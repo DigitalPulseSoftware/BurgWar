@@ -13,9 +13,7 @@ int main(int argc, char* argv[])
 	Nz::Initializer<Nz::Network> network;
 	bw::BurgApp app(argc, argv);
 
-	app.AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Mon super titre");
-
-	bw::ServerConnection server(app, app.GetCommandStore());
+	/*bw::ServerConnection server(app, app.GetCommandStore());
 	if (!server.Connect("localhost"))
 	{
 		std::cerr << "Failed to connect" << std::endl;
@@ -34,7 +32,7 @@ int main(int argc, char* argv[])
 	server.OnHelloWorld.Connect([](bw::ServerConnection* server, const bw::Packets::HelloWorld& helloWorld)
 	{
 		std::cout << "Server answers " << helloWorld.str << std::endl;
-	});
+	});*/
 
 	return app.Run();
 }

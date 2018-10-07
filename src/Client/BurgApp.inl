@@ -16,6 +16,11 @@ namespace bw
 		return m_commandStore;
 	}
 
+	inline Nz::RenderWindow& BurgApp::GetMainWindow() const
+	{
+		return m_mainWindow;
+	}
+
 	inline std::size_t BurgApp::AddReactor(std::unique_ptr<NetworkReactor> reactor)
 	{
 		m_reactors.emplace_back(std::move(reactor));
