@@ -1,5 +1,5 @@
 // Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// This file is part of the "Burgwar Server" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/BurgApp.hpp>
@@ -17,7 +17,7 @@ namespace bw
 	{
 		while (Application::Run())
 		{
-			m_sessionManager->Update();
+			m_sessionManager->Poll();
 		}
 
 		return 0;

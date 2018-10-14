@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENT_BURGAPP_HPP
 
 #include <Shared/NetworkReactor.hpp>
-#include <Client/Player.hpp>
+#include <Shared/MatchSessions.hpp>
 #include <Client/ServerCommandStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -22,11 +22,11 @@ namespace bw
 {
 	class Match;
 	class NetworkReactor;
-	class ServerConnection;
+	class NetworkClientSession;
 
 	class BurgApp : public Ndk::Application
 	{
-		friend ServerConnection;
+		friend NetworkClientSession;
 
 		public:
 			BurgApp(int argc, char* argv[]);
@@ -44,7 +44,7 @@ namespace bw
 			inline const std::unique_ptr<NetworkReactor>& GetReactor(std::size_t reactorId);
 			inline std::size_t GetReactorCount() const;
 
-			bool ConnectNewServer(const Nz::String& serverHostname, Nz::UInt32 data, ServerConnection* connection, std::size_t* peerId, NetworkReactor** peerReactor);
+			bool ConnectNewServer(const Nz::String& serverHostname, Nz::UInt32 data, NetworkClientSession* connection, std::size_t* peerId, NetworkReactor** peerReactor);
 
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);
 			void HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data);
@@ -52,9 +52,8 @@ namespace bw
 			void HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet);
 
 			std::vector<std::unique_ptr<NetworkReactor>> m_reactors;
-			std::vector<ServerConnection*> m_servers;
+			std::vector<NetworkClientSession*> m_servers;
 			ServerCommandStore m_commandStore;
-			Player m_testPlayer;
 			std::unique_ptr<Match> m_match;
 			Nz::RenderWindow& m_mainWindow;
 			Nz::UInt64 m_appTime;

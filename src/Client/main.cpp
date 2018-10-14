@@ -5,7 +5,7 @@
 #include <Nazara/Network/Network.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <Client/BurgApp.hpp>
-#include <Client/ServerConnection.hpp>
+#include <Client/NetworkClientSession.hpp>
 #include <iostream>
 
 int main(int argc, char* argv[])

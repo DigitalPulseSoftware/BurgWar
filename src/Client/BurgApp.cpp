@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/BurgApp.hpp>
-#include <Client/Match.hpp>
-#include <Client/Player.hpp>
-#include <Client/ServerConnection.hpp>
+#include <Shared/Match.hpp>
+#include <Client/LocalSessionManager.hpp>
+#include <Client/NetworkClientSession.hpp>
 #include <Client/Components/PlayerControlledComponent.hpp>
 #include <Client/Systems/PlayerControlledSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
@@ -25,7 +25,6 @@ namespace bw
 {
 	BurgApp::BurgApp(int argc, char* argv[]) :
 	Application(argc, argv),
-	m_testPlayer("Lynix"),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds()),
 	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Burg'war"))
@@ -43,8 +42,8 @@ namespace bw
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 
 		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
+		LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
 
-		m_match->Join(&m_testPlayer);
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -161,7 +160,7 @@ namespace bw
 
 	BurgApp::~BurgApp()
 	{
-		m_match->Leave(&m_testPlayer);
+		//m_match->Leave(&m_testPlayer);
 	}
 
 	int BurgApp::Run()
@@ -323,7 +322,7 @@ namespace bw
 		return 0;
 	}
 
-	bool BurgApp::ConnectNewServer(const Nz::String& serverHostname, Nz::UInt32 data, ServerConnection* connection, std::size_t* peerId, NetworkReactor** peerReactor)
+	bool BurgApp::ConnectNewServer(const Nz::String& serverHostname, Nz::UInt32 data, NetworkClientSession* connection, std::size_t* peerId, NetworkReactor** peerReactor)
 	{
 		constexpr std::size_t MaxPeerCount = 1;
 
@@ -391,7 +390,7 @@ namespace bw
 
 	void BurgApp::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
 	{
-		ServerConnection::ConnectionInfo connectionInfo;
+		NetworkClientSession::ConnectionInfo connectionInfo;
 		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;
 		connectionInfo.ping = peerInfo.ping;
 

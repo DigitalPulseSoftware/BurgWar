@@ -11,9 +11,9 @@
 
 namespace bw
 {
-	class ServerConnection;
+	class ClientSession;
 
-	class ServerCommandStore : public CommandStore<ServerConnection*>
+	class ServerCommandStore : public CommandStore<ClientSession*>
 	{
 		public:
 			ServerCommandStore();
