@@ -36,15 +36,10 @@ namespace bw
 	template<typename T>
 	void ClientSession::SendPacket(const T& packet)
 	{
-		if (!IsConnected())
-			return;
-
-		const auto& command = m_commandStore.GetOutgoingCommand<T>();
-
 		Nz::NetPacket data;
 		m_commandStore.SerializePacket(data, packet);
 
-		m_networkReactor->SendData(m_peerId, command.channelId, command.flags, std::move(data));
+		m_bridge->SendPacket(m_commandStore.GetOutgoingCommand<T>(), std::move(data));
 	}
 
 	inline void ClientSession::DispatchIncomingPacket(Nz::NetPacket&& packet)

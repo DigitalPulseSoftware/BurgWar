@@ -8,7 +8,9 @@
 #define BURGWAR_CLIENT_CLIENTSESSION_HPP
 
 #include <Shared/Protocol/NetworkStringStore.hpp>
+#include <Shared/SessionBridge.hpp>
 #include <Nazara/Core/Signal.hpp>
+#include <memory>
 
 namespace bw
 {
@@ -54,6 +56,7 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
+			std::unique_ptr<SessionBridge> m_bridge;
 			BurgApp& m_application;
 			const ServerCommandStore& m_commandStore;
 			NetworkStringStore m_stringStore;

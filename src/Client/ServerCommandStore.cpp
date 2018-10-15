@@ -3,16 +3,16 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ServerCommandStore.hpp>
-#include <Client/NetworkClientSession.hpp>
+#include <Client/ClientSession.hpp>
 #include <Shared/Protocol/Packets.hpp>
 
 namespace bw
 {
 	ServerCommandStore::ServerCommandStore()
 	{
-#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](NetworkClient* server, const Packets::Type& packet) \
+#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, const Packets::Type& packet) \
 { \
-	server->On##Type(server, packet); \
+	session->HandleIncomingPacket(packet); \
 })
 #define OutgoingCommand(Type, Flags, Channel) RegisterOutgoingCommand<Packets::Type>(#Type, Flags, Channel)
 
