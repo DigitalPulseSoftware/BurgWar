@@ -4,8 +4,8 @@
 
 #include <Client/BurgApp.hpp>
 #include <Shared/Match.hpp>
+#include <Shared/NetworkClientBridge.hpp>
 #include <Client/LocalSessionManager.hpp>
-#include <Client/NetworkClientSession.hpp>
 #include <Client/Components/PlayerControlledComponent.hpp>
 #include <Client/Systems/PlayerControlledSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
@@ -322,43 +322,26 @@ namespace bw
 		return 0;
 	}
 
-	bool BurgApp::ConnectNewServer(const Nz::String& serverHostname, Nz::UInt32 data, NetworkClientSession* connection, std::size_t* peerId, NetworkReactor** peerReactor)
+	std::shared_ptr<NetworkClientBridge> BurgApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
 	{
 		constexpr std::size_t MaxPeerCount = 1;
 
-		Nz::UInt16 port = 14738;
-		//Nz::UInt16 port = m_config.GetIntegerOption<Nz::UInt16>("Server.Port");
-
-		//Nz::NetProtocol hostnameProtocol = (m_config.GetBoolOption("Options.ForceIPv4")) ? Nz::NetProtocol_IPv4 : Nz::NetProtocol_Any;
-		Nz::NetProtocol hostnameProtocol = Nz::NetProtocol_Any;
-
-		Nz::ResolveError resolveError = Nz::ResolveError_NoError;
-		std::vector<Nz::HostnameInfo> results = Nz::IpAddress::ResolveHostname(hostnameProtocol, serverHostname, Nz::String::Number(port), &resolveError);
-		if (results.empty())
-		{
-			std::cerr << "Failed to resolve server hostname: " << Nz::ErrorToString(resolveError) << std::endl;
-			return false;
-		}
-
-		Nz::IpAddress serverAddress = results.front().address;
-
-		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> bool
+		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> std::shared_ptr<NetworkClientBridge>
 		{
 			std::size_t newPeerId = reactor->ConnectTo(serverAddress, data);
 			if (newPeerId == NetworkReactor::InvalidPeerId)
 			{
 				std::cerr << "Failed to allocate new peer" << std::endl;
-				return false;
+				return nullptr;
 			}
 
-			*peerId = newPeerId;
-			*peerReactor = reactor;
+			auto bridge = std::make_shared<NetworkClientBridge>(*reactor, newPeerId);
 
-			if (newPeerId >= m_servers.size())
-				m_servers.resize(newPeerId + 1);
+			if (newPeerId >= m_connections.size())
+				m_connections.resize(newPeerId + 1);
 
-			m_servers[newPeerId] = connection;
-			return true;
+			m_connections[newPeerId] = bridge;
+			return bridge;
 		};
 
 		std::size_t reactorCount = GetReactorCount();
@@ -379,26 +362,26 @@ namespace bw
 
 	void BurgApp::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
 	{
-		m_servers[peerId]->NotifyConnected(data);
+		m_connections[peerId]->OnConnected(data);
 	}
 
 	void BurgApp::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
 	{
-		m_servers[peerId]->NotifyDisconnected(data);
-		m_servers[peerId] = nullptr;
+		m_connections[peerId]->OnDisconnected(data);
+		m_connections[peerId].reset();
 	}
 
 	void BurgApp::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
 	{
-		NetworkClientSession::ConnectionInfo connectionInfo;
+		/*NetworkClientSession::ConnectionInfo connectionInfo;
 		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;
 		connectionInfo.ping = peerInfo.ping;
 
-		m_servers[peerId]->UpdateInfo(connectionInfo);
+		m_connections[peerId]->UpdateInfo(connectionInfo);*/
 	}
 
 	void BurgApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet)
 	{
-		m_servers[peerId]->DispatchIncomingPacket(std::move(packet));
+		m_connections[peerId]->OnIncomingPacket(packet);
 	}
 }

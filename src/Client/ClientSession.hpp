@@ -10,6 +10,7 @@
 #include <Shared/Protocol/NetworkStringStore.hpp>
 #include <Shared/SessionBridge.hpp>
 #include <Nazara/Core/Signal.hpp>
+#include <Nazara/Network/IpAddress.hpp>
 #include <memory>
 
 namespace bw
@@ -19,6 +20,8 @@ namespace bw
 
 	class ClientSession
 	{
+		friend class ServerCommandStore;
+
 		public:
 			struct ConnectionInfo;
 
@@ -27,12 +30,18 @@ namespace bw
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
 
+			bool Connect(const Nz::IpAddress& address);
+			bool Connect(const Nz::String& serverHostname, Nz::UInt16 port, Nz::NetProtocol protocol = Nz::NetProtocol_Any);
+			void Disconnect();
+
 			Nz::UInt64 EstimateMatchTime() const;
 
 			inline BurgApp& GetApp();
 			inline const BurgApp& GetApp() const;
 			inline const ConnectionInfo& GetConnectionInfo() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
+
+			inline bool IsConnected() const;
 
 			void HandleIncomingPacket(Nz::NetPacket&& packet);
 
@@ -52,11 +61,12 @@ namespace bw
 			};
 
 		protected:
-			inline void DispatchIncomingPacket(Nz::NetPacket&& packet);
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
-			std::unique_ptr<SessionBridge> m_bridge;
+			void HandleIncomingPacket(const Packets::HelloWorld& packet);
+			
+			std::shared_ptr<SessionBridge> m_bridge;
 			BurgApp& m_application;
 			const ServerCommandStore& m_commandStore;
 			NetworkStringStore m_stringStore;

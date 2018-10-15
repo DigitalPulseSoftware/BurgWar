@@ -8,6 +8,7 @@
 #define BURGWAR_SHARED_NETWORKCLIENTBRIDGE_HPP
 
 #include <Shared/SessionBridge.hpp>
+#include <Nazara/Core/Signal.hpp>
 
 namespace bw
 {
@@ -17,13 +18,17 @@ namespace bw
 	{
 		public:
 			inline NetworkClientBridge(NetworkReactor& reactor, std::size_t peerId);
-			~NetworkClientBridge() = default;
+			~NetworkClientBridge();
 
 			void Disconnect() override;
 
 			inline std::size_t GetPeerId() const;
 
 			void SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket&& packet) override;
+
+			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
+			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);
+			NazaraSignal(OnIncomingPacket, Nz::NetPacket& /*packet*/);
 
 		private:
 			std::size_t m_peerId;

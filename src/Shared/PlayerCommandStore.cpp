@@ -10,7 +10,7 @@ namespace bw
 {
 	PlayerCommandStore::PlayerCommandStore()
 	{
-#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession& session, const Packets::Type& packet) \
+#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](MatchClientSession& session, const Packets::Type& packet) \
 { \
 	session.HandleIncomingPacket(packet); \
 })

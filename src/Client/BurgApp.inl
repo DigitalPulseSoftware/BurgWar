@@ -6,6 +6,17 @@
 
 namespace bw
 {
+	inline std::size_t BurgApp::AddReactor(std::unique_ptr<NetworkReactor> reactor)
+	{
+		m_reactors.emplace_back(std::move(reactor));
+		return m_reactors.size() - 1;
+	}
+
+	inline void BurgApp::ClearReactors()
+	{
+		m_reactors.clear();
+	}
+
 	inline Nz::UInt64 bw::BurgApp::GetAppTime() const
 	{
 		return m_appTime;
@@ -19,17 +30,6 @@ namespace bw
 	inline Nz::RenderWindow& BurgApp::GetMainWindow() const
 	{
 		return m_mainWindow;
-	}
-
-	inline std::size_t BurgApp::AddReactor(std::unique_ptr<NetworkReactor> reactor)
-	{
-		m_reactors.emplace_back(std::move(reactor));
-		return m_reactors.size() - 1;
-	}
-
-	inline void BurgApp::ClearReactors()
-	{
-		m_reactors.clear();
 	}
 
 	inline const std::unique_ptr<NetworkReactor>& BurgApp::GetReactor(std::size_t reactorId)

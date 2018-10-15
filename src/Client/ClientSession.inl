@@ -33,18 +33,21 @@ namespace bw
 		return m_stringStore;
 	}
 
+	inline bool ClientSession::IsConnected() const
+	{
+		return m_bridge != nullptr;
+	}
+
 	template<typename T>
 	void ClientSession::SendPacket(const T& packet)
 	{
+		if (!m_isConnected)
+			return;
+
 		Nz::NetPacket data;
 		m_commandStore.SerializePacket(data, packet);
 
 		m_bridge->SendPacket(m_commandStore.GetOutgoingCommand<T>(), std::move(data));
-	}
-
-	inline void ClientSession::DispatchIncomingPacket(Nz::NetPacket&& packet)
-	{
-		m_commandStore.UnserializePacket(this, std::move(packet));
 	}
 
 	inline void ClientSession::UpdateInfo(const ConnectionInfo& connectionInfo)

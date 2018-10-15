@@ -21,11 +21,6 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
 	{
-		std::cout << "Client " << m_sessionId << " says hi (" << packet.str << ")" << std::endl;
-
-		Packets::HelloWorld answer;
-		answer.str = "La belgique aurait dû gagner la demi-finale 2018";
-
-		SendPacket(answer);
+		std::cout << "[Server] Hello world: " << packet.str << std::endl;
 	}
 }

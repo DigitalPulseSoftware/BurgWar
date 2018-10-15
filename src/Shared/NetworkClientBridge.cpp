@@ -8,6 +8,11 @@
 
 namespace bw
 {
+	NetworkClientBridge::~NetworkClientBridge()
+	{
+		Disconnect();
+	}
+
 	void NetworkClientBridge::Disconnect()
 	{
 		m_reactor.DisconnectPeer(m_peerId);
