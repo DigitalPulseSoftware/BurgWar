@@ -10,7 +10,9 @@
 #include <Shared/Protocol/CompressedInteger.hpp>
 #include <Shared/Protocol/PacketSerializer.hpp>
 #include <Nazara/Prerequisites.hpp>
+#include <Nazara/Core/Color.hpp>
 #include <Nazara/Core/String.hpp>
+#include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Box.hpp>
 #include <Nazara/Math/Quaternion.hpp>
 #include <Nazara/Math/Vector3.hpp>
@@ -21,15 +23,16 @@
 
 namespace bw
 {
-	enum class PacketOpcode
-	{
-		HelloWorld = 0,
-		NetworkStrings = 1
-	};
-
 	enum class PacketType
 	{
+		Auth,
+		AuthFailure,
+		AuthSuccess,
+		CreateEntities,
+		DeleteEntities,
 		HelloWorld,
+		MatchData,
+		MatchState,
 		NetworkStrings
 	};
 
@@ -42,9 +45,69 @@ namespace bw
 	{
 #define DeclarePacket(Type) struct Type : PacketTag<PacketType:: Type >
 
+		DeclarePacket(Auth)
+		{
+			Nz::UInt8 playerCount;
+		};
+
+		DeclarePacket(AuthFailure)
+		{
+		};
+
+		DeclarePacket(AuthSuccess)
+		{
+		};
+
+		DeclarePacket(CreateEntities)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				Nz::RadianAnglef angularVelocity;
+				Nz::RadianAnglef rotation;
+				Nz::Vector2f linearVelocity;
+				Nz::Vector2f position;
+			};
+
+			std::vector<Entity> entities;
+		};
+
+		DeclarePacket(DeleteEntities)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			std::vector<Entity> entityIds;
+		};
+
 		DeclarePacket(HelloWorld)
 		{
 			std::string str;
+		};
+
+		DeclarePacket(MatchData)
+		{
+			std::vector<Nz::UInt8> tiles; //< 0 = empty, 1 = dirt, 2 = dirt w/ grass
+			Nz::Color backgroundColor;
+			Nz::UInt16 height;
+			Nz::UInt16 width;
+			float tileSize;
+		};
+
+		DeclarePacket(MatchState)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				Nz::RadianAnglef angularVelocity;
+				Nz::RadianAnglef rotation;
+				Nz::Vector2f linearVelocity;
+				Nz::Vector2f position;
+			};
+
+			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(NetworkStrings)
@@ -55,7 +118,14 @@ namespace bw
 
 #undef DeclarePacket
 
+		void Serialize(PacketSerializer& serializer, Auth& data);
+		void Serialize(PacketSerializer& serializer, AuthFailure& data);
+		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
+		void Serialize(PacketSerializer& serializer, CreateEntities& data);
+		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
+		void Serialize(PacketSerializer& serializer, MatchData& data);
+		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 	}
 }

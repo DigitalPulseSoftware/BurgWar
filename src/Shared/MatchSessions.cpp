@@ -39,7 +39,7 @@ namespace bw
 		return session;
 	}
 
-	void MatchSessions::Deletesession(MatchClientSession* session)
+	void MatchSessions::DeleteSession(MatchClientSession* session)
 	{
 		std::size_t sessionId = session->GetSessionId();
 		m_sessionIdToSession.erase(sessionId);

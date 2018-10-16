@@ -21,6 +21,7 @@ namespace bw
 
 			inline TerrainLayer& GetLayer(std::size_t layerIndex);
 			inline const TerrainLayer& GetLayer(std::size_t layerIndex) const;
+			inline std::size_t GetLayerCount() const;
 
 			void Update(float elapsedTime);
 

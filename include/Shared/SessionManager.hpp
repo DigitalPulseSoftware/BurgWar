@@ -20,7 +20,7 @@ namespace bw
 	{
 		public:
 			inline SessionManager(MatchSessions* owner);
-			~SessionManager();
+			virtual ~SessionManager();
 
 			inline MatchSessions* GetOwner();
 

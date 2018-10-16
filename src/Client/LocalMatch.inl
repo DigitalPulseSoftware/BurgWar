@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/LocalSessionBridge.hpp>
+#include <Client/LocalMatch.hpp>
 
 namespace bw
 {

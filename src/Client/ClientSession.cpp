@@ -4,8 +4,9 @@
 
 #include <Client/ClientSession.hpp>
 #include <Shared/NetworkClientBridge.hpp>
-#include <Client/ServerCommandStore.hpp>
 #include <Client/BurgApp.hpp>
+#include <Client/LocalCommandStore.hpp>
+#include <Client/LocalMatch.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 
 namespace bw
@@ -20,7 +21,21 @@ namespace bw
 		if (!bridge)
 			return false;
 
-		//bridge->OnConnected.Connect
+		bridge->OnConnected.Connect([this](Nz::UInt32 /*data*/)
+		{
+			m_isConnected = true;
+		});
+
+		bridge->OnDisconnected.Connect([this](Nz::UInt32 /*data*/)
+		{
+			m_isConnected = false;
+			m_bridge.reset();
+		});
+
+		bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
+		{
+			HandleIncomingPacket(packet);
+		});
 
 		m_bridge = bridge;
 		return true;
@@ -42,7 +57,10 @@ namespace bw
 	void ClientSession::Disconnect()
 	{
 		if (m_bridge)
+		{
+			m_bridge->Disconnect();
 			m_bridge.reset();
+		}
 	}
 
 	Nz::UInt64 ClientSession::EstimateMatchTime() const
@@ -50,13 +68,56 @@ namespace bw
 		return m_application.GetAppTime() + m_deltaTime;
 	}
 
-	void ClientSession::HandleIncomingPacket(Nz::NetPacket&& packet)
+	void ClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
-		m_commandStore.UnserializePacket(this, std::move(packet));
+		m_commandStore.UnserializePacket(this, packet);
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::AuthFailure& packet)
+	{
+		std::cout << "[Client] Auth failed" << std::endl;
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::AuthSuccess& packet)
+	{
+		std::cout << "[Client] Auth succeeded" << std::endl;
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::CreateEntities & packet)
+	{
+		for (const auto& entityData : packet.entities)
+		{
+			std::cout << "[Client] Entity #" << entityData.id << " created at " << entityData.position << std::endl;
+			m_localMatch->CreateEntity(entityData.id, entityData.position);
+		}
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::DeleteEntities& packet)
+	{
+		for (const auto& entityData : packet.entityIds)
+		{
+			std::cout << "[Client] Entity #" << entityData.id << " deleted" << std::endl;
+			m_localMatch->DeleteEntity(entityData.id);
+		}
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
 	{
 		std::cout << "[Client] Hello world: " << packet.str << std::endl;
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::MatchData& matchData)
+	{
+		std::cout << "[Client] Got match data: " << matchData.backgroundColor << std::endl;
+		m_localMatch = m_application.CreateLocalMatch(matchData);
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::MatchState& packet)
+	{
+		for (const auto& entityData : packet.entities)
+		{
+			std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position << std::endl;
+			m_localMatch->MoveEntity(entityData.id, entityData.position);
+		}
 	}
 }

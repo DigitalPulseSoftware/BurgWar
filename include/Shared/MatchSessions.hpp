@@ -27,7 +27,9 @@ namespace bw
 
 			MatchClientSession* CreateSession(std::unique_ptr<SessionBridge> bridge);
 			template<typename T, typename... Args> T* CreateSessionManager(Args&&... args);
-			void Deletesession(MatchClientSession* session);
+			void DeleteSession(MatchClientSession* session);
+
+			template<typename F> void ForEachSession(F&& cb);
 
 			void Poll();
 

@@ -13,14 +13,14 @@ namespace bw
 {
 	class ClientSession;
 
-	class ServerCommandStore : public CommandStore<ClientSession*>
+	class LocalCommandStore : public CommandStore<ClientSession*>
 	{
 		public:
-			ServerCommandStore();
-			~ServerCommandStore() = default;
+			LocalCommandStore();
+			~LocalCommandStore() = default;
 	};
 }
 
-#include <Client/ServerCommandStore.inl>
+#include <Client/LocalCommandStore.inl>
 
 #endif

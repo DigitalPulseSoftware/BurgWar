@@ -33,9 +33,9 @@ namespace bw
 			template<typename T>
 			void SerializePacket(Nz::NetPacket& packet, const T& data) const;
 
-			bool UnserializePacket(PeerRef peer, Nz::NetPacket&& packet) const;
+			bool UnserializePacket(PeerRef peer, Nz::NetPacket& packet) const;
 
-			using UnserializeFunction = std::function<void(PeerRef peer, Nz::NetPacket&& packet)>;
+			using UnserializeFunction = std::function<void(PeerRef peer, Nz::NetPacket& packet)>;
 
 			struct IncomingCommand
 			{

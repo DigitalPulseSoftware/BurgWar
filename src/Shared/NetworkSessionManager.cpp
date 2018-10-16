@@ -47,7 +47,7 @@ namespace bw
 		MatchClientSession*& session = m_peerIdToSession[peerId];
 		assert(session);
 
-		GetOwner()->Deletesession(session);
+		GetOwner()->DeleteSession(session);
 		session = nullptr;
 	}
 

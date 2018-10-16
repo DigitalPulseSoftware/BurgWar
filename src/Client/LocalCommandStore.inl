@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar Client" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/ServerCommandStore.hpp>
+#include <Client/LocalCommandStore.hpp>
 
 namespace bw
 {

@@ -12,7 +12,7 @@ namespace bw
 		throw std::runtime_error("Disconnect() called on local player");
 	}
 
-	void LocalSessionBridge::SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket && packet)
+	void LocalSessionBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
 	{
 		//m_reactor.SendData(m_peerId, command.channelId, command.flags, std::move(packet));
 	}

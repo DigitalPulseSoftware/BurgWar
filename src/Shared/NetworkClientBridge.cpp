@@ -8,18 +8,15 @@
 
 namespace bw
 {
-	NetworkClientBridge::~NetworkClientBridge()
-	{
-		Disconnect();
-	}
+	NetworkClientBridge::~NetworkClientBridge() = default;
 
 	void NetworkClientBridge::Disconnect()
 	{
 		m_reactor.DisconnectPeer(m_peerId);
 	}
 
-	void NetworkClientBridge::SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket && packet)
+	void NetworkClientBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
 	{
-		m_reactor.SendData(m_peerId, command.channelId, command.flags, std::move(packet));
+		m_reactor.SendData(m_peerId, channelId, flags, std::move(packet));
 	}
 }

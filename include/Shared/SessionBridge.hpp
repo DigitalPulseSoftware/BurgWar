@@ -23,7 +23,7 @@ namespace bw
 
 			inline MatchClientSession* GetSession();
 
-			virtual void SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket&& data) = 0;
+			virtual void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& data) = 0;
 
 		private:
 			MatchClientSession* m_session;

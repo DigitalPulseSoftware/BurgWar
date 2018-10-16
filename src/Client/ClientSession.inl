@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ClientSession::ClientSession(BurgApp& application, const ServerCommandStore& commandStore) :
+	inline ClientSession::ClientSession(BurgApp& application, const LocalCommandStore& commandStore) :
 	m_application(application),
 	m_commandStore(commandStore)
 	{
@@ -47,7 +47,8 @@ namespace bw
 		Nz::NetPacket data;
 		m_commandStore.SerializePacket(data, packet);
 
-		m_bridge->SendPacket(m_commandStore.GetOutgoingCommand<T>(), std::move(data));
+		const auto& command = m_commandStore.GetOutgoingCommand<T>();
+		m_bridge->SendPacket(command.channelId, command.flags, std::move(data));
 	}
 
 	inline void ClientSession::UpdateInfo(const ConnectionInfo& connectionInfo)

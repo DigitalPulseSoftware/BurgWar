@@ -5,6 +5,10 @@
 #include <Client/BurgApp.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/NetworkClientBridge.hpp>
+#include <Shared/Components/NetworkSyncComponent.hpp>
+#include <Shared/Systems/NetworkSyncSystem.hpp>
+#include <Client/ClientSession.hpp>
+#include <Client/LocalMatch.hpp>
 #include <Client/LocalSessionManager.hpp>
 #include <Client/Components/PlayerControlledComponent.hpp>
 #include <Client/Systems/PlayerControlledSystem.hpp>
@@ -38,12 +42,23 @@ namespace bw
 	m_isMoving(false)
 #endif
 	{
+		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
+		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 
 		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
-		LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
+		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
+		NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 
+		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore);
+		m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
+
+		Packets::HelloWorld hw;
+		hw.str = "Coucou";
+		m_clientSession->SendPacket(hw);
+
+		m_clientSession->SendPacket(Packets::Auth{});
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -308,11 +323,14 @@ namespace bw
 
 			m_match->Update(elapsedTime / 1'000'000.f);
 
+			for (const auto& localMatchPtr : m_localMatches)
+				localMatchPtr->Update(elapsedTime / 1'000'000.f);
+
 			for (const auto& reactorPtr : m_reactors)
 			{
 				reactorPtr->Poll([&](bool outgoing, std::size_t clientId, Nz::UInt32 data) { HandlePeerConnection(outgoing, clientId, data); },
 				                 [&](std::size_t clientId, Nz::UInt32 data) { HandlePeerDisconnection(clientId, data); },
-				                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, std::move(packet)); },
+				                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, packet); },
 				                 [&](std::size_t clientId, const NetworkReactor::PeerInfo& peerInfo) { HandlePeerInfo(clientId, peerInfo); });
 			}
 
@@ -320,6 +338,11 @@ namespace bw
 		}
 
 		return 0;
+	}
+
+	std::shared_ptr<LocalMatch> BurgApp::CreateLocalMatch(const Packets::MatchData& matchData)
+	{
+		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, matchData));
 	}
 
 	std::shared_ptr<NetworkClientBridge> BurgApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
@@ -380,7 +403,7 @@ namespace bw
 		m_connections[peerId]->UpdateInfo(connectionInfo);*/
 	}
 
-	void BurgApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet)
+	void BurgApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)
 	{
 		m_connections[peerId]->OnIncomingPacket(packet);
 	}

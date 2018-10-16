@@ -24,7 +24,7 @@ namespace bw
 
 			inline std::size_t GetPeerId() const;
 
-			void SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket&& packet) override;
+			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
 
 			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
 			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);

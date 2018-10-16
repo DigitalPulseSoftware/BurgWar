@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar Client" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/ServerCommandStore.hpp>
+#include <Client/LocalCommandStore.hpp>
 #include <Client/ClientSession.hpp>
 #include <Shared/Protocol/Packets.hpp>
 
 namespace bw
 {
-	ServerCommandStore::ServerCommandStore()
+	LocalCommandStore::LocalCommandStore()
 	{
 #define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, const Packets::Type& packet) \
 { \
@@ -17,10 +17,17 @@ namespace bw
 #define OutgoingCommand(Type, Flags, Channel) RegisterOutgoingCommand<Packets::Type>(#Type, Flags, Channel)
 
 		// Incoming commands
+		IncomingCommand(AuthFailure);
+		IncomingCommand(AuthSuccess);
 		IncomingCommand(HelloWorld);
+		IncomingCommand(CreateEntities);
+		IncomingCommand(DeleteEntities);
+		IncomingCommand(MatchData);
+		IncomingCommand(MatchState);
 
 		// Outgoing commands
-		OutgoingCommand(HelloWorld, Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(Auth,           Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(HelloWorld,     Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings, Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand

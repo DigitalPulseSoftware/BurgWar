@@ -24,6 +24,7 @@ namespace bw
 		Nz::NetPacket data;
 		m_commandStore.SerializePacket(data, packet);
 
-		m_bridge->SendPacket(m_commandStore.GetOutgoingCommand<T>(), std::move(data));
+		const auto& command = m_commandStore.GetOutgoingCommand<T>();
+		m_bridge->SendPacket(command.channelId, command.flags, std::move(data));
 	}
 }

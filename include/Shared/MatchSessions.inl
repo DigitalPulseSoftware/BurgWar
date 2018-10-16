@@ -12,4 +12,11 @@ namespace bw
 		m_managers.emplace_back(std::make_unique<T>(this, std::forward<Args>(args)...));
 		return static_cast<T*>(m_managers.back().get());
 	}
+
+	template<typename F>
+	void MatchSessions::ForEachSession(F&& cb)
+	{
+		for (const auto& pair : m_sessionIdToSession)
+			cb(pair.second);
+	}
 }

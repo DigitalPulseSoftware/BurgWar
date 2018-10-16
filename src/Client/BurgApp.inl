@@ -22,7 +22,7 @@ namespace bw
 		return m_appTime;
 	}
 
-	inline const ServerCommandStore& BurgApp::GetCommandStore() const
+	inline const LocalCommandStore& BurgApp::GetCommandStore() const
 	{
 		return m_commandStore;
 	}

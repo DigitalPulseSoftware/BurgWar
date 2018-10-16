@@ -16,16 +16,17 @@
 namespace bw
 {
 	class BurgApp;
-	class ServerCommandStore;
+	class LocalCommandStore;
+	class LocalMatch;
 
 	class ClientSession
 	{
-		friend class ServerCommandStore;
+		friend class LocalCommandStore;
 
 		public:
 			struct ConnectionInfo;
 
-			inline ClientSession(BurgApp& app, const ServerCommandStore& commandStore);
+			inline ClientSession(BurgApp& app, const LocalCommandStore& commandStore);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
@@ -43,9 +44,7 @@ namespace bw
 
 			inline bool IsConnected() const;
 
-			void HandleIncomingPacket(Nz::NetPacket&& packet);
-
-			virtual void RefreshInfos() = 0;
+			void HandleIncomingPacket(Nz::NetPacket& packet);
 
 			template<typename T> void SendPacket(const T& packet);
 
@@ -64,14 +63,22 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
+			void HandleIncomingPacket(const Packets::AuthFailure& packet);
+			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
+			void HandleIncomingPacket(const Packets::CreateEntities& packet);
+			void HandleIncomingPacket(const Packets::DeleteEntities& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
+			void HandleIncomingPacket(const Packets::MatchData& packet);
+			void HandleIncomingPacket(const Packets::MatchState& packet);
 			
 			std::shared_ptr<SessionBridge> m_bridge;
+			std::shared_ptr<LocalMatch> m_localMatch;
 			BurgApp& m_application;
-			const ServerCommandStore& m_commandStore;
+			const LocalCommandStore& m_commandStore;
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;
 			Nz::UInt64 m_deltaTime;
+			bool m_isConnected;
 	};
 }
 

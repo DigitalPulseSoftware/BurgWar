@@ -9,7 +9,8 @@
 
 #include <Shared/NetworkReactor.hpp>
 #include <Shared/MatchSessions.hpp>
-#include <Client/ServerCommandStore.hpp>
+#include <Shared/Protocol/Packets.hpp>
+#include <Client/LocalCommandStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Network/IpAddress.hpp>
@@ -21,6 +22,7 @@
 
 namespace bw
 {
+	class LocalMatch;
 	class Match;
 	class NetworkClientBridge;
 	class NetworkReactor;
@@ -37,7 +39,7 @@ namespace bw
 			inline void ClearReactors();
 
 			inline Nz::UInt64 GetAppTime() const;
-			inline const ServerCommandStore& GetCommandStore() const;
+			inline const LocalCommandStore& GetCommandStore() const;
 			inline Nz::RenderWindow& GetMainWindow() const;
 			inline const std::unique_ptr<NetworkReactor>& GetReactor(std::size_t reactorId);
 			inline std::size_t GetReactorCount() const;
@@ -45,17 +47,20 @@ namespace bw
 			int Run();
 
 		private:
+			std::shared_ptr<LocalMatch> CreateLocalMatch(const Packets::MatchData& matchData);
 			std::shared_ptr<NetworkClientBridge> ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
 
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);
 			void HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data);
 			void HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo);
-			void HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet);
+			void HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet);
 
+			std::vector<std::shared_ptr<LocalMatch>> m_localMatches;
 			std::vector<std::unique_ptr<NetworkReactor>> m_reactors;
 			std::vector<std::shared_ptr<NetworkClientBridge>> m_connections;
-			ServerCommandStore m_commandStore;
+			LocalCommandStore m_commandStore;
 			std::unique_ptr<Match> m_match;
+			std::unique_ptr<ClientSession> m_clientSession;
 			Nz::RenderWindow& m_mainWindow;
 			Nz::UInt64 m_appTime;
 			Nz::UInt64 m_lastTime;

@@ -19,7 +19,7 @@ namespace bw
 
 			void Disconnect() override;
 
-			void SendPacket(const PlayerCommandStore::OutgoingCommand& command, Nz::NetPacket&& packet) override;
+			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
 
 		private:
 	};

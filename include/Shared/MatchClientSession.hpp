@@ -34,6 +34,7 @@ namespace bw
 			template<typename T> void SendPacket(const T& packet);
 
 		private:
+			void HandleIncomingPacket(const Packets::Auth& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 
 			PlayerCommandStore& m_commandStore;

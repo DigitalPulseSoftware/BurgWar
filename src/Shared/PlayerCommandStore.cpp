@@ -17,10 +17,17 @@ namespace bw
 #define OutgoingCommand(Type, Flags, Channel) RegisterOutgoingCommand<Packets::Type>(#Type, Flags, Channel)
 
 		// Incoming commands
+		IncomingCommand(Auth);
 		IncomingCommand(HelloWorld);
 
 		// Outgoing commands
-		OutgoingCommand(HelloWorld, Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(AuthFailure,    Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(AuthSuccess,    Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(CreateEntities, Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(DeleteEntities, Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(HelloWorld,     Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(MatchData,      Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(MatchState,     0,                           1);
 		OutgoingCommand(NetworkStrings, Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
