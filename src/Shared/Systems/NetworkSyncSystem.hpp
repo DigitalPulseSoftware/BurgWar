@@ -10,6 +10,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/System.hpp>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -37,6 +38,7 @@ namespace bw
 					Nz::RadianAnglef rotation;
 					Nz::Vector2f position;
 					Nz::Vector2f linearVelocity;
+					bool hasPlayerMovement;
 				};
 
 				struct EntityDestruction
@@ -45,10 +47,17 @@ namespace bw
 
 				struct EntityMovement
 				{
+					struct PlayerMovementData
+					{
+						bool isAirControlling;
+						bool isFacingRight;
+					};
+
 					Nz::RadianAnglef angularVelocity;
 					Nz::RadianAnglef rotation;
 					Nz::Vector2f position;
 					Nz::Vector2f linearVelocity;
+					std::optional<PlayerMovementData> playerMovement;
 				};
 
 				std::variant<EntityCreation, EntityDestruction, EntityMovement> eventData;

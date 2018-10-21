@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline MatchClientSession::MatchClientSession(std::size_t sessionId, PlayerCommandStore& commandStore,  std::unique_ptr<SessionBridge> bridge) :
+	inline MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore,  std::unique_ptr<SessionBridge> bridge) :
+	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
 	m_bridge(std::move(bridge))

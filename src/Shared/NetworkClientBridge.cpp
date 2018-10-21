@@ -17,6 +17,7 @@ namespace bw
 
 	void NetworkClientBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
 	{
+		packet.FlushBits();
 		m_reactor.SendData(m_peerId, channelId, flags, std::move(packet));
 	}
 }

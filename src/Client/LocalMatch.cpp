@@ -4,9 +4,12 @@
 
 #include <Client/LocalMatch.hpp>
 #include <Client/BurgApp.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
+#include <Nazara/Platform/Keyboard.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
@@ -15,8 +18,12 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, const Packets::MatchData& matchData) :
-	m_application(burgApp)
+	m_application(burgApp),
+	m_errorCorrectionTimer(0.f),
+	m_playerEntitiesTimer(0.f)
 	{
+		m_world.AddSystem<PlayerMovementSystem>();
+
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(Nz::ColorBackground::New(matchData.backgroundColor));
@@ -25,7 +32,7 @@ namespace bw
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
 
 		Ndk::EntityHandle camera = m_world.CreateEntity();
-		camera->AddComponent<Ndk::NodeComponent>();
+		camera->AddComponent<Ndk::NodeComponent>().SetPosition(Nz::Vector2f(320.f, 0.f));
 
 		Ndk::CameraComponent& viewer = camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(&(m_application.GetMainWindow()));
@@ -44,17 +51,19 @@ namespace bw
 		grassSprite->SetSize(grassSprite->GetSize() * grassScale);
 		grassSprite->SetOrigin(Nz::Vector3f(0.f, 8.f, 0.f));
 
-		Nz::TileMapRef tileMap = Nz::TileMap::New(Nz::Vector2ui(matchData.width, matchData.height), Nz::Vector2f(matchData.tileSize, matchData.tileSize));
+		auto& layerData = matchData.layers.front();
+
+		Nz::TileMapRef tileMap = Nz::TileMap::New(Nz::Vector2ui(layerData.width, layerData.height), Nz::Vector2f(matchData.tileSize, matchData.tileSize));
 		tileMap->SetMaterial(0, dirtMat);
 
 		Ndk::EntityHandle theCollider = m_world.CreateEntity();
 		auto& worldGfx = theCollider->AddComponent<Ndk::GraphicsComponent>();
 
-		for (std::size_t y = 0; y < matchData.height; ++y)
+		for (std::size_t y = 0; y < layerData.height; ++y)
 		{
-			for (std::size_t x = 0; x < matchData.width; ++x)
+			for (std::size_t x = 0; x < layerData.width; ++x)
 			{
-				switch (matchData.tiles[y * matchData.width + x])
+				switch (layerData.tiles[y * layerData.width + x])
 				{
 					case 0: //< Air
 						break;
@@ -80,16 +89,17 @@ namespace bw
 		worldGfx.Attach(tileMap);
 
 		std::vector<Nz::Collider2DRef> colliders;
-		for (std::size_t y = 0; y < matchData.height; ++y)
+		for (std::size_t y = 0; y < layerData.height; ++y)
 		{
-			for (std::size_t x = 0; x < matchData.width; ++x)
+			for (std::size_t x = 0; x < layerData.width; ++x)
 			{
-				if (matchData.tiles[y * matchData.width + x] != 0)
+				if (layerData.tiles[y * layerData.width + x] != 0)
 				{
 					std::size_t startX = x++;
 
-					while (x < matchData.width && matchData.tiles[y * matchData.width + x] != 0) ++x;
+					while (x < layerData.width && layerData.tiles[y * layerData.width + x] != 0) ++x;
 
+					std::cout << "[client] " << Nz::Rectf(startX * tileMap->GetTileSize().x, y * tileMap->GetTileSize().y, (x - startX) * tileMap->GetTileSize().x, tileMap->GetTileSize().y) << std::endl;
 					colliders.emplace_back(Nz::BoxCollider2D::New(Nz::Rectf(startX * tileMap->GetTileSize().x, y * tileMap->GetTileSize().y, (x - startX) * tileMap->GetTileSize().x, tileMap->GetTileSize().y)));
 				}
 			}
@@ -134,7 +144,7 @@ namespace bw
 	{
 		m_world.Update(elapsedTime);
 
-		Ndk::PhysicsSystem2D::DebugDrawOptions options;
+		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
 		{
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
@@ -143,10 +153,41 @@ namespace bw
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
 		};
 
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+
+		constexpr float ErrorCorrectionPerSecond = 60;
+
+		m_errorCorrectionTimer += elapsedTime;
+		while (m_errorCorrectionTimer >= 1.f / ErrorCorrectionPerSecond)
+		{
+			m_errorCorrectionTimer -= 1.f / ErrorCorrectionPerSecond;
+
+			for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+			{
+				ServerEntity& serverEntity = it.value();
+				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+				serverEntity.positionError = Nz::Lerp(serverEntity.positionError, Nz::Vector2f::Zero(), 0.5f);
+
+				// Avoid denormals
+				for (std::size_t i = 0; i < 2; ++i)
+				{
+					if (Nz::NumberEquals(serverEntity.positionError[i], 0.f, 1.f))
+						serverEntity.positionError[i] = 0.f;
+				}
+
+				serverEntity.rotationError = Nz::Lerp(serverEntity.rotationError, Nz::RadianAnglef::Zero(), 0.5f);
+				if (serverEntity.rotationError == 0.f)
+					serverEntity.rotationError = Nz::RadianAnglef::Zero();
+
+				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
+				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
+			}
+		}
 	}
 
-	const Ndk::EntityHandle& LocalMatch::CreateEntity(Nz::UInt32 serverId, const Nz::Vector2f& createPosition)
+	const Ndk::EntityHandle& LocalMatch::CreateEntity(Nz::UInt32 serverId, const Nz::Vector2f& createPosition, bool hasPlayerMovement)
 	{
 		Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
 		burgerMat->SetDiffuseMap("../resources/burger.png");
@@ -165,14 +206,23 @@ namespace bw
 
 		const Ndk::EntityHandle& burger = m_world.CreateEntity();
 		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
-		burger->AddComponent<Ndk::NodeComponent>().SetPosition(createPosition);
+		auto& burgerGfx = burger->AddComponent<Ndk::NodeComponent>();
+		burgerGfx.SetPosition(createPosition);
+
 		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
 		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
 		burgerPhys.SetMass(300);
 		burgerPhys.SetFriction(10.f);
 		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+		burgerPhys.EnableNodeSynchronization(false);
 
-		m_serverEntityIdToClient.emplace(serverId, burger);
+		if (hasPlayerMovement)
+			burger->AddComponent<PlayerMovementComponent>();
+
+		ServerEntity serverEntity;
+		serverEntity.entity = burger;
+
+		m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
 
 		return burger;
 	}
@@ -184,17 +234,39 @@ namespace bw
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
-		it->second->Kill();
 		m_serverEntityIdToClient.erase(it);
 	}
 
-	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos)
+	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight)
 	{
+		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
+			return;
+
 		auto it = m_serverEntityIdToClient.find(serverId);
 		//assert(it != m_serverEntityIdToClient.end());
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
-		it->second->GetComponent<Ndk::PhysicsComponent2D>().SetPosition(newPos);
+		ServerEntity& serverEntity = it.value();
+		auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+		serverEntity.positionError += physComponent.GetPosition() - newPos;
+		serverEntity.rotationError += physComponent.GetRotation() - newRot;
+
+		if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
+		{
+			auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
+			playerMovementComponent.UpdateAirControlState(isAirControlling);
+
+			if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+			{
+				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				entityNode.Scale(-1.f, 1.f);
+			}
+		}
+
+		physComponent.SetAngularVelocity(newAngularVel);
+		physComponent.SetPosition(newPos);
+		physComponent.SetVelocity(newLinearVel);
 	}
 }

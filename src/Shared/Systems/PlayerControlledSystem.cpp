@@ -2,15 +2,16 @@
 // This file is part of the "Burgwar Client" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/Systems/PlayerControlledSystem.hpp>
+#include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <NDK/Components.hpp>
-#include <Client/Components/PlayerControlledComponent.hpp>
+#include <Shared/Components/PlayerControlledComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
 
 namespace bw
 {
 	PlayerControlledSystem::PlayerControlledSystem()
 	{
-		Requires<PlayerControlledComponent, Ndk::NodeComponent, Ndk::PhysicsComponent2D>();
+		Requires<PlayerControlledComponent, PlayerMovementComponent, Ndk::NodeComponent, Ndk::PhysicsComponent2D>();
 	}
 
 	void PlayerControlledSystem::OnUpdate(float elapsedTime)
@@ -22,10 +23,11 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : GetEntities())
 		{
 			auto& playerControlledComponent = entity->GetComponent<PlayerControlledComponent>();
+			auto& playerMovementComponent = entity->GetComponent<PlayerMovementComponent>();
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			auto& physicsComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-			bool isFacingRight = playerControlledComponent.IsFacingRight();
+			bool isFacingRight = playerMovementComponent.IsFacingRight();
 			bool isOnGround = playerControlledComponent.IsOnGround();
 
 			bool isJumping = playerControlledComponent.IsJumping();
@@ -72,13 +74,10 @@ namespace bw
 				}
 			}
 
-			if (!isMovementKeyPressed && !isOnGround)
-				physicsComponent.AddImpulse(Nz::Vector2f(-physicsComponent.GetVelocity().x / 2.f, 0.f) * physicsComponent.GetMass());
-
-			if (playerControlledComponent.UpdateFacingRightState(isFacingRight))
-				nodeComponent.Scale(-1.f, 1.f);
-
 			playerControlledComponent.UpdateGroundState(isOnGround);
+			playerMovementComponent.UpdateAirControlState(!isMovementKeyPressed && !isOnGround);
+			if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+				nodeComponent.Scale(-1.f, 1.f);
 		}
 	}
 

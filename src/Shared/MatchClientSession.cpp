@@ -3,8 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/MatchClientSession.hpp>
-#include <Shared/PlayerCommandStore.hpp>
+#include <Shared/Match.hpp>
+#include <Shared/MapData.hpp>
 #include <Shared/NetworkReactor.hpp>
+#include <Shared/PlayerCommandStore.hpp>
+#include <Shared/Terrain.hpp>
 #include <iostream>
 
 namespace bw
@@ -25,23 +28,20 @@ namespace bw
 
 		SendPacket(Packets::AuthSuccess());
 
+		const MapData& mapData = m_match.GetTerrain().GetMapData();
+
 		Packets::MatchData matchData;
-		matchData.backgroundColor = Nz::Color::Cyan;
-		matchData.tileSize = 64.f;
-		matchData.width = 15;
-		matchData.height = 10;
-		matchData.tiles = {
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			2, 2, 2, 2, 2, 1, 2, 0, 0, 1, 0, 0, 0, 0, 0,
-			1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0,
-			1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0,
-		};
+		matchData.backgroundColor = mapData.backgroundColor;
+		matchData.tileSize = mapData.tileSize;
+
+		matchData.layers.reserve(mapData.layers.size());
+		for (auto& layer : mapData.layers)
+		{
+			auto& packetLayer = matchData.layers.emplace_back();
+			packetLayer.height = static_cast<Nz::UInt16>(layer.height);
+			packetLayer.width = static_cast<Nz::UInt16>(layer.width);
+			packetLayer.tiles = layer.tiles;
+		}
 
 		SendPacket(matchData);
 	}

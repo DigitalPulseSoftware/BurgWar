@@ -8,7 +8,8 @@
 
 namespace bw
 {
-	MatchSessions::MatchSessions() :
+	MatchSessions::MatchSessions(Match& match) :
+	m_match(match),
 	m_sessionPool(sizeof(MatchClientSession)),
 	m_nextSessionId(0)
 	{
@@ -30,7 +31,7 @@ namespace bw
 	MatchClientSession* MatchSessions::CreateSession(std::unique_ptr<SessionBridge> bridge)
 	{
 		std::size_t sessionId = m_nextSessionId++;
-		MatchClientSession* session = m_sessionPool.New<MatchClientSession>(sessionId, m_commandStore, std::move(bridge));
+		MatchClientSession* session = m_sessionPool.New<MatchClientSession>(m_match, sessionId, m_commandStore, std::move(bridge));
 
 		m_sessionIdToSession.insert_or_assign(sessionId, session);
 

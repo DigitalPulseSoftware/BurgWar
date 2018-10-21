@@ -21,26 +21,20 @@ namespace bw
 			PlayerControlledComponent();
 			~PlayerControlledComponent() = default;
 
-			inline bool IsFacingRight() const;
-
+			bool IsJumping() const;
 			bool IsMovingLeft() const;
 			bool IsMovingRight() const;
-
-			bool IsJumping() const;
-
 			inline bool IsOnGround() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			inline bool UpdateFacingRightState(bool isFacingRight);
 			inline bool UpdateGroundState(bool isOnGround);
 
-			bool m_isFacingRight;
 			bool m_isOnGround;
 	};
 }
 
-#include <Client/Components/PlayerControlledComponent.inl>
+#include <Shared/Components/PlayerControlledComponent.inl>
 
 #endif

@@ -13,11 +13,32 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount) :
+	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName)),
 	m_application(app)
 	{
-		m_terrain = std::make_unique<Terrain>();
+		MapData mapData;
+		mapData.backgroundColor = Nz::Color::Cyan;
+		mapData.tileSize = 64.f;
+
+		auto& layer = mapData.layers.emplace_back();
+		layer.width = 20;
+		layer.height = 10;
+		layer.tiles = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 0, 2, 2,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1,
+		};
+
+		m_terrain = std::make_unique<Terrain>(std::move(mapData));
 	}
 
 	Match::~Match() = default;
@@ -80,6 +101,7 @@ namespace bw
 							entityData.linearVelocity = eventData.linearVelocity;
 							entityData.position = eventData.position;
 							entityData.rotation = eventData.rotation;
+							entityData.hasPlayerMovement = eventData.hasPlayerMovement;
 						}
 						else if constexpr (std::is_same_v<T, NetworkSyncSystem::Event::EntityDestruction>)
 						{
@@ -94,6 +116,13 @@ namespace bw
 							entityData.linearVelocity = eventData.linearVelocity;
 							entityData.position = eventData.position;
 							entityData.rotation = eventData.rotation;
+
+							if (eventData.playerMovement.has_value())
+							{
+								entityData.playerMovement.emplace();
+								entityData.playerMovement->isAirControlling = eventData.playerMovement->isAirControlling;
+								entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
+							}
 						}
 						else
 							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");

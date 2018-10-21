@@ -88,7 +88,8 @@ namespace bw
 		for (const auto& entityData : packet.entities)
 		{
 			std::cout << "[Client] Entity #" << entityData.id << " created at " << entityData.position << std::endl;
-			m_localMatch->CreateEntity(entityData.id, entityData.position);
+
+			m_localMatch->CreateEntity(entityData.id, entityData.position, entityData.hasPlayerMovement);
 		}
 	}
 
@@ -116,8 +117,20 @@ namespace bw
 	{
 		for (const auto& entityData : packet.entities)
 		{
-			std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position << std::endl;
-			m_localMatch->MoveEntity(entityData.id, entityData.position);
+			bool isAirControlling = false;
+			bool isFacingRight = false;
+
+			std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position;
+			if (entityData.playerMovement.has_value())
+			{
+				isAirControlling = entityData.playerMovement->isAirControlling;
+				isFacingRight = entityData.playerMovement->isFacingRight;
+				std::cout << " and has player entity data (air control=" << isAirControlling << ", facing right=" << isFacingRight << ")";
+			}
+
+			std::cout << "\n";
+
+			m_localMatch->MoveEntity(entityData.id, entityData.position, entityData.linearVelocity, entityData.rotation, entityData.angularVelocity, isAirControlling, isFacingRight);
 		}
 	}
 }

@@ -28,6 +28,19 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, CreateEntities& data)
 		{
 			serializer.SerializeArraySize(data.entities);
+
+			for (auto& entity : data.entities)
+			{
+				bool hasMovementData;
+				if (serializer.IsWriting())
+					hasMovementData = entity.hasPlayerMovement;
+
+				serializer &= hasMovementData;
+
+				if (!serializer.IsWriting())
+					entity.hasPlayerMovement = hasMovementData;
+			}
+
 			for (auto& entity : data.entities)
 			{
 				serializer &= entity.id;
@@ -53,22 +66,40 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data)
 		{
 			serializer &= data.backgroundColor;
-			serializer &= data.width;
-			serializer &= data.height;
 			serializer &= data.tileSize;
 
-			if (!serializer.IsWriting())
-				data.tiles.resize(data.width * data.height);
+			serializer.SerializeArraySize(data.layers);
+			for (auto& layer : data.layers)
+			{
+				serializer &= layer.width;
+				serializer &= layer.height;
 
-			assert(data.tiles.size() == data.width * data.height);
+				if (!serializer.IsWriting())
+					layer.tiles.resize(layer.width * layer.height);
 
-			for (Nz::UInt8& tile : data.tiles)
-				serializer &= tile;
+				assert(layer.tiles.size() == layer.width * layer.height);
+
+				for (Nz::UInt8& tile : layer.tiles)
+					serializer &= tile;
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)
 		{
 			serializer.SerializeArraySize(data.entities);
+
+			for (auto& entity : data.entities)
+			{
+				bool hasMovementData;
+				if (serializer.IsWriting())
+					hasMovementData = entity.playerMovement.has_value();
+
+				serializer &= hasMovementData;
+
+				if (!serializer.IsWriting() && hasMovementData)
+					entity.playerMovement.emplace();
+			}
+
 			for (auto& entity : data.entities)
 			{
 				serializer &= entity.id;
@@ -76,6 +107,13 @@ namespace bw
 				serializer &= entity.linearVelocity;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
+
+				if (entity.playerMovement)
+				{
+					auto& playerMovementData = entity.playerMovement.value();
+					serializer &= playerMovementData.isAirControlling;
+					serializer &= playerMovementData.isFacingRight;
+				}
 			}
 		}
 

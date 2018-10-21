@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_TERRAIN_HPP
 #define BURGWAR_SHARED_TERRAIN_HPP
 
+#include <Shared/MapData.hpp>
 #include <Shared/TerrainLayer.hpp>
 #include <vector>
 
@@ -15,19 +16,21 @@ namespace bw
 	class Terrain
 	{
 		public:
-			Terrain(std::size_t layerCount = 1);
+			Terrain(MapData mapData);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
 			inline TerrainLayer& GetLayer(std::size_t layerIndex);
 			inline const TerrainLayer& GetLayer(std::size_t layerIndex) const;
 			inline std::size_t GetLayerCount() const;
+			inline const MapData& GetMapData() const;
 
 			void Update(float elapsedTime);
 
 			Terrain& operator=(const Terrain&) = delete;
 
 		private:
+			MapData m_mapData;
 			std::vector<TerrainLayer> m_layers; //< Shouldn't resize because of raw pointer in Player
 	};
 }

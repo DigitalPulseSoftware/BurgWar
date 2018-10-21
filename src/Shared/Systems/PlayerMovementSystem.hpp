@@ -4,19 +4,19 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENT_SYSTEMS_PLAYERCONTROLLED_HPP
-#define BURGWAR_CLIENT_SYSTEMS_PLAYERCONTROLLED_HPP
+#ifndef BURGWAR_CLIENT_SYSTEMS_PLAYERMOVEMENT_HPP
+#define BURGWAR_CLIENT_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <NDK/System.hpp>
 #include <vector>
 
 namespace bw
 {
-	class PlayerControlledSystem : public Ndk::System<PlayerControlledSystem>
+	class PlayerMovementSystem : public Ndk::System<PlayerMovementSystem>
 	{
 		public:
-			PlayerControlledSystem();
-			~PlayerControlledSystem() = default;
+			PlayerMovementSystem();
+			~PlayerMovementSystem() = default;
 
 			static Ndk::SystemIndex systemIndex;
 
@@ -25,6 +25,6 @@ namespace bw
 	};
 }
 
-#include <Client/Systems/PlayerControlledSystem.inl>
+#include <Shared/Systems/PlayerMovementSystem.inl>
 
 #endif

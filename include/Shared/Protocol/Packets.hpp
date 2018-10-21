@@ -18,6 +18,7 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <Nazara/Network/NetPacket.hpp>
 #include <array>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -67,6 +68,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f linearVelocity;
 				Nz::Vector2f position;
+				bool hasPlayerMovement;
 			};
 
 			std::vector<Entity> entities;
@@ -89,15 +91,26 @@ namespace bw
 
 		DeclarePacket(MatchData)
 		{
-			std::vector<Nz::UInt8> tiles; //< 0 = empty, 1 = dirt, 2 = dirt w/ grass
+			struct Layer
+			{
+				Nz::UInt16 height;
+				Nz::UInt16 width;
+				std::vector<Nz::UInt8> tiles; //< 0 = empty, 1 = dirt, 2 = dirt w/ grass
+			};
+
+			std::vector<Layer> layers;
 			Nz::Color backgroundColor;
-			Nz::UInt16 height;
-			Nz::UInt16 width;
 			float tileSize;
 		};
 
 		DeclarePacket(MatchState)
 		{
+			struct PlayerMovementData
+			{
+				bool isAirControlling;
+				bool isFacingRight;
+			};
+
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
@@ -105,6 +118,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f linearVelocity;
 				Nz::Vector2f position;
+				std::optional<PlayerMovementData> playerMovement;
 			};
 
 			std::vector<Entity> entities;

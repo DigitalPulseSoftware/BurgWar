@@ -5,13 +5,14 @@
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <NDK/Components.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
 
 namespace bw
 {
 	NetworkSyncSystem::NetworkSyncSystem()
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
-		SetMaximumUpdateRate(10.f);
+		SetMaximumUpdateRate(20.f);
 	}
 
 	void NetworkSyncSystem::OnEntityAdded(Ndk::Entity* entity)
@@ -19,6 +20,7 @@ namespace bw
 		Event& creationEvent = m_events.emplace_back();
 		creationEvent.id = entity->GetId();
 		auto& eventData = creationEvent.eventData.emplace<Event::EntityCreation>();
+		eventData.hasPlayerMovement = entity->HasComponent<PlayerMovementComponent>();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
@@ -57,13 +59,22 @@ namespace bw
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-			Event& deletionEvent = m_events.emplace_back();
-			deletionEvent.id = entity->GetId();
-			auto& eventData = deletionEvent.eventData.emplace<Event::EntityMovement>();
+			Event& movementEvent = m_events.emplace_back();
+			movementEvent.id = entity->GetId();
+			auto& eventData = movementEvent.eventData.emplace<Event::EntityMovement>();
 			eventData.angularVelocity = entityPhys.GetAngularVelocity();
 			eventData.linearVelocity = entityPhys.GetVelocity();
 			eventData.position = entityPhys.GetPosition();
 			eventData.rotation = entityPhys.GetRotation();
+
+			if (entity->HasComponent<PlayerMovementComponent>())
+			{
+				auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
+
+				eventData.playerMovement.emplace();
+				eventData.playerMovement->isAirControlling = entityPlayerMovement.IsAirControlling();
+				eventData.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
+			}
 		}
 	}
 

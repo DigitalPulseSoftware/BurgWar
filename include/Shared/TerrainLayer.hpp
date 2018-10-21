@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_TERRAINLAYER_HPP
 #define BURGWAR_SHARED_TERRAINLAYER_HPP
 
+#include <Shared/MapData.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
@@ -14,7 +15,7 @@ namespace bw
 	class TerrainLayer
 	{
 		public:
-			TerrainLayer();
+			TerrainLayer(const MapData::Layer& layerData, float tileSize);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) = default;
 			~TerrainLayer() = default;

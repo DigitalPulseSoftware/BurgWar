@@ -10,8 +10,10 @@
 #include <Client/ClientSession.hpp>
 #include <Client/LocalMatch.hpp>
 #include <Client/LocalSessionManager.hpp>
-#include <Client/Components/PlayerControlledComponent.hpp>
-#include <Client/Systems/PlayerControlledSystem.hpp>
+#include <Shared/Components/PlayerControlledComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Systems/PlayerControlledSystem.hpp>
+#include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
@@ -44,8 +46,10 @@ namespace bw
 	{
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
+		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerControlledSystem>();
+		Ndk::InitializeSystem<PlayerMovementSystem>();
 
 		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
 		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();

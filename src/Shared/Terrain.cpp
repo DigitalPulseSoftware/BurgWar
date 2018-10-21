@@ -6,11 +6,12 @@
 
 namespace bw
 {
-	Terrain::Terrain(std::size_t layerCount)
+	Terrain::Terrain(MapData mapData) :
+	m_mapData(std::move(mapData))
 	{
-		m_layers.reserve(layerCount);
-		for (std::size_t i = 0; i < layerCount; ++i)
-			m_layers.emplace_back();
+		m_layers.reserve(m_mapData.layers.size());
+		for (auto& layer : m_mapData.layers)
+			m_layers.emplace_back(layer, m_mapData.tileSize);
 	}
 
 	void Terrain::Update(float elapsedTime)

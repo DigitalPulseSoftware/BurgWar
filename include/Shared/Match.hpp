@@ -29,6 +29,8 @@ namespace bw
 
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
+			inline Terrain& GetTerrain();
+			inline const Terrain& GetTerrain() const;
 
 			bool Join(Player* player);
 

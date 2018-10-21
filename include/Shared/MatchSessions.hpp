@@ -17,12 +17,13 @@
 
 namespace bw
 {
+	class Match;
 	class MatchClientSession;
 
 	class MatchSessions
 	{
 		public:
-			MatchSessions();
+			MatchSessions(Match& match);
 			~MatchSessions();
 
 			MatchClientSession* CreateSession(std::unique_ptr<SessionBridge> bridge);
@@ -36,6 +37,7 @@ namespace bw
 		private:
 			std::size_t m_nextSessionId;
 			std::vector<std::unique_ptr<SessionManager>> m_managers;
+			Match& m_match;
 			PlayerCommandStore m_commandStore;
 			Nz::MemoryPool m_sessionPool;
 			tsl::hopscotch_map<std::size_t /*sessionId*/, MatchClientSession* /*session*/> m_sessionIdToSession;
