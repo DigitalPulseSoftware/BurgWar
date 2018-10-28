@@ -11,6 +11,7 @@
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <hopstotch/hopscotch_map.h>
+#include <Nazara/Platform/EventHandler.hpp>
 
 namespace bw
 {
@@ -21,7 +22,7 @@ namespace bw
 		friend class ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, const Packets::MatchData& matchData);
+			LocalMatch(BurgApp& burgApp, ClientSession& session, const Packets::MatchData& matchData);
 			~LocalMatch() = default;
 
 			void Update(float elapsedTime);
@@ -30,6 +31,7 @@ namespace bw
 			const Ndk::EntityHandle& CreateEntity(Nz::UInt32 serverId, const Nz::Vector2f& createPosition, bool hasPlayerMovement);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
+			void SendInputs();
 
 			struct ServerEntity
 			{
@@ -38,11 +40,18 @@ namespace bw
 				Nz::RadianAnglef rotationError = 0.f;
 			};
 
+			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
+			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
+
 			Ndk::World m_world;
 			BurgApp& m_application;
+			ClientSession& m_session;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			Packets::PlayerInput m_inputPacket;
+			bool m_hasInputChanged;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
+			float m_playerInputTimer;
 	};
 }
 

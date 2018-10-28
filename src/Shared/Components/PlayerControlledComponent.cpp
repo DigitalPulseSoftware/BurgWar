@@ -7,21 +7,6 @@
 
 namespace bw
 {
-	bool PlayerControlledComponent::IsJumping() const
-	{
-		return Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Space);
-	}
-
-	bool PlayerControlledComponent::IsMovingLeft() const
-	{
-		return Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Q);
-	}
-
-	bool PlayerControlledComponent::IsMovingRight() const
-	{
-		return Nz::Keyboard::IsKeyPressed(Nz::Keyboard::D);
-	}
-
 	Ndk::ComponentIndex PlayerControlledComponent::componentIndex;
 }
 

@@ -8,6 +8,7 @@
 #include <Shared/NetworkReactor.hpp>
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/Terrain.hpp>
+#include <Shared/Components/PlayerControlledComponent.hpp>
 #include <iostream>
 
 namespace bw
@@ -20,6 +21,11 @@ namespace bw
 	void MatchClientSession::HandleIncomingPacket(Nz::NetPacket&& packet)
 	{
 		m_commandStore.UnserializePacket(*this, std::move(packet));
+	}
+
+	void MatchClientSession::Update(float elapsedTime)
+	{
+		m_visibility.Update(elapsedTime);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
@@ -54,5 +60,20 @@ namespace bw
 		hw.str = "La belgique aurait dû gagner la coupe du monde 2018";
 
 		SendPacket(hw);
+	}
+
+	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerInput& packet)
+	{
+		// This hack is "hugly" (hugely ugly)
+		for (const Ndk::EntityHandle& entity : m_match.GetTerrain().GetLayer(0).GetWorld().GetEntities())
+		{
+			if (entity->HasComponent<PlayerControlledComponent>())
+			{
+				auto& playerController = entity->GetComponent<PlayerControlledComponent>();
+				playerController.UpdateJumpingState(packet.isJumping);
+				playerController.UpdateMovingLeftState(packet.isMovingLeft);
+				playerController.UpdateMovingRightState(packet.isMovingRight);
+			}
+		}
 	}
 }

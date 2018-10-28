@@ -33,12 +33,12 @@ namespace bw
 			{
 				bool hasMovementData;
 				if (serializer.IsWriting())
-					hasMovementData = entity.hasPlayerMovement;
+					hasMovementData = entity.playerMovement.has_value();
 
 				serializer &= hasMovementData;
 
 				if (!serializer.IsWriting())
-					entity.hasPlayerMovement = hasMovementData;
+					entity.playerMovement.emplace();
 			}
 
 			for (auto& entity : data.entities)
@@ -48,13 +48,20 @@ namespace bw
 				serializer &= entity.linearVelocity;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
+
+				if (entity.playerMovement)
+				{
+					auto& playerMovementData = entity.playerMovement.value();
+					serializer &= playerMovementData.isAirControlling;
+					serializer &= playerMovementData.isFacingRight;
+				}
 			}
 		}
 
 		void Serialize(PacketSerializer & serializer, DeleteEntities& data)
 		{
-			serializer.SerializeArraySize(data.entityIds);
-			for (auto& entity : data.entityIds)
+			serializer.SerializeArraySize(data.entities);
+			for (auto& entity : data.entities)
 				serializer &= entity.id;
 		}
 
@@ -124,6 +131,13 @@ namespace bw
 			serializer.SerializeArraySize(data.strings);
 			for (auto& string : data.strings)
 				serializer &= string;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerInput& data)
+		{
+			serializer &= data.isJumping;
+			serializer &= data.isMovingLeft;
+			serializer &= data.isMovingRight;
 		}
 	}
 }

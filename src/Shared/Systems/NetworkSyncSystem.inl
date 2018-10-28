@@ -6,13 +6,4 @@
 
 namespace bw
 {
-	inline void NetworkSyncSystem::ClearEvents()
-	{
-		m_events.clear();
-	}
-
-	inline const std::vector<NetworkSyncSystem::Event>& NetworkSyncSystem::GetEvents() const
-	{
-		return m_events;
-	}
 }

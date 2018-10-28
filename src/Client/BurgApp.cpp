@@ -344,9 +344,9 @@ namespace bw
 		return 0;
 	}
 
-	std::shared_ptr<LocalMatch> BurgApp::CreateLocalMatch(const Packets::MatchData& matchData)
+	std::shared_ptr<LocalMatch> BurgApp::CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData)
 	{
-		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, matchData));
+		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, session, matchData));
 	}
 
 	std::shared_ptr<NetworkClientBridge> BurgApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)

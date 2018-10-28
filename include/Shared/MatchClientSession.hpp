@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SERVER_CLIENTSESSION_HPP
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
+#include <Shared/MatchClientVisibility.hpp>
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/SessionBridge.hpp>
 #include <Shared/Protocol/Packets.hpp>
@@ -29,16 +30,22 @@ namespace bw
 			void Disconnect();
 
 			inline std::size_t GetSessionId() const;
+			inline MatchClientVisibility& GetVisibility();
+			inline const MatchClientVisibility& GetVisibility() const;
 
 			void HandleIncomingPacket(Nz::NetPacket&& packet);
 
 			template<typename T> void SendPacket(const T& packet);
 
+			void Update(float elapsedTime);
+
 		private:
 			void HandleIncomingPacket(const Packets::Auth& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
+			void HandleIncomingPacket(const Packets::PlayerInput& packet);
 
 			Match& m_match;
+			MatchClientVisibility m_visibility;
 			PlayerCommandStore& m_commandStore;
 			std::size_t m_sessionId;
 			std::unique_ptr<SessionBridge> m_bridge;

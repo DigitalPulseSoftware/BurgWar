@@ -79,73 +79,8 @@ namespace bw
 
 		m_sessions.ForEachSession([&](MatchClientSession* session)
 		{
-			Packets::CreateEntities createPacket;
-			Packets::DeleteEntities deletePacket;
-			Packets::MatchState statePacket;
-
-			for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
-			{
-				TerrainLayer& layer = m_terrain->GetLayer(i);
-				auto& networkSync = layer.GetWorld().GetSystem<NetworkSyncSystem>();
-				for (const auto& event : networkSync.GetEvents())
-				{
-					std::visit([&](auto&& eventData)
-					{
-						using T = std::decay_t<decltype(eventData)>;
-
-						if constexpr (std::is_same_v<T, NetworkSyncSystem::Event::EntityCreation>)
-						{
-							auto& entityData = createPacket.entities.emplace_back();
-							entityData.id = event.id;
-							entityData.angularVelocity = eventData.angularVelocity;
-							entityData.linearVelocity = eventData.linearVelocity;
-							entityData.position = eventData.position;
-							entityData.rotation = eventData.rotation;
-							entityData.hasPlayerMovement = eventData.hasPlayerMovement;
-						}
-						else if constexpr (std::is_same_v<T, NetworkSyncSystem::Event::EntityDestruction>)
-						{
-							auto& entityData = deletePacket.entityIds.emplace_back();
-							entityData.id = event.id;
-						}
-						else if constexpr (std::is_same_v<T, NetworkSyncSystem::Event::EntityMovement>)
-						{
-							auto& entityData = statePacket.entities.emplace_back();
-							entityData.id = event.id;
-							entityData.angularVelocity = eventData.angularVelocity;
-							entityData.linearVelocity = eventData.linearVelocity;
-							entityData.position = eventData.position;
-							entityData.rotation = eventData.rotation;
-
-							if (eventData.playerMovement.has_value())
-							{
-								entityData.playerMovement.emplace();
-								entityData.playerMovement->isAirControlling = eventData.playerMovement->isAirControlling;
-								entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
-							}
-						}
-						else
-							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-					}, event.eventData);
-				}
-			}
-
-			if (!deletePacket.entityIds.empty())
-				session->SendPacket(deletePacket);
-
-			if (!createPacket.entities.empty())
-				session->SendPacket(createPacket);
-
-			if (!statePacket.entities.empty())
-				session->SendPacket(statePacket);
+			session->GetVisibility().UpdateLayer(0); //< HAAAAAX
+			session->Update(elapsedTime);
 		});
-
-		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
-		{
-			TerrainLayer& layer = m_terrain->GetLayer(i);
-			auto& networkSync = layer.GetWorld().GetSystem<NetworkSyncSystem>();
-			networkSync.ClearEvents();
-		}
 	}
 }

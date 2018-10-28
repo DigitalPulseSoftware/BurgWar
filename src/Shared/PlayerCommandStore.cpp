@@ -19,6 +19,7 @@ namespace bw
 		// Incoming commands
 		IncomingCommand(Auth);
 		IncomingCommand(HelloWorld);
+		IncomingCommand(PlayerInput);
 
 		// Outgoing commands
 		OutgoingCommand(AuthFailure,    Nz::ENetPacketFlag_Reliable, 0);

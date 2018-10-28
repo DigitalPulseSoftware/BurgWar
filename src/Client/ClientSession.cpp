@@ -83,19 +83,19 @@ namespace bw
 		std::cout << "[Client] Auth succeeded" << std::endl;
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::CreateEntities & packet)
+	void ClientSession::HandleIncomingPacket(const Packets::CreateEntities& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
 			std::cout << "[Client] Entity #" << entityData.id << " created at " << entityData.position << std::endl;
 
-			m_localMatch->CreateEntity(entityData.id, entityData.position, entityData.hasPlayerMovement);
+			m_localMatch->CreateEntity(entityData.id, entityData.position, entityData.playerMovement.has_value());
 		}
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::DeleteEntities& packet)
 	{
-		for (const auto& entityData : packet.entityIds)
+		for (const auto& entityData : packet.entities)
 		{
 			std::cout << "[Client] Entity #" << entityData.id << " deleted" << std::endl;
 			m_localMatch->DeleteEntity(entityData.id);
@@ -110,7 +110,7 @@ namespace bw
 	void ClientSession::HandleIncomingPacket(const Packets::MatchData& matchData)
 	{
 		std::cout << "[Client] Got match data: " << matchData.backgroundColor << std::endl;
-		m_localMatch = m_application.CreateLocalMatch(matchData);
+		m_localMatch = m_application.CreateLocalMatch(*this, matchData);
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::MatchState& packet)

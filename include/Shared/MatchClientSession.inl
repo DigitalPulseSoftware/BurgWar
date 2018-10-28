@@ -8,6 +8,7 @@ namespace bw
 {
 	inline MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore,  std::unique_ptr<SessionBridge> bridge) :
 	m_match(match),
+	m_visibility(match, *this),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
 	m_bridge(std::move(bridge))
@@ -17,6 +18,16 @@ namespace bw
 	inline std::size_t MatchClientSession::GetSessionId() const
 	{
 		return m_sessionId;
+	}
+
+	inline MatchClientVisibility& MatchClientSession::GetVisibility()
+	{
+		return m_visibility;
+	}
+
+	inline const MatchClientVisibility& MatchClientSession::GetVisibility() const
+	{
+		return m_visibility;
 	}
 
 	template<typename T>

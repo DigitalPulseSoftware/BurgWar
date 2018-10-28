@@ -47,7 +47,7 @@ namespace bw
 			int Run();
 
 		private:
-			std::shared_ptr<LocalMatch> CreateLocalMatch(const Packets::MatchData& matchData);
+			std::shared_ptr<LocalMatch> CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData);
 			std::shared_ptr<NetworkClientBridge> ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
 
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);

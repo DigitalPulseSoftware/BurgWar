@@ -34,7 +34,8 @@ namespace bw
 		HelloWorld,
 		MatchData,
 		MatchState,
-		NetworkStrings
+		NetworkStrings,
+		PlayerInput
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -61,6 +62,12 @@ namespace bw
 
 		DeclarePacket(CreateEntities)
 		{
+			struct PlayerMovementData
+			{
+				bool isAirControlling;
+				bool isFacingRight;
+			};
+
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
@@ -68,7 +75,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f linearVelocity;
 				Nz::Vector2f position;
-				bool hasPlayerMovement;
+				std::optional<PlayerMovementData> playerMovement;
 			};
 
 			std::vector<Entity> entities;
@@ -81,7 +88,7 @@ namespace bw
 				CompressedUnsigned<Nz::UInt32> id;
 			};
 
-			std::vector<Entity> entityIds;
+			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(HelloWorld)
@@ -130,6 +137,13 @@ namespace bw
 			std::vector<std::string> strings;
 		};
 
+		DeclarePacket(PlayerInput)
+		{
+			bool isJumping;
+			bool isMovingLeft;
+			bool isMovingRight;
+		};
+
 #undef DeclarePacket
 
 		void Serialize(PacketSerializer& serializer, Auth& data);
@@ -141,6 +155,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
+		void Serialize(PacketSerializer& serializer, PlayerInput& data);
 	}
 }
 

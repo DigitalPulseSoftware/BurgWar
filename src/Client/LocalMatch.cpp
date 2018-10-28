@@ -4,6 +4,7 @@
 
 #include <Client/LocalMatch.hpp>
 #include <Client/BurgApp.hpp>
+#include <Client/ClientSession.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
@@ -17,10 +18,13 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
 	m_application(burgApp),
+	m_session(session),
+	m_hasInputChanged(false),
 	m_errorCorrectionTimer(0.f),
-	m_playerEntitiesTimer(0.f)
+	m_playerEntitiesTimer(0.f),
+	m_playerInputTimer(0.f)
 	{
 		m_world.AddSystem<PlayerMovementSystem>();
 
@@ -59,9 +63,9 @@ namespace bw
 		Ndk::EntityHandle theCollider = m_world.CreateEntity();
 		auto& worldGfx = theCollider->AddComponent<Ndk::GraphicsComponent>();
 
-		for (std::size_t y = 0; y < layerData.height; ++y)
+		for (Nz::UInt16 y = 0; y < layerData.height; ++y)
 		{
-			for (std::size_t x = 0; x < layerData.width; ++x)
+			for (Nz::UInt16 x = 0; x < layerData.width; ++x)
 			{
 				switch (layerData.tiles[y * layerData.width + x])
 				{
@@ -114,6 +118,61 @@ namespace bw
 		theColliderPhys.SetMass(0.f);
 		theColliderPhys.SetFriction(1.f);
 
+		m_inputPacket.isJumping = false;
+		m_inputPacket.isMovingLeft = false;
+		m_inputPacket.isMovingRight = false;
+
+		Nz::EventHandler& eventHandler = m_application.GetMainWindow().GetEventHandler();
+		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, [this](const Nz::EventHandler* /*eventHandler*/, const Nz::WindowEvent::KeyEvent& event)
+		{
+			if (event.repeated)
+				return;
+
+			switch (event.code)
+			{
+				case Nz::Keyboard::Space:
+					m_inputPacket.isJumping = true;
+					m_hasInputChanged = true;
+					break;
+
+				case Nz::Keyboard::Q:
+					m_inputPacket.isMovingLeft = true;
+					m_hasInputChanged = true;
+					break;
+
+				case Nz::Keyboard::D:
+					m_inputPacket.isMovingRight = true;
+					m_hasInputChanged = true;
+					break;
+
+				default:
+					break;
+			}
+		});
+
+		m_onKeyReleasedSlot.Connect(eventHandler.OnKeyReleased, [this](const Nz::EventHandler* /*eventHandler*/, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Space:
+					m_inputPacket.isJumping = false;
+					m_hasInputChanged = true;
+					break;
+
+				case Nz::Keyboard::Q:
+					m_inputPacket.isMovingLeft = false;
+					m_hasInputChanged = true;
+					break;
+
+				case Nz::Keyboard::D:
+					m_inputPacket.isMovingRight = false;
+					m_hasInputChanged = true;
+					break;
+
+				default:
+					break;
+			}
+		});
 
 		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
 		burgerMat->SetDiffuseMap("../resources/burger.png");
@@ -183,6 +242,20 @@ namespace bw
 
 				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
 				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
+			}
+		}
+
+		constexpr float MaxInputSendInterval = 1.f / 60.f;
+
+		m_playerInputTimer += elapsedTime;
+		if (m_playerInputTimer >= MaxInputSendInterval)
+		{
+			m_playerInputTimer -= MaxInputSendInterval;
+
+			if (m_hasInputChanged)
+			{
+				m_session.SendPacket(m_inputPacket);
+				m_hasInputChanged = false;
 			}
 		}
 	}
