@@ -21,7 +21,6 @@ namespace bw
 	LocalMatch::LocalMatch(BurgApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
 	m_application(burgApp),
 	m_session(session),
-	m_hasInputChanged(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -118,61 +117,16 @@ namespace bw
 		theColliderPhys.SetMass(0.f);
 		theColliderPhys.SetFriction(1.f);
 
-		m_inputPacket.isJumping = false;
-		m_inputPacket.isMovingLeft = false;
-		m_inputPacket.isMovingRight = false;
+		constexpr Nz::UInt8 playerCount = 2;
 
-		Nz::EventHandler& eventHandler = m_application.GetMainWindow().GetEventHandler();
-		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, [this](const Nz::EventHandler* /*eventHandler*/, const Nz::WindowEvent::KeyEvent& event)
-		{
-			if (event.repeated)
-				return;
+		m_inputPacket.inputs.resize(playerCount);
+		for (auto& input : m_inputPacket.inputs)
+			input.emplace();
 
-			switch (event.code)
-			{
-				case Nz::Keyboard::Space:
-					m_inputPacket.isJumping = true;
-					m_hasInputChanged = true;
-					break;
-
-				case Nz::Keyboard::Q:
-					m_inputPacket.isMovingLeft = true;
-					m_hasInputChanged = true;
-					break;
-
-				case Nz::Keyboard::D:
-					m_inputPacket.isMovingRight = true;
-					m_hasInputChanged = true;
-					break;
-
-				default:
-					break;
-			}
-		});
-
-		m_onKeyReleasedSlot.Connect(eventHandler.OnKeyReleased, [this](const Nz::EventHandler* /*eventHandler*/, const Nz::WindowEvent::KeyEvent& event)
-		{
-			switch (event.code)
-			{
-				case Nz::Keyboard::Space:
-					m_inputPacket.isJumping = false;
-					m_hasInputChanged = true;
-					break;
-
-				case Nz::Keyboard::Q:
-					m_inputPacket.isMovingLeft = false;
-					m_hasInputChanged = true;
-					break;
-
-				case Nz::Keyboard::D:
-					m_inputPacket.isMovingRight = false;
-					m_hasInputChanged = true;
-					break;
-
-				default:
-					break;
-			}
-		});
+		m_inputControllers.reserve(playerCount);
+		assert(playerCount != 0xFF);
+		for (Nz::UInt8 i = 0; i < playerCount; ++i)
+			m_inputControllers.emplace_back(i);
 
 		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
 		burgerMat->SetDiffuseMap("../resources/burger.png");
@@ -251,12 +205,7 @@ namespace bw
 		if (m_playerInputTimer >= MaxInputSendInterval)
 		{
 			m_playerInputTimer -= MaxInputSendInterval;
-
-			if (m_hasInputChanged)
-			{
-				m_session.SendPacket(m_inputPacket);
-				m_hasInputChanged = false;
-			}
+			SendInputs();
 		}
 	}
 
@@ -341,5 +290,29 @@ namespace bw
 		physComponent.SetAngularVelocity(newAngularVel);
 		physComponent.SetPosition(newPos);
 		physComponent.SetVelocity(newLinearVel);
+	}
+
+	void LocalMatch::SendInputs()
+	{
+		assert(m_inputControllers.size() == m_inputPacket.inputs.size());
+
+		bool hasInputData = false;
+		for (std::size_t i = 0; i < m_inputControllers.size(); ++i)
+		{
+			auto& controllerData = m_inputControllers[i];
+			InputData input = controllerData.controller.Poll();
+
+			if (controllerData.lastInputData != input)
+			{
+				hasInputData = true;
+				controllerData.lastInputData = input;
+				m_inputPacket.inputs[i] = input;
+			}
+			else
+				m_inputPacket.inputs[i].reset();
+		}
+
+		if (hasInputData)
+			m_session.SendPacket(m_inputPacket);
 	}
 }

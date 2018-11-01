@@ -133,11 +133,31 @@ namespace bw
 				serializer &= string;
 		}
 
-		void Serialize(PacketSerializer& serializer, PlayerInput& data)
+		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
-			serializer &= data.isJumping;
-			serializer &= data.isMovingLeft;
-			serializer &= data.isMovingRight;
+			serializer.SerializeArraySize(data.inputs);
+
+			for (auto& input : data.inputs)
+			{
+				bool hasInput;
+				if (serializer.IsWriting())
+					hasInput = input.has_value();
+
+				serializer &= hasInput;
+
+				if (!serializer.IsWriting() && hasInput)
+					input.emplace();
+			}
+
+			for (auto& input : data.inputs)
+			{
+				if (!input.has_value())
+					continue;
+
+				serializer &= input->isJumping;
+				serializer &= input->isMovingLeft;
+				serializer &= input->isMovingRight;
+			}
 		}
 	}
 }

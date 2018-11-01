@@ -7,20 +7,27 @@
 #ifndef BURGWAR_CLIENT_PLAYER_HPP
 #define BURGWAR_CLIENT_PLAYER_HPP
 
+#include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <string>
 
 namespace bw
 {
 	class Match;
+	class MatchClientSession;
+	class Player;
 
-	class Player
+	using PlayerHandle = Nz::ObjectHandle<Player>;
+
+	class Player : public Nz::HandledObject<Player>
 	{
 		friend Match;
 
 		public:
-			Player(std::string name);
+			Player(MatchClientSession& session, std::string name);
 			Player(const Player&) = delete;
+			Player(Player&&) noexcept = default;
 			~Player();
 
 			const Ndk::EntityHandle& CreateEntity(Ndk::World& world);
@@ -30,7 +37,10 @@ namespace bw
 
 			inline bool IsInMatch() const;
 
+			void UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight);
+
 			Player& operator=(const Player&) = delete;
+			Player& operator=(Player&&) noexcept = default;
 
 		private:
 			void UpdateLayer(std::size_t layerIndex);
@@ -39,7 +49,8 @@ namespace bw
 			std::size_t m_layerIndex;
 			std::string m_name;
 			Ndk::EntityOwner m_playerEntity;
-			Match* m_match;
+			Nz::MovablePtr<Match> m_match;
+			MatchClientSession& m_session;
 	};
 }
 

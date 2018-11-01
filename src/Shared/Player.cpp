@@ -8,13 +8,16 @@
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
 #include <Shared/Match.hpp>
+#include <Shared/Components/NetworkSyncComponent.hpp>
+#include <Shared/Components/PlayerControlledComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
 
 namespace bw
 {
-	Player::Player(std::string playerName) :
+	Player::Player(MatchClientSession& session, std::string playerName) :
 	m_layerIndex(std::numeric_limits<std::size_t>::max()),
 	m_name(std::move(playerName)),
-	m_match(nullptr)
+	m_session(session)
 	{
 	}
 
@@ -31,26 +34,38 @@ namespace bw
 		auto& sampler = burgerMat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
 
-		Nz::SpriteRef burgersprite = Nz::Sprite::New();
-		burgersprite->SetMaterial(burgerMat);
-		burgersprite->SetSize(burgersprite->GetSize() / 2.f);
-		Nz::Vector2f burgerSize = burgersprite->GetSize();
+		Nz::Vector2f burgerSize = Nz::Vector2f(Nz::Vector3f(burgerMat->GetDiffuseMap()->GetSize())) / 2.f;
 
-		burgersprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(0.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
+		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
 		burgerBox->SetCollisionId(1);
 
-		m_playerEntity = world.CreateEntity();
-		m_playerEntity->AddComponent<Ndk::NodeComponent>().SetPosition(300.f, 100.f);
-		m_playerEntity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
+		static unsigned int huglyCount = 0;
 
+		m_playerEntity = world.CreateEntity();
+		m_playerEntity->AddComponent<NetworkSyncComponent>();
+		m_playerEntity->AddComponent<PlayerControlledComponent>();
+		m_playerEntity->AddComponent<PlayerMovementComponent>();
+		m_playerEntity->AddComponent<Ndk::NodeComponent>().SetPosition(480.f + (huglyCount++) * 100.f, 100.f);
+		m_playerEntity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
 		auto& burgerPhys = m_playerEntity->AddComponent<Ndk::PhysicsComponent2D>();
 		burgerPhys.SetMass(300);
 		burgerPhys.SetFriction(10.f);
 		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 
 		return m_playerEntity;
+	}
+
+	void Player::UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight)
+	{
+		if (m_playerEntity)
+		{
+			assert(m_playerEntity->HasComponent<PlayerControlledComponent>());
+
+			auto& playerController = m_playerEntity->GetComponent<PlayerControlledComponent>();
+			playerController.UpdateJumpingState(isJumping);
+			playerController.UpdateMovingLeftState(isMovingLeft);
+			playerController.UpdateMovingRightState(isMovingRight);
+		}
 	}
 
 	void Player::UpdateLayer(std::size_t layerIndex)

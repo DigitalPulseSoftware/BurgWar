@@ -63,7 +63,7 @@ namespace bw
 		if (m_players.size() >= m_maxPlayerCount)
 			return false;
 
-		m_players.push_back(player);
+		m_players.emplace_back(player);
 		player->UpdateMatch(this);
 
 		player->UpdateLayer(0);

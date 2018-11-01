@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_MATCH_HPP
 #define BURGWAR_SHARED_MATCH_HPP
 
+#include <Nazara/Core/ObjectHandle.hpp>
 #include <Shared/MatchSessions.hpp>
 #include <memory>
 #include <string>
@@ -17,6 +18,8 @@ namespace bw
 	class BurgApp;
 	class Player;
 	class Terrain;
+
+	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	class Match
 	{
@@ -42,7 +45,7 @@ namespace bw
 			std::size_t m_maxPlayerCount;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
-			std::vector<Player*> m_players;
+			std::vector<PlayerHandle> m_players;
 			BurgApp& m_application;
 			MatchSessions m_sessions;
 	};

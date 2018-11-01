@@ -67,28 +67,6 @@ namespace bw
 		auto& theColliderPhys = map->AddComponent<Ndk::PhysicsComponent2D>();
 		theColliderPhys.SetMass(0.f);
 		theColliderPhys.SetFriction(1.f);
-
-
-		Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap("../resources/burger.png");
-		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
-
-		Nz::Vector2f burgerSize = Nz::Vector2f(Nz::Vector3f(burgerMat->GetDiffuseMap()->GetSize())) / 2.f;
-
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
-		burgerBox->SetCollisionId(1);
-
-		Ndk::EntityHandle burger = m_world.CreateEntity();
-		burger->AddComponent<NetworkSyncComponent>();
-		burger->AddComponent<PlayerControlledComponent>();
-		burger->AddComponent<PlayerMovementComponent>();
-		burger->AddComponent<Ndk::NodeComponent>().SetPosition(640.f, 100.f);
-		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(300);
-		burgerPhys.SetFriction(10.f);
-		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 	}
 
 	void TerrainLayer::Update(float elapsedTime)

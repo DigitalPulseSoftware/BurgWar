@@ -9,6 +9,7 @@
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/Terrain.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
+#include <cassert>
 #include <iostream>
 
 namespace bw
@@ -30,7 +31,29 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
 	{
-		std::cout << "[Server] Auth request" << std::endl;
+		std::cout << "[Server] Auth request for " << packet.playerCount << " players" << std::endl;
+
+		if (packet.playerCount == 0 || packet.playerCount >= 8) //< For now, we don't have any spectator
+		{
+			SendPacket(Packets::AuthFailure());
+			Disconnect();
+			return;
+		}
+
+		assert(packet.playerCount != 0xFF);
+
+		m_players.reserve(packet.playerCount);
+		for (Nz::UInt8 i = 0; i < packet.playerCount; ++i)
+		{
+			Player& player = m_players.emplace_back(*this, "Noname");
+			if (!m_match.Join(&player))
+			{
+				m_players.clear();
+				SendPacket(Packets::AuthFailure());
+				Disconnect();
+				return;
+			}
+		}
 
 		SendPacket(Packets::AuthSuccess());
 
@@ -62,18 +85,21 @@ namespace bw
 		SendPacket(hw);
 	}
 
-	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerInput& packet)
+	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
-		// This hack is "hugly" (hugely ugly)
-		for (const Ndk::EntityHandle& entity : m_match.GetTerrain().GetLayer(0).GetWorld().GetEntities())
+		if (packet.inputs.size() != m_players.size())
 		{
-			if (entity->HasComponent<PlayerControlledComponent>())
-			{
-				auto& playerController = entity->GetComponent<PlayerControlledComponent>();
-				playerController.UpdateJumpingState(packet.isJumping);
-				playerController.UpdateMovingLeftState(packet.isMovingLeft);
-				playerController.UpdateMovingRightState(packet.isMovingRight);
-			}
+			std::cerr << "Player input count doesn't match player count" << std::endl;
+			return;
+		}
+
+		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
+		{
+			const auto& input = packet.inputs[playerIndex];
+			if (!input.has_value())
+				continue;
+
+			m_players[playerIndex].UpdateInput(input->isJumping, input->isMovingLeft, input->isMovingRight);
 		}
 	}
 }

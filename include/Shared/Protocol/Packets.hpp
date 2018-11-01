@@ -7,6 +7,7 @@
 #ifndef EREWHON_SHARED_NETWORK_PACKETS_HPP
 #define EREWHON_SHARED_NETWORK_PACKETS_HPP
 
+#include <Shared/InputData.hpp>
 #include <Shared/Protocol/CompressedInteger.hpp>
 #include <Shared/Protocol/PacketSerializer.hpp>
 #include <Nazara/Prerequisites.hpp>
@@ -35,7 +36,7 @@ namespace bw
 		MatchData,
 		MatchState,
 		NetworkStrings,
-		PlayerInput
+		PlayersInput
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -137,11 +138,9 @@ namespace bw
 			std::vector<std::string> strings;
 		};
 
-		DeclarePacket(PlayerInput)
+		DeclarePacket(PlayersInput)
 		{
-			bool isJumping;
-			bool isMovingLeft;
-			bool isMovingRight;
+			std::vector<std::optional<InputData>> inputs;
 		};
 
 #undef DeclarePacket
@@ -155,7 +154,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
-		void Serialize(PacketSerializer& serializer, PlayerInput& data);
+		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 	}
 }
 

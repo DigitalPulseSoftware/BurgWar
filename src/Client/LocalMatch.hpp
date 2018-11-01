@@ -7,11 +7,13 @@
 #ifndef BURGWAR_CLIENT_LOCALMATCH_HPP
 #define BURGWAR_CLIENT_LOCALMATCH_HPP
 
+#include <Client/LocalInputController.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <hopstotch/hopscotch_map.h>
 #include <Nazara/Platform/EventHandler.hpp>
+#include <vector>
 
 namespace bw
 {
@@ -33,6 +35,17 @@ namespace bw
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
 			void SendInputs();
 
+			struct InputController
+			{
+				InputController(Nz::UInt8 playerIndex) :
+				controller(playerIndex)
+				{
+				}
+
+				LocalInputController controller;
+				InputData lastInputData;
+			};
+
 			struct ServerEntity
 			{
 				Ndk::EntityOwner entity;
@@ -43,12 +56,12 @@ namespace bw
 			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
 			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
 
+			std::vector<InputController> m_inputControllers;
 			Ndk::World m_world;
 			BurgApp& m_application;
 			ClientSession& m_session;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
-			Packets::PlayerInput m_inputPacket;
-			bool m_hasInputChanged;
+			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;
