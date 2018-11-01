@@ -7,9 +7,9 @@
 #ifndef BURGWAR_SERVER_BURGAPP_HPP
 #define BURGWAR_SERVER_BURGAPP_HPP
 
-#include <Shared/MatchSessions.hpp>
+#include <Shared/Match.hpp>
 #include <NDK/Application.hpp>
-#include <optional>
+#include <memory>
 
 namespace bw
 {
@@ -22,9 +22,7 @@ namespace bw
 			int Run();
 
 		private:
-			void SetupNetwork();
-
-			std::optional<MatchSessions> m_sessionManager;
+			std::unique_ptr<Match> m_match;
 	};
 }
 

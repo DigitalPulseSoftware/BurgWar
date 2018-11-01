@@ -3,6 +3,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/BurgApp.hpp>
+#include <Shared/NetworkSessionManager.hpp>
+#include <Shared/Components/NetworkSyncComponent.hpp>
+#include <Shared/Components/PlayerControlledComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Systems/NetworkSyncSystem.hpp>
+#include <Shared/Systems/PlayerControlledSystem.hpp>
+#include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <iostream>
 
 namespace bw
@@ -10,21 +17,24 @@ namespace bw
 	BurgApp::BurgApp(int argc, char* argv[]) :
 	Application(argc, argv)
 	{
-		SetupNetwork();
+		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
+		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
+		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
+		Ndk::InitializeSystem<NetworkSyncSystem>();
+		Ndk::InitializeSystem<PlayerControlledSystem>();
+		Ndk::InitializeSystem<PlayerMovementSystem>();
+
+		m_match = std::make_unique<Match>("Je suis un match sur le serveur", 10);
+		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 	}
 
 	int BurgApp::Run()
 	{
 		while (Application::Run())
 		{
-			m_sessionManager->Poll();
+			m_match->Update(GetUpdateTime());
 		}
 
 		return 0;
-	}
-
-	void BurgApp::SetupNetwork()
-	{
-		m_sessionManager.emplace(14738, 100);
 	}
 }

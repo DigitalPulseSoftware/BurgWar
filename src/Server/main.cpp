@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Nazara/Network/Network.hpp>
-#include <Shared/BurgApp.hpp>
+#include <Server/BurgApp.hpp>
 #include <iostream>
 
 int main(int argc, char* argv[])

@@ -12,11 +12,10 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount) :
+	Match::Match(std::string matchName, std::size_t maxPlayerCount) :
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_name(std::move(matchName)),
-	m_application(app)
+	m_name(std::move(matchName))
 	{
 		MapData mapData;
 		mapData.backgroundColor = Nz::Color::Cyan;

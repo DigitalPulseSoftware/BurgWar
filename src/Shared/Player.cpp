@@ -29,12 +29,8 @@ namespace bw
 
 	const Ndk::EntityHandle& Player::CreateEntity(Ndk::World& world)
 	{
-		Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap("../resources/burger.png");
-		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
-
-		Nz::Vector2f burgerSize = Nz::Vector2f(Nz::Vector3f(burgerMat->GetDiffuseMap()->GetSize())) / 2.f;
+		Nz::ImageRef burgerImage = Nz::ImageManager::Get("../resources/burger.png");
+		Nz::Vector2f burgerSize = Nz::Vector2f(Nz::Vector3f(burgerImage->GetSize())) / 2.f;
 
 		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
 		burgerBox->SetCollisionId(1);
