@@ -9,13 +9,21 @@ namespace bw
 {
 	inline NetworkStringStore::NetworkStringStore()
 	{
-		RegisterString(""); //< Force #0 to be empty string
+		Clear();
 	}
 
 	inline void NetworkStringStore::Clear()
 	{
 		m_stringMap.clear();
 		m_strings.clear();
+		RegisterString(""); //< Force #0 to be empty string
+	}
+
+	inline Nz::UInt32 NetworkStringStore::CheckStringIndex(const std::string & string) const
+	{
+		Nz::UInt32 index = GetStringIndex(string);
+		assert(index != InvalidIndex);
+		return index;
 	}
 
 	inline const std::string& NetworkStringStore::GetString(Nz::UInt32 id) const
@@ -27,7 +35,8 @@ namespace bw
 	inline Nz::UInt32 NetworkStringStore::GetStringIndex(const std::string& string) const
 	{
 		auto it = m_stringMap.find(string);
-		assert(it != m_stringMap.end());
+		if (it == m_stringMap.end())
+			return InvalidIndex;
 
 		return it->second;
 	}

@@ -8,7 +8,9 @@
 #define BURGWAR_CLIENT_LOCALMATCH_HPP
 
 #include <Client/LocalInputController.hpp>
+#include <Shared/EntityStore.hpp>
 #include <Shared/Protocol/Packets.hpp>
+#include <Nazara/Lua/LuaInstance.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <hopstotch/hopscotch_map.h>
@@ -30,7 +32,7 @@ namespace bw
 			void Update(float elapsedTime);
 
 		private:
-			const Ndk::EntityHandle& CreateEntity(Nz::UInt32 serverId, const Nz::Vector2f& createPosition, bool hasPlayerMovement);
+			const Ndk::EntityHandle& CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
 			void SendInputs();
@@ -57,10 +59,12 @@ namespace bw
 			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
 
 			std::vector<InputController> m_inputControllers;
+			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::World m_world;
+			Nz::LuaInstance m_luaInstance;
 			BurgApp& m_application;
 			ClientSession& m_session;
-			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			EntityStore m_entityStore;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

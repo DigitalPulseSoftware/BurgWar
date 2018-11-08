@@ -12,6 +12,7 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/System.hpp>
 #include <optional>
+#include <string>
 #include <variant>
 #include <vector>
 
@@ -47,6 +48,7 @@ namespace bw
 				Nz::Vector2f position;
 				Nz::Vector2f linearVelocity;
 				std::optional<PlayerMovementData> playerMovement;
+				std::string entityClass;
 			};
 
 			struct EntityDestruction

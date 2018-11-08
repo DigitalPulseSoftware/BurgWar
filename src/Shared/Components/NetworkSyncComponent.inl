@@ -6,5 +6,13 @@
 
 namespace bw
 {
-	inline NetworkSyncComponent::NetworkSyncComponent() = default;
+	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass) :
+	m_entityClass(entityClass)
+	{
+	}
+
+	inline const std::string& NetworkSyncComponent::GetEntityClass() const
+	{
+		return m_entityClass;
+	}
 }

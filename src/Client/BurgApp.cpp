@@ -33,7 +33,7 @@ namespace bw
 	Application(argc, argv),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds()),
-	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Burg'war"))
+	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8)))
 #if 0
 	m_world(AddWorld()),
 	m_lastTime(Nz::GetElapsedMicroseconds() / 1000),
@@ -51,7 +51,7 @@ namespace bw
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 
-		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
+		m_match = std::make_unique<Match>("Faites l'amour pas la Burg'guerre", 10);
 		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
 		NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 

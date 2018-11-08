@@ -6,6 +6,7 @@
 #include <Shared/Match.hpp>
 #include <Shared/MapData.hpp>
 #include <Shared/NetworkReactor.hpp>
+#include <Shared/Player.hpp>
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/Terrain.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
@@ -14,6 +15,17 @@
 
 namespace bw
 {
+	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge) :
+	m_match(match),
+	m_visibility(match, *this),
+	m_commandStore(commandStore),
+	m_sessionId(sessionId),
+	m_bridge(std::move(bridge))
+	{
+	}
+
+	MatchClientSession::~MatchClientSession() = default;
+
 	void MatchClientSession::Disconnect()
 	{
 		m_bridge->Disconnect();
@@ -31,7 +43,7 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
 	{
-		std::cout << "[Server] Auth request for " << packet.playerCount << " players" << std::endl;
+		std::cout << "[Server] Auth request for " << +packet.playerCount << " players" << std::endl;
 
 		if (packet.playerCount == 0 || packet.playerCount >= 8) //< For now, we don't have any spectator
 		{
@@ -42,20 +54,22 @@ namespace bw
 
 		assert(packet.playerCount != 0xFF);
 
-		m_players.reserve(packet.playerCount);
+		std::vector<Player> players;
 		for (Nz::UInt8 i = 0; i < packet.playerCount; ++i)
 		{
-			Player& player = m_players.emplace_back(*this, "Noname");
+			Player& player = players.emplace_back(*this, "Noname");
 			if (!m_match.Join(&player))
 			{
-				m_players.clear();
 				SendPacket(Packets::AuthFailure());
 				Disconnect();
 				return;
 			}
 		}
 
+		m_players = std::move(players);
+
 		SendPacket(Packets::AuthSuccess());
+		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
 		const MapData& mapData = m_match.GetTerrain().GetMapData();
 

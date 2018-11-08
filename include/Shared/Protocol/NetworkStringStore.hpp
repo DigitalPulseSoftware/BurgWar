@@ -9,6 +9,7 @@
 
 #include <Shared/Protocol/Packets.hpp>
 #include <hopstotch/hopscotch_map.h>
+#include <limits>
 #include <optional>
 #include <vector>
 
@@ -20,9 +21,11 @@ namespace bw
 			inline NetworkStringStore();
 			~NetworkStringStore() = default;
 
-			Packets::NetworkStrings BuildPacket(Nz::UInt32 firstId) const;
+			Packets::NetworkStrings BuildPacket(Nz::UInt32 firstId = 0) const;
 
 			inline void Clear();
+
+			inline Nz::UInt32 CheckStringIndex(const std::string& string) const;
 
 			void FillStore(Nz::UInt32 firstId, std::vector<std::string> strings);
 
@@ -30,6 +33,8 @@ namespace bw
 			inline Nz::UInt32 GetStringIndex(const std::string& string) const;
 
 			inline Nz::UInt32 RegisterString(std::string string);
+
+			static constexpr Nz::UInt32 InvalidIndex = std::numeric_limits<Nz::UInt32>::max();
 
 		private:
 			tsl::hopscotch_map<std::string, Nz::UInt32> m_stringMap;

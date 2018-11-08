@@ -8,7 +8,10 @@
 #define BURGWAR_SHARED_MATCH_HPP
 
 #include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Lua/LuaInstance.hpp>
+#include <Shared/EntityStore.hpp>
 #include <Shared/MatchSessions.hpp>
+#include <Shared/Protocol/NetworkStringStore.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,8 +32,11 @@ namespace bw
 
 			void Leave(Player* player);
 
+			inline const EntityStore& GetEntityStore() const;
+			inline Nz::LuaInstance& GetLuaInstance();
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
+			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
 
@@ -45,7 +51,10 @@ namespace bw
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
+			Nz::LuaInstance m_luaInstance;
+			EntityStore m_entityStore;
 			MatchSessions m_sessions;
+			NetworkStringStore m_networkStringStore;
 	};
 }
 

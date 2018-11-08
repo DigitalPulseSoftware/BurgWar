@@ -72,6 +72,7 @@ namespace bw
 	void NetworkSyncSystem::CreateEntity(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
 		creationEvent.id = entity->GetId();
+		creationEvent.entityClass = entity->GetComponent<NetworkSyncComponent>().GetEntityClass();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{

@@ -70,6 +70,7 @@ namespace bw
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 			void HandleIncomingPacket(const Packets::MatchData& packet);
 			void HandleIncomingPacket(const Packets::MatchState& packet);
+			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
 			
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<LocalMatch> m_localMatch;

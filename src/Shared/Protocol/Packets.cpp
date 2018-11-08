@@ -44,6 +44,7 @@ namespace bw
 			for (auto& entity : data.entities)
 			{
 				serializer &= entity.id;
+				serializer &= entity.entityClass;
 				serializer &= entity.angularVelocity;
 				serializer &= entity.linearVelocity;
 				serializer &= entity.position;

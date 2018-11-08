@@ -11,7 +11,7 @@ namespace bw
 		return m_layerIndex;
 	}
 
-	inline Match* bw::Player::GetMatch() const
+	inline Match* Player::GetMatch() const
 	{
 		return m_match;
 	}
@@ -19,5 +19,11 @@ namespace bw
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;
+	}
+
+	template<typename T>
+	void Player::SendPacket(const T& packet)
+	{
+		m_session.SendPacket(packet);
 	}
 }

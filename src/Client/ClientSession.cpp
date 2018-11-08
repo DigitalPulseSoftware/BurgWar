@@ -87,9 +87,10 @@ namespace bw
 	{
 		for (const auto& entityData : packet.entities)
 		{
-			std::cout << "[Client] Entity #" << entityData.id << " created at " << entityData.position << std::endl;
+			const std::string& entityClass = m_stringStore.GetString(entityData.entityClass);
+			std::cout << "[Client] Entity #" << entityData.id << " of type " << entityClass << " created at " << entityData.position << std::endl;
 
-			m_localMatch->CreateEntity(entityData.id, entityData.position, entityData.playerMovement.has_value());
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value());
 		}
 	}
 
@@ -132,5 +133,13 @@ namespace bw
 
 			m_localMatch->MoveEntity(entityData.id, entityData.position, entityData.linearVelocity, entityData.rotation, entityData.angularVelocity, isAirControlling, isFacingRight);
 		}
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::NetworkStrings& packet)
+	{
+		if (packet.startId == 0)
+			m_stringStore.Clear(); //< Reset string store
+
+		m_stringStore.FillStore(packet.startId, packet.strings);
 	}
 }

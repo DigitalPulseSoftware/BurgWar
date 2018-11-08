@@ -116,13 +116,7 @@ namespace bw
 
 		if (m_incomingCommands.size() <= opcode || !m_incomingCommands[opcode].enabled)
 		{
-			/*std::size_t peerId;
-			if constexpr (std::is_pointer_v<Peer>)
-				peerId = peer->GetPeerId();
-			else
-				peerId = peer.GetPeerId();
-
-			std::cerr << "Client #" << peerId << " sent invalid opcode" << std::endl;*/
+			std::cerr << "Client :derp: sent invalid or disabled opcode " << opcode << std::endl;
 			return false;
 		}
 

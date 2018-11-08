@@ -122,8 +122,11 @@ namespace bw
 
 	void MatchClientVisibility::HandleEntityCreation(Packets::CreateEntities& createPacket, const NetworkSyncSystem::EntityCreation& eventData)
 	{
+		const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
+
 		auto& entityData = createPacket.entities.emplace_back();
 		entityData.id = eventData.id;
+		entityData.entityClass = networkStringStore.CheckStringIndex(eventData.entityClass);
 		entityData.angularVelocity = eventData.angularVelocity;
 		entityData.linearVelocity = eventData.linearVelocity;
 		entityData.position = eventData.position;

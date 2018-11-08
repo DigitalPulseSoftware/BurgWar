@@ -15,12 +15,15 @@ namespace bw
 	class NetworkSyncComponent : public Ndk::Component<NetworkSyncComponent>
 	{
 		public:
-			NetworkSyncComponent();
+			inline NetworkSyncComponent(std::string entityClass);
 			~NetworkSyncComponent() = default;
+
+			inline const std::string& GetEntityClass() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			std::string m_entityClass;
 	};
 }
 

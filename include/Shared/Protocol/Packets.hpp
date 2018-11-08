@@ -72,6 +72,7 @@ namespace bw
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
+				CompressedUnsigned<Nz::UInt32> entityClass;
 				Nz::RadianAnglef angularVelocity;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f linearVelocity;

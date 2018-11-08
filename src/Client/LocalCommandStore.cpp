@@ -24,12 +24,13 @@ namespace bw
 		IncomingCommand(DeleteEntities);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
+		IncomingCommand(NetworkStrings);
 
 		// Outgoing commands
 		OutgoingCommand(Auth,           Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HelloWorld,     Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings, Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayersInput,    Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayersInput,   Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
 #undef OutgoingCommand

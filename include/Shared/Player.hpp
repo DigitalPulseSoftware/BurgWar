@@ -10,12 +10,12 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <Shared/MatchClientSession.hpp>
 #include <string>
 
 namespace bw
 {
 	class Match;
-	class MatchClientSession;
 	class Player;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
@@ -36,6 +36,8 @@ namespace bw
 			inline Match* GetMatch() const;
 
 			inline bool IsInMatch() const;
+
+			template<typename T> void SendPacket(const T& packet);
 
 			void UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight);
 

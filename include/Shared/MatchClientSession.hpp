@@ -8,7 +8,6 @@
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
 #include <Shared/MatchClientVisibility.hpp>
-#include <Shared/Player.hpp>
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/SessionBridge.hpp>
 #include <Shared/Protocol/Packets.hpp>
@@ -18,6 +17,7 @@
 namespace bw
 {
 	class Match;
+	class Player;
 	class PlayerCommandStore;
 
 	// Match client session
@@ -26,10 +26,10 @@ namespace bw
 		friend PlayerCommandStore;
 
 		public:
-			inline MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge);
+			MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge);
 			MatchClientSession(const MatchClientSession&) = delete;
 			MatchClientSession(MatchClientSession&&) = delete;
-			~MatchClientSession() = default;
+			~MatchClientSession();
 
 			void Disconnect();
 

@@ -23,7 +23,8 @@ namespace bw
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
-	m_playerInputTimer(0.f)
+	m_playerInputTimer(0.f),
+	m_entityStore(false, m_luaInstance)
 	{
 		m_world.AddSystem<PlayerMovementSystem>();
 
@@ -128,6 +129,19 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(i);
 
+		m_luaInstance.LoadLibraries();
+		m_entityStore.Load("../../scripts/entities");
+
+		auto& networkStringStore = m_session.GetNetworkStringStore();
+		m_entityStore.ForEachEntity([&](const EntityStore::Entity& entity)
+		{
+			if (entity.isNetworked)
+			{
+				if (networkStringStore.GetStringIndex(entity.name) == NetworkStringStore::InvalidIndex)
+					std::cout << "[Client] Entity " << entity.name << " is marked as networked but is not part of the network string store" << std::endl;
+			}
+		});
+
 		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
 		burgerMat->SetDiffuseMap("../resources/burger.png");
 		auto& sampler = burgerMat->GetDiffuseSampler();
@@ -209,22 +223,64 @@ namespace bw
 		}
 	}
 
-	const Ndk::EntityHandle& LocalMatch::CreateEntity(Nz::UInt32 serverId, const Nz::Vector2f& createPosition, bool hasPlayerMovement)
+	const Ndk::EntityHandle& LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement)
 	{
+		std::size_t entityIndex = m_entityStore.GetEntityIndex(entityClassName);
+		if (entityIndex == EntityStore::InvalidIndex)
+		{
+			std::cerr << "Entity class \"" << entityClassName << "\" is not registered" << std::endl;
+			return Ndk::EntityHandle::InvalidHandle;
+		}
+
+		auto& entityClass = m_entityStore.GetEntity(entityIndex);
+
+		std::string spritePath;
+		bool canRotate;
+		float mass;
+		float scale;
+		unsigned int collisionId;
+		try
+		{
+			m_luaInstance.PushReference(entityClass.tableRef);
+			Nz::CallOnExit popOnExit([&] { m_luaInstance.Pop(); });
+
+			canRotate = m_luaInstance.CheckField<bool>("RotationEnabled");
+			collisionId = m_luaInstance.CheckField<unsigned int>("CollisionType");
+			mass = m_luaInstance.CheckField<float>("Mass");
+			scale = m_luaInstance.CheckField<float>("Scale");
+			spritePath = m_luaInstance.CheckField<std::string>("Sprite");
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Failed to get entity class \"" << entityClassName << "\" informations: " << e.what() << std::endl;
+			return Ndk::EntityHandle::InvalidHandle;
+		}
+
 		Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap("../resources/burger.png");
+		burgerMat->SetDiffuseMap(spritePath);
 		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
+		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
 		Nz::SpriteRef burgerSprite = Nz::Sprite::New();
 		burgerSprite->SetMaterial(burgerMat);
-		burgerSprite->SetSize(burgerSprite->GetSize() / 2.f);
+		burgerSprite->SetSize(burgerSprite->GetSize() * scale);
 		Nz::Vector2f burgerSize = burgerSprite->GetSize();
 
-		burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
+		// Warning what's following is ugly
+		Nz::Rectf colliderBox;
+		if (entityClassName == "burger")
+		{
+			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f);
+			burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - ((entityClassName == "burger") ? 3.f : 0.f)));
+		}
+		else
+		{
+			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y / 2.f, burgerSize.x, burgerSize.y);
+			burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
+		}
 
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
-		burgerBox->SetCollisionId(1);
+		auto burgerBox = Nz::BoxCollider2D::New(colliderBox);
+		burgerBox->SetCollisionId(collisionId);
 
 		const Ndk::EntityHandle& burger = m_world.CreateEntity();
 		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
@@ -233,9 +289,10 @@ namespace bw
 
 		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
 		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(300);
+		burgerPhys.SetMass(mass);
 		burgerPhys.SetFriction(10.f);
-		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+		if (!canRotate)
+			burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 		burgerPhys.EnableNodeSynchronization(false);
 
 		if (hasPlayerMovement)
