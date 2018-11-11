@@ -8,7 +8,8 @@
 #define BURGWAR_CLIENT_LOCALMATCH_HPP
 
 #include <Client/LocalInputController.hpp>
-#include <Shared/EntityStore.hpp>
+#include <Client/Scripting/ClientEntityStore.hpp>
+#include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Nazara/Lua/LuaInstance.hpp>
 #include <NDK/EntityOwner.hpp>
@@ -32,7 +33,7 @@ namespace bw
 			void Update(float elapsedTime);
 
 		private:
-			const Ndk::EntityHandle& CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement);
+			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
 			void SendInputs();
@@ -53,6 +54,7 @@ namespace bw
 				Ndk::EntityOwner entity;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
 				Nz::RadianAnglef rotationError = 0.f;
+				bool isPhysics;
 			};
 
 			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
@@ -64,7 +66,8 @@ namespace bw
 			Nz::LuaInstance m_luaInstance;
 			BurgApp& m_application;
 			ClientSession& m_session;
-			EntityStore m_entityStore;
+			ClientEntityStore m_entityStore;
+			ClientWeaponStore m_weaponStore;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

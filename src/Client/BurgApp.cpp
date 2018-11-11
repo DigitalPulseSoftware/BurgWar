@@ -44,6 +44,8 @@ namespace bw
 	m_isMoving(false)
 #endif
 	{
+		m_mainWindow.SetFramerateLimit(100);
+
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");

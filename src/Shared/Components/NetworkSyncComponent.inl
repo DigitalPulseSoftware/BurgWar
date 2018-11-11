@@ -6,13 +6,19 @@
 
 namespace bw
 {
-	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass) :
-	m_entityClass(entityClass)
+	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent) :
+	m_entityClass(entityClass),
+	m_parent(parent)
 	{
 	}
 
 	inline const std::string& NetworkSyncComponent::GetEntityClass() const
 	{
 		return m_entityClass;
+	}
+
+	inline const Ndk::EntityHandle & NetworkSyncComponent::GetParent() const
+	{
+		return m_parent;
 	}
 }

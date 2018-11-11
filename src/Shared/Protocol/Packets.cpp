@@ -31,30 +31,55 @@ namespace bw
 
 			for (auto& entity : data.entities)
 			{
+				bool hasParent;
 				bool hasMovementData;
+				bool hasPhysicsProps;
 				if (serializer.IsWriting())
+				{
+					hasParent = entity.parentId.has_value();
 					hasMovementData = entity.playerMovement.has_value();
+					hasPhysicsProps = entity.physicsProperties.has_value();
+				}
 
+				serializer &= hasParent;
 				serializer &= hasMovementData;
+				serializer &= hasPhysicsProps;
 
 				if (!serializer.IsWriting())
-					entity.playerMovement.emplace();
+				{
+					if (hasParent)
+						entity.parentId.emplace();
+
+					if (hasMovementData)
+						entity.playerMovement.emplace();
+
+					if (hasPhysicsProps)
+						entity.physicsProperties.emplace();
+				}
 			}
 
 			for (auto& entity : data.entities)
 			{
 				serializer &= entity.id;
 				serializer &= entity.entityClass;
-				serializer &= entity.angularVelocity;
-				serializer &= entity.linearVelocity;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
+
+				if (entity.parentId)
+					serializer &= entity.parentId.value();
 
 				if (entity.playerMovement)
 				{
 					auto& playerMovementData = entity.playerMovement.value();
 					serializer &= playerMovementData.isAirControlling;
 					serializer &= playerMovementData.isFacingRight;
+				}
+
+				if (entity.physicsProperties)
+				{
+					auto& physicsProperties = entity.physicsProperties.value();
+					serializer &= physicsProperties.angularVelocity;
+					serializer &= physicsProperties.linearVelocity;
 				}
 			}
 		}
@@ -99,20 +124,29 @@ namespace bw
 			for (auto& entity : data.entities)
 			{
 				bool hasMovementData;
+				bool hasPhysicsProps;
 				if (serializer.IsWriting())
+				{
 					hasMovementData = entity.playerMovement.has_value();
+					hasPhysicsProps = entity.physicsProperties.has_value();
+				}
 
 				serializer &= hasMovementData;
+				serializer &= hasPhysicsProps;
 
-				if (!serializer.IsWriting() && hasMovementData)
-					entity.playerMovement.emplace();
+				if (!serializer.IsWriting())
+				{
+					if (hasMovementData)
+						entity.playerMovement.emplace();
+
+					if (hasPhysicsProps)
+						entity.physicsProperties.emplace();
+				}
 			}
 
 			for (auto& entity : data.entities)
 			{
 				serializer &= entity.id;
-				serializer &= entity.angularVelocity;
-				serializer &= entity.linearVelocity;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
 
@@ -121,6 +155,13 @@ namespace bw
 					auto& playerMovementData = entity.playerMovement.value();
 					serializer &= playerMovementData.isAirControlling;
 					serializer &= playerMovementData.isFacingRight;
+				}
+
+				if (entity.physicsProperties)
+				{
+					auto& physicsProperties = entity.physicsProperties.value();
+					serializer &= physicsProperties.angularVelocity;
+					serializer &= physicsProperties.linearVelocity;
 				}
 			}
 		}

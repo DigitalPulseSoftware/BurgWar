@@ -40,14 +40,20 @@ namespace bw
 				bool isFacingRight;
 			};
 
+			struct PhysicsProperties
+			{
+				Nz::RadianAnglef angularVelocity;
+				Nz::Vector2f linearVelocity;
+			};
+
 			struct EntityCreation
 			{
 				Ndk::EntityId id;
-				Nz::RadianAnglef angularVelocity;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
-				Nz::Vector2f linearVelocity;
+				std::optional<Ndk::EntityId> parent;
 				std::optional<PlayerMovementData> playerMovement;
+				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
 			};
 
@@ -59,11 +65,10 @@ namespace bw
 			struct EntityMovement
 			{
 				Ndk::EntityId id;
-				Nz::RadianAnglef angularVelocity;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
-				Nz::Vector2f linearVelocity;
 				std::optional<PlayerMovementData> playerMovement;
+				std::optional<PhysicsProperties> physicsProperties;
 			};
 
 			NazaraSignal(OnEntityCreated, NetworkSyncSystem* /*emitter*/, const EntityCreation& /*event*/);

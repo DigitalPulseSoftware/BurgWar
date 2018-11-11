@@ -24,7 +24,8 @@ namespace bw
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f),
-	m_entityStore(false, m_luaInstance)
+	m_entityStore(m_luaInstance),
+	m_weaponStore(m_luaInstance)
 	{
 		m_world.AddSystem<PlayerMovementSystem>();
 
@@ -36,7 +37,7 @@ namespace bw
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
 
 		Ndk::EntityHandle camera = m_world.CreateEntity();
-		camera->AddComponent<Ndk::NodeComponent>().SetPosition(Nz::Vector2f(320.f, 0.f));
+		camera->AddComponent<Ndk::NodeComponent>().SetPosition(Nz::Vector2f(0.f, 0.f));
 
 		Ndk::CameraComponent& viewer = camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(&(m_application.GetMainWindow()));
@@ -131,16 +132,17 @@ namespace bw
 
 		m_luaInstance.LoadLibraries();
 		m_entityStore.Load("../../scripts/entities");
+		m_weaponStore.Load("../../scripts/weapons");
 
-		auto& networkStringStore = m_session.GetNetworkStringStore();
-		m_entityStore.ForEachEntity([&](const EntityStore::Entity& entity)
+		/*auto& networkStringStore = m_session.GetNetworkStringStore();
+		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
 		{
 			if (entity.isNetworked)
 			{
 				if (networkStringStore.GetStringIndex(entity.name) == NetworkStringStore::InvalidIndex)
 					std::cout << "[Client] Entity " << entity.name << " is marked as networked but is not part of the network string store" << std::endl;
 			}
-		});
+		});*/
 
 		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
 		burgerMat->SetDiffuseMap("../resources/burger.png");
@@ -192,24 +194,27 @@ namespace bw
 			for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
 			{
 				ServerEntity& serverEntity = it.value();
-				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
-
-				serverEntity.positionError = Nz::Lerp(serverEntity.positionError, Nz::Vector2f::Zero(), 0.5f);
-
-				// Avoid denormals
-				for (std::size_t i = 0; i < 2; ++i)
+				if (serverEntity.isPhysics)
 				{
-					if (Nz::NumberEquals(serverEntity.positionError[i], 0.f, 1.f))
-						serverEntity.positionError[i] = 0.f;
+					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+					auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+					serverEntity.positionError = Nz::Lerp(serverEntity.positionError, Nz::Vector2f::Zero(), 0.5f);
+
+					// Avoid denormals
+					for (std::size_t i = 0; i < 2; ++i)
+					{
+						if (Nz::NumberEquals(serverEntity.positionError[i], 0.f, 1.f))
+							serverEntity.positionError[i] = 0.f;
+					}
+
+					serverEntity.rotationError = Nz::Lerp(serverEntity.rotationError, Nz::RadianAnglef::Zero(), 0.5f);
+					if (serverEntity.rotationError == 0.f)
+						serverEntity.rotationError = Nz::RadianAnglef::Zero();
+
+					entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
+					entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 				}
-
-				serverEntity.rotationError = Nz::Lerp(serverEntity.rotationError, Nz::RadianAnglef::Zero(), 0.5f);
-				if (serverEntity.rotationError == 0.f)
-					serverEntity.rotationError = Nz::RadianAnglef::Zero();
-
-				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
-				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 			}
 		}
 
@@ -223,87 +228,62 @@ namespace bw
 		}
 	}
 
-	const Ndk::EntityHandle& LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement)
+	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId)
 	{
-		std::size_t entityIndex = m_entityStore.GetEntityIndex(entityClassName);
-		if (entityIndex == EntityStore::InvalidIndex)
+		static std::string entityPrefix = "entity_";
+		static std::string weaponPrefix = "weapon_";
+
+		Ndk::EntityHandle entity;
+		if (entityClassName.compare(0, entityPrefix.size(), entityPrefix) == 0)
 		{
-			std::cerr << "Entity class \"" << entityClassName << "\" is not registered" << std::endl;
-			return Ndk::EntityHandle::InvalidHandle;
+			// Entity
+			if (std::size_t entityIndex = m_entityStore.GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
+			{
+				entity = m_entityStore.BuildEntity(m_world, entityIndex);
+				if (!entity)
+					return Ndk::EntityHandle::InvalidHandle;
+
+				entity->GetComponent<Ndk::NodeComponent>().SetPosition(createPosition);
+			}
 		}
-
-		auto& entityClass = m_entityStore.GetEntity(entityIndex);
-
-		std::string spritePath;
-		bool canRotate;
-		float mass;
-		float scale;
-		unsigned int collisionId;
-		try
+		else if (entityClassName.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
 		{
-			m_luaInstance.PushReference(entityClass.tableRef);
-			Nz::CallOnExit popOnExit([&] { m_luaInstance.Pop(); });
+			// Weapon
+			if (std::size_t weaponIndex = m_weaponStore.GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
+			{
+				entity = m_weaponStore.BuildWeapon(m_world, weaponIndex);
+				if (!entity)
+					return Ndk::EntityHandle::InvalidHandle;
 
-			canRotate = m_luaInstance.CheckField<bool>("RotationEnabled");
-			collisionId = m_luaInstance.CheckField<unsigned int>("CollisionType");
-			mass = m_luaInstance.CheckField<float>("Mass");
-			scale = m_luaInstance.CheckField<float>("Scale");
-			spritePath = m_luaInstance.CheckField<std::string>("Sprite");
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Failed to get entity class \"" << entityClassName << "\" informations: " << e.what() << std::endl;
-			return Ndk::EntityHandle::InvalidHandle;
-		}
-
-		Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap(spritePath);
-		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
-
-		Nz::SpriteRef burgerSprite = Nz::Sprite::New();
-		burgerSprite->SetMaterial(burgerMat);
-		burgerSprite->SetSize(burgerSprite->GetSize() * scale);
-		Nz::Vector2f burgerSize = burgerSprite->GetSize();
-
-		// Warning what's following is ugly
-		Nz::Rectf colliderBox;
-		if (entityClassName == "burger")
-		{
-			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f);
-			burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - ((entityClassName == "burger") ? 3.f : 0.f)));
+				entity->GetComponent<Ndk::NodeComponent>().SetPosition(createPosition);
+			}
 		}
 		else
 		{
-			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y / 2.f, burgerSize.x, burgerSize.y);
-			burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
+			// Unknown
+			std::cerr << "Failed to decode entity type: " << entityClassName << std::endl;
+			return Ndk::EntityHandle::InvalidHandle;
 		}
 
-		auto burgerBox = Nz::BoxCollider2D::New(colliderBox);
-		burgerBox->SetCollisionId(collisionId);
+		if (entity)
+		{
+			if (parentId)
+			{
+				auto it = m_serverEntityIdToClient.find(parentId.value());
+				assert(it != m_serverEntityIdToClient.end());
 
-		const Ndk::EntityHandle& burger = m_world.CreateEntity();
-		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
-		auto& burgerGfx = burger->AddComponent<Ndk::NodeComponent>();
-		burgerGfx.SetPosition(createPosition);
+				const ServerEntity& parentEntity = it->second;
+				entity->GetComponent<Ndk::NodeComponent>().SetParent(parentEntity.entity);
+			}
 
-		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(mass);
-		burgerPhys.SetFriction(10.f);
-		if (!canRotate)
-			burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
-		burgerPhys.EnableNodeSynchronization(false);
+			ServerEntity serverEntity;
+			serverEntity.entity = entity;
+			serverEntity.isPhysics = isPhysical;
 
-		if (hasPlayerMovement)
-			burger->AddComponent<PlayerMovementComponent>();
+			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
+		}
 
-		ServerEntity serverEntity;
-		serverEntity.entity = burger;
-
-		m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
-
-		return burger;
+		return entity;
 	}
 
 	void LocalMatch::DeleteEntity(Nz::UInt32 serverId)
@@ -327,26 +307,35 @@ namespace bw
 			return;
 
 		ServerEntity& serverEntity = it.value();
-		auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
-
-		serverEntity.positionError += physComponent.GetPosition() - newPos;
-		serverEntity.rotationError += physComponent.GetRotation() - newRot;
-
-		if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
+		if (serverEntity.isPhysics)
 		{
-			auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
-			playerMovementComponent.UpdateAirControlState(isAirControlling);
+			auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-			if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+			serverEntity.positionError += physComponent.GetPosition() - newPos;
+			serverEntity.rotationError += physComponent.GetRotation() - newRot;
+
+			if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
 			{
-				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				entityNode.Scale(-1.f, 1.f);
-			}
-		}
+				auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
+				playerMovementComponent.UpdateAirControlState(isAirControlling);
 
-		physComponent.SetAngularVelocity(newAngularVel);
-		physComponent.SetPosition(newPos);
-		physComponent.SetVelocity(newLinearVel);
+				if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+				{
+					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+					entityNode.Scale(-1.f, 1.f);
+				}
+			}
+
+			physComponent.SetAngularVelocity(newAngularVel);
+			physComponent.SetPosition(newPos);
+			physComponent.SetVelocity(newLinearVel);
+		}
+		else
+		{
+			auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+			nodeComponent.SetPosition(newPos);
+			nodeComponent.SetRotation(newRot);
+		}
 	}
 
 	void LocalMatch::SendInputs()

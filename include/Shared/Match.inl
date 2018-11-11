@@ -7,7 +7,12 @@
 
 namespace bw
 {
-	inline const EntityStore& Match::GetEntityStore() const
+	inline ServerEntityStore& Match::GetEntityStore()
+	{
+		return m_entityStore;
+	}
+
+	inline const ServerEntityStore& Match::GetEntityStore() const
 	{
 		return m_entityStore;
 	}
@@ -15,6 +20,11 @@ namespace bw
 	inline Nz::LuaInstance& Match::GetLuaInstance()
 	{
 		return m_luaInstance;
+	}
+
+	inline const NetworkStringStore& Match::GetNetworkStringStore() const
+	{
+		return m_networkStringStore;
 	}
 
 	inline MatchSessions& Match::GetSessions()
@@ -27,11 +37,6 @@ namespace bw
 		return m_sessions;
 	}
 
-	inline const NetworkStringStore& Match::GetNetworkStringStore() const
-	{
-		return m_networkStringStore;
-	}
-
 	inline Terrain& Match::GetTerrain()
 	{
 		assert(m_terrain);
@@ -42,5 +47,15 @@ namespace bw
 	{
 		assert(m_terrain);
 		return *m_terrain;
+	}
+
+	inline ServerWeaponStore& Match::GetWeaponStore()
+	{
+		return m_weaponStore;
+	}
+
+	inline const ServerWeaponStore & Match::GetWeaponStore() const
+	{
+		return m_weaponStore;
 	}
 }

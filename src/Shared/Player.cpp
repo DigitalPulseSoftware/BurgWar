@@ -29,61 +29,28 @@ namespace bw
 
 	const Ndk::EntityHandle& Player::CreateEntity(Ndk::World& world)
 	{
-		std::string entityClassName = "burger";
-
-		std::size_t entityIndex = m_match->GetEntityStore().GetEntityIndex(entityClassName);
-		if (entityIndex == EntityStore::InvalidIndex)
+		ServerEntityStore& entityStore = m_match->GetEntityStore();
+		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
+		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			std::cerr << "Entity class \"" << entityClassName << "\" is not registered" << std::endl;
-			return Ndk::EntityHandle::InvalidHandle;
+			const Ndk::EntityHandle& burger = entityStore.BuildEntity(world, entityIndex);
+			if (!burger)
+				return Ndk::EntityHandle::InvalidHandle;
+
+			static unsigned int huglyCount = 0;
+
+			burger->GetComponent<Ndk::PhysicsComponent2D>().SetPosition({ 200.f + (huglyCount++) * 100.f, 100.f });
+
+			m_playerEntity = burger;
+
+			// Create weapon
+			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_sword_emmentalibur"); weaponIndex != ServerEntityStore::InvalidIndex)
+				weaponStore.BuildWeapon(world, weaponIndex, burger);
+
+			return burger;
 		}
 
-		auto& entityClass = m_match->GetEntityStore().GetEntity(entityIndex);
-
-		std::string spritePath;
-		bool canRotate;
-		float mass;
-		float scale;
-		unsigned int collisionId;
-		try
-		{
-			m_match->GetLuaInstance().PushReference(entityClass.tableRef);
-			Nz::CallOnExit popOnExit([&] { m_match->GetLuaInstance().Pop(); });
-
-			canRotate = m_match->GetLuaInstance().CheckField<bool>("RotationEnabled");
-			collisionId = m_match->GetLuaInstance().CheckField<unsigned int>("CollisionType");
-			mass = m_match->GetLuaInstance().CheckField<float>("Mass");
-			scale = m_match->GetLuaInstance().CheckField<float>("Scale");
-			spritePath = m_match->GetLuaInstance().CheckField<std::string>("Sprite");
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Failed to get entity class \"" << entityClassName << "\" informations: " << e.what() << std::endl;
-			return Ndk::EntityHandle::InvalidHandle;
-		}
-
-
-		Nz::ImageRef burgerImage = Nz::ImageManager::Get(spritePath);
-		Nz::Vector2f burgerSize = Nz::Vector2f(Nz::Vector3f(burgerImage->GetSize())) * scale;
-
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
-		burgerBox->SetCollisionId(collisionId);
-
-		static unsigned int huglyCount = 0;
-
-		m_playerEntity = world.CreateEntity();
-		m_playerEntity->AddComponent<NetworkSyncComponent>("burger");
-		m_playerEntity->AddComponent<PlayerControlledComponent>();
-		m_playerEntity->AddComponent<PlayerMovementComponent>();
-		m_playerEntity->AddComponent<Ndk::NodeComponent>().SetPosition(0.f + (huglyCount++) * 200.f, 100.f);
-		m_playerEntity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = m_playerEntity->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(mass);
-		burgerPhys.SetFriction(10.f);
-		if (!canRotate)
-			burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
-
-		return m_playerEntity;
+		return Ndk::EntityHandle::InvalidHandle;
 	}
 
 	void Player::UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight)

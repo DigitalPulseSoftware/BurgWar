@@ -6,6 +6,7 @@
 #include <NDK/Components.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <iostream>
 
 namespace bw
 {
@@ -47,14 +48,26 @@ namespace bw
 
 		for (const Ndk::EntityHandle& entity : m_physicsEntities)
 		{
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-
 			EntityMovement& movementEvent = m_movementEvents.emplace_back();
 			movementEvent.id = entity->GetId();
-			movementEvent.angularVelocity = entityPhys.GetAngularVelocity();
-			movementEvent.linearVelocity = entityPhys.GetVelocity();
-			movementEvent.position = entityPhys.GetPosition();
-			movementEvent.rotation = entityPhys.GetRotation();
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				//TODO: Handle parents?
+				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				movementEvent.position = entityPhys.GetPosition();
+				movementEvent.rotation = entityPhys.GetRotation();
+
+				movementEvent.physicsProperties.emplace();
+				movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
+				movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
+			}
+			else
+			{
+				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+				movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
+				movementEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+			}
 
 			if (entity->HasComponent<PlayerMovementComponent>())
 			{
@@ -71,26 +84,31 @@ namespace bw
 
 	void NetworkSyncSystem::CreateEntity(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
+		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
+
 		creationEvent.id = entity->GetId();
-		creationEvent.entityClass = entity->GetComponent<NetworkSyncComponent>().GetEntityClass();
+		creationEvent.entityClass = syncComponent.GetEntityClass();
+
+		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
+			creationEvent.parent = parent->GetId();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-			creationEvent.angularVelocity = entityPhys.GetAngularVelocity();
-			creationEvent.linearVelocity = entityPhys.GetVelocity();
 			creationEvent.position = entityPhys.GetPosition();
 			creationEvent.rotation = entityPhys.GetRotation();
+
+			creationEvent.physicsProperties.emplace();
+			creationEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
+			creationEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
 		}
 		else
 		{
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
-			creationEvent.angularVelocity = 0.f;
-			creationEvent.linearVelocity = Nz::Vector2f::Zero();
-			creationEvent.position = Nz::Vector2f(entityNode.GetPosition());
-			creationEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation().ToEulerAngles().roll);
+			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
+			creationEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())

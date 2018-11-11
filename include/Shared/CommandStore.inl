@@ -40,7 +40,10 @@ namespace bw
 	{
 		std::size_t packetId = static_cast<std::size_t>(T::Type);
 
-		IncomingCommand newCommand;
+		if (m_incomingCommands.size() <= packetId)
+			m_incomingCommands.resize(packetId + 1);
+
+		IncomingCommand& newCommand = m_incomingCommands[packetId];
 		newCommand.enabled = true;
 		newCommand.unserialize = [cb = std::forward<CB>(callback)](PeerRef peer, Nz::NetPacket& packet)
 		{
@@ -61,11 +64,6 @@ namespace bw
 			return true;
 		};
 		newCommand.name = name;
-
-		if (m_incomingCommands.size() <= packetId)
-			m_incomingCommands.resize(packetId + 1);
-
-		m_incomingCommands[packetId] = std::move(newCommand);
 	}
 
 	template<typename Peer>
@@ -74,16 +72,14 @@ namespace bw
 	{
 		std::size_t packetId = static_cast<std::size_t>(T::Type);
 
-		OutgoingCommand newCommand;
+		if (m_outgoingCommands.size() <= packetId)
+			m_outgoingCommands.resize(packetId + 1);
+
+		OutgoingCommand& newCommand = m_outgoingCommands[packetId];
 		newCommand.channelId = channelId;
 		newCommand.enabled = true;
 		newCommand.flags = flags;
 		newCommand.name = name;
-
-		if (m_outgoingCommands.size() <= packetId)
-			m_outgoingCommands.resize(packetId + 1);
-
-		m_outgoingCommands[packetId] = std::move(newCommand);
 	}
 
 	template<typename Peer>
@@ -98,6 +94,8 @@ namespace bw
 
 		PacketSerializer serializer(packet, true);
 		Packets::Serialize(serializer, dataRef);
+
+		packet.FlushBits();
 	}
 
 	template<typename Peer>

@@ -90,7 +90,7 @@ namespace bw
 			const std::string& entityClass = m_stringStore.GetString(entityData.entityClass);
 			std::cout << "[Client] Entity #" << entityData.id << " of type " << entityClass << " created at " << entityData.position << std::endl;
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value());
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.parentId);
 		}
 	}
 
@@ -131,7 +131,16 @@ namespace bw
 
 			std::cout << "\n";
 
-			m_localMatch->MoveEntity(entityData.id, entityData.position, entityData.linearVelocity, entityData.rotation, entityData.angularVelocity, isAirControlling, isFacingRight);
+			Nz::RadianAnglef angularVelocity = 0.f;
+			Nz::Vector2f linearVelocity = Nz::Vector2f::Zero();
+
+			if (entityData.physicsProperties.has_value())
+			{
+				angularVelocity = entityData.physicsProperties->angularVelocity;
+				linearVelocity = entityData.physicsProperties->linearVelocity;
+			}
+
+			m_localMatch->MoveEntity(entityData.id, entityData.position, linearVelocity, entityData.rotation, angularVelocity, isAirControlling, isFacingRight);
 		}
 	}
 

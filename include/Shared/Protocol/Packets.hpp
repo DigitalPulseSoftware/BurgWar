@@ -69,15 +69,21 @@ namespace bw
 				bool isFacingRight;
 			};
 
+			struct PhysicsProperties
+			{
+				Nz::RadianAnglef angularVelocity;
+				Nz::Vector2f linearVelocity;
+			};
+
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
 				CompressedUnsigned<Nz::UInt32> entityClass;
-				Nz::RadianAnglef angularVelocity;
 				Nz::RadianAnglef rotation;
-				Nz::Vector2f linearVelocity;
 				Nz::Vector2f position;
+				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<PlayerMovementData> playerMovement;
+				std::optional<PhysicsProperties> physicsProperties;
 			};
 
 			std::vector<Entity> entities;
@@ -120,14 +126,19 @@ namespace bw
 				bool isFacingRight;
 			};
 
+			struct PhysicsProperties
+			{
+				Nz::RadianAnglef angularVelocity;
+				Nz::Vector2f linearVelocity;
+			};
+
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
-				Nz::RadianAnglef angularVelocity;
 				Nz::RadianAnglef rotation;
-				Nz::Vector2f linearVelocity;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
+				std::optional<PhysicsProperties> physicsProperties;
 			};
 
 			std::vector<Entity> entities;

@@ -3,11 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/MatchClientVisibility.hpp>
+#include <Nazara/Core/StackArray.hpp>
+#include <Nazara/Core/StackVector.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/Terrain.hpp>
 #include <cassert>
+#include <queue>
 
 namespace bw
 {
@@ -34,8 +37,6 @@ namespace bw
 
 						auto& entityData = movementPacket.entities.emplace_back();
 						entityData.id = eventData.id;
-						entityData.angularVelocity = eventData.angularVelocity;
-						entityData.linearVelocity = eventData.linearVelocity;
 						entityData.position = eventData.position;
 						entityData.rotation = eventData.rotation;
 
@@ -44,6 +45,13 @@ namespace bw
 							entityData.playerMovement.emplace();
 							entityData.playerMovement->isAirControlling = eventData.playerMovement->isAirControlling;
 							entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
+						}
+
+						if (eventData.physicsProperties.has_value())
+						{
+							entityData.physicsProperties.emplace();
+							entityData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
+							entityData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
 						}
 					}
 				});
@@ -107,16 +115,51 @@ namespace bw
 				m_session.SendPacket(deletePacket);
 			});
 
+			// Handle parents
+			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::size_t /*entityId*/> entities;
 			Packets::CreateEntities createPacket;
 			syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 			{
 				createPacket.entities.reserve(entityCount);
 				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					entities[entitiesCreation[i].id] = createPacket.entities.size();
 					HandleEntityCreation(createPacket, entitiesCreation[i]);
+				}
 			});
 
-			if (!createPacket.entities.empty())
-				m_session.SendPacket(createPacket);
+			if (createPacket.entities.empty())
+				return;
+
+			Packets::CreateEntities sortedCreatePacket;
+			sortedCreatePacket.entities.reserve(createPacket.entities.size());
+
+			Nz::StackArray<bool> alreadyInPacket = NazaraStackArrayNoInit(bool, createPacket.entities.size());
+			alreadyInPacket.fill(false);
+
+			std::function<void(std::size_t entityIndex)> PushEntity;
+			PushEntity = [&](std::size_t entityIndex)
+			{
+				if (!alreadyInPacket[entityIndex])
+				{
+					auto& entityData = createPacket.entities[entityIndex];
+					if (entityData.parentId)
+					{
+						Nz::UInt32 parentId = entityData.parentId.value();
+						auto it = entities.find(parentId);
+						if (it != entities.end())
+							PushEntity(it->second);
+					}
+
+					sortedCreatePacket.entities.emplace_back(std::move(entityData));
+					alreadyInPacket[entityIndex] = true;
+				}
+			};
+
+			for (std::size_t i = 0; i < createPacket.entities.size(); ++i)
+				PushEntity(i);
+
+			m_session.SendPacket(sortedCreatePacket);
 		}
 	}
 
@@ -127,16 +170,24 @@ namespace bw
 		auto& entityData = createPacket.entities.emplace_back();
 		entityData.id = eventData.id;
 		entityData.entityClass = networkStringStore.CheckStringIndex(eventData.entityClass);
-		entityData.angularVelocity = eventData.angularVelocity;
-		entityData.linearVelocity = eventData.linearVelocity;
 		entityData.position = eventData.position;
 		entityData.rotation = eventData.rotation;
+
+		if (eventData.parent.has_value())
+			entityData.parentId = eventData.parent.value();
 
 		if (eventData.playerMovement.has_value())
 		{
 			entityData.playerMovement.emplace();
 			entityData.playerMovement->isAirControlling = eventData.playerMovement->isAirControlling;
 			entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
+		}
+
+		if (eventData.physicsProperties.has_value())
+		{
+			entityData.physicsProperties.emplace();
+			entityData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
+			entityData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
 		}
 	}
 

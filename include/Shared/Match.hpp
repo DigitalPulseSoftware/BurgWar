@@ -9,9 +9,10 @@
 
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Lua/LuaInstance.hpp>
-#include <Shared/EntityStore.hpp>
 #include <Shared/MatchSessions.hpp>
 #include <Shared/Protocol/NetworkStringStore.hpp>
+#include <Shared/Scripting/ServerEntityStore.hpp>
+#include <Shared/Scripting/ServerWeaponStore.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,13 +33,16 @@ namespace bw
 
 			void Leave(Player* player);
 
-			inline const EntityStore& GetEntityStore() const;
+			inline ServerEntityStore& GetEntityStore();
+			inline const ServerEntityStore& GetEntityStore() const;
 			inline Nz::LuaInstance& GetLuaInstance();
+			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
-			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
+			inline ServerWeaponStore& GetWeaponStore();
+			inline const ServerWeaponStore& GetWeaponStore() const;
 
 			bool Join(Player* player);
 
@@ -52,9 +56,10 @@ namespace bw
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
 			Nz::LuaInstance m_luaInstance;
-			EntityStore m_entityStore;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
+			ServerEntityStore m_entityStore;
+			ServerWeaponStore m_weaponStore;
 	};
 }
 
