@@ -10,6 +10,7 @@
 #include <Client/ClientSession.hpp>
 #include <Client/LocalMatch.hpp>
 #include <Client/LocalSessionManager.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
@@ -47,6 +48,7 @@ namespace bw
 	{
 		m_mainWindow.SetFramerateLimit(100);
 
+		Ndk::InitializeComponent<HealthComponent>("Health");
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");

@@ -32,6 +32,7 @@ namespace bw
 		AuthSuccess,
 		CreateEntities,
 		DeleteEntities,
+		HealthUpdate,
 		HelloWorld,
 		MatchData,
 		MatchState,
@@ -63,6 +64,12 @@ namespace bw
 
 		DeclarePacket(CreateEntities)
 		{
+			struct HealthData
+			{
+				Nz::UInt16 maxHealth;
+				Nz::UInt16 currentHealth;
+			};
+
 			struct PlayerMovementData
 			{
 				bool isAirControlling;
@@ -82,6 +89,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
+				std::optional<HealthData> health;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 			};
@@ -94,6 +102,17 @@ namespace bw
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			std::vector<Entity> entities;
+		};
+
+		DeclarePacket(HealthUpdate)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				Nz::UInt16 currentHealth;
 			};
 
 			std::vector<Entity> entities;
@@ -162,6 +181,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
+		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);

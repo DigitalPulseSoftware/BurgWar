@@ -7,8 +7,10 @@
 #ifndef BURGWAR_SERVER_CLIENTVISIBILITY_HPP
 #define BURGWAR_SERVER_CLIENTVISIBILITY_HPP
 
+#include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Shared/Protocol/Packets.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <limits>
 
@@ -33,13 +35,16 @@ namespace bw
 		private:
 			void HandleEntityCreation(Packets::CreateEntities& createPacket, const NetworkSyncSystem::EntityCreation& eventData);
 			void HandleEntityDestruction(Packets::DeleteEntities& deletePacket, const NetworkSyncSystem::EntityDestruction& eventData);
+			void HandleEntityHealthUpdate(Packets::HealthUpdate& healthPacket, const NetworkSyncSystem::EntityHealth& eventData);
 
 			NazaraSlot(NetworkSyncSystem, OnEntityCreated, m_onEntityCreatedSlot);
 			NazaraSlot(NetworkSyncSystem, OnEntityDeleted, m_onEntityDeletedSlot);
+			NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, m_onEntitiesHealthUpdate);
 
+			std::size_t m_activeLayer;
+			Nz::Bitset<Nz::UInt64> m_visibleEntities;
 			Match& m_match;
 			MatchClientSession& m_session;
-			std::size_t m_activeLayer;
 			float m_entityMovementSendInterval;
 			float m_entityMovementSendTimer;
 	};

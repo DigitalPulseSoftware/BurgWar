@@ -11,6 +11,7 @@ namespace bw
 {
 	struct InputData
 	{
+		bool isAttacking = false;
 		bool isJumping = false;
 		bool isMovingLeft = false;
 		bool isMovingRight = false;

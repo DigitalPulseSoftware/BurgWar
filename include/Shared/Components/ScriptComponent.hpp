@@ -19,6 +19,9 @@ namespace bw
 			ScriptComponent(std::shared_ptr<SharedScriptingContext> context, int tableRef);
 			~ScriptComponent();
 
+			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
+			inline int GetTableRef();
+
 			static Ndk::ComponentIndex componentIndex;
 
 		private:

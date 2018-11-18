@@ -6,6 +6,7 @@
 #include <NDK/Components.hpp>
 #include <NDK/LuaAPI.hpp>
 #include <Nazara/Utility/Image.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -60,6 +61,9 @@ namespace bw
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 		entity->AddComponent<Ndk::NodeComponent>();
 
+		if (entityClass.maxHealth > 0)
+			entity->AddComponent<HealthComponent>(entityClass.maxHealth);
+
 		if (entityClass.isNetworked)
 			entity->AddComponent<NetworkSyncComponent>(entityClass.fullName);
 
@@ -87,5 +91,6 @@ namespace bw
 		SharedEntityStore::InitializeElement(state, element);
 
 		element.isNetworked = state.CheckField<bool>("IsNetworked");
+		element.maxHealth = state.CheckField<Nz::UInt16>("MaxHealth", 0, -1);
 	}
 }

@@ -4,6 +4,7 @@
 
 #include <Server/BurgApp.hpp>
 #include <Shared/NetworkSessionManager.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -18,6 +19,7 @@ namespace bw
 	BurgApp::BurgApp(int argc, char* argv[]) :
 	Application(argc, argv)
 	{
+		Ndk::InitializeComponent<HealthComponent>("Health");
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");

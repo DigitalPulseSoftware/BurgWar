@@ -19,9 +19,10 @@ namespace bw
 		// Incoming commands
 		IncomingCommand(AuthFailure);
 		IncomingCommand(AuthSuccess);
-		IncomingCommand(HelloWorld);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
+		IncomingCommand(HealthUpdate);
+		IncomingCommand(HelloWorld);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);

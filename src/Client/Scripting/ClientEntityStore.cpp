@@ -45,7 +45,6 @@ namespace bw
 		Nz::Vector2f burgerSize = sprite->GetSize();
 
 		// Warning what's following is ugly
-		Nz::Rectf colliderBox;
 		if (entityClass.name == "burger")
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
 		else

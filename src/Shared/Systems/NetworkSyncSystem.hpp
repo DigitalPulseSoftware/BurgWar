@@ -7,10 +7,12 @@
 #ifndef BURGWAR_SHARED_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 #define BURGWAR_SHARED_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 
+#include <Shared/Components/HealthComponent.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/System.hpp>
+#include <hopstotch/hopscotch_map.h>
 #include <optional>
 #include <string>
 #include <variant>
@@ -34,6 +36,12 @@ namespace bw
 
 			static Ndk::SystemIndex systemIndex;
 
+			struct HealthProperties
+			{
+				Nz::UInt16 currentHealth;
+				Nz::UInt16 maxHealth;
+			};
+
 			struct PlayerMovementData
 			{
 				bool isAirControlling;
@@ -52,6 +60,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<Ndk::EntityId> parent;
+				std::optional<HealthProperties> healthProperties;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
@@ -60,6 +69,12 @@ namespace bw
 			struct EntityDestruction
 			{
 				Ndk::EntityId id;
+			};
+
+			struct EntityHealth
+			{
+				Ndk::EntityId id;
+				Nz::UInt16 currentHealth;
 			};
 
 			struct EntityMovement
@@ -73,6 +88,7 @@ namespace bw
 
 			NazaraSignal(OnEntityCreated, NetworkSyncSystem* /*emitter*/, const EntityCreation& /*event*/);
 			NazaraSignal(OnEntityDeleted, NetworkSyncSystem* /*emitter*/, const EntityDestruction& /*event*/);
+			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
 
 		private:
 			void CreateEntity(EntityCreation& creationEvent, Ndk::Entity* entity) const;
@@ -82,10 +98,18 @@ namespace bw
 			void OnEntityRemoved(Ndk::Entity* entity) override;
 			void OnUpdate(float elapsedTime) override;
 
+			struct EntitySlots
+			{
+				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
+			};
+			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
+
+			Ndk::EntityList m_healthUpdateEntities;
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
+			std::vector<EntityHealth> m_healthEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;
 	};
 }

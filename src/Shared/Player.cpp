@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Player.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Graphics/Material.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
@@ -11,6 +12,7 @@
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 
 namespace bw
 {
@@ -45,7 +47,7 @@ namespace bw
 
 			// Create weapon
 			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_sword_emmentalibur"); weaponIndex != ServerEntityStore::InvalidIndex)
-				weaponStore.InstantiateWeapon(world, weaponIndex, burger);
+				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, burger);
 
 			return burger;
 		}
@@ -53,7 +55,7 @@ namespace bw
 		return Ndk::EntityHandle::InvalidHandle;
 	}
 
-	void Player::UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight)
+	void Player::UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight)
 	{
 		if (m_playerEntity)
 		{
@@ -63,6 +65,24 @@ namespace bw
 			playerController.UpdateJumpingState(isJumping);
 			playerController.UpdateMovingLeftState(isMovingLeft);
 			playerController.UpdateMovingRightState(isMovingRight);
+
+			if (isAttacking)
+			{
+				if (m_playerWeapon)
+				{
+					auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
+					Nz::LuaState& luaState = weaponScript.GetContext()->GetLuaInstance();
+
+					luaState.PushReference(weaponScript.GetTableRef());
+					Nz::CallOnExit popOnExit([&] { luaState.Pop(); });
+
+					if (luaState.GetField("OnAttack") == Nz::LuaType_Function)
+					{
+						luaState.PushValue(-2);
+						luaState.Call(1);
+					}
+				}
+			}
 		}
 	}
 

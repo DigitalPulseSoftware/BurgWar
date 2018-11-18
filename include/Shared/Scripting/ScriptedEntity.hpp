@@ -8,6 +8,7 @@
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTEDENTITY_HPP
 
 #include <Shared/Scripting/ScriptedElement.hpp>
+#include <Nazara/Prerequisites.hpp>
 
 namespace bw
 {
@@ -15,6 +16,7 @@ namespace bw
 	{
 		bool isNetworked;
 		int initializeFunction;
+		Nz::UInt16 maxHealth;
 	};
 }
 

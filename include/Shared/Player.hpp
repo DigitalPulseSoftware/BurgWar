@@ -39,7 +39,7 @@ namespace bw
 
 			template<typename T> void SendPacket(const T& packet);
 
-			void UpdateInput(bool isJumping, bool isMovingLeft, bool isMovingRight);
+			void UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) noexcept = default;
@@ -51,6 +51,7 @@ namespace bw
 			std::size_t m_layerIndex;
 			std::string m_name;
 			Ndk::EntityOwner m_playerEntity;
+			Ndk::EntityOwner m_playerWeapon;
 			Nz::MovablePtr<Match> m_match;
 			MatchClientSession& m_session;
 	};

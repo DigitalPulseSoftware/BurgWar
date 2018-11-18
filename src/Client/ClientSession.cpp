@@ -90,7 +90,16 @@ namespace bw
 			const std::string& entityClass = m_stringStore.GetString(entityData.entityClass);
 			std::cout << "[Client] Entity #" << entityData.id << " of type " << entityClass << " created at " << entityData.position << std::endl;
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.parentId);
+			Nz::UInt16 currentHealth = 0;
+			Nz::UInt16 maxHealth = 0;
+
+			if (entityData.health.has_value())
+			{
+				currentHealth = entityData.health->currentHealth;
+				maxHealth = entityData.health->maxHealth;
+			}
+
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth);
 		}
 	}
 
@@ -100,6 +109,15 @@ namespace bw
 		{
 			std::cout << "[Client] Entity #" << entityData.id << " deleted" << std::endl;
 			m_localMatch->DeleteEntity(entityData.id);
+		}
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::HealthUpdate& packet)
+	{
+		for (const auto& entityData : packet.entities)
+		{
+			std::cout << "[Client] Health update for entity " << entityData.id << " (now at " << entityData.currentHealth << ')' << std::endl;
+			m_localMatch->UpdateEntityHealth(entityData.id, entityData.currentHealth);
 		}
 	}
 
@@ -121,15 +139,15 @@ namespace bw
 			bool isAirControlling = false;
 			bool isFacingRight = false;
 
-			std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position;
+			//std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position;
 			if (entityData.playerMovement.has_value())
 			{
 				isAirControlling = entityData.playerMovement->isAirControlling;
 				isFacingRight = entityData.playerMovement->isFacingRight;
-				std::cout << " and has player entity data (air control=" << isAirControlling << ", facing right=" << isFacingRight << ")";
+				//std::cout << " and has player entity data (air control=" << isAirControlling << ", facing right=" << isFacingRight << ")";
 			}
 
-			std::cout << "\n";
+			//std::cout << "\n";
 
 			Nz::RadianAnglef angularVelocity = 0.f;
 			Nz::Vector2f linearVelocity = Nz::Vector2f::Zero();

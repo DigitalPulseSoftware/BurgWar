@@ -31,22 +31,28 @@ namespace bw
 
 			for (auto& entity : data.entities)
 			{
+				bool hasHealth;
 				bool hasParent;
 				bool hasMovementData;
 				bool hasPhysicsProps;
 				if (serializer.IsWriting())
 				{
+					hasHealth = entity.health.has_value();
 					hasParent = entity.parentId.has_value();
 					hasMovementData = entity.playerMovement.has_value();
 					hasPhysicsProps = entity.physicsProperties.has_value();
 				}
 
+				serializer &= hasHealth;
 				serializer &= hasParent;
 				serializer &= hasMovementData;
 				serializer &= hasPhysicsProps;
 
 				if (!serializer.IsWriting())
 				{
+					if (hasHealth)
+						entity.health.emplace();
+
 					if (hasParent)
 						entity.parentId.emplace();
 
@@ -64,6 +70,13 @@ namespace bw
 				serializer &= entity.entityClass;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
+
+				if (entity.health)
+				{
+					auto& healthProperties = entity.health.value();
+					serializer &= healthProperties.currentHealth;
+					serializer &= healthProperties.maxHealth;
+				}
 
 				if (entity.parentId)
 					serializer &= entity.parentId.value();
@@ -89,6 +102,16 @@ namespace bw
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 				serializer &= entity.id;
+		}
+
+		void Serialize(PacketSerializer & serializer, HealthUpdate & data)
+		{
+			serializer.SerializeArraySize(data.entities);
+			for (auto& entity : data.entities)
+			{
+				serializer &= entity.id;
+				serializer &= entity.currentHealth;
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, HelloWorld& data)
@@ -196,6 +219,7 @@ namespace bw
 				if (!input.has_value())
 					continue;
 
+				serializer &= input->isAttacking;
 				serializer &= input->isJumping;
 				serializer &= input->isMovingLeft;
 				serializer &= input->isMovingRight;

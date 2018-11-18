@@ -113,7 +113,7 @@ namespace bw
 			if (!input.has_value())
 				continue;
 
-			m_players[playerIndex].UpdateInput(input->isJumping, input->isMovingLeft, input->isMovingRight);
+			m_players[playerIndex].UpdateInput(input->isAttacking, input->isJumping, input->isMovingLeft, input->isMovingRight);
 		}
 	}
 }

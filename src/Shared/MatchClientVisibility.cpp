@@ -90,6 +90,7 @@ namespace bw
 
 			m_onEntityCreatedSlot.Disconnect();
 			m_onEntityDeletedSlot.Disconnect();
+			m_onEntitiesHealthUpdate.Disconnect();
 		}
 
 		m_activeLayer = layerIndex;
@@ -113,6 +114,18 @@ namespace bw
 				HandleEntityDestruction(deletePacket, entityDestruction);
 
 				m_session.SendPacket(deletePacket);
+			});
+
+			m_onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
+			{
+				Packets::HealthUpdate healthUpdate;
+
+				healthUpdate.entities.reserve(entityCount);
+				for (std::size_t i = 0; i < entityCount; ++i)
+					HandleEntityHealthUpdate(healthUpdate, events[i]);
+
+				if (!healthUpdate.entities.empty())
+					m_session.SendPacket(healthUpdate);
 			});
 
 			// Handle parents
@@ -176,6 +189,13 @@ namespace bw
 		if (eventData.parent.has_value())
 			entityData.parentId = eventData.parent.value();
 
+		if (eventData.healthProperties.has_value())
+		{
+			entityData.health.emplace();
+			entityData.health->currentHealth = eventData.healthProperties->currentHealth;
+			entityData.health->maxHealth = eventData.healthProperties->maxHealth;
+		}
+
 		if (eventData.playerMovement.has_value())
 		{
 			entityData.playerMovement.emplace();
@@ -189,11 +209,26 @@ namespace bw
 			entityData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
 			entityData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
 		}
+
+		m_visibleEntities.UnboundedSet(eventData.id);
 	}
 
 	void MatchClientVisibility::HandleEntityDestruction(Packets::DeleteEntities& deletePacket, const NetworkSyncSystem::EntityDestruction& eventData)
 	{
 		auto& entityData = deletePacket.entities.emplace_back();
+		entityData.id = eventData.id;
+
+		m_visibleEntities.UnboundedReset(eventData.id);
+	}
+
+	void MatchClientVisibility::HandleEntityHealthUpdate(Packets::HealthUpdate& healthPacket, const NetworkSyncSystem::EntityHealth & eventData)
+	{
+		// If entity is not visible to us, do nothing
+		if (!m_visibleEntities.UnboundedTest(eventData.id))
+			return;
+
+		auto& entityData = healthPacket.entities.emplace_back();
+		entityData.currentHealth = eventData.currentHealth;
 		entityData.id = eventData.id;
 	}
 }

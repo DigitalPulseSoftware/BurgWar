@@ -67,6 +67,7 @@ namespace bw
 			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
 			void HandleIncomingPacket(const Packets::CreateEntities& packet);
 			void HandleIncomingPacket(const Packets::DeleteEntities& packet);
+			void HandleIncomingPacket(const Packets::HealthUpdate& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 			void HandleIncomingPacket(const Packets::MatchData& packet);
 			void HandleIncomingPacket(const Packets::MatchState& packet);

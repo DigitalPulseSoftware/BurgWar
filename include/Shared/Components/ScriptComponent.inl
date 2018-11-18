@@ -6,4 +6,13 @@
 
 namespace bw
 {
+	inline const std::shared_ptr<SharedScriptingContext>& ScriptComponent::GetContext()
+	{
+		return m_context;
+	}
+
+	inline int ScriptComponent::GetTableRef()
+	{
+		return m_tableRef;
+	}
 }

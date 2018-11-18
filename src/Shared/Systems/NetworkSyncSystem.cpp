@@ -4,6 +4,7 @@
 
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <NDK/Components.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <iostream>
@@ -92,6 +93,15 @@ namespace bw
 		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
 			creationEvent.parent = parent->GetId();
 
+		if (entity->HasComponent<HealthComponent>())
+		{
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+
+			creationEvent.healthProperties.emplace();
+			creationEvent.healthProperties->currentHealth = entityHealth.GetHealth();
+			creationEvent.healthProperties->maxHealth = entityHealth.GetMaxHealth();
+		}
+
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -137,6 +147,18 @@ namespace bw
 			m_physicsEntities.Insert(entity);
 		else
 			m_staticEntities.Insert(entity);
+
+
+		assert(m_entitySlots.find(entity->GetId()) == m_entitySlots.end());
+		auto& slots = m_entitySlots.emplace(entity->GetId(), EntitySlots()).first.value();
+
+		if (entity->HasComponent<HealthComponent>())
+		{
+			slots.onHealthChange.Connect(entity->GetComponent<HealthComponent>().OnHealthChange, [&](HealthComponent* health)
+			{
+				m_healthUpdateEntities.Insert(health->GetEntity());
+			});
+		}
 	}
 
 	void NetworkSyncSystem::OnEntityRemoved(Ndk::Entity* entity)
@@ -148,10 +170,29 @@ namespace bw
 
 		m_physicsEntities.Remove(entity);
 		m_staticEntities.Remove(entity);
+
+		auto it = m_entitySlots.find(entity->GetId());
+		assert(it != m_entitySlots.end());
+		m_entitySlots.erase(it);
 	}
 
 	void NetworkSyncSystem::OnUpdate(float elapsedTime)
 	{
+		if (!m_healthUpdateEntities.empty())
+		{
+			m_healthEvents.clear();
+
+			for (const auto& entity : m_healthUpdateEntities)
+			{
+				EntityHealth& healthEvent = m_healthEvents.emplace_back();
+				healthEvent.id = entity->GetId();
+				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
+			}
+
+			m_healthUpdateEntities.Clear();
+
+			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
+		}
 	}
 
 	Ndk::SystemIndex NetworkSyncSystem::systemIndex;

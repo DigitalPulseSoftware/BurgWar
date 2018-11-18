@@ -5,7 +5,9 @@
 #include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
+#include <NDK/LuaAPI.hpp>
 #include <iostream>
 
 namespace bw
@@ -32,9 +34,10 @@ namespace bw
 		sprite->SetMaterial(mat);
 		sprite->SetSize(sprite->GetSize() * weaponClass.scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();
+		sprite->SetOrigin(weaponClass.spriteOrigin);
 
 		const Ndk::EntityHandle& entity = world.CreateEntity();
-		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite);
+		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite, -1);
 		entity->AddComponent<Ndk::NodeComponent>();
 
 		return entity;
@@ -49,5 +52,6 @@ namespace bw
 	{
 		weapon.scale = state.CheckField<float>("Scale");
 		weapon.spriteName = state.CheckField<std::string>("Sprite");
+		weapon.spriteOrigin = state.CheckField<Nz::Vector2f>("SpriteOrigin");
 	}
 }

@@ -8,7 +8,7 @@ namespace bw
 {
 	inline bool InputData::operator==(const InputData& rhs)
 	{
-		return isJumping == rhs.isJumping && isMovingLeft == rhs.isMovingLeft && isMovingRight == rhs.isMovingRight;
+		return isAttacking == rhs.isAttacking && isJumping == rhs.isJumping && isMovingLeft == rhs.isMovingLeft && isMovingRight == rhs.isMovingRight;
 	}
 
 	inline bool InputData::operator!=(const InputData& rhs)
