@@ -14,6 +14,7 @@ namespace bw
 	struct ScriptedEntity : ScriptedElement
 	{
 		bool isNetworked;
+		int initializeFunction;
 	};
 }
 

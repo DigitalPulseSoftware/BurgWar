@@ -23,9 +23,7 @@ namespace bw
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
-	m_playerInputTimer(0.f),
-	m_entityStore(m_luaInstance),
-	m_weaponStore(m_luaInstance)
+	m_playerInputTimer(0.f)
 	{
 		m_world.AddSystem<PlayerMovementSystem>();
 
@@ -130,9 +128,13 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(i);
 
-		m_luaInstance.LoadLibraries();
-		m_entityStore.Load("../../scripts/entities");
-		m_weaponStore.Load("../../scripts/weapons");
+		m_scriptingContext = std::make_shared<SharedScriptingContext>();
+
+		m_entityStore.emplace(m_scriptingContext);
+		m_entityStore->Load("../../scripts/entities");
+
+		m_weaponStore.emplace(m_scriptingContext);
+		m_weaponStore->Load("../../scripts/weapons");
 
 		/*auto& networkStringStore = m_session.GetNetworkStringStore();
 		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
@@ -194,6 +196,9 @@ namespace bw
 			for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
 			{
 				ServerEntity& serverEntity = it.value();
+				if (!serverEntity.entity)
+					continue;
+
 				if (serverEntity.isPhysics)
 				{
 					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
@@ -237,9 +242,9 @@ namespace bw
 		if (entityClassName.compare(0, entityPrefix.size(), entityPrefix) == 0)
 		{
 			// Entity
-			if (std::size_t entityIndex = m_entityStore.GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
+			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_entityStore.BuildEntity(m_world, entityIndex);
+				entity = m_entityStore->InstantiateEntity(m_world, entityIndex);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 
@@ -249,9 +254,9 @@ namespace bw
 		else if (entityClassName.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
 		{
 			// Weapon
-			if (std::size_t weaponIndex = m_weaponStore.GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
+			if (std::size_t weaponIndex = m_weaponStore->GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_weaponStore.BuildWeapon(m_world, weaponIndex);
+				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 
@@ -307,6 +312,9 @@ namespace bw
 			return;
 
 		ServerEntity& serverEntity = it.value();
+		if (!serverEntity.entity)
+			return;
+
 		if (serverEntity.isPhysics)
 		{
 			auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();

@@ -8,12 +8,13 @@
 #define BURGWAR_SHARED_MATCH_HPP
 
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Lua/LuaInstance.hpp>
 #include <Shared/MatchSessions.hpp>
 #include <Shared/Protocol/NetworkStringStore.hpp>
+#include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <Shared/Scripting/ServerEntityStore.hpp>
 #include <Shared/Scripting/ServerWeaponStore.hpp>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -51,15 +52,15 @@ namespace bw
 			Match& operator=(const Match&) = delete;
 
 		private:
+			std::optional<ServerEntityStore> m_entityStore;
+			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
+			std::shared_ptr<SharedScriptingContext> m_scriptingContext;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
-			Nz::LuaInstance m_luaInstance;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
-			ServerEntityStore m_entityStore;
-			ServerWeaponStore m_weaponStore;
 	};
 }
 

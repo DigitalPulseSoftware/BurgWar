@@ -12,6 +12,7 @@
 #include <Client/LocalSessionManager.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
@@ -49,6 +50,7 @@ namespace bw
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
+		Ndk::InitializeComponent<ScriptComponent>("Script");
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();

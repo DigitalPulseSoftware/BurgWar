@@ -17,10 +17,10 @@ namespace bw
 	class ServerWeaponStore : public ScriptStore<ScriptedWeapon, true>
 	{
 		public:
-			ServerWeaponStore(Nz::LuaState& state);
+			ServerWeaponStore(std::shared_ptr<SharedScriptingContext> context);
 			~ServerWeaponStore() = default;
 
-			const Ndk::EntityHandle& BuildWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);
+			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(Nz::LuaState& state) override;

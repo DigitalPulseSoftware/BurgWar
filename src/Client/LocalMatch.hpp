@@ -11,11 +11,12 @@
 #include <Client/Scripting/ClientEntityStore.hpp>
 #include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/Protocol/Packets.hpp>
-#include <Nazara/Lua/LuaInstance.hpp>
+#include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <hopstotch/hopscotch_map.h>
 #include <Nazara/Platform/EventHandler.hpp>
+#include <optional>
 #include <vector>
 
 namespace bw
@@ -60,14 +61,14 @@ namespace bw
 			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
 			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
 
+			std::optional<ClientEntityStore> m_entityStore;
+			std::optional<ClientWeaponStore> m_weaponStore;
+			std::shared_ptr<SharedScriptingContext> m_scriptingContext;
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::World m_world;
-			Nz::LuaInstance m_luaInstance;
 			BurgApp& m_application;
 			ClientSession& m_session;
-			ClientEntityStore m_entityStore;
-			ClientWeaponStore m_weaponStore;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

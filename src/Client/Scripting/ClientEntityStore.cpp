@@ -10,34 +10,21 @@
 
 namespace bw
 {
-	ClientEntityStore::ClientEntityStore(Nz::LuaState& state) :
-	ScriptStore(state)
-	{
-		SetElementTypeName("entity");
-		SetTableName("ENTITY");
-	}
-
-	const Ndk::EntityHandle& ClientEntityStore::BuildEntity(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex)
 	{
 		auto& entityClass = GetElement(entityIndex);
 
-		Nz::LuaState& state = GetState();
+		Nz::LuaState& state = GetLuaState();
 
 		std::string spritePath;
-		bool canRotate;
 		bool playerControlled;
-		float mass;
 		float scale;
-		unsigned int collisionId;
 		try
 		{
 			state.PushReference(entityClass.tableRef);
 			Nz::CallOnExit popOnExit([&] { state.Pop(); });
 
-			canRotate = state.CheckField<bool>("RotationEnabled");
 			playerControlled = state.CheckField<bool>("PlayerControlled");
-			collisionId = state.CheckField<unsigned int>("CollisionType");
-			mass = state.CheckField<float>("Mass");
 			scale = state.CheckField<float>("Scale");
 			spritePath = state.CheckField<std::string>("Sprite");
 		}
@@ -60,41 +47,33 @@ namespace bw
 		// Warning what's following is ugly
 		Nz::Rectf colliderBox;
 		if (entityClass.name == "burger")
-		{
-			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f);
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-		}
 		else
-		{
-			colliderBox = Nz::Rectf(-burgerSize.x / 2.f, -burgerSize.y / 2.f, burgerSize.x, burgerSize.y);
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
-		}
-
-		auto burgerBox = Nz::BoxCollider2D::New(colliderBox);
-		burgerBox->SetCollisionId(collisionId);
 
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite);
 		entity->AddComponent<Ndk::NodeComponent>();
-		entity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(mass);
-		burgerPhys.SetFriction(10.f);
-		if (!canRotate)
-			burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
-		burgerPhys.EnableNodeSynchronization(false);
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();
+
+		if (!InitializeEntity(entityClass, entity))
+			entity->Kill();
+
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
 
 		return entity;
 	}
 
 	void ClientEntityStore::InitializeElementTable(Nz::LuaState& state)
 	{
+		SharedEntityStore::InitializeElementTable(state);
 	}
 
 	void ClientEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& entity)
 	{
+		SharedEntityStore::InitializeElement(state, entity);
 	}
 }

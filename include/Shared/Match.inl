@@ -9,17 +9,17 @@ namespace bw
 {
 	inline ServerEntityStore& Match::GetEntityStore()
 	{
-		return m_entityStore;
+		return *m_entityStore;
 	}
 
 	inline const ServerEntityStore& Match::GetEntityStore() const
 	{
-		return m_entityStore;
+		return *m_entityStore;
 	}
 
 	inline Nz::LuaInstance& Match::GetLuaInstance()
 	{
-		return m_luaInstance;
+		return m_scriptingContext->GetLuaInstance();
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const
@@ -51,11 +51,11 @@ namespace bw
 
 	inline ServerWeaponStore& Match::GetWeaponStore()
 	{
-		return m_weaponStore;
+		return *m_weaponStore;
 	}
 
-	inline const ServerWeaponStore & Match::GetWeaponStore() const
+	inline const ServerWeaponStore& Match::GetWeaponStore() const
 	{
-		return m_weaponStore;
+		return *m_weaponStore;
 	}
 }

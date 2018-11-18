@@ -16,9 +16,7 @@ namespace bw
 	Match::Match(std::string matchName, std::size_t maxPlayerCount) :
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_name(std::move(matchName)),
-	m_entityStore(m_luaInstance),
-	m_weaponStore(m_luaInstance)
+	m_name(std::move(matchName))
 	{
 		MapData mapData;
 		mapData.backgroundColor = Nz::Color::Cyan;
@@ -42,26 +40,29 @@ namespace bw
 
 		m_terrain = std::make_unique<Terrain>(std::move(mapData));
 
-		m_luaInstance.LoadLibraries();
-		m_entityStore.Load("../../scripts/entities");
+		m_scriptingContext = std::make_shared<SharedScriptingContext>();
 
-		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
+		m_entityStore.emplace(m_scriptingContext);
+		m_entityStore->Load("../../scripts/entities");
+
+		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
 		{
 			if (entity.isNetworked)
 				m_networkStringStore.RegisterString(entity.fullName);
 		});
 
-		m_weaponStore.Load("../../scripts/weapons");
+		m_weaponStore.emplace(m_scriptingContext);
+		m_weaponStore->Load("../../scripts/weapons");
 
-		m_weaponStore.ForEachElement([&](const ScriptedWeapon& weapon)
+		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
 		{
 			m_networkStringStore.RegisterString(weapon.fullName);
 		});
 
 
-		if (std::size_t entityIndex = m_entityStore.GetElementIndex("entity_box"); entityIndex != ServerEntityStore::InvalidIndex)
+		if (std::size_t entityIndex = m_entityStore->GetElementIndex("entity_box"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& box = m_entityStore.BuildEntity(m_terrain->GetLayer(0).GetWorld(), entityIndex);
+			const Ndk::EntityHandle& box = m_entityStore->InstantiateEntity(m_terrain->GetLayer(0).GetWorld(), entityIndex);
 			if (!box)
 				return;
 

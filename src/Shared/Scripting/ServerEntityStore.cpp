@@ -4,10 +4,12 @@
 
 #include <Shared/Scripting/ServerEntityStore.hpp>
 #include <NDK/Components.hpp>
+#include <NDK/LuaAPI.hpp>
 #include <Nazara/Utility/Image.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
@@ -15,34 +17,21 @@
 
 namespace bw
 {
-	ServerEntityStore::ServerEntityStore(Nz::LuaState& state) :
-	ScriptStore(state)
-	{
-		SetElementTypeName("entity");
-		SetTableName("ENTITY");
-	}
-
-	const Ndk::EntityHandle& ServerEntityStore::BuildEntity(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex)
 	{
 		auto& entityClass = GetElement(entityIndex);
 
-		Nz::LuaState& state = GetState();
+		Nz::LuaState& state = GetLuaState();
 
 		std::string spritePath;
-		bool canRotate;
 		bool playerControlled;
-		float mass;
 		float scale;
-		unsigned int collisionId;
 		try
 		{
 			state.PushReference(entityClass.tableRef);
 			Nz::CallOnExit popOnExit([&] { state.Pop(); });
 
-			canRotate = state.CheckField<bool>("RotationEnabled");
 			playerControlled = state.CheckField<bool>("PlayerControlled");
-			collisionId = state.CheckField<unsigned int>("CollisionType");
-			mass = state.CheckField<float>("Mass");
 			scale = state.CheckField<float>("Scale");
 			spritePath = state.CheckField<std::string>("Sprite");
 		}
@@ -57,7 +46,7 @@ namespace bw
 		Nz::Vector2f imageSize = Nz::Vector2f(Nz::Vector3f(boxImage->GetSize())) * scale;
 
 		// Warning what's following is ugly
-		Nz::Rectf colliderBox;
+		/*Nz::Rectf colliderBox;
 		if (entityClass.name == "burger")
 			colliderBox = Nz::Rectf(-imageSize.x / 2.f, -imageSize.y, imageSize.x, imageSize.y - 3.f);
 		else
@@ -66,15 +55,10 @@ namespace bw
 		auto burgerBox = Nz::BoxCollider2D::New(colliderBox);
 		burgerBox->SetCollisionId(collisionId);
 
+		entity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);*/
+
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 		entity->AddComponent<Ndk::NodeComponent>();
-		entity->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(mass);
-		burgerPhys.SetFriction(10.f);
-
-		if (!canRotate)
-			burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 
 		if (entityClass.isNetworked)
 			entity->AddComponent<NetworkSyncComponent>(entityClass.fullName);
@@ -85,16 +69,23 @@ namespace bw
 			entity->AddComponent<PlayerMovementComponent>();
 		}
 
+		if (!InitializeEntity(entityClass, entity))
+			entity->Kill();
+
 		return entity;
 	}
 
 	void ServerEntityStore::InitializeElementTable(Nz::LuaState& state)
 	{
+		SharedEntityStore::InitializeElementTable(state);
+
 		state.PushField("IsNetworked", false);
 	}
 
 	void ServerEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& element)
 	{
+		SharedEntityStore::InitializeElement(state, element);
+
 		element.isNetworked = state.CheckField<bool>("IsNetworked");
 	}
 }

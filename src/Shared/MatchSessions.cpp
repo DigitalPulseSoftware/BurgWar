@@ -17,7 +17,6 @@ namespace bw
 
 	MatchSessions::~MatchSessions()
 	{
-		//FIXME: This may call DeleteSession while iterating on it
 		for (const auto& pair : m_sessionIdToSession)
 			m_sessionPool.Delete(pair.second);
 	}

@@ -1,11 +1,11 @@
 // Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
-#ifndef BURGWAR_CLIENT_COMPONENTS_PLAYERCONTROLLED_HPP
-#define BURGWAR_CLIENT_COMPONENTS_PLAYERCONTROLLED_HPP
+#ifndef BURGWAR_SHARED_COMPONENTS_PLAYERCONTROLLED_HPP
+#define BURGWAR_SHARED_COMPONENTS_PLAYERCONTROLLED_HPP
 
 #include <NDK/Component.hpp>
 #include <vector>

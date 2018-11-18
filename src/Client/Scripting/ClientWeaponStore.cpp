@@ -10,18 +10,18 @@
 
 namespace bw
 {
-	ClientWeaponStore::ClientWeaponStore(Nz::LuaState& state) :
-	ScriptStore(state)
+	ClientWeaponStore::ClientWeaponStore(std::shared_ptr<SharedScriptingContext> context) :
+	ScriptStore(std::move(context))
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");
 	}
 
-	const Ndk::EntityHandle& ClientWeaponStore::BuildWeapon(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex)
 	{
 		auto& weaponClass = GetElement(entityIndex);
 
-		Nz::LuaState& state = GetState();
+		Nz::LuaState& state = GetLuaState();
 
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 		mat->SetDiffuseMap(weaponClass.spriteName);

@@ -9,9 +9,10 @@
 namespace bw
 {
 	template<typename Element, bool IsServer>
-	ScriptStore<Element, IsServer>::ScriptStore(Nz::LuaState& state) :
-	m_state(state)
+	ScriptStore<Element, IsServer>::ScriptStore(std::shared_ptr<SharedScriptingContext> context) :
+	m_context(std::move(context))
 	{
+		assert(m_context);
 	}
 
 	template<typename Element, bool IsServer>
@@ -42,6 +43,8 @@ namespace bw
 	template<typename Element, bool IsServer>
 	bool ScriptStore<Element, IsServer>::Load(const std::string& folder)
 	{
+		Nz::LuaState& state = GetLuaState();
+
 		for (auto& p : std::filesystem::directory_iterator(folder))
 		{
 			if (p.is_regular_file() || p.is_directory())
@@ -52,19 +55,23 @@ namespace bw
 				else
 					elementName = p.path().filename().u8string();
 
-				m_state.PushTable();
-				m_state.PushValue(-1);
-				int tableRef = m_state.CreateReference();
+				state.PushTable();
+				state.PushValue(-1);
+				int tableRef = state.CreateReference();
 				Nz::CallOnExit destroyRef([&]()
 				{
-					m_state.DestroyReference(tableRef);
+					state.DestroyReference(tableRef);
 				});
 
-				m_state.PushField("Name", elementName);
+				// TABLE.__index = TABLE
+				state.PushValue(-1);
+				state.SetField("__index");
 
-				InitializeElementTable(m_state);
+				state.PushField("Name", elementName);
 
-				m_state.SetGlobal(m_tableName);
+				InitializeElementTable(state);
+
+				state.SetGlobal(m_tableName);
 
 				std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
 
@@ -74,11 +81,11 @@ namespace bw
 					if (!std::filesystem::exists(path))
 						return false;
 
-					if (m_state.ExecuteFromFile(path.generic_u8string()))
+					if (state.ExecuteFromFile(path.generic_u8string()))
 						return true;
 					else
 					{
-						std::cerr << path << " failed: " << m_state.GetLastError() << std::endl;
+						std::cerr << path << " failed: " << state.GetLastError() << std::endl;
 						hasError = true;
 						return false;
 					}
@@ -110,18 +117,18 @@ namespace bw
 				element.fullName = m_elementTypeName + "_" + element.name;
 				element.tableRef = tableRef;
 
-				m_state.PushReference(tableRef);
+				state.PushReference(tableRef);
 
 				try
 				{
-					InitializeElement(m_state, element);
+					InitializeElement(state, element);
 				}
 				catch (const std::exception& e)
 				{
 					std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
 				}
 
-				m_state.Pop();
+				state.Pop();
 
 				//if (IsServer && !isNetworked && hasSharedFiles)
 				//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
@@ -133,16 +140,22 @@ namespace bw
 			}
 		}
 
-		m_state.PushNil();
-		m_state.SetGlobal(m_tableName);
+		state.PushNil();
+		state.SetGlobal(m_tableName);
 
 		return true;
 	}
 
 	template<typename Element, bool IsServer>
-	Nz::LuaState & ScriptStore<Element, IsServer>::GetState()
+	Nz::LuaState& ScriptStore<Element, IsServer>::GetLuaState()
 	{
-		return m_state;
+		return m_context->GetLuaInstance();
+	}
+
+	template<typename Element, bool IsServer>
+	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element, IsServer>::GetScriptingContext()
+	{
+		return m_context;
 	}
 
 	template<typename Element, bool IsServer>

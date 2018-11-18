@@ -8,18 +8,18 @@
 #define BURGWAR_SHARED_SCRIPTING_CLIENTENTITYSTORE_HPP
 
 #include <Shared/Scripting/ScriptedEntity.hpp>
-#include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Scripting/SharedEntityStore.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	class ClientEntityStore : public ScriptStore<ScriptedEntity, false>
+	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
-			ClientEntityStore(Nz::LuaState& state);
+			using SharedEntityStore::SharedEntityStore;
 			~ClientEntityStore() = default;
 
-			const Ndk::EntityHandle& BuildEntity(Ndk::World& world, std::size_t entityIndex);
+			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex);
 
 		private:
 			void InitializeElementTable(Nz::LuaState& state) override;

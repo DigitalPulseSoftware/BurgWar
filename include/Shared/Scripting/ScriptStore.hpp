@@ -7,7 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 
-#include <Nazara/Lua/LuaState.hpp>
+#include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <hopstotch/hopscotch_map.h>
 #include <limits>
 #include <vector>
@@ -18,7 +18,7 @@ namespace bw
 	class ScriptStore
 	{
 		public:
-			inline ScriptStore(Nz::LuaState& state);
+			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -34,16 +34,18 @@ namespace bw
 			virtual void InitializeElementTable(Nz::LuaState& state) = 0;
 			virtual void InitializeElement(Nz::LuaState& state, Element& element) = 0;
 
-			Nz::LuaState& GetState();
+			Nz::LuaState& GetLuaState();
+			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext();
+
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);
 
 		private:
+			std::shared_ptr<SharedScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;
 			std::vector<Element> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
-			Nz::LuaState& m_state;
 	};
 }
 

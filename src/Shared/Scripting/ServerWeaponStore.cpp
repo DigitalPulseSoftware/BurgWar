@@ -15,18 +15,18 @@
 
 namespace bw
 {
-	ServerWeaponStore::ServerWeaponStore(Nz::LuaState& state) :
-	ScriptStore(state)
+	ServerWeaponStore::ServerWeaponStore(std::shared_ptr<SharedScriptingContext> context) :
+	ScriptStore(std::move(context))
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");
 	}
 
-	const Ndk::EntityHandle& ServerWeaponStore::BuildWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent)
+	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent)
 	{
 		auto& weaponClass = GetElement(weaponIndex);
 
-		Nz::LuaState& state = GetState();
+		Nz::LuaState& state = GetLuaState();
 
 		const Ndk::EntityHandle& weapon = world.CreateEntity();
 		weapon->AddComponent<Ndk::NodeComponent>().SetParent(parent);
