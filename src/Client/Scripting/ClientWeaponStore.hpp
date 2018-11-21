@@ -7,19 +7,18 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_CLIENTWEAPONSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_CLIENTWEAPONSTORE_HPP
 
-#include <Shared/Scripting/ScriptedWeapon.hpp>
-#include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Scripting/SharedWeaponStore.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	class ClientWeaponStore : public ScriptStore<ScriptedWeapon, false>
+	class ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
-			ClientWeaponStore(std::shared_ptr<SharedScriptingContext> context);
+			inline ClientWeaponStore(std::shared_ptr<SharedScriptingContext> context);
 			~ClientWeaponStore() = default;
 
-			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex);
+			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(Nz::LuaState& state) override;
@@ -27,6 +26,6 @@ namespace bw
 	};
 }
 
-#include <Client/Scripting/ClientEntityStore.hpp>
+#include <Client/Scripting/ClientWeaponStore.inl>
 
 #endif

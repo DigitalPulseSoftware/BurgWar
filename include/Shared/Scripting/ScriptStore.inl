@@ -8,30 +8,31 @@
 
 namespace bw
 {
-	template<typename Element, bool IsServer>
-	ScriptStore<Element, IsServer>::ScriptStore(std::shared_ptr<SharedScriptingContext> context) :
-	m_context(std::move(context))
+	template<typename Element>
+	ScriptStore<Element>::ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	m_context(std::move(context)),
+	m_isServer(isServer)
 	{
 		assert(m_context);
 	}
 
-	template<typename Element, bool IsServer>
+	template<typename Element>
 	template<typename F>
-	void ScriptStore<Element, IsServer>::ForEachElement(const F& func) const
+	void ScriptStore<Element>::ForEachElement(const F& func) const
 	{
 		for (const auto& entity : m_elements)
 			func(entity);
 	}
 	
-	template<typename Element, bool IsServer>
-	const Element& ScriptStore<Element, IsServer>::GetElement(std::size_t index) const
+	template<typename Element>
+	const Element& ScriptStore<Element>::GetElement(std::size_t index) const
 	{
 		assert(index < m_elements.size());
 		return m_elements[index];
 	}
 
-	template<typename Element, bool IsServer>
-	std::size_t ScriptStore<Element, IsServer>::GetElementIndex(const std::string& name) const
+	template<typename Element>
+	std::size_t ScriptStore<Element>::GetElementIndex(const std::string& name) const
 	{
 		auto it = m_elementsByName.find(name);
 		if (it == m_elementsByName.end())
@@ -40,8 +41,8 @@ namespace bw
 		return it->second;
 	}
 
-	template<typename Element, bool IsServer>
-	bool ScriptStore<Element, IsServer>::Load(const std::string& folder)
+	template<typename Element>
+	bool ScriptStore<Element>::Load(const std::string& folder)
 	{
 		Nz::LuaState& state = GetLuaState();
 
@@ -106,7 +107,7 @@ namespace bw
 					if (Load(folderPath / "shared.lua"))
 						hasSharedFiles = true;
 
-					if constexpr (IsServer)
+					if (m_isServer)
 						Load(folderPath / "sv_init.lua");
 					else
 						Load(folderPath / "cl_init.lua");
@@ -146,26 +147,26 @@ namespace bw
 		return true;
 	}
 
-	template<typename Element, bool IsServer>
-	Nz::LuaState& ScriptStore<Element, IsServer>::GetLuaState()
+	template<typename Element>
+	Nz::LuaState& ScriptStore<Element>::GetLuaState()
 	{
 		return m_context->GetLuaInstance();
 	}
 
-	template<typename Element, bool IsServer>
-	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element, IsServer>::GetScriptingContext()
+	template<typename Element>
+	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element>::GetScriptingContext()
 	{
 		return m_context;
 	}
 
-	template<typename Element, bool IsServer>
-	void ScriptStore<Element, IsServer>::SetElementTypeName(std::string typeName)
+	template<typename Element>
+	void ScriptStore<Element>::SetElementTypeName(std::string typeName)
 	{
 		m_elementTypeName = std::move(typeName);
 	}
 
-	template<typename Element, bool IsServer>
-	void ScriptStore<Element, IsServer>::SetTableName(std::string tableName)
+	template<typename Element>
+	void ScriptStore<Element>::SetTableName(std::string tableName)
 	{
 		m_tableName = std::move(tableName);
 	}

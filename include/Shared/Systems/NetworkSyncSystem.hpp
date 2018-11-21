@@ -7,12 +7,13 @@
 #ifndef BURGWAR_SHARED_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 #define BURGWAR_SHARED_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 
+#include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/System.hpp>
-#include <hopstotch/hopscotch_map.h>
+#include <hopscotch/hopscotch_map.h>
 #include <optional>
 #include <string>
 #include <variant>
@@ -54,6 +55,13 @@ namespace bw
 				Nz::Vector2f linearVelocity;
 			};
 
+			struct EntityPlayAnimation
+			{
+				Ndk::EntityId entityId;
+				std::size_t animId;
+				Nz::UInt64 startTime;
+			};
+
 			struct EntityCreation
 			{
 				Ndk::EntityId id;
@@ -88,6 +96,7 @@ namespace bw
 
 			NazaraSignal(OnEntityCreated, NetworkSyncSystem* /*emitter*/, const EntityCreation& /*event*/);
 			NazaraSignal(OnEntityDeleted, NetworkSyncSystem* /*emitter*/, const EntityDestruction& /*event*/);
+			NazaraSignal(OnEntityPlayAnimation, NetworkSyncSystem* /*emitter*/, const EntityPlayAnimation& /*event*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
 
 		private:
@@ -100,8 +109,10 @@ namespace bw
 
 			struct EntitySlots
 			{
+				NazaraSlot(AnimationComponent, OnAnimationStart, onAnimationStart);
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
 			};
+
 			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
 
 			Ndk::EntityList m_healthUpdateEntities;

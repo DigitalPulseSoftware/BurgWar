@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline LocalInputController::LocalInputController(Nz::UInt8 localPlayerIndex) :
+	inline LocalInputController::LocalInputController(ClientApp& app, Nz::UInt8 localPlayerIndex) :
+	m_application(app),
 	m_localPlayerIndex(localPlayerIndex)
 	{
 	}

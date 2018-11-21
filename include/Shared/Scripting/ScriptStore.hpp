@@ -8,17 +8,17 @@
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
-#include <hopstotch/hopscotch_map.h>
+#include <hopscotch/hopscotch_map.h>
 #include <limits>
 #include <vector>
 
 namespace bw
 {
-	template<typename Element, bool IsServer>
+	template<typename Element>
 	class ScriptStore
 	{
 		public:
-			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context);
+			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -46,6 +46,7 @@ namespace bw
 			std::string m_tableName;
 			std::vector<Element> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
+			bool m_isServer;
 	};
 }
 

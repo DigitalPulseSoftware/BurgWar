@@ -15,21 +15,21 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
-#include <hopstotch/hopscotch_map.h>
+#include <hopscotch/hopscotch_map.h>
 #include <Nazara/Platform/EventHandler.hpp>
 #include <optional>
 #include <vector>
 
 namespace bw
 {
-	class BurgApp;
+	class ClientApp;
 
 	class LocalMatch
 	{
 		friend class ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, ClientSession& session, const Packets::MatchData& matchData);
+			LocalMatch(ClientApp& burgApp, ClientSession& session, const Packets::MatchData& matchData);
 			~LocalMatch() = default;
 
 			void Update(float elapsedTime);
@@ -51,8 +51,8 @@ namespace bw
 
 			struct InputController
 			{
-				InputController(Nz::UInt8 playerIndex) :
-				controller(playerIndex)
+				InputController(ClientApp& app, Nz::UInt8 playerIndex) :
+				controller(app, playerIndex)
 				{
 				}
 
@@ -78,7 +78,7 @@ namespace bw
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::World m_world;
-			BurgApp& m_application;
+			ClientApp& m_application;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;

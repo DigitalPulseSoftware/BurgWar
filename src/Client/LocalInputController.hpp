@@ -12,15 +12,18 @@
 
 namespace bw
 {
+	class ClientApp;
+
 	class LocalInputController
 	{
 		public:
-			inline LocalInputController(Nz::UInt8 localPlayerIndex);
+			inline LocalInputController(ClientApp& app, Nz::UInt8 localPlayerIndex);
 			~LocalInputController() = default;
 
 			InputData Poll();
 
 		private:
+			ClientApp& m_application;
 			Nz::UInt8 m_localPlayerIndex;
 	};
 }

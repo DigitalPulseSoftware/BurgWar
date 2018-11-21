@@ -4,13 +4,13 @@
 
 #include <Nazara/Network/Network.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
-#include <Client/BurgApp.hpp>
+#include <Client/ClientApp.hpp>
 #include <iostream>
 
 int main(int argc, char* argv[])
 {
 	Nz::Initializer<Nz::Network> network;
-	bw::BurgApp app(argc, argv);
+	bw::ClientApp app(argc, argv);
 
 	/*bw::ServerConnection server(app, app.GetCommandStore());
 	if (!server.Connect("localhost"))

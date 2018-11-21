@@ -3,14 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Nazara/Network/Network.hpp>
-#include <Server/BurgApp.hpp>
+#include <Server/ServerApp.hpp>
 #include <filesystem>
 #include <iostream>
 
 int main(int argc, char* argv[])
 {
 	Nz::Initializer<Nz::Network> network;
-	bw::BurgApp app(argc, argv);
+	bw::ServerApp app(argc, argv);
 
 	return app.Run();
 }

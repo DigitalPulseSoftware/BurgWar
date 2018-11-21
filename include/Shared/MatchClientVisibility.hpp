@@ -39,6 +39,7 @@ namespace bw
 
 			NazaraSlot(NetworkSyncSystem, OnEntityCreated, m_onEntityCreatedSlot);
 			NazaraSlot(NetworkSyncSystem, OnEntityDeleted, m_onEntityDeletedSlot);
+			NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation, m_onEntityPlayAnimation);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, m_onEntitiesHealthUpdate);
 
 			std::size_t m_activeLayer;

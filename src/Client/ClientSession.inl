@@ -7,18 +7,18 @@
 
 namespace bw
 {
-	inline ClientSession::ClientSession(BurgApp& application, const LocalCommandStore& commandStore) :
+	inline ClientSession::ClientSession(ClientApp& application, const LocalCommandStore& commandStore) :
 	m_application(application),
 	m_commandStore(commandStore)
 	{
 	}
 
-	inline BurgApp& ClientSession::GetApp()
+	inline ClientApp& ClientSession::GetApp()
 	{
 		return m_application;
 	}
 
-	inline const BurgApp& ClientSession::GetApp() const
+	inline const ClientApp& ClientSession::GetApp() const
 	{
 		return m_application;
 	}

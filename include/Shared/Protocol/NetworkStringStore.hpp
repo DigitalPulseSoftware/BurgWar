@@ -8,7 +8,7 @@
 #define BURGWAR_SHARED_NETWORK_NETWORKSTRINGSTORE_HPP
 
 #include <Shared/Protocol/Packets.hpp>
-#include <hopstotch/hopscotch_map.h>
+#include <hopscotch/hopscotch_map.h>
 #include <limits>
 #include <optional>
 #include <vector>

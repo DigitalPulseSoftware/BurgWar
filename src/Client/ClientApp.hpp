@@ -4,9 +4,10 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENT_BURGAPP_HPP
-#define BURGWAR_CLIENT_BURGAPP_HPP
+#ifndef BURGWAR_CLIENTAPP_HPP
+#define BURGWAR_CLIENTAPP_HPP
 
+#include <Shared/BurgApp.hpp>
 #include <Shared/NetworkReactor.hpp>
 #include <Shared/MatchSessions.hpp>
 #include <Shared/Protocol/Packets.hpp>
@@ -27,18 +28,17 @@ namespace bw
 	class NetworkClientBridge;
 	class NetworkReactor;
 
-	class BurgApp : public Ndk::Application
+	class ClientApp : public Ndk::Application, public BurgApp
 	{
 		friend class ClientSession;
 
 		public:
-			BurgApp(int argc, char* argv[]);
-			~BurgApp();
+			ClientApp(int argc, char* argv[]);
+			~ClientApp();
 
 			inline std::size_t AddReactor(std::unique_ptr<NetworkReactor> reactor);
 			inline void ClearReactors();
 
-			inline Nz::UInt64 GetAppTime() const;
 			inline const LocalCommandStore& GetCommandStore() const;
 			inline Nz::RenderWindow& GetMainWindow() const;
 			inline const std::unique_ptr<NetworkReactor>& GetReactor(std::size_t reactorId);
@@ -62,8 +62,6 @@ namespace bw
 			std::unique_ptr<Match> m_match;
 			std::unique_ptr<ClientSession> m_clientSession;
 			Nz::RenderWindow& m_mainWindow;
-			Nz::UInt64 m_appTime;
-			Nz::UInt64 m_lastTime;
 #if 0
 			Ndk::EntityHandle m_camera;
 			Ndk::EntityHandle m_burger;
@@ -82,6 +80,6 @@ namespace bw
 	};
 }
 
-#include <Client/BurgApp.inl>
+#include <Client/ClientApp.inl>
 
 #endif

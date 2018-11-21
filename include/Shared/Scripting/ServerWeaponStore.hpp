@@ -7,17 +7,18 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SERVERWEAPONSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SERVERWEAPONSTORE_HPP
 
-#include <Shared/Scripting/ScriptedWeapon.hpp>
-#include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Scripting/SharedWeaponStore.hpp>
 #include <NDK/Entity.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	class ServerWeaponStore : public ScriptStore<ScriptedWeapon, true>
+	class BurgApp;
+
+	class ServerWeaponStore : public SharedWeaponStore
 	{
 		public:
-			ServerWeaponStore(std::shared_ptr<SharedScriptingContext> context);
+			inline ServerWeaponStore(BurgApp& app, std::shared_ptr<SharedScriptingContext> context);
 			~ServerWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);
@@ -25,6 +26,8 @@ namespace bw
 		private:
 			void InitializeElementTable(Nz::LuaState& state) override;
 			void InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon) override;
+
+			BurgApp& m_application;
 	};
 }
 

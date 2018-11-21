@@ -3,9 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/LocalMatch.hpp>
-#include <Client/BurgApp.hpp>
+#include <Client/ClientApp.hpp>
 #include <Client/ClientSession.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
+#include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
@@ -18,13 +20,14 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(ClientApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
 	m_application(burgApp),
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
 	{
+		m_world.AddSystem<AnimationSystem>(burgApp);
 		m_world.AddSystem<PlayerMovementSystem>();
 
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
@@ -126,7 +129,7 @@ namespace bw
 		m_inputControllers.reserve(playerCount);
 		assert(playerCount != 0xFF);
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
-			m_inputControllers.emplace_back(i);
+			m_inputControllers.emplace_back(m_application, i);
 
 		m_scriptingContext = std::make_shared<SharedScriptingContext>();
 
@@ -175,7 +178,7 @@ namespace bw
 	{
 		m_world.Update(elapsedTime);
 
-		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
+		Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
 		{
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
@@ -184,7 +187,28 @@ namespace bw
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
 		};
 
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
+
+		Nz::DebugDrawer::SetPrimaryColor(Nz::Color::Blue);
+		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+		{
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			if (serverEntity.entity->HasComponent<ScriptComponent>())
+			{
+				const std::string& className = serverEntity.entity->GetComponent<ScriptComponent>().GetClassName();
+				if (className == "weapon_sword_emmentalibur")
+				{
+					auto& node = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+					Nz::Vector3f pos = node.GetPosition();
+
+					Nz::DebugDrawer::Draw(Nz::Boxf(pos.x + 40.f, pos.y - 76.f, pos.z, 120.f, 150.f, 1.f));
+				}
+			}
+		}
+		Nz::DebugDrawer::SetPrimaryColor(Nz::Color::Red);
 
 		constexpr float ErrorCorrectionPerSecond = 60;
 
@@ -238,6 +262,15 @@ namespace bw
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
 
+		const ServerEntity* parent = nullptr;
+		if (parentId)
+		{
+			auto it = m_serverEntityIdToClient.find(parentId.value());
+			assert(it != m_serverEntityIdToClient.end());
+
+			parent = &it->second;
+		}
+
 		Ndk::EntityHandle entity;
 		if (entityClassName.compare(0, entityPrefix.size(), entityPrefix) == 0)
 		{
@@ -256,7 +289,9 @@ namespace bw
 			// Weapon
 			if (std::size_t weaponIndex = m_weaponStore->GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex);
+				assert(parent);
+
+				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, parent->entity);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 
@@ -272,15 +307,6 @@ namespace bw
 
 		if (entity)
 		{
-			if (parentId)
-			{
-				auto it = m_serverEntityIdToClient.find(parentId.value());
-				assert(it != m_serverEntityIdToClient.end());
-
-				const ServerEntity& parentEntity = it->second;
-				entity->GetComponent<Ndk::NodeComponent>().SetParent(parentEntity.entity);
-			}
-
 			ServerEntity serverEntity;
 			serverEntity.entity = entity;
 			serverEntity.isPhysics = isPhysical;

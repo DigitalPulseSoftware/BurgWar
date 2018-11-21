@@ -4,20 +4,21 @@
 
 #pragma once
 
-#ifndef BURGWAR_SERVER_BURGAPP_HPP
-#define BURGWAR_SERVER_BURGAPP_HPP
+#ifndef BURGWAR_SERVERAPP_HPP
+#define BURGWAR_SERVERAPP_HPP
 
+#include <Shared/BurgApp.hpp>
 #include <Shared/Match.hpp>
 #include <NDK/Application.hpp>
 #include <memory>
 
 namespace bw
 {
-	class BurgApp : public Ndk::Application
+	class ServerApp : public Ndk::Application, public BurgApp
 	{
 		public:
-			BurgApp(int argc, char* argv[]);
-			~BurgApp() = default;
+			ServerApp(int argc, char* argv[]);
+			~ServerApp() = default;
 
 			int Run();
 
@@ -26,6 +27,6 @@ namespace bw
 	};
 }
 
-#include <Server/BurgApp.inl>
+#include <Server/ServerApp.inl>
 
 #endif

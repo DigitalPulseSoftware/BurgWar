@@ -11,8 +11,8 @@
 
 namespace bw
 {
-	SharedEntityStore::SharedEntityStore(std::shared_ptr<SharedScriptingContext> context) :
-	ScriptStore(std::move(context))
+	SharedEntityStore::SharedEntityStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	ScriptStore(std::move(context), isServer)
 	{
 		SetElementTypeName("entity");
 		SetTableName("ENTITY");
@@ -112,7 +112,7 @@ namespace bw
 
 		int tableRef = state.CreateReference();
 
-		entity->AddComponent<ScriptComponent>(GetScriptingContext(), tableRef);
+		entity->AddComponent<ScriptComponent>(entityClass.fullName, GetScriptingContext(), tableRef);
 
 		if (entityClass.initializeFunction != -1)
 		{

@@ -4,6 +4,7 @@
 
 #include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
@@ -12,14 +13,7 @@
 
 namespace bw
 {
-	ClientWeaponStore::ClientWeaponStore(std::shared_ptr<SharedScriptingContext> context) :
-	ScriptStore(std::move(context))
-	{
-		SetElementTypeName("weapon");
-		SetTableName("WEAPON");
-	}
-
-	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent)
 	{
 		auto& weaponClass = GetElement(entityIndex);
 
@@ -36,20 +30,25 @@ namespace bw
 		Nz::Vector2f burgerSize = sprite->GetSize();
 		sprite->SetOrigin(weaponClass.spriteOrigin);
 
-		const Ndk::EntityHandle& entity = world.CreateEntity();
-		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite, -1);
-		entity->AddComponent<Ndk::NodeComponent>();
+		const Ndk::EntityHandle& weapon = world.CreateEntity();
+		weapon->AddComponent<Ndk::GraphicsComponent>().Attach(sprite, -1);
 
-		return entity;
+		SharedWeaponStore::InitializeWeapon(weaponClass, weapon, parent);
+
+		return weapon;
 	}
 
 	void ClientWeaponStore::InitializeElementTable(Nz::LuaState& state)
 	{
+		SharedWeaponStore::InitializeElementTable(state);
+
 		state.PushField("Scale", 1.f);
 	}
 
 	void ClientWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
 	{
+		SharedWeaponStore::InitializeElement(state, weapon);
+
 		weapon.scale = state.CheckField<float>("Scale");
 		weapon.spriteName = state.CheckField<std::string>("Sprite");
 		weapon.spriteOrigin = state.CheckField<Nz::Vector2f>("SpriteOrigin");

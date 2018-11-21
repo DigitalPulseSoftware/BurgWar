@@ -198,6 +198,12 @@ namespace bw
 				serializer &= string;
 		}
 
+		void Serialize(PacketSerializer& serializer, PlayAnimation& data)
+		{
+			serializer &= data.entityId;
+			serializer &= data.animId;
+		}
+
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
 			serializer.SerializeArraySize(data.inputs);

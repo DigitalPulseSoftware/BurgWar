@@ -20,6 +20,7 @@
 
 namespace bw
 {
+	class BurgApp;
 	class Player;
 	class Terrain;
 
@@ -28,7 +29,7 @@ namespace bw
 	class Match
 	{
 		public:
-			Match(std::string matchName, std::size_t maxPlayerCount);
+			Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount);
 			Match(const Match&) = delete;
 			~Match();
 

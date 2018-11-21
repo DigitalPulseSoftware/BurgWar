@@ -12,10 +12,12 @@
 
 namespace bw
 {
+	class BurgApp;
+
 	class TerrainLayer
 	{
 		public:
-			TerrainLayer(const MapData::Layer& layerData, float tileSize);
+			TerrainLayer(BurgApp& app, const MapData::Layer& layerData, float tileSize);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) = default;
 			~TerrainLayer() = default;

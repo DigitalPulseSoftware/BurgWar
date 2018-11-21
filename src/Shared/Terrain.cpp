@@ -6,12 +6,12 @@
 
 namespace bw
 {
-	Terrain::Terrain(MapData mapData) :
+	Terrain::Terrain(BurgApp& app, MapData mapData) :
 	m_mapData(std::move(mapData))
 	{
 		m_layers.reserve(m_mapData.layers.size());
 		for (auto& layer : m_mapData.layers)
-			m_layers.emplace_back(layer, m_mapData.tileSize);
+			m_layers.emplace_back(app, layer, m_mapData.tileSize);
 	}
 
 	void Terrain::Update(float elapsedTime)

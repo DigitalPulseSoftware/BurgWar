@@ -90,6 +90,7 @@ namespace bw
 
 			m_onEntityCreatedSlot.Disconnect();
 			m_onEntityDeletedSlot.Disconnect();
+			m_onEntityPlayAnimation.Disconnect();
 			m_onEntitiesHealthUpdate.Disconnect();
 		}
 
@@ -114,6 +115,18 @@ namespace bw
 				HandleEntityDestruction(deletePacket, entityDestruction);
 
 				m_session.SendPacket(deletePacket);
+			});
+
+			m_onEntityPlayAnimation.Connect(syncSystem.OnEntityPlayAnimation, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityPlayAnimation& entityPlayAnimation)
+			{
+				if (!m_visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
+					return;
+
+				Packets::PlayAnimation animPacket;
+				animPacket.animId = static_cast<Nz::UInt8>(entityPlayAnimation.animId);
+				animPacket.entityId = static_cast<Nz::UInt32>(entityPlayAnimation.entityId);
+				
+				m_session.SendPacket(animPacket);
 			});
 
 			m_onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)

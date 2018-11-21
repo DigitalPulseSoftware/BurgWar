@@ -26,6 +26,7 @@ namespace bw
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
+		IncomingCommand(PlayAnimation);
 
 		// Outgoing commands
 		OutgoingCommand(Auth,           Nz::ENetPacketFlag_Reliable, 0);

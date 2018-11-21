@@ -3,11 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/ServerWeaponStore.hpp>
-#include <Nazara/Utility/Image.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
-#include <NDK/Systems.hpp>
-#include <NDK/World.hpp>
+#include <Shared/BurgApp.hpp>
+#include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -15,17 +12,16 @@
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
+#include <Nazara/Math/Rect.hpp>
+#include <Nazara/Utility/Image.hpp>
+#include <NDK/Components.hpp>
+#include <NDK/LuaAPI.hpp>
+#include <NDK/Systems.hpp>
+#include <NDK/World.hpp>
 #include <iostream>
 
 namespace bw
 {
-	ServerWeaponStore::ServerWeaponStore(std::shared_ptr<SharedScriptingContext> context) :
-	ScriptStore(std::move(context))
-	{
-		SetElementTypeName("weapon");
-		SetTableName("WEAPON");
-	}
-
 	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent)
 	{
 		auto& weaponClass = GetElement(weaponIndex);
@@ -33,34 +29,24 @@ namespace bw
 		Nz::LuaState& state = GetLuaState();
 
 		const Ndk::EntityHandle& weapon = world.CreateEntity();
-		auto& weaponNode = weapon->AddComponent<Ndk::NodeComponent>();
 		weapon->AddComponent<NetworkSyncComponent>(weaponClass.fullName, parent);
 
-		weaponNode.SetParent(parent);
-		weaponNode.SetPosition(weaponClass.weaponOffset);
-
-		state.PushTable();
-
-		state.PushField("Entity", weapon);
-
-		state.PushReference(weaponClass.tableRef);
-		state.SetMetatable(-2);
-
-		int tableRef = state.CreateReference();
-
-		weapon->AddComponent<ScriptComponent>(GetScriptingContext(), tableRef);
+		SharedWeaponStore::InitializeWeapon(weaponClass, weapon, parent);
 
 		return weapon;
 	}
 
 	void ServerWeaponStore::InitializeElementTable(Nz::LuaState& state)
 	{
+		SharedWeaponStore::InitializeElementTable(state);
+
 		state.PushFunction([](Nz::LuaState& state) -> int
 		{
 			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
 
-			Nz::UInt16 damage = state.CheckInteger(2);
-			float range = state.CheckNumber(3);
+			int index = 2;
+			Nz::UInt16 damage = state.Check<Nz::UInt16>(&index);
+			Nz::Rectf damageZone = state.Check<Nz::Rectf>(&index);
 
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
@@ -70,7 +56,7 @@ namespace bw
 			Nz::Vector2f pos = Nz::Vector2f(nodeComponent.GetPosition());
 
 			std::vector<Ndk::EntityHandle> hitEntities;
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(Nz::Rectf(pos.x - range / 2.f, pos.y - range / 2.f, range, range), 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitEntities);
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitEntities);
 
 			for (const Ndk::EntityHandle& hitEntity : hitEntities)
 			{
@@ -83,14 +69,47 @@ namespace bw
 			return 0;
 		});
 		state.SetField("DealDamage");
+
+		state.PushFunction([this](Nz::LuaState& state) -> int
+		{
+			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+
+			int index = 2;
+			std::string animationName = state.Check<std::string>(&index);
+
+			if (!entity->HasComponent<AnimationComponent>())
+				state.Error("Entity has no animations");
+
+			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
+			const auto& animationStore = entityAnimation.GetAnimationStore();
+
+			if (std::size_t animId = animationStore->FindAnimationByName(animationName); animId != animationStore->InvalidId)
+				entityAnimation.Play(animId, m_application.GetAppTime());
+			else
+				state.Error("Entity has no animation \"" + animationName + "\"");
+
+			return 0;
+		});
+		state.SetField("PlayAnim");
+
+		state.PushFunction([](Nz::LuaState& state) -> int
+		{
+			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			if (!entity->HasComponent<AnimationComponent>())
+			{
+				state.PushBoolean(false);
+				return 1;
+			}
+
+			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
+			state.PushBoolean(entityAnimation.IsPlaying());
+			return 1;
+		});
+		state.SetField("IsPlayingAnimation");
 	}
 
 	void ServerWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
 	{
-		weapon.weaponOffset = state.CheckField<Nz::Vector2f>("WeaponOffset", Nz::Vector2f::Zero());
-
-		// Actually server doesn't care about those
-		weapon.scale = state.CheckField<float>("Scale");
-		weapon.spriteName = state.CheckField<std::string>("Sprite");
+		SharedWeaponStore::InitializeElement(state, weapon);
 	}
 }

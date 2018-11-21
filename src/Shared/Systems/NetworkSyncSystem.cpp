@@ -152,6 +152,19 @@ namespace bw
 		assert(m_entitySlots.find(entity->GetId()) == m_entitySlots.end());
 		auto& slots = m_entitySlots.emplace(entity->GetId(), EntitySlots()).first.value();
 
+		if (entity->HasComponent<AnimationComponent>())
+		{
+			slots.onAnimationStart.Connect(entity->GetComponent<AnimationComponent>().OnAnimationStart, [&](AnimationComponent* anim)
+			{
+				EntityPlayAnimation event;
+				event.animId = anim->GetAnimId();
+				event.entityId = anim->GetEntity()->GetId();
+				event.startTime = anim->GetStartTime();
+
+				OnEntityPlayAnimation(this, event);
+			});
+		}
+
 		if (entity->HasComponent<HealthComponent>())
 		{
 			slots.onHealthChange.Connect(entity->GetComponent<HealthComponent>().OnHealthChange, [&](HealthComponent* health)

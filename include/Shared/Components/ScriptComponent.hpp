@@ -9,6 +9,7 @@
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Component.hpp>
+#include <string>
 #include <vector>
 
 namespace bw
@@ -16,16 +17,18 @@ namespace bw
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			ScriptComponent(std::shared_ptr<SharedScriptingContext> context, int tableRef);
+			ScriptComponent(std::string className, std::shared_ptr<SharedScriptingContext> context, int tableRef);
 			~ScriptComponent();
 
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
+			inline const std::string& GetClassName() const;
 			inline int GetTableRef();
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			std::shared_ptr<SharedScriptingContext> m_context;
+			std::string m_className;
 			int m_tableRef;
 	};
 }

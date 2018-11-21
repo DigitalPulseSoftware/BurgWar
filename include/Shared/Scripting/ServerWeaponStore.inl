@@ -7,4 +7,9 @@
 
 namespace bw
 {
+	inline ServerWeaponStore::ServerWeaponStore(BurgApp& app, std::shared_ptr<SharedScriptingContext> context) :
+	SharedWeaponStore(std::move(context), true),
+	m_application(app)
+	{
+	}
 }

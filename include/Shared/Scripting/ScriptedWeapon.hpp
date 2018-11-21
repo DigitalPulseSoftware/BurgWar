@@ -7,8 +7,10 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTEDWEAPON_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTEDWEAPON_HPP
 
+#include <Shared/AnimationStore.hpp>
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <memory>
 
 namespace bw
 {
@@ -17,6 +19,7 @@ namespace bw
 		Nz::Vector2f spriteOrigin;
 		Nz::Vector2f weaponOrigin;
 		Nz::Vector2f weaponOffset;
+		std::shared_ptr<AnimationStore> animations;
 		std::string spriteName;
 		float scale;
 	};

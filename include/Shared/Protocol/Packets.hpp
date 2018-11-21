@@ -37,6 +37,7 @@ namespace bw
 		MatchData,
 		MatchState,
 		NetworkStrings,
+		PlayAnimation,
 		PlayersInput
 	};
 
@@ -169,6 +170,12 @@ namespace bw
 			std::vector<std::string> strings;
 		};
 
+		DeclarePacket(PlayAnimation)
+		{
+			CompressedUnsigned<Nz::UInt32> entityId;
+			Nz::UInt8 animId;
+		};
+
 		DeclarePacket(PlayersInput)
 		{
 			std::vector<std::optional<InputData>> inputs;
@@ -186,6 +193,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
+		void Serialize(PacketSerializer& serializer, PlayAnimation& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 	}
 }

@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/BurgApp.hpp>
+#include <Client/ClientApp.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/NetworkClientBridge.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
@@ -10,12 +10,6 @@
 #include <Client/ClientSession.hpp>
 #include <Client/LocalMatch.hpp>
 #include <Client/LocalSessionManager.hpp>
-#include <Shared/Components/HealthComponent.hpp>
-#include <Shared/Components/PlayerControlledComponent.hpp>
-#include <Shared/Components/PlayerMovementComponent.hpp>
-#include <Shared/Components/ScriptComponent.hpp>
-#include <Shared/Systems/PlayerControlledSystem.hpp>
-#include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
@@ -31,10 +25,8 @@
 
 namespace bw
 {
-	BurgApp::BurgApp(int argc, char* argv[]) :
+	ClientApp::ClientApp(int argc, char* argv[]) :
 	Application(argc, argv),
-	m_appTime(0),
-	m_lastTime(Nz::GetElapsedMicroseconds()),
 	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8)))
 #if 0
 	m_world(AddWorld()),
@@ -48,16 +40,7 @@ namespace bw
 	{
 		m_mainWindow.SetFramerateLimit(100);
 
-		Ndk::InitializeComponent<HealthComponent>("Health");
-		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
-		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
-		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
-		Ndk::InitializeComponent<ScriptComponent>("Script");
-		Ndk::InitializeSystem<NetworkSyncSystem>();
-		Ndk::InitializeSystem<PlayerControlledSystem>();
-		Ndk::InitializeSystem<PlayerMovementSystem>();
-
-		m_match = std::make_unique<Match>("Faites l'amour pas la Burg'guerre", 10);
+		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
 		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
 		NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 
@@ -182,19 +165,16 @@ namespace bw
 #endif
 	}
 
-	BurgApp::~BurgApp()
+	ClientApp::~ClientApp()
 	{
 		//m_match->Leave(&m_testPlayer);
 	}
 
-	int BurgApp::Run()
+	int ClientApp::Run()
 	{
 		while (Application::Run())
 		{
-			Nz::UInt64 now = Nz::GetElapsedMicroseconds();
-			Nz::UInt64 elapsedTime = now - m_lastTime;
-			m_appTime += elapsedTime / 1000;
-			m_lastTime = now;
+			BurgApp::Update();
 
 #if 0
 			if (m_appTime - lastUpdate > 1'000 / 30)
@@ -330,10 +310,10 @@ namespace bw
 			}
 #endif
 
-			m_match->Update(elapsedTime / 1'000'000.f);
+			m_match->Update(GetUpdateTime());
 
 			for (const auto& localMatchPtr : m_localMatches)
-				localMatchPtr->Update(elapsedTime / 1'000'000.f);
+				localMatchPtr->Update(GetUpdateTime());
 
 			for (const auto& reactorPtr : m_reactors)
 			{
@@ -349,12 +329,12 @@ namespace bw
 		return 0;
 	}
 
-	std::shared_ptr<LocalMatch> BurgApp::CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData)
+	std::shared_ptr<LocalMatch> ClientApp::CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData)
 	{
 		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, session, matchData));
 	}
 
-	std::shared_ptr<NetworkClientBridge> BurgApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
+	std::shared_ptr<NetworkClientBridge> ClientApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
 	{
 		constexpr std::size_t MaxPeerCount = 1;
 
@@ -392,18 +372,18 @@ namespace bw
 		return ConnectWithReactor(GetReactor(reactorId).get());
 	}
 
-	void BurgApp::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
+	void ClientApp::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
 	{
 		m_connections[peerId]->OnConnected(data);
 	}
 
-	void BurgApp::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
+	void ClientApp::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
 	{
 		m_connections[peerId]->OnDisconnected(data);
 		m_connections[peerId].reset();
 	}
 
-	void BurgApp::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
+	void ClientApp::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
 	{
 		/*NetworkClientSession::ConnectionInfo connectionInfo;
 		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;
@@ -412,7 +392,7 @@ namespace bw
 		m_connections[peerId]->UpdateInfo(connectionInfo);*/
 	}
 
-	void BurgApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)
+	void ClientApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)
 	{
 		m_connections[peerId]->OnIncomingPacket(packet);
 	}

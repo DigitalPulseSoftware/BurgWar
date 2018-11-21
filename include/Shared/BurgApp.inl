@@ -2,13 +2,15 @@
 // This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Shared/Scripting/ServerEntityStore.hpp>
+#include <Shared/AnimationStore.hpp>
 #include <cassert>
+#include <stdexcept>
+#include "BurgApp.hpp"
 
 namespace bw
 {
-	inline ServerEntityStore::ServerEntityStore(std::shared_ptr<SharedScriptingContext> context) :
-	SharedEntityStore(std::move(context), true)
+	inline Nz::UInt64 bw::BurgApp::GetAppTime() const
 	{
+		return m_appTime;
 	}
 }

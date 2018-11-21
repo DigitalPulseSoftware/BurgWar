@@ -79,7 +79,8 @@ namespace bw
 					if (luaState.GetField("OnAttack") == Nz::LuaType_Function)
 					{
 						luaState.PushValue(-2);
-						luaState.Call(1);
+						if (!luaState.Call(1))
+							std::cerr << "OnAttack hook failed: " << luaState.GetLastError() << std::endl;
 					}
 				}
 			}

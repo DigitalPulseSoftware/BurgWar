@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	Match::Match(std::string matchName, std::size_t maxPlayerCount) :
+	Match::Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount) :
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName))
@@ -38,7 +38,7 @@ namespace bw
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
 		};
 
-		m_terrain = std::make_unique<Terrain>(std::move(mapData));
+		m_terrain = std::make_unique<Terrain>(app, std::move(mapData));
 
 		m_scriptingContext = std::make_shared<SharedScriptingContext>();
 
@@ -51,7 +51,7 @@ namespace bw
 				m_networkStringStore.RegisterString(entity.fullName);
 		});
 
-		m_weaponStore.emplace(m_scriptingContext);
+		m_weaponStore.emplace(app, m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
 
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)

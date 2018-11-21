@@ -6,8 +6,9 @@
 
 namespace bw
 {
-	ScriptComponent::ScriptComponent(std::shared_ptr<SharedScriptingContext> context, int tableRef) :
+	ScriptComponent::ScriptComponent(std::string className, std::shared_ptr<SharedScriptingContext> context, int tableRef) :
 	m_context(std::move(context)),
+	m_className(std::move(className)),
 	m_tableRef(tableRef)
 	{
 	}

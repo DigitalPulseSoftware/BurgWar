@@ -1,44 +1,43 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Server" project
+// Copyright (C) 2018 JÃ©rÃ´me Leclercq
+// This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Server/BurgApp.hpp>
-#include <Shared/NetworkSessionManager.hpp>
+#include <Shared/BurgApp.hpp>
+#include <Nazara/Core/Clock.hpp>
+#include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
+#include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
-#include <iostream>
 
 namespace bw
 {
-	BurgApp::BurgApp(int argc, char* argv[]) :
-	Application(argc, argv)
+	BurgApp::BurgApp() :
+	m_appTime(0),
+	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
+		Ndk::InitializeComponent<AnimationComponent>("Anim");
 		Ndk::InitializeComponent<HealthComponent>("Health");
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
 		Ndk::InitializeComponent<ScriptComponent>("Script");
+		Ndk::InitializeSystem<AnimationSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
-
-		m_match = std::make_unique<Match>("Je suis un match sur le serveur", 10);
-		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 	}
 
-	int BurgApp::Run()
+	void BurgApp::Update()
 	{
-		while (Application::Run())
-		{
-			m_match->Update(GetUpdateTime());
-		}
-
-		return 0;
+		Nz::UInt64 now = Nz::GetElapsedMicroseconds();
+		Nz::UInt64 elapsedTime = now - m_lastTime;
+		m_appTime += elapsedTime / 1000;
+		m_lastTime = now;
 	}
 }

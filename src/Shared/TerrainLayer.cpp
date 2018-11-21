@@ -6,6 +6,7 @@
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
@@ -16,8 +17,9 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(const MapData::Layer& layerData, float tileSize)
+	TerrainLayer::TerrainLayer(BurgApp& app, const MapData::Layer& layerData, float tileSize)
 	{
+		m_world.AddSystem<AnimationSystem>(app);
 		m_world.AddSystem<NetworkSyncSystem>();
 		m_world.AddSystem<PlayerControlledSystem>();
 		m_world.AddSystem<PlayerMovementSystem>();

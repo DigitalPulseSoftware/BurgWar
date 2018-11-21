@@ -12,7 +12,7 @@
 #include <Shared/SessionBridge.hpp>
 #include <Shared/SessionManager.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
-#include <hopstotch/hopscotch_map.h>
+#include <hopscotch/hopscotch_map.h>
 #include <vector>
 
 namespace bw

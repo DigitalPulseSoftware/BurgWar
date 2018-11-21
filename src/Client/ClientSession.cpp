@@ -4,7 +4,7 @@
 
 #include <Client/ClientSession.hpp>
 #include <Shared/NetworkClientBridge.hpp>
-#include <Client/BurgApp.hpp>
+#include <Client/ClientApp.hpp>
 #include <Client/LocalCommandStore.hpp>
 #include <Client/LocalMatch.hpp>
 #include <Nazara/Network/Algorithm.hpp>
@@ -168,5 +168,10 @@ namespace bw
 			m_stringStore.Clear(); //< Reset string store
 
 		m_stringStore.FillStore(packet.startId, packet.strings);
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::PlayAnimation& packet)
+	{
+		std::cout << "[Client] Entity #" << packet.entityId << " plays animation " << +packet.animId << std::endl;
 	}
 }

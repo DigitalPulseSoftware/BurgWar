@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class ClientApp;
 	class LocalCommandStore;
 	class LocalMatch;
 
@@ -26,7 +26,7 @@ namespace bw
 		public:
 			struct ConnectionInfo;
 
-			inline ClientSession(BurgApp& app, const LocalCommandStore& commandStore);
+			inline ClientSession(ClientApp& app, const LocalCommandStore& commandStore);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
@@ -37,8 +37,8 @@ namespace bw
 
 			Nz::UInt64 EstimateMatchTime() const;
 
-			inline BurgApp& GetApp();
-			inline const BurgApp& GetApp() const;
+			inline ClientApp& GetApp();
+			inline const ClientApp& GetApp() const;
 			inline const ConnectionInfo& GetConnectionInfo() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 
@@ -72,10 +72,11 @@ namespace bw
 			void HandleIncomingPacket(const Packets::MatchData& packet);
 			void HandleIncomingPacket(const Packets::MatchState& packet);
 			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
+			void HandleIncomingPacket(const Packets::PlayAnimation& packet);
 			
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<LocalMatch> m_localMatch;
-			BurgApp& m_application;
+			ClientApp& m_application;
 			const LocalCommandStore& m_commandStore;
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;

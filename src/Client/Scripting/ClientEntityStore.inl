@@ -7,4 +7,8 @@
 
 namespace bw
 {
+	inline ClientEntityStore::ClientEntityStore(std::shared_ptr<SharedScriptingContext> context) :
+	SharedEntityStore(std::move(context), false)
+	{
+	}
 }

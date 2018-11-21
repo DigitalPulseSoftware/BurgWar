@@ -11,6 +11,11 @@ namespace bw
 		return m_context;
 	}
 
+	inline const std::string& ScriptComponent::GetClassName() const
+	{
+		return m_className;
+	}
+
 	inline int ScriptComponent::GetTableRef()
 	{
 		return m_tableRef;
