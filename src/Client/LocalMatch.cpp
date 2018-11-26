@@ -5,15 +5,18 @@
 #include <Client/LocalMatch.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/ClientSession.hpp>
+#include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
+#include <Shared/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <NDK/Components.hpp>
+#include <NDK/LuaAPI.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
 #include <iostream>
@@ -29,6 +32,7 @@ namespace bw
 	{
 		m_world.AddSystem<AnimationSystem>(burgApp);
 		m_world.AddSystem<PlayerMovementSystem>();
+		m_world.AddSystem<TickCallbackSystem>();
 
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -131,13 +135,53 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(m_application, i);
 
-		m_scriptingContext = std::make_shared<SharedScriptingContext>();
+		m_scriptingContext = std::make_shared<SharedScriptingContext>(false);
 
 		m_entityStore.emplace(m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");
 
 		m_weaponStore.emplace(m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
+
+		Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+		state.PushFunction([&](Nz::LuaState& state)
+		{
+			int index = 1;
+			Ndk::EntityHandle entity = state.Check<Ndk::EntityHandle>(&index);
+			float fromAngle = state.Check<float>(&index);
+			float toAngle = state.Check<float>(&index);
+			float duration = state.Check<float>(&index);
+			state.CheckType(index, Nz::LuaType_Function);
+
+			state.PushValue(index);
+			int finishFunction = state.CreateReference();
+
+			m_animationManager.PushAnimation(duration, [=](float ratio)
+			{
+				if (!entity)
+				{
+					Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+					state.DestroyReference(finishFunction);
+					return false;
+				}
+
+				float newAngle = Nz::Lerp(fromAngle, toAngle, ratio);
+				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				nodeComponent.SetRotation(Nz::DegreeAnglef(newAngle));
+
+				return true;
+			}, [this, finishFunction]()
+			{
+				Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+				state.PushReference(finishFunction);
+				if (!state.Call(0))
+					std::cerr << "engine_AnimateRotation callback failed: " << state.GetLastError() << std::endl;
+
+				state.DestroyReference(finishFunction);
+			});
+			return 0;
+		});
+		state.SetGlobal("engine_AnimateRotation");
 
 		/*auto& networkStringStore = m_session.GetNetworkStringStore();
 		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
@@ -176,6 +220,7 @@ namespace bw
 
 	void LocalMatch::Update(float elapsedTime)
 	{
+		m_scriptingContext->Update();
 		m_world.Update(elapsedTime);
 
 		Ndk::PhysicsSystem2D::DebugDrawOptions options;
@@ -198,7 +243,7 @@ namespace bw
 
 			if (serverEntity.entity->HasComponent<ScriptComponent>())
 			{
-				const std::string& className = serverEntity.entity->GetComponent<ScriptComponent>().GetClassName();
+				const std::string& className = serverEntity.entity->GetComponent<ScriptComponent>().GetElement()->fullName;
 				if (className == "weapon_sword_emmentalibur")
 				{
 					auto& node = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
@@ -255,6 +300,8 @@ namespace bw
 			m_playerInputTimer -= MaxInputSendInterval;
 			SendInputs();
 		}
+
+		m_animationManager.Update(elapsedTime);
 	}
 
 	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)
@@ -407,7 +454,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth)
+	void LocalMatch::PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId)
 	{
 		auto it = m_serverEntityIdToClient.find(serverId);
 		if (it == m_serverEntityIdToClient.end())
@@ -417,10 +464,8 @@ namespace bw
 		if (!serverEntity.entity)
 			return;
 
-		assert(serverEntity.health);
-		HealthData& healthData = serverEntity.health.value();
-		healthData.currentHealth = newHealth;
-		healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
+		auto& animComponent = serverEntity.entity->GetComponent<AnimationComponent>();
+		animComponent.Play(animId, m_application.GetAppTime());
 	}
 
 	void LocalMatch::SendInputs()
@@ -445,5 +490,21 @@ namespace bw
 
 		if (hasInputData)
 			m_session.SendPacket(m_inputPacket);
+	}
+
+	void LocalMatch::UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth)
+	{
+		auto it = m_serverEntityIdToClient.find(serverId);
+		if (it == m_serverEntityIdToClient.end())
+			return;
+
+		ServerEntity& serverEntity = it.value();
+		if (!serverEntity.entity)
+			return;
+
+		assert(serverEntity.health);
+		HealthData& healthData = serverEntity.health.value();
+		healthData.currentHealth = newHealth;
+		healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
 	}
 }

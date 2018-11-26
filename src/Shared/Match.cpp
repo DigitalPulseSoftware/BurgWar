@@ -40,7 +40,7 @@ namespace bw
 
 		m_terrain = std::make_unique<Terrain>(app, std::move(mapData));
 
-		m_scriptingContext = std::make_shared<SharedScriptingContext>();
+		m_scriptingContext = std::make_shared<SharedScriptingContext>(true);
 
 		m_entityStore.emplace(m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");
@@ -103,6 +103,7 @@ namespace bw
 
 	void Match::Update(float elapsedTime)
 	{
+		m_scriptingContext->Update();
 		m_sessions.Poll();
 		m_terrain->Update(elapsedTime);
 

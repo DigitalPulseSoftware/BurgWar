@@ -6,4 +6,8 @@
 
 namespace bw
 {
+	inline AnimationManager& bw::LocalMatch::GetAnimationManager()
+	{
+		return m_animationManager;
+	}
 }

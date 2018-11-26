@@ -11,7 +11,7 @@ namespace bw
 	ServerApp::ServerApp(int argc, char* argv[]) :
 	Application(argc, argv)
 	{
-		m_match = std::make_unique<Match>("Je suis un match sur le serveur", 10);
+		m_match = std::make_unique<Match>(*this, "Je suis un match sur le serveur", 10);
 		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 	}
 

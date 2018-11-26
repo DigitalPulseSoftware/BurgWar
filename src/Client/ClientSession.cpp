@@ -173,5 +173,6 @@ namespace bw
 	void ClientSession::HandleIncomingPacket(const Packets::PlayAnimation& packet)
 	{
 		std::cout << "[Client] Entity #" << packet.entityId << " plays animation " << +packet.animId << std::endl;
+		m_localMatch->PlayAnimation(packet.entityId, packet.animId);
 	}
 }

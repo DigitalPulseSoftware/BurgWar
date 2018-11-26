@@ -7,25 +7,32 @@
 #ifndef BURGWAR_SHARED_SCRIPTINGCONTEXT_HPP
 #define BURGWAR_SHARED_SCRIPTINGCONTEXT_HPP
 
+#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <Nazara/Lua/LuaInstance.hpp>
 #include <filesystem>
+#include <vector>
 
 namespace bw
 {
 	class SharedScriptingContext
 	{
 		public:
-			SharedScriptingContext();
+			SharedScriptingContext(bool isServer);
 			virtual ~SharedScriptingContext();
+
+			Nz::LuaCoroutine& CreateCoroutine();
 
 			inline Nz::LuaInstance& GetLuaInstance();
 			inline const Nz::LuaInstance& GetLuaInstance() const;
 
 			bool Load(const std::filesystem::path& folderOrFile);
 
+			void Update();
+
 		private:
 			void RegisterMetatableLibrary();
 
+			std::vector<Nz::LuaCoroutine> m_coroutines;
 			Nz::LuaInstance m_luaInstance;
 	};
 }

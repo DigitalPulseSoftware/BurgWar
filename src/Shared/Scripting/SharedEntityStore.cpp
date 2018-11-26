@@ -85,19 +85,7 @@ namespace bw
 
 	void SharedEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& element)
 	{
-		Nz::LuaType initType = state.GetField("Initialize");
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-		if (initType != Nz::LuaType_Nil)
-		{
-			if (initType != Nz::LuaType_Function)
-				throw std::runtime_error("Initialize must be a function if defined");
-
-			element.initializeFunction = state.CreateReference();
-			popOnExit.Reset();
-		}
-		else
-			element.initializeFunction = -1;
+		element.initializeFunction = GetScriptFunction(state, "Initialize");
 	}
 
 	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity)
@@ -112,7 +100,7 @@ namespace bw
 
 		int tableRef = state.CreateReference();
 
-		entity->AddComponent<ScriptComponent>(entityClass.fullName, GetScriptingContext(), tableRef);
+		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), tableRef);
 
 		if (entityClass.initializeFunction != -1)
 		{

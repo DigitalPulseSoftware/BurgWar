@@ -7,9 +7,12 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 
+#include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <limits>
+#include <memory>
+#include <type_traits>
 #include <vector>
 
 namespace bw
@@ -17,13 +20,15 @@ namespace bw
 	template<typename Element>
 	class ScriptStore
 	{
+		static_assert(std::is_base_of_v<ScriptedElement, Element>);
+
 		public:
 			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
 
-			inline const Element& GetElement(std::size_t index) const;
+			inline const std::shared_ptr<Element>& GetElement(std::size_t index) const;
 			inline std::size_t GetElementIndex(const std::string& name) const;
 
 			bool Load(const std::string& folder);
@@ -40,11 +45,13 @@ namespace bw
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);
 
+			static int GetScriptFunction(Nz::LuaState& state, const std::string& functionName);
+
 		private:
 			std::shared_ptr<SharedScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;
-			std::vector<Element> m_elements;
+			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
 			bool m_isServer;
 	};

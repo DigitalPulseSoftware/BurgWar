@@ -21,11 +21,11 @@ namespace bw
 	void ScriptStore<Element>::ForEachElement(const F& func) const
 	{
 		for (const auto& entity : m_elements)
-			func(entity);
+			func(static_cast<const Element&>(*entity));
 	}
 	
 	template<typename Element>
-	const Element& ScriptStore<Element>::GetElement(std::size_t index) const
+	const std::shared_ptr<Element>& ScriptStore<Element>::GetElement(std::size_t index) const
 	{
 		assert(index < m_elements.size());
 		return m_elements[index];
@@ -113,16 +113,18 @@ namespace bw
 						Load(folderPath / "cl_init.lua");
 				}
 
-				Element element;
-				element.name = std::move(elementName);
-				element.fullName = m_elementTypeName + "_" + element.name;
-				element.tableRef = tableRef;
+				std::shared_ptr<Element> element = std::make_shared<Element>();
+				element->name = std::move(elementName);
+				element->fullName = m_elementTypeName + "_" + element->name;
+				element->tableRef = tableRef;
 
 				state.PushReference(tableRef);
 
+				element->tickFunction = GetScriptFunction(state, "OnTick");
+
 				try
 				{
-					InitializeElement(state, element);
+					InitializeElement(state, *element);
 				}
 				catch (const std::exception& e)
 				{
@@ -136,7 +138,7 @@ namespace bw
 
 				destroyRef.Reset();
 
-				m_elementsByName[element.fullName] = m_elements.size();
+				m_elementsByName[element->fullName] = m_elements.size();
 				m_elements.emplace_back(std::move(element));
 			}
 		}
@@ -169,5 +171,25 @@ namespace bw
 	void ScriptStore<Element>::SetTableName(std::string tableName)
 	{
 		m_tableName = std::move(tableName);
+	}
+
+	template<typename Element>
+	int ScriptStore<Element>::GetScriptFunction(Nz::LuaState& state, const std::string& functionName)
+	{
+		Nz::LuaType initType = state.GetField(functionName);
+		Nz::CallOnExit popOnExit([&] { state.Pop(); });
+
+		if (initType != Nz::LuaType_Nil)
+		{
+			if (initType != Nz::LuaType_Function)
+				throw std::runtime_error(functionName + " must be a function if defined");
+
+			int funcId = state.CreateReference();
+			popOnExit.Reset();
+
+			return funcId;
+		}
+		else
+			return -1;
 	}
 }

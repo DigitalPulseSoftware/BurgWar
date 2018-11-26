@@ -10,6 +10,7 @@
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
+#include <Shared/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Physics2D/Arbiter2D.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
@@ -23,6 +24,7 @@ namespace bw
 		m_world.AddSystem<NetworkSyncSystem>();
 		m_world.AddSystem<PlayerControlledSystem>();
 		m_world.AddSystem<PlayerMovementSystem>();
+		m_world.AddSystem<TickCallbackSystem>();
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));

@@ -31,6 +31,7 @@ namespace bw
 		AuthFailure,
 		AuthSuccess,
 		CreateEntities,
+		ControlEntity,
 		DeleteEntities,
 		HealthUpdate,
 		HelloWorld,
@@ -96,6 +97,12 @@ namespace bw
 			};
 
 			std::vector<Entity> entities;
+		};
+
+		DeclarePacket(ControlEntity)
+		{
+			Nz::UInt8 playerIndex;
+			CompressedUnsigned<Nz::UInt32> entityId;
 		};
 
 		DeclarePacket(DeleteEntities)
@@ -187,6 +194,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
+		void Serialize(PacketSerializer& serializer, ControlEntity& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_COMPONENTS_SCRIPTCOMPONENT_HPP
 #define BURGWAR_SHARED_COMPONENTS_SCRIPTCOMPONENT_HPP
 
+#include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Component.hpp>
 #include <string>
@@ -17,18 +18,18 @@ namespace bw
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			ScriptComponent(std::string className, std::shared_ptr<SharedScriptingContext> context, int tableRef);
+			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, int tableRef);
 			~ScriptComponent();
 
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
-			inline const std::string& GetClassName() const;
+			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline int GetTableRef();
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<SharedScriptingContext> m_context;
-			std::string m_className;
 			int m_tableRef;
 	};
 }

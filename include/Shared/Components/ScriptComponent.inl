@@ -11,9 +11,9 @@ namespace bw
 		return m_context;
 	}
 
-	inline const std::string& ScriptComponent::GetClassName() const
+	inline const std::shared_ptr<const ScriptedElement>& ScriptComponent::GetElement() const
 	{
-		return m_className;
+		return m_element;
 	}
 
 	inline int ScriptComponent::GetTableRef()

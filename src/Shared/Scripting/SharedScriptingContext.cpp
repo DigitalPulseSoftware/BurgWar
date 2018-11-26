@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <NDK/LuaAPI.hpp>
 #include <NDK/Lua/LuaBinding.hpp>
 #include <filesystem>
@@ -10,7 +11,7 @@
 
 namespace bw
 {
-	SharedScriptingContext::SharedScriptingContext()
+	SharedScriptingContext::SharedScriptingContext(bool isServer)
 	{
 		m_luaInstance.LoadLibraries();
 		Ndk::LuaAPI::GetBinding()->RegisterClasses(m_luaInstance);
@@ -18,9 +19,21 @@ namespace bw
 		RegisterMetatableLibrary();
 
 		Load("../../scripts/autorun");
+
+		m_luaInstance.PushGlobal("SERVER", isServer);
+		m_luaInstance.PushGlobal("CLIENT", !isServer);
 	}
 
-	SharedScriptingContext::~SharedScriptingContext() = default;
+	SharedScriptingContext::~SharedScriptingContext()
+	{
+		// Destroy coroutines before destroying lua instance
+		m_coroutines.clear();
+	}
+
+	Nz::LuaCoroutine& SharedScriptingContext::CreateCoroutine()
+	{
+		return m_coroutines.emplace_back(m_luaInstance.NewCoroutine());
+	}
 
 	bool SharedScriptingContext::Load(const std::filesystem::path& folderOrFile)
 	{
@@ -46,6 +59,18 @@ namespace bw
 		}
 
 		return true;
+	}
+
+	void SharedScriptingContext::Update()
+	{
+		for (auto it = m_coroutines.begin(); it != m_coroutines.end();)
+		{
+			// Is coroutine dead/finished?
+			if (!it->CanResume())
+				it = m_coroutines.erase(it);
+			else
+				++it;
+		}
 	}
 
 	void SharedScriptingContext::RegisterMetatableLibrary()

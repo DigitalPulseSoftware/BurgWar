@@ -7,13 +7,15 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 
+#include <memory>
 #include <string>
 
 namespace bw
 {
-	struct ScriptedElement
+	struct ScriptedElement : std::enable_shared_from_this<ScriptedElement>
 	{
 		int tableRef;
+		int tickFunction;
 		std::string name;
 		std::string fullName;
 	};

@@ -97,6 +97,12 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, ControlEntity& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.entityId;
+		}
+
 		void Serialize(PacketSerializer & serializer, DeleteEntities& data)
 		{
 			serializer.SerializeArraySize(data.entities);

@@ -15,7 +15,7 @@ namespace bw
 {
 	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent)
 	{
-		auto& weaponClass = GetElement(entityIndex);
+		auto& weaponClass = *GetElement(entityIndex);
 
 		Nz::LuaState& state = GetLuaState();
 

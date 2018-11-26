@@ -14,6 +14,7 @@
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
+#include <Shared/Systems/TickCallbackSystem.hpp>
 
 namespace bw
 {
@@ -31,6 +32,7 @@ namespace bw
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerControlledSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
+		Ndk::InitializeSystem<TickCallbackSystem>();
 	}
 
 	void BurgApp::Update()

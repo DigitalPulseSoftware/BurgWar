@@ -10,6 +10,7 @@
 #include <Client/LocalInputController.hpp>
 #include <Client/Scripting/ClientEntityStore.hpp>
 #include <Client/Scripting/ClientWeaponStore.hpp>
+#include <Shared/AnimationManager.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -32,14 +33,17 @@ namespace bw
 			LocalMatch(ClientApp& burgApp, ClientSession& session, const Packets::MatchData& matchData);
 			~LocalMatch() = default;
 
+			inline AnimationManager& GetAnimationManager();
+
 			void Update(float elapsedTime);
 
 		private:
 			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
-			void UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth);
+			void PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId);
 			void SendInputs();
+			void UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth);
 
 			struct HealthData
 			{
@@ -78,6 +82,7 @@ namespace bw
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::World m_world;
+			AnimationManager m_animationManager;
 			ClientApp& m_application;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;

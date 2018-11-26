@@ -8,6 +8,7 @@
 #include <NDK/LuaAPI.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
+#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -43,6 +44,17 @@ namespace bw
 			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
+			float rot = nodeComponent.GetRotation().ToEulerAngles().roll;
+			state.Push(rot);
+			return 1;
+		});
+		state.SetField("GetRotation");
+
+		state.PushFunction([](Nz::LuaState& state) -> int
+		{
+			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+
 			state.PushBoolean(nodeComponent.GetScale().x > 0.f);
 			return 1;
 		});
@@ -51,10 +63,12 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
 	{
+		std::cout << state.DumpStack() << std::endl;
+
 		weapon.weaponOffset = state.CheckField<Nz::Vector2f>("WeaponOffset", Nz::Vector2f::Zero());
 
 		Nz::LuaType animationType = state.GetField("Animations");
-		Nz::CallOnExit popAnimations([&] { state.Pop(); });
+		Nz::CallOnExit popOnExit([&] { state.Pop(); });
 
 		if (animationType != Nz::LuaType_Nil)
 		{
@@ -92,12 +106,14 @@ namespace bw
 				}
 
 				state.Pop();
-
-				std::cout << state.DumpStack() << std::endl;
 			}
 
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
 		}
+
+		popOnExit.CallAndReset();
+
+		weapon.animationStartFunction = GetScriptFunction(state, "OnAnimationStart");
 	}
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
@@ -105,24 +121,6 @@ namespace bw
 		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);
-
-		if (weaponClass.animations)
-		{
-			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
-			anim.OnAnimationStart.Connect([](AnimationComponent* anim)
-			{
-				Nz::UInt64 now = Nz::GetElapsedMicroseconds();
-				const auto& animStore = anim->GetAnimationStore();
-				std::cout << "Entity #" << anim->GetEntity()->GetId() << " plays " << animStore->GetAnimation(anim->GetAnimId()).animationName << " (" << now << ")" << std::endl;
-			});
-
-			anim.OnAnimationEnd.Connect([](AnimationComponent* anim)
-			{
-				Nz::UInt64 now = Nz::GetElapsedMicroseconds();
-				const auto& animStore = anim->GetAnimationStore();
-				std::cout << "Entity #" << anim->GetEntity()->GetId() << " stopped playing " << animStore->GetAnimation(anim->GetAnimId()).animationName << " (" << now << ")" << std::endl;
-			});
-		}
 
 		Nz::LuaState& state = GetLuaState();
 		state.PushTable();
@@ -134,7 +132,31 @@ namespace bw
 
 		int tableRef = state.CreateReference();
 
-		entity->AddComponent<ScriptComponent>(weaponClass.fullName, GetScriptingContext(), tableRef);
+		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), tableRef);
+
+		if (weaponClass.animations)
+		{
+			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
+
+			if (int callbackId = weaponClass.animationStartFunction; callbackId != -1)
+			{
+				anim.OnAnimationStart.Connect([callbackId](AnimationComponent* anim)
+				{
+					const Ndk::EntityHandle& entity = anim->GetEntity();
+					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+
+					auto& co = scriptComponent.GetContext()->CreateCoroutine();
+
+					co.PushReference(callbackId);
+					co.PushReference(scriptComponent.GetTableRef());
+					co.Push(anim->GetAnimId());
+
+					Nz::Ternary status = co.Resume(2);
+					if (status == Nz::Ternary_False)
+						std::cerr << "OnAnimationStart() failed: " << co.GetLastError() << std::endl;
+				});
+			}
+		}
 
 		return true;
 	}

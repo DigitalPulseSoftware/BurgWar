@@ -7,12 +7,12 @@
 
 namespace bw
 {
-	inline Nz::LuaInstance& bw::SharedScriptingContext::GetLuaInstance()
+	inline Nz::LuaInstance& SharedScriptingContext::GetLuaInstance()
 	{
 		return m_luaInstance;
 	}
 
-	inline const Nz::LuaInstance& bw::SharedScriptingContext::GetLuaInstance() const
+	inline const Nz::LuaInstance& SharedScriptingContext::GetLuaInstance() const
 	{
 		return m_luaInstance;
 	}

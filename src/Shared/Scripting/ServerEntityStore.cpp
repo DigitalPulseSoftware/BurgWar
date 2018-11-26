@@ -20,7 +20,7 @@ namespace bw
 {
 	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex)
 	{
-		auto& entityClass = GetElement(entityIndex);
+		auto& entityClass = *GetElement(entityIndex);
 
 		Nz::LuaState& state = GetLuaState();
 
