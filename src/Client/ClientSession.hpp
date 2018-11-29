@@ -65,6 +65,7 @@ namespace bw
 		private:
 			void HandleIncomingPacket(const Packets::AuthFailure& packet);
 			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
+			void HandleIncomingPacket(const Packets::ControlEntity& packet);
 			void HandleIncomingPacket(const Packets::CreateEntities& packet);
 			void HandleIncomingPacket(const Packets::DeleteEntities& packet);
 			void HandleIncomingPacket(const Packets::HealthUpdate& packet);

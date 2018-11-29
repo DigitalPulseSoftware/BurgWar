@@ -24,6 +24,7 @@ namespace bw
 		// Outgoing commands
 		OutgoingCommand(AuthFailure,    Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(AuthSuccess,    Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(ControlEntity,  Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(CreateEntities, Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(DeleteEntities, Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(HealthUpdate,   Nz::ENetPacketFlag_Reliable, 0);

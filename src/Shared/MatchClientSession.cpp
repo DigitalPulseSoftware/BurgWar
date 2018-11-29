@@ -57,7 +57,7 @@ namespace bw
 		std::vector<Player> players;
 		for (Nz::UInt8 i = 0; i < packet.playerCount; ++i)
 		{
-			Player& player = players.emplace_back(*this, "Noname");
+			Player& player = players.emplace_back(*this, i, "Noname");
 			if (!m_match.Join(&player))
 			{
 				SendPacket(Packets::AuthFailure());

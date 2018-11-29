@@ -19,4 +19,14 @@ namespace bw
 	{
 		return m_activeLayer;
 	}
+
+	template<typename T>
+	void MatchClientVisibility::SendEntityPacket(Nz::UInt32 entityId, T&& packet)
+	{
+		auto it = m_pendingEntitiesEvent.find(entityId);
+		if (it == m_pendingEntitiesEvent.end())
+			it = m_pendingEntitiesEvent.emplace(entityId, std::vector<EntityPacketSendFunction>()).first;
+
+		it.value().emplace_back([this, packet = std::forward<T>(packet)]() { m_session.SendPacket(packet); });
+	}
 }

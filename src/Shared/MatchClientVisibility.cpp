@@ -131,6 +131,17 @@ namespace bw
 			if (m_activeLayer != NoLayer)
 				SendMatchState(elapsedTime);
 		}
+
+		for (auto it = m_pendingEntitiesEvent.begin(); it != m_pendingEntitiesEvent.end(); ++it)
+		{
+			if (!m_visibleEntities.UnboundedTest(it.key()))
+				continue;
+
+			auto& callbackVec = it.value();
+			for (auto&& func : callbackVec)
+				func();
+		}
+		m_pendingEntitiesEvent.clear();
 	}
 
 	void MatchClientVisibility::UpdateLayer(std::size_t layerIndex)

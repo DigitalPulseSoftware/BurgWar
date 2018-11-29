@@ -19,6 +19,7 @@ namespace bw
 		// Incoming commands
 		IncomingCommand(AuthFailure);
 		IncomingCommand(AuthSuccess);
+		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
 		IncomingCommand(HealthUpdate);

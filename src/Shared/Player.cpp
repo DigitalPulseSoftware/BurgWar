@@ -16,9 +16,10 @@
 
 namespace bw
 {
-	Player::Player(MatchClientSession& session, std::string playerName) :
+	Player::Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string playerName) :
 	m_layerIndex(std::numeric_limits<std::size_t>::max()),
 	m_name(std::move(playerName)),
+	m_playerIndex(playerIndex),
 	m_session(session)
 	{
 	}
@@ -43,7 +44,7 @@ namespace bw
 
 			burger->GetComponent<Ndk::PhysicsComponent2D>().SetPosition({ 200.f + (huglyCount++) * 100.f, 100.f });
 
-			m_playerEntity = burger;
+			UpdateControlledEntity(burger);
 
 			// Create weapon
 			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_sword_emmentalibur"); weaponIndex != ServerEntityStore::InvalidIndex)
@@ -53,6 +54,17 @@ namespace bw
 		}
 
 		return Ndk::EntityHandle::InvalidHandle;
+	}
+
+	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
+	{
+		m_playerEntity = entity;
+
+		Packets::ControlEntity controlEntity;
+		controlEntity.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
+		controlEntity.playerIndex = m_playerIndex;
+
+		m_session.GetVisibility().SendEntityPacket(controlEntity.entityId, controlEntity);
 	}
 
 	void Player::UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight)

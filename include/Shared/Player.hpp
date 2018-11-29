@@ -25,7 +25,7 @@ namespace bw
 		friend Match;
 
 		public:
-			Player(MatchClientSession& session, std::string name);
+			Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string name);
 			Player(const Player&) = delete;
 			Player(Player&&) noexcept = default;
 			~Player();
@@ -39,6 +39,7 @@ namespace bw
 
 			template<typename T> void SendPacket(const T& packet);
 
+			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight);
 
 			Player& operator=(const Player&) = delete;
@@ -53,6 +54,7 @@ namespace bw
 			Ndk::EntityOwner m_playerEntity;
 			Ndk::EntityOwner m_playerWeapon;
 			Nz::MovablePtr<Match> m_match;
+			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;
 	};
 }
