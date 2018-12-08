@@ -1,7 +1,7 @@
-WEAPON.Scale = 0.714
+WEAPON.Scale = 0.6
 WEAPON.Sprite = "../resources/emmentalibur.png"
 WEAPON.SpriteOrigin = Vec2(40, 284) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(30, -80) -- This should not be here
+WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
 WEAPON.Cooldown = 0.3
 WEAPON.Animations = {
 	{"attack", 0.3}
@@ -13,8 +13,8 @@ function WEAPON:OnAttack()
 	end
 
 	local pos = self:GetPosition()
-	local maxs = Vec2(160, 74)
-	local mins = Vec2(40, -76)
+	local maxs = Vec2(128, 66)
+	local mins = Vec2(28, -76)
 
 	if (not self:IsLookingRight()) then
 		maxs = maxs * -1

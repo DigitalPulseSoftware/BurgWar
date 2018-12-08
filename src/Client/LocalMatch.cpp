@@ -234,27 +234,6 @@ namespace bw
 
 		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
 
-		Nz::DebugDrawer::SetPrimaryColor(Nz::Color::Blue);
-		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
-		{
-			ServerEntity& serverEntity = it.value();
-			if (!serverEntity.entity)
-				continue;
-
-			if (serverEntity.entity->HasComponent<ScriptComponent>())
-			{
-				const std::string& className = serverEntity.entity->GetComponent<ScriptComponent>().GetElement()->fullName;
-				if (className == "weapon_sword_emmentalibur")
-				{
-					auto& node = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-					Nz::Vector3f pos = node.GetPosition();
-
-					Nz::DebugDrawer::Draw(Nz::Boxf(pos.x + 40.f, pos.y - 76.f, pos.z, 120.f, 150.f, 1.f));
-				}
-			}
-		}
-		Nz::DebugDrawer::SetPrimaryColor(Nz::Color::Red);
-
 		constexpr float ErrorCorrectionPerSecond = 60;
 
 		m_errorCorrectionTimer += elapsedTime;

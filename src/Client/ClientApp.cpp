@@ -27,7 +27,7 @@ namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
 	Application(argc, argv),
-	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(800, 600), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8)))
+	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(1280, 720), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8)))
 #if 0
 	m_world(AddWorld()),
 	m_lastTime(Nz::GetElapsedMicroseconds() / 1000),
