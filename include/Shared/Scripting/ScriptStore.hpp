@@ -17,13 +17,15 @@
 
 namespace bw
 {
+	class Gamemode;
+
 	template<typename Element>
 	class ScriptStore
 	{
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer);
+			inline ScriptStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -40,6 +42,7 @@ namespace bw
 			virtual void InitializeElement(Nz::LuaState& state, Element& element) = 0;
 
 			Nz::LuaState& GetLuaState();
+			const std::shared_ptr<Gamemode>& GetGamemode();
 			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext();
 
 			void SetElementTypeName(std::string typeName);
@@ -48,6 +51,7 @@ namespace bw
 			static int GetScriptFunction(Nz::LuaState& state, const std::string& functionName);
 
 		private:
+			std::shared_ptr<Gamemode> m_gamemode;
 			std::shared_ptr<SharedScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;

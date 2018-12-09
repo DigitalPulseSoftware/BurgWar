@@ -1,5 +1,5 @@
 // Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Match.hpp>
@@ -20,6 +20,11 @@ namespace bw
 	inline Nz::LuaInstance& Match::GetLuaInstance()
 	{
 		return m_scriptingContext->GetLuaInstance();
+	}
+
+	inline const std::shared_ptr<Gamemode>& Match::GetGamemode()
+	{
+		return m_gamemode;
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const

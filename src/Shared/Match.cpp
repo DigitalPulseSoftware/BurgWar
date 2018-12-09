@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Match.hpp>
+#include <Shared/Gamemode.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/Player.hpp>
 #include <Shared/Terrain.hpp>
@@ -13,7 +14,7 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount) :
+	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeName, std::size_t maxPlayerCount) :
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName))
@@ -45,7 +46,9 @@ namespace bw
 
 		m_scriptingContext = std::make_shared<SharedScriptingContext>(true);
 
-		m_entityStore.emplace(m_scriptingContext);
+		m_gamemode = std::make_shared<Gamemode>(*this, m_scriptingContext, gamemodeName, std::filesystem::path("../../scripts/gamemodes") / gamemodeName);
+
+		m_entityStore.emplace(m_gamemode, m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");
 
 		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
@@ -54,7 +57,7 @@ namespace bw
 				m_networkStringStore.RegisterString(entity.fullName);
 		});
 
-		m_weaponStore.emplace(app, m_scriptingContext);
+		m_weaponStore.emplace(app, m_gamemode, m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
 
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
@@ -62,15 +65,7 @@ namespace bw
 			m_networkStringStore.RegisterString(weapon.fullName);
 		});
 
-
-		if (std::size_t entityIndex = m_entityStore->GetElementIndex("entity_box"); entityIndex != ServerEntityStore::InvalidIndex)
-		{
-			const Ndk::EntityHandle& box = m_entityStore->InstantiateEntity(m_terrain->GetLayer(0).GetWorld(), entityIndex);
-			if (!box)
-				return;
-
-			box->GetComponent<Ndk::PhysicsComponent2D>().SetPosition({ 500.f, 100.f });
-		}
+		m_gamemode->ExecuteCallback("OnInit");
 	}
 
 	Match::~Match() = default;
@@ -112,8 +107,9 @@ namespace bw
 
 		m_sessions.ForEachSession([&](MatchClientSession* session)
 		{
-			session->GetVisibility().UpdateLayer(0); //< HAAAAAX
 			session->Update(elapsedTime);
 		});
+
+		m_gamemode->ExecuteCallback("OnTick");
 	}
 }

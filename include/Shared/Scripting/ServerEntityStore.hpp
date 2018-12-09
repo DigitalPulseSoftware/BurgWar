@@ -17,7 +17,7 @@ namespace bw
 	class ServerEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ServerEntityStore(std::shared_ptr<SharedScriptingContext> context);
+			inline ServerEntityStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
 			~ServerEntityStore() = default;
 
 			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex);

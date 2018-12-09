@@ -1,5 +1,5 @@
 // Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -21,6 +21,7 @@
 namespace bw
 {
 	class BurgApp;
+	class Gamemode;
 	class Player;
 	class Terrain;
 
@@ -29,8 +30,9 @@ namespace bw
 	class Match
 	{
 		public:
-			Match(BurgApp& app, std::string matchName, std::size_t maxPlayerCount);
+			Match(BurgApp& app, std::string matchName, const std::string& gamemodeName, std::size_t maxPlayerCount);
 			Match(const Match&) = delete;
+			Match(Match&&) = delete;
 			~Match();
 
 			void Leave(Player* player);
@@ -38,6 +40,7 @@ namespace bw
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
 			inline Nz::LuaInstance& GetLuaInstance();
+			inline const std::shared_ptr<Gamemode>& GetGamemode();
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
@@ -51,11 +54,13 @@ namespace bw
 			void Update(float elapsedTime);
 
 			Match& operator=(const Match&) = delete;
+			Match& operator=(Match&&) = delete;
 
 		private:
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
+			std::shared_ptr<Gamemode> m_gamemode;
 			std::shared_ptr<SharedScriptingContext> m_scriptingContext;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;

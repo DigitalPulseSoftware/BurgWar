@@ -41,7 +41,7 @@ namespace bw
 	template<typename T>
 	void ClientSession::SendPacket(const T& packet)
 	{
-		if (!m_isConnected)
+		if (!IsConnected())
 			return;
 
 		Nz::NetPacket data;

@@ -21,15 +21,9 @@ namespace bw
 		if (!bridge)
 			return false;
 
-		bridge->OnConnected.Connect([this](Nz::UInt32 /*data*/)
-		{
-			m_isConnected = true;
-		});
-
 		bridge->OnDisconnected.Connect([this](Nz::UInt32 /*data*/)
 		{
-			m_isConnected = false;
-			m_bridge.reset();
+			m_bridge.reset(); //< FIXME: Release during slot, hmm
 		});
 
 		bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)

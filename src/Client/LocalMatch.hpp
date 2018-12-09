@@ -70,7 +70,7 @@ namespace bw
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
-				bool isPhysics;
+				bool isPhysical;
 			};
 
 			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);

@@ -33,7 +33,16 @@ namespace bw
 			OnHealthChange(this);
 
 			if (m_currentHealth == 0)
-				OnDeath(this, attacker);
+			{
+				OnDying(this, attacker);
+
+				// Recheck health in case a slot gave us health
+				if (m_currentHealth == 0)
+				{
+					OnDied(this, attacker);
+					m_entity->Kill();
+				}
+			}
 		}
 	}
 

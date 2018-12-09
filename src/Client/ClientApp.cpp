@@ -38,9 +38,10 @@ namespace bw
 	m_isMoving(false)
 #endif
 	{
+		m_mainWindow.EnableVerticalSync(false);
 		m_mainWindow.SetFramerateLimit(100);
 
-		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", 10);
+		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", "test", 10);
 		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
 		NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 

@@ -28,7 +28,8 @@ namespace bw
 
 			static Ndk::ComponentIndex componentIndex;
 
-			NazaraSignal(OnDeath, HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
+			NazaraSignal(OnDying, HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
+			NazaraSignal(OnDied, const HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
 			NazaraSignal(OnHealthChange, HealthComponent* /*emitter*/);
 
 		private:

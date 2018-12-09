@@ -28,6 +28,9 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		physics.SetMaximumUpdateRate(20.f);
+		/*physics.SetMaxStepCount(3);
+		physics.SetStepSize(1.f / 40.f);*/
 
 		Ndk::PhysicsSystem2D::Callback cb;
 		cb.endCallback = [&](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)

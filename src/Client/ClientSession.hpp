@@ -82,7 +82,6 @@ namespace bw
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;
 			Nz::UInt64 m_deltaTime;
-			bool m_isConnected;
 	};
 }
 

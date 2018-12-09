@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	inline ServerEntityStore::ServerEntityStore(std::shared_ptr<SharedScriptingContext> context) :
-	SharedEntityStore(std::move(context), true)
+	inline ServerEntityStore::ServerEntityStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context) :
+	SharedEntityStore(std::move(gamemode), std::move(context), true)
 	{
 	}
 }

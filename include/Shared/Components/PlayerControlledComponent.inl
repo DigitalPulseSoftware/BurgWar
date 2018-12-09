@@ -6,12 +6,18 @@
 
 namespace bw
 {
-	inline PlayerControlledComponent::PlayerControlledComponent() :
+	inline PlayerControlledComponent::PlayerControlledComponent(PlayerHandle owner) :
+	m_owner(std::move(owner)),
 	m_isJumping(false),
 	m_isMovingLeft(false),
 	m_isMovingRight(false),
 	m_isOnGround(false)
 	{
+	}
+
+	inline Player* PlayerControlledComponent::GetOwner() const
+	{
+		return m_owner;
 	}
 
 	inline bool PlayerControlledComponent::IsJumping() const

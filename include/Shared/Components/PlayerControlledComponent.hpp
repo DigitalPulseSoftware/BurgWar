@@ -8,6 +8,7 @@
 #define BURGWAR_SHARED_COMPONENTS_PLAYERCONTROLLED_HPP
 
 #include <NDK/Component.hpp>
+#include <Shared/Player.hpp>
 #include <vector>
 
 namespace bw
@@ -18,8 +19,10 @@ namespace bw
 		friend class TerrainLayer;
 
 		public:
-			PlayerControlledComponent();
+			PlayerControlledComponent(PlayerHandle owner);
 			~PlayerControlledComponent() = default;
+
+			inline Player* GetOwner() const;
 
 			inline bool IsJumping() const;
 			inline bool IsMovingLeft() const;
@@ -35,6 +38,7 @@ namespace bw
 		private:
 			inline bool UpdateGroundState(bool isOnGround);
 
+			PlayerHandle m_owner;
 			bool m_isJumping;
 			bool m_isMovingLeft;
 			bool m_isMovingRight;

@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	inline ClientWeaponStore::ClientWeaponStore(std::shared_ptr<SharedScriptingContext> context) :
-	SharedWeaponStore(std::move(context), false)
+	inline ClientWeaponStore::ClientWeaponStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context) :
+	SharedWeaponStore(std::move(gamemode), std::move(context), false)
 	{
 	}
 }

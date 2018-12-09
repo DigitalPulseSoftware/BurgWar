@@ -40,6 +40,9 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		/*physics.SetMaximumUpdateRate(20.f);
+		physics.SetMaxStepCount(3);
+		physics.SetStepSize(1.f / 40.f);*/
 
 		Ndk::EntityHandle camera = m_world.CreateEntity();
 		camera->AddComponent<Ndk::NodeComponent>().SetPosition(Nz::Vector2f(0.f, 0.f));
@@ -137,10 +140,10 @@ namespace bw
 
 		m_scriptingContext = std::make_shared<SharedScriptingContext>(false);
 
-		m_entityStore.emplace(m_scriptingContext);
+		m_entityStore.emplace(nullptr, m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");
 
-		m_weaponStore.emplace(m_scriptingContext);
+		m_weaponStore.emplace(nullptr, m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
 
 		Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
@@ -223,7 +226,7 @@ namespace bw
 		m_scriptingContext->Update();
 		m_world.Update(elapsedTime);
 
-		Ndk::PhysicsSystem2D::DebugDrawOptions options;
+		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
 		{
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
@@ -232,7 +235,7 @@ namespace bw
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
 		};
 
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 
 		constexpr float ErrorCorrectionPerSecond = 60;
 
@@ -247,7 +250,7 @@ namespace bw
 				if (!serverEntity.entity)
 					continue;
 
-				if (serverEntity.isPhysics)
+				if (serverEntity.isPhysical)
 				{
 					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
 					auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -335,7 +338,7 @@ namespace bw
 		{
 			ServerEntity serverEntity;
 			serverEntity.entity = entity;
-			serverEntity.isPhysics = isPhysical;
+			serverEntity.isPhysical = isPhysical;
 
 			if (maxHealth != 0)
 			{
@@ -402,7 +405,7 @@ namespace bw
 		if (!serverEntity.entity)
 			return;
 
-		if (serverEntity.isPhysics)
+		if (serverEntity.isPhysical)
 		{
 			auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
 
@@ -423,6 +426,7 @@ namespace bw
 
 			physComponent.SetAngularVelocity(newAngularVel);
 			physComponent.SetPosition(newPos);
+			physComponent.SetRotation(newRot);
 			physComponent.SetVelocity(newLinearVel);
 		}
 		else

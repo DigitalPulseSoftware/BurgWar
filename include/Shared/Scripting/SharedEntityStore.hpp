@@ -17,7 +17,7 @@ namespace bw
 	class SharedEntityStore : public ScriptStore<ScriptedEntity>
 	{
 		public:
-			SharedEntityStore(std::shared_ptr<SharedScriptingContext> context, bool isServer);
+			SharedEntityStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			~SharedEntityStore() = default;
 
 		protected:

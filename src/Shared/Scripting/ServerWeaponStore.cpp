@@ -6,8 +6,6 @@
 #include <Shared/BurgApp.hpp>
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
-#include <Shared/Components/PlayerControlledComponent.hpp>
-#include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Shared/Systems/PlayerControlledSystem.hpp>

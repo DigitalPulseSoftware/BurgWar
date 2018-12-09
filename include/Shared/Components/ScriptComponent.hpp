@@ -10,6 +10,7 @@
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Component.hpp>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,8 @@ namespace bw
 			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, int tableRef);
 			~ScriptComponent();
 
+			void ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction = nullptr);
+	
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline int GetTableRef();

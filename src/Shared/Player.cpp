@@ -8,6 +8,8 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
+#include <NDK/LuaAPI.hpp>
+#include <Shared/Gamemode.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
@@ -39,6 +41,26 @@ namespace bw
 			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex);
 			if (!burger)
 				return Ndk::EntityHandle::InvalidHandle;
+
+			burger->AddComponent<PlayerControlledComponent>(CreateHandle());
+
+			if (burger->HasComponent<HealthComponent>())
+			{
+				auto& healthComponent = burger->GetComponent<HealthComponent>();
+
+				healthComponent.OnDied.Connect([ply = CreateHandle()](const HealthComponent* health, const Ndk::EntityHandle& attacker)
+				{
+					if (!ply)
+						return;
+
+					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", [&](Nz::LuaState& state)
+					{
+						state.PushLightUserdata(ply.GetObject());
+						state.Push(attacker);
+						return 2;
+					});
+				});
+			}
 
 			static unsigned int huglyCount = 0;
 
@@ -102,6 +124,8 @@ namespace bw
 	void Player::UpdateLayer(std::size_t layerIndex)
 	{
 		m_layerIndex = layerIndex;
+
+		m_session.GetVisibility().UpdateLayer(layerIndex);
 	}
 
 	void Player::UpdateMatch(Match* match)
