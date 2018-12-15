@@ -138,7 +138,7 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(m_application, i);
 
-		m_scriptingContext = std::make_shared<SharedScriptingContext>(false);
+		m_scriptingContext = std::make_shared<ClientScriptingContext>(*this);
 
 		m_entityStore.emplace(nullptr, m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");

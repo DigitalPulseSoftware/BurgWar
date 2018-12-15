@@ -1,3 +1,5 @@
+RegisterClientScript("box.lua")
+
 print(ENTITY.Name)
 ENTITY.IsNetworked = true
 ENTITY.Sprite = "../resources/box.png"

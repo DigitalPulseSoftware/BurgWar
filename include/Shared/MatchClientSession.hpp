@@ -48,6 +48,7 @@ namespace bw
 
 		private:
 			void HandleIncomingPacket(const Packets::Auth& packet);
+			void HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 			void HandleIncomingPacket(const Packets::PlayersInput& packet);
 

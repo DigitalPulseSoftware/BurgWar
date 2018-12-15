@@ -16,4 +16,9 @@ namespace bw
 	{
 		return m_luaInstance;
 	}
+
+	inline const std::filesystem::path& bw::SharedScriptingContext::GetCurrentFolder() const
+	{
+		return m_currentFolder;
+	}
 }

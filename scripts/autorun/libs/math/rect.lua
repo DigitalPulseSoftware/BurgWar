@@ -1,3 +1,5 @@
+RegisterClientScript("rect.lua")
+
 local rectmeta = RegisterMetatable("rect")
 rectmeta.__index = rectmeta
 

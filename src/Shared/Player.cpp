@@ -124,8 +124,6 @@ namespace bw
 	void Player::UpdateLayer(std::size_t layerIndex)
 	{
 		m_layerIndex = layerIndex;
-
-		m_session.GetVisibility().UpdateLayer(layerIndex);
 	}
 
 	void Player::UpdateMatch(Match* match)

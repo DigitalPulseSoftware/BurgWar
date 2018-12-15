@@ -1,3 +1,5 @@
+RegisterClientScript("animations.lua")
+
 animation = {}
 function animation.Rotate(entity, from, to, time)
 	local co = coroutine.running()

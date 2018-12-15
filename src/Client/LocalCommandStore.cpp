@@ -19,9 +19,11 @@ namespace bw
 		// Incoming commands
 		IncomingCommand(AuthFailure);
 		IncomingCommand(AuthSuccess);
+		IncomingCommand(ClientScriptList);
 		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
+		IncomingCommand(DownloadClientScriptResponse);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(HelloWorld);
 		IncomingCommand(MatchData);
@@ -30,10 +32,11 @@ namespace bw
 		IncomingCommand(PlayAnimation);
 
 		// Outgoing commands
-		OutgoingCommand(Auth,           Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(HelloWorld,     Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(NetworkStrings, Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayersInput,   Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(DownloadClientScriptRequest, Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(HelloWorld,                  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
 #undef OutgoingCommand

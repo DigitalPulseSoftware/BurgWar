@@ -1,3 +1,5 @@
+RegisterClientScript("circle.lua")
+
 local circlemeta = RegisterMetatable("circle")
 circlemeta.__index = circlemeta
 

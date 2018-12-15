@@ -30,9 +30,12 @@ namespace bw
 		Auth,
 		AuthFailure,
 		AuthSuccess,
+		ClientScriptList,
 		CreateEntities,
 		ControlEntity,
 		DeleteEntities,
+		DownloadClientScriptRequest,
+		DownloadClientScriptResponse,
 		HealthUpdate,
 		HelloWorld,
 		MatchData,
@@ -62,6 +65,17 @@ namespace bw
 
 		DeclarePacket(AuthSuccess)
 		{
+		};
+
+		DeclarePacket(ClientScriptList)
+		{
+			struct Script
+			{
+				std::array<Nz::UInt8, 20> sha1Checksum;
+				std::string path;
+			};
+
+			std::vector<Script> scripts;
 		};
 
 		DeclarePacket(CreateEntities)
@@ -113,6 +127,16 @@ namespace bw
 			};
 
 			std::vector<Entity> entities;
+		};
+
+		DeclarePacket(DownloadClientScriptRequest)
+		{
+			std::string path;
+		};
+
+		DeclarePacket(DownloadClientScriptResponse)
+		{
+			std::vector<Nz::UInt8> fileContent;
 		};
 
 		DeclarePacket(HealthUpdate)
@@ -193,9 +217,12 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, Auth& data);
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
+		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
+		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
+		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
 		void Serialize(PacketSerializer& serializer, MatchData& data);

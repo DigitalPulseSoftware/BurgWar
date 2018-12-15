@@ -18,21 +18,24 @@ namespace bw
 
 		// Incoming commands
 		IncomingCommand(Auth);
+		IncomingCommand(DownloadClientScriptRequest);
 		IncomingCommand(HelloWorld);
 		IncomingCommand(PlayersInput);
 
 		// Outgoing commands
-		OutgoingCommand(AuthFailure,    Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(AuthSuccess,    Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(ControlEntity,  Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(CreateEntities, Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(DeleteEntities, Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(HealthUpdate,   Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(HelloWorld,     Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(MatchData,      Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(MatchState,     0,                           1);
-		OutgoingCommand(NetworkStrings, Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayAnimation,  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(AuthFailure,                  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(AuthSuccess,                  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(ClientScriptList,             Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(ControlEntity,                Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(CreateEntities,               Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(DeleteEntities,               Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(HelloWorld,                   Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(MatchState,                   0,                           1);
+		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayAnimation,                Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
 #undef OutgoingCommand

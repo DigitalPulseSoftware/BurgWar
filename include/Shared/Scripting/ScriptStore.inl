@@ -83,7 +83,7 @@ namespace bw
 					if (!std::filesystem::exists(path))
 						return false;
 
-					if (state.ExecuteFromFile(path.generic_u8string()))
+					if (m_context->Load(path))
 						return true;
 					else
 					{

@@ -4,6 +4,7 @@
 
 #include <Shared/Protocol/PacketSerializer.hpp>
 #include <cassert>
+#include <stdexcept>
 
 namespace bw
 {
@@ -13,9 +14,21 @@ namespace bw
 	{
 	}
 
+	inline void PacketSerializer::Read(void* ptr, std::size_t size)
+	{
+		if (m_buffer.Read(ptr, size) != size)
+			throw std::runtime_error("Failed to read");
+	}
+
 	inline bool PacketSerializer::IsWriting() const
 	{
 		return m_isWriting;
+	}
+
+	inline void PacketSerializer::Write(const void* ptr, std::size_t size)
+	{
+		if (m_buffer.Write(ptr, size) != size)
+			throw std::runtime_error("Failed to write");
 	}
 
 	template<typename DataType>

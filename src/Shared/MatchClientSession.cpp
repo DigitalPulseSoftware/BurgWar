@@ -71,6 +71,7 @@ namespace bw
 		SendPacket(Packets::AuthSuccess());
 		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
+		// Send match data
 		const MapData& mapData = m_match.GetTerrain().GetMapData();
 
 		Packets::MatchData matchData;
@@ -87,6 +88,28 @@ namespace bw
 		}
 
 		SendPacket(matchData);
+
+		// Send client-file script list
+		SendPacket(m_match.BuildClientFileListPacket());
+
+		// HAAAAAX
+		GetVisibility().UpdateLayer(0);
+	}
+
+	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
+	{
+		std::cout << "[Server] Client asked for client script " << packet.path << std::endl;
+
+		const Match::ClientScript* clientScript;
+		if (m_match.GetClientScript(packet.path, &clientScript))
+		{
+			Packets::DownloadClientScriptResponse response;
+			response.fileContent = clientScript->content;
+
+			SendPacket(response);
+		}
+		else
+			Disconnect();
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)

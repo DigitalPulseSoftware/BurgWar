@@ -9,6 +9,7 @@
 #include <Shared/Terrain.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
+#include <Nazara/Core/File.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
 
@@ -44,7 +45,7 @@ namespace bw
 
 		m_terrain = std::make_unique<Terrain>(app, std::move(mapData));
 
-		m_scriptingContext = std::make_shared<SharedScriptingContext>(true);
+		m_scriptingContext = std::make_shared<ServerScriptingContext>(*this);
 
 		m_gamemode = std::make_shared<Gamemode>(*this, m_scriptingContext, gamemodeName, std::filesystem::path("../../scripts/gamemodes") / gamemodeName);
 
@@ -70,6 +71,25 @@ namespace bw
 
 	Match::~Match() = default;
 
+	Packets::ClientScriptList Match::BuildClientFileListPacket() const
+	{
+		Packets::ClientScriptList clientScript;
+
+		for (const auto& pair : m_clientScripts)
+		{
+			auto& scriptData = clientScript.scripts.emplace_back();
+			scriptData.path = pair.first;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(scriptData.sha1Checksum.size() == checksum.size());
+			std::memcpy(scriptData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientScript.scripts.begin(), clientScript.scripts.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
+
+		return clientScript;
+	}
+
 	void Match::Leave(Player* player)
 	{
 		assert(player->GetMatch() == this);
@@ -81,6 +101,16 @@ namespace bw
 
 		player->UpdateLayer(std::numeric_limits<std::size_t>::max());
 		player->UpdateMatch(nullptr);
+	}
+
+	bool Match::GetClientScript(const std::string& filePath, const ClientScript** clientScriptData)
+	{
+		auto it = m_clientScripts.find(filePath);
+		if (it == m_clientScripts.end())
+			return false;
+
+		*clientScriptData = &it->second;
+		return true;
 	}
 
 	bool Match::Join(Player* player)
@@ -97,6 +127,37 @@ namespace bw
 		player->CreateEntity(m_terrain->GetLayer(0).GetWorld());
 
 		return true;
+	}
+
+	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
+	{
+		std::filesystem::path scriptPath = "../../scripts";
+		std::string relativePath = std::filesystem::relative(clientScript, scriptPath).generic_u8string();
+
+		if (m_clientScripts.find(relativePath) != m_clientScripts.end())
+			return;
+
+		std::string filePath = clientScript.generic_u8string();
+		if (!std::filesystem::is_regular_file(clientScript))
+			throw std::runtime_error(filePath + " is not a file");
+
+		Nz::File file(filePath);
+		if (!file.Open(Nz::OpenMode_ReadOnly))
+			throw std::runtime_error("Failed to open " + filePath);
+
+		std::vector<Nz::UInt8> content(file.GetSize());
+		if (file.Read(content.data(), content.size()) != content.size())
+			throw std::runtime_error("Failed to read " + filePath);
+
+		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+		hash->Begin();
+		hash->Append(content.data(), content.size());
+
+		ClientScript clientScriptData;
+		clientScriptData.checksum = hash->End();
+		clientScriptData.content = std::move(content);
+
+		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
 	}
 
 	void Match::Update(float elapsedTime)

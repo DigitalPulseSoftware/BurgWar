@@ -25,6 +25,21 @@ namespace bw
 		{
 		}
 
+		void Serialize(PacketSerializer& serializer, ClientScriptList& data)
+		{
+			serializer.SerializeArraySize(data.scripts);
+
+			for (auto& script : data.scripts)
+			{
+				serializer &= script.path;
+
+				if (serializer.IsWriting())
+					serializer.Write(script.sha1Checksum.data(), script.sha1Checksum.size());
+				else
+					serializer.Read(script.sha1Checksum.data(), script.sha1Checksum.size());
+			}
+		}
+
 		void Serialize(PacketSerializer& serializer, CreateEntities& data)
 		{
 			serializer.SerializeArraySize(data.entities);
@@ -108,6 +123,20 @@ namespace bw
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 				serializer &= entity.id;
+		}
+
+		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data)
+		{
+			serializer &= data.path;
+		}
+
+		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data)
+		{
+			serializer.SerializeArraySize(data.fileContent);
+			if (serializer.IsWriting())
+				serializer.Write(data.fileContent.data(), data.fileContent.size());
+			else
+				serializer.Read(data.fileContent.data(), data.fileContent.size());
 		}
 
 		void Serialize(PacketSerializer & serializer, HealthUpdate & data)

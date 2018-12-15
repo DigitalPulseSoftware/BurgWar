@@ -17,7 +17,11 @@ namespace bw
 			inline PacketSerializer(Nz::NetPacket& packetBuffer, bool isWriting);
 			~PacketSerializer() = default;
 
+			inline void Read(void* ptr, std::size_t size);
+
 			inline bool IsWriting() const;
+
+			inline void Write(const void* ptr, std::size_t size);
 
 			template<typename DataType> void Serialize(DataType& data);
 			template<typename DataType> void Serialize(const DataType& data) const;

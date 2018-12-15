@@ -77,6 +77,21 @@ namespace bw
 		std::cout << "[Client] Auth succeeded" << std::endl;
 	}
 
+	void ClientSession::HandleIncomingPacket(const Packets::ClientScriptList& packet)
+	{
+		std::cout << "[Client] Got client script list" << std::endl;
+
+		assert(!m_downloadManager.has_value());
+		m_downloadManager.emplace(".scriptCache");
+
+		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)
+		{
+			SendPacket(request);
+		});
+
+		m_downloadManager->HandlePacket(packet);
+	}
+
 	void ClientSession::HandleIncomingPacket(const Packets::ControlEntity& packet)
 	{
 		std::cout << "[Client] Control entity #" << packet.entityId << std::endl;
@@ -109,6 +124,12 @@ namespace bw
 			std::cout << "[Client] Entity #" << entityData.id << " deleted" << std::endl;
 			m_localMatch->DeleteEntity(entityData.id);
 		}
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptResponse& packet)
+	{
+		assert(m_downloadManager.has_value());
+		m_downloadManager->HandlePacket(packet);
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::HealthUpdate& packet)

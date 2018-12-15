@@ -16,10 +16,6 @@ namespace bw
 		m_luaInstance.LoadLibraries();
 		Ndk::LuaAPI::GetBinding()->RegisterClasses(m_luaInstance);
 
-		RegisterMetatableLibrary();
-
-		Load("../../scripts/autorun");
-
 		m_luaInstance.PushGlobal("SERVER", isServer);
 		m_luaInstance.PushGlobal("CLIENT", !isServer);
 	}
@@ -43,12 +39,17 @@ namespace bw
 		{
 			for (auto& p : std::filesystem::directory_iterator(folderOrFile))
 				Load(p);
+
+			return true;
 		}
 		else if (std::filesystem::is_regular_file(folderOrFile))
 		{
-			if (state.ExecuteFromFile(folderOrFile.generic_u8string()))
+			m_currentFolder = folderOrFile.parent_path();
+
+			std::string err;
+			if (LoadFile(folderOrFile, &err))
 			{
-				std::cout << "Loaded " << folderOrFile.generic_u8string() << '\n';
+				std::cout << "Loaded " << folderOrFile << std::endl;
 				return true;
 			}
 			else
@@ -58,7 +59,8 @@ namespace bw
 			}
 		}
 
-		return true;
+		std::cerr << "Unknown path " << folderOrFile.generic_u8string() << std::endl;
+		return false;
 	}
 
 	void SharedScriptingContext::Update()
@@ -71,6 +73,44 @@ namespace bw
 			else
 				++it;
 		}
+	}
+
+	bool SharedScriptingContext::LoadFile(const std::filesystem::path& filePath, std::string* error)
+	{
+		Nz::LuaInstance& state = GetLuaInstance();
+
+		if (state.ExecuteFromFile(filePath.generic_u8string()))
+			return true;
+		else
+		{
+			*error = state.GetLastError().ToStdString();
+			return false;
+		}
+	}
+
+	void SharedScriptingContext::RegisterLibrary()
+	{
+		RegisterGlobalLibrary();
+		RegisterMetatableLibrary();
+
+		Load("../../scripts/autorun");
+	}
+
+	void SharedScriptingContext::RegisterGlobalLibrary()
+	{
+		m_luaInstance.PushFunction([&](Nz::LuaState& state) -> int
+		{
+			int index = 1;
+			std::string scriptName = state.Check<std::string>(&index);
+
+			std::filesystem::path scriptPath = m_currentFolder / scriptName;
+
+			if (!state.ExecuteFromFile(scriptPath.generic_u8string()))
+				state.Error(state.GetLastError());
+
+			return 0;
+		});
+		m_luaInstance.SetGlobal("include");
 	}
 
 	void SharedScriptingContext::RegisterMetatableLibrary()

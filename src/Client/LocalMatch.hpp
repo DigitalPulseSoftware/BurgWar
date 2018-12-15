@@ -9,10 +9,10 @@
 
 #include <Client/LocalInputController.hpp>
 #include <Client/Scripting/ClientEntityStore.hpp>
+#include <Client/Scripting/ClientScriptingContext.hpp>
 #include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/AnimationManager.hpp>
 #include <Shared/Protocol/Packets.hpp>
-#include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
@@ -34,6 +34,8 @@ namespace bw
 			~LocalMatch() = default;
 
 			inline AnimationManager& GetAnimationManager();
+
+
 
 			void Update(float elapsedTime);
 
@@ -78,7 +80,7 @@ namespace bw
 
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
-			std::shared_ptr<SharedScriptingContext> m_scriptingContext;
+			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::World m_world;

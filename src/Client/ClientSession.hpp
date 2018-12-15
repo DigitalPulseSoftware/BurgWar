@@ -9,9 +9,11 @@
 
 #include <Shared/Protocol/NetworkStringStore.hpp>
 #include <Shared/SessionBridge.hpp>
+#include <Client/ClientScriptDownloadManager.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <memory>
+#include <optional>
 
 namespace bw
 {
@@ -65,9 +67,11 @@ namespace bw
 		private:
 			void HandleIncomingPacket(const Packets::AuthFailure& packet);
 			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
+			void HandleIncomingPacket(const Packets::ClientScriptList& packet);
 			void HandleIncomingPacket(const Packets::ControlEntity& packet);
 			void HandleIncomingPacket(const Packets::CreateEntities& packet);
 			void HandleIncomingPacket(const Packets::DeleteEntities& packet);
+			void HandleIncomingPacket(const Packets::DownloadClientScriptResponse& packet);
 			void HandleIncomingPacket(const Packets::HealthUpdate& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 			void HandleIncomingPacket(const Packets::MatchData& packet);
@@ -78,6 +82,7 @@ namespace bw
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<LocalMatch> m_localMatch;
 			ClientApp& m_application;
+			std::optional<ClientScriptDownloadManager> m_downloadManager;
 			const LocalCommandStore& m_commandStore;
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;

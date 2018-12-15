@@ -1,3 +1,5 @@
+RegisterClientScript("vector2.lua")
+
 local vec2meta = RegisterMetatable("vec2")
 vec2meta.__index = vec2meta
 
