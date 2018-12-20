@@ -57,23 +57,14 @@ namespace bw
 				else
 					elementName = p.path().filename().u8string();
 
-				state.PushTable();
-				state.PushValue(-1);
-				int tableRef = state.CreateReference();
-				Nz::CallOnExit destroyRef([&]()
-				{
-					state.DestroyReference(tableRef);
-				});
+				sol::table elementTable = state.PushTable();
+				elementTable["__index"] = elementTable;
 
-				// TABLE.__index = TABLE
-				state.PushValue(-1);
-				state.SetField("__index");
+				elementTable["Name"] = elementName;
 
-				state.PushField("Name", elementName);
+				InitializeElementTable(elementTable);
 
-				InitializeElementTable(state);
-
-				state.SetGlobal(m_tableName);
+				state[m_tableName] = elementTable;
 
 				std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
 
@@ -117,27 +108,21 @@ namespace bw
 				std::shared_ptr<Element> element = std::make_shared<Element>();
 				element->name = std::move(elementName);
 				element->fullName = m_elementTypeName + "_" + element->name;
-				element->tableRef = tableRef;
+				element->elementTable = std::move(elementTable);
 
-				state.PushReference(tableRef);
-
-				element->tickFunction = GetScriptFunction(state, "OnTick");
+				element->tickFunction = element->elementTable["OnTick"];
 
 				try
 				{
-					InitializeElement(state, *element);
+					InitializeElement(element->elementTable, *element);
 				}
 				catch (const std::exception& e)
 				{
 					std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
 				}
 
-				state.Pop();
-
 				//if (IsServer && !isNetworked && hasSharedFiles)
 				//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
-
-				destroyRef.Reset();
 
 				m_elementsByName[element->fullName] = m_elements.size();
 				m_elements.emplace_back(std::move(element));
@@ -151,9 +136,9 @@ namespace bw
 	}
 
 	template<typename Element>
-	Nz::LuaState& ScriptStore<Element>::GetLuaState()
+	sol::state& ScriptStore<Element>::GetLuaState()
 	{
-		return m_context->GetLuaInstance();
+		return m_context->GetLuaState();
 	}
 
 	template<typename Element>
@@ -178,25 +163,5 @@ namespace bw
 	void ScriptStore<Element>::SetTableName(std::string tableName)
 	{
 		m_tableName = std::move(tableName);
-	}
-
-	template<typename Element>
-	int ScriptStore<Element>::GetScriptFunction(Nz::LuaState& state, const std::string& functionName)
-	{
-		Nz::LuaType initType = state.GetField(functionName);
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-		if (initType != Nz::LuaType_Nil)
-		{
-			if (initType != Nz::LuaType_Function)
-				throw std::runtime_error(functionName + " must be a function if defined");
-
-			int funcId = state.CreateReference();
-			popOnExit.Reset();
-
-			return funcId;
-		}
-		else
-			return -1;
 	}
 }

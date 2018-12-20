@@ -33,7 +33,7 @@ namespace bw
 
 	bool SharedScriptingContext::Load(const std::filesystem::path& folderOrFile)
 	{
-		Nz::LuaInstance& state = GetLuaInstance();
+		Nz::LuaInstance& state = GetLuaState();
 
 		if (std::filesystem::is_directory(folderOrFile))
 		{
@@ -77,7 +77,7 @@ namespace bw
 
 	bool SharedScriptingContext::LoadFile(const std::filesystem::path& filePath, std::string* error)
 	{
-		Nz::LuaInstance& state = GetLuaInstance();
+		Nz::LuaInstance& state = GetLuaState();
 
 		if (state.ExecuteFromFile(filePath.generic_u8string()))
 			return true;

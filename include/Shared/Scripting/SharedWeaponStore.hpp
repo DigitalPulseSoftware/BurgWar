@@ -21,8 +21,8 @@ namespace bw
 			~SharedWeaponStore() = default;
 
 		protected:
-			void InitializeElementTable(Nz::LuaState& state) override = 0;
-			void InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon) override = 0;
+			void InitializeElementTable(sol::table& elementTable) override = 0;
+			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override = 0;
 			bool InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent);
 	};
 }

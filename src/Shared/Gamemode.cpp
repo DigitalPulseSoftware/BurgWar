@@ -25,18 +25,11 @@ namespace bw
 			return m_context->Load(filepath);
 		};
 
-		Nz::LuaState& state = m_context->GetLuaInstance();
+		sol::state& state = m_context->GetLuaState();
 
-		state.PushTable();
-		{
-			state.PushValue(-1);
-			m_gamemodeRef = state.CreateReference();
-
-			state.PushField("Name", gamemodeName);
-
-			InitializeGamemode(state);
-		}
-		state.SetGlobal("GM");
+		m_gamemodeTable = state.create_table();
+		m_gamemodeTable["Name"] = gamemodeName;
+		state["GM"] = m_gamemodeTable;
 
 		Load(gamemodePath / "shared.lua");
 		//Load(gamemodePath / "cl_init.lua");
@@ -45,26 +38,12 @@ namespace bw
 
 	void Gamemode::ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction)
 	{
-		Nz::LuaState& state = m_context->GetLuaInstance();
-
-		state.PushReference(m_gamemodeRef);
-
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-		Nz::LuaType initType = state.GetField(callbackName);
-
-		if (initType != Nz::LuaType_Nil)
+		sol::protected_function callback = m_gamemodeTable[callbackName];
+		if (callback)
 		{
-			if (initType != Nz::LuaType_Function)
-				throw std::runtime_error(callbackName + " must be a function if defined");
-
-			state.PushValue(-2);
-
-			int paramCount = 1; // GM table itself
-			if (argumentFunction)
-				paramCount += argumentFunction(state);
-
-			if (!state.Call(paramCount))
-				std::cerr << callbackName << " gamemode callback failed: " << state.GetLastError() << std::endl;
+			auto result = callback(m_gamemodeTable, 42);
+			if (!result.valid())
+				std::cerr << callbackName << " gamemode callback failed: " << result.abandon << std::endl;
 
 			//TODO: Handle return
 		}

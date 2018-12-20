@@ -23,19 +23,14 @@ namespace bw
 	{
 		auto& entityClass = *GetElement(entityIndex);
 
-		Nz::LuaState& state = GetLuaState();
-
 		std::string spritePath;
 		bool playerControlled;
 		float scale;
 		try
 		{
-			state.PushReference(entityClass.tableRef);
-			Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-			playerControlled = state.CheckField<bool>("PlayerControlled");
-			scale = state.CheckField<float>("Scale");
-			spritePath = state.CheckField<std::string>("Sprite");
+			playerControlled = entityClass.elementTable["PlayerControlled"];
+			scale = entityClass.elementTable["Scale"];
+			spritePath = entityClass.elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
@@ -65,10 +60,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback("OnDeath", [&](Nz::LuaState& state) {
-					state.Push(attacker);
-					return 1;
-				});
+				entityScript.ExecuteCallback("OnDeath", attacker);
 			});
 
 			healthComponent.OnDied.Connect([&](const HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -76,10 +68,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback("OnDied", [&](Nz::LuaState& state) {
-					state.Push(attacker);
-					return 1;
-				});
+				entityScript.ExecuteCallback("OnDied", attacker);
 			});
 		}
 
@@ -95,18 +84,18 @@ namespace bw
 		return entity;
 	}
 
-	void ServerEntityStore::InitializeElementTable(Nz::LuaState& state)
+	void ServerEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
-		SharedEntityStore::InitializeElementTable(state);
+		SharedEntityStore::InitializeElementTable(elementTable);
 
-		state.PushField("IsNetworked", false);
+		elementTable["IsNetworked"] = false;
 	}
 
-	void ServerEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& element)
+	void ServerEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		SharedEntityStore::InitializeElement(state, element);
+		SharedEntityStore::InitializeElement(elementTable, element);
 
-		element.isNetworked = state.CheckField<bool>("IsNetworked");
-		element.maxHealth = state.CheckField<Nz::UInt16>("MaxHealth", 0, -1);
+		element.isNetworked = elementTable["IsNetworked"];
+		element.maxHealth = elementTable.get_or("MaxHealth", 0);
 	}
 }

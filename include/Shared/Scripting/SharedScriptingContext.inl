@@ -7,14 +7,14 @@
 
 namespace bw
 {
-	inline Nz::LuaInstance& SharedScriptingContext::GetLuaInstance()
+	inline sol::state& SharedScriptingContext::GetLuaState()
 	{
-		return m_luaInstance;
+		return m_luaState;
 	}
 
-	inline const Nz::LuaInstance& SharedScriptingContext::GetLuaInstance() const
+	inline const sol::state& SharedScriptingContext::GetLuaState() const
 	{
-		return m_luaInstance;
+		return m_luaState;
 	}
 
 	inline const std::filesystem::path& bw::SharedScriptingContext::GetCurrentFolder() const

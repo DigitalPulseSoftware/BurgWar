@@ -11,12 +11,8 @@ namespace bw
 	SharedScriptingContext(false),
 	m_match(match)
 	{
-		Nz::LuaState& state = GetLuaInstance();
-		state.PushFunction([&](Nz::LuaState& /*state*/) -> int
-		{
-			return 0;
-		});
-		state.SetGlobal("RegisterClientScript");
+		sol::state& state = GetLuaState();
+		state["RegisterClientScript"] = []() {}; // Dummy function
 
 		RegisterLibrary();
 	}

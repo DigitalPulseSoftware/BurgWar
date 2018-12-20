@@ -18,7 +18,7 @@ namespace bw
 		SetTableName("ENTITY");
 	}
 
-	void SharedEntityStore::InitializeElementTable(Nz::LuaState& state)
+	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
 		state.PushFunction([](Nz::LuaState& state) -> int
 		{
@@ -83,32 +83,29 @@ namespace bw
 		state.SetField("InitRigidBody");
 	}
 
-	void SharedEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& element)
+	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		element.initializeFunction = GetScriptFunction(state, "Initialize");
+		element.initializeFunction = elementTable["Initialize"];
 	}
 
 	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity)
 	{
-		Nz::LuaState& state = GetLuaState();
-		state.PushTable();
+		sol::state& state = GetLuaState();
 
-		state.PushField("Entity", entity);
+		sol::table entityTable = state.create_table();
+		entityTable["Entity"] = entity;
+		entityTable[sol::metatable_key] = entityClass.elementTable;
 
-		state.PushReference(entityClass.tableRef);
-		state.SetMetatable(-2);
+		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), entityTable);
 
-		int tableRef = state.CreateReference();
-
-		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), tableRef);
-
-		if (entityClass.initializeFunction != -1)
+		if (entityClass.initializeFunction)
 		{
-			state.PushReference(entityClass.initializeFunction);
-			state.PushReference(tableRef);
-			if (!state.Call(1))
+			sol::protected_function init = entityClass.initializeFunction;
+
+			auto result = init(entityTable);
+			if (!result)
 			{
-				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << state.GetLastError() << std::endl;
+				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << sol::error(result).what() << std::endl;
 				return false;
 			}
 		}

@@ -16,8 +16,8 @@ namespace bw
 		return m_element;
 	}
 
-	inline int ScriptComponent::GetTableRef()
+	inline sol::table& ScriptComponent::GetTable()
 	{
-		return m_tableRef;
+		return m_entityTable;
 	}
 }

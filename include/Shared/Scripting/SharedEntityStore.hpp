@@ -21,8 +21,8 @@ namespace bw
 			~SharedEntityStore() = default;
 
 		protected:
-			void InitializeElementTable(Nz::LuaState& state) override = 0;
-			void InitializeElement(Nz::LuaState& state, ScriptedEntity& element) override = 0;
+			void InitializeElementTable(sol::table& elementTable) override = 0;
+			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
 			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity);
 	};
 }

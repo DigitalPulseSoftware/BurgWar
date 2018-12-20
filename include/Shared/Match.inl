@@ -19,7 +19,7 @@ namespace bw
 
 	inline Nz::LuaInstance& Match::GetLuaInstance()
 	{
-		return m_scriptingContext->GetLuaInstance();
+		return m_scriptingContext->GetLuaState();
 	}
 
 	inline const std::shared_ptr<Gamemode>& Match::GetGamemode()

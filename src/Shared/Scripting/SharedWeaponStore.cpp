@@ -21,7 +21,7 @@ namespace bw
 		SetTableName("WEAPON");
 	}
 
-	void SharedWeaponStore::InitializeElementTable(Nz::LuaState& state)
+	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
 		state.PushFunction([](Nz::LuaState& state) -> int
 		{
@@ -61,23 +61,20 @@ namespace bw
 		state.SetField("IsLookingRight");
 	}
 
-	void SharedWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
+	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		std::cout << state.DumpStack() << std::endl;
+		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
-		weapon.weaponOffset = state.CheckField<Nz::Vector2f>("WeaponOffset", Nz::Vector2f::Zero());
-
-		Nz::LuaType animationType = state.GetField("Animations");
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-		if (animationType != Nz::LuaType_Nil)
+		sol::table animations = elementTable["Animations"];
+		if (animations)
 		{
-			if (animationType != Nz::LuaType_Table)
-				throw std::runtime_error("Animations must of type table");
-
 			std::vector<AnimationStore::AnimationData> animData;
 
-			state.PushNil();
+			for (const auto& kv : animations)
+			{
+				kv.first.as();
+			}
+
 			while (state.Next())
 			{
 				state.CheckType(-1, Nz::LuaType_Table);
@@ -111,9 +108,7 @@ namespace bw
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
 		}
 
-		popOnExit.CallAndReset();
-
-		weapon.animationStartFunction = GetScriptFunction(state, "OnAnimationStart");
+		weapon.animationStartFunction = elementTable["OnAnimationStart"];
 	}
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
@@ -122,38 +117,30 @@ namespace bw
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);
 
-		Nz::LuaState& state = GetLuaState();
-		state.PushTable();
+		sol::state& state = GetLuaState();
 
-		state.PushField("Entity", entity);
+		sol::table entityTable = state.create_table();
+		entityTable["Entity"] = entity;
+		entityTable[sol::metatable_key] = weaponClass.elementTable;
 
-		state.PushReference(weaponClass.tableRef);
-		state.SetMetatable(-2);
-
-		int tableRef = state.CreateReference();
-
-		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), tableRef);
+		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), entityTable);
 
 		if (weaponClass.animations)
 		{
 			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
 
-			if (int callbackId = weaponClass.animationStartFunction; callbackId != -1)
+			if (sol::protected_function callback = weaponClass.animationStartFunction)
 			{
-				anim.OnAnimationStart.Connect([callbackId](AnimationComponent* anim)
+				anim.OnAnimationStart.Connect([callback](AnimationComponent* anim)
 				{
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
 					auto& co = scriptComponent.GetContext()->CreateCoroutine();
 
-					co.PushReference(callbackId);
-					co.PushReference(scriptComponent.GetTableRef());
-					co.Push(anim->GetAnimId());
-
-					Nz::Ternary status = co.Resume(2);
-					if (status == Nz::Ternary_False)
-						std::cerr << "OnAnimationStart() failed: " << co.GetLastError() << std::endl;
+					auto result = co.call(scriptComponent.GetTable(), anim->GetAnimId());
+					if (!result)
+						std::cerr << "OnAnimationStart() failed: " << sol::error(result).what() << std::endl;
 				});
 			}
 		}

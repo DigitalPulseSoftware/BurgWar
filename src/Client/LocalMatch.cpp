@@ -146,7 +146,7 @@ namespace bw
 		m_weaponStore.emplace(nullptr, m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
 
-		Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+		Nz::LuaState& state = m_scriptingContext->GetLuaState();
 		state.PushFunction([&](Nz::LuaState& state)
 		{
 			int index = 1;
@@ -163,7 +163,7 @@ namespace bw
 			{
 				if (!entity)
 				{
-					Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+					Nz::LuaState& state = m_scriptingContext->GetLuaState();
 					state.DestroyReference(finishFunction);
 					return false;
 				}
@@ -175,7 +175,7 @@ namespace bw
 				return true;
 			}, [this, finishFunction]()
 			{
-				Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
+				Nz::LuaState& state = m_scriptingContext->GetLuaState();
 				state.PushReference(finishFunction);
 				if (!state.Call(0))
 					std::cerr << "engine_AnimateRotation callback failed: " << state.GetLastError() << std::endl;

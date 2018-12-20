@@ -12,7 +12,7 @@ namespace bw
 	SharedScriptingContext(true),
 	m_match(match)
 	{
-		Nz::LuaState& state = GetLuaInstance();
+		Nz::LuaState& state = GetLuaState();
 		state.PushFunction([&](Nz::LuaState& state) -> int
 		{
 			std::string path = state.CheckString(1);

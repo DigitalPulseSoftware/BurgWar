@@ -31,7 +31,7 @@ namespace bw
 
 			std::shared_ptr<SharedScriptingContext> m_context;
 			Match& m_match;
-			int m_gamemodeRef;
+			sol::table m_gamemodeTable;
 	};
 }
 

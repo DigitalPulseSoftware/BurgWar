@@ -15,7 +15,7 @@ namespace bw
 	struct ScriptedEntity : ScriptedElement
 	{
 		bool isNetworked;
-		int initializeFunction;
+		sol::reference initializeFunction;
 		Nz::UInt16 maxHealth;
 	};
 }

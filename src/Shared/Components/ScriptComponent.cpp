@@ -7,40 +7,23 @@
 
 namespace bw
 {
-	ScriptComponent::ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, int tableRef) :
+	ScriptComponent::ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable) :
 	m_element(std::move(element)),
 	m_context(std::move(context)),
-	m_tableRef(tableRef)
+	m_entityTable(std::move(entityTable))
 	{
 	}
 
-	ScriptComponent::~ScriptComponent()
+	ScriptComponent::~ScriptComponent() = default;
+
+	void ScriptComponent::ExecuteCallback(const std::string& callbackName, const std::function<void()>& argumentFunction)
 	{
-		m_context->GetLuaInstance().DestroyReference(m_tableRef);
-	}
-
-	void ScriptComponent::ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState&)>& argumentFunction)
-	{
-		Nz::LuaState& state = m_context->GetLuaInstance();
-
-		state.PushReference(m_tableRef);
-
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-		Nz::LuaType initType = state.GetField(callbackName);
-
-		if (initType != Nz::LuaType_Nil)
+		sol::protected_function callback = m_entityTable[callbackName];
+		if (callback)
 		{
-			if (initType != Nz::LuaType_Function)
-				throw std::runtime_error(callbackName + " must be a function if defined");
-
-			state.PushValue(-2);
-
-			int paramCount = 1; // GM table itself
-			if (argumentFunction)
-				paramCount += argumentFunction(state);
-
-			if (!state.Call(paramCount))
-				std::cerr << callbackName << " gamemode callback failed: " << state.GetLastError() << std::endl;
+			auto result = callback(m_entityTable, 42);
+			if (!result.valid())
+				std::cerr << callbackName << " entity callback failed: " << result.abandon << std::endl;
 
 			//TODO: Handle return
 		}

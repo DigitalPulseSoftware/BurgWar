@@ -22,7 +22,7 @@ namespace bw
 		std::shared_ptr<AnimationStore> animations;
 		std::string spriteName;
 		float scale;
-		int animationStartFunction;
+		sol::reference animationStartFunction;
 	};
 }
 
