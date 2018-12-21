@@ -45,7 +45,7 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::Load(const std::string& folder)
 	{
-		Nz::LuaState& state = GetLuaState();
+		sol::state& state = GetLuaState();
 
 		for (auto& p : std::filesystem::directory_iterator(folder))
 		{
@@ -57,7 +57,7 @@ namespace bw
 				else
 					elementName = p.path().filename().u8string();
 
-				sol::table elementTable = state.PushTable();
+				sol::table elementTable = state.create_table();
 				elementTable["__index"] = elementTable;
 
 				elementTable["Name"] = elementName;

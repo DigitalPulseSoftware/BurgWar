@@ -17,7 +17,7 @@ namespace bw
 		return *m_entityStore;
 	}
 
-	inline Nz::LuaInstance& Match::GetLuaInstance()
+	inline sol::state& Match::GetLuaState()
 	{
 		return m_scriptingContext->GetLuaState();
 	}

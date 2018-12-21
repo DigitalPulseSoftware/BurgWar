@@ -16,19 +16,6 @@ namespace bw
 
 	ScriptComponent::~ScriptComponent() = default;
 
-	void ScriptComponent::ExecuteCallback(const std::string& callbackName, const std::function<void()>& argumentFunction)
-	{
-		sol::protected_function callback = m_entityTable[callbackName];
-		if (callback)
-		{
-			auto result = callback(m_entityTable, 42);
-			if (!result.valid())
-				std::cerr << callbackName << " entity callback failed: " << result.abandon << std::endl;
-
-			//TODO: Handle return
-		}
-	}
-
 	Ndk::ComponentIndex ScriptComponent::componentIndex;
 }
 

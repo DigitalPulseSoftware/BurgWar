@@ -7,4 +7,20 @@
 
 namespace bw
 {
+	template<typename... Args>
+	void Gamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	{
+		sol::protected_function callback = m_gamemodeTable[callbackName];
+		if (callback)
+		{
+			auto result = callback(m_gamemodeTable, std::forward<Args>(args)...);
+			if (!result.valid())
+			{
+				sol::error err = result;
+				std::cerr << callbackName << " gamemode callback failed: " << err.what() << std::endl;
+			}
+
+			//TODO: Handle return
+		}
+	}
 }

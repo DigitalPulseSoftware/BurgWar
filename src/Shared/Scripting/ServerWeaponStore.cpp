@@ -24,8 +24,6 @@ namespace bw
 	{
 		auto& weaponClass = *GetElement(weaponIndex);
 
-		Nz::LuaState& state = GetLuaState();
-
 		const Ndk::EntityHandle& weapon = world.CreateEntity();
 		weapon->AddComponent<NetworkSyncComponent>(weaponClass.fullName, parent);
 
@@ -34,11 +32,11 @@ namespace bw
 		return weapon;
 	}
 
-	void ServerWeaponStore::InitializeElementTable(Nz::LuaState& state)
+	void ServerWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		SharedWeaponStore::InitializeElementTable(state);
+		SharedWeaponStore::InitializeElementTable(elementTable);
 
-		state.PushFunction([](Nz::LuaState& state) -> int
+		/*state.PushFunction([](Nz::LuaState& state) -> int
 		{
 			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
 
@@ -103,11 +101,11 @@ namespace bw
 			state.PushBoolean(entityAnimation.IsPlaying());
 			return 1;
 		});
-		state.SetField("IsPlayingAnimation");
+		state.SetField("IsPlayingAnimation");*/
 	}
 
-	void ServerWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
+	void ServerWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		SharedWeaponStore::InitializeElement(state, weapon);
+		SharedWeaponStore::InitializeElement(elementTable, weapon);
 	}
 }

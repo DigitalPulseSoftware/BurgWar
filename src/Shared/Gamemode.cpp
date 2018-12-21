@@ -36,22 +36,9 @@ namespace bw
 		Load(gamemodePath / "sv_init.lua");
 	}
 
-	void Gamemode::ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction)
+	void Gamemode::InitializeGamemode(sol::table& gamemodeTable)
 	{
-		sol::protected_function callback = m_gamemodeTable[callbackName];
-		if (callback)
-		{
-			auto result = callback(m_gamemodeTable, 42);
-			if (!result.valid())
-				std::cerr << callbackName << " gamemode callback failed: " << result.abandon << std::endl;
-
-			//TODO: Handle return
-		}
-	}
-
-	void Gamemode::InitializeGamemode(Nz::LuaState& state)
-	{
-		state.PushFunction([&](Nz::LuaState& state) -> int
+		/*state.PushFunction([&](Nz::LuaState& state) -> int
 		{
 			int index = 2;
 			std::string entityType = state.Check<std::string>(&index);
@@ -82,6 +69,6 @@ namespace bw
 				return 0;
 			}
 		});
-		state.SetField("CreateEntity");
+		state.SetField("CreateEntity");*/
 	}
 }

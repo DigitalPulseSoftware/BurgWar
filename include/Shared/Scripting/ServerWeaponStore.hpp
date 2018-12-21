@@ -24,8 +24,8 @@ namespace bw
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);
 
 		private:
-			void InitializeElementTable(Nz::LuaState& state) override;
-			void InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon) override;
+			void InitializeElementTable(sol::table& elementTable) override;
+			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
 
 			BurgApp& m_application;
 	};

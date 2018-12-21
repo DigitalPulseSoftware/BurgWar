@@ -47,7 +47,7 @@ namespace bw
 
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
-			inline Nz::LuaInstance& GetLuaInstance();
+			inline sol::state& GetLuaState();
 			inline const std::shared_ptr<Gamemode>& GetGamemode();
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();

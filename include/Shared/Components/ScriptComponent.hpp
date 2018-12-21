@@ -22,8 +22,9 @@ namespace bw
 			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable);
 			~ScriptComponent();
 
-			void ExecuteCallback(const std::string& callbackName, const std::function<void()>& argumentFunction = nullptr);
-	
+			template<typename... Args>
+			void ExecuteCallback(const std::string& callbackName, Args&&... args);
+
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline sol::table& GetTable();
