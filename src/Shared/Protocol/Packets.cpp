@@ -266,5 +266,9 @@ namespace bw
 				serializer &= input->isMovingRight;
 			}
 		}
+
+		void Serialize(PacketSerializer& /*serializer*/, Ready& /*data*/)
+		{
+		}
 	}
 }

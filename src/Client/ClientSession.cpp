@@ -21,6 +21,16 @@ namespace bw
 		if (!bridge)
 			return false;
 
+		bridge->OnConnected.Connect([this](Nz::UInt32 /*data*/) 
+		{
+			std::cout << "Connected" << std::endl;
+
+			Packets::Auth auth;
+			auth.playerCount = 1;
+
+			SendPacket(auth);
+		});
+
 		bridge->OnDisconnected.Connect([this](Nz::UInt32 /*data*/)
 		{
 			m_bridge.reset(); //< FIXME: Release during slot, hmm
@@ -84,9 +94,22 @@ namespace bw
 		assert(!m_downloadManager.has_value());
 		m_downloadManager.emplace(".scriptCache");
 
+		m_scriptDirectory = std::make_shared<VirtualDirectory>();
+
+		m_downloadManager->OnFileChecked.Connect([this](ClientScriptDownloadManager* downloadManager, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
+		{
+			m_scriptDirectory->Store(filePath, fileContent);
+		});
+
 		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)
 		{
 			SendPacket(request);
+		});
+
+		m_downloadManager->OnFinished.Connect([this](ClientScriptDownloadManager* downloadManager)
+		{
+			m_localMatch->LoadScripts(m_scriptDirectory);
+			SendPacket(Packets::Ready{});
 		});
 
 		m_downloadManager->HandlePacket(packet);

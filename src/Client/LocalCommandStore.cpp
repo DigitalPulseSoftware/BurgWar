@@ -37,6 +37,7 @@ namespace bw
 		OutgoingCommand(HelloWorld,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
 #undef OutgoingCommand

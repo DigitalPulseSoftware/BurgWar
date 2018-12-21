@@ -42,7 +42,8 @@ namespace bw
 		MatchState,
 		NetworkStrings,
 		PlayAnimation,
-		PlayersInput
+		PlayersInput,
+		Ready
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -212,6 +213,10 @@ namespace bw
 			std::vector<std::optional<InputData>> inputs;
 		};
 
+		DeclarePacket(Ready)
+		{
+		};
+
 #undef DeclarePacket
 
 		void Serialize(PacketSerializer& serializer, Auth& data);
@@ -230,6 +235,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayAnimation& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
+		void Serialize(PacketSerializer& serializer, Ready& data);
 	}
 }
 

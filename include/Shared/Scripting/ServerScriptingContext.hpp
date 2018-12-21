@@ -19,6 +19,8 @@ namespace bw
 			ServerScriptingContext(Match& match);
 			~ServerScriptingContext() = default;
 
+			bool Load(const std::filesystem::path& folderOrFile) override;
+
 		private:
 			Match& m_match;
 	};

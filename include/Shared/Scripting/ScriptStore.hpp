@@ -18,6 +18,7 @@
 namespace bw
 {
 	class Gamemode;
+	class VirtualDirectory;
 
 	template<typename Element>
 	class ScriptStore
@@ -33,11 +34,14 @@ namespace bw
 			inline const std::shared_ptr<Element>& GetElement(std::size_t index) const;
 			inline std::size_t GetElementIndex(const std::string& name) const;
 
-			bool Load(const std::string& folder);
+			bool Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory);
+			bool Load(const std::filesystem::path& directoryPath);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
 		protected:
+			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
+
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 

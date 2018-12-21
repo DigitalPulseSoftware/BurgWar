@@ -24,16 +24,16 @@ namespace bw
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
 
-			bool Load(const std::filesystem::path& folderOrFile);
+			virtual bool Load(const std::filesystem::path& folderOrFile) = 0;
 
 			void Update();
 
 		protected:
 			inline const std::filesystem::path& GetCurrentFolder() const;
 
-			virtual bool LoadFile(const std::filesystem::path& filePath, std::string* error);
-
 			void RegisterLibrary();
+
+			std::filesystem::path m_currentFolder;
 
 		private:
 			void RegisterGlobalLibrary();

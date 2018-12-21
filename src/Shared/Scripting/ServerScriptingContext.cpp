@@ -25,4 +25,35 @@ namespace bw
 
 		RegisterLibrary();
 	}
+
+	bool ServerScriptingContext::Load(const std::filesystem::path& folderOrFile)
+	{
+		Nz::LuaInstance& state = GetLuaInstance();
+
+		if (std::filesystem::is_directory(folderOrFile))
+		{
+			for (auto& p : std::filesystem::directory_iterator(folderOrFile))
+				Load(p);
+
+			return true;
+		}
+		else if (std::filesystem::is_regular_file(folderOrFile))
+		{
+			m_currentFolder = folderOrFile.parent_path();
+
+			if (state.ExecuteFromFile(folderOrFile.generic_u8string()))
+			{
+				std::cout << "Loaded " << folderOrFile << std::endl;
+				return true;
+			}
+			else
+			{
+				std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << state.GetLastError() << std::endl;
+				return false;
+			}
+		}
+
+		std::cerr << "Unknown path " << folderOrFile.generic_u8string() << std::endl;
+		return false;
+	}
 }

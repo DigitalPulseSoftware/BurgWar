@@ -12,21 +12,38 @@ namespace bw
 	void ClientScriptDownloadManager::HandlePacket(const Packets::ClientScriptList& packet)
 	{
 		Nz::ByteArray checksum;
-		for (auto& file : packet.scripts)
+		for (auto& fileData : packet.scripts)
 		{
-			checksum.Assign(file.sha1Checksum.begin(), file.sha1Checksum.end());
+			checksum.Assign(fileData.sha1Checksum.begin(), fileData.sha1Checksum.end());
 			std::string hexChecksum = checksum.ToHex().ToStdString();
 
-			std::filesystem::path clientFilePath = m_clientFileCache / file.path;
+			std::filesystem::path clientFilePath = m_clientFileCache / fileData.path;
 			clientFilePath.concat("." + hexChecksum);
 
 			bool shouldDownload = false;
 			if (std::filesystem::is_regular_file(clientFilePath))
 			{
 				// Check file against checksum (in case the user changed it)
-				Nz::ByteArray checksum = Nz::File::ComputeHash(Nz::HashType_SHA1, clientFilePath.generic_u8string());
-				if (checksum.size() != file.sha1Checksum.size() || std::memcmp(checksum.GetConstBuffer(), file.sha1Checksum.data(), checksum.GetSize() != 0))
+				Nz::ByteArray checksum;
+				std::vector<Nz::UInt8> content;
+
+				Nz::File file(clientFilePath.generic_u8string());
+				if (file.Open(Nz::OpenMode_ReadOnly))
+				{
+					content.resize(file.GetSize());
+					if (file.Read(content.data(), content.size()) == content.size())
+					{
+						auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+						hash->Begin();
+						hash->Append(content.data(), content.size());
+						checksum = hash->End();
+					}
+				}
+
+				if (checksum.size() != fileData.sha1Checksum.size() || std::memcmp(checksum.GetConstBuffer(), fileData.sha1Checksum.data(), checksum.GetSize() != 0))
 					shouldDownload = true;
+				else
+					OnFileChecked(this, fileData.path, content);
 			}
 			else
 			{
@@ -43,7 +60,7 @@ namespace bw
 			if (shouldDownload)
 			{
 				PendingFile& pendingFile = m_downloadList.emplace_back();
-				pendingFile.downloadPath = file.path;
+				pendingFile.downloadPath = fileData.path;
 				pendingFile.outputPath = std::move(clientFilePath);
 			}
 		}
@@ -61,6 +78,8 @@ namespace bw
 
 		outputFile.Write(packet.fileContent.data(), packet.fileContent.size());
 		outputFile.Close();
+
+		OnFileChecked(this, pendingFileData.downloadPath, packet.fileContent);
 
 		m_currentFileIndex++;
 		RequestNextFile();

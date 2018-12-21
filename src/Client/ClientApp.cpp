@@ -47,11 +47,6 @@ namespace bw
 
 		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore);
 		m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
-
-		Packets::Auth auth;
-		auth.playerCount = 2;
-
-		m_clientSession->SendPacket(auth);
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
