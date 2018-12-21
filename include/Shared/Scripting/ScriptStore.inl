@@ -61,13 +61,11 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath)
 	{
-		Nz::LuaState& state = GetLuaState();
-
 		for (auto& p : std::filesystem::directory_iterator(directoryPath))
 			LoadElement(p.is_directory(), p.path());
 
-		state.PushNil();
-		state.SetGlobal(m_tableName);
+		sol::state& state = GetLuaState();
+		state[m_tableName] = nullptr;
 
 		return true;
 	}
@@ -75,7 +73,7 @@ namespace bw
 	template<typename Element>
 	inline bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
-		Nz::LuaState& state = GetLuaState();
+		sol::state& state = GetLuaState();
 
 		std::string elementName;
 		if (!isDirectory)
@@ -101,7 +99,7 @@ namespace bw
 				return true;
 			else
 			{
-				std::cerr << path << " failed: " << state.GetLastError() << std::endl;
+				std::cerr << path << " failed" << std::endl;
 				hasError = true;
 				return false;
 			}
@@ -135,19 +133,15 @@ namespace bw
 
 		try
 		{
-			InitializeElement(state, *element);
+			InitializeElement(element->elementTable, *element);
 		}
 		catch (const std::exception& e)
 		{
 			std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
 		}
 
-		state.Pop();
-
 		//if (IsServer && !isNetworked && hasSharedFiles)
 		//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
-
-		destroyRef.Reset();
 
 		m_elementsByName[element->fullName] = m_elements.size();
 		m_elements.emplace_back(std::move(element));

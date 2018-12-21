@@ -12,23 +12,18 @@ namespace bw
 	SharedScriptingContext(true),
 	m_match(match)
 	{
-		Nz::LuaState& state = GetLuaState();
-		state.PushFunction([&](Nz::LuaState& state) -> int
+		sol::state& state = GetLuaState();
+		state.set_function("RegisterClientScript", [&](const std::string& path)
 		{
-			std::string path = state.CheckString(1);
-
 			m_match.RegisterClientScript(GetCurrentFolder() / path);
-
-			return 0;
 		});
-		state.SetGlobal("RegisterClientScript");
 
 		RegisterLibrary();
 	}
 
 	bool ServerScriptingContext::Load(const std::filesystem::path& folderOrFile)
 	{
-		Nz::LuaInstance& state = GetLuaInstance();
+		sol::state& state = GetLuaState();
 
 		if (std::filesystem::is_directory(folderOrFile))
 		{
@@ -41,14 +36,16 @@ namespace bw
 		{
 			m_currentFolder = folderOrFile.parent_path();
 
-			if (state.ExecuteFromFile(folderOrFile.generic_u8string()))
+			auto result = state.do_file(folderOrFile.generic_u8string());
+			if (result)
 			{
 				std::cout << "Loaded " << folderOrFile << std::endl;
 				return true;
 			}
 			else
 			{
-				std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << state.GetLastError() << std::endl;
+				sol::error err = result;
+				std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << err.what() << std::endl;
 				return false;
 			}
 		}

@@ -105,17 +105,7 @@ namespace bw
 				if (m_playerWeapon)
 				{
 					auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
-					Nz::LuaState& luaState = weaponScript.GetContext()->GetLuaInstance();
-
-					luaState.PushReference(weaponScript.GetTableRef());
-					Nz::CallOnExit popOnExit([&] { luaState.Pop(); });
-
-					if (luaState.GetField("OnAttack") == Nz::LuaType_Function)
-					{
-						luaState.PushValue(-2);
-						if (!luaState.Call(1))
-							std::cerr << "OnAttack hook failed: " << luaState.GetLastError() << std::endl;
-					}
+					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
 				}
 			}
 		}

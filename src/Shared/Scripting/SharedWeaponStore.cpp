@@ -23,7 +23,7 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		state.PushFunction([](Nz::LuaState& state) -> int
+		/*state.PushFunction([](Nz::LuaState& state) -> int
 		{
 			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
@@ -58,12 +58,12 @@ namespace bw
 			state.PushBoolean(nodeComponent.GetScale().x > 0.f);
 			return 1;
 		});
-		state.SetField("IsLookingRight");
+		state.SetField("IsLookingRight");*/
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
+		//weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
 		sol::table animations = elementTable["Animations"];
 		if (animations)
@@ -72,37 +72,11 @@ namespace bw
 
 			for (const auto& kv : animations)
 			{
-				kv.first.as();
-			}
-
-			while (state.Next())
-			{
-				state.CheckType(-1, Nz::LuaType_Table);
+				sol::table animTable = kv.second;
 
 				auto& anim = animData.emplace_back();
-
-
-				{
-					state.PushInteger(1);
-					state.GetTable();
-					state.CheckType(-1, Nz::LuaType_String);
-
-					anim.animationName = state.ToString(-1);
-
-					state.Pop();
-				}
-
-				{
-					state.PushInteger(2);
-					state.GetTable();
-					state.CheckType(-1, Nz::LuaType_Number);
-
-					anim.duration = static_cast<std::chrono::milliseconds>(static_cast<long long>(state.ToNumber(-1) * 1000.0));
-
-					state.Pop();
-				}
-
-				state.Pop();
+				anim.animationName = animTable[1];
+				anim.duration = static_cast<std::chrono::milliseconds>(static_cast<long long>(double(animTable[2]) * 1000.0));
 			}
 
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
@@ -140,7 +114,10 @@ namespace bw
 
 					auto result = co.call(scriptComponent.GetTable(), anim->GetAnimId());
 					if (!result)
-						std::cerr << "OnAnimationStart() failed: " << sol::error(result).what() << std::endl;
+					{
+						sol::error err = result;
+						std::cerr << "OnAnimationStart() failed: " << err.what() << std::endl;
+					}
 				});
 			}
 		}

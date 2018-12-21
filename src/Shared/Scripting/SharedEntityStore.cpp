@@ -20,7 +20,7 @@ namespace bw
 
 	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
-		state.PushFunction([](Nz::LuaState& state) -> int
+		/*state.PushFunction([](Nz::LuaState& state) -> int
 		{
 			unsigned int collisionType = state.CheckField<unsigned int>("CollisionType", 0, 1);
 
@@ -80,7 +80,7 @@ namespace bw
 
 			return 0;
 		});
-		state.SetField("InitRigidBody");
+		state.SetField("InitRigidBody");*/
 	}
 
 	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
@@ -105,7 +105,8 @@ namespace bw
 			auto result = init(entityTable);
 			if (!result)
 			{
-				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << sol::error(result).what() << std::endl;
+				sol::error err = result;
+				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << err.what() << std::endl;
 				return false;
 			}
 		}

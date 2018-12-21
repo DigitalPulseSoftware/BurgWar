@@ -42,15 +42,18 @@ namespace bw
 			else if constexpr (std::is_same_v<T, VirtualDirectory::FileEntry>)
 			{
 				m_currentFolder = folderOrFile.parent_path();
-				Nz::LuaInstance& state = GetLuaInstance();
-				if (state.ExecuteFromMemory(arg.data(), arg.size()))
+
+				sol::state& state = GetLuaState();
+				auto result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
+				if (result)
 				{
 					std::cout << "Loaded " << folderOrFile << std::endl;
 					return true;
 				}
 				else
 				{
-					std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << state.GetLastError() << std::endl;
+					sol::error err = result;
+					std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << err.what() << std::endl;
 					return false;
 				}
 			}

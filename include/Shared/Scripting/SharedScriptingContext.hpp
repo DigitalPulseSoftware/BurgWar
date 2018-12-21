@@ -39,7 +39,6 @@ namespace bw
 			void RegisterGlobalLibrary();
 			void RegisterMetatableLibrary();
 
-			std::filesystem::path m_currentFolder;
 			std::vector<sol::coroutine> m_coroutines;
 			sol::state m_luaState;
 	};
