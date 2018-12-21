@@ -43,109 +43,125 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::Load(const std::string& folder)
+	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory)
 	{
 		Nz::LuaState& state = GetLuaState();
 
-		for (auto& p : std::filesystem::directory_iterator(folder))
+		directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
 		{
-			if (p.is_regular_file() || p.is_directory())
-			{
-				std::string elementName;
-				if (p.is_regular_file())
-					elementName = p.path().stem().u8string();
-				else
-					elementName = p.path().filename().u8string();
-
-				state.PushTable();
-				state.PushValue(-1);
-				int tableRef = state.CreateReference();
-				Nz::CallOnExit destroyRef([&]()
-				{
-					state.DestroyReference(tableRef);
-				});
-
-				// TABLE.__index = TABLE
-				state.PushValue(-1);
-				state.SetField("__index");
-
-				state.PushField("Name", elementName);
-
-				InitializeElementTable(state);
-
-				state.SetGlobal(m_tableName);
-
-				std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
-
-				bool hasError = false;
-				auto Load = [&](const std::filesystem::path& path)
-				{
-					if (!std::filesystem::exists(path))
-						return false;
-
-					if (m_context->Load(path))
-						return true;
-					else
-					{
-						std::cerr << path << " failed: " << state.GetLastError() << std::endl;
-						hasError = true;
-						return false;
-					}
-
-				};
-
-				bool hasSharedFiles = false;
-				if (p.is_regular_file())
-				{
-					// Element script
-					Load(p);
-				}
-				else
-				{
-					// Element folder
-					const std::filesystem::path& folderPath = p;
-
-					if (Load(folderPath / "shared.lua"))
-						hasSharedFiles = true;
-
-					if (m_isServer)
-						Load(folderPath / "sv_init.lua");
-					else
-						Load(folderPath / "cl_init.lua");
-				}
-
-				std::shared_ptr<Element> element = std::make_shared<Element>();
-				element->name = std::move(elementName);
-				element->fullName = m_elementTypeName + "_" + element->name;
-				element->tableRef = tableRef;
-
-				state.PushReference(tableRef);
-
-				element->tickFunction = GetScriptFunction(state, "OnTick");
-
-				try
-				{
-					InitializeElement(state, *element);
-				}
-				catch (const std::exception& e)
-				{
-					std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
-				}
-
-				state.Pop();
-
-				//if (IsServer && !isNetworked && hasSharedFiles)
-				//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
-
-				destroyRef.Reset();
-
-				m_elementsByName[element->fullName] = m_elements.size();
-				m_elements.emplace_back(std::move(element));
-			}
-		}
+			LoadElement(std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
+		});
 
 		state.PushNil();
 		state.SetGlobal(m_tableName);
+
+		return true;
+	}
+
+	template<typename Element>
+	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath)
+	{
+		Nz::LuaState& state = GetLuaState();
+
+		for (auto& p : std::filesystem::directory_iterator(directoryPath))
+			LoadElement(p.is_directory(), p.path());
+
+		state.PushNil();
+		state.SetGlobal(m_tableName);
+
+		return true;
+	}
+
+	template<typename Element>
+	inline bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
+	{
+		Nz::LuaState& state = GetLuaState();
+
+		std::string elementName;
+		if (!isDirectory)
+			elementName = elementPath.stem().u8string();
+		else
+			elementName = elementPath.filename().u8string();
+
+		state.PushTable();
+		state.PushValue(-1);
+		int tableRef = state.CreateReference();
+		Nz::CallOnExit destroyRef([&]()
+		{
+			state.DestroyReference(tableRef);
+		});
+
+		// TABLE.__index = TABLE
+		state.PushValue(-1);
+		state.SetField("__index");
+
+		state.PushField("Name", elementName);
+
+		InitializeElementTable(state);
+
+		state.SetGlobal(m_tableName);
+
+		std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
+
+		bool hasError = false;
+		auto LoadFile = [&](const std::filesystem::path& path)
+		{
+			if (m_context->Load(path))
+				return true;
+			else
+			{
+				std::cerr << path << " failed: " << state.GetLastError() << std::endl;
+				hasError = true;
+				return false;
+			}
+
+		};
+
+		bool hasSharedFiles = false;
+		if (!isDirectory)
+		{
+			// Element script
+			LoadFile(elementPath);
+		}
+		else
+		{
+			// Element folder
+			if (LoadFile(elementPath / "shared.lua"))
+				hasSharedFiles = true;
+
+			if (m_isServer)
+				LoadFile(elementPath / "sv_init.lua");
+			else
+				LoadFile(elementPath / "cl_init.lua");
+		}
+
+		std::shared_ptr<Element> element = std::make_shared<Element>();
+		element->name = std::move(elementName);
+		element->fullName = m_elementTypeName + "_" + element->name;
+		element->tableRef = tableRef;
+
+		state.PushReference(tableRef);
+
+		element->tickFunction = GetScriptFunction(state, "OnTick");
+
+		try
+		{
+			InitializeElement(state, *element);
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
+		}
+
+		state.Pop();
+
+		//if (IsServer && !isNetworked && hasSharedFiles)
+		//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
+
+		destroyRef.Reset();
+
+		m_elementsByName[element->fullName] = m_elements.size();
+		m_elements.emplace_back(std::move(element));
 
 		return true;
 	}

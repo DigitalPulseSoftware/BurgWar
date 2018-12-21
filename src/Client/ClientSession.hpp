@@ -20,6 +20,7 @@ namespace bw
 	class ClientApp;
 	class LocalCommandStore;
 	class LocalMatch;
+	class VirtualDirectory;
 
 	class ClientSession
 	{
@@ -79,8 +80,9 @@ namespace bw
 			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
 			void HandleIncomingPacket(const Packets::PlayAnimation& packet);
 			
-			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<LocalMatch> m_localMatch;
+			std::shared_ptr<SessionBridge> m_bridge;
+			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			ClientApp& m_application;
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
 			const LocalCommandStore& m_commandStore;

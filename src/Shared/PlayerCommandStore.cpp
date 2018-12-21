@@ -21,6 +21,7 @@ namespace bw
 		IncomingCommand(DownloadClientScriptRequest);
 		IncomingCommand(HelloWorld);
 		IncomingCommand(PlayersInput);
+		IncomingCommand(Ready);
 
 		// Outgoing commands
 		OutgoingCommand(AuthFailure,                  Nz::ENetPacketFlag_Reliable, 0);

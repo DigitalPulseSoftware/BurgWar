@@ -24,6 +24,7 @@ namespace bw
 			void HandlePacket(const Packets::DownloadClientScriptResponse& packet);
 
 			NazaraSignal(OnDownloadRequest, ClientScriptDownloadManager* /*downloadManager*/, const Packets::DownloadClientScriptRequest& /*request*/);
+			NazaraSignal(OnFileChecked, ClientScriptDownloadManager* /*downloadManager*/, const std::string& /*downloadPath*/, const std::vector<Nz::UInt8>& /*content*/);
 			NazaraSignal(OnFinished, ClientScriptDownloadManager* /*downloadManager*/);
 
 		private:

@@ -25,22 +25,21 @@ namespace bw
 			inline Nz::LuaInstance& GetLuaInstance();
 			inline const Nz::LuaInstance& GetLuaInstance() const;
 
-			bool Load(const std::filesystem::path& folderOrFile);
+			virtual bool Load(const std::filesystem::path& folderOrFile) = 0;
 
 			void Update();
 
 		protected:
 			inline const std::filesystem::path& GetCurrentFolder() const;
 
-			virtual bool LoadFile(const std::filesystem::path& filePath, std::string* error);
-
 			void RegisterLibrary();
+
+			std::filesystem::path m_currentFolder;
 
 		private:
 			void RegisterGlobalLibrary();
 			void RegisterMetatableLibrary();
 
-			std::filesystem::path m_currentFolder;
 			std::vector<Nz::LuaCoroutine> m_coroutines;
 			Nz::LuaInstance m_luaInstance;
 	};

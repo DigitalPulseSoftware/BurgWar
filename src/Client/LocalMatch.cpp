@@ -127,7 +127,7 @@ namespace bw
 		theColliderPhys.SetMass(0.f);
 		theColliderPhys.SetFriction(1.f);
 
-		constexpr Nz::UInt8 playerCount = 2;
+		constexpr Nz::UInt8 playerCount = 1;
 
 		m_inputPacket.inputs.resize(playerCount);
 		for (auto& input : m_inputPacket.inputs)
@@ -138,13 +138,55 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(m_application, i);
 
-		m_scriptingContext = std::make_shared<ClientScriptingContext>(*this);
+		/*auto& networkStringStore = m_session.GetNetworkStringStore();
+		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
+		{
+			if (entity.isNetworked)
+			{
+				if (networkStringStore.GetStringIndex(entity.name) == NetworkStringStore::InvalidIndex)
+					std::cout << "[Client] Entity " << entity.name << " is marked as networked but is not part of the network string store" << std::endl;
+			}
+		});*/
+
+		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
+		burgerMat->SetDiffuseMap("../resources/burger.png");
+		auto& sampler = burgerMat->GetDiffuseSampler();
+		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
+
+		Nz::SpriteRef burgerSprite = Nz::Sprite::New();
+		burgerSprite->SetMaterial(burgerMat);
+		burgerSprite->SetSize(burgerSprite->GetSize() / 2.f);
+		Nz::Vector2f burgerSize = burgerSprite->GetSize();
+
+		burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
+
+		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(0.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
+		burgerBox->SetCollisionId(1);
+
+		Ndk::EntityHandle burger = m_world.CreateEntity();
+		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
+		burger->AddComponent<Ndk::NodeComponent>().SetPosition(300.f, 100.f);
+		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
+		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
+		burgerPhys.SetMass(300);
+		burgerPhys.SetFriction(10.f);
+		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());*/
+	}
+
+	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
+	{
+		m_scriptingContext = std::make_shared<ClientScriptingContext>(*this, scriptDir);
 
 		m_entityStore.emplace(nullptr, m_scriptingContext);
-		m_entityStore->Load("../../scripts/entities");
-
 		m_weaponStore.emplace(nullptr, m_scriptingContext);
-		m_weaponStore->Load("../../scripts/weapons");
+
+		VirtualDirectory::Entry entry;
+
+		if (scriptDir->GetEntry("entities", &entry))
+			m_entityStore->Load("entities", std::get<VirtualDirectory::DirectoryEntry>(entry));
+
+		if (scriptDir->GetEntry("weapons", &entry))
+			m_weaponStore->Load("weapons", std::get<VirtualDirectory::DirectoryEntry>(entry));
 
 		Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
 		state.PushFunction([&](Nz::LuaState& state)
@@ -185,45 +227,13 @@ namespace bw
 			return 0;
 		});
 		state.SetGlobal("engine_AnimateRotation");
-
-		/*auto& networkStringStore = m_session.GetNetworkStringStore();
-		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
-		{
-			if (entity.isNetworked)
-			{
-				if (networkStringStore.GetStringIndex(entity.name) == NetworkStringStore::InvalidIndex)
-					std::cout << "[Client] Entity " << entity.name << " is marked as networked but is not part of the network string store" << std::endl;
-			}
-		});*/
-
-		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap("../resources/burger.png");
-		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
-
-		Nz::SpriteRef burgerSprite = Nz::Sprite::New();
-		burgerSprite->SetMaterial(burgerMat);
-		burgerSprite->SetSize(burgerSprite->GetSize() / 2.f);
-		Nz::Vector2f burgerSize = burgerSprite->GetSize();
-
-		burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(0.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
-		burgerBox->SetCollisionId(1);
-
-		Ndk::EntityHandle burger = m_world.CreateEntity();
-		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
-		burger->AddComponent<Ndk::NodeComponent>().SetPosition(300.f, 100.f);
-		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(300);
-		burgerPhys.SetFriction(10.f);
-		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());*/
 	}
 
 	void LocalMatch::Update(float elapsedTime)
 	{
-		m_scriptingContext->Update();
+		if (m_scriptingContext)
+			m_scriptingContext->Update();
+
 		m_world.Update(elapsedTime);
 
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;

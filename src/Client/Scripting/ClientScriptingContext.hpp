@@ -8,6 +8,7 @@
 #define BURGWAR_SHARED_CLIENTSCRIPTINGCONTEXT_HPP
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <Shared/Utility/VirtualDirectory.hpp>
 
 namespace bw
 {
@@ -16,12 +17,13 @@ namespace bw
 	class ClientScriptingContext : public SharedScriptingContext
 	{
 		public:
-			ClientScriptingContext(LocalMatch& match);
+			ClientScriptingContext(LocalMatch& match, std::shared_ptr<VirtualDirectory> scriptDir);
 			~ClientScriptingContext() = default;
 
-		private:
-			//bool LoadFile(const std::filesystem::path& filePath, std::string* error) override;
+			bool Load(const std::filesystem::path& folderOrFile) override;
 
+		private:
+			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			LocalMatch& m_match;
 	};
 }

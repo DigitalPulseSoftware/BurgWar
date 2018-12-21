@@ -51,6 +51,7 @@ namespace bw
 			void HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
 			void HandleIncomingPacket(const Packets::PlayersInput& packet);
+			void HandleIncomingPacket(const Packets::Ready& packet);
 
 			Match& m_match;
 			MatchClientVisibility m_visibility;

@@ -31,38 +31,6 @@ namespace bw
 		return m_coroutines.emplace_back(m_luaInstance.NewCoroutine());
 	}
 
-	bool SharedScriptingContext::Load(const std::filesystem::path& folderOrFile)
-	{
-		Nz::LuaInstance& state = GetLuaInstance();
-
-		if (std::filesystem::is_directory(folderOrFile))
-		{
-			for (auto& p : std::filesystem::directory_iterator(folderOrFile))
-				Load(p);
-
-			return true;
-		}
-		else if (std::filesystem::is_regular_file(folderOrFile))
-		{
-			m_currentFolder = folderOrFile.parent_path();
-
-			std::string err;
-			if (LoadFile(folderOrFile, &err))
-			{
-				std::cout << "Loaded " << folderOrFile << std::endl;
-				return true;
-			}
-			else
-			{
-				std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << state.GetLastError() << std::endl;
-				return false;
-			}
-		}
-
-		std::cerr << "Unknown path " << folderOrFile.generic_u8string() << std::endl;
-		return false;
-	}
-
 	void SharedScriptingContext::Update()
 	{
 		for (auto it = m_coroutines.begin(); it != m_coroutines.end();)
@@ -75,25 +43,13 @@ namespace bw
 		}
 	}
 
-	bool SharedScriptingContext::LoadFile(const std::filesystem::path& filePath, std::string* error)
-	{
-		Nz::LuaInstance& state = GetLuaInstance();
-
-		if (state.ExecuteFromFile(filePath.generic_u8string()))
-			return true;
-		else
-		{
-			*error = state.GetLastError().ToStdString();
-			return false;
-		}
-	}
-
 	void SharedScriptingContext::RegisterLibrary()
 	{
 		RegisterGlobalLibrary();
 		RegisterMetatableLibrary();
 
 		Load("../../scripts/autorun");
+		Load("autorun");
 	}
 
 	void SharedScriptingContext::RegisterGlobalLibrary()
@@ -105,8 +61,8 @@ namespace bw
 
 			std::filesystem::path scriptPath = m_currentFolder / scriptName;
 
-			if (!state.ExecuteFromFile(scriptPath.generic_u8string()))
-				state.Error(state.GetLastError());
+			if (!Load(scriptPath.generic_u8string()))
+				state.Error("TODO");
 
 			return 0;
 		});

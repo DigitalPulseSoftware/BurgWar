@@ -24,6 +24,7 @@
 namespace bw
 {
 	class ClientApp;
+	class VirtualDirectory;
 
 	class LocalMatch
 	{
@@ -35,7 +36,7 @@ namespace bw
 
 			inline AnimationManager& GetAnimationManager();
 
-
+			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
 			void Update(float elapsedTime);
 

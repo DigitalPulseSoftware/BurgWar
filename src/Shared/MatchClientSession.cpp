@@ -91,9 +91,6 @@ namespace bw
 
 		// Send client-file script list
 		SendPacket(m_match.BuildClientFileListPacket());
-
-		// HAAAAAX
-		GetVisibility().UpdateLayer(0);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
@@ -138,5 +135,11 @@ namespace bw
 
 			m_players[playerIndex].UpdateInput(input->isAttacking, input->isJumping, input->isMovingLeft, input->isMovingRight);
 		}
+	}
+
+	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& packet)
+	{
+		// HAAAAAX
+		GetVisibility().UpdateLayer(0);
 	}
 }
