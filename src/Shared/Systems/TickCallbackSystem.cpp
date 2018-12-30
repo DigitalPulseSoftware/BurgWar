@@ -40,7 +40,7 @@ namespace bw
 			sol::protected_function onTick = element->tickFunction;
 
 			auto result = onTick(scriptComponent.GetTable());
-			if (!result)
+			if (!result.valid())
 			{
 				sol::error err = result;
 				std::cerr << "OnTick failed: " << err.what() << std::endl;

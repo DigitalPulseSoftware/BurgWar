@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
-#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <NDK/LuaAPI.hpp>
 #include <NDK/Lua/LuaBinding.hpp>
 #include <filesystem>
@@ -23,11 +22,6 @@ namespace bw
 	{
 		// Destroy coroutines before destroying lua instance
 		m_coroutines.clear();
-	}
-
-	sol::coroutine& SharedScriptingContext::CreateCoroutine()
-	{
-		return m_coroutines.emplace_back(m_luaState);
 	}
 
 	void SharedScriptingContext::Update()

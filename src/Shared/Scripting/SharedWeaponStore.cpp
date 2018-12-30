@@ -8,7 +8,6 @@
 #include <NDK/LuaAPI.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
-#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -23,42 +22,29 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		/*state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["GetPosition"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			const Ndk::EntityHandle& entity = table["Entity"];
+
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.GetPosition());
+		};
 
-			Nz::Vector2f pos = Nz::Vector2f(nodeComponent.GetPosition());
-
-			state.PushTable(0, 2);
-			state.PushField("x", pos.x);
-			state.PushField("y", pos.y);
-
-			state.SetMetatable("vec2");
-			return 1;
-		});
-		state.SetField("GetPosition");
-
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["GetRotation"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			const Ndk::EntityHandle& entity = table["Entity"];
+
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetRotation().ToEulerAngles().roll;
+		};
 
-			float rot = nodeComponent.GetRotation().ToEulerAngles().roll;
-			state.Push(rot);
-			return 1;
-		});
-		state.SetField("GetRotation");
-
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["IsLookingRight"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			const Ndk::EntityHandle& entity = table["Entity"];
 
-			state.PushBoolean(nodeComponent.GetScale().x > 0.f);
-			return 1;
-		});
-		state.SetField("IsLookingRight");*/
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetScale().x > 0.f;
+		};
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
@@ -110,10 +96,10 @@ namespace bw
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
-					auto& co = scriptComponent.GetContext()->CreateCoroutine();
+					auto& co = scriptComponent.GetContext()->CreateCoroutine(callback);
 
-					auto result = co.call(scriptComponent.GetTable(), anim->GetAnimId());
-					if (!result)
+					auto result = co(scriptComponent.GetTable(), anim->GetAnimId());
+					if (!result.valid())
 					{
 						sol::error err = result;
 						std::cerr << "OnAnimationStart() failed: " << err.what() << std::endl;

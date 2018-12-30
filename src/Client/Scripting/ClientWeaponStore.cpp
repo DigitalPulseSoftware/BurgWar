@@ -17,8 +17,6 @@ namespace bw
 	{
 		auto& weaponClass = *GetElement(entityIndex);
 
-		Nz::LuaState& state = GetLuaState();
-
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 		mat->SetDiffuseMap(weaponClass.spriteName);
 		auto& sampler = mat->GetDiffuseSampler();
@@ -38,19 +36,19 @@ namespace bw
 		return weapon;
 	}
 
-	void ClientWeaponStore::InitializeElementTable(Nz::LuaState& state)
+	void ClientWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		SharedWeaponStore::InitializeElementTable(state);
+		SharedWeaponStore::InitializeElementTable(elementTable);
 
-		state.PushField("Scale", 1.f);
+		elementTable["Scale"] = 1.f;
 	}
 
-	void ClientWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
+	void ClientWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		SharedWeaponStore::InitializeElement(state, weapon);
+		SharedWeaponStore::InitializeElement(elementTable, weapon);
 
-		weapon.scale = state.CheckField<float>("Scale");
-		weapon.spriteName = state.CheckField<std::string>("Sprite");
-		weapon.spriteOrigin = state.CheckField<Nz::Vector2f>("SpriteOrigin");
+		weapon.scale = elementTable["Scale"];
+		weapon.spriteName = elementTable["Sprite"];
+		weapon.spriteOrigin = elementTable["SpriteOrigin"];
 	}
 }

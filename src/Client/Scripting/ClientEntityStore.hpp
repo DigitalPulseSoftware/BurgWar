@@ -22,8 +22,8 @@ namespace bw
 			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex);
 
 		private:
-			void InitializeElementTable(sol::table& elementTable) override = 0;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
+			void InitializeElementTable(sol::table& elementTable) override;
+			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
 	};
 }
 

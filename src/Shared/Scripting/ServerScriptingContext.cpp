@@ -37,7 +37,7 @@ namespace bw
 			m_currentFolder = folderOrFile.parent_path();
 
 			auto result = state.do_file(folderOrFile.generic_u8string());
-			if (result)
+			if (result.valid())
 			{
 				std::cout << "Loaded " << folderOrFile << std::endl;
 				return true;

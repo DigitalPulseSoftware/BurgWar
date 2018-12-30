@@ -19,7 +19,7 @@ namespace bw
 			SharedScriptingContext(bool isServer);
 			virtual ~SharedScriptingContext();
 
-			sol::coroutine& CreateCoroutine();
+			template<typename... Args> sol::coroutine& CreateCoroutine(Args&&... args);
 
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;

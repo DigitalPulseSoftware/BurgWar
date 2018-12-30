@@ -45,15 +45,13 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory)
 	{
-		sol::state& state = GetLuaState();
-
 		directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
 		{
 			LoadElement(std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
 		});
 
-		state.PushNil();
-		state.SetGlobal(m_tableName);
+		sol::state& state = GetLuaState();
+		state[m_tableName] = nullptr;
 
 		return true;
 	}

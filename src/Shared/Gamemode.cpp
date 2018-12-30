@@ -29,6 +29,8 @@ namespace bw
 
 		m_gamemodeTable = state.create_table();
 		m_gamemodeTable["Name"] = gamemodeName;
+		InitializeGamemode(m_gamemodeTable);
+
 		state["GM"] = m_gamemodeTable;
 
 		Load(gamemodePath / "shared.lua");
@@ -38,37 +40,25 @@ namespace bw
 
 	void Gamemode::InitializeGamemode(sol::table& gamemodeTable)
 	{
-		/*state.PushFunction([&](Nz::LuaState& state) -> int
+		gamemodeTable["CreateEntity"] = [&](const sol::table& gmTable, const std::string& entityType, const Nz::Vector2f& spawnPos)
 		{
-			int index = 2;
-			std::string entityType = state.Check<std::string>(&index);
-			Nz::Vector2f spawnPos = state.Check<Nz::Vector2f>(&index);
-
 			auto& entityStore = m_match.GetEntityStore();
 
 			if (std::size_t entityIndex = entityStore.GetElementIndex(entityType); entityIndex != ServerEntityStore::InvalidIndex)
 			{
 				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex);
 				if (!entity)
-				{
-					state.Error("Failed to create \"" + entityType + "\"");
-					return 0;
-				}
+					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
 				if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 					entity->GetComponent<Ndk::PhysicsComponent2D>().SetPosition(spawnPos);
 				else
 					entity->GetComponent<Ndk::NodeComponent>().SetPosition(spawnPos);
 
-				//TODO: Return entity
-				return 0;
+				return entity;
 			}
 			else
-			{
-				state.Error("Entity type \"" + entityType + "\" doesn't exist");
-				return 0;
-			}
-		});
-		state.SetField("CreateEntity");*/
+				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+		};
 	}
 }

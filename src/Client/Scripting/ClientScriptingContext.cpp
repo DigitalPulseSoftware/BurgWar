@@ -45,7 +45,7 @@ namespace bw
 
 				sol::state& state = GetLuaState();
 				auto result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
-				if (result)
+				if (result.valid())
 				{
 					std::cout << "Loaded " << folderOrFile << std::endl;
 					return true;
