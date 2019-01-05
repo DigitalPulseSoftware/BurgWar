@@ -237,9 +237,18 @@ namespace bw
 		constexpr float ErrorCorrectionPerSecond = 60;
 
 		m_errorCorrectionTimer += elapsedTime;
-		while (m_errorCorrectionTimer >= 1.f / ErrorCorrectionPerSecond)
+		if (m_errorCorrectionTimer >= 1.f / ErrorCorrectionPerSecond)
 		{
-			m_errorCorrectionTimer -= 1.f / ErrorCorrectionPerSecond;
+			// Compute how many loop we have to do (usually one)
+			float loopCount = std::floor(ErrorCorrectionPerSecond * m_errorCorrectionTimer);
+			m_errorCorrectionTimer -= loopCount / ErrorCorrectionPerSecond;
+
+			// Compute correction factor for this loop count
+			constexpr float positionCorrectionFactor = 0.3f;
+			constexpr float rotationCorrectionFactor = 0.5f;
+
+			float realPositionCorrectionFactor = Nz::IntegralPow(1.f - positionCorrectionFactor, static_cast<unsigned int>(loopCount));
+			float realRotationCorrectionFactor = Nz::IntegralPow(1.f - rotationCorrectionFactor, static_cast<unsigned int>(loopCount));
 
 			for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
 			{
@@ -252,7 +261,8 @@ namespace bw
 					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
 					auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-					serverEntity.positionError = Nz::Lerp(serverEntity.positionError, Nz::Vector2f::Zero(), 0.5f);
+					serverEntity.positionError *= realPositionCorrectionFactor;
+					serverEntity.rotationError *= realRotationCorrectionFactor;
 
 					// Avoid denormals
 					for (std::size_t i = 0; i < 2; ++i)
@@ -261,10 +271,10 @@ namespace bw
 							serverEntity.positionError[i] = 0.f;
 					}
 
-					serverEntity.rotationError = Nz::Lerp(serverEntity.rotationError, Nz::RadianAnglef::Zero(), 0.5f);
 					if (serverEntity.rotationError == 0.f)
 						serverEntity.rotationError = Nz::RadianAnglef::Zero();
 
+					// Apply new position/rotation
 					entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
 					entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 				}
