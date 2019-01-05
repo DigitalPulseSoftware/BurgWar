@@ -14,19 +14,14 @@ namespace bw
 	{
 		auto& entityClass = *GetElement(entityIndex);
 
-		Nz::LuaState& state = GetLuaState();
-
 		std::string spritePath;
 		bool playerControlled;
 		float scale;
 		try
 		{
-			state.PushReference(entityClass.tableRef);
-			Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-			playerControlled = state.CheckField<bool>("PlayerControlled");
-			scale = state.CheckField<float>("Scale");
-			spritePath = state.CheckField<std::string>("Sprite");
+			playerControlled = entityClass.elementTable["PlayerControlled"];
+			scale = entityClass.elementTable["Scale"];
+			spritePath = entityClass.elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
@@ -66,13 +61,13 @@ namespace bw
 		return entity;
 	}
 
-	void ClientEntityStore::InitializeElementTable(Nz::LuaState& state)
+	void ClientEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
-		SharedEntityStore::InitializeElementTable(state);
+		SharedEntityStore::InitializeElementTable(elementTable);
 	}
 
-	void ClientEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& entity)
+	void ClientEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& entity)
 	{
-		SharedEntityStore::InitializeElement(state, entity);
+		SharedEntityStore::InitializeElement(elementTable, entity);
 	}
 }

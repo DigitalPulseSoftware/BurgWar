@@ -1,6 +1,20 @@
 WorkspaceName = "Burgwar"
 Projects = {
 	{
+		Name = "Lua",
+		Kind = "StaticLib",
+		Files = {
+			"../contrib/lua/include/**.h",
+			"../contrib/lua/include/**.hpp",
+			"../contrib/lua/src/**.h",
+			"../contrib/lua/src/**.c",
+		},
+		Libs = {},
+		LibsDebug = {},
+		LibsRelease = {},
+		AdditionalDependencies = {}
+	},
+	{
 		Name = "Shared",
 		Kind = "StaticLib",
 		Files = {
@@ -10,6 +24,9 @@ Projects = {
 			"../src/Shared/**.inl",
 			"../src/Shared/**.cpp"
 		},
+		LinkStatic = {},
+		LinkStaticDebug = {"Lua-d"},
+		LinkStaticRelease = {"Lua"},
 		Libs = {},
 		LibsDebug = {},
 		LibsRelease = {},
@@ -24,8 +41,8 @@ Projects = {
 			"../src/Client/**.cpp"
 		},
 		LinkStatic = {},
-		LinkStaticDebug = {"Shared-d"},
-		LinkStaticRelease = {"Shared"},
+		LinkStaticDebug = {"Lua-d", "Shared-d"},
+		LinkStaticRelease = {"Lua", "Shared"},
 		Libs = os.istarget("windows") and {} or {"pthread"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -40,8 +57,8 @@ Projects = {
 			"../src/Server/**.cpp"
 		},
 		LinkStatic = {},
-		LinkStaticDebug = {"Shared-d"},
-		LinkStaticRelease = {"Shared"},
+		LinkStaticDebug = {"Lua-d", "Shared-d"},
+		LinkStaticRelease = {"Lua", "Shared"},
 		Libs = os.istarget("windows") and {} or {"pthread"},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
@@ -97,6 +114,7 @@ workspace("Burgwar")
 	targetdir("../bin/%{cfg.buildcfg}")
 
 	includedirs({
+		"../contrib/lua/include",
 		"../include",
 		"../src",
 		"../thirdparty/include"

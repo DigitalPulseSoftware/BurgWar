@@ -24,8 +24,6 @@ namespace bw
 	{
 		auto& weaponClass = *GetElement(weaponIndex);
 
-		Nz::LuaState& state = GetLuaState();
-
 		const Ndk::EntityHandle& weapon = world.CreateEntity();
 		weapon->AddComponent<NetworkSyncComponent>(weaponClass.fullName, parent);
 
@@ -34,18 +32,13 @@ namespace bw
 		return weapon;
 	}
 
-	void ServerWeaponStore::InitializeElementTable(Nz::LuaState& state)
+	void ServerWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		SharedWeaponStore::InitializeElementTable(state);
+		SharedWeaponStore::InitializeElementTable(elementTable);
 
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["DealDamage"] = [](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
-
-			int index = 2;
-			Nz::UInt16 damage = state.Check<Nz::UInt16>(&index);
-			Nz::Rectf damageZone = state.Check<Nz::Rectf>(&index);
-
+			const Ndk::EntityHandle& entity = weaponTable["Entity"];
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -63,20 +56,22 @@ namespace bw
 
 				std::cout << hitEntity << std::endl;
 			}
+		};
 
-			return 0;
-		});
-		state.SetField("DealDamage");
-
-		state.PushFunction([this](Nz::LuaState& state) -> int
+		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
-
-			int index = 2;
-			std::string animationName = state.Check<std::string>(&index);
-
+			const Ndk::EntityHandle& entity = weaponTable["Entity"];
 			if (!entity->HasComponent<AnimationComponent>())
-				state.Error("Entity has no animations");
+				return false;
+
+			return entity->GetComponent<AnimationComponent>().IsPlaying();
+		};
+
+		elementTable["PlayAnim"] = [&](const sol::table& weaponTable, const std::string& animationName)
+		{
+			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			if (!entity->HasComponent<AnimationComponent>())
+				throw std::runtime_error("Entity has no animations");
 
 			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
 			const auto& animationStore = entityAnimation.GetAnimationStore();
@@ -84,30 +79,12 @@ namespace bw
 			if (std::size_t animId = animationStore->FindAnimationByName(animationName); animId != animationStore->InvalidId)
 				entityAnimation.Play(animId, m_application.GetAppTime());
 			else
-				state.Error("Entity has no animation \"" + animationName + "\"");
-
-			return 0;
-		});
-		state.SetField("PlayAnim");
-
-		state.PushFunction([](Nz::LuaState& state) -> int
-		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
-			if (!entity->HasComponent<AnimationComponent>())
-			{
-				state.PushBoolean(false);
-				return 1;
-			}
-
-			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
-			state.PushBoolean(entityAnimation.IsPlaying());
-			return 1;
-		});
-		state.SetField("IsPlayingAnimation");
+				throw std::runtime_error("Entity has no animation \"" + animationName + "\"");
+		};
 	}
 
-	void ServerWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
+	void ServerWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		SharedWeaponStore::InitializeElement(state, weapon);
+		SharedWeaponStore::InitializeElement(elementTable, weapon);
 	}
 }

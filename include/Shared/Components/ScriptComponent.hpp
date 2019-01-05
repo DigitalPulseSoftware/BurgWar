@@ -19,21 +19,22 @@ namespace bw
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, int tableRef);
+			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable);
 			~ScriptComponent();
 
-			void ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction = nullptr);
-	
+			template<typename... Args>
+			void ExecuteCallback(const std::string& callbackName, Args&&... args);
+
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
-			inline int GetTableRef();
+			inline sol::table& GetTable();
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<SharedScriptingContext> m_context;
-			int m_tableRef;
+			sol::table m_entityTable;
 	};
 }
 

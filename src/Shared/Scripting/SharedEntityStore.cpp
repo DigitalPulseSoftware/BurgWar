@@ -18,9 +18,9 @@ namespace bw
 		SetTableName("ENTITY");
 	}
 
-	void SharedEntityStore::InitializeElementTable(Nz::LuaState& state)
+	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
-		state.PushFunction([](Nz::LuaState& state) -> int
+		/*state.PushFunction([](Nz::LuaState& state) -> int
 		{
 			unsigned int collisionType = state.CheckField<unsigned int>("CollisionType", 0, 1);
 
@@ -80,35 +80,78 @@ namespace bw
 
 			return 0;
 		});
-		state.SetField("InitRigidBody");
+		state.SetField("InitRigidBody");*/
+
+		auto InitRigidBody = [](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+
+			auto& burgerPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
+			burgerPhys.SetMass(mass);
+			burgerPhys.SetFriction(10.f);
+
+			if (!canRotate)
+				burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+		};
+
+		elementTable["InitRigidBody"] = sol::overload(InitRigidBody,
+		                                              [=](const sol::table& entityTable, float mass, float friction) { InitRigidBody(entityTable, mass, friction); },
+		                                              [=](const sol::table& entityTable, float mass) { InitRigidBody(entityTable, mass); });
+
+		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			unsigned int collisionType = entityTable["CollisionType"];
+
+			sol::table metatable = colliderTable[sol::metatable_key];
+			std::string typeName = metatable["__name"];
+
+			Nz::Collider2DRef collider;
+			if (typeName == "rect")
+			{
+				Nz::Rectf rect = colliderTable.as<Nz::Rectf>();
+				collider = Nz::BoxCollider2D::New(rect);
+			}
+			else if (typeName == "circle")
+			{
+				Nz::Vector2f origin = colliderTable["origin"];
+				float radius = colliderTable["radius"];
+
+				collider = Nz::CircleCollider2D::New(radius, origin);
+			}
+			else
+				luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
+
+			collider->SetCollisionId(collisionType);
+
+			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
+		};
 	}
 
-	void SharedEntityStore::InitializeElement(Nz::LuaState& state, ScriptedEntity& element)
+	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		element.initializeFunction = GetScriptFunction(state, "Initialize");
+		element.initializeFunction = elementTable["Initialize"];
 	}
 
 	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity)
 	{
-		Nz::LuaState& state = GetLuaState();
-		state.PushTable();
+		sol::state& state = GetLuaState();
 
-		state.PushField("Entity", entity);
+		sol::table entityTable = state.create_table();
+		entityTable["Entity"] = entity;
+		entityTable[sol::metatable_key] = entityClass.elementTable;
 
-		state.PushReference(entityClass.tableRef);
-		state.SetMetatable(-2);
+		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), entityTable);
 
-		int tableRef = state.CreateReference();
-
-		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), tableRef);
-
-		if (entityClass.initializeFunction != -1)
+		if (entityClass.initializeFunction)
 		{
-			state.PushReference(entityClass.initializeFunction);
-			state.PushReference(tableRef);
-			if (!state.Call(1))
+			sol::protected_function init = entityClass.initializeFunction;
+
+			auto result = init(entityTable);
+			if (!result.valid())
 			{
-				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << state.GetLastError() << std::endl;
+				sol::error err = result;
+				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << err.what() << std::endl;
 				return false;
 			}
 		}

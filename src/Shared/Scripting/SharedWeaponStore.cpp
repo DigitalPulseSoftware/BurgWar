@@ -8,7 +8,6 @@
 #include <NDK/LuaAPI.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
-#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -21,99 +20,55 @@ namespace bw
 		SetTableName("WEAPON");
 	}
 
-	void SharedWeaponStore::InitializeElementTable(Nz::LuaState& state)
+	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["GetPosition"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			const Ndk::EntityHandle& entity = table["Entity"];
+
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.GetPosition());
+		};
 
-			Nz::Vector2f pos = Nz::Vector2f(nodeComponent.GetPosition());
-
-			state.PushTable(0, 2);
-			state.PushField("x", pos.x);
-			state.PushField("y", pos.y);
-
-			state.SetMetatable("vec2");
-			return 1;
-		});
-		state.SetField("GetPosition");
-
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["GetRotation"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
+			const Ndk::EntityHandle& entity = table["Entity"];
+
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetRotation().ToEulerAngles().roll;
+		};
 
-			float rot = nodeComponent.GetRotation().ToEulerAngles().roll;
-			state.Push(rot);
-			return 1;
-		});
-		state.SetField("GetRotation");
-
-		state.PushFunction([](Nz::LuaState& state) -> int
+		elementTable["IsLookingRight"] = [](const sol::table& table)
 		{
-			Ndk::EntityHandle entity = state.CheckField<Ndk::EntityHandle>("Entity", 1);
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			const Ndk::EntityHandle& entity = table["Entity"];
 
-			state.PushBoolean(nodeComponent.GetScale().x > 0.f);
-			return 1;
-		});
-		state.SetField("IsLookingRight");
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetScale().x > 0.f;
+		};
 	}
 
-	void SharedWeaponStore::InitializeElement(Nz::LuaState& state, ScriptedWeapon& weapon)
+	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		std::cout << state.DumpStack() << std::endl;
+		//weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
-		weapon.weaponOffset = state.CheckField<Nz::Vector2f>("WeaponOffset", Nz::Vector2f::Zero());
-
-		Nz::LuaType animationType = state.GetField("Animations");
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-
-		if (animationType != Nz::LuaType_Nil)
+		sol::table animations = elementTable["Animations"];
+		if (animations)
 		{
-			if (animationType != Nz::LuaType_Table)
-				throw std::runtime_error("Animations must of type table");
-
 			std::vector<AnimationStore::AnimationData> animData;
 
-			state.PushNil();
-			while (state.Next())
+			for (const auto& kv : animations)
 			{
-				state.CheckType(-1, Nz::LuaType_Table);
+				sol::table animTable = kv.second;
 
 				auto& anim = animData.emplace_back();
-
-
-				{
-					state.PushInteger(1);
-					state.GetTable();
-					state.CheckType(-1, Nz::LuaType_String);
-
-					anim.animationName = state.ToString(-1);
-
-					state.Pop();
-				}
-
-				{
-					state.PushInteger(2);
-					state.GetTable();
-					state.CheckType(-1, Nz::LuaType_Number);
-
-					anim.duration = static_cast<std::chrono::milliseconds>(static_cast<long long>(state.ToNumber(-1) * 1000.0));
-
-					state.Pop();
-				}
-
-				state.Pop();
+				anim.animationName = animTable[1];
+				anim.duration = static_cast<std::chrono::milliseconds>(static_cast<long long>(double(animTable[2]) * 1000.0));
 			}
 
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
 		}
 
-		popOnExit.CallAndReset();
-
-		weapon.animationStartFunction = GetScriptFunction(state, "OnAnimationStart");
+		weapon.animationStartFunction = elementTable["OnAnimationStart"];
 	}
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
@@ -122,38 +77,33 @@ namespace bw
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);
 
-		Nz::LuaState& state = GetLuaState();
-		state.PushTable();
+		sol::state& state = GetLuaState();
 
-		state.PushField("Entity", entity);
+		sol::table entityTable = state.create_table();
+		entityTable["Entity"] = entity;
+		entityTable[sol::metatable_key] = weaponClass.elementTable;
 
-		state.PushReference(weaponClass.tableRef);
-		state.SetMetatable(-2);
-
-		int tableRef = state.CreateReference();
-
-		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), tableRef);
+		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), entityTable);
 
 		if (weaponClass.animations)
 		{
 			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
 
-			if (int callbackId = weaponClass.animationStartFunction; callbackId != -1)
+			if (sol::protected_function callback = weaponClass.animationStartFunction)
 			{
-				anim.OnAnimationStart.Connect([callbackId](AnimationComponent* anim)
+				anim.OnAnimationStart.Connect([callback](AnimationComponent* anim)
 				{
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
-					auto& co = scriptComponent.GetContext()->CreateCoroutine();
+					auto co = scriptComponent.GetContext()->CreateCoroutine(callback);
 
-					co.PushReference(callbackId);
-					co.PushReference(scriptComponent.GetTableRef());
-					co.Push(anim->GetAnimId());
-
-					Nz::Ternary status = co.Resume(2);
-					if (status == Nz::Ternary_False)
-						std::cerr << "OnAnimationStart() failed: " << co.GetLastError() << std::endl;
+					auto result = co(scriptComponent.GetTable(), anim->GetAnimId());
+					if (!result.valid())
+					{
+						sol::error err = result;
+						std::cerr << "OnAnimationStart() failed: " << err.what() << std::endl;
+					}
 				});
 			}
 		}

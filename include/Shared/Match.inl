@@ -17,9 +17,9 @@ namespace bw
 		return *m_entityStore;
 	}
 
-	inline Nz::LuaInstance& Match::GetLuaInstance()
+	inline sol::state& Match::GetLuaState()
 	{
-		return m_scriptingContext->GetLuaInstance();
+		return m_scriptingContext->GetLuaState();
 	}
 
 	inline const std::shared_ptr<Gamemode>& Match::GetGamemode()

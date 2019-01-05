@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
-#include <Nazara/Lua/LuaCoroutine.hpp>
 #include <NDK/LuaAPI.hpp>
 #include <NDK/Lua/LuaBinding.hpp>
 #include <filesystem>
@@ -13,31 +12,48 @@ namespace bw
 {
 	SharedScriptingContext::SharedScriptingContext(bool isServer)
 	{
-		m_luaInstance.LoadLibraries();
-		Ndk::LuaAPI::GetBinding()->RegisterClasses(m_luaInstance);
+		m_luaState.open_libraries();
 
-		m_luaInstance.PushGlobal("SERVER", isServer);
-		m_luaInstance.PushGlobal("CLIENT", !isServer);
+		m_luaState["SERVER"] = isServer;
+		m_luaState["CLIENT"] = !isServer;
 	}
 
 	SharedScriptingContext::~SharedScriptingContext()
 	{
-		// Destroy coroutines before destroying lua instance
-		m_coroutines.clear();
-	}
-
-	Nz::LuaCoroutine& SharedScriptingContext::CreateCoroutine()
-	{
-		return m_coroutines.emplace_back(m_luaInstance.NewCoroutine());
+		m_availableThreads.clear();
+		m_runningThreads.clear();
 	}
 
 	void SharedScriptingContext::Update()
 	{
-		for (auto it = m_coroutines.begin(); it != m_coroutines.end();)
+		for (auto it = m_runningThreads.begin(); it != m_runningThreads.end();)
 		{
-			// Is coroutine dead/finished?
-			if (!it->CanResume())
-				it = m_coroutines.erase(it);
+			sol::thread& runningThread = *it;
+			lua_State* lthread = runningThread.thread_state();
+
+			bool removeThread = true;
+			switch (static_cast<sol::thread_status>(lua_status(lthread)))
+			{
+				case sol::thread_status::ok:
+					// Coroutine has finished without error, we can recycle its thread
+					m_availableThreads.emplace_back(std::move(runningThread));
+					break;
+
+				case sol::thread_status::yielded:
+					removeThread = false;
+					break;
+
+				// Errors
+				case sol::thread_status::dead:
+				case sol::thread_status::handler:
+				case sol::thread_status::gc:
+				case sol::thread_status::memory:
+				case sol::thread_status::runtime:
+					break;
+			}
+
+			if (removeThread)
+				it = m_runningThreads.erase(it);
 			else
 				++it;
 		}
@@ -48,70 +64,59 @@ namespace bw
 		RegisterGlobalLibrary();
 		RegisterMetatableLibrary();
 
+		// Shame :bell:
 		Load("../../scripts/autorun");
 		Load("autorun");
 	}
 
 	void SharedScriptingContext::RegisterGlobalLibrary()
 	{
-		m_luaInstance.PushFunction([&](Nz::LuaState& state) -> int
+		m_luaState["include"] = [&](const std::string& scriptName)
 		{
-			int index = 1;
-			std::string scriptName = state.Check<std::string>(&index);
-
 			std::filesystem::path scriptPath = m_currentFolder / scriptName;
 
 			if (!Load(scriptPath.generic_u8string()))
-				state.Error("TODO");
-
-			return 0;
-		});
-		m_luaInstance.SetGlobal("include");
+				throw std::runtime_error("TODO");
+		};
 	}
 
 	void SharedScriptingContext::RegisterMetatableLibrary()
 	{
-		m_luaInstance.PushFunction([](Nz::LuaState& state) -> int
+		m_luaState["RegisterMetatable"] = [](sol::this_state s, const char* metaname)
 		{
-			const char* metaname = state.CheckString(1);
-			if (!state.NewMetatable(metaname))
+			if (luaL_newmetatable(s, metaname) == 0)
 			{
-				state.Pop();
-				state.Error("Metatable " + std::string(metaname) + " already exists");
-				return 0;
+				lua_pop(s, 1);
+				throw std::runtime_error("Metatable " + std::string(metaname) + " already exists");
 			}
 
-			return 1;
-		});
-		m_luaInstance.SetGlobal("RegisterMetatable");
+			return sol::stack_table(s);
+		};
 
-		m_luaInstance.PushFunction([](Nz::LuaState& state) -> int
+		m_luaState["GetMetatable"] = [](sol::this_state s, const char* metaname)
 		{
-			state.GetMetatable(state.CheckString(1));
+			luaL_getmetatable(s, metaname);
+			return sol::stack_table(s);
+		};
 
-			return 1;
-		});
-		m_luaInstance.SetGlobal("GetMetatable");
-
-		m_luaInstance.PushFunction([](Nz::LuaState& state) -> int
+		m_luaState["AssertMetatable"] = [](sol::this_state s, sol::table tableRef, const char* metaname)
 		{
-			state.CheckType(1, Nz::LuaType_Table);
-			const char* metaname = state.CheckString(2);
+			sol::table metatable = tableRef[sol::metatable_key];
+			if (!metatable)
+				throw std::runtime_error("Table has no metatable");
 
-			if (!state.GetMetatable(1))
-				state.Error("Table has no metatable");
+			luaL_getmetatable(s, metaname);
+			sol::stack_table expectedMetatable;
 
-			state.GetMetatable(metaname);
+			metatable.push();
+			bool equal = lua_rawequal(s, expectedMetatable.stack_index(), -1);
 
-			bool equal = state.RawEqual(-1, -2);
+			lua_pop(s, 2);
 
-			state.Pop(2);
+			if (!metatable)
+				throw std::runtime_error("Table is not of type " + std::string(metaname));
 
-			if (!equal)
-				state.Error("Table is not of type " + std::string(metaname));
-
-			return 1;
-		});
-		m_luaInstance.SetGlobal("AssertMetatable");
+			return tableRef;
+		};
 	}
 }

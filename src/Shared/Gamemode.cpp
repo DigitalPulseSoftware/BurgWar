@@ -25,84 +25,40 @@ namespace bw
 			return m_context->Load(filepath);
 		};
 
-		Nz::LuaState& state = m_context->GetLuaInstance();
+		sol::state& state = m_context->GetLuaState();
 
-		state.PushTable();
-		{
-			state.PushValue(-1);
-			m_gamemodeRef = state.CreateReference();
+		m_gamemodeTable = state.create_table();
+		m_gamemodeTable["Name"] = gamemodeName;
+		InitializeGamemode(m_gamemodeTable);
 
-			state.PushField("Name", gamemodeName);
-
-			InitializeGamemode(state);
-		}
-		state.SetGlobal("GM");
+		state["GM"] = m_gamemodeTable;
 
 		Load(gamemodePath / "shared.lua");
 		//Load(gamemodePath / "cl_init.lua");
 		Load(gamemodePath / "sv_init.lua");
 	}
 
-	void Gamemode::ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction)
+	void Gamemode::InitializeGamemode(sol::table& gamemodeTable)
 	{
-		Nz::LuaState& state = m_context->GetLuaInstance();
-
-		state.PushReference(m_gamemodeRef);
-
-		Nz::CallOnExit popOnExit([&] { state.Pop(); });
-		Nz::LuaType initType = state.GetField(callbackName);
-
-		if (initType != Nz::LuaType_Nil)
+		gamemodeTable["CreateEntity"] = [&](const sol::table& gmTable, const std::string& entityType, const Nz::Vector2f& spawnPos)
 		{
-			if (initType != Nz::LuaType_Function)
-				throw std::runtime_error(callbackName + " must be a function if defined");
-
-			state.PushValue(-2);
-
-			int paramCount = 1; // GM table itself
-			if (argumentFunction)
-				paramCount += argumentFunction(state);
-
-			if (!state.Call(paramCount))
-				std::cerr << callbackName << " gamemode callback failed: " << state.GetLastError() << std::endl;
-
-			//TODO: Handle return
-		}
-	}
-
-	void Gamemode::InitializeGamemode(Nz::LuaState& state)
-	{
-		state.PushFunction([&](Nz::LuaState& state) -> int
-		{
-			int index = 2;
-			std::string entityType = state.Check<std::string>(&index);
-			Nz::Vector2f spawnPos = state.Check<Nz::Vector2f>(&index);
-
 			auto& entityStore = m_match.GetEntityStore();
 
 			if (std::size_t entityIndex = entityStore.GetElementIndex(entityType); entityIndex != ServerEntityStore::InvalidIndex)
 			{
 				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex);
 				if (!entity)
-				{
-					state.Error("Failed to create \"" + entityType + "\"");
-					return 0;
-				}
+					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
 				if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 					entity->GetComponent<Ndk::PhysicsComponent2D>().SetPosition(spawnPos);
 				else
 					entity->GetComponent<Ndk::NodeComponent>().SetPosition(spawnPos);
 
-				//TODO: Return entity
-				return 0;
+				return entity;
 			}
 			else
-			{
-				state.Error("Entity type \"" + entityType + "\" doesn't exist");
-				return 0;
-			}
-		});
-		state.SetField("CreateEntity");
+				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+		};
 	}
 }

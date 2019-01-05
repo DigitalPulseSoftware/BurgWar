@@ -7,8 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTINGCONTEXT_HPP
 #define BURGWAR_SHARED_SCRIPTINGCONTEXT_HPP
 
-#include <Nazara/Lua/LuaCoroutine.hpp>
-#include <Nazara/Lua/LuaInstance.hpp>
+#include <sol2/sol.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -20,10 +19,10 @@ namespace bw
 			SharedScriptingContext(bool isServer);
 			virtual ~SharedScriptingContext();
 
-			Nz::LuaCoroutine& CreateCoroutine();
+			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
 
-			inline Nz::LuaInstance& GetLuaInstance();
-			inline const Nz::LuaInstance& GetLuaInstance() const;
+			inline sol::state& GetLuaState();
+			inline const sol::state& GetLuaState() const;
 
 			virtual bool Load(const std::filesystem::path& folderOrFile) = 0;
 
@@ -40,8 +39,9 @@ namespace bw
 			void RegisterGlobalLibrary();
 			void RegisterMetatableLibrary();
 
-			std::vector<Nz::LuaCoroutine> m_coroutines;
-			Nz::LuaInstance m_luaInstance;
+			std::vector<sol::thread> m_availableThreads;
+			std::vector<sol::thread> m_runningThreads;
+			sol::state m_luaState;
 	};
 }
 

@@ -24,7 +24,7 @@ namespace bw
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 		const auto& element = scriptComponent.GetElement();
 
-		if (element->tickFunction != -1)
+		if (element->tickFunction)
 			m_tickableEntities.Insert(entity);
 		else
 			m_tickableEntities.Remove(entity);
@@ -37,13 +37,14 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
 			const auto& element = scriptComponent.GetElement();
-			Nz::LuaState& state = scriptComponent.GetContext()->GetLuaInstance();
+			sol::protected_function onTick = element->tickFunction;
 
-			state.PushReference(element->tickFunction);
-			state.PushReference(scriptComponent.GetTableRef());
-
-			if (!state.Call(1))
-				std::cerr << "OnTick failed: " << state.GetLastError() << std::endl;
+			auto result = onTick(scriptComponent.GetTable());
+			if (!result.valid())
+			{
+				sol::error err = result;
+				std::cerr << "OnTick failed: " << err.what() << std::endl;
+			}
 		}
 	}
 

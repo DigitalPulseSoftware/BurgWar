@@ -42,17 +42,15 @@ namespace bw
 		protected:
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
-			virtual void InitializeElementTable(Nz::LuaState& state) = 0;
-			virtual void InitializeElement(Nz::LuaState& state, Element& element) = 0;
+			virtual void InitializeElementTable(sol::table& elementTable) = 0;
+			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 
-			Nz::LuaState& GetLuaState();
+			sol::state& GetLuaState();
 			const std::shared_ptr<Gamemode>& GetGamemode();
 			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext();
 
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);
-
-			static int GetScriptFunction(Nz::LuaState& state, const std::string& functionName);
 
 		private:
 			std::shared_ptr<Gamemode> m_gamemode;

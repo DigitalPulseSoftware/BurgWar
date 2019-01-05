@@ -22,16 +22,17 @@ namespace bw
 			Gamemode(const Gamemode&) = delete;
 			~Gamemode() = default;
 
-			void ExecuteCallback(const std::string& callbackName, const std::function<int(Nz::LuaState& /*state*/)>& argumentFunction = nullptr);
+			template<typename... Args>
+			void ExecuteCallback(const std::string& callbackName, Args&&... args);
 
 			Gamemode& operator=(const Gamemode&) = delete;
 
 		private:
-			void InitializeGamemode(Nz::LuaState& state);
+			void InitializeGamemode(sol::table& gamemodeTable);
 
 			std::shared_ptr<SharedScriptingContext> m_context;
 			Match& m_match;
-			int m_gamemodeRef;
+			sol::table m_gamemodeTable;
 	};
 }
 

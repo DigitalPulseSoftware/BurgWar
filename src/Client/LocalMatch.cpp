@@ -188,45 +188,32 @@ namespace bw
 		if (scriptDir->GetEntry("weapons", &entry))
 			m_weaponStore->Load("weapons", std::get<VirtualDirectory::DirectoryEntry>(entry));
 
-		Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
-		state.PushFunction([&](Nz::LuaState& state)
+		sol::state& state = m_scriptingContext->GetLuaState();
+		state["engine_AnimateRotation"] = [&](const Ndk::EntityHandle& entity, float fromAngle, float toAngle, float duration, sol::object callbackObject)
 		{
-			int index = 1;
-			Ndk::EntityHandle entity = state.Check<Ndk::EntityHandle>(&index);
-			float fromAngle = state.Check<float>(&index);
-			float toAngle = state.Check<float>(&index);
-			float duration = state.Check<float>(&index);
-			state.CheckType(index, Nz::LuaType_Function);
-
-			state.PushValue(index);
-			int finishFunction = state.CreateReference();
-
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
 				if (!entity)
-				{
-					Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
-					state.DestroyReference(finishFunction);
 					return false;
-				}
 
 				float newAngle = Nz::Lerp(fromAngle, toAngle, ratio);
 				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 				nodeComponent.SetRotation(Nz::DegreeAnglef(newAngle));
 
 				return true;
-			}, [this, finishFunction]()
+			}, [this, callbackObject]()
 			{
-				Nz::LuaState& state = m_scriptingContext->GetLuaInstance();
-				state.PushReference(finishFunction);
-				if (!state.Call(0))
-					std::cerr << "engine_AnimateRotation callback failed: " << state.GetLastError() << std::endl;
+				sol::protected_function callback(m_scriptingContext->GetLuaState(), sol::ref_index(callbackObject.registry_index()));
 
-				state.DestroyReference(finishFunction);
+				auto result = callback();
+				if (!result.valid())
+				{
+					sol::error err = result;
+					std::cerr << "engine_AnimateRotation callback failed: " << err.what() << std::endl;
+				}
 			});
 			return 0;
-		});
-		state.SetGlobal("engine_AnimateRotation");
+		};
 	}
 
 	void LocalMatch::Update(float elapsedTime)
