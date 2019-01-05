@@ -49,7 +49,7 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
-		//weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
+		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
 		sol::table animations = elementTable["Animations"];
 		if (animations)
