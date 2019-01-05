@@ -19,7 +19,7 @@ namespace bw
 			SharedScriptingContext(bool isServer);
 			virtual ~SharedScriptingContext();
 
-			template<typename... Args> sol::coroutine& CreateCoroutine(Args&&... args);
+			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
 
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
@@ -39,7 +39,8 @@ namespace bw
 			void RegisterGlobalLibrary();
 			void RegisterMetatableLibrary();
 
-			std::vector<sol::coroutine> m_coroutines;
+			std::vector<sol::thread> m_availableThreads;
+			std::vector<sol::thread> m_runningThreads;
 			sol::state m_luaState;
 	};
 }

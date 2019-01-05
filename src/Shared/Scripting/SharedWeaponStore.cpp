@@ -96,7 +96,7 @@ namespace bw
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
-					auto& co = scriptComponent.GetContext()->CreateCoroutine(callback);
+					auto co = scriptComponent.GetContext()->CreateCoroutine(callback);
 
 					auto result = co(scriptComponent.GetTable(), anim->GetAnimId());
 					if (!result.valid())
