@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	class ClientSession;
+	class MatchClientSession;
 	class MatchSessions;
 
 	class LocalSessionManager : public SessionManager
@@ -27,7 +27,7 @@ namespace bw
 			void Poll() override;
 
 		private:
-			std::vector<ClientSession*> m_peerIdToSession;
+			std::vector<MatchClientSession*> m_peerIdToSession;
 	};
 }
 

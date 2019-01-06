@@ -11,10 +11,12 @@
 
 namespace bw
 {
+	class LocalSessionManager;
+
 	class LocalSessionBridge : public SessionBridge
 	{
 		public:
-			LocalSessionBridge() = default;
+			inline LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId);
 			~LocalSessionBridge() = default;
 
 			void Disconnect() override;
@@ -22,6 +24,8 @@ namespace bw
 			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
 
 		private:
+			LocalSessionManager& m_sessionManager;
+			std::size_t m_peerId;
 	};
 }
 
