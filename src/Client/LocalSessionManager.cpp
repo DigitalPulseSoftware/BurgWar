@@ -16,27 +16,37 @@ namespace bw
 
 	LocalSessionManager::~LocalSessionManager() = default;
 
-	std::size_t LocalSessionManager::CreateSession()
+	std::shared_ptr<LocalSessionBridge> LocalSessionManager::CreateSession()
 	{
 		// Find first free peerId
-		std::size_t peerId;
-		for (; peerId < m_peerIdToSession.size(); ++peerId)
+		std::size_t peerId = 0;
+		for (; peerId < m_peers.size(); ++peerId)
 		{
-			if (m_peerIdToSession[peerId] == nullptr)
+			if (!m_peers[peerId].has_value())
 				break;
 		}
 
-		if (peerId == m_peerIdToSession.size())
-			m_peerIdToSession.emplace_back(nullptr);
+		if (peerId == m_peers.size())
+			m_peers.emplace_back();
 
 		std::cout << "Local session #" << peerId << " created" << std::endl;
-		m_peerIdToSession[peerId] = GetOwner()->CreateSession(std::make_unique<LocalSessionBridge>(*this, peerId));
+		auto& peer = m_peers.emplace_back();
+		peer.emplace();
+		peer->clientBridge = std::make_shared<LocalSessionBridge>(*this, peerId);
+		peer->session = GetOwner()->CreateSession(std::make_unique<LocalSessionBridge>(*this, peerId));
 
-		return peerId;
+		return peer->clientBridge;
 	}
 
 	void LocalSessionManager::Poll()
 	{
-		// Nothing to do?
+		// TODO
+	}
+
+	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::NetPacket&& packet)
+	{
+		assert(peerId < m_peers.size() && m_peers[peerId]);
+		Peer& peer = m_peers[peerId].value();
+		peer.pendingPackets.emplace_back(std::move(packet));
 	}
 }

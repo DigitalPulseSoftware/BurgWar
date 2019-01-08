@@ -8,7 +8,6 @@
 #define BURGWAR_SHARED_NETWORKCLIENTBRIDGE_HPP
 
 #include <Shared/SessionBridge.hpp>
-#include <Nazara/Core/Signal.hpp>
 
 namespace bw
 {
@@ -28,7 +27,6 @@ namespace bw
 
 			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
 			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);
-			NazaraSignal(OnIncomingPacket, Nz::NetPacket& /*packet*/);
 
 		private:
 			std::size_t m_peerId;

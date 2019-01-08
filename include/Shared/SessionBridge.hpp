@@ -8,6 +8,7 @@
 #define BURGWAR_SHARED_SESSIONBRIDGE_HPP
 
 #include <Shared/PlayerCommandStore.hpp>
+#include <Nazara/Core/Signal.hpp>
 
 namespace bw
 {
@@ -24,6 +25,8 @@ namespace bw
 			inline MatchClientSession* GetSession();
 
 			virtual void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& data) = 0;
+
+			NazaraSignal(OnIncomingPacket, Nz::NetPacket& /*packet*/);
 
 		private:
 			MatchClientSession* m_session;

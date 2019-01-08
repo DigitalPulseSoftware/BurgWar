@@ -20,6 +20,7 @@ namespace bw
 	class ClientApp;
 	class LocalCommandStore;
 	class LocalMatch;
+	class LocalSessionManager;
 	class VirtualDirectory;
 
 	class ClientSession
@@ -34,6 +35,7 @@ namespace bw
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
 
+			bool Connect(LocalSessionManager* sessionManager);
 			bool Connect(const Nz::IpAddress& address);
 			bool Connect(const Nz::String& serverHostname, Nz::UInt16 port, Nz::NetProtocol protocol = Nz::NetProtocol_Any);
 			void Disconnect();

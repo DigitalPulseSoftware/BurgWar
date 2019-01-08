@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/LocalSessionBridge.hpp>
+#include <Client/LocalSessionManager.hpp>
 #include <iostream>
 
 namespace bw
@@ -12,8 +13,8 @@ namespace bw
 		throw std::runtime_error("Disconnect() called on local player");
 	}
 
-	void LocalSessionBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
+	void LocalSessionBridge::SendPacket(Nz::UInt8 /*channelId*/, Nz::ENetPacketFlags /*flags*/, Nz::NetPacket&& packet)
 	{
-		//m_reactor.SendData(m_peerId, command.channelId, command.flags, std::move(packet));
+		m_sessionManager.SendPacket(m_peerId, std::move(packet));
 	}
 }

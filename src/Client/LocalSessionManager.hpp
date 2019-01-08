@@ -9,25 +9,38 @@
 
 #include <Shared/SessionManager.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
+#include <optional>
 #include <vector>
 
 namespace bw
 {
+	class LocalSessionBridge;
 	class MatchClientSession;
 	class MatchSessions;
 
 	class LocalSessionManager : public SessionManager
 	{
+		friend LocalSessionBridge;
+
 		public:
 			LocalSessionManager(MatchSessions* owner);
 			~LocalSessionManager();
 
-			std::size_t CreateSession();
+			std::shared_ptr<LocalSessionBridge> CreateSession();
 
 			void Poll() override;
 
 		private:
-			std::vector<MatchClientSession*> m_peerIdToSession;
+			void SendPacket(std::size_t peerId, Nz::NetPacket&& packet);
+
+			struct Peer
+			{
+				std::shared_ptr<LocalSessionBridge> clientBridge;
+				std::vector<Nz::NetPacket> pendingPackets;
+				MatchClientSession* session;
+			};
+
+			std::vector<std::optional<Peer>> m_peers;
 	};
 }
 

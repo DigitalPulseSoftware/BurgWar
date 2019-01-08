@@ -29,9 +29,6 @@ end
 
 if (CLIENT) then
 	function WEAPON:OnAnimationStart(animationId)
-		print("[Client] We play animation #" .. tostring(animationId))
-		print(coroutine.running())
-
 		local startRotation = self:GetRotation()
 		local endRotation = self:IsLookingRight() and 110 or -110
 

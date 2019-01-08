@@ -4,14 +4,35 @@
 
 #include <Client/ClientSession.hpp>
 #include <Shared/NetworkClientBridge.hpp>
+#include <Shared/Utility/VirtualDirectory.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/LocalCommandStore.hpp>
+#include <Client/LocalCommandStore.hpp>
 #include <Client/LocalMatch.hpp>
+#include <Client/LocalSessionBridge.hpp>
+#include <Client/LocalSessionManager.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 
 namespace bw
 {
 	ClientSession::~ClientSession() = default;
+
+	bool ClientSession::Connect(LocalSessionManager* sessionManager)
+	{
+		Disconnect();
+
+		auto bridge = sessionManager->CreateSession();
+		if (!bridge)
+			return false;
+
+		bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
+		{
+			HandleIncomingPacket(packet);
+		});
+
+		m_bridge = std::move(bridge);
+		return true;
+	}
 
 	bool ClientSession::Connect(const Nz::IpAddress& address)
 	{
@@ -41,7 +62,7 @@ namespace bw
 			HandleIncomingPacket(packet);
 		});
 
-		m_bridge = bridge;
+		m_bridge = std::move(bridge);
 		return true;
 	}
 
