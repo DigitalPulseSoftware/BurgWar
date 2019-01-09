@@ -8,9 +8,10 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <Shared/Gamemode.hpp>
 #include <Shared/Match.hpp>
+#include <Shared/MatchClientSession.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -53,12 +54,12 @@ namespace bw
 					if (!ply)
 						return;
 
-					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", [&](Nz::LuaState& state)
+					/*ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", [&](Nz::LuaState& state)
 					{
 						state.PushLightUserdata(ply.GetObject());
 						state.Push(attacker);
 						return 2;
-					});
+					});*/
 				});
 			}
 
