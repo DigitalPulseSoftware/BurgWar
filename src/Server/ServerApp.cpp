@@ -4,6 +4,7 @@
 
 #include <Server/ServerApp.hpp>
 #include <Shared/NetworkSessionManager.hpp>
+#include <Nazara/Core/Thread.hpp>
 #include <iostream>
 
 namespace bw
@@ -22,6 +23,9 @@ namespace bw
 			BurgApp::Update();
 
 			m_match->Update(GetUpdateTime());
+
+			//TODO: Sleep only when server is not overloaded
+			Nz::Thread::Sleep(1);
 		}
 
 		return 0;
