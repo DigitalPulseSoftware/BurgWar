@@ -27,7 +27,6 @@ namespace bw
 			inline bool IsJumping() const;
 			inline bool IsMovingLeft() const;
 			inline bool IsMovingRight() const;
-			inline bool IsOnGround() const;
 
 			inline void UpdateJumpingState(bool isJumping);
 			inline void UpdateMovingLeftState(bool isMovingLeft);
@@ -36,13 +35,10 @@ namespace bw
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			inline bool UpdateGroundState(bool isOnGround);
-
 			PlayerHandle m_owner;
 			bool m_isJumping;
 			bool m_isMovingLeft;
 			bool m_isMovingRight;
-			bool m_isOnGround;
 	};
 }
 

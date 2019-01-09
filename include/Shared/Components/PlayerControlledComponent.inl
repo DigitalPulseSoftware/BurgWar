@@ -10,8 +10,7 @@ namespace bw
 	m_owner(std::move(owner)),
 	m_isJumping(false),
 	m_isMovingLeft(false),
-	m_isMovingRight(false),
-	m_isOnGround(false)
+	m_isMovingRight(false)
 	{
 	}
 
@@ -35,11 +34,6 @@ namespace bw
 		return m_isMovingRight;
 	}
 
-	inline bool PlayerControlledComponent::IsOnGround() const
-	{
-		return m_isOnGround;
-	}
-
 	inline void PlayerControlledComponent::UpdateJumpingState(bool isJumping)
 	{
 		m_isJumping = isJumping;
@@ -53,14 +47,5 @@ namespace bw
 	inline void PlayerControlledComponent::UpdateMovingRightState(bool isMovingRight)
 	{
 		m_isMovingRight = isMovingRight;
-	}
-
-	inline bool PlayerControlledComponent::UpdateGroundState(bool isOnGround)
-	{
-		if (m_isOnGround == isOnGround)
-			return false;
-
-		m_isOnGround = isOnGround;
-		return true;
 	}
 }

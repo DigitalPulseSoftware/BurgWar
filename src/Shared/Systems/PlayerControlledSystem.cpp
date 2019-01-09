@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Systems/PlayerControlledSystem.hpp>
+#include <Nazara/Physics2D/Arbiter2D.hpp>
 #include <NDK/Components.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -28,7 +29,15 @@ namespace bw
 			auto& physicsComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
 			bool isFacingRight = playerMovementComponent.IsFacingRight();
-			bool isOnGround = playerControlledComponent.IsOnGround();
+
+			Nz::Vector2f up = Nz::Vector2f::UnitY();
+
+			bool isOnGround = false;
+			physicsComponent.ForEachArbiter([&](Nz::Arbiter2D& arbiter)
+			{
+				if (up.DotProduct(arbiter.GetNormal()) > 0.75f)
+					isOnGround = true;
+			});
 
 			bool isJumping = playerControlledComponent.IsJumping();
 			bool isMovingLeft = playerControlledComponent.IsMovingLeft();
@@ -74,7 +83,6 @@ namespace bw
 				}
 			}
 
-			playerControlledComponent.UpdateGroundState(isOnGround);
 			playerMovementComponent.UpdateAirControlState(!isMovementKeyPressed && !isOnGround);
 			if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
 				nodeComponent.Scale(-1.f, 1.f);

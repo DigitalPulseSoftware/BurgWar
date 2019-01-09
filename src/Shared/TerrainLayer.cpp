@@ -28,23 +28,10 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
-		physics.SetMaximumUpdateRate(20.f);
+		physics.SetMaximumUpdateRate(30.f);
 		/*physics.SetMaxStepCount(3);
 		physics.SetStepSize(1.f / 40.f);*/
 
-		Ndk::PhysicsSystem2D::Callback cb;
-		cb.endCallback = [&](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)
-		{
-			if (bodyB->HasComponent<PlayerControlledComponent>())
-				bodyB->GetComponent<PlayerControlledComponent>().UpdateGroundState(false);
-		};
-		cb.postSolveCallback = [&](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)
-		{
-			if (bodyB->HasComponent<PlayerControlledComponent>())
-				bodyB->GetComponent<PlayerControlledComponent>().UpdateGroundState(true);
-		};
-		cb.userdata = nullptr;
-		physics.RegisterCallbacks(0, 1, std::move(cb));
 
 		// Create map collider
 		const Ndk::EntityHandle& map = m_world.CreateEntity();
