@@ -44,8 +44,8 @@ Projects = {
 			"../src/Client/**.cpp"
 		},
 		LinkStatic = {},
-		LinkStaticDebug = {"Lua-d", "Shared-d"},
-		LinkStaticRelease = {"Lua", "Shared"},
+		LinkStaticDebug = {"Shared-d", "Lua-d"},
+		LinkStaticRelease = {"Shared", "Lua"},
 		Libs = os.istarget("windows") and {} or {"pthread"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -61,8 +61,8 @@ Projects = {
 			"../src/Server/**.cpp"
 		},
 		LinkStatic = {},
-		LinkStaticDebug = {"Lua-d", "Shared-d"},
-		LinkStaticRelease = {"Lua", "Shared"},
+		LinkStaticDebug = {"Shared-d", "Lua-d"},
+		LinkStaticRelease = {"Shared", "Lua"},
 		Libs = os.istarget("windows") and {} or {"pthread"},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
@@ -111,7 +111,7 @@ workspace("Burgwar")
 		defines "_CRT_SECURE_NO_WARNINGS"
 
 	filter "action:gmake or gmake2"
-		linkoptions "-lstdc++fs"
+		links "stdc++fs"
 
 	filter({})
 
