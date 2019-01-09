@@ -110,6 +110,9 @@ workspace("Burgwar")
 	filter "action:vs*"
 		defines "_CRT_SECURE_NO_WARNINGS"
 
+	filter "action:gmake or gmake2"
+		linkoptions "-lstdc++fs"
+
 	filter({})
 
 	flags { "MultiProcessorCompile", "NoMinimalRebuild" }
