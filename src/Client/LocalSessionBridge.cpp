@@ -15,6 +15,6 @@ namespace bw
 
 	void LocalSessionBridge::SendPacket(Nz::UInt8 /*channelId*/, Nz::ENetPacketFlags /*flags*/, Nz::NetPacket&& packet)
 	{
-		m_sessionManager.SendPacket(m_peerId, std::move(packet));
+		m_sessionManager.SendPacket(m_peerId, std::move(packet), m_isServer);
 	}
 }

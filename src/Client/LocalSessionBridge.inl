@@ -6,10 +6,16 @@
 
 namespace bw
 {
-	inline LocalSessionBridge::LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId) :
+	inline LocalSessionBridge::LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId, bool isServer) :
 	SessionBridge(nullptr),
 	m_sessionManager(sessionManager),
-	m_peerId(peerId)
+	m_peerId(peerId),
+	m_isServer(isServer)
 	{
+	}
+
+	inline bool bw::LocalSessionBridge::IsServer() const
+	{
+		return m_isServer;
 	}
 }

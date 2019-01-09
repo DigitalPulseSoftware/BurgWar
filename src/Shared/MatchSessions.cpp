@@ -27,7 +27,7 @@ namespace bw
 			sessionManager->Poll();
 	}
 
-	MatchClientSession* MatchSessions::CreateSession(std::unique_ptr<SessionBridge> bridge)
+	MatchClientSession* MatchSessions::CreateSession(std::shared_ptr<SessionBridge> bridge)
 	{
 		std::size_t sessionId = m_nextSessionId++;
 		MatchClientSession* session = m_sessionPool.New<MatchClientSession>(m_match, sessionId, m_commandStore, std::move(bridge));

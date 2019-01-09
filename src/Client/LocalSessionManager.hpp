@@ -31,12 +31,14 @@ namespace bw
 			void Poll() override;
 
 		private:
-			void SendPacket(std::size_t peerId, Nz::NetPacket&& packet);
+			void SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer);
 
 			struct Peer
 			{
 				std::shared_ptr<LocalSessionBridge> clientBridge;
-				std::vector<Nz::NetPacket> pendingPackets;
+				std::shared_ptr<LocalSessionBridge> serverBridge;
+				std::vector<Nz::NetPacket> clientPackets;
+				std::vector<Nz::NetPacket> serverPackets;
 				MatchClientSession* session;
 			};
 

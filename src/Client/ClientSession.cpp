@@ -31,6 +31,12 @@ namespace bw
 		});
 
 		m_bridge = std::move(bridge);
+
+		Packets::Auth auth;
+		auth.playerCount = 1;
+
+		SendPacket(auth);
+
 		return true;
 	}
 

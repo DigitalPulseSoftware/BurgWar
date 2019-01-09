@@ -26,7 +26,7 @@ namespace bw
 			MatchSessions(Match& match);
 			~MatchSessions();
 
-			MatchClientSession* CreateSession(std::unique_ptr<SessionBridge> bridge);
+			MatchClientSession* CreateSession(std::shared_ptr<SessionBridge> bridge);
 			template<typename T, typename... Args> T* CreateSessionManager(Args&&... args);
 			void DeleteSession(MatchClientSession* session);
 

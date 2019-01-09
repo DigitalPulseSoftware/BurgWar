@@ -30,23 +30,46 @@ namespace bw
 			m_peers.emplace_back();
 
 		std::cout << "Local session #" << peerId << " created" << std::endl;
-		auto& peer = m_peers.emplace_back();
+		auto& peer = m_peers[peerId];
 		peer.emplace();
-		peer->clientBridge = std::make_shared<LocalSessionBridge>(*this, peerId);
-		peer->session = GetOwner()->CreateSession(std::make_unique<LocalSessionBridge>(*this, peerId));
+		peer->clientBridge = std::make_shared<LocalSessionBridge>(*this, peerId, false);
+		peer->serverBridge = std::make_shared<LocalSessionBridge>(*this, peerId, true);
+		peer->session = GetOwner()->CreateSession(peer->serverBridge);
 
 		return peer->clientBridge;
 	}
 
 	void LocalSessionManager::Poll()
 	{
-		// TODO
+		for (auto& peerOpt : m_peers)
+		{
+			if (peerOpt)
+			{
+				Peer& peer = peerOpt.value();
+				for (auto&& packet : peer.clientPackets)
+					peer.clientBridge->OnIncomingPacket(packet);
+
+				peer.clientPackets.clear();
+
+				for (auto&& packet : peer.serverPackets)
+					peer.serverBridge->OnIncomingPacket(packet);
+
+				peer.serverPackets.clear();
+			}
+		}
 	}
 
-	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::NetPacket&& packet)
+	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer)
 	{
 		assert(peerId < m_peers.size() && m_peers[peerId]);
 		Peer& peer = m_peers[peerId].value();
-		peer.pendingPackets.emplace_back(std::move(packet));
+
+		// Reset cursor position
+		packet.GetStream()->SetCursorPos(Nz::NetPacket::HeaderSize);
+
+		if (isServer)
+			peer.clientPackets.emplace_back(std::move(packet));
+		else
+			peer.serverPackets.emplace_back(std::move(packet));
 	}
 }

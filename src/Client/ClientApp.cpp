@@ -42,11 +42,12 @@ namespace bw
 		m_mainWindow.SetFramerateLimit(100);
 
 		m_match = std::make_unique<Match>(*this, "Faites l'amour pas la Burg'guerre", "test", 10);
-		//LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
-		NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
+		LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
+		//NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 
 		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore);
-		m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
+		m_clientSession->Connect(localSessions);
+		//m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());

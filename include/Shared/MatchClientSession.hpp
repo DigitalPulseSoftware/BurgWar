@@ -26,7 +26,7 @@ namespace bw
 		friend PlayerCommandStore;
 
 		public:
-			MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge);
+			MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge);
 			MatchClientSession(const MatchClientSession&) = delete;
 			MatchClientSession(MatchClientSession&&) = delete;
 			~MatchClientSession();
@@ -56,8 +56,8 @@ namespace bw
 			Match& m_match;
 			PlayerCommandStore& m_commandStore;
 			std::size_t m_sessionId;
+			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
-			std::unique_ptr<SessionBridge> m_bridge;
 			std::vector<Player> m_players;
 	};
 }

@@ -30,7 +30,7 @@ namespace bw
 	{
 		std::cout << "Peer #" << peerId << " connected" << std::endl;
 
-		std::unique_ptr<NetworkClientBridge> clientBridge = std::make_unique<NetworkClientBridge>(m_reactor, peerId);
+		std::shared_ptr<NetworkClientBridge> clientBridge = std::make_shared<NetworkClientBridge>(m_reactor, peerId);
 
 		MatchClientSession* session = GetOwner()->CreateSession(std::move(clientBridge));
 

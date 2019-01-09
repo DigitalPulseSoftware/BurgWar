@@ -16,13 +16,17 @@
 
 namespace bw
 {
-	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge) :
+	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge) :
 	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
 	m_bridge(std::move(bridge))
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
+		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
+		{
+			HandleIncomingPacket(packet);
+		});
 	}
 
 	MatchClientSession::~MatchClientSession() = default;
