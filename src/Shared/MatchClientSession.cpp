@@ -4,6 +4,7 @@
 
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/Match.hpp>
+#include <Shared/MatchClientVisibility.hpp>
 #include <Shared/MapData.hpp>
 #include <Shared/NetworkReactor.hpp>
 #include <Shared/Player.hpp>
@@ -17,11 +18,11 @@ namespace bw
 {
 	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::unique_ptr<SessionBridge> bridge) :
 	m_match(match),
-	m_visibility(match, *this),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
 	m_bridge(std::move(bridge))
 	{
+		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
 	}
 
 	MatchClientSession::~MatchClientSession() = default;
@@ -31,14 +32,14 @@ namespace bw
 		m_bridge->Disconnect();
 	}
 
-	void MatchClientSession::HandleIncomingPacket(Nz::NetPacket&& packet)
+	void MatchClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
-		m_commandStore.UnserializePacket(*this, std::move(packet));
+		m_commandStore.UnserializePacket(*this, packet);
 	}
 
 	void MatchClientSession::Update(float elapsedTime)
 	{
-		m_visibility.Update(elapsedTime);
+		m_visibility->Update(elapsedTime);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
