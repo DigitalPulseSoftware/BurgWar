@@ -8,7 +8,6 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <iostream>
 
 namespace bw

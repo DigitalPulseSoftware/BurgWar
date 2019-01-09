@@ -4,7 +4,6 @@
 
 #include <Shared/Scripting/SharedEntityStore.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <iostream>
 #include <stdexcept>

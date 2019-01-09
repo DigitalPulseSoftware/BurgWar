@@ -3,8 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
-#include <NDK/LuaAPI.hpp>
-#include <NDK/Lua/LuaBinding.hpp>
 #include <filesystem>
 #include <iostream>
 

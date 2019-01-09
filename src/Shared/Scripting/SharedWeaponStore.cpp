@@ -5,7 +5,6 @@
 #include <Shared/Scripting/SharedWeaponStore.hpp>
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <iostream>

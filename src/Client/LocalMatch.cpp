@@ -16,7 +16,6 @@
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
 #include <iostream>

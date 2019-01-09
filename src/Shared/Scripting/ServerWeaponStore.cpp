@@ -13,7 +13,6 @@
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Utility/Image.hpp>
 #include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <NDK/Systems.hpp>
 #include <NDK/World.hpp>
 #include <iostream>
