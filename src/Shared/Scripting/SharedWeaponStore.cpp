@@ -7,6 +7,7 @@
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
+#include <NDK/Components/NodeComponent.hpp>
 #include <iostream>
 #include <stdexcept>
 
