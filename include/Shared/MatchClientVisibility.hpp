@@ -10,6 +10,7 @@
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/EntityList.hpp>
+#include <Shared/MatchClientSession.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>

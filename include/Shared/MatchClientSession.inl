@@ -13,12 +13,12 @@ namespace bw
 
 	inline MatchClientVisibility& MatchClientSession::GetVisibility()
 	{
-		return m_visibility;
+		return *m_visibility;
 	}
 
 	inline const MatchClientVisibility& MatchClientSession::GetVisibility() const
 	{
-		return m_visibility;
+		return *m_visibility;
 	}
 
 	template<typename T>

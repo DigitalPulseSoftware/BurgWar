@@ -7,7 +7,6 @@
 #ifndef BURGWAR_SERVER_CLIENTSESSION_HPP
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
-#include <Shared/MatchClientVisibility.hpp>
 #include <Shared/PlayerCommandStore.hpp>
 #include <Shared/SessionBridge.hpp>
 #include <Shared/Protocol/Packets.hpp>
@@ -17,6 +16,7 @@
 namespace bw
 {
 	class Match;
+	class MatchClientVisibility;
 	class Player;
 	class PlayerCommandStore;
 
@@ -54,9 +54,9 @@ namespace bw
 			void HandleIncomingPacket(const Packets::Ready& packet);
 
 			Match& m_match;
-			MatchClientVisibility m_visibility;
 			PlayerCommandStore& m_commandStore;
 			std::size_t m_sessionId;
+			std::unique_ptr<MatchClientVisibility> m_visibility;
 			std::unique_ptr<SessionBridge> m_bridge;
 			std::vector<Player> m_players;
 	};
