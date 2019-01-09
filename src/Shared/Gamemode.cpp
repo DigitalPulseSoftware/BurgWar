@@ -5,7 +5,6 @@
 #include <Shared/Gamemode.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
-#include <NDK/LuaAPI.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/Terrain.hpp>
 #include <cassert>
