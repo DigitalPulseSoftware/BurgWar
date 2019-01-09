@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Protocol/PacketSerializer.hpp>
+#include <Shared/Protocol/CompressedInteger.hpp>
 #include <cassert>
 #include <stdexcept>
 
