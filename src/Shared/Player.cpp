@@ -11,6 +11,7 @@
 #include <Shared/Gamemode.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/MatchClientSession.hpp>
+#include <Shared/MatchClientVisibility.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
