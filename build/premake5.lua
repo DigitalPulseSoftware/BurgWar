@@ -3,6 +3,7 @@ Projects = {
 	{
 		Name = "Lua",
 		Kind = "StaticLib",
+		Defines = {},
 		Files = {
 			"../contrib/lua/include/**.h",
 			"../contrib/lua/include/**.hpp",
@@ -17,6 +18,7 @@ Projects = {
 	{
 		Name = "Shared",
 		Kind = "StaticLib",
+		Defines = {},
 		Files = {
 			"../include/Shared/**.hpp",
 			"../include/Shared/**.inl",
@@ -35,6 +37,7 @@ Projects = {
 	{
 		Name = "Client",
 		Kind = "ConsoleApp",
+		Defines = {},
 		Files = {
 			"../src/Client/**.hpp",
 			"../src/Client/**.inl",
@@ -51,6 +54,7 @@ Projects = {
 	{
 		Name = "Server",
 		Kind = "ConsoleApp",
+		Defines = {"NDK_SERVER"},
 		Files = {
 			"../src/Server/**.hpp",
 			"../src/Server/**.inl",
@@ -177,6 +181,7 @@ workspace("Burgwar")
 	for _, data in pairs(Projects) do
 		project(data.Name)
 			kind(data.Kind)
+			defines(data.Defines)
 			files(data.Files)
 
 			links(data.Libs)
