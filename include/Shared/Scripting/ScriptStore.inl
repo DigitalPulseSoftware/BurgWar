@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Utility/VirtualDirectory.hpp>
 #include <cassert>
 #include <filesystem>
 
