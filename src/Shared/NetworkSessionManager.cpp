@@ -65,6 +65,6 @@ namespace bw
 		assert(session);
 
 		std::cout << "Peer #" << peerId << " sent packet" << std::endl;
-		session->HandleIncomingPacket(std::move(packet));
+		session->HandleIncomingPacket(packet);
 	}
 }
