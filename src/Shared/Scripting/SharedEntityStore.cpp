@@ -5,6 +5,8 @@
 #include <Shared/Scripting/SharedEntityStore.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
+#include <NDK/Components/CollisionComponent2D.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
 #include <iostream>
 #include <stdexcept>
 
