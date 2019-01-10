@@ -26,6 +26,8 @@ namespace bw
 
 			virtual void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& data) = 0;
 
+			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
+			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);
 			NazaraSignal(OnIncomingPacket, Nz::NetPacket& /*packet*/);
 
 		private:

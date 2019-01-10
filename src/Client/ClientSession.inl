@@ -9,7 +9,8 @@ namespace bw
 {
 	inline ClientSession::ClientSession(ClientApp& application, const LocalCommandStore& commandStore) :
 	m_application(application),
-	m_commandStore(commandStore)
+	m_commandStore(commandStore),
+	m_isConnected(false)
 	{
 	}
 
@@ -35,7 +36,7 @@ namespace bw
 
 	inline bool ClientSession::IsConnected() const
 	{
-		return m_bridge != nullptr;
+		return m_isConnected;
 	}
 
 	template<typename T>

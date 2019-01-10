@@ -25,9 +25,6 @@ namespace bw
 
 			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
 
-			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
-			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);
-
 		private:
 			std::size_t m_peerId;
 			NetworkReactor& m_reactor;

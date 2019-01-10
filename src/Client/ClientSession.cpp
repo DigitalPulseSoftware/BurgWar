@@ -25,18 +25,9 @@ namespace bw
 		if (!bridge)
 			return false;
 
-		bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
-		{
-			HandleIncomingPacket(packet);
-		});
+		ConnectInternal(std::move(bridge));
 
-		m_bridge = std::move(bridge);
-
-		Packets::Auth auth;
-		auth.playerCount = 1;
-
-		SendPacket(auth);
-
+		OnConnected();
 		return true;
 	}
 
@@ -48,27 +39,12 @@ namespace bw
 		if (!bridge)
 			return false;
 
-		bridge->OnConnected.Connect([this](Nz::UInt32 /*data*/) 
+		m_onConnectedSlot.Connect(bridge->OnConnected, [this](Nz::UInt32 /*data*/) 
 		{
-			std::cout << "Connected" << std::endl;
-
-			Packets::Auth auth;
-			auth.playerCount = 1;
-
-			SendPacket(auth);
+			OnConnected();
 		});
 
-		bridge->OnDisconnected.Connect([this](Nz::UInt32 /*data*/)
-		{
-			m_bridge.reset(); //< FIXME: Release during slot, hmm
-		});
-
-		bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
-		{
-			HandleIncomingPacket(packet);
-		});
-
-		m_bridge = std::move(bridge);
+		ConnectInternal(std::move(bridge));
 		return true;
 	}
 
@@ -90,7 +66,7 @@ namespace bw
 		if (m_bridge)
 		{
 			m_bridge->Disconnect();
-			m_bridge.reset();
+			OnDisconnected();
 		}
 	}
 
@@ -102,6 +78,20 @@ namespace bw
 	void ClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
 		m_commandStore.UnserializePacket(this, packet);
+	}
+
+	void ClientSession::ConnectInternal(std::shared_ptr<SessionBridge> sessionBridge)
+	{
+		m_bridge = std::move(sessionBridge);
+		m_onDisconnectedSlot.Connect(m_bridge->OnDisconnected, [this](Nz::UInt32 /*data*/)
+		{
+			OnDisconnected();
+		});
+
+		m_onIncomingPacketSlot.Connect(m_bridge->OnIncomingPacket, [this](Nz::NetPacket& packet)
+		{
+			HandleIncomingPacket(packet);
+		});
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::AuthFailure& packet)
@@ -244,5 +234,23 @@ namespace bw
 	{
 		std::cout << "[Client] Entity #" << packet.entityId << " plays animation " << +packet.animId << std::endl;
 		m_localMatch->PlayAnimation(packet.entityId, packet.animId);
+	}
+
+	void ClientSession::OnConnected()
+	{
+		std::cout << "Connected" << std::endl;
+
+		m_isConnected = true;
+
+		Packets::Auth auth;
+		auth.playerCount = 1;
+
+		SendPacket(auth);
+	}
+
+	void ClientSession::OnDisconnected()
+	{
+		m_bridge.reset();
+		m_isConnected = false;
 	}
 }

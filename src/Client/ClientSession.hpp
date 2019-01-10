@@ -68,6 +68,7 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
+			void ConnectInternal(std::shared_ptr<SessionBridge> sessionBridge);
 			void HandleIncomingPacket(const Packets::AuthFailure& packet);
 			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
 			void HandleIncomingPacket(const Packets::ClientScriptList& packet);
@@ -81,7 +82,13 @@ namespace bw
 			void HandleIncomingPacket(const Packets::MatchState& packet);
 			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
 			void HandleIncomingPacket(const Packets::PlayAnimation& packet);
+			void OnConnected();
+			void OnDisconnected();
 			
+			NazaraSlot(SessionBridge, OnConnected, m_onConnectedSlot);
+			NazaraSlot(SessionBridge, OnDisconnected, m_onDisconnectedSlot);
+			NazaraSlot(SessionBridge, OnIncomingPacket, m_onIncomingPacketSlot);
+
 			std::shared_ptr<LocalMatch> m_localMatch;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
@@ -91,6 +98,7 @@ namespace bw
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;
 			Nz::UInt64 m_deltaTime;
+			bool m_isConnected;
 	};
 }
 
