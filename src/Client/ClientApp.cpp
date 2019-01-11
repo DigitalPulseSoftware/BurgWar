@@ -4,7 +4,7 @@
 
 #include <Client/ClientApp.hpp>
 #include <Shared/Match.hpp>
-#include <Shared/NetworkClientBridge.hpp>
+#include <Shared/NetworkSessionBridge.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Client/ClientSession.hpp>
@@ -332,11 +332,11 @@ namespace bw
 		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, session, matchData));
 	}
 
-	std::shared_ptr<NetworkClientBridge> ClientApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
+	std::shared_ptr<NetworkSessionBridge> ClientApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
 	{
 		constexpr std::size_t MaxPeerCount = 1;
 
-		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> std::shared_ptr<NetworkClientBridge>
+		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> std::shared_ptr<NetworkSessionBridge>
 		{
 			std::size_t newPeerId = reactor->ConnectTo(serverAddress, data);
 			if (newPeerId == NetworkReactor::InvalidPeerId)
@@ -345,7 +345,7 @@ namespace bw
 				return nullptr;
 			}
 
-			auto bridge = std::make_shared<NetworkClientBridge>(*reactor, newPeerId);
+			auto bridge = std::make_shared<NetworkSessionBridge>(*reactor, newPeerId);
 
 			if (newPeerId >= m_connections.size())
 				m_connections.resize(newPeerId + 1);

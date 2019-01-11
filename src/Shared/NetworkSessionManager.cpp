@@ -4,7 +4,7 @@
 
 #include <Shared/NetworkSessionManager.hpp>
 #include <Shared/MatchClientSession.hpp>
-#include <Shared/NetworkClientBridge.hpp>
+#include <Shared/NetworkSessionBridge.hpp>
 #include <Shared/MatchSessions.hpp>
 #include <iostream>
 
@@ -30,7 +30,7 @@ namespace bw
 	{
 		std::cout << "Peer #" << peerId << " connected" << std::endl;
 
-		std::shared_ptr<NetworkClientBridge> clientBridge = std::make_shared<NetworkClientBridge>(m_reactor, peerId);
+		std::shared_ptr<NetworkSessionBridge> clientBridge = std::make_shared<NetworkSessionBridge>(m_reactor, peerId);
 
 		MatchClientSession* session = GetOwner()->CreateSession(std::move(clientBridge));
 

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_SHARED_NETWORKCLIENTBRIDGE_HPP
-#define BURGWAR_SHARED_NETWORKCLIENTBRIDGE_HPP
+#ifndef BURGWAR_SHARED_NETWORKSESSIONBRIDGE_HPP
+#define BURGWAR_SHARED_NETWORKSESSIONBRIDGE_HPP
 
 #include <Shared/SessionBridge.hpp>
 
@@ -13,11 +13,11 @@ namespace bw
 {
 	class NetworkReactor;
 
-	class NetworkClientBridge : public SessionBridge
+	class NetworkSessionBridge : public SessionBridge
 	{
 		public:
-			inline NetworkClientBridge(NetworkReactor& reactor, std::size_t peerId);
-			~NetworkClientBridge();
+			inline NetworkSessionBridge(NetworkReactor& reactor, std::size_t peerId);
+			~NetworkSessionBridge();
 
 			void Disconnect() override;
 
@@ -31,6 +31,6 @@ namespace bw
 	};
 }
 
-#include <Shared/NetworkClientBridge.inl>
+#include <Shared/NetworkSessionBridge.inl>
 
 #endif

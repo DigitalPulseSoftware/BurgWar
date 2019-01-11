@@ -25,7 +25,7 @@ namespace bw
 {
 	class LocalMatch;
 	class Match;
-	class NetworkClientBridge;
+	class NetworkSessionBridge;
 	class NetworkReactor;
 
 	class ClientApp : public Ndk::Application, public BurgApp
@@ -48,7 +48,7 @@ namespace bw
 
 		private:
 			std::shared_ptr<LocalMatch> CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData);
-			std::shared_ptr<NetworkClientBridge> ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
+			std::shared_ptr<NetworkSessionBridge> ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
 
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);
 			void HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data);
@@ -57,7 +57,7 @@ namespace bw
 
 			std::vector<std::shared_ptr<LocalMatch>> m_localMatches;
 			std::vector<std::unique_ptr<NetworkReactor>> m_reactors;
-			std::vector<std::shared_ptr<NetworkClientBridge>> m_connections;
+			std::vector<std::shared_ptr<NetworkSessionBridge>> m_connections;
 			LocalCommandStore m_commandStore;
 			std::unique_ptr<Match> m_match;
 			std::unique_ptr<ClientSession> m_clientSession;

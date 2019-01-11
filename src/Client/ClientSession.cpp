@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ClientSession.hpp>
-#include <Shared/NetworkClientBridge.hpp>
+#include <Shared/NetworkSessionBridge.hpp>
 #include <Shared/Utility/VirtualDirectory.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/LocalCommandStore.hpp>
