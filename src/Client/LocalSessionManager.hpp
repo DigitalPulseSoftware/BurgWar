@@ -31,6 +31,7 @@ namespace bw
 			void Poll() override;
 
 		private:
+			void DisconnectPeer(std::size_t peerId);
 			void SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer);
 
 			struct Peer
@@ -40,6 +41,7 @@ namespace bw
 				std::vector<Nz::NetPacket> clientPackets;
 				std::vector<Nz::NetPacket> serverPackets;
 				MatchClientSession* session;
+				bool disconnectionRequested = false;
 			};
 
 			std::vector<std::optional<Peer>> m_peers;

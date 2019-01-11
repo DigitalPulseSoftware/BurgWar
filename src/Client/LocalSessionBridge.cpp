@@ -10,7 +10,7 @@ namespace bw
 {
 	void LocalSessionBridge::Disconnect()
 	{
-		throw std::runtime_error("Disconnect() called on local player");
+		m_sessionManager.DisconnectPeer(m_peerId);
 	}
 
 	void LocalSessionBridge::SendPacket(Nz::UInt8 /*channelId*/, Nz::ENetPacketFlags /*flags*/, Nz::NetPacket&& packet)

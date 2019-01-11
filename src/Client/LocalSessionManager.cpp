@@ -55,8 +55,25 @@ namespace bw
 					peer.serverBridge->OnIncomingPacket(packet);
 
 				peer.serverPackets.clear();
+
+				if (peer.disconnectionRequested)
+				{
+					peer.clientBridge->OnDisconnected(0);
+					peer.serverBridge->OnDisconnected(0);
+
+					GetOwner()->DeleteSession(peer.session);
+
+					peerOpt.reset();
+				}
 			}
 		}
+	}
+
+	void LocalSessionManager::DisconnectPeer(std::size_t peerId)
+	{
+		assert(peerId < m_peers.size() && m_peers[peerId]);
+		Peer& peer = m_peers[peerId].value();
+		peer.disconnectionRequested = true;
 	}
 
 	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer)
