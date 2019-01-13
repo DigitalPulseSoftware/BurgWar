@@ -46,16 +46,7 @@ namespace bw
 					OnFileChecked(this, fileData.path, content);
 			}
 			else
-			{
-				std::filesystem::path clientFolderPath = clientFilePath.parent_path();
-				if (!std::filesystem::is_directory(clientFolderPath)) 
-				{
-					if (!std::filesystem::create_directories(clientFolderPath))
-						throw std::runtime_error("Failed to create client script cache directory: " + clientFolderPath.generic_u8string());
-				}
-
 				shouldDownload = true;
-			}
 
 			if (shouldDownload)
 			{
@@ -72,9 +63,18 @@ namespace bw
 	{
 		PendingFile& pendingFileData = m_downloadList[m_currentFileIndex];
 
-		Nz::File outputFile(pendingFileData.outputPath.generic_u8string(), Nz::OpenMode_Truncate | Nz::OpenMode_WriteOnly);
+		std::filesystem::path clientFolderPath = pendingFileData.outputPath.parent_path();
+		std::string filePath = pendingFileData.outputPath.generic_u8string();
+
+		if (!std::filesystem::is_directory(clientFolderPath))
+		{
+			if (!std::filesystem::create_directories(clientFolderPath))
+				throw std::runtime_error("Failed to create client script cache directory: " + clientFolderPath.generic_u8string());
+		}
+
+		Nz::File outputFile(filePath, Nz::OpenMode_Truncate | Nz::OpenMode_WriteOnly);
 		if (!outputFile.IsOpen())
-			throw std::runtime_error("Failed to open file " + pendingFileData.outputPath.generic_u8string());
+			throw std::runtime_error("Failed to open file " + filePath);
 
 		outputFile.Write(packet.fileContent.data(), packet.fileContent.size());
 		outputFile.Close();
