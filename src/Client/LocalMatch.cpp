@@ -218,6 +218,21 @@ namespace bw
 			});
 			return 0;
 		};
+
+		state["engine_GetPlayerPosition"] = [&]()
+		{
+			if (!m_playerControlledEntity)
+				return Nz::Vector2f::Zero();
+
+			return Nz::Vector2f(m_playerControlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
+		};
+
+		state["engine_SetCameraPosition"] = [&](const Nz::Vector2f& position)
+		{
+			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
+		};
+
+		m_gamemode->ExecuteCallback("OnInit");
 	}
 
 	void LocalMatch::Update(float elapsedTime)
@@ -295,6 +310,8 @@ namespace bw
 		}
 
 		m_animationManager.Update(elapsedTime);
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
 	}
 
 	void LocalMatch::ControlEntity(Nz::UInt32 serverId)
@@ -304,7 +321,8 @@ namespace bw
 			return;
 
 		const ServerEntity& serverEntity = it->second;
-		m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
+		m_playerControlledEntity = serverEntity.entity;
+		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
 	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)

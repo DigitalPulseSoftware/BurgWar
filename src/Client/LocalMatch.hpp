@@ -89,6 +89,7 @@ namespace bw
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
+			Ndk::EntityHandle m_playerControlledEntity;
 			Ndk::World m_world;
 			AnimationManager m_animationManager;
 			ClientApp& m_application;
