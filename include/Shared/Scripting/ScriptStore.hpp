@@ -17,7 +17,7 @@
 
 namespace bw
 {
-	class Gamemode;
+	class SharedGamemode;
 	class VirtualDirectory;
 
 	template<typename Element>
@@ -26,7 +26,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
+			inline ScriptStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -46,14 +46,14 @@ namespace bw
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 
 			sol::state& GetLuaState();
-			const std::shared_ptr<Gamemode>& GetGamemode();
+			const std::shared_ptr<SharedGamemode>& GetGamemode();
 			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext();
 
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);
 
 		private:
-			std::shared_ptr<Gamemode> m_gamemode;
+			std::shared_ptr<SharedGamemode> m_gamemode;
 			std::shared_ptr<SharedScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;

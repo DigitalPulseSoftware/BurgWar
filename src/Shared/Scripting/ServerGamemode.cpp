@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Shared/Gamemode.hpp>
+#include <Shared/Scripting/ServerGamemode.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
 #include <Shared/Match.hpp>
@@ -12,33 +12,25 @@
 
 namespace bw
 {
-	Gamemode::Gamemode(Match& match, std::shared_ptr<SharedScriptingContext> scriptingContext, std::string gamemodeName, const std::filesystem::path& gamemodePath) :
-	m_context(std::move(scriptingContext)),
-	m_match(match)
+	void ServerGamemode::InitializeGamemode()
 	{
+		auto& context = GetScriptingContext();
+
 		auto Load = [&](const std::filesystem::path& filepath)
 		{
-			if (!std::filesystem::exists(filepath))
-				return false;
-
-			return m_context->Load(filepath);
+			return context->Load(filepath);
 		};
 
-		sol::state& state = m_context->GetLuaState();
+		sol::state& state = context->GetLuaState();
+		state["GM"] = GetGamemodeTable();
 
-		m_gamemodeTable = state.create_table();
-		m_gamemodeTable["Name"] = gamemodeName;
-		InitializeGamemode(m_gamemodeTable);
-
-		state["GM"] = m_gamemodeTable;
-
+		const std::filesystem::path& gamemodePath = GetGamemodePath();
 		Load(gamemodePath / "shared.lua");
-		//Load(gamemodePath / "cl_init.lua");
 		Load(gamemodePath / "sv_init.lua");
-	}
 
-	void Gamemode::InitializeGamemode(sol::table& gamemodeTable)
-	{
+		state["GM"] = nullptr;
+
+		sol::table& gamemodeTable = GetGamemodeTable();
 		gamemodeTable["CreateEntity"] = [&](const sol::table& gmTable, const std::string& entityType, const Nz::Vector2f& spawnPos)
 		{
 			auto& entityStore = m_match.GetEntityStore();

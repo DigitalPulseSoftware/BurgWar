@@ -31,8 +31,8 @@ namespace bw
 		AuthFailure,
 		AuthSuccess,
 		ClientScriptList,
-		CreateEntities,
 		ControlEntity,
+		CreateEntities,
 		DeleteEntities,
 		DownloadClientScriptRequest,
 		DownloadClientScriptResponse,
@@ -79,6 +79,12 @@ namespace bw
 			std::vector<Script> scripts;
 		};
 
+		DeclarePacket(ControlEntity)
+		{
+			Nz::UInt8 playerIndex;
+			CompressedUnsigned<Nz::UInt32> entityId;
+		};
+
 		DeclarePacket(CreateEntities)
 		{
 			struct HealthData
@@ -112,12 +118,6 @@ namespace bw
 			};
 
 			std::vector<Entity> entities;
-		};
-
-		DeclarePacket(ControlEntity)
-		{
-			Nz::UInt8 playerIndex;
-			CompressedUnsigned<Nz::UInt32> entityId;
 		};
 
 		DeclarePacket(DeleteEntities)
@@ -168,6 +168,7 @@ namespace bw
 			std::vector<Layer> layers;
 			Nz::Color backgroundColor;
 			float tileSize;
+			std::string gamemodePath;
 		};
 
 		DeclarePacket(MatchState)
@@ -223,8 +224,8 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
-		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);
+		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);

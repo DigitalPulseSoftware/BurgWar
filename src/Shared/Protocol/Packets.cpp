@@ -157,6 +157,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data)
 		{
 			serializer &= data.backgroundColor;
+			serializer &= data.gamemodePath;
 			serializer &= data.tileSize;
 
 			serializer.SerializeArraySize(data.layers);

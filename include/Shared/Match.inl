@@ -22,9 +22,14 @@ namespace bw
 		return m_scriptingContext->GetLuaState();
 	}
 
-	inline const std::shared_ptr<Gamemode>& Match::GetGamemode()
+	inline const std::shared_ptr<ServerGamemode>& Match::GetGamemode()
 	{
 		return m_gamemode;
+	}
+
+	inline const std::filesystem::path& Match::GetGamemodePath() const
+	{
+		return m_gamemodePath;
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const

@@ -5,7 +5,7 @@
 #include <Shared/Scripting/ServerEntityStore.hpp>
 #include <NDK/Components.hpp>
 #include <Nazara/Utility/Image.hpp>
-#include <Shared/Gamemode.hpp>
+#include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>

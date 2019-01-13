@@ -81,6 +81,7 @@ namespace bw
 
 		Packets::MatchData matchData;
 		matchData.backgroundColor = mapData.backgroundColor;
+		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
 		matchData.tileSize = mapData.tileSize;
 
 		matchData.layers.reserve(mapData.layers.size());

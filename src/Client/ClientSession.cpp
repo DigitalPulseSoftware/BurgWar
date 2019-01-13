@@ -135,6 +135,7 @@ namespace bw
 	void ClientSession::HandleIncomingPacket(const Packets::ControlEntity& packet)
 	{
 		std::cout << "[Client] Control entity #" << packet.entityId << std::endl;
+		m_localMatch->ControlEntity(packet.entityId);
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::CreateEntities& packet)

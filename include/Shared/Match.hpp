@@ -23,8 +23,8 @@
 namespace bw
 {
 	class BurgApp;
-	class Gamemode;
 	class Player;
+	class ServerGamemode;
 	class Terrain;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
@@ -34,7 +34,7 @@ namespace bw
 		public:
 			struct ClientScript;
 
-			Match(BurgApp& app, std::string matchName, const std::string& gamemodeName, std::size_t maxPlayerCount);
+			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -48,7 +48,8 @@ namespace bw
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
 			inline sol::state& GetLuaState();
-			inline const std::shared_ptr<Gamemode>& GetGamemode();
+			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
+			inline const std::filesystem::path& GetGamemodePath() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
@@ -73,10 +74,11 @@ namespace bw
 			};
 
 		private:
+			std::filesystem::path m_gamemodePath;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
-			std::shared_ptr<Gamemode> m_gamemode;
+			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ServerScriptingContext> m_scriptingContext;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;

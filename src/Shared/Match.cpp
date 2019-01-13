@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Match.hpp>
-#include <Shared/Gamemode.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/Player.hpp>
 #include <Shared/Terrain.hpp>
+#include <Shared/Scripting/ServerGamemode.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
 #include <Nazara/Core/File.hpp>
@@ -15,7 +15,8 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeName, std::size_t maxPlayerCount) :
+	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount) :
+	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName))
@@ -25,9 +26,9 @@ namespace bw
 		mapData.tileSize = 64.f;
 
 		auto& layer = mapData.layers.emplace_back();
-		layer.width = 20;
+		layer.width = 80;
 		layer.height = 13;
-		layer.tiles = {
+		/*layer.tiles = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -41,13 +42,35 @@ namespace bw
 			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2,
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
-		};
+		};*/
+
+		for (std::size_t y = 0; y < layer.height; ++y)
+		{
+			Nz::UInt8 blockType = 0;
+			if (y == 10)
+				blockType = 2;
+			else if (y > 10)
+				blockType = 1;
+
+			Nz::UInt8 originalBlockType = blockType;
+			for (std::size_t x = 0; x < layer.width; ++x)
+			{
+				if (x == 0 || x == layer.width - 1)
+					blockType = 1;
+				else if (x > 10 && x < 15)
+					blockType = 0;
+				else
+					blockType = originalBlockType;
+
+				layer.tiles.push_back(blockType);
+			}
+		}
 
 		m_terrain = std::make_unique<Terrain>(app, std::move(mapData));
 
 		m_scriptingContext = std::make_shared<ServerScriptingContext>(*this);
 
-		m_gamemode = std::make_shared<Gamemode>(*this, m_scriptingContext, gamemodeName, std::filesystem::path("../../scripts/gamemodes") / gamemodeName);
+		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "../../scripts" / m_gamemodePath);
 
 		m_entityStore.emplace(m_gamemode, m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");

@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
 	ScriptStore(std::move(gamemode), std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");

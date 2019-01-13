@@ -47,6 +47,13 @@ namespace bw
 
 		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore);
 		m_clientSession->Connect(localSessions);
+
+		m_mainWindow.GetEventHandler().OnKeyPressed.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			if (event.code == Nz::Keyboard::A)
+				m_clientSession->Disconnect();
+		});
+
 		//m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();

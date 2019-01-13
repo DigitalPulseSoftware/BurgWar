@@ -24,6 +24,7 @@
 namespace bw
 {
 	class ClientApp;
+	class ClientGamemode;
 	class VirtualDirectory;
 
 	class LocalMatch
@@ -41,6 +42,7 @@ namespace bw
 			void Update(float elapsedTime);
 
 		private:
+			void ControlEntity(Nz::UInt32 serverId);
 			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight);
@@ -81,9 +83,12 @@ namespace bw
 
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
+			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::string m_gamemodePath;
 			std::vector<InputController> m_inputControllers;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;
 			AnimationManager m_animationManager;
 			ClientApp& m_application;

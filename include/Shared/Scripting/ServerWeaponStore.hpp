@@ -18,7 +18,7 @@ namespace bw
 	class ServerWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ServerWeaponStore(BurgApp& app, std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
+			inline ServerWeaponStore(BurgApp& app, std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
 			~ServerWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);

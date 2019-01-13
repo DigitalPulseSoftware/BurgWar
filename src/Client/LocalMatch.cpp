@@ -5,6 +5,7 @@
 #include <Client/LocalMatch.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/ClientSession.hpp>
+#include <Client/Scripting/ClientGamemode.hpp>
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
@@ -23,6 +24,7 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(ClientApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
+	m_gamemodePath(matchData.gamemodePath),
 	m_application(burgApp),
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
@@ -43,10 +45,11 @@ namespace bw
 		physics.SetMaxStepCount(3);
 		physics.SetStepSize(1.f / 40.f);*/
 
-		Ndk::EntityHandle camera = m_world.CreateEntity();
-		camera->AddComponent<Ndk::NodeComponent>().SetPosition(Nz::Vector2f(0.f, 0.f));
+		m_camera = m_world.CreateEntity();
+		auto& cameraNode = m_camera->AddComponent<Ndk::NodeComponent>();
+		cameraNode.SetPosition(-Nz::Vector2f(640.f, 360.f));
 
-		Ndk::CameraComponent& viewer = camera->AddComponent<Ndk::CameraComponent>();
+		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(&(m_application.GetMainWindow()));
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
@@ -176,8 +179,10 @@ namespace bw
 	{
 		m_scriptingContext = std::make_shared<ClientScriptingContext>(*this, scriptDir);
 
-		m_entityStore.emplace(nullptr, m_scriptingContext);
-		m_weaponStore.emplace(nullptr, m_scriptingContext);
+		m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
+
+		m_entityStore.emplace(m_gamemode, m_scriptingContext);
+		m_weaponStore.emplace(m_gamemode, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 
@@ -290,6 +295,16 @@ namespace bw
 		}
 
 		m_animationManager.Update(elapsedTime);
+	}
+
+	void LocalMatch::ControlEntity(Nz::UInt32 serverId)
+	{
+		auto it = m_serverEntityIdToClient.find(serverId);
+		if (it == m_serverEntityIdToClient.end())
+			return;
+
+		const ServerEntity& serverEntity = it->second;
+		m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
 	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)

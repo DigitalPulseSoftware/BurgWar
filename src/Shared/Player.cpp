@@ -8,7 +8,6 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
-#include <Shared/Gamemode.hpp>
 #include <Shared/Match.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/MatchClientVisibility.hpp>
@@ -17,6 +16,7 @@
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
+#include <Shared/Scripting/ServerGamemode.hpp>
 
 namespace bw
 {

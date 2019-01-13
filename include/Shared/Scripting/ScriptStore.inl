@@ -10,7 +10,7 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(std::shared_ptr<Gamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
 	m_gamemode(std::move(gamemode)),
 	m_context(std::move(context)),
 	m_isServer(isServer)
@@ -155,7 +155,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	const std::shared_ptr<Gamemode>& ScriptStore<Element>::GetGamemode()
+	const std::shared_ptr<SharedGamemode>& ScriptStore<Element>::GetGamemode()
 	{
 		return m_gamemode;
 	}

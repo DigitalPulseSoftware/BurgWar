@@ -132,16 +132,19 @@ namespace bw
 				SendMatchState(elapsedTime);
 		}
 
-		for (auto it = m_pendingEntitiesEvent.begin(); it != m_pendingEntitiesEvent.end(); ++it)
+		for (auto it = m_pendingEntitiesEvent.begin(); it != m_pendingEntitiesEvent.end();)
 		{
-			if (!m_visibleEntities.UnboundedTest(it.key()))
-				continue;
+			if (m_visibleEntities.UnboundedTest(it.key()))
+			{
+				auto& callbackVec = it.value();
+				for (auto&& func : callbackVec)
+					func();
 
-			auto& callbackVec = it.value();
-			for (auto&& func : callbackVec)
-				func();
+				it = m_pendingEntitiesEvent.erase(it);
+			}
+			else
+				++it;
 		}
-		m_pendingEntitiesEvent.clear();
 	}
 
 	void MatchClientVisibility::UpdateLayer(std::size_t layerIndex)

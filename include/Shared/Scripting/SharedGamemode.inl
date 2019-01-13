@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar Shared" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Shared/Gamemode.hpp>
+#include <Shared/Scripting/SharedGamemode.hpp>
 #include <cassert>
 
 namespace bw
 {
 	template<typename... Args>
-	void Gamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	void SharedGamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
 	{
 		sol::protected_function callback = m_gamemodeTable[callbackName];
 		if (callback)
@@ -22,5 +22,20 @@ namespace bw
 
 			//TODO: Handle return
 		}
+	}
+
+	inline const std::filesystem::path& SharedGamemode::GetGamemodePath() const
+	{
+		return m_gamemodePath;
+	}
+
+	inline sol::table& SharedGamemode::GetGamemodeTable()
+	{
+		return m_gamemodeTable;
+	}
+
+	inline const std::shared_ptr<SharedScriptingContext>& SharedGamemode::GetScriptingContext() const
+	{
+		return m_context;
 	}
 }
