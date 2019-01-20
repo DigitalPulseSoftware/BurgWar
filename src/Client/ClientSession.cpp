@@ -154,7 +154,7 @@ namespace bw
 				maxHealth = entityData.health->maxHealth;
 			}
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth);
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.inputs.has_value(), entityData.parentId, currentHealth, maxHealth);
 		}
 	}
 
@@ -171,6 +171,15 @@ namespace bw
 	{
 		assert(m_downloadManager.has_value());
 		m_downloadManager->HandlePacket(packet);
+	}
+
+	void ClientSession::HandleIncomingPacket(const Packets::EntitiesInputs& packet)
+	{
+		for (const auto& entityData : packet.entities)
+		{
+			std::cout << "[Client] Input update for entity " << entityData.id << std::endl;
+			m_localMatch->UpdateEntityInput(entityData.id, entityData.inputs);
+		}
 	}
 
 	void ClientSession::HandleIncomingPacket(const Packets::HealthUpdate& packet)
@@ -205,6 +214,7 @@ namespace bw
 			{
 				isAirControlling = entityData.playerMovement->isAirControlling;
 				isFacingRight = entityData.playerMovement->isFacingRight;
+				std::cout << entityData.position << std::endl;
 				//std::cout << " and has player entity data (air control=" << isAirControlling << ", facing right=" << isFacingRight << ")";
 			}
 

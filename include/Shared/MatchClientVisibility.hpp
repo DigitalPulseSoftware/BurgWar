@@ -48,12 +48,14 @@ namespace bw
 			NazaraSlot(NetworkSyncSystem, OnEntityDeleted, m_onEntityDeletedSlot);
 			NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation, m_onEntityPlayAnimation);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, m_onEntitiesHealthUpdate);
+			NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate, m_onEntitiesInputUpdate);
 
 			using EntityPacketSendFunction = std::function<void()>;
 			using PendingCreationEventMap = tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::optional<NetworkSyncSystem::EntityCreation>>;
 
 			std::size_t m_activeLayer;
 			PendingCreationEventMap m_creationEvents;
+			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityInputs> m_inputUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityHealth> m_healthUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> m_playAnimationEvents;
 			tsl::hopscotch_set<Nz::UInt32 /*entityId*/> m_destructionEvents;
@@ -67,6 +69,7 @@ namespace bw
 			Packets::CreateEntities m_createEntitiesPacket;
 			Packets::DeleteEntities m_deleteEntitiesPacket;
 			Packets::HealthUpdate   m_healthUpdatePacket;
+			Packets::EntitiesInputs m_inputUpdatePacket;
 			Packets::MatchState     m_matchStatePacket;
 	};
 }

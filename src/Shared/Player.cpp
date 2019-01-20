@@ -11,6 +11,7 @@
 #include <Shared/Match.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/MatchClientVisibility.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
@@ -44,6 +45,7 @@ namespace bw
 			if (!burger)
 				return Ndk::EntityHandle::InvalidHandle;
 
+			burger->AddComponent<InputComponent>();
 			burger->AddComponent<PlayerControlledComponent>(CreateHandle());
 
 			if (burger->HasComponent<HealthComponent>())
@@ -91,18 +93,16 @@ namespace bw
 		m_session.GetVisibility().SendEntityPacket(controlEntity.entityId, controlEntity);
 	}
 
-	void Player::UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight)
+	void Player::UpdateInputs(const InputData& inputData)
 	{
 		if (m_playerEntity)
 		{
-			assert(m_playerEntity->HasComponent<PlayerControlledComponent>());
+			assert(m_playerEntity->HasComponent<InputComponent>());
 
-			auto& playerController = m_playerEntity->GetComponent<PlayerControlledComponent>();
-			playerController.UpdateJumpingState(isJumping);
-			playerController.UpdateMovingLeftState(isMovingLeft);
-			playerController.UpdateMovingRightState(isMovingRight);
+			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
+			inputComponent.UpdateInputs(inputData);
 
-			if (isAttacking)
+			if (inputData.isAttacking)
 			{
 				if (m_playerWeapon)
 				{

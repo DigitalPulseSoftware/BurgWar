@@ -7,6 +7,7 @@
 #include <Client/ClientSession.hpp>
 #include <Client/Scripting/ClientGamemode.hpp>
 #include <Shared/Components/AnimationComponent.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/AnimationSystem.hpp>
@@ -325,7 +326,7 @@ namespace bw
 		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
-	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)
+	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)
 	{
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
@@ -413,6 +414,9 @@ namespace bw
 				healthData.spriteWidth = aabb.width;
 				healthData.healthSprite = healthBar;
 			}
+
+			if (hasInputs)
+				entity->AddComponent<InputComponent>();
 
 			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
 		}
@@ -528,5 +532,18 @@ namespace bw
 		HealthData& healthData = serverEntity.health.value();
 		healthData.currentHealth = newHealth;
 		healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
+	}
+
+	void LocalMatch::UpdateEntityInput(Nz::UInt32 serverId, const InputData& inputs)
+	{
+		auto it = m_serverEntityIdToClient.find(serverId);
+		if (it == m_serverEntityIdToClient.end())
+			return;
+
+		ServerEntity& serverEntity = it.value();
+		if (!serverEntity.entity)
+			return;
+
+		serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(inputs);
 	}
 }

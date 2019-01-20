@@ -40,7 +40,7 @@ namespace bw
 			template<typename T> void SendPacket(const T& packet);
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
-			void UpdateInput(bool isAttacking, bool isJumping, bool isMovingLeft, bool isMovingRight);
+			void UpdateInputs(const InputData& inputData);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) noexcept = default;

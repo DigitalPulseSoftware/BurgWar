@@ -9,6 +9,7 @@
 
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -69,6 +70,7 @@ namespace bw
 				Nz::Vector2f position;
 				std::optional<Ndk::EntityId> parent;
 				std::optional<HealthProperties> healthProperties;
+				std::optional<InputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
@@ -85,6 +87,12 @@ namespace bw
 				Nz::UInt16 currentHealth;
 			};
 
+			struct EntityInputs
+			{
+				Ndk::EntityId id;
+				InputData inputs;
+			};
+
 			struct EntityMovement
 			{
 				Ndk::EntityId id;
@@ -97,6 +105,7 @@ namespace bw
 			NazaraSignal(OnEntityCreated, NetworkSyncSystem* /*emitter*/, const EntityCreation& /*event*/);
 			NazaraSignal(OnEntityDeleted, NetworkSyncSystem* /*emitter*/, const EntityDestruction& /*event*/);
 			NazaraSignal(OnEntityPlayAnimation, NetworkSyncSystem* /*emitter*/, const EntityPlayAnimation& /*event*/);
+			NazaraSignal(OnEntitiesInputUpdate, NetworkSyncSystem* /*emitter*/, const EntityInputs* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
 
 		private:
@@ -111,16 +120,19 @@ namespace bw
 			{
 				NazaraSlot(AnimationComponent, OnAnimationStart, onAnimationStart);
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
+				NazaraSlot(InputComponent, OnInputUpdate, onInputUpdate);
 			};
 
 			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
 
+			Ndk::EntityList m_inputUpdateEntities;
 			Ndk::EntityList m_healthUpdateEntities;
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<EntityHealth> m_healthEvents;
+			std::vector<EntityInputs> m_inputEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;
 	};
 }

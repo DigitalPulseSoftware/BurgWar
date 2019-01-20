@@ -107,6 +107,23 @@ namespace bw
 			m_session.SendPacket(m_healthUpdatePacket);
 		}
 
+		if (!m_inputUpdateEvents.empty())
+		{
+			m_inputUpdatePacket.entities.clear();
+
+			for (auto&& pair : m_inputUpdateEvents)
+			{
+				auto& eventData = pair.second;
+
+				auto& entityData = m_inputUpdatePacket.entities.emplace_back();
+				entityData.id = eventData.id;
+				entityData.inputs = eventData.inputs;
+			}
+			m_inputUpdateEvents.clear();
+
+			m_session.SendPacket(m_inputUpdatePacket);
+		}
+
 		if (!m_playAnimationEvents.empty())
 		{
 			for (auto&& pair : m_playAnimationEvents)
@@ -172,6 +189,7 @@ namespace bw
 			m_onEntityDeletedSlot.Disconnect();
 			m_onEntityPlayAnimation.Disconnect();
 			m_onEntitiesHealthUpdate.Disconnect();
+			m_onEntitiesInputUpdate.Disconnect();
 		}
 
 		m_activeLayer = layerIndex;
@@ -210,6 +228,17 @@ namespace bw
 				}
 			});
 
+			m_onEntitiesInputUpdate.Connect(syncSystem.OnEntitiesInputUpdate, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityInputs* events, std::size_t entityCount)
+			{
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!m_visibleEntities.UnboundedTest(events[i].id))
+						return;
+
+					m_inputUpdateEvents[events[i].id] = events[i];
+				}
+			});
+
 			syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
@@ -234,6 +263,7 @@ namespace bw
 		else
 			m_destructionEvents.insert(eventData.id);
 
+		m_inputUpdateEvents.erase(eventData.id);
 		m_healthUpdateEvents.erase(eventData.id);
 		m_playAnimationEvents.erase(eventData.id);
 

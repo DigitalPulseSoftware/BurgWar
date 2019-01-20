@@ -7,10 +7,13 @@
 #ifndef BURGWAR_SHARED_INPUTDATA_HPP
 #define BURGWAR_SHARED_INPUTDATA_HPP
 
+#include <Nazara/Math/Vector2.hpp>
+
 namespace bw
 {
 	struct InputData
 	{
+		Nz::Vector2f aimDirection = Nz::Vector2f::UnitX();
 		bool isAttacking = false;
 		bool isJumping = false;
 		bool isMovingLeft = false;

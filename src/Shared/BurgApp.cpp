@@ -6,6 +6,7 @@
 #include <Nazara/Core/Clock.hpp>
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
@@ -24,6 +25,7 @@ namespace bw
 	{
 		Ndk::InitializeComponent<AnimationComponent>("Anim");
 		Ndk::InitializeComponent<HealthComponent>("Health");
+		Ndk::InitializeComponent<InputComponent>("Input");
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");

@@ -24,6 +24,7 @@ namespace bw
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
 		IncomingCommand(DownloadClientScriptResponse);
+		IncomingCommand(EntitiesInputs);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(HelloWorld);
 		IncomingCommand(MatchData);

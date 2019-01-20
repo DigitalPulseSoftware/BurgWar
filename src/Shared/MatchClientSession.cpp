@@ -135,11 +135,11 @@ namespace bw
 
 		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
 		{
-			const auto& input = packet.inputs[playerIndex];
-			if (!input.has_value())
+			const auto& inputOpt = packet.inputs[playerIndex];
+			if (!inputOpt.has_value())
 				continue;
 
-			m_players[playerIndex].UpdateInput(input->isAttacking, input->isJumping, input->isMovingLeft, input->isMovingRight);
+			m_players[playerIndex].UpdateInputs(*inputOpt);
 		}
 	}
 

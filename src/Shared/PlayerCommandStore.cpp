@@ -31,6 +31,7 @@ namespace bw
 		OutgoingCommand(CreateEntities,               Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(DeleteEntities,               Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(EntitiesInputs,                 Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HelloWorld,                   Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable, 0);

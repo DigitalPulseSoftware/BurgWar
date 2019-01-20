@@ -36,6 +36,7 @@ namespace bw
 		DeleteEntities,
 		DownloadClientScriptRequest,
 		DownloadClientScriptResponse,
+		EntitiesInputs,
 		HealthUpdate,
 		HelloWorld,
 		MatchData,
@@ -113,6 +114,7 @@ namespace bw
 				Nz::Vector2f position;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
+				std::optional<InputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 			};
@@ -138,6 +140,17 @@ namespace bw
 		DeclarePacket(DownloadClientScriptResponse)
 		{
 			std::vector<Nz::UInt8> fileContent;
+		};
+
+		DeclarePacket(EntitiesInputs)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				InputData inputs;
+			};
+
+			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(HealthUpdate)
@@ -220,6 +233,7 @@ namespace bw
 
 #undef DeclarePacket
 
+		// Packets serializer
 		void Serialize(PacketSerializer& serializer, Auth& data);
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
@@ -229,6 +243,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
+		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
 		void Serialize(PacketSerializer& serializer, MatchData& data);
@@ -237,6 +252,9 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayAnimation& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
+
+		// Helpers
+		void Serialize(PacketSerializer& serializer, InputData& data);
 	}
 }
 

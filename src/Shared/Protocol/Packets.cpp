@@ -47,18 +47,22 @@ namespace bw
 			for (auto& entity : data.entities)
 			{
 				bool hasHealth;
+				bool hasInputs;
 				bool hasParent;
 				bool hasMovementData;
 				bool hasPhysicsProps;
+
 				if (serializer.IsWriting())
 				{
 					hasHealth = entity.health.has_value();
+					hasInputs = entity.inputs.has_value();
 					hasParent = entity.parentId.has_value();
 					hasMovementData = entity.playerMovement.has_value();
 					hasPhysicsProps = entity.physicsProperties.has_value();
 				}
 
 				serializer &= hasHealth;
+				serializer &= hasInputs;
 				serializer &= hasParent;
 				serializer &= hasMovementData;
 				serializer &= hasPhysicsProps;
@@ -67,6 +71,9 @@ namespace bw
 				{
 					if (hasHealth)
 						entity.health.emplace();
+
+					if (hasInputs)
+						entity.inputs.emplace();
 
 					if (hasParent)
 						entity.parentId.emplace();
@@ -92,6 +99,9 @@ namespace bw
 					serializer &= healthProperties.currentHealth;
 					serializer &= healthProperties.maxHealth;
 				}
+
+				if (entity.inputs)
+					Serialize(serializer, entity.inputs.value());
 
 				if (entity.parentId)
 					serializer &= entity.parentId.value();
@@ -137,6 +147,16 @@ namespace bw
 				serializer.Write(data.fileContent.data(), data.fileContent.size());
 			else
 				serializer.Read(data.fileContent.data(), data.fileContent.size());
+		}
+
+		void Serialize(PacketSerializer& serializer, EntitiesInputs& data)
+		{
+			serializer.SerializeArraySize(data.entities);
+			for (auto& entity : data.entities)
+			{
+				serializer &= entity.id;
+				Serialize(serializer, entity.inputs);
+			}
 		}
 
 		void Serialize(PacketSerializer & serializer, HealthUpdate & data)
@@ -261,15 +281,22 @@ namespace bw
 				if (!input.has_value())
 					continue;
 
-				serializer &= input->isAttacking;
-				serializer &= input->isJumping;
-				serializer &= input->isMovingLeft;
-				serializer &= input->isMovingRight;
+				Serialize(serializer, *input);
 			}
 		}
 
 		void Serialize(PacketSerializer& /*serializer*/, Ready& /*data*/)
 		{
+		}
+
+		void Serialize(PacketSerializer& serializer, InputData& input)
+		{
+			serializer &= input.isAttacking;
+			serializer &= input.isJumping;
+			serializer &= input.isMovingLeft;
+			serializer &= input.isMovingRight;
+
+			serializer &= input.aimDirection;
 		}
 	}
 }

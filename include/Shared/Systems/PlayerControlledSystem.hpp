@@ -21,6 +21,8 @@ namespace bw
 			static Ndk::SystemIndex systemIndex;
 
 		private:
+			void OnEntityAdded(Ndk::Entity* entity) override;
+			void OnEntityRemoved(Ndk::Entity* entity) override;
 			void OnUpdate(float elapsedTime) override;
 	};
 }

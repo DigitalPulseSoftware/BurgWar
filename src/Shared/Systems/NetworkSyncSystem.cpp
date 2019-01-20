@@ -14,7 +14,7 @@ namespace bw
 	NetworkSyncSystem::NetworkSyncSystem()
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
-		SetMaximumUpdateRate(20.f);
+		SetMaximumUpdateRate(30.f);
 	}
 
 	void NetworkSyncSystem::CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const
@@ -102,6 +102,13 @@ namespace bw
 			creationEvent.healthProperties->maxHealth = entityHealth.GetMaxHealth();
 		}
 
+		if (entity->HasComponent<InputComponent>())
+		{
+			auto& entityInputs = entity->GetComponent<InputComponent>();
+
+			creationEvent.inputs = entityInputs.GetInputData();
+		}
+
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -172,6 +179,14 @@ namespace bw
 				m_healthUpdateEntities.Insert(health->GetEntity());
 			});
 		}
+
+		if (entity->HasComponent<InputComponent>())
+		{
+			slots.onInputUpdate.Connect(entity->GetComponent<InputComponent>().OnInputUpdate, [&](InputComponent* input)
+			{
+				m_inputUpdateEntities.Insert(input->GetEntity());
+			});
+		}
 	}
 
 	void NetworkSyncSystem::OnEntityRemoved(Ndk::Entity* entity)
@@ -181,6 +196,8 @@ namespace bw
 
 		OnEntityDeleted(this, destructionEvent);
 
+		m_healthUpdateEntities.Remove(entity);
+		m_inputUpdateEntities.Remove(entity);
 		m_physicsEntities.Remove(entity);
 		m_staticEntities.Remove(entity);
 
@@ -205,6 +222,22 @@ namespace bw
 			m_healthUpdateEntities.Clear();
 
 			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
+		}
+
+		if (!m_inputUpdateEntities.empty())
+		{
+			m_inputEvents.clear();
+
+			for (const auto& entity : m_inputUpdateEntities)
+			{
+				EntityInputs& inputEvent = m_inputEvents.emplace_back();
+				inputEvent.id = entity->GetId();
+				inputEvent.inputs = entity->GetComponent<InputComponent>().GetInputData();
+			}
+
+			m_inputUpdateEntities.Clear();
+
+			OnEntitiesInputUpdate(this, m_inputEvents.data(), m_inputEvents.size());
 		}
 	}
 
