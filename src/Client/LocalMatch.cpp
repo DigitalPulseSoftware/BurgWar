@@ -448,7 +448,7 @@ namespace bw
 		m_serverEntityIdToClient.erase(it);
 	}
 
-	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isAirControlling, bool isFacingRight)
+	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight)
 	{
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
@@ -472,7 +472,6 @@ namespace bw
 			if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
 			{
 				auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
-				playerMovementComponent.UpdateAirControlState(isAirControlling);
 
 				if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
 				{

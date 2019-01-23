@@ -72,7 +72,6 @@ namespace bw
 				if (eventData->playerMovement.has_value())
 				{
 					entityData.playerMovement.emplace();
-					entityData.playerMovement->isAirControlling = eventData->playerMovement->isAirControlling;
 					entityData.playerMovement->isFacingRight = eventData->playerMovement->isFacingRight;
 				}
 
@@ -294,7 +293,6 @@ namespace bw
 				if (eventData.playerMovement.has_value())
 				{
 					entityData.playerMovement.emplace();
-					entityData.playerMovement->isAirControlling = eventData.playerMovement->isAirControlling;
 					entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
 				}
 

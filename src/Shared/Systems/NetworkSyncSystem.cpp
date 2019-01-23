@@ -75,7 +75,6 @@ namespace bw
 				auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
 
 				movementEvent.playerMovement.emplace();
-				movementEvent.playerMovement->isAirControlling = entityPlayerMovement.IsAirControlling();
 				movementEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
 			}
 		}
@@ -133,7 +132,6 @@ namespace bw
 			auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
 
 			creationEvent.playerMovement.emplace();
-			creationEvent.playerMovement->isAirControlling = entityPlayerMovement.IsAirControlling();
 			creationEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
 		}
 	}

@@ -46,7 +46,6 @@ namespace bw
 
 			struct PlayerMovementData
 			{
-				bool isAirControlling;
 				bool isFacingRight;
 			};
 

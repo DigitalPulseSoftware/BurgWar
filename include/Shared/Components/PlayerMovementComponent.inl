@@ -7,7 +7,6 @@
 namespace bw
 {
 	inline PlayerMovementComponent::PlayerMovementComponent() :
-	m_isAirControlling(false),
 	m_isFacingRight(true),
 	m_isOnGround(false),
 	m_lastJumpingState(false),
@@ -20,11 +19,6 @@ namespace bw
 		return m_jumpTime;
 	}
 
-	inline bool PlayerMovementComponent::IsAirControlling() const
-	{
-		return m_isAirControlling;
-	}
-
 	inline bool PlayerMovementComponent::IsFacingRight() const
 	{
 		return m_isFacingRight;
@@ -33,15 +27,6 @@ namespace bw
 	inline bool PlayerMovementComponent::IsOnGround() const
 	{
 		return m_isOnGround;
-	}
-
-	inline bool PlayerMovementComponent::UpdateAirControlState(bool isAirControlling)
-	{
-		if (m_isAirControlling == isAirControlling)
-			return false;
-
-		m_isAirControlling = isAirControlling;
-		return true;
 	}
 
 	inline bool PlayerMovementComponent::UpdateFacingRightState(bool isFacingRight)

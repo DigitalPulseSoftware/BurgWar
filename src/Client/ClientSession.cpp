@@ -177,7 +177,7 @@ namespace bw
 	{
 		for (const auto& entityData : packet.entities)
 		{
-			std::cout << "[Client] Input update for entity " << entityData.id << std::endl;
+			//std::cout << "[Client] Input update for entity " << entityData.id << std::endl;
 			m_localMatch->UpdateEntityInput(entityData.id, entityData.inputs);
 		}
 	}
@@ -206,16 +206,13 @@ namespace bw
 	{
 		for (const auto& entityData : packet.entities)
 		{
-			bool isAirControlling = false;
 			bool isFacingRight = false;
 
 			//std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position;
 			if (entityData.playerMovement.has_value())
 			{
-				isAirControlling = entityData.playerMovement->isAirControlling;
 				isFacingRight = entityData.playerMovement->isFacingRight;
-				std::cout << entityData.position << std::endl;
-				//std::cout << " and has player entity data (air control=" << isAirControlling << ", facing right=" << isFacingRight << ")";
+				//std::cout << " and has player entity data (facing right=" << isFacingRight << ")";
 			}
 
 			//std::cout << "\n";
@@ -229,7 +226,7 @@ namespace bw
 				linearVelocity = entityData.physicsProperties->linearVelocity;
 			}
 
-			m_localMatch->MoveEntity(entityData.id, entityData.position, linearVelocity, entityData.rotation, angularVelocity, isAirControlling, isFacingRight);
+			m_localMatch->MoveEntity(entityData.id, entityData.position, linearVelocity, entityData.rotation, angularVelocity, isFacingRight);
 		}
 	}
 

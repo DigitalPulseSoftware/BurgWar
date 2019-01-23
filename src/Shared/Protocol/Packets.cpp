@@ -109,7 +109,6 @@ namespace bw
 				if (entity.playerMovement)
 				{
 					auto& playerMovementData = entity.playerMovement.value();
-					serializer &= playerMovementData.isAirControlling;
 					serializer &= playerMovementData.isFacingRight;
 				}
 
@@ -232,7 +231,6 @@ namespace bw
 				if (entity.playerMovement)
 				{
 					auto& playerMovementData = entity.playerMovement.value();
-					serializer &= playerMovementData.isAirControlling;
 					serializer &= playerMovementData.isFacingRight;
 				}
 

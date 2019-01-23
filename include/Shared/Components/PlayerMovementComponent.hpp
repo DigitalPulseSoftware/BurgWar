@@ -20,11 +20,9 @@ namespace bw
 
 			inline float GetJumpTime() const;
 
-			inline bool IsAirControlling() const;
 			inline bool IsFacingRight() const;
 			inline bool IsOnGround() const;
 
-			inline bool UpdateAirControlState(bool isAirControlling);
 			inline bool UpdateFacingRightState(bool isFacingRight);
 			inline void UpdateGroundState(bool isOnGround);
 			inline void UpdateJumpTime(float jumpTime);
@@ -35,7 +33,6 @@ namespace bw
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			bool m_isAirControlling;
 			bool m_isFacingRight;
 			bool m_isOnGround;
 			bool m_lastJumpingState;
