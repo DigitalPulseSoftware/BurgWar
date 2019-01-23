@@ -8,7 +8,6 @@
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
-#include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Shared/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Physics2D/Arbiter2D.hpp>
@@ -22,7 +21,6 @@ namespace bw
 	{
 		m_world.AddSystem<AnimationSystem>(app);
 		m_world.AddSystem<NetworkSyncSystem>();
-		m_world.AddSystem<PlayerControlledSystem>();
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>();
 

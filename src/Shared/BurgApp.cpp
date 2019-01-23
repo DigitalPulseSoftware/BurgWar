@@ -13,7 +13,6 @@
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
-#include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Shared/Systems/TickCallbackSystem.hpp>
 
@@ -32,7 +31,6 @@ namespace bw
 		Ndk::InitializeComponent<ScriptComponent>("Script");
 		Ndk::InitializeSystem<AnimationSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
-		Ndk::InitializeSystem<PlayerControlledSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();
 	}

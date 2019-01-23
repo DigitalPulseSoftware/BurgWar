@@ -18,17 +18,28 @@ namespace bw
 			PlayerMovementComponent();
 			~PlayerMovementComponent() = default;
 
+			inline float GetJumpTime() const;
+
 			inline bool IsAirControlling() const;
 			inline bool IsFacingRight() const;
+			inline bool IsOnGround() const;
 
 			inline bool UpdateAirControlState(bool isAirControlling);
 			inline bool UpdateFacingRightState(bool isFacingRight);
+			inline void UpdateGroundState(bool isOnGround);
+			inline void UpdateJumpTime(float jumpTime);
+			inline void UpdateWasJumpingState(bool isJumping);
+
+			inline bool WasJumping() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			bool m_isFacingRight;
 			bool m_isAirControlling;
+			bool m_isFacingRight;
+			bool m_isOnGround;
+			bool m_lastJumpingState;
+			float m_jumpTime;
 	};
 }
 

@@ -8,7 +8,6 @@
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
-#include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Utility/Image.hpp>

@@ -12,7 +12,6 @@
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
-#include <Shared/Systems/PlayerControlledSystem.hpp>
 #include <Shared/Systems/PlayerMovementSystem.hpp>
 #include <iostream>
 

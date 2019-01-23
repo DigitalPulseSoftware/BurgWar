@@ -15,30 +15,16 @@ namespace bw
 {
 	class PlayerControlledComponent : public Ndk::Component<PlayerControlledComponent>
 	{
-		friend class PlayerControlledSystem;
-		friend class TerrainLayer;
-
 		public:
 			PlayerControlledComponent(PlayerHandle owner);
 			~PlayerControlledComponent() = default;
 
 			inline Player* GetOwner() const;
 
-			inline bool IsJumping() const;
-			inline bool IsMovingLeft() const;
-			inline bool IsMovingRight() const;
-
-			inline void UpdateJumpingState(bool isJumping);
-			inline void UpdateMovingLeftState(bool isMovingLeft);
-			inline void UpdateMovingRightState(bool isMovingRight);
-
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			PlayerHandle m_owner;
-			bool m_isJumping;
-			bool m_isMovingLeft;
-			bool m_isMovingRight;
 	};
 }
 

@@ -7,45 +7,12 @@
 namespace bw
 {
 	inline PlayerControlledComponent::PlayerControlledComponent(PlayerHandle owner) :
-	m_owner(std::move(owner)),
-	m_isJumping(false),
-	m_isMovingLeft(false),
-	m_isMovingRight(false)
+	m_owner(std::move(owner))
 	{
 	}
 
 	inline Player* PlayerControlledComponent::GetOwner() const
 	{
 		return m_owner;
-	}
-
-	inline bool PlayerControlledComponent::IsJumping() const
-	{
-		return m_isJumping;
-	}
-
-	inline bool PlayerControlledComponent::IsMovingLeft() const
-	{
-		return m_isMovingLeft;
-	}
-
-	inline bool PlayerControlledComponent::IsMovingRight() const
-	{
-		return m_isMovingRight;
-	}
-
-	inline void PlayerControlledComponent::UpdateJumpingState(bool isJumping)
-	{
-		m_isJumping = isJumping;
-	}
-
-	inline void PlayerControlledComponent::UpdateMovingLeftState(bool isMovingLeft)
-	{
-		m_isMovingLeft = isMovingLeft;
-	}
-
-	inline void PlayerControlledComponent::UpdateMovingRightState(bool isMovingRight)
-	{
-		m_isMovingRight = isMovingRight;
 	}
 }
