@@ -12,7 +12,9 @@ namespace bw
 		sol::protected_function callback = m_entityTable[callbackName];
 		if (callback)
 		{
-			auto result = callback(m_entityTable, std::forward<Args>(args)...);
+			auto co = m_context->CreateCoroutine(callback);
+
+			auto result = co(m_entityTable, std::forward<Args>(args)...);
 			if (!result.valid())
 			{
 				sol::error err = result;
