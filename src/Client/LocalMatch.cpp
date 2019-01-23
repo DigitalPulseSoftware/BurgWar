@@ -221,6 +221,32 @@ namespace bw
 			return 0;
 		};
 
+		state["engine_AnimatePositionByOffsetSq"] = [&](const Ndk::EntityHandle& entity, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::object callbackObject)
+		{
+			m_animationManager.PushAnimation(duration, [=](float ratio)
+			{
+				if (!entity)
+					return false;
+
+				Nz::Vector2f offset = Nz::Lerp(fromOffset, toOffset, ratio * ratio); //< FIXME
+				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				nodeComponent.SetInitialPosition(offset); //< FIXME
+
+				return true;
+			}, [this, callbackObject]()
+			{
+				sol::protected_function callback(m_scriptingContext->GetLuaState(), sol::ref_index(callbackObject.registry_index()));
+
+				auto result = callback();
+				if (!result.valid())
+				{
+					sol::error err = result;
+					std::cerr << "engine_AnimatePositionByOffset callback failed: " << err.what() << std::endl;
+				}
+			});
+			return 0;
+		};
+
 		state["engine_GetPlayerPosition"] = [&]()
 		{
 			if (!m_playerControlledEntity)
