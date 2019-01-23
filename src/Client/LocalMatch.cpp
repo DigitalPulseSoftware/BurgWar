@@ -42,6 +42,7 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		physics.SetMaximumUpdateRate(30.f);
 		/*physics.SetMaximumUpdateRate(20.f);
 		physics.SetMaxStepCount(3);
 		physics.SetStepSize(1.f / 40.f);*/
@@ -293,11 +294,24 @@ namespace bw
 
 					if (serverEntity.rotationError == 0.f)
 						serverEntity.rotationError = Nz::RadianAnglef::Zero();
-
-					// Apply new position/rotation
-					entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
-					entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 				}
+			}
+		}
+
+		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+		{
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			if (serverEntity.isPhysical)
+			{
+				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+				// Apply new position/rotation
+				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
+				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 			}
 		}
 

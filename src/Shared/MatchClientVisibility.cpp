@@ -56,6 +56,9 @@ namespace bw
 				entityData.position = eventData->position;
 				entityData.rotation = eventData->rotation;
 
+				if (eventData->inputs.has_value())
+					entityData.inputs = eventData->inputs.value();
+
 				if (eventData->parent.has_value())
 					entityData.parentId = eventData->parent.value();
 

@@ -154,7 +154,7 @@ namespace bw
 				maxHealth = entityData.health->maxHealth;
 			}
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.physicsProperties.has_value(), entityData.inputs.has_value(), entityData.parentId, currentHealth, maxHealth);
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth);
 		}
 	}
 
