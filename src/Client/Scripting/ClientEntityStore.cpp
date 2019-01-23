@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/Scripting/ClientEntityStore.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components.hpp>
@@ -15,10 +16,12 @@ namespace bw
 		auto& entityClass = *GetElement(entityIndex);
 
 		std::string spritePath;
+		bool hasInputs;
 		bool playerControlled;
 		float scale;
 		try
 		{
+			hasInputs = entityClass.elementTable["HasInputs"];
 			playerControlled = entityClass.elementTable["PlayerControlled"];
 			scale = entityClass.elementTable["Scale"];
 			spritePath = entityClass.elementTable["Sprite"];
@@ -51,6 +54,9 @@ namespace bw
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();
+
+		if (hasInputs)
+			entity->AddComponent<InputComponent>();
 
 		if (!InitializeEntity(entityClass, entity))
 			entity->Kill();

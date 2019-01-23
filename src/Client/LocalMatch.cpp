@@ -429,9 +429,6 @@ namespace bw
 				healthData.healthSprite = healthBar;
 			}
 
-			if (hasInputs)
-				entity->AddComponent<InputComponent>();
-
 			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
 		}
 

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedEntityStore.hpp>
+#include <Shared/Components/InputComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/Components/CollisionComponent2D.hpp>
@@ -155,6 +156,18 @@ namespace bw
 				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << err.what() << std::endl;
 				return false;
 			}
+		}
+
+		if (entity->HasComponent<InputComponent>())
+		{
+			InputComponent& entityInputs = entity->GetComponent<InputComponent>();
+			entityInputs.OnInputUpdate.Connect([](InputComponent* input)
+			{
+				const Ndk::EntityHandle& entity = input->GetEntity();
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+				entityScript.ExecuteCallback("OnInputUpdate", input->GetInputData());
+			});
 		}
 
 		return true;

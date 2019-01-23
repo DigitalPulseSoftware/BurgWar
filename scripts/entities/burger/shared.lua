@@ -5,6 +5,7 @@ ENTITY.Scale = 0.33
 ENTITY.CollisionType = 1 -- Player
 ENTITY.PlayerControlled = true
 ENTITY.MaxHealth = 1000
+ENTITY.HasInputs = true
 
 function ENTITY:Initialize()
 	local size = {277 / 3, 253 / 3}

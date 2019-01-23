@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <Shared/InputData.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <cassert>
@@ -49,10 +50,16 @@ namespace bw
 namespace sol
 {
 	template<>
+	struct lua_size<bw::InputData> : std::integral_constant<int, 1> {};
+
+	template<>
 	struct lua_size<Nz::Rectf> : std::integral_constant<int, 1> {};
 
 	template<>
 	struct lua_size<Nz::Vector2f> : std::integral_constant<int, 1> {};
+
+	template<>
+	struct lua_type_of<bw::InputData> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
 	struct lua_type_of<Nz::Rectf> : std::integral_constant<sol::type, sol::type::table> {};
@@ -113,13 +120,29 @@ namespace sol
 			{
 				int absoluteIndex = lua_absindex(L, index);
 
-				sol::stack_table vec(L, absoluteIndex);
+				sol::table vec(L, absoluteIndex);
 				float x = vec["x"];
 				float y = vec["y"];
 
 				tracking.use(1);
 
 				return Nz::Vector2f(x, y);
+			}
+		};
+
+		template <>
+		struct pusher<bw::InputData>
+		{
+			static int push(lua_State* L, const bw::InputData& inputs)
+			{
+				lua_createtable(L, 0, 4);
+				sol::stack_table vec(L);
+				vec["isAttacking"] = inputs.isAttacking;
+				vec["isJumping"] = inputs.isJumping;
+				vec["isMovingLeft"] = inputs.isMovingLeft;
+				vec["isMovingRight"] = inputs.isMovingRight;
+
+				return 1;
 			}
 		};
 
@@ -137,6 +160,5 @@ namespace sol
 				return 1;
 			}
 		};
-
 	}
 }
