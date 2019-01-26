@@ -23,8 +23,9 @@ namespace bw
 			bool Load(const std::filesystem::path& folderOrFile) override;
 
 		private:
+			inline LocalMatch& GetMatch();
+
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
-			LocalMatch& m_match;
 	};
 }
 

@@ -10,6 +10,7 @@
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Shared/MatchSessions.hpp>
+#include <Shared/SharedMatch.hpp>
 #include <Shared/Protocol/NetworkStringStore.hpp>
 #include <Shared/Scripting/ServerScriptingContext.hpp>
 #include <Shared/Scripting/ServerEntityStore.hpp>
@@ -29,7 +30,7 @@ namespace bw
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
-	class Match
+	class Match : public SharedMatch
 	{
 		public:
 			struct ClientScript;

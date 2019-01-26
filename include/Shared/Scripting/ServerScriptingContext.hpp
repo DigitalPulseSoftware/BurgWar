@@ -22,7 +22,7 @@ namespace bw
 			bool Load(const std::filesystem::path& folderOrFile) override;
 
 		private:
-			Match& m_match;
+			Match& GetMatch();
 	};
 }
 

@@ -3,12 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <Shared/SharedMatch.hpp>
 #include <filesystem>
 #include <iostream>
 
 namespace bw
 {
-	SharedScriptingContext::SharedScriptingContext(bool isServer)
+	SharedScriptingContext::SharedScriptingContext(SharedMatch& sharedMatch, bool isServer) :
+	m_match(sharedMatch)
 	{
 		m_luaState.open_libraries();
 
@@ -75,6 +77,21 @@ namespace bw
 
 			if (!Load(scriptPath.generic_u8string()))
 				throw std::runtime_error("TODO");
+		};
+
+		m_luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)
+		{
+			m_match.GetTimerManager().PushCallback(time, [this, callbackObject]()
+			{
+				sol::protected_function callback(GetLuaState(), sol::ref_index(callbackObject.registry_index()));
+
+				auto result = callback();
+				if (!result.valid())
+				{
+					sol::error err = result;
+					std::cerr << "engine_SetTimer callback failed: " << err.what() << std::endl;
+				}
+			});
 		};
 	}
 

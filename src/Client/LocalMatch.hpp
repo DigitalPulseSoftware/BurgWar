@@ -12,6 +12,7 @@
 #include <Client/Scripting/ClientScriptingContext.hpp>
 #include <Client/Scripting/ClientWeaponStore.hpp>
 #include <Shared/AnimationManager.hpp>
+#include <Shared/SharedMatch.hpp>
 #include <Shared/Protocol/Packets.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
@@ -27,7 +28,7 @@ namespace bw
 	class ClientGamemode;
 	class VirtualDirectory;
 
-	class LocalMatch
+	class LocalMatch : public SharedMatch
 	{
 		friend class ClientSession;
 

@@ -16,6 +16,7 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount) :
+	SharedMatch(app),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
@@ -185,6 +186,8 @@ namespace bw
 
 	void Match::Update(float elapsedTime)
 	{
+		SharedMatch::Update(elapsedTime);
+
 		m_scriptingContext->Update();
 		m_sessions.Poll();
 		m_terrain->Update(elapsedTime);

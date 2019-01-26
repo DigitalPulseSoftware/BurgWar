@@ -25,6 +25,7 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(ClientApp& burgApp, ClientSession& session, const Packets::MatchData& matchData) :
+	SharedMatch(burgApp),
 	m_gamemodePath(matchData.gamemodePath),
 	m_application(burgApp),
 	m_session(session),
@@ -265,6 +266,8 @@ namespace bw
 
 	void LocalMatch::Update(float elapsedTime)
 	{
+		SharedMatch::Update(elapsedTime);
+
 		if (m_scriptingContext)
 			m_scriptingContext->Update();
 

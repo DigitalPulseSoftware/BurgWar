@@ -41,9 +41,14 @@ namespace bw
 		return m_luaState;
 	}
 
-	inline const std::filesystem::path& bw::SharedScriptingContext::GetCurrentFolder() const
+	inline const std::filesystem::path& SharedScriptingContext::GetCurrentFolder() const
 	{
 		return m_currentFolder;
+	}
+
+	inline SharedMatch& SharedScriptingContext::GetSharedMatch()
+	{
+		return m_match;
 	}
 }
 

@@ -13,10 +13,12 @@
 
 namespace bw
 {
+	class SharedMatch;
+
 	class SharedScriptingContext
 	{
 		public:
-			SharedScriptingContext(bool isServer);
+			SharedScriptingContext(SharedMatch& sharedMatch, bool isServer);
 			virtual ~SharedScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
@@ -31,6 +33,7 @@ namespace bw
 		protected:
 			inline const std::filesystem::path& GetCurrentFolder() const;
 
+			inline SharedMatch& GetSharedMatch();
 			void RegisterLibrary();
 
 			std::filesystem::path m_currentFolder;
@@ -42,6 +45,7 @@ namespace bw
 			std::vector<sol::thread> m_availableThreads;
 			std::vector<sol::thread> m_runningThreads;
 			sol::state m_luaState;
+			SharedMatch& m_match;
 	};
 }
 
