@@ -4,6 +4,7 @@
 
 #include <Shared/Scripting/SharedEntityStore.hpp>
 #include <Shared/Components/InputComponent.hpp>
+#include <Shared/Components/PlayerMovementComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/Components/CollisionComponent2D.hpp>
@@ -99,6 +100,16 @@ namespace bw
 		elementTable["InitRigidBody"] = sol::overload(InitRigidBody,
 		                                              [=](const sol::table& entityTable, float mass, float friction) { InitRigidBody(entityTable, mass, friction); },
 		                                              [=](const sol::table& entityTable, float mass) { InitRigidBody(entityTable, mass); });
+
+		elementTable["IsPlayerOnGround"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
+		};
 
 		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
