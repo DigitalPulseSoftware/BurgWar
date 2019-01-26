@@ -15,8 +15,12 @@ function ENTITY:OnInputUpdate(input)
 			if (not self.IsHoping) then
 				self.IsHoping = true
 				while (self.IsMoving) do
-					animation.PositionByOffset(self.Entity, Vec2(0, 0), Vec2(0, -25), 0.15)
-					animation.PositionByOffset(self.Entity, Vec2(0, -25), Vec2(0, 0), 0.15)
+					if (self:IsPlayerOnGround()) then
+						animation.PositionByOffset(self.Entity, Vec2(0, 0), Vec2(0, -25), 0.15)
+						animation.PositionByOffset(self.Entity, Vec2(0, -25), Vec2(0, 0), 0.15)
+					else
+						timer.Sleep(30)
+					end
 				end
 				self.IsHoping = false
 			end
