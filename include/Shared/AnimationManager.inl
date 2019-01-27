@@ -20,7 +20,9 @@ namespace bw
 
 	inline void AnimationManager::Update(float elapsedTime)
 	{
-		for (std::size_t i = 0; i < m_playingAnimations.size();)
+		// Keep animation count to prevent updating newly pushed animations
+		std::size_t animationCount = m_playingAnimations.size();
+		for (std::size_t i = 0; i < animationCount;)
 		{
 			Animation& anim = m_playingAnimations[i];
 			anim.elapsedtime += elapsedTime;
@@ -39,7 +41,11 @@ namespace bw
 			if (isRunning)
 				++i;
 			else
+			{
 				m_playingAnimations.erase(m_playingAnimations.begin() + i);
+				i--;
+				animationCount--;
+			}
 		}
 	}
 }
