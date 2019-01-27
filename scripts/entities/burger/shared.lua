@@ -11,10 +11,10 @@ function ENTITY:Initialize()
 	local size = {277 / 3, 253 / 3}
 
 	local rect = Rect()
-	rect.x = -size[1] / 2
-	rect.y = -size[2]
-	rect.width = size[1]
-	rect.height = size[2] - 3
+	rect.x = -size[1] / 2 + 5
+	rect.y = -size[2] - 20
+	rect.width = size[1] - 10
+	rect.height = size[2] - 3 + 20
 
 	self:SetCollider(rect)
 	self:InitRigidBody(300, 10, false)
