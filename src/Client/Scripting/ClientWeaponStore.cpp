@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent)
+	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent)
 	{
 		auto& weaponClass = *GetElement(entityIndex);
 
@@ -28,6 +28,8 @@ namespace bw
 		sprite->SetOrigin(weaponClass.spriteOrigin);
 
 		const Ndk::EntityHandle& weapon = world.CreateEntity();
+		InitializeProperties(weaponClass, weapon, properties);
+		
 		weapon->AddComponent<Ndk::GraphicsComponent>().Attach(sprite, -1);
 
 		SharedWeaponStore::InitializeWeapon(weaponClass, weapon, parent);

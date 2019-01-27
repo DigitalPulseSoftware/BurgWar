@@ -41,7 +41,7 @@ namespace bw
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex);
+			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, {});
 			if (!burger)
 				return Ndk::EntityHandle::InvalidHandle;
 
@@ -74,7 +74,7 @@ namespace bw
 
 			// Create weapon
 			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_sword_emmentalibur"); weaponIndex != ServerEntityStore::InvalidIndex)
-				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, burger);
+				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, burger);
 
 			return burger;
 		}

@@ -389,7 +389,7 @@ namespace bw
 			// Entity
 			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_entityStore->InstantiateEntity(m_world, entityIndex);
+				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, {});
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 
@@ -403,7 +403,7 @@ namespace bw
 			{
 				assert(parent);
 
-				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, parent->entity);
+				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, {}, parent->entity);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 

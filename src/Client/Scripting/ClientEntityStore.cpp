@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
 	{
 		auto& entityClass = *GetElement(entityIndex);
 
@@ -49,6 +49,8 @@ namespace bw
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
 
 		const Ndk::EntityHandle& entity = world.CreateEntity();
+		InitializeProperties(entityClass, entity, properties);
+		
 		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite);
 		entity->AddComponent<Ndk::NodeComponent>();
 

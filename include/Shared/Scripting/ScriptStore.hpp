@@ -9,6 +9,7 @@
 
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <NDK/Entity.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <limits>
 #include <memory>
@@ -26,6 +27,8 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
+			using EntityProperties = tsl::hopscotch_map<std::string /*key*/, EntityProperty /*value*/>;
+
 			inline ScriptStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
@@ -44,6 +47,7 @@ namespace bw
 
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
+			void InitializeProperties(const Element& element, const Ndk::EntityHandle& entity, const EntityProperties& properties);
 
 			sol::state& GetLuaState();
 			const std::shared_ptr<SharedGamemode>& GetGamemode();

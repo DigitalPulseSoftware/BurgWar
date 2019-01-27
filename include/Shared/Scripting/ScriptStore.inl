@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Utils.hpp>
+#include <Shared/Components/PropertiesComponent.hpp>
 #include <Shared/Utility/VirtualDirectory.hpp>
 #include <cassert>
 #include <filesystem>
@@ -85,6 +87,37 @@ namespace bw
 
 		elementTable["Name"] = elementName;
 
+		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		{
+			sol::state_view lua(s);
+
+			const Ndk::EntityHandle& entity = table["Entity"];
+
+			auto& properties = entity->GetComponent<PropertiesComponent>();
+
+			auto propertyVal = properties.GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				const EntityProperty& property = propertyVal.value();
+				assert(!std::holds_alternative<std::monostate>(property));
+
+				return std::visit([&](auto&& value) -> sol::object
+				{
+					using T = std::decay_t<decltype(value)>;
+
+					if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, int> || std::is_same_v<T, std::string>)
+						return sol::make_object(lua, value);
+					else if constexpr (std::is_same_v<T, std::monostate>)
+						throw std::runtime_error("Unexpected monostate in property");
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+				}, property);
+			}
+			else
+				return sol::nil;
+		};
+
 		InitializeElementTable(elementTable);
 
 		state[m_tableName] = elementTable;
@@ -127,8 +160,67 @@ namespace bw
 		element->name = std::move(elementName);
 		element->fullName = m_elementTypeName + "_" + element->name;
 		element->elementTable = std::move(elementTable);
-
 		element->tickFunction = element->elementTable["OnTick"];
+
+		sol::object properties = element->elementTable["Properties"];
+		if (properties)
+		{
+			sol::table elementProperties = properties.as<sol::table>();
+
+			for (const auto& kv : elementProperties)
+			{
+				sol::table propertyTable = kv.second;
+
+				std::string propertyName = propertyTable[1];
+
+				try
+				{
+					ScriptedElement::Property property;
+
+					property.type = propertyTable[2];
+
+					sol::object propertyDefault = propertyTable[3];
+					if (propertyDefault)
+					{
+						// Waiting for C++20 template lambda
+
+						auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
+						{
+							using T = std::decay_t<decltype(dummyType)>;
+
+							if (propertyDefault.is<T>())
+							{
+								if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
+									throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
+
+								property.defaultValue = propertyDefault.as<T>();
+								return true;
+							}
+							else
+								return false;
+						};
+
+						if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
+							!PropertyChecker(float(), { PropertyType::Float }) &&
+							!PropertyChecker(int(), { PropertyType::Integer }) &&
+							!PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
+						{
+							throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
+						}
+					}
+
+					auto it = element->properties.find(propertyName);
+					if (it == element->properties.end())
+						element->properties.emplace(std::move(propertyName), std::move(property));
+					else
+						throw std::runtime_error("Property " + propertyName + " found twice");
+				}
+				catch (const std::exception& e)
+				{
+					std::cerr << "Failed to load property " << propertyName << " for entity " << element->name << ": " << e.what() << std::endl;
+				}
+			}
+		}
 
 		try
 		{
@@ -146,6 +238,35 @@ namespace bw
 		m_elements.emplace_back(std::move(element));
 
 		return true;
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::InitializeProperties(const Element& element, const Ndk::EntityHandle& entity, const EntityProperties& properties)
+	{
+		EntityProperties filteredProperties; //< With default value and without unused properties
+
+		for (auto&& [propertyName, propertyInfo] : element.properties)
+		{
+			if (auto it = properties.find(propertyName); it != properties.end())
+			{
+				// Property exists, check its type
+			
+				//TODO: Check property type
+
+				filteredProperties[propertyName] = it->second;
+			}
+			else
+			{
+				// Property doesn't exist, so it must have a default value
+
+				if (!std::holds_alternative<std::monostate>(propertyInfo.defaultValue))
+					filteredProperties[propertyName] = propertyInfo.defaultValue;
+				else
+					throw std::runtime_error("Missing property " + propertyName);
+			}
+		}
+
+		entity->AddComponent<PropertiesComponent>(std::move(filteredProperties));
 	}
 
 	template<typename Element>

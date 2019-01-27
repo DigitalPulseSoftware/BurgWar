@@ -18,7 +18,7 @@ namespace bw
 			inline ClientWeaponStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
 			~ClientWeaponStore() = default;
 
-			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent);
+			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

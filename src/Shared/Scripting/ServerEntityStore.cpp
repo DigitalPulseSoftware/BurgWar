@@ -17,7 +17,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex)
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
 	{
 		auto& entityClass = *GetElement(entityIndex);
 
@@ -41,6 +41,8 @@ namespace bw
 		Nz::Vector2f imageSize = Nz::Vector2f(Nz::Vector3f(boxImage->GetSize())) * scale;
 
 		const Ndk::EntityHandle& entity = world.CreateEntity();
+		InitializeProperties(entityClass, entity, properties);
+		
 		entity->AddComponent<Ndk::NodeComponent>();
 
 		if (entityClass.maxHealth > 0)
