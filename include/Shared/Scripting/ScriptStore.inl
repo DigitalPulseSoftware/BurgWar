@@ -241,11 +241,11 @@ namespace bw
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle & ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties)
+	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties)
 	{
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 
-		EntityProperties filteredProperties; //< With default value and without unused properties
+		EntityProperties filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
 
 		for (auto&& [propertyName, propertyInfo] : element->properties)
 		{
@@ -259,11 +259,8 @@ namespace bw
 			}
 			else
 			{
-				// Property doesn't exist, so it must have a default value
-
-				if (!std::holds_alternative<std::monostate>(propertyInfo.defaultValue))
-					filteredProperties[propertyName] = propertyInfo.defaultValue;
-				else
+				// Property doesn't exist, check for it's default value
+				if (std::holds_alternative<std::monostate>(propertyInfo.defaultValue))
 					throw std::runtime_error("Missing property " + propertyName);
 			}
 		}

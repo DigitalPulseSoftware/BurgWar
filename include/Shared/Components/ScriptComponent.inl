@@ -37,11 +37,16 @@ namespace bw
 
 	inline std::optional<std::reference_wrapper<const EntityProperty>> ScriptComponent::GetProperty(const std::string& keyName) const
 	{
-		auto it = m_properties.find(keyName);
-		if (it == m_properties.end())
-			return std::nullopt;
+		// Check specific value
+		if (auto it = m_properties.find(keyName); it != m_properties.end())
+			return it->second;
 
-		return it->second;
+		// Check default value
+		if (auto it = m_element->properties.find(keyName); it != m_element->properties.end())
+			return it->second.defaultValue;
+
+		// Not found, return nil for now (should we throw an error?)
+		return std::nullopt;
 	}
 
 	inline sol::table& ScriptComponent::GetTable()
