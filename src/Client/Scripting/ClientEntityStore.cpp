@@ -13,7 +13,7 @@ namespace bw
 {
 	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
 	{
-		auto& entityClass = *GetElement(entityIndex);
+		const auto& entityClass = GetElement(entityIndex);
 
 		std::string spritePath;
 		bool hasInputs;
@@ -21,14 +21,14 @@ namespace bw
 		float scale;
 		try
 		{
-			hasInputs = entityClass.elementTable["HasInputs"];
-			playerControlled = entityClass.elementTable["PlayerControlled"];
-			scale = entityClass.elementTable["Scale"];
-			spritePath = entityClass.elementTable["Sprite"];
+			hasInputs = entityClass->elementTable["HasInputs"];
+			playerControlled = entityClass->elementTable["PlayerControlled"];
+			scale = entityClass->elementTable["Scale"];
+			spritePath = entityClass->elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
-			std::cerr << "Failed to get entity class \"" << entityClass.name << "\" informations: " << e.what() << std::endl;
+			std::cerr << "Failed to get entity class \"" << entityClass->name << "\" informations: " << e.what() << std::endl;
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 
@@ -43,14 +43,13 @@ namespace bw
 		Nz::Vector2f burgerSize = sprite->GetSize();
 
 		// Warning what's following is ugly
-		if (entityClass.name == "burger")
+		if (entityClass->name == "burger")
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
 		else
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
 
-		const Ndk::EntityHandle& entity = world.CreateEntity();
-		InitializeProperties(entityClass, entity, properties);
-		
+		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+
 		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite);
 		entity->AddComponent<Ndk::NodeComponent>();
 
@@ -60,7 +59,7 @@ namespace bw
 		if (hasInputs)
 			entity->AddComponent<InputComponent>();
 
-		if (!InitializeEntity(entityClass, entity))
+		if (!InitializeEntity(*entityClass, entity))
 			entity->Kill();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())

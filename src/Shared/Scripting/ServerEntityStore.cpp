@@ -19,20 +19,20 @@ namespace bw
 {
 	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
 	{
-		auto& entityClass = *GetElement(entityIndex);
+		const auto& entityClass = GetElement(entityIndex);
 
 		std::string spritePath;
 		bool playerControlled;
 		float scale;
 		try
 		{
-			playerControlled = entityClass.elementTable["PlayerControlled"];
-			scale = entityClass.elementTable["Scale"];
-			spritePath = entityClass.elementTable["Sprite"];
+			playerControlled = entityClass->elementTable["PlayerControlled"];
+			scale = entityClass->elementTable["Scale"];
+			spritePath = entityClass->elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
-			std::cerr << "Failed to get entity class \"" << entityClass.name << "\" informations: " << e.what() << std::endl;
+			std::cerr << "Failed to get entity class \"" << entityClass->name << "\" informations: " << e.what() << std::endl;
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 
@@ -40,14 +40,13 @@ namespace bw
 		Nz::ImageRef boxImage = Nz::ImageManager::Get(spritePath);
 		Nz::Vector2f imageSize = Nz::Vector2f(Nz::Vector3f(boxImage->GetSize())) * scale;
 
-		const Ndk::EntityHandle& entity = world.CreateEntity();
-		InitializeProperties(entityClass, entity, properties);
-		
+		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+
 		entity->AddComponent<Ndk::NodeComponent>();
 
-		if (entityClass.maxHealth > 0)
+		if (entityClass->maxHealth > 0)
 		{
-			auto& healthComponent = entity->AddComponent<HealthComponent>(entityClass.maxHealth);
+			auto& healthComponent = entity->AddComponent<HealthComponent>(entityClass->maxHealth);
 			healthComponent.OnHealthChange.Connect([](HealthComponent* health)
 			{
 				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
@@ -72,13 +71,13 @@ namespace bw
 			});
 		}
 
-		if (entityClass.isNetworked)
-			entity->AddComponent<NetworkSyncComponent>(entityClass.fullName);
+		if (entityClass->isNetworked)
+			entity->AddComponent<NetworkSyncComponent>(entityClass->fullName);
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();
 
-		if (!InitializeEntity(entityClass, entity))
+		if (!InitializeEntity(*entityClass, entity))
 			entity->Kill();
 
 		return entity;

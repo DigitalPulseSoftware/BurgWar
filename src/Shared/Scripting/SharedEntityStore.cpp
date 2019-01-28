@@ -150,17 +150,11 @@ namespace bw
 	{
 		sol::state& state = GetLuaState();
 
-		sol::table entityTable = state.create_table();
-		entityTable["Entity"] = entity;
-		entityTable[sol::metatable_key] = entityClass.elementTable;
-
-		entity->AddComponent<ScriptComponent>(entityClass.shared_from_this(), GetScriptingContext(), entityTable);
-
 		if (entityClass.initializeFunction)
 		{
 			sol::protected_function init = entityClass.initializeFunction;
 
-			auto result = init(entityTable);
+			auto result = init(entity->GetComponent<ScriptComponent>().GetTable());
 			if (!result.valid())
 			{
 				sol::error err = result;

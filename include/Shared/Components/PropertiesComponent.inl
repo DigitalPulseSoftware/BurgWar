@@ -10,14 +10,5 @@ namespace bw
 	m_properties(std::move(properties))
 	{
 	}
-
-	inline std::optional<std::reference_wrapper<const EntityProperty>> PropertiesComponent::GetProperty(const std::string& keyName) const
-	{
-		auto it = m_properties.find(keyName);
-		if (it == m_properties.end())
-			return std::nullopt;
-
-		return it->second;
-	}
 }
 

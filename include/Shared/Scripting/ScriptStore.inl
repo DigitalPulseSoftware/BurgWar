@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Scripting/ScriptStore.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Utils.hpp>
-#include <Shared/Components/PropertiesComponent.hpp>
 #include <Shared/Utility/VirtualDirectory.hpp>
 #include <cassert>
 #include <filesystem>
@@ -93,7 +93,7 @@ namespace bw
 
 			const Ndk::EntityHandle& entity = table["Entity"];
 
-			auto& properties = entity->GetComponent<PropertiesComponent>();
+			auto& properties = entity->GetComponent<ScriptComponent>();
 
 			auto propertyVal = properties.GetProperty(propertyName);
 			if (propertyVal.has_value())
@@ -241,16 +241,18 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::InitializeProperties(const Element& element, const Ndk::EntityHandle& entity, const EntityProperties& properties)
+	const Ndk::EntityHandle & ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties)
 	{
+		const Ndk::EntityHandle& entity = world.CreateEntity();
+
 		EntityProperties filteredProperties; //< With default value and without unused properties
 
-		for (auto&& [propertyName, propertyInfo] : element.properties)
+		for (auto&& [propertyName, propertyInfo] : element->properties)
 		{
 			if (auto it = properties.find(propertyName); it != properties.end())
 			{
 				// Property exists, check its type
-			
+
 				//TODO: Check property type
 
 				filteredProperties[propertyName] = it->second;
@@ -266,7 +268,17 @@ namespace bw
 			}
 		}
 
-		entity->AddComponent<PropertiesComponent>(std::move(filteredProperties));
+		const auto& scriptingContext = GetScriptingContext();
+
+		sol::state& state = scriptingContext->GetLuaState();
+
+		sol::table entityTable = state.create_table();
+		entityTable["Entity"] = entity;
+		entityTable[sol::metatable_key] = element->elementTable;
+
+		entity->AddComponent<ScriptComponent>(std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
+
+		return entity;
 	}
 
 	template<typename Element>

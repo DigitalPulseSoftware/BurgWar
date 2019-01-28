@@ -45,9 +45,9 @@ namespace bw
 		protected:
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
+			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties);
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
-			void InitializeProperties(const Element& element, const Ndk::EntityHandle& entity, const EntityProperties& properties);
 
 			sol::state& GetLuaState();
 			const std::shared_ptr<SharedGamemode>& GetGamemode();

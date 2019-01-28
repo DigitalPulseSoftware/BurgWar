@@ -20,14 +20,12 @@ namespace bw
 {
 	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent)
 	{
-		auto& weaponClass = *GetElement(weaponIndex);
+		const auto& weaponClass = GetElement(weaponIndex);
 
-		const Ndk::EntityHandle& weapon = world.CreateEntity();
-		InitializeProperties(weaponClass, weapon, properties);
+		const Ndk::EntityHandle& weapon = CreateEntity(world, weaponClass, properties);
+		weapon->AddComponent<NetworkSyncComponent>(weaponClass->fullName, parent);
 
-		weapon->AddComponent<NetworkSyncComponent>(weaponClass.fullName, parent);
-
-		SharedWeaponStore::InitializeWeapon(weaponClass, weapon, parent);
+		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 
 		return weapon;
 	}

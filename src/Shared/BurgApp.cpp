@@ -10,7 +10,6 @@
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerControlledComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
-#include <Shared/Components/PropertiesComponent.hpp>
 #include <Shared/Components/ScriptComponent.hpp>
 #include <Shared/Systems/AnimationSystem.hpp>
 #include <Shared/Systems/NetworkSyncSystem.hpp>
@@ -29,7 +28,6 @@ namespace bw
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
-		Ndk::InitializeComponent<PropertiesComponent>("Prprties");
 		Ndk::InitializeComponent<ScriptComponent>("Script");
 		Ndk::InitializeSystem<AnimationSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
