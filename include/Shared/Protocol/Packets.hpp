@@ -105,6 +105,14 @@ namespace bw
 				Nz::Vector2f linearVelocity;
 			};
 
+			struct Properties
+			{
+				using PropertyValue = std::variant<std::monostate, bool, float, Nz::Int64, std::string>;
+
+				CompressedUnsigned<Nz::UInt32> name;
+				PropertyValue value;
+			};
+
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
@@ -116,6 +124,7 @@ namespace bw
 				std::optional<InputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
+				std::vector<Properties> properties;
 			};
 
 			std::vector<Entity> entities;

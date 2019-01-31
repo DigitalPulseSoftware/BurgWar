@@ -37,7 +37,7 @@ namespace bw
 
 			if (std::size_t entityIndex = entityStore.GetElementIndex(entityType); entityIndex != ServerEntityStore::InvalidIndex)
 			{
-				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex, {});
+				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex, { { "size", 3.f * rand() / float(RAND_MAX) + 0.5f } });
 				if (!entity)
 					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 

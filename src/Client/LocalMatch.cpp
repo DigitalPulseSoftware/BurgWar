@@ -369,7 +369,7 @@ namespace bw
 		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
-	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth)
+	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const tsl::hopscotch_map<std::string, EntityProperty>& properties)
 	{
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
@@ -389,7 +389,7 @@ namespace bw
 			// Entity
 			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, {});
+				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, properties);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 
@@ -403,7 +403,7 @@ namespace bw
 			{
 				assert(parent);
 
-				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, {}, parent->entity);
+				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, properties, parent->entity);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
 

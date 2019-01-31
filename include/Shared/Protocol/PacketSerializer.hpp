@@ -29,6 +29,7 @@ namespace bw
 			template<typename PacketType, typename DataType> void Serialize(const DataType& data) const;
 
 			template<typename T> void SerializeArraySize(T& array);
+			template<typename T> void SerializeArraySize(const T& array);
 
 			template<typename DataType> void operator&=(DataType& data);
 			template<typename DataType> void operator&=(const DataType& data) const;

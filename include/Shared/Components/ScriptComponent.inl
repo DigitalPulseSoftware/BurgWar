@@ -49,6 +49,11 @@ namespace bw
 		return std::nullopt;
 	}
 
+	inline auto ScriptComponent::GetProperties() const -> const Properties&
+	{
+		return m_properties;
+	}
+
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;

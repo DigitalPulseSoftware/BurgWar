@@ -32,25 +32,28 @@ namespace bw
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 
-		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(spritePath);
-		auto& sampler = mat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 
-		Nz::SpriteRef sprite = Nz::Sprite::New();
-		sprite->SetMaterial(mat);
-		sprite->SetSize(sprite->GetSize() * scale);
-		Nz::Vector2f burgerSize = sprite->GetSize();
+		entity->AddComponent<Ndk::GraphicsComponent>();
 
 		// Warning what's following is ugly
 		if (entityClass->name == "burger")
+		{
+			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
+			mat->SetDiffuseMap(spritePath);
+			auto& sampler = mat->GetDiffuseSampler();
+			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+
+			Nz::SpriteRef sprite = Nz::Sprite::New();
+			sprite->SetMaterial(mat);
+			sprite->SetSize(sprite->GetSize() * scale);
+			Nz::Vector2f burgerSize = sprite->GetSize();
+
 			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-		else
-			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
 
-		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+			entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite);
+		}
 
-		entity->AddComponent<Ndk::GraphicsComponent>().Attach(sprite);
 		entity->AddComponent<Ndk::NodeComponent>();
 
 		if (playerControlled)
@@ -71,6 +74,26 @@ namespace bw
 	void ClientEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
 		SharedEntityStore::InitializeElementTable(elementTable);
+		
+		elementTable["AddSprite"] = [](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+
+			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
+			mat->SetDiffuseMap(texturePath);
+			auto& sampler = mat->GetDiffuseSampler();
+			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+
+			Nz::SpriteRef sprite = Nz::Sprite::New();
+			sprite->SetMaterial(mat);
+			sprite->SetSize(sprite->GetSize() * scale);
+			Nz::Vector2f burgerSize = sprite->GetSize();
+
+			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
+
+			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
+			gfxComponent.Attach(sprite);
+		};
 	}
 
 	void ClientEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& entity)

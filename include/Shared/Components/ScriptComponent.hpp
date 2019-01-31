@@ -31,6 +31,7 @@ namespace bw
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
+			inline const Properties& GetProperties() const;
 			inline sol::table& GetTable();
 
 			static Ndk::ComponentIndex componentIndex;

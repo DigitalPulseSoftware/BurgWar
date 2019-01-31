@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 
+#include <Nazara/Prerequisites.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <sol2/sol.hpp>
 #include <memory>
@@ -23,7 +24,7 @@ namespace bw
 		Texture
 	};
 
-	using EntityProperty = std::variant<std::monostate, bool, float, int, std::string>;
+	using EntityProperty = std::variant<std::monostate, bool, float, Nz::Int64, std::string>;
 
 	struct ScriptedElement : std::enable_shared_from_this<ScriptedElement>
 	{
@@ -31,6 +32,7 @@ namespace bw
 		{
 			PropertyType type;
 			EntityProperty defaultValue;
+			bool shared = false;
 		};
 
 		sol::table elementTable;

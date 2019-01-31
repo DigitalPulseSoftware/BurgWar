@@ -105,7 +105,7 @@ namespace bw
 				{
 					using T = std::decay_t<decltype(value)>;
 
-					if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, int> || std::is_same_v<T, std::string>)
+					if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
 						return sol::make_object(lua, value);
 					else if constexpr (std::is_same_v<T, std::monostate>)
 						throw std::runtime_error("Unexpected monostate in property");
@@ -171,15 +171,19 @@ namespace bw
 			{
 				sol::table propertyTable = kv.second;
 
-				std::string propertyName = propertyTable[1];
+				std::string propertyName = propertyTable["Name"];
 
 				try
 				{
 					ScriptedElement::Property property;
 
-					property.type = propertyTable[2];
+					property.type = propertyTable["Type"];
+					
+					sol::object propertyShared = propertyTable["Shared"];
+					if (propertyShared)
+						property.shared = propertyShared.as<bool>();
 
-					sol::object propertyDefault = propertyTable[3];
+					sol::object propertyDefault = propertyTable["Default"];
 					if (propertyDefault)
 					{
 						// Waiting for C++20 template lambda
@@ -202,7 +206,7 @@ namespace bw
 
 						if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
 							!PropertyChecker(float(), { PropertyType::Float }) &&
-							!PropertyChecker(int(), { PropertyType::Integer }) &&
+							!PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
 							!PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
 						{
 							throw std::runtime_error("Property " + propertyName + " default value has unhandled type");

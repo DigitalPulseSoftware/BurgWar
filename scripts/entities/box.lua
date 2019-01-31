@@ -9,11 +9,16 @@ ENTITY.PlayerControlled = false
 ENTITY.MaxHealth = 1000
 
 ENTITY.Properties = {
-	{"size", PropertyType.Float, 1.0}
+	{ Name = "size", Type = PropertyType.Float, Default = 1.0, Shared = true }
 }
 
 function ENTITY:Initialize()
-	local size = 256 * 0.2 / 2 * self:GetProperty("size")
-	self:SetCollider(Rect(Vec2(-size, -size), Vec2(size, size)))
+	local size = self:GetProperty("size")
+	local colliderSize = 256 * 0.2 / 2 * size
+	self:SetCollider(Rect(Vec2(-colliderSize, -colliderSize), Vec2(colliderSize, colliderSize)))
 	self:InitRigidBody(100, 10)
+
+	if (CLIENT) then
+		self:AddSprite("../resources/box.png", Vec2(0.2, 0.2) * self:GetProperty("size"))
+	end
 end
