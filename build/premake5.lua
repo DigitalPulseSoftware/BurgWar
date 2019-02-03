@@ -18,7 +18,7 @@ Projects = {
 	{
 		Name = "Shared",
 		Kind = "StaticLib",
-		Defines = {},
+		Defines = { "SOL_SAFE_NUMERICS=1" },
 		Files = {
 			"../include/Shared/**.hpp",
 			"../include/Shared/**.inl",
@@ -37,7 +37,7 @@ Projects = {
 	{
 		Name = "Client",
 		Kind = "ConsoleApp",
-		Defines = {},
+		Defines = { "SOL_SAFE_NUMERICS=1" },
 		Files = {
 			"../src/Client/**.hpp",
 			"../src/Client/**.inl",
@@ -54,7 +54,7 @@ Projects = {
 	{
 		Name = "Server",
 		Kind = "ConsoleApp",
-		Defines = {"NDK_SERVER"},
+		Defines = {"NDK_SERVER", "SOL_SAFE_NUMERICS=1"},
 		Files = {
 			"../src/Server/**.hpp",
 			"../src/Server/**.inl",
