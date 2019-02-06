@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	ScriptComponent::ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable, Properties properties) :
+	ScriptComponent::ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable, EntityProperties properties) :
 	m_element(std::move(element)),
 	m_context(std::move(context)),
 	m_entityTable(std::move(entityTable)),

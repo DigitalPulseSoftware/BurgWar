@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTEDELEMENT_HPP
 
+#include <Common/EntityProperties.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <sol2/sol.hpp>
@@ -15,17 +16,6 @@
 
 namespace bw
 {
-	enum class PropertyType
-	{
-		Bool,
-		Float,
-		Integer,
-		String,
-		Texture
-	};
-
-	using EntityProperty = std::variant<std::monostate, bool, float, Nz::Int64, std::string>;
-
 	struct ScriptedElement : std::enable_shared_from_this<ScriptedElement>
 	{
 		struct Property

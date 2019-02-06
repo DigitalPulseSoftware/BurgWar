@@ -49,7 +49,7 @@ namespace bw
 		return std::nullopt;
 	}
 
-	inline auto ScriptComponent::GetProperties() const -> const Properties&
+	inline const EntityProperties& ScriptComponent::GetProperties() const
 	{
 		return m_properties;
 	}

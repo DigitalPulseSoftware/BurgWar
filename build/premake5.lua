@@ -1,6 +1,7 @@
 WorkspaceName = "Burgwar"
 Projects = {
 	{
+		Group = "Dependencies",
 		Name = "Lua",
 		Kind = "StaticLib",
 		Defines = {},
@@ -16,6 +17,19 @@ Projects = {
 		AdditionalDependencies = {}
 	},
 	{
+		Group = "Dependencies",
+		Name = "Common",
+		Kind = "StaticLib",
+		Files = {
+			"../include/Common/**.hpp",
+			"../include/Common/**.inl",
+			"../src/Common/**.hpp",
+			"../src/Common/**.inl",
+			"../src/Common/**.cpp"
+		}
+	},
+	{
+		Group = "Dependencies",
 		Name = "Shared",
 		Kind = "StaticLib",
 		Defines = { "SOL_SAFE_NUMERICS=1" },
@@ -27,14 +41,15 @@ Projects = {
 			"../src/Shared/**.cpp"
 		},
 		LinkStatic = {},
-		LinkStaticDebug = {"Lua-d"},
-		LinkStaticRelease = {"Lua"},
+		LinkStaticDebug = {"Common-d", "Lua-d"},
+		LinkStaticRelease = {"Common", "Lua"},
 		Libs = {},
 		LibsDebug = {},
 		LibsRelease = {},
 		AdditionalDependencies = {}
 	},
 	{
+		Group = "Executable",
 		Name = "Client",
 		Kind = "ConsoleApp",
 		Defines = { "SOL_SAFE_NUMERICS=1" },
@@ -52,6 +67,7 @@ Projects = {
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}
 	},
 	{
+		Group = "Executable",
 		Name = "Server",
 		Kind = "ConsoleApp",
 		Defines = {"NDK_SERVER", "SOL_SAFE_NUMERICS=1"},
@@ -182,6 +198,7 @@ workspace("Burgwar")
 	end
 
 	for _, data in pairs(Projects) do
+		group(data.Group)
 		project(data.Name)
 			kind(data.Kind)
 			defines(data.Defines)
