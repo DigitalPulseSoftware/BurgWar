@@ -196,7 +196,7 @@ namespace bw
 
 		std::string content = AsJson().dump(1, '\t');
 
-		Nz::File infoFile((path / "info.json").generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+		Nz::File infoFile((mapFolderPath / "info.json").generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
