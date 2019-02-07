@@ -174,42 +174,7 @@ namespace bw
 
 			MapInfo mapInfo = createMapDialog->GetMapInfo();
 
-			QDir mapFolder;
-			Map map;
-			std::filesystem::path workingPath;
-
-			for (;;)
-			{
-				QString path = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
-				if (path.isEmpty())
-					return;
-
-				mapFolder = path;
-				if (!mapFolder.isEmpty())
-				{
-					QMessageBox::critical(this, tr("Folder not empty"), tr("Map folder must be empty"), QMessageBox::Ok);
-					continue;
-				}
-
-				workingPath = mapFolder.path().toStdString();
-
-				map = Map(mapInfo);
-				if (!map.Save(workingPath))
-				{
-					QMessageBox::critical(this, tr("Failed to create file"), tr("Failed to create map files (is map folder read-only?)"), QMessageBox::Ok);
-					continue;
-				}
-
-				break;
-			}
-
-			if (!mapFolder.mkdir("assets"))
-				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create assets subdirectory (is map folder read-only?)"), QMessageBox::Ok);
-
-			if (!mapFolder.mkdir("scripts"))
-				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create scripts subdirectory (is map folder read-only?)"), QMessageBox::Ok);
-
-			UpdateWorkingMap(std::move(map), std::move(workingPath));
+			UpdateWorkingMap(Map(mapInfo));
 		});
 		createMapDialog->exec();
 	}
@@ -347,9 +312,44 @@ namespace bw
 
 	void EditorWindow::OnSaveMap()
 	{
-		if (!m_workingMap.Save(m_workingMapPath))
+		if (m_workingMapPath.empty())
+		{
+			QDir mapFolder;
+			std::filesystem::path workingPath;
+
+			for (;;)
+			{
+				QString path = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
+				if (path.isEmpty())
+					return;
+
+				mapFolder = path;
+				if (!mapFolder.isEmpty())
+				{
+					QMessageBox::critical(this, tr("Folder not empty"), tr("Map folder must be empty"), QMessageBox::Ok);
+					continue;
+				}
+
+				workingPath = mapFolder.path().toStdString();
+				break;
+			}
+
+			if (!mapFolder.mkdir("assets"))
+				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create assets subdirectory (is map folder read-only?)"), QMessageBox::Ok);
+
+			if (!mapFolder.mkdir("scripts"))
+				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create scripts subdirectory (is map folder read-only?)"), QMessageBox::Ok);
+
+			m_workingMapPath = std::move(workingPath);
+		}
+
+		if (m_workingMap.Save(m_workingMapPath))
+			statusBar()->showMessage(tr("Map saved"), 3000);
+		else
+		{
 			QMessageBox::warning(this, tr("Failed to save map"), tr("Failed to save map (is map folder read-only?)"), QMessageBox::Ok);
+			statusBar()->showMessage(tr("Failed to save map"), 5000);
+		}
 		
-		statusBar()->showMessage(tr("Map saved"), 3000);
 	}
 }
