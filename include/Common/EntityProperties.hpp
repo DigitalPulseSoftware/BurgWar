@@ -22,6 +22,8 @@ namespace bw
 		Texture
 	};
 
+	PropertyType ParsePropertyType(const std::string_view& str);
+
 	using EntityProperty = std::variant<std::monostate, bool, float, Nz::Int64, std::string>;
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
 }
