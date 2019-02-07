@@ -10,6 +10,7 @@
 #include <Shared/Components/AnimationComponent.hpp>
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/InputComponent.hpp>
+#include <Shared/Scripting/ScriptedElement.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -73,6 +74,7 @@ namespace bw
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
+				tsl::hopscotch_map<std::string /*key*/, EntityProperty> properties;
 			};
 
 			struct EntityDestruction

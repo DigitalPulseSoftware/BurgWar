@@ -84,6 +84,15 @@ namespace bw
 			array.resize(arraySize);
 	}
 
+	template<typename T>
+	void PacketSerializer::SerializeArraySize(const T& array)
+	{
+		assert(IsWriting());
+
+		CompressedUnsigned<Nz::UInt32> arraySize(Nz::UInt32(array.size()));
+		Serialize(arraySize);
+	}
+
 	template<typename DataType>
 	void PacketSerializer::operator&=(DataType& data)
 	{

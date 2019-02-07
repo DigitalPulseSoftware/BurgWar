@@ -21,7 +21,7 @@ namespace bw
 			inline ServerWeaponStore(BurgApp& app, std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
 			~ServerWeaponStore() = default;
 
-			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const Ndk::EntityHandle& parent);
+			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

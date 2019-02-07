@@ -118,6 +118,115 @@ namespace bw
 					serializer &= physicsProperties.angularVelocity;
 					serializer &= physicsProperties.linearVelocity;
 				}
+
+				serializer.SerializeArraySize(entity.properties);
+				for (auto& property : entity.properties)
+				{
+					serializer &= property.name;
+
+					// Serialize type
+					Nz::UInt8 dataType;
+					if (serializer.IsWriting())
+						dataType = static_cast<Nz::UInt8>(property.value.index());
+					
+					serializer &= dataType;
+
+					// Read/write value
+					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 5);
+
+					if (serializer.IsWriting())
+					{
+						switch (dataType)
+						{
+							case 0: // std::monostate
+								// Nothing to do
+								break;
+
+							case 1: // bool
+							{
+								bool value = std::get<bool>(property.value);
+								serializer &= value;
+								break;
+							}
+
+							case 2: // float
+							{
+								float value = std::get<float>(property.value);
+								serializer &= value;
+								break;
+							}
+
+							case 3: // Nz::Int64
+							{
+								Nz::Int64 value = std::get<Nz::Int64>(property.value);
+								serializer &= value;
+								break;
+							}
+
+							case 4: // std::string
+							{
+								const std::string& value = std::get<std::string>(property.value);
+								serializer.SerializeArraySize(value);
+								serializer.Write(value.data(), value.size());
+								break;
+							}
+
+							default:
+								assert(!"Unexpected datatype");
+								break;
+						}
+					}
+					else
+					{
+						switch (dataType)
+						{
+							case 0: // std::monostate
+								property.value = std::monostate{};
+								break;
+
+							case 1: // bool
+							{
+								bool value;
+								serializer &= value;
+
+								property.value = value;
+								break;
+							}
+
+							case 2: // float
+							{
+								float value;
+								serializer &= value;
+
+								property.value = value;
+								break;
+							}
+
+							case 3: // Nz::Int64
+							{
+								Nz::Int64 value;
+								serializer &= value;
+
+								property.value = value;
+								break;
+							}
+
+							case 4: // std::string
+							{
+								std::string value;
+								serializer.SerializeArraySize(value);
+								serializer.Read(value.data(), value.size());
+
+								property.value = std::move(value);
+								break;
+							}
+
+							default:
+								assert(!"Unexpected datatype");
+								break;
+						}
+					}
+				}
 			}
 		}
 

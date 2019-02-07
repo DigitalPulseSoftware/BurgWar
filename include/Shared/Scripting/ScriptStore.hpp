@@ -7,8 +7,10 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 
+#include <Common/EntityProperties.hpp>
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
+#include <NDK/Entity.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <limits>
 #include <memory>
@@ -42,6 +44,7 @@ namespace bw
 		protected:
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
+			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties);
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 

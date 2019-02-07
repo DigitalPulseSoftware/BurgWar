@@ -7,6 +7,7 @@
 #include <Shared/Components/HealthComponent.hpp>
 #include <Shared/Components/NetworkSyncComponent.hpp>
 #include <Shared/Components/PlayerMovementComponent.hpp>
+#include <Shared/Components/ScriptComponent.hpp>
 #include <iostream>
 
 namespace bw
@@ -133,6 +134,24 @@ namespace bw
 
 			creationEvent.playerMovement.emplace();
 			creationEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
+		}
+
+		if (entity->HasComponent<ScriptComponent>())
+		{
+			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+
+			const auto& element = scriptComponent.GetElement();
+
+			for (const auto& [key, value] : scriptComponent.GetProperties())
+			{
+				auto it = element->properties.find(key);
+				assert(it != element->properties.end());
+
+				if (!it->second.shared)
+					continue;
+
+				creationEvent.properties.emplace(key, value);
+			}
 		}
 	}
 

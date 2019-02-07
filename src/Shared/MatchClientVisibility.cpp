@@ -48,6 +48,7 @@ namespace bw
 					if (it != m_creationEvents.end())
 						PushEntity(it);
 				}
+
 				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
@@ -80,6 +81,13 @@ namespace bw
 					entityData.physicsProperties.emplace();
 					entityData.physicsProperties->angularVelocity = eventData->physicsProperties->angularVelocity;
 					entityData.physicsProperties->linearVelocity = eventData->physicsProperties->linearVelocity;
+				}
+
+				for (auto&& [propertyName, propertyValue] : eventData->properties)
+				{
+					auto& propertyData = entityData.properties.emplace_back();
+					propertyData.name = networkStringStore.CheckStringIndex(propertyName);
+					propertyData.value = std::move(propertyValue);
 				}
 				
 				eventData.reset();

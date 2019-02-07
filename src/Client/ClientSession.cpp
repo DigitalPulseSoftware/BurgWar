@@ -154,7 +154,15 @@ namespace bw
 				maxHealth = entityData.health->maxHealth;
 			}
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth);
+			EntityProperties properties;
+			for (const auto& property : entityData.properties)
+			{
+				const std::string& propertyName = m_stringStore.GetString(property.name);
+
+				properties.emplace(propertyName, property.value);
+			}
+
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth, properties);
 		}
 	}
 

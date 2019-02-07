@@ -77,14 +77,6 @@ namespace bw
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);
 
-		sol::state& state = GetLuaState();
-
-		sol::table entityTable = state.create_table();
-		entityTable["Entity"] = entity;
-		entityTable[sol::metatable_key] = weaponClass.elementTable;
-
-		entity->AddComponent<ScriptComponent>(weaponClass.shared_from_this(), GetScriptingContext(), entityTable);
-
 		if (weaponClass.animations)
 		{
 			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);

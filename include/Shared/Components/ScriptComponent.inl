@@ -35,6 +35,25 @@ namespace bw
 		return m_element;
 	}
 
+	inline std::optional<std::reference_wrapper<const EntityProperty>> ScriptComponent::GetProperty(const std::string& keyName) const
+	{
+		// Check specific value
+		if (auto it = m_properties.find(keyName); it != m_properties.end())
+			return it->second;
+
+		// Check default value
+		if (auto it = m_element->properties.find(keyName); it != m_element->properties.end())
+			return it->second.defaultValue;
+
+		// Not found, return nil for now (should we throw an error?)
+		return std::nullopt;
+	}
+
+	inline const EntityProperties& ScriptComponent::GetProperties() const
+	{
+		return m_properties;
+	}
+
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;

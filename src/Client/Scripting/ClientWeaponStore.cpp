@@ -12,25 +12,25 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const Ndk::EntityHandle& parent)
+	const Ndk::EntityHandle& ClientWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent)
 	{
-		auto& weaponClass = *GetElement(entityIndex);
+		const auto& weaponClass = GetElement(entityIndex);
 
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(weaponClass.spriteName);
+		mat->SetDiffuseMap(weaponClass->spriteName);
 		auto& sampler = mat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
 		Nz::SpriteRef sprite = Nz::Sprite::New();
 		sprite->SetMaterial(mat);
-		sprite->SetSize(sprite->GetSize() * weaponClass.scale);
+		sprite->SetSize(sprite->GetSize() * weaponClass->scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();
-		sprite->SetOrigin(weaponClass.spriteOrigin);
+		sprite->SetOrigin(weaponClass->spriteOrigin);
 
-		const Ndk::EntityHandle& weapon = world.CreateEntity();
+		const Ndk::EntityHandle& weapon = CreateEntity(world, weaponClass, properties);
 		weapon->AddComponent<Ndk::GraphicsComponent>().Attach(sprite, -1);
 
-		SharedWeaponStore::InitializeWeapon(weaponClass, weapon, parent);
+		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 
 		return weapon;
 	}

@@ -79,7 +79,15 @@ namespace bw
 		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
 		{
 			if (entity.isNetworked)
+			{
 				m_networkStringStore.RegisterString(entity.fullName);
+
+				for (auto&& [propertyName, propertyData] : entity.properties)
+				{
+					if (propertyData.shared)
+						m_networkStringStore.RegisterString(propertyName);
+				}
+			}
 		});
 
 		m_weaponStore.emplace(app, m_gamemode, m_scriptingContext);
@@ -88,6 +96,12 @@ namespace bw
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
 		{
 			m_networkStringStore.RegisterString(weapon.fullName);
+
+			for (auto&& [propertyName, propertyData] : weapon.properties)
+			{
+				if (propertyData.shared)
+					m_networkStringStore.RegisterString(propertyName);
+			}
 		});
 
 		m_gamemode->ExecuteCallback("OnInit");
