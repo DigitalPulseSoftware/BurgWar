@@ -37,7 +37,7 @@ namespace bw
 
 			if (std::size_t entityIndex = entityStore.GetElementIndex(entityType); entityIndex != ServerEntityStore::InvalidIndex)
 			{
-				ServerEntityStore::EntityProperties entityProperties;
+				EntityProperties entityProperties;
 				if (properties)
 				{
 					sol::table propertiesTable = properties;

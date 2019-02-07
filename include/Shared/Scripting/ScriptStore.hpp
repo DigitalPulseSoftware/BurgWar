@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SCRIPTSTORE_HPP
 
+#include <Common/EntityProperties.hpp>
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Entity.hpp>
@@ -27,8 +28,6 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			using EntityProperties = tsl::hopscotch_map<std::string /*key*/, EntityProperty /*value*/>;
-
 			inline ScriptStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 

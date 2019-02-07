@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef EREWHON_SHARED_NETWORK_PACKETS_HPP
-#define EREWHON_SHARED_NETWORK_PACKETS_HPP
+#ifndef BURGWAR_SHARED_NETWORK_PACKETS_HPP
+#define BURGWAR_SHARED_NETWORK_PACKETS_HPP
 
 #include <Shared/InputData.hpp>
 #include <Shared/Protocol/CompressedInteger.hpp>

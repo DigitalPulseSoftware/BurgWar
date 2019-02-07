@@ -154,7 +154,7 @@ namespace bw
 				maxHealth = entityData.health->maxHealth;
 			}
 
-			tsl::hopscotch_map<std::string, EntityProperty> properties;
+			EntityProperties properties;
 			for (const auto& property : entityData.properties)
 			{
 				const std::string& propertyName = m_stringStore.GetString(property.name);

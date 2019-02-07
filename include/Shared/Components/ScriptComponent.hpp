@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_COMPONENTS_SCRIPTCOMPONENT_HPP
 #define BURGWAR_SHARED_COMPONENTS_SCRIPTCOMPONENT_HPP
 
+#include <Common/EntityProperties.hpp>
 #include <Shared/Scripting/ScriptedElement.hpp>
 #include <Shared/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Component.hpp>
@@ -20,9 +21,7 @@ namespace bw
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			using Properties = tsl::hopscotch_map<std::string /*key*/, EntityProperty>;
-
-			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable, Properties properties);
+			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable, EntityProperties properties);
 			~ScriptComponent();
 
 			template<typename... Args>
@@ -31,7 +30,7 @@ namespace bw
 			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
-			inline const Properties& GetProperties() const;
+			inline const EntityProperties& GetProperties() const;
 			inline sol::table& GetTable();
 
 			static Ndk::ComponentIndex componentIndex;
@@ -40,7 +39,7 @@ namespace bw
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<SharedScriptingContext> m_context;
 			sol::table m_entityTable;
-			Properties m_properties;
+			EntityProperties m_properties;
 	};
 }
 
