@@ -1,10 +1,10 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/Scripting/ClientEntityStore.hpp>
-#include <Shared/Components/InputComponent.hpp>
-#include <Shared/Components/PlayerMovementComponent.hpp>
+#include <GameLibShared/Components/InputComponent.hpp>
+#include <GameLibShared/Components/PlayerMovementComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components.hpp>
 #include <iostream>

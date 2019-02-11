@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,10 +7,10 @@
 #ifndef BURGWAR_CLIENTAPP_HPP
 #define BURGWAR_CLIENTAPP_HPP
 
-#include <Shared/BurgApp.hpp>
-#include <Shared/NetworkReactor.hpp>
-#include <Shared/MatchSessions.hpp>
-#include <Shared/Protocol/Packets.hpp>
+#include <GameLibShared/BurgApp.hpp>
+#include <GameLibShared/NetworkReactor.hpp>
+#include <GameLibShared/MatchSessions.hpp>
+#include <GameLibShared/Protocol/Packets.hpp>
 #include <Client/LocalCommandStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Angle.hpp>

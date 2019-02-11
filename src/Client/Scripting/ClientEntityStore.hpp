@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,8 +7,8 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_CLIENTENTITYSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_CLIENTENTITYSTORE_HPP
 
-#include <Shared/Scripting/ScriptedEntity.hpp>
-#include <Shared/Scripting/SharedEntityStore.hpp>
+#include <GameLibShared/Scripting/ScriptedEntity.hpp>
+#include <GameLibShared/Scripting/SharedEntityStore.hpp>
 #include <NDK/World.hpp>
 
 namespace bw

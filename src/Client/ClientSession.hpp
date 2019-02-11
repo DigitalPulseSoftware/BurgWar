@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CLIENT_CLIENTSESSION_HPP
 #define BURGWAR_CLIENT_CLIENTSESSION_HPP
 
-#include <Shared/Protocol/NetworkStringStore.hpp>
-#include <Shared/SessionBridge.hpp>
+#include <GameLibShared/Protocol/NetworkStringStore.hpp>
+#include <GameLibShared/SessionBridge.hpp>
 #include <Client/ClientScriptDownloadManager.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>

@@ -1,10 +1,10 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/LocalSessionManager.hpp>
 #include <Client/LocalSessionBridge.hpp>
-#include <Shared/MatchSessions.hpp>
+#include <GameLibShared/MatchSessions.hpp>
 #include <iostream>
 
 namespace bw

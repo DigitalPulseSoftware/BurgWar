@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Server" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerApp.hpp>
-#include <Shared/NetworkSessionManager.hpp>
+#include <GameLibShared/NetworkSessionManager.hpp>
 #include <Nazara/Core/Thread.hpp>
 #include <iostream>
 

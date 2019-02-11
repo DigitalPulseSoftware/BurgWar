@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENT_LOCALPLAYERBRIDGE_HPP
 #define BURGWAR_CLIENT_LOCALPLAYERBRIDGE_HPP
 
-#include <Shared/SessionBridge.hpp>
+#include <GameLibShared/SessionBridge.hpp>
 
 namespace bw
 {

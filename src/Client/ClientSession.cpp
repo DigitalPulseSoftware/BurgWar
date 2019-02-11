@@ -1,10 +1,10 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Client" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ClientSession.hpp>
-#include <Shared/NetworkSessionBridge.hpp>
-#include <Shared/Utility/VirtualDirectory.hpp>
+#include <GameLibShared/NetworkSessionBridge.hpp>
+#include <GameLibShared/Utility/VirtualDirectory.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/LocalCommandStore.hpp>
 #include <Client/LocalCommandStore.hpp>

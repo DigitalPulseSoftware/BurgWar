@@ -1,18 +1,18 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/LocalMatch.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/ClientSession.hpp>
 #include <Client/Scripting/ClientGamemode.hpp>
-#include <Shared/Components/AnimationComponent.hpp>
-#include <Shared/Components/InputComponent.hpp>
-#include <Shared/Components/PlayerMovementComponent.hpp>
-#include <Shared/Components/ScriptComponent.hpp>
-#include <Shared/Systems/AnimationSystem.hpp>
-#include <Shared/Systems/PlayerMovementSystem.hpp>
-#include <Shared/Systems/TickCallbackSystem.hpp>
+#include <GameLibShared/Components/AnimationComponent.hpp>
+#include <GameLibShared/Components/InputComponent.hpp>
+#include <GameLibShared/Components/PlayerMovementComponent.hpp>
+#include <GameLibShared/Components/ScriptComponent.hpp>
+#include <GameLibShared/Systems/AnimationSystem.hpp>
+#include <GameLibShared/Systems/PlayerMovementSystem.hpp>
+#include <GameLibShared/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>

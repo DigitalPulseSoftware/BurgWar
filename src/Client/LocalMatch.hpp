@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Shared" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,14 +7,14 @@
 #ifndef BURGWAR_CLIENT_LOCALMATCH_HPP
 #define BURGWAR_CLIENT_LOCALMATCH_HPP
 
-#include <Common/EntityProperties.hpp>
+#include <GameLibShared/EntityProperties.hpp>
 #include <Client/LocalInputController.hpp>
 #include <Client/Scripting/ClientEntityStore.hpp>
 #include <Client/Scripting/ClientScriptingContext.hpp>
 #include <Client/Scripting/ClientWeaponStore.hpp>
-#include <Shared/AnimationManager.hpp>
-#include <Shared/SharedMatch.hpp>
-#include <Shared/Protocol/Packets.hpp>
+#include <GameLibShared/AnimationManager.hpp>
+#include <GameLibShared/SharedMatch.hpp>
+#include <GameLibShared/Protocol/Packets.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
