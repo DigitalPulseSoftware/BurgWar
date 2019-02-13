@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>

@@ -12,8 +12,7 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
-	m_gamemode(std::move(gamemode)),
+	ScriptStore<Element>::ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
 	m_isServer(isServer)
 	{
@@ -286,12 +285,6 @@ namespace bw
 	sol::state& ScriptStore<Element>::GetLuaState()
 	{
 		return m_context->GetLuaState();
-	}
-
-	template<typename Element>
-	const std::shared_ptr<SharedGamemode>& ScriptStore<Element>::GetGamemode()
-	{
-		return m_gamemode;
 	}
 
 	template<typename Element>

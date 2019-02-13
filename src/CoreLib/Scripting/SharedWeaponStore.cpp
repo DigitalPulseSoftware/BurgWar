@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
@@ -13,8 +14,8 @@
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context, bool isServer) :
-	ScriptStore(std::move(gamemode), std::move(context), isServer)
+	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	ScriptStore(std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");
