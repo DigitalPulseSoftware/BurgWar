@@ -7,8 +7,8 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
-#include <Common/Map.hpp>
 #include <NDK/Prerequisites.hpp>
+#include <CoreLib/Map.hpp>
 #include <QtWidgets/QMainWindow>
 #include <hopscotch/hopscotch_map.h>
 #include <filesystem>

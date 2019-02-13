@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_ENTITYTYPEREGISTRY_HPP
 #define BURGWAR_MAPEDITOR_ENTITYTYPEREGISTRY_HPP
 
-#include <Common/EntityProperties.hpp>
+#include <CoreLib/EntityProperties.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <hopscotch/hopscotch_map.h>
 #include <filesystem>

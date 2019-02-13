@@ -1,5 +1,5 @@
-// Copyright (C) 2018 Jérôme Leclercq
-// This file is part of the "Burgwar Server" project
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
@@ -7,8 +7,8 @@
 #ifndef BURGWAR_SERVERAPP_HPP
 #define BURGWAR_SERVERAPP_HPP
 
-#include <Shared/BurgApp.hpp>
-#include <Shared/Match.hpp>
+#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/Match.hpp>
 #include <NDK/Application.hpp>
 #include <memory>
 
