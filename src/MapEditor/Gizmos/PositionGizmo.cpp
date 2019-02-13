@@ -11,27 +11,11 @@
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity, Nz::EventHandler& eventHandler) :
+	PositionGizmo::PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity) :
 	m_hoveredAction(MovementType::None),
 	m_movementType(MovementType::None),
 	m_cameraEntity(camera)
 	{
-		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
-		{
-			OnMouseButtonPressed(mouseButton);
-		});
-
-		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
-		{
-			OnMouseButtonReleased(mouseButton);
-		});
-
-		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
-		{
-			OnMouseMoved(mouseMoved);
-		});
-
-
 		Nz::MaterialRef arrowMat = Nz::Material::New("Translucent2D");
 		arrowMat->EnableDepthBuffer(false);
 		arrowMat->SetDiffuseMap("../resources/arrow.png");
@@ -72,13 +56,15 @@ namespace bw
 		gfx.Attach(m_sprites[MovementType::YAxis], Nz::Matrix4f::Rotate(Nz::DegreeAnglef(-90.f)), 1);
 
 		auto& node = m_arrowEntity->GetComponent<Ndk::NodeComponent>();
+		node.SetInheritRotation(false);
+		node.SetInheritScale(false);
 		node.SetParent(m_movedEntity);
 	}
 
-	void PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	bool PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
 		if (mouseButton.button != Nz::Mouse::Left)
-			return;
+			return false;
 
 		if (m_arrowEntity->IsEnabled())
 		{
@@ -106,17 +92,30 @@ namespace bw
 				auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
 				m_originalPosition = Nz::Vector2f(node.GetPosition());
 				m_movementStartPos = Nz::Vector2f(start);
+
+				return true;
 			}
 		}
+
+		return false;
 	}
 
-	void PositionGizmo::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	bool PositionGizmo::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button == Nz::Mouse::Left)
+		if (mouseButton.button == Nz::Mouse::Left && m_movementType != MovementType::None)
+		{
 			m_movementType = MovementType::None;
+
+			auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
+			OnPositionUpdated(this, Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global)));
+
+			return true;
+		}
+		else
+			return false;
 	}
 
-	void PositionGizmo::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
+	bool PositionGizmo::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
 		if (m_arrowEntity->IsEnabled())
 		{
@@ -160,6 +159,8 @@ namespace bw
 						m_sprites[index]->SetColor(m_spriteDefaultColors[index] * Nz::Color(128));
 					}
 				}
+
+				return false;
 			}
 			else
 			{
@@ -169,7 +170,11 @@ namespace bw
 
 				auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
 				node.SetPosition(m_originalPosition + allowedMovement * delta, Nz::CoordSys_Global);
+
+				return true;
 			}
 		}
+		else
+			return false;
 	}
 }

@@ -17,7 +17,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -42,7 +42,9 @@ namespace bw
 
 		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 
-		entity->AddComponent<Ndk::NodeComponent>();
+		auto& node = entity->AddComponent<Ndk::NodeComponent>();
+		node.SetPosition(position);
+		node.SetRotation(rotation);
 
 		if (entityClass->maxHealth > 0)
 		{

@@ -8,8 +8,11 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
 #include <Common/Map.hpp>
+#include <NDK/Prerequisites.hpp>
 #include <QtWidgets/QMainWindow>
+#include <hopscotch/hopscotch_map.h>
 #include <filesystem>
+#include <optional>
 
 class QAction;
 class QListWidget;
@@ -17,7 +20,7 @@ class QListWidgetItem;
 
 namespace bw
 {
-	class MapWidget;
+	class MapCanvas;
 
 	class EditorWindow : public QMainWindow
 	{
@@ -34,12 +37,19 @@ namespace bw
 			void OnCreateEntity();
 			void OnCreateMap();
 			void OnEntityDoubleClicked(QListWidgetItem* item);
-			void OnEntitySelected(QListWidgetItem* item);
+			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);
+			void OnLayerDoubleClicked(QListWidgetItem* item);
+
 			void OnOpenMap();
 			void OnSaveMap();
 
+			void RegisterEntity(std::size_t entityIndex);
+
 			std::filesystem::path m_workingMapPath;
+			std::optional<int> m_currentLayer;
+			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
+			QAction* m_compileMap;
 			QAction* m_createEntityAction;
 			QAction* m_createEntityActionToolbar;
 			QAction* m_saveMap;
@@ -47,7 +57,7 @@ namespace bw
 			QListWidget* m_entityList;
 			QListWidget* m_layerList;
 			Map m_workingMap;
-			MapWidget* m_canvas;
+			MapCanvas* m_canvas;
 	};
 }
 

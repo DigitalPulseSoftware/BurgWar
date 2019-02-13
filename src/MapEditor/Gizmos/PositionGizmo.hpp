@@ -9,6 +9,7 @@
 
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <Nazara/Core/Color.hpp>
+#include <Nazara/Core/Signal.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
 
@@ -16,14 +17,18 @@ namespace bw
 {
 	class PositionGizmo
 	{
+		friend class MapCanvas;
+
 		public:
-			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity, Nz::EventHandler& eventHandler);
+			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity);
 			~PositionGizmo() = default;
 
+			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*newPosition*/);
+
 		private:
-			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
+			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
+			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
+			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
 
 			enum MovementType
 			{
@@ -47,6 +52,6 @@ namespace bw
 	};
 }
 
-#include <MapEditor/Widgets/MapWidget.inl>
+#include <MapEditor/Widgets/MapCanvas.inl>
 
 #endif

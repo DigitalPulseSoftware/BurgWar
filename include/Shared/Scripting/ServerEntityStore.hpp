@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_SCRIPTING_SERVERENTITYSTORE_HPP
 #define BURGWAR_SHARED_SCRIPTING_SERVERENTITYSTORE_HPP
 
+#include <Nazara/Math/Angle.hpp>
 #include <Shared/Scripting/ScriptedEntity.hpp>
 #include <Shared/Scripting/SharedEntityStore.hpp>
 #include <NDK/Entity.hpp>
@@ -20,7 +21,7 @@ namespace bw
 			inline ServerEntityStore(std::shared_ptr<SharedGamemode> gamemode, std::shared_ptr<SharedScriptingContext> context);
 			~ServerEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties);
+			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

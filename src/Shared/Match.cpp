@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Shared/Match.hpp>
+#include <Common/Map.hpp>
 #include <Shared/MatchClientSession.hpp>
 #include <Shared/Player.hpp>
 #include <Shared/Terrain.hpp>
@@ -23,7 +24,6 @@ namespace bw
 	m_name(std::move(matchName))
 	{
 		MapData mapData;
-		mapData.backgroundColor = Nz::Color::Cyan;
 		mapData.tileSize = 64.f;
 
 		auto& layer = mapData.layers.emplace_back();
@@ -67,8 +67,6 @@ namespace bw
 			}
 		}
 
-		m_terrain = std::make_unique<Terrain>(app, std::move(mapData));
-
 		m_scriptingContext = std::make_shared<ServerScriptingContext>(*this);
 
 		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "../../scripts" / m_gamemodePath);
@@ -103,6 +101,11 @@ namespace bw
 					m_networkStringStore.RegisterString(propertyName);
 			}
 		});
+
+		Map map = Map::LoadFromBinary("mapdetest.bmap");
+		mapData.backgroundColor = map.GetLayer(0).backgroundColor; //< Ni vu, ni connu :-°
+
+		m_terrain = std::make_unique<Terrain>(app, *this, std::move(mapData), std::move(map));
 
 		m_gamemode->ExecuteCallback("OnInit");
 	}

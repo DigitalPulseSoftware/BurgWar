@@ -41,7 +41,8 @@ namespace bw
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, {});
+			static unsigned int huglyCount = 0;
+			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, { 200.f + (huglyCount++) * 100.f, 100.f }, 0.f, {});
 			if (!burger)
 				return Ndk::EntityHandle::InvalidHandle;
 
@@ -65,10 +66,6 @@ namespace bw
 					});*/
 				});
 			}
-
-			static unsigned int huglyCount = 0;
-
-			burger->GetComponent<Ndk::PhysicsComponent2D>().SetPosition({ 200.f + (huglyCount++) * 100.f, 100.f });
 
 			UpdateControlledEntity(burger);
 

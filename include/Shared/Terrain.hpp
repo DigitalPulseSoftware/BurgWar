@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SHARED_TERRAIN_HPP
 #define BURGWAR_SHARED_TERRAIN_HPP
 
+#include <Common/Map.hpp>
 #include <Shared/MapData.hpp>
 #include <Shared/TerrainLayer.hpp>
 #include <vector>
@@ -14,11 +15,12 @@
 namespace bw
 {
 	class BurgApp;
+	class Match;
 
 	class Terrain
 	{
 		public:
-			Terrain(BurgApp& app, MapData mapData);
+			Terrain(BurgApp& app, Match& match, MapData mapData, Map mapData2);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 

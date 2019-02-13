@@ -50,8 +50,8 @@ namespace bw
 
 		m_mainWindow.GetEventHandler().OnKeyPressed.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
-			if (event.code == Nz::Keyboard::A)
-				m_clientSession->Disconnect();
+			//if (event.code == Nz::Keyboard::A)
+			//	m_clientSession->Disconnect();
 		});
 
 		//m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));

@@ -213,6 +213,7 @@ namespace bw
 			case PropertyType::Float:
 			{
 				QDoubleSpinBox* spinbox = new QDoubleSpinBox;
+				spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
 				if (std::holds_alternative<float>(property))
 					spinbox->setValue(std::get<float>(property));
 
