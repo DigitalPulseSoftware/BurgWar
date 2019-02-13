@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_MAPINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_MAPINFODIALOG_HPP
 
-#include <Common/Map.hpp>
+#include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
 #include <filesystem>
 

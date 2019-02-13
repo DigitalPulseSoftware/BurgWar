@@ -7,8 +7,8 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
-#include <Common/EntityProperties.hpp>
-#include <Common/Map.hpp>
+#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
 #include <hopscotch/hopscotch_map.h>
 #include <filesystem>

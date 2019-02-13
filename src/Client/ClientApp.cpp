@@ -3,13 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ClientApp.hpp>
-#include <GameLibShared/Match.hpp>
-#include <GameLibShared/NetworkSessionBridge.hpp>
-#include <GameLibShared/Components/NetworkSyncComponent.hpp>
-#include <GameLibShared/Systems/NetworkSyncSystem.hpp>
-#include <Client/ClientSession.hpp>
-#include <Client/LocalMatch.hpp>
-#include <Client/LocalSessionManager.hpp>
+#include <CoreLib/Match.hpp>
+#include <CoreLib/NetworkSessionBridge.hpp>
+#include <CoreLib/Components/NetworkSyncComponent.hpp>
+#include <CoreLib/Systems/NetworkSyncSystem.hpp>
+#include <ClientLib/ClientSession.hpp>
+#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/LocalSessionBridge.hpp>
+#include <ClientLib/LocalSessionManager.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
@@ -45,16 +46,13 @@ namespace bw
 		LocalSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<LocalSessionManager>();
 		//NetworkSessionManager* localSessions = m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 10);
 
-		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore);
-		m_clientSession->Connect(localSessions);
-
-		m_mainWindow.GetEventHandler().OnKeyPressed.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		auto CreateMatch = [this](ClientSession& session, const Packets::MatchData& matchData) -> std::shared_ptr<LocalMatch>
 		{
-			if (event.code == Nz::Keyboard::A)
-				m_clientSession->Disconnect();
-		});
+			return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, &m_mainWindow, session, matchData));
+		};
 
-		//m_clientSession->Connect(Nz::IpAddress(127, 0, 0, 1, 14768));
+		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore, CreateMatch);
+		m_clientSession->Connect(localSessions->CreateSession());
 #if 0
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -314,91 +312,17 @@ namespace bw
 			}
 #endif
 
+			m_networkReactors.Update();
+
 			if (m_match)
 				m_match->Update(GetUpdateTime());
 
 			for (const auto& localMatchPtr : m_localMatches)
 				localMatchPtr->Update(GetUpdateTime());
 
-			for (const auto& reactorPtr : m_reactors)
-			{
-				reactorPtr->Poll([&](bool outgoing, std::size_t clientId, Nz::UInt32 data) { HandlePeerConnection(outgoing, clientId, data); },
-				                 [&](std::size_t clientId, Nz::UInt32 data) { HandlePeerDisconnection(clientId, data); },
-				                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, packet); },
-				                 [&](std::size_t clientId, const NetworkReactor::PeerInfo& peerInfo) { HandlePeerInfo(clientId, peerInfo); });
-			}
-
 			m_mainWindow.Display();
 		}
 
 		return 0;
-	}
-
-	std::shared_ptr<LocalMatch> ClientApp::CreateLocalMatch(ClientSession& session, const Packets::MatchData& matchData)
-	{
-		return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, session, matchData));
-	}
-
-	std::shared_ptr<NetworkSessionBridge> ClientApp::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
-	{
-		constexpr std::size_t MaxPeerCount = 1;
-
-		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> std::shared_ptr<NetworkSessionBridge>
-		{
-			std::size_t newPeerId = reactor->ConnectTo(serverAddress, data);
-			if (newPeerId == NetworkReactor::InvalidPeerId)
-			{
-				std::cerr << "Failed to allocate new peer" << std::endl;
-				return nullptr;
-			}
-
-			auto bridge = std::make_shared<NetworkSessionBridge>(*reactor, newPeerId);
-
-			if (newPeerId >= m_connections.size())
-				m_connections.resize(newPeerId + 1);
-
-			m_connections[newPeerId] = bridge;
-			return bridge;
-		};
-
-		std::size_t reactorCount = GetReactorCount();
-		std::size_t reactorIndex;
-		for (reactorIndex = 0; reactorIndex < reactorCount; ++reactorIndex)
-		{
-			const std::unique_ptr<NetworkReactor>& reactor = GetReactor(reactorIndex);
-			if (reactor->GetProtocol() != serverAddress.GetProtocol())
-				continue;
-
-			return ConnectWithReactor(reactor.get());
-		}
-
-		// We don't have any reactor compatible with the server's protocol, allocate a new one
-		std::size_t reactorId = AddReactor(std::make_unique<NetworkReactor>(reactorCount * MaxPeerCount, serverAddress.GetProtocol(), 0, MaxPeerCount));
-		return ConnectWithReactor(GetReactor(reactorId).get());
-	}
-
-	void ClientApp::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
-	{
-		m_connections[peerId]->OnConnected(data);
-	}
-
-	void ClientApp::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
-	{
-		m_connections[peerId]->OnDisconnected(data);
-		m_connections[peerId].reset();
-	}
-
-	void ClientApp::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
-	{
-		/*NetworkClientSession::ConnectionInfo connectionInfo;
-		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;
-		connectionInfo.ping = peerInfo.ping;
-
-		m_connections[peerId]->UpdateInfo(connectionInfo);*/
-	}
-
-	void ClientApp::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)
-	{
-		m_connections[peerId]->OnIncomingPacket(packet);
 	}
 }

@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerApp.hpp>
-#include <GameLibShared/NetworkSessionManager.hpp>
+#include <CoreLib/NetworkSessionManager.hpp>
 #include <Nazara/Core/Thread.hpp>
 #include <iostream>
 

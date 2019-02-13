@@ -7,8 +7,8 @@
 #ifndef BURGWAR_SERVERAPP_HPP
 #define BURGWAR_SERVERAPP_HPP
 
-#include <GameLibShared/BurgApp.hpp>
-#include <GameLibShared/Match.hpp>
+#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/Match.hpp>
 #include <NDK/Application.hpp>
 #include <memory>
 
