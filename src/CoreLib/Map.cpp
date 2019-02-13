@@ -5,6 +5,7 @@
 #include <CoreLib/Map.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/ByteStream.hpp>
+#include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -12,9 +13,21 @@
 
 namespace Nz
 {
+	void to_json(nlohmann::json& j, const Nz::Color& color)
+	{
+		j = nlohmann::json{ {"r", color.r}, {"g", color.g}, {"b", color.b} };
+	}
+
 	void to_json(nlohmann::json& j, const Nz::Vector2f& vec)
 	{
 		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y} };
+	}
+
+	void from_json(const nlohmann::json& j, Nz::Color& color)
+	{
+		j.at("r").get_to(color.r);
+		j.at("g").get_to(color.g);
+		j.at("b").get_to(color.b);
 	}
 
 	void from_json(const nlohmann::json& j, Nz::Vector2f& vec)
@@ -50,6 +63,7 @@ namespace bw
 		for (auto&& layerEntry : m_layers)
 		{
 			nlohmann::json layerInfo;
+			layerInfo["backgroundColor"] = layerEntry.backgroundColor;
 			layerInfo["name"] = layerEntry.name;
 			layerInfo["depth"] = layerEntry.depth;
 
@@ -112,9 +126,7 @@ namespace bw
 		stream << FileVersion;
 
 		// Map header
-		stream.Write(m_mapInfo.name.data(), m_mapInfo.name.size() + 1);
-		stream.Write(m_mapInfo.author.data(), m_mapInfo.author.size() + 1);
-		stream.Write(m_mapInfo.description.data(), m_mapInfo.description.size() + 1);
+		stream << m_mapInfo.name << m_mapInfo.author << m_mapInfo.description;
 
 		// Map layers
 		Nz::UInt16 layerCount = Nz::UInt16(m_layers.size());
@@ -122,23 +134,26 @@ namespace bw
 
 		for (const Layer& layer : m_layers)
 		{
-			stream.Write(layer.name.data(), layer.name.size() + 1);
+			stream << layer.name;
 			stream << layer.depth;
+			stream << layer.backgroundColor;
 
 			Nz::UInt16 entityCount = Nz::UInt16(layer.entities.size());
 			stream << entityCount;
 
 			for (const Entity& entity : layer.entities)
 			{
-				stream.Write(entity.entityType.data(), entity.entityType.size() + 1);
-				stream.Write(entity.name.data(), entity.name.size() + 1);
+				stream << entity.entityType;
+				stream << entity.name;
 				stream << entity.position.x << entity.position.y;
 				stream << entity.rotation.ToDegrees();
 
 				Nz::UInt8 propertyCount = Nz::UInt8(entity.properties.size());
+				stream << propertyCount;
+
 				for (const auto& [key, value] : entity.properties)
 				{
-					stream.Write(key.data(), key.size() + 1);
+					stream << key;
 
 					Nz::UInt8 propertyType = Nz::UInt8(value.index());
 					stream << propertyType;
@@ -152,15 +167,9 @@ namespace bw
 							Nz::UInt8 boolValue((value) ? 1 : 0);
 							stream << boolValue;
 						}
-						else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64>)
+						else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
 						{
 							stream << value;
-						}
-						else if constexpr (std::is_same_v<T, std::string>)
-						{
-							Nz::UInt32 size = Nz::UInt32(value.size());
-							stream << size;
-							stream.Write(value.data(), value.size());
 						}
 						else if constexpr (std::is_same_v<T, std::monostate>)
 						{
@@ -206,9 +215,139 @@ namespace bw
 		return true;
 	}
 
-	void Map::Load(const std::filesystem::path& path)
+	void Map::LoadFromBinaryInternal(const std::filesystem::path& mapFile)
 	{
-		Nz::File infoFile((path / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode_ReadOnly);
+		if (!infoFile.IsOpen())
+			throw std::runtime_error("Failed to open map file");
+
+		Nz::ErrorFlags errFlags(Nz::ErrorFlag_ThrowException);
+
+		Nz::ByteStream stream(&infoFile);
+		stream.SetDataEndianness(Nz::Endianness_LittleEndian);
+
+		std::array<char, 8> signature;
+		if (stream.Read(signature.data(), signature.size()) != signature.size())
+			throw std::runtime_error("Corrupted map file (or not a burger map file)");
+
+		if (std::memcmp(signature.data(), "Burgrmap", signature.size()) != 0)
+			throw std::runtime_error("Not a valid burger map file");
+
+		Nz::UInt16 fileVersion;
+		stream >> fileVersion;
+
+		if (fileVersion != 0)
+			throw std::runtime_error("Unhandled file version");
+
+		// Map header
+		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
+
+		Nz::UInt16 layerCount;
+		stream >> layerCount;
+
+		m_layers.clear();
+		m_layers.resize(layerCount);
+
+		std::size_t layerIndex = 0;
+		for (Layer& layer : m_layers)
+		{
+			stream >> layer.name;
+			stream >> layer.depth;
+			stream >> layer.backgroundColor;
+
+			Nz::UInt16 entityCount;
+			stream >> entityCount;
+
+			std::size_t entityIndex = 0;
+
+			layer.entities.resize(entityCount);
+			for (Entity& entity : layer.entities)
+			{
+				stream >> entity.entityType;
+				stream >> entity.name;
+				stream >> entity.position.x >> entity.position.y;
+
+				float degRot;
+				stream >> degRot;
+				entity.rotation = Nz::DegreeAnglef::FromDegrees(degRot);
+
+				Nz::UInt8 propertyCount;
+				stream >> propertyCount;
+
+				std::size_t loopCount = propertyCount;
+				for (std::size_t i = 0; i < loopCount; ++i)
+				{
+					std::string propertyName;
+					stream >> propertyName;
+
+					Nz::UInt8 propertyType;
+					stream >> propertyType;
+
+					EntityProperty propertyValue;
+					switch (propertyType)
+					{
+						case 0: //< std::monostate
+							propertyValue = std::monostate{};
+							break;
+
+						case 1: //< Bool
+						{
+							Nz::UInt8 value;
+							stream >> value;
+							
+							if (value != 0 && value != 1)
+								throw std::runtime_error("Unexpected bool value " + std::to_string(value) + " (0/1 expected) for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
+
+							propertyValue = (value == 1);
+							break;
+						}
+
+						case 2: //< Float
+						{
+							float value;
+							stream >> value;
+
+							propertyValue = value;
+							break;
+						}
+
+						case 3: //< Nz::Int64
+						{
+							Nz::Int64 value;
+							stream >> value;
+
+							propertyValue = value;
+							break;
+						}
+
+						case 4: //< std::string
+						{
+							std::string value;
+							stream >> value;
+
+							propertyValue = std::move(value);
+							break;
+						}
+
+						default:
+							throw std::runtime_error("Unexpected type index " + std::to_string(propertyType) + " for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
+					}
+
+					entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
+				}
+
+				entityIndex++;
+			}
+
+			layerIndex++;
+		}
+
+		m_isValid = true;
+	}
+
+	void Map::LoadFromTextInternal(const std::filesystem::path& mapFolder)
+	{
+		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("Failed to open info.json file");
 
@@ -233,6 +372,7 @@ namespace bw
 		for (auto&& entry : json["layers"])
 		{
 			Layer& layer = m_layers.emplace_back();
+			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black);
 			layer.depth = entry.value("depth", 0.f);
 			layer.name = entry.value("name", "");
 
@@ -259,6 +399,8 @@ namespace bw
 				}
 			}
 		}
+
+		m_isValid = true;
 	}
 
 	void Map::SetupDefault()

@@ -4,7 +4,8 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
-#include <MapEditor/Widgets/MapWidget.hpp>
+#include <MapEditor/Widgets/LayerInfoDialog.hpp>
+#include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
 #include <QtCore/QStringBuilder>
 #include <QtWidgets/QApplication>
@@ -23,13 +24,40 @@ namespace bw
 	{
 		BuildMenu();
 
-		m_canvas = new MapWidget;
+		m_canvas = new MapCanvas;
+		m_canvas->OnEntityPositionUpdated.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex, const Nz::Vector2f& newPosition)
+		{
+			assert(m_currentLayer.has_value());
+		
+			auto it = m_entityIndexes.find(canvasIndex);
+			assert(it != m_entityIndexes.end());
+
+			std::size_t entityIndex = it.value();
+
+			auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+
+			auto& layerEntity = layer.entities[entityIndex];
+			layerEntity.position = newPosition;
+		});
+
+		m_canvas->OnEntitySelected.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex)
+		{
+			auto it = m_entityIndexes.find(canvasIndex);
+			assert(it != m_entityIndexes.end());
+
+			std::size_t entityIndex = it.value();
+
+			m_entityList->clearSelection();
+			m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
+		});
+
 		setCentralWidget(m_canvas);
 
 		QDockWidget* layerListDock = new QDockWidget("Layer list", this);
 
 		m_layerList = new QListWidget;
 		connect(m_layerList, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
+		connect(m_layerList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnLayerDoubleClicked);
 
 		layerListDock->setWidget(m_layerList);
 
@@ -38,8 +66,8 @@ namespace bw
 		QDockWidget* entityListDock = new QDockWidget("Layer entities", this);
 
 		m_entityList = new QListWidget;
-		connect(m_entityList, &QListWidget::currentItemChanged, this, &EditorWindow::OnEntitySelected);
 		connect(m_entityList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEntityDoubleClicked);
+		connect(m_entityList, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		entityListDock->setWidget(m_entityList);
 
@@ -85,6 +113,7 @@ namespace bw
 
 		bool enableMapActions = m_workingMap.IsValid();
 
+		m_compileMap->setEnabled(enableMapActions);
 		m_createEntityActionToolbar->setEnabled(enableMapActions);
 		m_saveMap->setEnabled(enableMapActions);
 		m_saveMapToolbar->setEnabled(enableMapActions);
@@ -92,10 +121,14 @@ namespace bw
 		if (m_workingMap.IsValid())
 		{
 			m_layerList->clear();
-			for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
+			for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
 			{
-				const auto& layer = m_workingMap.GetLayer(i);
-				m_layerList->addItem(QString(layer.name.data()));
+				const auto& layer = m_workingMap.GetLayer(layerIndex);
+
+				QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(layer.name));
+				item->setData(Qt::UserRole, layerIndex);
+
+				m_layerList->addItem(item);
 			}
 		}
 	}
@@ -112,8 +145,10 @@ namespace bw
 		m_saveMap = fileMenu->addAction(tr("Save map..."));
 		connect(m_saveMap, &QAction::triggered, this, &EditorWindow::OnSaveMap);
 
-		QAction* compileMap = fileMenu->addAction(tr("Compile map..."));
-		connect(compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
+		fileMenu->addSeparator();
+
+		m_compileMap = fileMenu->addAction(tr("Compile map..."));
+		connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
 
 		QMenu* mapMenu = menuBar()->addMenu(tr("&Map"));
 
@@ -127,7 +162,8 @@ namespace bw
 
 	void EditorWindow::OnCompileMap()
 	{
-		QString fileName = QFileDialog::getSaveFileName(this, tr("Where to save compiled map file"), QString(), QString(".bmap"));
+		QString filter(".bmap");
+		QString fileName = QFileDialog::getSaveFileName(this, tr("Where to save compiled map file"), QString(), filter, &filter);
 		if (fileName.isEmpty())
 			return;
 
@@ -145,20 +181,21 @@ namespace bw
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
 		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(this);
-		connect(createEntityDialog, &QDialog::finished, [this, createEntityDialog, layerIndex](int code)
+		connect(createEntityDialog, &QDialog::accepted, [this, createEntityDialog, layerIndex]()
 		{
-			if (code != QDialog::Accepted)
-				return;
-
 			const EntityInfo& entityInfo = createEntityDialog->GetEntityInfo();
 
 			auto& layer = m_workingMap.GetLayer(layerIndex);
 			
+			std::size_t entityIndex = layer.entities.size();
 			auto& layerEntity = layer.entities.emplace_back();
 			layerEntity.entityType = entityInfo.entityClass;
+			layerEntity.name = entityInfo.entityName;
 			layerEntity.position = entityInfo.position;
 			layerEntity.properties = entityInfo.properties;
 			layerEntity.rotation = entityInfo.rotation;
+
+			RegisterEntity(entityIndex);
 		});
 
 		createEntityDialog->exec();
@@ -167,11 +204,8 @@ namespace bw
 	void EditorWindow::OnCreateMap()
 	{
 		MapInfoDialog* createMapDialog = new MapInfoDialog(this);
-		connect(createMapDialog, &QDialog::finished, [this, createMapDialog](int code)
+		connect(createMapDialog, &QDialog::accepted, [this, createMapDialog]()
 		{
-			if (code != QDialog::Accepted)
-				return;
-
 			MapInfo mapInfo = createMapDialog->GetMapInfo();
 
 			UpdateWorkingMap(Map(mapInfo));
@@ -200,11 +234,8 @@ namespace bw
 		entityInfo.rotation = layerEntity.rotation;
 
 		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(std::move(entityInfo), this);
-		connect(editEntityDialog, &QDialog::finished, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId](int code)
+		connect(editEntityDialog, &QDialog::accepted, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId]()
 		{
-			if (code != QDialog::Accepted)
-				return;
-
 			const EntityInfo& entityInfo = editEntityDialog->GetEntityInfo();
 
 			auto& layer = m_workingMap.GetLayer(layerIndex);
@@ -243,47 +274,88 @@ namespace bw
 		editEntityDialog->exec();
 	}
 
-	void EditorWindow::OnEntitySelected(QListWidgetItem* item)
+	void EditorWindow::OnEntitySelectionUpdate()
 	{
-		if (!item)
-			return;
+		QList<QListWidgetItem*> items = m_entityList->selectedItems();
+		if (!items.empty())
+		{
+			assert(items.size() == 1);
 
-		std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
-		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+			QListWidgetItem* item = items.front();
 
-		m_canvas->EditEntityPosition(canvasId);
+			std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+			std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+
+			m_canvas->EditEntityPosition(canvasId);
+		}
+		else
+			m_canvas->ClearEntitySelection();
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)
 	{
 		if (layerIndex == -1)
+		{
+			m_currentLayer.reset();
+			m_entityIndexes.clear();
 			return;
+		}
 
 		assert(layerIndex >= 0);
-		std::size_t layer = static_cast<std::size_t>(layerIndex);
+		std::size_t layerIdx = static_cast<std::size_t>(layerIndex);
 
-		assert(layer < m_workingMap.GetLayerCount());
+		m_currentLayer = layerIndex;
+
+		assert(layerIdx < m_workingMap.GetLayerCount());
+		auto& layer = m_workingMap.GetLayer(layerIdx);
 
 		m_entityList->clear();
 
+		m_canvas->UpdateBackgroundColor(layer.backgroundColor);
+
 		m_canvas->ClearEntities();
+		m_entityIndexes.clear();
 
-		std::size_t entityIndex = 0;
-		for (const Map::Entity& entity : m_workingMap.GetLayer(layer).entities)
+		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
+			RegisterEntity(entityIndex);
+	}
+
+	void EditorWindow::OnLayerDoubleClicked(QListWidgetItem* item)
+	{
+		std::size_t layerIndex = item->data(Qt::UserRole).value<std::size_t>();
+
+		auto& layer = m_workingMap.GetLayer(layerIndex);
+
+		LayerInfo layerInfo;
+		layerInfo.backgroundColor = layer.backgroundColor;
+		layerInfo.depth = layer.depth;
+		layerInfo.name = layer.name;
+
+		LayerInfoDialog* layerInfoDialog = new LayerInfoDialog(layerInfo, this);
+		connect(layerInfoDialog, &QDialog::accepted, [this, layerInfoDialog, layerIndex, item]()
 		{
-			QString entryName = QString::fromStdString(entity.entityType);
-			if (!entity.name.empty())
-				entryName = entryName % " (" % QString::fromStdString(entity.name) % ")";
+			LayerInfo layerInfo = layerInfoDialog->GetLayerInfo();
 
-			QListWidgetItem* item = new QListWidgetItem(entryName);
-			item->setData(Qt::UserRole, entityIndex++);
+			auto& layer = m_workingMap.GetLayer(layerIndex);
 
-			Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.position, entity.rotation);
-			item->setData(Qt::UserRole + 1, canvasId);
+			layer.backgroundColor = layerInfo.backgroundColor;
+			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
-			m_entityList->addItem(item);
-		}
+			layer.depth = layerInfo.depth;
+
+			bool resetItemName = false;
+			if (layer.name != layerInfo.name)
+			{
+				layer.name = layerInfo.name;
+				resetItemName = true;
+			}
+
+			if (resetItemName)
+				item->setText(QString::fromStdString(layer.name));
+		});
+
+		layerInfoDialog->exec();
 	}
 
 	void EditorWindow::OnOpenMap()
@@ -298,7 +370,7 @@ namespace bw
 
 		try
 		{
-			map = Map(workingMapPath);
+			map = Map::LoadFromFolder(workingMapPath);
 		}
 		catch (const std::exception& e)
 		{
@@ -350,6 +422,29 @@ namespace bw
 			QMessageBox::warning(this, tr("Failed to save map"), tr("Failed to save map (is map folder read-only?)"), QMessageBox::Ok);
 			statusBar()->showMessage(tr("Failed to save map"), 5000);
 		}
-		
+	}
+
+	void EditorWindow::RegisterEntity(std::size_t entityIndex)
+	{
+		assert(m_currentLayer.has_value());
+
+		auto& layer = m_workingMap.GetLayer(*m_currentLayer);
+
+		assert(entityIndex < layer.entities.size());
+		const Map::Entity& entity = layer.entities[entityIndex];
+
+		QString entryName = QString::fromStdString(entity.entityType);
+		if (!entity.name.empty())
+			entryName = entryName % " (" % QString::fromStdString(entity.name) % ")";
+
+		QListWidgetItem* item = new QListWidgetItem(entryName);
+		item->setData(Qt::UserRole, entityIndex);
+
+		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.position, entity.rotation);
+		item->setData(Qt::UserRole + 1, canvasId);
+
+		m_entityList->addItem(item);
+
+		m_entityIndexes.emplace(canvasId, entityIndex);
 	}
 }

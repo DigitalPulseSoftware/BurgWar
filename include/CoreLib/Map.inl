@@ -17,13 +17,6 @@ namespace bw
 		SetupDefault();
 	}
 
-	inline Map::Map(const std::filesystem::path& folder) :
-	m_isValid(false)
-	{
-		Load(folder);
-		m_isValid = true;
-	}
-
 	inline auto Map::GetLayer(std::size_t i) -> Layer&
 	{
 		assert(i < m_layers.size());
@@ -49,5 +42,21 @@ namespace bw
 	inline bool Map::IsValid() const
 	{
 		return m_isValid;
+	}
+
+	inline Map Map::LoadFromBinary(const std::filesystem::path& mapFile)
+	{
+		Map map;
+		map.LoadFromBinaryInternal(mapFile);
+
+		return map;
+	}
+
+	inline Map Map::LoadFromFolder(const std::filesystem::path& folder)
+	{
+		Map map;
+		map.LoadFromTextInternal(folder);
+
+		return map;
 	}
 }

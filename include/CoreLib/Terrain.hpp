@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_TERRAIN_HPP
 #define BURGWAR_CORELIB_TERRAIN_HPP
 
+#include <CoreLib/Map.hpp>
 #include <CoreLib/MapData.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <vector>
@@ -14,11 +15,12 @@
 namespace bw
 {
 	class BurgApp;
+	class Match;
 
 	class Terrain
 	{
 		public:
-			Terrain(BurgApp& app, MapData mapData);
+			Terrain(BurgApp& app, Match& match, MapData mapData, Map mapData2);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 

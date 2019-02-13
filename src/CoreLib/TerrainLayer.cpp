@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/TerrainLayer.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -17,7 +18,7 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(BurgApp& app, const MapData::Layer& layerData, float tileSize)
+	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const MapData::Layer& layerData, const Map::Layer& layerData2, float tileSize)
 	{
 		m_world.AddSystem<AnimationSystem>(app);
 		m_world.AddSystem<NetworkSyncSystem>();
@@ -59,6 +60,19 @@ namespace bw
 		auto& theColliderPhys = map->AddComponent<Ndk::PhysicsComponent2D>();
 		theColliderPhys.SetMass(0.f);
 		theColliderPhys.SetFriction(1.f);
+
+		auto& entityStore = match.GetEntityStore();
+		for (const Map::Entity& entityData : layerData2.entities)
+		{
+			std::size_t entityTypeIndex = entityStore.GetElementIndex("entity_" + entityData.entityType);
+			if (entityTypeIndex == entityStore.InvalidIndex)
+			{
+				std::cerr << "Unknown entity type " + entityData.entityType << std::endl;
+				continue;
+			}
+
+			entityStore.InstantiateEntity(m_world, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+		}
 	}
 
 	void TerrainLayer::Update(float elapsedTime)

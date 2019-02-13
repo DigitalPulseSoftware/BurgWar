@@ -7,17 +7,19 @@
 #ifndef BURGWAR_CORELIB_TERRAINLAYER_HPP
 #define BURGWAR_CORELIB_TERRAINLAYER_HPP
 
+#include <CoreLib/Map.hpp>
 #include <CoreLib/MapData.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
 	class BurgApp;
+	class Match;
 
 	class TerrainLayer
 	{
 		public:
-			TerrainLayer(BurgApp& app, const MapData::Layer& layerData, float tileSize);
+			TerrainLayer(BurgApp& app, Match& match, const MapData::Layer& layerData, const Map::Layer& layerData2, float tileSize);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) = default;
 			~TerrainLayer() = default;

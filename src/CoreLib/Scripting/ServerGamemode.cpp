@@ -58,14 +58,9 @@ namespace bw
 					}
 				}
 
-				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex, entityProperties);
+				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), entityIndex, spawnPos, 0.f, entityProperties);
 				if (!entity)
 					throw std::runtime_error("Failed to create \"" + entityType + "\"");
-
-				if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-					entity->GetComponent<Ndk::PhysicsComponent2D>().SetPosition(spawnPos);
-				else
-					entity->GetComponent<Ndk::NodeComponent>().SetPosition(spawnPos);
 
 				return entity;
 			}

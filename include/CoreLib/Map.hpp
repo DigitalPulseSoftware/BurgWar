@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_MAP_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <nlohmann/json_fwd.hpp>
@@ -33,7 +34,6 @@ namespace bw
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
-			inline Map(const std::filesystem::path& folder);
 			~Map() = default;
 
 			nlohmann::json AsJson() const;
@@ -59,13 +59,18 @@ namespace bw
 
 			struct Layer
 			{
+				Nz::Color backgroundColor = Nz::Color::Black;
 				std::string name;
-				float depth;
+				float depth = 0.f;
 				std::vector<Entity> entities;
 			};
 
+			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);
+			static inline Map LoadFromFolder(const std::filesystem::path& mapFolder);
+
 		private:
-			void Load(const std::filesystem::path& path);
+			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
+			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
 			void SetupDefault();
 
 			struct Asset
@@ -75,7 +80,6 @@ namespace bw
 			};
 
 			MapInfo m_mapInfo;
-			std::filesystem::path m_mapPath;
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;
 			bool m_isValid;

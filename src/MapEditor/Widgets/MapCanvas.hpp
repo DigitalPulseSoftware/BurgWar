@@ -15,18 +15,24 @@
 
 namespace bw
 {
-	class MapWidget : public NazaraCanvas
+	class MapCanvas : public NazaraCanvas
 	{
 		public:
-			MapWidget(QWidget* parent = nullptr);
-			~MapWidget() = default;
+			MapCanvas(QWidget* parent = nullptr);
+			~MapCanvas() = default;
 
 			void ClearEntities();
+			void ClearEntitySelection();
+
 			Ndk::EntityId CreateEntity(const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
 
 			void EditEntityPosition(Ndk::EntityId entityId);
 
+			void UpdateBackgroundColor(Nz::Color color);
 			void UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
+
+			NazaraSignal(OnEntityPositionUpdated, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/, const Nz::Vector2f& /*position*/);
+			NazaraSignal(OnEntitySelected, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/);
 
 		private:
 			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
@@ -35,12 +41,12 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			std::unique_ptr<PositionGizmo> m_positionGizmo;
-			Ndk::EntityHandle m_camera;
+			Ndk::EntityHandle m_cameraEntity;
 			Ndk::EntityList m_mapEntities;
 			Ndk::World m_world;
 	};
 }
 
-#include <MapEditor/Widgets/MapWidget.inl>
+#include <MapEditor/Widgets/MapCanvas.inl>
 
 #endif
