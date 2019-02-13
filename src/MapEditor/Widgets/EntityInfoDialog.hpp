@@ -24,6 +24,7 @@ class QWidget;
 
 namespace bw
 {
+	class ClientEntityStore;
 	class PositionEditWidget;
 
 	struct EntityInfo
@@ -38,8 +39,8 @@ namespace bw
 	class EntityInfoDialog : public QDialog
 	{
 		public:
-			EntityInfoDialog(QWidget* parent = nullptr);
-			EntityInfoDialog(EntityInfo entityInfo, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, EntityInfo entityInfo, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
 			const EntityInfo& GetEntityInfo() const;
@@ -52,6 +53,17 @@ namespace bw
 
 			void OnAccept();
 
+			struct PropertyData
+			{
+				std::string keyName;
+				std::string visualName;
+				PropertyType type;
+			};
+
+			std::size_t m_entityTypeIndex;
+			std::vector<PropertyData> m_properties;
+			std::vector<std::string> m_entityTypes;
+			ClientEntityStore& m_entityStore;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;
 			PositionEditWidget* m_positionWidget;
@@ -61,7 +73,6 @@ namespace bw
 			QLineEdit* m_nameWidget;
 			QWidget* m_propertyContentWidget;
 			QTableWidget* m_propertiesList;
-			std::size_t m_entityTypeIndex;
 	};
 }
 

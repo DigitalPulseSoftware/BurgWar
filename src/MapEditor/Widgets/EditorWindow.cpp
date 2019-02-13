@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
+#include <ClientLib/Scripting/ClientScriptingContext.hpp>
+#include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <MapEditor/Widgets/LayerInfoDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
@@ -22,6 +24,40 @@ namespace bw
 {
 	EditorWindow::EditorWindow()
 	{
+		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>();
+
+		for (auto&& entry : std::filesystem::recursive_directory_iterator("../../scripts"))
+		{
+			if (entry.is_regular_file())
+			{
+				std::vector<Nz::UInt8> content;
+
+				Nz::File file(entry.path().generic_u8string());
+				if (file.Open(Nz::OpenMode_ReadOnly))
+				{
+					content.resize(file.GetSize());
+					if (file.Read(content.data(), content.size()) != content.size())
+						throw std::runtime_error("Failed");
+				}
+
+				std::filesystem::path scriptPath = "../../scripts";
+				std::string relativePath = std::filesystem::relative(entry.path(), scriptPath).generic_u8string();
+
+				virtualDir->Store(relativePath, std::move(content));
+			}
+		}
+
+		m_scriptingContext = std::make_shared<ClientScriptingContext>(virtualDir);
+		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
+
+		m_clientEntityStore.emplace(m_scriptingContext);
+
+		VirtualDirectory::Entry entry;
+
+		if (virtualDir->GetEntry("entities", &entry))
+			m_clientEntityStore->Load("entities", std::get<VirtualDirectory::DirectoryEntry>(entry));
+
+		// GUI
 		BuildMenu();
 
 		m_canvas = new MapCanvas;
@@ -180,7 +216,7 @@ namespace bw
 	{
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
-		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(this);
+		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(*m_clientEntityStore, this);
 		connect(createEntityDialog, &QDialog::accepted, [this, createEntityDialog, layerIndex]()
 		{
 			const EntityInfo& entityInfo = createEntityDialog->GetEntityInfo();
@@ -233,7 +269,7 @@ namespace bw
 		entityInfo.properties = layerEntity.properties;
 		entityInfo.rotation = layerEntity.rotation;
 
-		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(std::move(entityInfo), this);
+		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_clientEntityStore, std::move(entityInfo), this);
 		connect(editEntityDialog, &QDialog::accepted, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId]()
 		{
 			const EntityInfo& entityInfo = editEntityDialog->GetEntityInfo();

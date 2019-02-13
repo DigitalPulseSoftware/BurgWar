@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
-#include <MapEditor/EntityTypeRegistry.hpp>
+#include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <MapEditor/Widgets/PositionEditWidget.hpp>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -21,20 +21,26 @@
 
 namespace bw
 {
-	EntityInfoDialog::EntityInfoDialog(QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, QWidget* parent) :
 	QDialog(parent),
-	m_entityTypeIndex(0)
+	m_entityTypeIndex(0),
+	m_entityStore(clientEntityStore)
 	{
 		m_entityInfo.position = Nz::Vector2f::Zero();
 		m_entityInfo.rotation = 0.f;
 
 		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-		EntityTypeRegistry* instance = EntityTypeRegistry::Instance();
-
 		m_entityTypeWidget = new QComboBox;
-		for (std::size_t i = 0; i < instance->GetTypeCount(); ++i)
-			m_entityTypeWidget->addItem(QString::fromStdString(instance->GetType(i).name));
+		m_entityStore.ForEachElement([this](const ScriptedEntity& entityData)
+		{
+			m_entityTypes.emplace_back(entityData.fullName);
+		});
+
+		std::sort(m_entityTypes.begin(), m_entityTypes.end());
+
+		for (std::size_t i = 0; i < m_entityTypes.size(); ++i)
+			m_entityTypeWidget->addItem(QString::fromStdString(m_entityTypes[i]));
 
 		connect(m_entityTypeWidget, qOverload<int>(&QComboBox::currentIndexChanged), [this](int) 
 		{
@@ -121,8 +127,8 @@ namespace bw
 		OnEntityTypeUpdate();
 	}
 
-	EntityInfoDialog::EntityInfoDialog(EntityInfo entityInfo, QWidget* parent) :
-	EntityInfoDialog(parent)
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, EntityInfo entityInfo, QWidget* parent) :
+	EntityInfoDialog(clientEntityStore, parent)
 	{
 		m_entityInfo = std::move(entityInfo);
 
@@ -140,30 +146,41 @@ namespace bw
 	{
 		std::string entityType = m_entityTypeWidget->currentText().toStdString();
 
-		auto typeIndexOpt = EntityTypeRegistry::Instance()->FindTypeIndex(entityType);
-		if (!typeIndexOpt.has_value())
+		std::size_t elementIndex = m_entityStore.GetElementIndex(entityType);
+		if (elementIndex == m_entityStore.InvalidIndex)
 			return;
 
 		m_entityInfo.entityClass = std::move(entityType);
 
-		m_entityTypeIndex = *typeIndexOpt;
+		m_entityTypeIndex = elementIndex;
 
 		RefreshEntityType();
 	}
 
 	void EntityInfoDialog::RefreshEntityType()
 	{
-		EntityTypeRegistry* registry = EntityTypeRegistry::Instance();
-
 		m_propertiesList->clearContents();
 
-		const auto& entityTypeInfo = registry->GetType(m_entityTypeIndex);
-		m_propertiesList->setRowCount(int(entityTypeInfo.properties.size()));
+		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
+
+		// Build property list
+		m_properties.clear();
+		for (const auto& propertyInfo : entityTypeInfo->properties)
+		{
+			auto& propertyData = m_properties.emplace_back();
+			propertyData.keyName = propertyInfo.first;
+			propertyData.visualName = propertyData.keyName; //< FIXME
+			propertyData.type = propertyInfo.second.type;
+		}
+
+		std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.keyName < second.keyName; });
+
+		m_propertiesList->setRowCount(int(m_properties.size()));
 
 		int rowIndex = 0;
-		for (const auto& propertyInfo : entityTypeInfo.properties)
+		for (const auto& propertyInfo : m_properties)
 		{
-			m_propertiesList->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(propertyInfo.keyName)));
+			m_propertiesList->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName)));
 			m_propertiesList->setItem(rowIndex, 1, new QTableWidgetItem("Value"));
 
 			++rowIndex;
@@ -172,10 +189,10 @@ namespace bw
 
 	void EntityInfoDialog::RefreshPropertyEditor(int propertyIndex)
 	{
-		const auto& entityTypeInfo = EntityTypeRegistry::Instance()->GetType(m_entityTypeIndex);
+		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
 
-		assert(propertyIndex < int(entityTypeInfo.properties.size()));
-		const auto& propertyInfo = entityTypeInfo.properties[propertyIndex];
+		assert(propertyIndex < int(m_properties.size()));
+		const auto& propertyInfo = m_properties[propertyIndex];
 
 		m_propertyTitle->setText(QString::fromStdString(propertyInfo.visualName));
 

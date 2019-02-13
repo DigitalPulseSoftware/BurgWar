@@ -8,18 +8,22 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
 #include <NDK/Prerequisites.hpp>
+#include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QMainWindow>
 #include <hopscotch/hopscotch_map.h>
 #include <filesystem>
+#include <memory>
 #include <optional>
 
 class QAction;
 class QListWidget;
 class QListWidgetItem;
+class Gamemode;
 
 namespace bw
 {
+	class ClientScriptingContext;
 	class MapCanvas;
 
 	class EditorWindow : public QMainWindow
@@ -47,7 +51,9 @@ namespace bw
 			void RegisterEntity(std::size_t entityIndex);
 
 			std::filesystem::path m_workingMapPath;
+			std::optional<ClientEntityStore> m_clientEntityStore;
 			std::optional<int> m_currentLayer;
+			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
