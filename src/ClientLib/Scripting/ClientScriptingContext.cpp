@@ -9,14 +9,9 @@
 
 namespace bw
 {
-	ClientScriptingContext::ClientScriptingContext(LocalMatch& match, std::shared_ptr<VirtualDirectory> scriptDir) :
-	SharedScriptingContext(match, false),
+	ClientScriptingContext::ClientScriptingContext(std::shared_ptr<VirtualDirectory> scriptDir) :
 	m_scriptDirectory(std::move(scriptDir))
 	{
-		sol::state& state = GetLuaState();
-		state["RegisterClientScript"] = []() {}; // Dummy function
-
-		RegisterLibrary();
 	}
 
 	bool ClientScriptingContext::Load(const std::filesystem::path& folderOrFile)
@@ -61,10 +56,5 @@ namespace bw
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 		}, entry);
-	}
-
-	inline LocalMatch& ClientScriptingContext::GetMatch()
-	{
-		return static_cast<LocalMatch&>(GetSharedMatch());
 	}
 }

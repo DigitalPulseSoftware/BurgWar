@@ -17,14 +17,12 @@ namespace bw
 	class ClientScriptingContext : public SharedScriptingContext
 	{
 		public:
-			ClientScriptingContext(LocalMatch& match, std::shared_ptr<VirtualDirectory> scriptDir);
+			ClientScriptingContext(std::shared_ptr<VirtualDirectory> scriptDir);
 			~ClientScriptingContext() = default;
 
 			bool Load(const std::filesystem::path& folderOrFile) override;
 
 		private:
-			inline LocalMatch& GetMatch();
-
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 	};
 }

@@ -6,6 +6,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
+#include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
@@ -183,12 +184,13 @@ namespace bw
 
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
-		m_scriptingContext = std::make_shared<ClientScriptingContext>(*this, scriptDir);
+		m_scriptingContext = std::make_shared<ClientScriptingContext>(scriptDir);
+		m_scriptingContext->LoadLibrary(std::make_shared<ClientScriptingLibrary>(*this));
 
 		m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
 
-		m_entityStore.emplace(m_gamemode, m_scriptingContext);
-		m_weaponStore.emplace(m_gamemode, m_scriptingContext);
+		m_entityStore.emplace(m_scriptingContext);
+		m_weaponStore.emplace(m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 

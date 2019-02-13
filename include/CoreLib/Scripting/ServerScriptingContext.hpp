@@ -16,13 +16,10 @@ namespace bw
 	class ServerScriptingContext : public SharedScriptingContext
 	{
 		public:
-			ServerScriptingContext(Match& match);
+			using SharedScriptingContext::SharedScriptingContext;
 			~ServerScriptingContext() = default;
 
 			bool Load(const std::filesystem::path& folderOrFile) override;
-
-		private:
-			Match& GetMatch();
 	};
 }
 

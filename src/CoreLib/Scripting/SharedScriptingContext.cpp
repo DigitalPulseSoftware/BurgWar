@@ -3,25 +3,24 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <filesystem>
 #include <iostream>
 
 namespace bw
 {
-	SharedScriptingContext::SharedScriptingContext(SharedMatch& sharedMatch, bool isServer) :
-	m_match(sharedMatch)
-	{
-		m_luaState.open_libraries();
-
-		m_luaState["SERVER"] = isServer;
-		m_luaState["CLIENT"] = !isServer;
-	}
-
 	SharedScriptingContext::~SharedScriptingContext()
 	{
 		m_availableThreads.clear();
 		m_runningThreads.clear();
+	}
+
+	void SharedScriptingContext::LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library)
+	{
+		library->RegisterLibrary(*this);
+
+		m_libraries.emplace_back(std::move(library)); //< Store library to ensure it won't be deleted
 	}
 
 	void SharedScriptingContext::Update()
@@ -57,81 +56,5 @@ namespace bw
 			else
 				++it;
 		}
-	}
-
-	void SharedScriptingContext::RegisterLibrary()
-	{
-		RegisterGlobalLibrary();
-		RegisterMetatableLibrary();
-
-		// Shame :bell:
-		Load("../../scripts/autorun");
-		Load("autorun");
-	}
-
-	void SharedScriptingContext::RegisterGlobalLibrary()
-	{
-		m_luaState["include"] = [&](const std::string& scriptName)
-		{
-			std::filesystem::path scriptPath = m_currentFolder / scriptName;
-
-			if (!Load(scriptPath.generic_u8string()))
-				throw std::runtime_error("TODO");
-		};
-
-		m_luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)
-		{
-			m_match.GetTimerManager().PushCallback(time, [this, callbackObject]()
-			{
-				sol::protected_function callback(GetLuaState(), sol::ref_index(callbackObject.registry_index()));
-
-				auto result = callback();
-				if (!result.valid())
-				{
-					sol::error err = result;
-					std::cerr << "engine_SetTimer callback failed: " << err.what() << std::endl;
-				}
-			});
-		};
-	}
-
-	void SharedScriptingContext::RegisterMetatableLibrary()
-	{
-		m_luaState["RegisterMetatable"] = [](sol::this_state s, const char* metaname)
-		{
-			if (luaL_newmetatable(s, metaname) == 0)
-			{
-				lua_pop(s, 1);
-				throw std::runtime_error("Metatable " + std::string(metaname) + " already exists");
-			}
-
-			return sol::stack_table(s);
-		};
-
-		m_luaState["GetMetatable"] = [](sol::this_state s, const char* metaname)
-		{
-			luaL_getmetatable(s, metaname);
-			return sol::stack_table(s);
-		};
-
-		m_luaState["AssertMetatable"] = [](sol::this_state s, sol::table tableRef, const char* metaname)
-		{
-			sol::table metatable = tableRef[sol::metatable_key];
-			if (!metatable)
-				throw std::runtime_error("Table has no metatable");
-
-			luaL_getmetatable(s, metaname);
-			sol::stack_table expectedMetatable;
-
-			metatable.push();
-			bool equal = lua_rawequal(s, expectedMetatable.stack_index(), -1);
-
-			lua_pop(s, 2);
-
-			if (!metatable)
-				throw std::runtime_error("Table is not of type " + std::string(metaname));
-
-			return tableRef;
-		};
 	}
 }

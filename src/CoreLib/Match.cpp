@@ -8,6 +8,7 @@
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
+#include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <Nazara/Core/File.hpp>
@@ -67,11 +68,12 @@ namespace bw
 			}
 		}
 
-		m_scriptingContext = std::make_shared<ServerScriptingContext>(*this);
+		m_scriptingContext = std::make_shared<ServerScriptingContext>();
+		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
 
 		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "../../scripts" / m_gamemodePath);
 
-		m_entityStore.emplace(m_gamemode, m_scriptingContext);
+		m_entityStore.emplace(m_scriptingContext);
 		m_entityStore->Load("../../scripts/entities");
 
 		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
@@ -88,7 +90,7 @@ namespace bw
 			}
 		});
 
-		m_weaponStore.emplace(app, m_gamemode, m_scriptingContext);
+		m_weaponStore.emplace(app, m_scriptingContext);
 		m_weaponStore->Load("../../scripts/weapons");
 
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)

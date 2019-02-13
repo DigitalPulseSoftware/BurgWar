@@ -8,18 +8,6 @@
 
 namespace bw
 {
-	ServerScriptingContext::ServerScriptingContext(Match& match) :
-	SharedScriptingContext(match, true)
-	{
-		sol::state& state = GetLuaState();
-		state.set_function("RegisterClientScript", [&](const std::string& path)
-		{
-			GetMatch().RegisterClientScript(GetCurrentFolder() / path);
-		});
-
-		RegisterLibrary();
-	}
-
 	bool ServerScriptingContext::Load(const std::filesystem::path& folderOrFile)
 	{
 		sol::state& state = GetLuaState();
@@ -51,10 +39,5 @@ namespace bw
 
 		std::cerr << "Unknown path " << folderOrFile.generic_u8string() << std::endl;
 		return false;
-	}
-
-	inline Match& ServerScriptingContext::GetMatch()
-	{
-		return static_cast<Match&>(GetSharedMatch());
 	}
 }
