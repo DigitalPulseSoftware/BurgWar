@@ -49,7 +49,7 @@ namespace bw
 	{
 		directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
 		{
-			LoadElement(std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
+			LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), directoryPath / entryName);
 		});
 
 		sol::state& state = GetLuaState();

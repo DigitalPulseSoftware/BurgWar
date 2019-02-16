@@ -30,20 +30,10 @@ namespace bw
 		{
 			if (entry.is_regular_file())
 			{
-				std::vector<Nz::UInt8> content;
-
-				Nz::File file(entry.path().generic_u8string());
-				if (file.Open(Nz::OpenMode_ReadOnly))
-				{
-					content.resize(file.GetSize());
-					if (file.Read(content.data(), content.size()) != content.size())
-						throw std::runtime_error("Failed");
-				}
-
 				std::filesystem::path scriptPath = "../../scripts";
 				std::string relativePath = std::filesystem::relative(entry.path(), scriptPath).generic_u8string();
 
-				virtualDir->Store(relativePath, std::move(content));
+				virtualDir->Store(relativePath, entry.path());
 			}
 		}
 
@@ -55,7 +45,7 @@ namespace bw
 		VirtualDirectory::Entry entry;
 
 		if (virtualDir->GetEntry("entities", &entry))
-			m_clientEntityStore->Load("entities", std::get<VirtualDirectory::DirectoryEntry>(entry));
+			m_clientEntityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		// GUI
 		BuildMenu();
@@ -198,7 +188,7 @@ namespace bw
 
 	void EditorWindow::OnCompileMap()
 	{
-		QString filter(".bmap");
+		QString filter("*.bmap");
 		QString fileName = QFileDialog::getSaveFileName(this, tr("Where to save compiled map file"), QString(), filter, &filter);
 		if (fileName.isEmpty())
 			return;

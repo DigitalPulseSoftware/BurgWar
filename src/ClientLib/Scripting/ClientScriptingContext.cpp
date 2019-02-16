@@ -23,23 +23,41 @@ namespace bw
 			return false;
 		}
 
-		return std::visit([&](auto&& arg) {
+		return std::visit([&](auto&& arg)
+		{
 			using T = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<T, VirtualDirectory::DirectoryEntry>)
-			{
-				arg->Foreach([&](const std::string& entryName, VirtualDirectory::Entry)
-				{
-					Load(folderOrFile / entryName);
-				});
 
-				return true;
-			}
-			else if constexpr (std::is_same_v<T, VirtualDirectory::FileEntry>)
+			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 			{
 				m_currentFolder = folderOrFile.parent_path();
 
 				sol::state& state = GetLuaState();
-				auto result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
+				sol::protected_function_result result;
+				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
+				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+				{
+					std::vector<Nz::UInt8> content;
+
+					Nz::File file(arg.generic_u8string());
+					if (!file.Open(Nz::OpenMode_ReadOnly))
+					{
+						std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": failed to open file" << std::endl;
+						return false;
+					}
+
+					content.resize(file.GetSize());
+					if (file.Read(content.data(), content.size()) != content.size())
+					{
+						std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": failed to read file" << std::endl;
+						return false;
+					}
+
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()));
+				}
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive if");
+
 				if (result.valid())
 				{
 					std::cout << "Loaded " << folderOrFile << std::endl;
@@ -51,6 +69,15 @@ namespace bw
 					std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << err.what() << std::endl;
 					return false;
 				}
+			}
+			else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+			{
+				arg->Foreach([&](const std::string& entryName, VirtualDirectory::Entry)
+				{
+					Load(folderOrFile / entryName);
+				});
+
+				return true;
 			}
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");

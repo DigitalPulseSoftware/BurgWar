@@ -8,7 +8,7 @@
 
 namespace bw
 {
-	inline VirtualDirectory::VirtualDirectory(DirectoryEntry parentDirectory) :
+	inline VirtualDirectory::VirtualDirectory(VirtualDirectoryEntry parentDirectory) :
 	m_parent(std::move(parentDirectory)),
 	m_wereDotRegistered(false)
 	{
@@ -42,17 +42,7 @@ namespace bw
 		return true;
 	}
 
-	inline auto VirtualDirectory::Store(const std::string_view& path, DirectoryEntry directory) -> DirectoryEntry&
-	{
-		std::shared_ptr<VirtualDirectory> dir;
-		std::string_view entryName;
-		if (!RetrieveDirectory(path, true, dir, entryName))
-			throw std::runtime_error("Invalid path");
-
-		return dir->StoreInternal(std::string(entryName), std::move(directory));
-	}
-
-	inline auto VirtualDirectory::Store(const std::string_view& path, FileEntry file) -> FileEntry&
+	inline auto VirtualDirectory::Store(const std::string_view& path, FileContentEntry file) -> FileContentEntry&
 	{
 		std::shared_ptr<VirtualDirectory> dir;
 		std::string_view entryName;
@@ -60,6 +50,26 @@ namespace bw
 			throw std::runtime_error("Invalid path");
 
 		return dir->StoreInternal(std::string(entryName), std::move(file));
+	}
+
+	inline auto VirtualDirectory::Store(const std::string_view& path, PhysicalFileEntry filePath) -> PhysicalFileEntry&
+	{
+		std::shared_ptr<VirtualDirectory> dir;
+		std::string_view entryName;
+		if (!RetrieveDirectory(path, true, dir, entryName))
+			throw std::runtime_error("Invalid path");
+
+		return dir->StoreInternal(std::string(entryName), std::move(filePath));
+	}
+
+	inline auto VirtualDirectory::Store(const std::string_view& path, VirtualDirectoryEntry directory) -> VirtualDirectoryEntry&
+	{
+		std::shared_ptr<VirtualDirectory> dir;
+		std::string_view entryName;
+		if (!RetrieveDirectory(path, true, dir, entryName))
+			throw std::runtime_error("Invalid path");
+
+		return dir->StoreInternal(std::string(entryName), std::move(directory));
 	}
 
 	inline void VirtualDirectory::EnsureDots()
@@ -85,7 +95,7 @@ namespace bw
 			Entry entry;
 			if (directory->GetEntryInternal(dirName, &entry))
 			{
-				if (auto dir = std::get_if<DirectoryEntry>(&entry))
+				if (auto dir = std::get_if<VirtualDirectoryEntry>(&entry))
 					directory = *dir;
 				else
 					return false;
@@ -123,20 +133,28 @@ namespace bw
 			return false;
 	}
 
-	inline auto VirtualDirectory::StoreInternal(std::string name, DirectoryEntry directory) -> DirectoryEntry&
-	{
-		assert(name.find_first_of("\\/:") == name.npos);
-
-		auto it = m_content.insert_or_assign(std::move(name), std::move(directory)).first;
-		return std::get<DirectoryEntry>(it->second);
-	}
-
-	inline auto VirtualDirectory::StoreInternal(std::string name, FileEntry file) -> FileEntry&
+	inline auto VirtualDirectory::StoreInternal(std::string name, FileContentEntry file) -> FileContentEntry&
 	{
 		assert(name.find_first_of("\\/:") == name.npos);
 
 		auto it = m_content.insert_or_assign(std::move(name), std::move(file)).first;
-		return std::get<FileEntry>(it->second);
+		return std::get<FileContentEntry>(it->second);
+	}
+
+	inline auto VirtualDirectory::StoreInternal(std::string name, PhysicalFileEntry file) -> PhysicalFileEntry&
+	{
+		assert(name.find_first_of("\\/:") == name.npos);
+
+		auto it = m_content.insert_or_assign(std::move(name), std::move(file)).first;
+		return std::get<PhysicalFileEntry>(it->second);
+	}
+
+	inline auto VirtualDirectory::StoreInternal(std::string name, VirtualDirectoryEntry directory) -> VirtualDirectoryEntry&
+	{
+		assert(name.find_first_of("\\/:") == name.npos);
+
+		auto it = m_content.insert_or_assign(std::move(name), std::move(directory)).first;
+		return std::get<VirtualDirectoryEntry>(it->second);
 	}
 
 	template<typename F1, typename F2>

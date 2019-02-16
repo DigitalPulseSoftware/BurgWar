@@ -195,10 +195,10 @@ namespace bw
 		VirtualDirectory::Entry entry;
 
 		if (scriptDir->GetEntry("entities", &entry))
-			m_entityStore->Load("entities", std::get<VirtualDirectory::DirectoryEntry>(entry));
+			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		if (scriptDir->GetEntry("weapons", &entry))
-			m_weaponStore->Load("weapons", std::get<VirtualDirectory::DirectoryEntry>(entry));
+			m_weaponStore->Load("weapons", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const Ndk::EntityHandle& entity, float fromAngle, float toAngle, float duration, sol::object callbackObject)
