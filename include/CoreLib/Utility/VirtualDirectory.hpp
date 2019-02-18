@@ -27,27 +27,31 @@ namespace bw
 			using Entry = std::variant<FileContentEntry, PhysicalFileEntry, VirtualDirectoryEntry>;
 
 			inline VirtualDirectory(VirtualDirectoryEntry parentDirectory = nullptr);
+			inline VirtualDirectory(std::filesystem::path physicalPath, VirtualDirectoryEntry parentDirectory = nullptr);
 			~VirtualDirectory() = default;
 
 			template<typename F> void Foreach(F&& cb, bool includeDots = false);
 
 			inline bool GetEntry(const std::string_view& path, Entry* entry);
 
-			inline FileContentEntry& Store(const std::string_view& path, FileContentEntry file);
-			inline PhysicalFileEntry& Store(const std::string_view& path, PhysicalFileEntry filePath);
-			inline VirtualDirectoryEntry& Store(const std::string_view& path, VirtualDirectoryEntry directory);
+			inline VirtualDirectoryEntry& StoreDirectory(const std::string_view& path, VirtualDirectoryEntry directory);
+			inline VirtualDirectoryEntry& StoreDirectory(const std::string_view& path, std::filesystem::path directoryPath);
+			inline FileContentEntry& StoreFile(const std::string_view& path, FileContentEntry file);
+			inline PhysicalFileEntry& StoreFile(const std::string_view& path, std::filesystem::path filePath);
 
 		private:
 			inline void EnsureDots();
 			inline bool RetrieveDirectory(const std::string_view& path, bool allowCreation, std::shared_ptr<VirtualDirectory>& directory, std::string_view& entryName);
 			inline bool GetEntryInternal(const std::string_view& name, Entry* entry);
-			inline FileContentEntry& StoreInternal(std::string name, FileContentEntry file);
-			inline PhysicalFileEntry& StoreInternal(std::string name, PhysicalFileEntry file);
-			inline VirtualDirectoryEntry& StoreInternal(std::string name, VirtualDirectoryEntry directory);
+			inline VirtualDirectoryEntry& StoreDirectoryInternal(std::string name, std::filesystem::path directoryPath);
+			inline VirtualDirectoryEntry& StoreDirectoryInternal(std::string name, VirtualDirectoryEntry directory);
+			inline FileContentEntry& StoreFileInternal(std::string name, FileContentEntry file);
+			inline PhysicalFileEntry& StoreFileInternal(std::string name, std::filesystem::path file);
 
 			template<typename F1, typename F2> static bool SplitPath(std::string_view path, F1&& dirCB, F2&& fileCB);
 
 			std::map<std::string /*name*/, Entry, std::less<>> m_content;
+			std::optional<std::filesystem::path> m_physicalPath;
 			VirtualDirectoryEntry m_parent;
 			bool m_wereDotRegistered;
 	};

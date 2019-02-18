@@ -88,7 +88,7 @@ namespace bw
 
 		m_downloadManager->OnFileChecked.Connect([this](ClientScriptDownloadManager* downloadManager, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
 		{
-			m_scriptDirectory->Store(filePath, fileContent);
+			m_scriptDirectory->StoreFile(filePath, fileContent);
 		});
 
 		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)

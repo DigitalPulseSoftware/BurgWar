@@ -24,18 +24,7 @@ namespace bw
 {
 	EditorWindow::EditorWindow()
 	{
-		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>();
-
-		for (auto&& entry : std::filesystem::recursive_directory_iterator("../../scripts"))
-		{
-			if (entry.is_regular_file())
-			{
-				std::filesystem::path scriptPath = "../../scripts";
-				std::string relativePath = std::filesystem::relative(entry.path(), scriptPath).generic_u8string();
-
-				virtualDir->Store(relativePath, entry.path());
-			}
-		}
+		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>("../../scripts");
 
 		m_scriptingContext = std::make_shared<ClientScriptingContext>(virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
