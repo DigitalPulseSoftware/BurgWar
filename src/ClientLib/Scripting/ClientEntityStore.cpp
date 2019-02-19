@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties)
+	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 

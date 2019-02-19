@@ -44,12 +44,12 @@ namespace bw
 		protected:
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
-			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties);
+			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const;
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 
 			sol::state& GetLuaState();
-			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext();
+			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext() const;
 
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);

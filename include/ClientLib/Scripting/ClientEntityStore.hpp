@@ -19,7 +19,7 @@ namespace bw
 			inline ClientEntityStore(std::shared_ptr<SharedScriptingContext> context);
 			~ClientEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties);
+			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties) const;
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

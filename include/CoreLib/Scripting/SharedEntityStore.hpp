@@ -23,7 +23,7 @@ namespace bw
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override = 0;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
-			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity);
+			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
 	};
 }
 

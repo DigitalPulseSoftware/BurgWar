@@ -244,7 +244,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties)
+	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const
 	{
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 
@@ -288,7 +288,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element>::GetScriptingContext()
+	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element>::GetScriptingContext() const
 	{
 		return m_context;
 	}

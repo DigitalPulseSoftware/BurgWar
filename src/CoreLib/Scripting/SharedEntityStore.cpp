@@ -147,10 +147,8 @@ namespace bw
 		element.initializeFunction = elementTable["Initialize"];
 	}
 
-	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity)
+	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
 	{
-		sol::state& state = GetLuaState();
-
 		if (entityClass.initializeFunction)
 		{
 			sol::protected_function init = entityClass.initializeFunction;
