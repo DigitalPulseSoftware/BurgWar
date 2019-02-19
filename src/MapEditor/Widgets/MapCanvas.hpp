@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_MAPWIDGET_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_MAPWIDGET_HPP
 
+#include <CoreLib/EntityProperties.hpp>
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -15,16 +16,18 @@
 
 namespace bw
 {
+	class EditorWindow;
+
 	class MapCanvas : public NazaraCanvas
 	{
 		public:
-			MapCanvas(QWidget* parent = nullptr);
+			MapCanvas(EditorWindow& editor, QWidget* parent = nullptr);
 			~MapCanvas() = default;
 
 			void ClearEntities();
 			void ClearEntitySelection();
 
-			Ndk::EntityId CreateEntity(const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
+			Ndk::EntityId CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
 
 			void EditEntityPosition(Ndk::EntityId entityId);
 
@@ -41,6 +44,7 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			std::unique_ptr<PositionGizmo> m_positionGizmo;
+			EditorWindow& m_editor;
 			Ndk::EntityHandle m_cameraEntity;
 			Ndk::EntityList m_mapEntities;
 			Ndk::World m_world;

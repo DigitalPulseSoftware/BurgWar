@@ -9,6 +9,7 @@
 
 #include <NDK/Prerequisites.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QMainWindow>
 #include <hopscotch/hopscotch_map.h>
@@ -26,13 +27,16 @@ namespace bw
 	class ClientScriptingContext;
 	class MapCanvas;
 
-	class EditorWindow : public QMainWindow
+	class EditorWindow : public BurgApp, public QMainWindow
 	{
 		public:
 			EditorWindow();
-			~EditorWindow() = default;
+			~EditorWindow();
 
 			void ClearWorkingMap();
+
+			inline const ClientEntityStore& GetEntityStore() const;
+
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 		private:

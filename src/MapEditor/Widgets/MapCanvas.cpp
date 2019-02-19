@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/MapCanvas.hpp>
+#include <MapEditor/Widgets/EditorWindow.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Ray.hpp>
@@ -13,10 +14,12 @@
 
 namespace bw
 {
-	MapCanvas::MapCanvas(QWidget* parent) :
-	NazaraCanvas(parent)
+	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
+	NazaraCanvas(parent),
+	m_editor(editor),
+	m_world(false)
 	{
-		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
+		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
 		m_cameraEntity = m_world.CreateEntity();
@@ -57,20 +60,15 @@ namespace bw
 		m_positionGizmo.reset();
 	}
 
-	Ndk::EntityId MapCanvas::CreateEntity(const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
+	Ndk::EntityId MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
-		const Ndk::EntityHandle& entity = m_world.CreateEntity();
+		const ClientEntityStore& entityStore = m_editor.GetEntityStore();
+
+		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
+		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash
+
+		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_world, classIndex, position, rotation, properties);
 		m_mapEntities.Insert(entity);
-
-		Nz::SpriteRef pepsi = Nz::Sprite::New();
-		pepsi->SetTexture("../resources/burger.png");
-		pepsi->SetSize(64.f, 64.f);
-		pepsi->SetOrigin(Nz::Vector2f(32.f, 32.f));
-
-		entity->AddComponent<Ndk::GraphicsComponent>().Attach(pepsi);
-		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
-		nodeComponent.SetPosition(position);
-		nodeComponent.SetRotation(rotation);
 
 		return entity->GetId();
 	}

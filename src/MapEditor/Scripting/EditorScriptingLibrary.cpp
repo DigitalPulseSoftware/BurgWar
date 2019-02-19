@@ -13,7 +13,7 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state["CLIENT"] = false;
 		state["SERVER"] = false;
-		state["EDITOR"] = false;
+		state["EDITOR"] = true;
 
 		state.open_libraries();
 

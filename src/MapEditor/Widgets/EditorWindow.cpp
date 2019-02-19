@@ -39,7 +39,7 @@ namespace bw
 		// GUI
 		BuildMenu();
 
-		m_canvas = new MapCanvas;
+		m_canvas = new MapCanvas(*this);
 		m_canvas->OnEntityPositionUpdated.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex, const Nz::Vector2f& newPosition)
 		{
 			assert(m_currentLayer.has_value());
@@ -114,6 +114,12 @@ namespace bw
 		statusBar()->showMessage(tr("Ready"), 0);
 
 		ClearWorkingMap();
+	}
+
+	EditorWindow::~EditorWindow()
+	{
+		// Delete canvas before releasing everything else
+		delete m_canvas;
 	}
 
 	void EditorWindow::ClearWorkingMap()
@@ -455,7 +461,7 @@ namespace bw
 		QListWidgetItem* item = new QListWidgetItem(entryName);
 		item->setData(Qt::UserRole, entityIndex);
 
-		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.position, entity.rotation);
+		Ndk::EntityId canvasId = m_canvas->CreateEntity("entity_" + entity.entityType, entity.position, entity.rotation, entity.properties);
 		item->setData(Qt::UserRole + 1, canvasId);
 
 		m_entityList->addItem(item);
