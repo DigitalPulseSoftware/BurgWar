@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties) const
+	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -54,7 +54,9 @@ namespace bw
 			entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite);
 		}
 
-		entity->AddComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
+		nodeComponent.SetPosition(position);
+		nodeComponent.SetRotation(rotation);
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();

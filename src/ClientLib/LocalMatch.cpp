@@ -394,11 +394,9 @@ namespace bw
 			// Entity
 			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
 			{
-				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, properties);
+				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, createPosition, 0, properties);
 				if (!entity)
 					return Ndk::EntityHandle::InvalidHandle;
-
-				entity->GetComponent<Ndk::NodeComponent>().SetPosition(createPosition);
 			}
 		}
 		else if (entityClassName.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
