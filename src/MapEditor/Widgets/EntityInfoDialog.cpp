@@ -215,12 +215,12 @@ namespace bw
 			case PropertyType::Bool:
 			{
 				QCheckBox* checkBox = new QCheckBox;
-				if (std::holds_alternative<bool>(property))
-					checkBox->setChecked(std::get<bool>(property));
+				if (std::holds_alternative<EntityPropertyContainer<bool>>(property))
+					checkBox->setChecked(std::get<EntityPropertyContainer<bool>>(property).GetElement(0));
 
 				connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName](bool checked)
 				{
-					m_entityInfo.properties[keyName] = checked;
+					m_entityInfo.properties[keyName] = EntityPropertyContainer(checked);
 				});
 
 				layout->addWidget(checkBox);
@@ -231,12 +231,12 @@ namespace bw
 			{
 				QDoubleSpinBox* spinbox = new QDoubleSpinBox;
 				spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-				if (std::holds_alternative<float>(property))
-					spinbox->setValue(std::get<float>(property));
+				if (std::holds_alternative<EntityPropertyContainer<float>>(property))
+					spinbox->setValue(std::get<EntityPropertyContainer<float>>(property).GetElement(0));
 
 				connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = float(spinbox->value());
+					m_entityInfo.properties[keyName] = EntityPropertyContainer(float(spinbox->value()));
 				});
 
 				layout->addWidget(spinbox);
@@ -247,12 +247,12 @@ namespace bw
 			{
 				// TODO: Handle properly int64
 				QSpinBox* spinbox = new QSpinBox;
-				if (std::holds_alternative<Nz::Int64>(property))
-					spinbox->setValue(std::get<Nz::Int64>(property));
+				if (std::holds_alternative<EntityPropertyContainer<Nz::Int64>>(property))
+					spinbox->setValue(std::get<EntityPropertyContainer<Nz::Int64>>(property).GetElement(0));
 
 				connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
+					m_entityInfo.properties[keyName] = EntityPropertyContainer(Nz::Int64(spinbox->value()));
 				});
 
 				layout->addWidget(spinbox);
@@ -263,12 +263,12 @@ namespace bw
 			case PropertyType::Texture:
 			{
 				QLineEdit* lineEdit = new QLineEdit;
-				if (std::holds_alternative<std::string>(property))
-					lineEdit->setText(QString::fromStdString(std::get<std::string>(property)));
+				if (std::holds_alternative<EntityPropertyContainer<std::string>>(property))
+					lineEdit->setText(QString::fromStdString(std::get<EntityPropertyContainer<std::string>>(property).GetElement(0)));
 
 				connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = lineEdit->text().toStdString();
+					m_entityInfo.properties[keyName] = EntityPropertyContainer(lineEdit->text().toStdString());
 				});
 
 				layout->addWidget(lineEdit);

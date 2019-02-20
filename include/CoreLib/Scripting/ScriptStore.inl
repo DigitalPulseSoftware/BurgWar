@@ -104,8 +104,24 @@ namespace bw
 				{
 					using T = std::decay_t<decltype(value)>;
 
-					if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
-						return sol::make_object(lua, value);
+					if constexpr (std::is_same_v<T, EntityPropertyContainer<bool>> || 
+					              std::is_same_v<T, EntityPropertyContainer<float>> || 
+					              std::is_same_v<T, EntityPropertyContainer<Nz::Int64>> || 
+					              std::is_same_v<T, EntityPropertyContainer<std::string>>)
+					{
+						if (value.IsArray())
+						{
+							std::size_t elementCount = value.GetSize();
+							sol::table content = lua.create_table(int(elementCount));
+
+							for (std::size_t i = 0; i < elementCount; ++i)
+								content[i + 1] = sol::make_object(lua, value.GetElement(i));
+							
+							return content;
+						}
+						else
+							return sol::make_object(lua, value.GetElement(0));
+					}
 					else if constexpr (std::is_same_v<T, std::monostate>)
 						throw std::runtime_error("Unexpected monostate in property");
 					else
@@ -182,6 +198,10 @@ namespace bw
 					if (propertyShared)
 						property.shared = propertyShared.as<bool>();
 
+					sol::object propertyArray = propertyTable["IsArray"];
+					if (propertyArray)
+						property.isArray = propertyArray.as<bool>();
+
 					sol::object propertyDefault = propertyTable["Default"];
 					if (propertyDefault)
 					{
@@ -191,22 +211,30 @@ namespace bw
 						{
 							using T = std::decay_t<decltype(dummyType)>;
 
-							if (propertyDefault.is<T>())
+							if (property.isArray)
 							{
-								if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
-									throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
-
-								property.defaultValue = propertyDefault.as<T>();
-								return true;
+								assert(!"Todo");
+								return false;
 							}
 							else
-								return false;
+							{
+								if (propertyDefault.is<T>())
+								{
+									if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
+										throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
+
+									property.defaultValue = EntityPropertyContainer<T>(propertyDefault.as<T>());
+									return true;
+								}
+								else
+									return false;
+							}
 						};
 
 						if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
-							!PropertyChecker(float(), { PropertyType::Float }) &&
-							!PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
-							!PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
+						    !PropertyChecker(float(), { PropertyType::Float }) &&
+						    !PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
+						    !PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
 						{
 							throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
 						}

@@ -132,7 +132,30 @@ namespace bw
 			{
 				const std::string& propertyName = m_stringStore.GetString(property.name);
 
-				properties.emplace(propertyName, property.value);
+				std::visit([&](auto&& value)
+				{
+					using T = std::decay_t<decltype(value)>;
+
+					if constexpr (std::is_same_v<T, std::vector<bool>> ||
+					              std::is_same_v<T, std::vector<float>> ||
+					              std::is_same_v<T, std::vector<Nz::Int64>> ||
+					              std::is_same_v<T, std::vector<std::string>>)
+					{
+						using StoredType = typename T::value_type;
+
+						EntityPropertyContainer<StoredType> elements(property.isArray, value.size());
+
+						for (std::size_t i = 0; i < value.size(); ++i)
+							elements.GetElement(i) = value[i];
+
+						properties.emplace(propertyName, std::move(elements));
+					}
+					else if constexpr (std::is_same_v<T, std::monostate>)
+						properties.emplace(propertyName, std::monostate{});
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+				}, property.value);
 			}
 
 			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth, properties);

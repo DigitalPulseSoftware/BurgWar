@@ -22,6 +22,7 @@ namespace bw
 		{
 			PropertyType type;
 			EntityProperty defaultValue;
+			bool isArray = false;
 			bool shared = false;
 		};
 

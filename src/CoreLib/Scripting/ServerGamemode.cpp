@@ -46,13 +46,13 @@ namespace bw
 						std::string propertyName = key.as<std::string>();
 
 						if (value.is<bool>())
-							entityProperties.emplace(std::move(propertyName), value.as<bool>());
+							entityProperties.emplace(std::move(propertyName), EntityPropertyContainer<bool>(value.as<bool>()));
 						else if (value.is<Nz::Int64>()) //< Handle int before float
-							entityProperties.emplace(std::move(propertyName), Nz::Int64(value.as<Nz::Int64>()));
+							entityProperties.emplace(std::move(propertyName), EntityPropertyContainer<Nz::Int64>(value.as<Nz::Int64>()));
 						else if (value.is<float>())
-							entityProperties.emplace(std::move(propertyName), float(value.as<float>()));
+							entityProperties.emplace(std::move(propertyName), EntityPropertyContainer<float>(value.as<float>()));
 						else if (value.is<std::string>())
-							entityProperties.emplace(std::move(propertyName), value.as<std::string>());
+							entityProperties.emplace(std::move(propertyName), EntityPropertyContainer<std::string>(value.as<std::string>()));
 						else
 							throw std::runtime_error("Unknown property type for " + propertyName);
 					}
