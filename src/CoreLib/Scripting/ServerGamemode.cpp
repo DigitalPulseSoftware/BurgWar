@@ -47,12 +47,45 @@ namespace bw
 
 						if (value.is<bool>())
 							entityProperties.emplace(std::move(propertyName), value.as<bool>());
-						else if (value.is<Nz::Int64>()) //< Handle int before float
-							entityProperties.emplace(std::move(propertyName), Nz::Int64(value.as<Nz::Int64>()));
+						else if (value.is<Nz::Int64>()) //< Handle int before float to prevent implicit conversion
+							entityProperties.emplace(std::move(propertyName), value.as<Nz::Int64>());
 						else if (value.is<float>())
-							entityProperties.emplace(std::move(propertyName), float(value.as<float>()));
+							entityProperties.emplace(std::move(propertyName), value.as<float>());
 						else if (value.is<std::string>())
 							entityProperties.emplace(std::move(propertyName), value.as<std::string>());
+						else if (value.is<sol::table>())
+						{
+							sol::table content = value.as<sol::table>();
+							std::size_t elementCount = content.size();
+							if (elementCount == 0)
+								continue; //< ignore empty array
+							
+							// Get first element
+							sol::object firstElement = content[1];
+							assert(firstElement);
+
+							auto HandleDataArray = [&](auto dummyType)
+							{
+								using T = std::decay_t<decltype(dummyType)>;
+
+								EntityPropertyArray<T> container(elementCount);
+								for (std::size_t i = 0; i < elementCount; ++i)
+									container[i] = content[i];
+
+								entityProperties.emplace(std::move(propertyName), std::move(container));
+							};
+
+							if (firstElement.is<bool>())
+								HandleDataArray(bool());
+							else if (firstElement.is<Nz::Int64>()) //< Handle int before float to prevent implicit conversion
+								HandleDataArray(Nz::Int64());
+							else if (firstElement.is<float>())
+								HandleDataArray(float());
+							else if (firstElement.is<std::string>())
+								HandleDataArray(std::string());
+							else
+								throw std::runtime_error("Unknown property type for " + propertyName);
+						}
 						else
 							throw std::runtime_error("Unknown property type for " + propertyName);
 					}

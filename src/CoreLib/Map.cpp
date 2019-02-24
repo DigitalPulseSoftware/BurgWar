@@ -81,17 +81,27 @@ namespace bw
 				{
 					const std::string& keyName = propertyPair.first;
 
-					std::visit([&](auto&& value)
+					std::visit([&](auto&& propertyValue)
 					{
-						using T = std::decay_t<decltype(value)>;
+						using T = std::decay_t<decltype(propertyValue)>;
+						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-						if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
+						if constexpr (std::is_same_v<PropertyType, bool> || 
+						              std::is_same_v<PropertyType, float> || 
+						              std::is_same_v<PropertyType, Nz::Int64> ||
+						              std::is_same_v<PropertyType, std::string>)
 						{
-							propertiesObject[keyName] = value;
-						}
-						else if constexpr (std::is_same_v<T, std::monostate>)
-						{
-							// Ignore
+							if constexpr (IsArray)
+							{
+								auto elementArray = nlohmann::json::array();
+								for (std::size_t i = 0; i < propertyValue.size(); ++i)
+									elementArray.push_back(propertyValue[i]);
+
+								propertiesObject[keyName] = std::move(elementArray);
+							}
+							else
+								propertiesObject[keyName] = propertyValue;
 						}
 						else
 							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -158,25 +168,40 @@ namespace bw
 					Nz::UInt8 propertyType = Nz::UInt8(value.index());
 					stream << propertyType;
 
-					std::visit([&](auto&& value)
+					std::visit([&](auto&& propertyValue)
 					{
-						using T = std::decay_t<decltype(value)>;
+						using T = std::decay_t<decltype(propertyValue)>;
+						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-						if constexpr (std::is_same_v<T, bool>)
+						Nz::UInt8 isArray = (IsArray) ? 1 : 0;
+						stream << isArray;
+
+						auto Serialize = [&](const auto& value)
 						{
-							Nz::UInt8 boolValue((value) ? 1 : 0);
-							stream << boolValue;
-						}
-						else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
+							using T = std::decay_t<decltype(value)>;
+
+							if constexpr (std::is_same_v<T, bool>)
+							{
+								Nz::UInt8 boolValue = (value) ? 1 : 0;
+								stream << boolValue;
+							}
+							else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
+							{
+								stream << value;
+							}
+							else
+								static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+						};
+
+						if constexpr (IsArray)
 						{
-							stream << value;
-						}
-						else if constexpr (std::is_same_v<T, std::monostate>)
-						{
-							// Nothing to write
+							stream << Nz::UInt32(propertyValue.size());
+							for (const auto& element : propertyValue)
+								Serialize(element);
 						}
 						else
-							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+							Serialize(propertyValue);
 
 					}, value);
 				}
@@ -283,57 +308,48 @@ namespace bw
 					Nz::UInt8 propertyType;
 					stream >> propertyType;
 
-					EntityProperty propertyValue;
+					Nz::UInt8 isArrayInt;
+					stream >> isArrayInt;
+
+					bool isArray = (isArrayInt != 0);
+
+					// Waiting for template lambda in C++20
+					auto Unserialize = [&](auto dummyType)
+					{
+						using T = std::decay_t<decltype(dummyType)>;
+
+						static_assert(std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>);
+
+						if (isArray)
+						{
+							Nz::UInt32 size;
+							stream >> size;
+
+							EntityPropertyArray<T> elements(size);
+							for (T& element : elements)
+								stream >> element;
+
+							entity.properties.emplace(std::move(propertyName), std::move(elements));
+						}
+						else
+						{
+							T value;
+							stream >> value;
+
+							entity.properties.emplace(std::move(propertyName), std::move(value));
+						}
+					};
+
 					switch (propertyType)
 					{
-						case 0: //< std::monostate
-							propertyValue = std::monostate{};
-							break;
-
-						case 1: //< Bool
-						{
-							Nz::UInt8 value;
-							stream >> value;
-							
-							if (value != 0 && value != 1)
-								throw std::runtime_error("Unexpected bool value " + std::to_string(value) + " (0/1 expected) for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
-
-							propertyValue = (value == 1);
-							break;
-						}
-
-						case 2: //< Float
-						{
-							float value;
-							stream >> value;
-
-							propertyValue = value;
-							break;
-						}
-
-						case 3: //< Nz::Int64
-						{
-							Nz::Int64 value;
-							stream >> value;
-
-							propertyValue = value;
-							break;
-						}
-
-						case 4: //< std::string
-						{
-							std::string value;
-							stream >> value;
-
-							propertyValue = std::move(value);
-							break;
-						}
+						case 0: case 1: Unserialize(bool()); break;
+						case 2: case 3: Unserialize(float()); break;
+						case 4: case 5: Unserialize(Nz::Int64()); break;
+						case 6: case 7: Unserialize(std::string()); break;
 
 						default:
 							throw std::runtime_error("Unexpected type index " + std::to_string(propertyType) + " for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
 					}
-
-					entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
 				}
 
 				entityIndex++;
@@ -386,16 +402,60 @@ namespace bw
 
 				for (auto&& [key, value] : entityInfo["properties"].items())
 				{
-					if (value.is_boolean())
-						entity.properties[key] = bool(value);
-					else if (value.is_number_integer())
-						entity.properties[key] = Nz::Int64(value);
-					else if (value.is_number_float())
-						entity.properties[key] = float(value);
-					else if (value.is_string())
-						entity.properties[key] = std::string(value);
+					if (value.is_array())
+					{
+						std::size_t elementCount = value.size();
+						if (elementCount == 0)
+							continue; //< Ignore empty arrays
+
+						if (value[0].is_boolean())
+						{
+							EntityPropertyArray<bool> elements(elementCount);
+							for (std::size_t i = 0; i < elementCount; ++i)
+								elements[i] = value[i];
+
+							entity.properties.emplace(key, std::move(elements));
+						}
+						else if (value[0].is_number_integer())
+						{
+							EntityPropertyArray<Nz::Int64> elements(elementCount);
+							for (std::size_t i = 0; i < elementCount; ++i)
+								elements[i] = value[i];
+
+							entity.properties.emplace(key, std::move(elements));
+						}
+						else if (value[0].is_number_float())
+						{
+							EntityPropertyArray<float> elements(elementCount);
+							for (std::size_t i = 0; i < elementCount; ++i)
+								elements[i] = value[i];
+
+							entity.properties.emplace(key, std::move(elements));
+						}
+						else if (value[0].is_string())
+						{
+							EntityPropertyArray<std::string> elements(elementCount);
+							for (std::size_t i = 0; i < elementCount; ++i)
+								elements[i] = value[i];
+
+							entity.properties.emplace(key, std::move(elements));
+						}
+						else
+							std::cerr << "Invalid type for property " << key << ": (" << value.type_name() << ")" << std::endl;
+					}
 					else
-						std::cerr << "Invalid type for property " << key << " << (" << value.type_name() << ")" << std::endl;
+					{
+						if (value.is_boolean())
+							entity.properties.emplace(key, bool(value));
+						else if (value.is_number_integer())
+							entity.properties.emplace(key, Nz::Int64(value));
+						else if (value.is_number_float())
+							entity.properties.emplace(key, float(value));
+						else if (value.is_string())
+							entity.properties.emplace(key, std::string(value));
+						else
+							std::cerr << "Invalid type for property " << key << ": (" << value.type_name() << ")" << std::endl;
+					}
 				}
 			}
 		}

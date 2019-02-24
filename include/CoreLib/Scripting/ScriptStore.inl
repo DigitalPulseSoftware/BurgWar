@@ -98,16 +98,31 @@ namespace bw
 			if (propertyVal.has_value())
 			{
 				const EntityProperty& property = propertyVal.value();
-				assert(!std::holds_alternative<std::monostate>(property));
 
 				return std::visit([&](auto&& value) -> sol::object
 				{
 					using T = std::decay_t<decltype(value)>;
+					constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+					using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-					if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
-						return sol::make_object(lua, value);
-					else if constexpr (std::is_same_v<T, std::monostate>)
-						throw std::runtime_error("Unexpected monostate in property");
+					if constexpr (std::is_same_v<PropertyType, bool> || 
+					              std::is_same_v<PropertyType, float> || 
+					              std::is_same_v<PropertyType, Nz::Int64> || 
+					              std::is_same_v<PropertyType, std::string>)
+					{
+						if constexpr (IsArray)
+						{
+							std::size_t elementCount = value.GetSize();
+							sol::table content = lua.create_table(int(elementCount));
+
+							for (std::size_t i = 0; i < elementCount; ++i)
+								content[i + 1] = sol::make_object(lua, value[i]);
+							
+							return content;
+						}
+						else
+							return sol::make_object(lua, value);
+					}
 					else
 						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
@@ -182,15 +197,24 @@ namespace bw
 					if (propertyShared)
 						property.shared = propertyShared.as<bool>();
 
+					sol::object propertyArray = propertyTable["IsArray"];
+					if (propertyArray)
+						property.isArray = propertyArray.as<bool>();
+
 					sol::object propertyDefault = propertyTable["Default"];
-					if (propertyDefault)
+					
+					// Waiting for C++20 template lambda
+					auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
 					{
-						// Waiting for C++20 template lambda
+						using T = std::decay_t<decltype(dummyType)>;
 
-						auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
+						if (property.isArray)
 						{
-							using T = std::decay_t<decltype(dummyType)>;
-
+							assert(!"Todo");
+							return false;
+						}
+						else
+						{
 							if (propertyDefault.is<T>())
 							{
 								if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
@@ -201,15 +225,15 @@ namespace bw
 							}
 							else
 								return false;
-						};
-
-						if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
-							!PropertyChecker(float(), { PropertyType::Float }) &&
-							!PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
-							!PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
-						{
-							throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
 						}
+					};
+
+					if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
+					    !PropertyChecker(float(), { PropertyType::Float }) &&
+					    !PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
+					    !PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
+					{
+						throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
 					}
 
 					auto it = element->properties.find(propertyName);
@@ -258,14 +282,16 @@ namespace bw
 
 				//TODO: Check property type
 
-				filteredProperties[propertyName] = it->second;
+				filteredProperties.emplace(propertyName, it->second);
 			}
+/*
 			else
 			{
 				// Property doesn't exist, check for it's default value
-				if (std::holds_alternative<std::monostate>(propertyInfo.defaultValue))
+				if (!propertyInfo.defaultValue)
 					throw std::runtime_error("Missing property " + propertyName);
 			}
+*/
 		}
 
 		const auto& scriptingContext = GetScriptingContext();

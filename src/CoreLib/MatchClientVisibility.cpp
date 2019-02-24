@@ -87,7 +87,37 @@ namespace bw
 				{
 					auto& propertyData = entityData.properties.emplace_back();
 					propertyData.name = networkStringStore.CheckStringIndex(propertyName);
-					propertyData.value = std::move(propertyValue);
+
+					std::visit([&](auto&& propertyValue)
+					{
+						using T = std::decay_t<decltype(propertyValue)>;
+						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+
+						if constexpr (std::is_same_v<PropertyType, bool> ||
+						              std::is_same_v<PropertyType, float> ||
+						              std::is_same_v<PropertyType, Nz::Int64> ||
+						              std::is_same_v<PropertyType, std::string>)
+						{
+							propertyData.isArray = IsArray;
+
+							auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
+
+							if constexpr (IsArray)
+							{
+								std::size_t elementCount = propertyValue.GetSize();
+								vec.reserve(elementCount);
+
+								for (std::size_t i = 0; i < elementCount; ++i)
+									vec.emplace_back(std::move(propertyValue[i]));
+							}
+							else
+								vec.push_back(propertyValue);
+						}
+						else
+							static_assert(AlwaysFalse<PropertyType>::value, "non-exhaustive visitor");
+
+					}, std::move(propertyValue));
 				}
 				
 				eventData.reset();

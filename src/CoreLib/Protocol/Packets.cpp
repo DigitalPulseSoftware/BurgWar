@@ -130,101 +130,93 @@ namespace bw
 						dataType = static_cast<Nz::UInt8>(property.value.index());
 					
 					serializer &= dataType;
+					serializer &= property.isArray;
 
 					// Read/write value
-					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 5);
+					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 4);
 
-					if (serializer.IsWriting())
+					// Waiting for template lambda in C++20
+					auto SerializeValue = [&](auto dummyType)
 					{
-						switch (dataType)
+						using T = std::decay_t<decltype(dummyType)>;
+
+						static_assert(std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64>);
+
+						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(property.value) : property.value.emplace<std::vector<T>>();
+						
+						if (property.isArray)
 						{
-							case 0: // std::monostate
-								// Nothing to do
-								break;
-
-							case 1: // bool
-							{
-								bool value = std::get<bool>(property.value);
-								serializer &= value;
-								break;
-							}
-
-							case 2: // float
-							{
-								float value = std::get<float>(property.value);
-								serializer &= value;
-								break;
-							}
-
-							case 3: // Nz::Int64
-							{
-								Nz::Int64 value = std::get<Nz::Int64>(property.value);
-								serializer &= value;
-								break;
-							}
-
-							case 4: // std::string
-							{
-								const std::string& value = std::get<std::string>(property.value);
-								serializer.SerializeArraySize(value);
-								serializer.Write(value.data(), value.size());
-								break;
-							}
-
-							default:
-								assert(!"Unexpected datatype");
-								break;
+							serializer.SerializeArraySize(elements);
+							for (auto& element : elements)
+								serializer &= element;
 						}
-					}
-					else
+						else
+						{
+							assert(!serializer.IsWriting() || elements.size() == 1);
+							if (!serializer.IsWriting())
+								elements.resize(1);
+
+							serializer &= elements.front();
+						}
+					};
+
+					switch (dataType)
 					{
-						switch (dataType)
+						case 0:
 						{
-							case 0: // std::monostate
-								property.value = std::monostate{};
-								break;
+							// Handle std::vector<bool> specialization
+							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(property.value) : property.value.emplace<std::vector<bool>>();
 
-							case 1: // bool
+							serializer.SerializeArraySize(elements);
+							if (serializer.IsWriting())
 							{
-								bool value;
-								serializer &= value;
+								for (bool val : elements)
+									serializer &= val;
+							}
+							else
+							{
+								for (std::size_t i = 0; i < elements.size(); ++i)
+								{
+									bool val;
+									serializer &= val;
 
-								property.value = value;
-								break;
+									elements[i] = val;
+								}
 							}
 
-							case 2: // float
-							{
-								float value;
-								serializer &= value;
-
-								property.value = value;
-								break;
-							}
-
-							case 3: // Nz::Int64
-							{
-								Nz::Int64 value;
-								serializer &= value;
-
-								property.value = value;
-								break;
-							}
-
-							case 4: // std::string
-							{
-								std::string value;
-								serializer.SerializeArraySize(value);
-								serializer.Read(value.data(), value.size());
-
-								property.value = std::move(value);
-								break;
-							}
-
-							default:
-								assert(!"Unexpected datatype");
-								break;
+							break;
 						}
+
+						case 1: SerializeValue(float()); break;
+						case 2: SerializeValue(Nz::Int64()); break;
+
+						case 3: // std::string
+						{
+							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
+
+							serializer.SerializeArraySize(elements);
+							if (serializer.IsWriting())
+							{
+								for (const auto& element : elements)
+								{
+									serializer.SerializeArraySize(element);
+									serializer.Write(element.data(), element.size());
+								}
+							}
+							else
+							{
+								for (auto& element : elements)
+								{
+									serializer.SerializeArraySize(element);
+									serializer.Read(element.data(), element.size());
+								}
+							}
+							break;
+						}
+
+						default:
+							assert(!"Unexpected datatype");
+							break;
 					}
 				}
 			}
