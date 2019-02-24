@@ -197,43 +197,69 @@ namespace bw
 					if (propertyShared)
 						property.shared = propertyShared.as<bool>();
 
-					sol::object propertyArray = propertyTable["IsArray"];
+					sol::object propertyArray = propertyTable["Array"];
 					if (propertyArray)
 						property.isArray = propertyArray.as<bool>();
 
 					sol::object propertyDefault = propertyTable["Default"];
 					
-					// Waiting for C++20 template lambda
-					auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
+					auto PropertyChecker = [&](auto dummyType) -> EntityProperty
 					{
 						using T = std::decay_t<decltype(dummyType)>;
 
 						if (property.isArray)
 						{
-							assert(!"Todo");
-							return false;
+							if (!propertyDefault.is<sol::table>())
+								throw std::runtime_error("Property " + propertyName + " default value is not of the right type");
+
+							sol::table valueArray = propertyDefault.as<sol::table>();
+
+							std::size_t elementCount = valueArray.size();
+							if (elementCount == 0)
+								throw std::runtime_error("Property " + propertyName + " default value must have at least one element");
+
+							EntityPropertyArray<T> array(elementCount);
+							for (std::size_t i = 1; i <= elementCount; ++i)
+							{
+								sol::object value = valueArray[i];
+								if (!value.is<T>())
+									throw std::runtime_error("Property " + propertyName + " default value #" + std::to_string(i) + " is not of the right type");
+
+								array[i - 1] = value.as<T>();
+							}
+
+							return array;
 						}
 						else
 						{
 							if (propertyDefault.is<T>())
-							{
-								if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
-									throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
-
-								property.defaultValue = propertyDefault.as<T>();
-								return true;
-							}
+								return propertyDefault.as<T>();
 							else
-								return false;
+								throw std::runtime_error("Property " + propertyName + " default value is not of the right type");
 						}
 					};
 
-					if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
-					    !PropertyChecker(float(), { PropertyType::Float }) &&
-					    !PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
-					    !PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
+					switch (property.type)
 					{
-						throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
+						case PropertyType::Bool:
+							property.defaultValue = PropertyChecker(bool());
+							break;
+
+						case PropertyType::Float:
+							property.defaultValue = PropertyChecker(float());
+							break;
+
+						case PropertyType::Integer:
+							property.defaultValue = PropertyChecker(Nz::Int64());
+							break;
+
+						case PropertyType::String:
+						case PropertyType::Texture:
+							property.defaultValue = PropertyChecker(std::string());
+							break;
+
+						default:
+							break;
 					}
 
 					auto it = element->properties.find(propertyName);
