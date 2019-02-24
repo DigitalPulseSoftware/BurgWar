@@ -8,6 +8,7 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_MAPWIDGET_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <MapEditor/Gizmos/CameraMovement.hpp>
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -44,6 +45,7 @@ namespace bw
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
 			void OnUpdate(float elapsedTime) override;
 
+			std::optional<CameraMovement> m_cameraMovement;
 			std::unique_ptr<PositionGizmo> m_positionGizmo;
 			EditorWindow& m_editor;
 			Ndk::EntityHandle m_cameraEntity;

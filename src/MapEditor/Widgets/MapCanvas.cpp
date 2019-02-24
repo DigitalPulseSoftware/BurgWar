@@ -31,6 +31,8 @@ namespace bw
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 		viewer.SetTarget(this);
 
+		m_cameraMovement.emplace(GetCursorController(), m_cameraEntity);
+
 		Nz::EventHandler& eventHandler = GetEventHandler();
 
 		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -121,6 +123,9 @@ namespace bw
 			if (m_positionGizmo->OnMouseButtonPressed(mouseButton))
 				return;
 		}
+
+		if (m_cameraMovement->OnMouseButtonPressed(mouseButton))
+			return;
 	}
 
 	void MapCanvas::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -130,6 +135,9 @@ namespace bw
 			if (m_positionGizmo->OnMouseButtonReleased(mouseButton))
 				return;
 		}
+
+		if (m_cameraMovement->OnMouseButtonReleased(mouseButton))
+			return;
 
 		if (mouseButton.button == Nz::Mouse::Left)
 		{
@@ -159,6 +167,9 @@ namespace bw
 			if (m_positionGizmo->OnMouseMoved(mouseMoved))
 				return;
 		}
+
+		if (m_cameraMovement->OnMouseMoved(mouseMoved))
+			return;
 	}
 
 	void MapCanvas::OnUpdate(float elapsedTime)
