@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 #define BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <chrono>
 #include <limits>
 #include <vector>

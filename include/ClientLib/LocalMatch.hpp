@@ -19,7 +19,7 @@
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <Nazara/Platform/EventHandler.hpp>
 #include <optional>
 #include <vector>

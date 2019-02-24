@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_ENTITYPROPERTIES_HPP
 
 #include <Nazara/Prerequisites.hpp>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <optional>
 #include <memory>
 #include <variant>

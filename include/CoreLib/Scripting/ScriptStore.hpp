@@ -11,7 +11,7 @@
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/SharedScriptingContext.hpp>
 #include <NDK/Entity.hpp>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <limits>
 #include <memory>
 #include <type_traits>

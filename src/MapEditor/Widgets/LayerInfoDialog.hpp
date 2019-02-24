@@ -10,7 +10,7 @@
 #include <Nazara/Core/Color.hpp>
 #include <QtGui/QColor>
 #include <QtWidgets/QDialog>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 
 class QDoubleSpinBox;
 class QLineEdit;

@@ -10,7 +10,7 @@
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <filesystem>
 
 class QComboBox;

@@ -9,7 +9,7 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <Nazara/Prerequisites.hpp>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <sol2/sol.hpp>
 #include <memory>
 #include <optional>

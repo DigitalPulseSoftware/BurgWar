@@ -15,7 +15,7 @@
 #include <CoreLib/Scripting/ServerScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <memory>
 #include <optional>
 #include <string>

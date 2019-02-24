@@ -12,7 +12,7 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QMainWindow>
-#include <hopscotch/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
 #include <optional>
