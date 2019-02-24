@@ -473,7 +473,7 @@ namespace bw
 		QListWidgetItem* item = new QListWidgetItem(entryName);
 		item->setData(Qt::UserRole, entityIndex);
 
-		Ndk::EntityId canvasId = m_canvas->CreateEntity("entity_" + entity.entityType, entity.position, entity.rotation, entity.properties);
+		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties);
 		item->setData(Qt::UserRole + 1, canvasId);
 
 		m_entityList->addItem(item);
