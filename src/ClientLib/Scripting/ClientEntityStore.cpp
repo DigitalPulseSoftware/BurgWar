@@ -6,6 +6,7 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
+#include <Nazara/Graphics/TileMap.hpp>
 #include <NDK/Components.hpp>
 #include <iostream>
 
@@ -95,6 +96,39 @@ namespace bw
 
 			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
 			gfxComponent.Attach(sprite);
+		};
+
+		elementTable["AddTilemap"] = [](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+
+			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
+			mat->SetDiffuseMap(texturePath);
+			auto& sampler = mat->GetDiffuseSampler();
+			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+
+			Nz::TileMapRef tilemap = Nz::TileMap::New(mapSize, cellSize);
+			tilemap->SetMaterial(0, mat);
+
+			std::size_t cellCount = content.size();
+			std::size_t expectedCellCount = mapSize.x * mapSize.y;
+			if (cellCount != expectedCellCount)
+			{
+				std::cerr << "Expected " << expectedCellCount << " cells, got " << cellCount << std::endl;
+				cellCount = std::min(cellCount, expectedCellCount);
+			}
+
+			for (std::size_t i = 0; i < cellCount; ++i)
+			{
+				unsigned int value = content[i + 1]; //< Lua arrays start at 1
+
+				Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % mapSize.x), static_cast<unsigned int>(i / mapSize.x) };
+				if (value > 0)
+					tilemap->EnableTile(tilePos, Nz::Rectf(0.f, 0.f, 1.f, 1.f));
+			}
+
+			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
+			gfxComponent.Attach(tilemap);
 		};
 	}
 

@@ -204,7 +204,7 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(const Packets::MatchData& matchData)
 	{
-		std::cout << "[Client] Got match data: " << matchData.backgroundColor << std::endl;
+		std::cout << "[Client] Got match data" << std::endl;
 		m_localMatch = m_matchFactory(*this, matchData);
 	}
 

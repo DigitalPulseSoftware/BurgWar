@@ -43,7 +43,7 @@ namespace bw
 
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
-		renderSystem.SetDefaultBackground(Nz::ColorBackground::New(matchData.backgroundColor));
+		renderSystem.SetDefaultBackground(Nz::ColorBackground::New(matchData.layers.front().backgroundColor));
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
@@ -60,81 +60,7 @@ namespace bw
 		viewer.SetTarget(renderTarget);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
-		Nz::MaterialRef dirtMat = Nz::Material::New();
-		dirtMat->SetDiffuseMap("../resources/dirt.png");
-
-		Nz::MaterialRef grassMat = Nz::Material::New("Translucent2D");
-		grassMat->SetDiffuseMap("../resources/grass.png");
-
-		float grassScale = matchData.tileSize / grassMat->GetDiffuseMap()->GetWidth();
-
-		Nz::SpriteRef grassSprite = Nz::Sprite::New();
-		grassSprite->SetMaterial(grassMat);
-		grassSprite->SetSize(grassSprite->GetSize() * grassScale);
-		grassSprite->SetOrigin(Nz::Vector3f(0.f, 8.f, 0.f));
-
 		auto& layerData = matchData.layers.front();
-
-		Nz::TileMapRef tileMap = Nz::TileMap::New(Nz::Vector2ui(layerData.width, layerData.height), Nz::Vector2f(matchData.tileSize, matchData.tileSize));
-		tileMap->SetMaterial(0, dirtMat);
-
-		Ndk::EntityHandle theCollider = m_world.CreateEntity();
-		auto& worldGfx = theCollider->AddComponent<Ndk::GraphicsComponent>();
-
-		for (Nz::UInt16 y = 0; y < layerData.height; ++y)
-		{
-			for (Nz::UInt16 x = 0; x < layerData.width; ++x)
-			{
-				switch (layerData.tiles[y * layerData.width + x])
-				{
-					case 0: //< Air
-						break;
-
-					case 2: //< Grass
-					{
-						Nz::Vector3f pos = Nz::Vector2f(x, y) * tileMap->GetTileSize();
-
-						worldGfx.Attach(grassSprite, Nz::Matrix4f::Translate(pos), 5);
-
-						[[fallthrough]];
-					}
-
-					case 1: //< Dirt
-					{
-						tileMap->EnableTile(Nz::Vector2ui(x, y), Nz::Rectf(0.f, 0.f, 1.f, 1.f));
-						break;
-					}
-				}
-			}
-		}
-
-		worldGfx.Attach(tileMap);
-
-		std::vector<Nz::Collider2DRef> colliders;
-		for (std::size_t y = 0; y < layerData.height; ++y)
-		{
-			for (std::size_t x = 0; x < layerData.width; ++x)
-			{
-				if (layerData.tiles[y * layerData.width + x] != 0)
-				{
-					std::size_t startX = x++;
-
-					while (x < layerData.width && layerData.tiles[y * layerData.width + x] != 0) ++x;
-
-					std::cout << "[client] " << Nz::Rectf(startX * tileMap->GetTileSize().x, y * tileMap->GetTileSize().y, (x - startX) * tileMap->GetTileSize().x, tileMap->GetTileSize().y) << std::endl;
-					colliders.emplace_back(Nz::BoxCollider2D::New(Nz::Rectf(startX * tileMap->GetTileSize().x, y * tileMap->GetTileSize().y, (x - startX) * tileMap->GetTileSize().x, tileMap->GetTileSize().y)));
-				}
-			}
-		}
-
-		Nz::CompoundCollider2DRef collider = Nz::CompoundCollider2D::New(std::move(colliders));
-		collider->SetCollisionId(0);
-
-		theCollider->AddComponent<Ndk::NodeComponent>().SetPosition(0.f, 0.f);
-		theCollider->AddComponent<Ndk::CollisionComponent2D>(collider);
-		auto& theColliderPhys = theCollider->AddComponent<Ndk::PhysicsComponent2D>();
-		theColliderPhys.SetMass(0.f);
-		theColliderPhys.SetFriction(1.f);
 
 		constexpr Nz::UInt8 playerCount = 1;
 
@@ -146,40 +72,6 @@ namespace bw
 		assert(playerCount != 0xFF);
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 			m_inputControllers.emplace_back(i);
-
-		/*auto& networkStringStore = m_session.GetNetworkStringStore();
-		m_entityStore.ForEachElement([&](const ScriptedEntity& entity)
-		{
-			if (entity.isNetworked)
-			{
-				if (networkStringStore.GetStringIndex(entity.name) == NetworkStringStore::InvalidIndex)
-					std::cout << "[Client] Entity " << entity.name << " is marked as networked but is not part of the network string store" << std::endl;
-			}
-		});*/
-
-		/*Nz::MaterialRef burgerMat = Nz::Material::New("Translucent2D");
-		burgerMat->SetDiffuseMap("../resources/burger.png");
-		auto& sampler = burgerMat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Nearest);
-
-		Nz::SpriteRef burgerSprite = Nz::Sprite::New();
-		burgerSprite->SetMaterial(burgerMat);
-		burgerSprite->SetSize(burgerSprite->GetSize() / 2.f);
-		Nz::Vector2f burgerSize = burgerSprite->GetSize();
-
-		burgerSprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-
-		auto burgerBox = Nz::BoxCollider2D::New(Nz::Rectf(0.f, -burgerSize.y, burgerSize.x, burgerSize.y - 3.f));
-		burgerBox->SetCollisionId(1);
-
-		Ndk::EntityHandle burger = m_world.CreateEntity();
-		burger->AddComponent<Ndk::GraphicsComponent>().Attach(burgerSprite);
-		burger->AddComponent<Ndk::NodeComponent>().SetPosition(300.f, 100.f);
-		burger->AddComponent<Ndk::CollisionComponent2D>(burgerBox);
-		auto& burgerPhys = burger->AddComponent<Ndk::PhysicsComponent2D>();
-		burgerPhys.SetMass(300);
-		burgerPhys.SetFriction(10.f);
-		burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());*/
 	}
 
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)

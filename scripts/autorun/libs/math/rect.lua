@@ -4,6 +4,10 @@ local rectmeta = RegisterMetatable("rect")
 rectmeta.__index = rectmeta
 
 
+function rectmeta:__tostring()
+	return "rect(" .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.width) .. ", " .. tostring(self.height) .. ")"
+end
+
 
 function Rect(mins, maxs)
 	if (not mins and not maxs) then

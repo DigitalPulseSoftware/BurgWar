@@ -5,7 +5,6 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
-#include <CoreLib/MapData.hpp>
 #include <CoreLib/NetworkReactor.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
@@ -77,20 +76,18 @@ namespace bw
 		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
 		// Send match data
-		const MapData& mapData = m_match.GetTerrain().GetMapData();
+		const Map& mapData = m_match.GetTerrain().GetMap();
 
 		Packets::MatchData matchData;
-		matchData.backgroundColor = mapData.backgroundColor;
 		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
-		matchData.tileSize = mapData.tileSize;
 
-		matchData.layers.reserve(mapData.layers.size());
-		for (auto& layer : mapData.layers)
+		matchData.layers.reserve(mapData.GetLayerCount());
+		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
 		{
+			const auto& mapLayer = mapData.GetLayer(i);
+
 			auto& packetLayer = matchData.layers.emplace_back();
-			packetLayer.height = static_cast<Nz::UInt16>(layer.height);
-			packetLayer.width = static_cast<Nz::UInt16>(layer.width);
-			packetLayer.tiles = layer.tiles;
+			packetLayer.backgroundColor = mapLayer.backgroundColor;
 		}
 
 		SendPacket(matchData);

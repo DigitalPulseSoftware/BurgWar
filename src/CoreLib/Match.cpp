@@ -24,50 +24,6 @@ namespace bw
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName))
 	{
-		MapData mapData;
-		mapData.tileSize = 64.f;
-
-		auto& layer = mapData.layers.emplace_back();
-		layer.width = 80;
-		layer.height = 13;
-		/*layer.tiles = {
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
-		};*/
-
-		for (std::size_t y = 0; y < layer.height; ++y)
-		{
-			Nz::UInt8 blockType = 0;
-			if (y == 10)
-				blockType = 2;
-			else if (y > 10)
-				blockType = 1;
-
-			Nz::UInt8 originalBlockType = blockType;
-			for (std::size_t x = 0; x < layer.width; ++x)
-			{
-				if (x == 0 || x == layer.width - 1)
-					blockType = 1;
-				else if (x > 10 && x < 15)
-					blockType = 0;
-				else
-					blockType = originalBlockType;
-
-				layer.tiles.push_back(blockType);
-			}
-		}
-
 		m_scriptingContext = std::make_shared<ServerScriptingContext>();
 		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
 
@@ -105,9 +61,7 @@ namespace bw
 		});
 
 		Map map = Map::LoadFromBinary("mapdetest.bmap");
-		mapData.backgroundColor = map.GetLayer(0).backgroundColor; //< Ni vu, ni connu :-°
-
-		m_terrain = std::make_unique<Terrain>(app, *this, std::move(mapData), std::move(map));
+		m_terrain = std::make_unique<Terrain>(app, *this, std::move(map));
 
 		m_gamemode->ExecuteCallback("OnInit");
 	}

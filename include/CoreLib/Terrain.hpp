@@ -8,7 +8,6 @@
 #define BURGWAR_CORELIB_TERRAIN_HPP
 
 #include <CoreLib/Map.hpp>
-#include <CoreLib/MapData.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <vector>
 
@@ -20,21 +19,21 @@ namespace bw
 	class Terrain
 	{
 		public:
-			Terrain(BurgApp& app, Match& match, MapData mapData, Map mapData2);
+			Terrain(BurgApp& app, Match& match, Map map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
 			inline TerrainLayer& GetLayer(std::size_t layerIndex);
 			inline const TerrainLayer& GetLayer(std::size_t layerIndex) const;
 			inline std::size_t GetLayerCount() const;
-			inline const MapData& GetMapData() const;
+			inline const Map& GetMap() const;
 
 			void Update(float elapsedTime);
 
 			Terrain& operator=(const Terrain&) = delete;
 
 		private:
-			MapData m_mapData;
+			Map m_map;
 			std::vector<TerrainLayer> m_layers; //< Shouldn't resize because of raw pointer in Player
 	};
 }

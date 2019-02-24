@@ -276,24 +276,11 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, MatchData& data)
 		{
-			serializer &= data.backgroundColor;
 			serializer &= data.gamemodePath;
-			serializer &= data.tileSize;
 
 			serializer.SerializeArraySize(data.layers);
 			for (auto& layer : data.layers)
-			{
-				serializer &= layer.width;
-				serializer &= layer.height;
-
-				if (!serializer.IsWriting())
-					layer.tiles.resize(layer.width * layer.height);
-
-				assert(layer.tiles.size() == layer.width * layer.height);
-
-				for (Nz::UInt8& tile : layer.tiles)
-					serializer &= tile;
-			}
+				serializer &= layer.backgroundColor;
 		}
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)

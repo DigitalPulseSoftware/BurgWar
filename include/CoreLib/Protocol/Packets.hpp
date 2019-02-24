@@ -182,14 +182,10 @@ namespace bw
 		{
 			struct Layer
 			{
-				Nz::UInt16 height;
-				Nz::UInt16 width;
-				std::vector<Nz::UInt8> tiles; //< 0 = empty, 1 = dirt, 2 = dirt w/ grass
+				Nz::Color backgroundColor;
 			};
 
 			std::vector<Layer> layers;
-			Nz::Color backgroundColor;
-			float tileSize;
 			std::string gamemodePath;
 		};
 

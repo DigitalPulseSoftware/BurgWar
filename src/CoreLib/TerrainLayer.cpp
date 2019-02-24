@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const MapData::Layer& layerData, const Map::Layer& layerData2, float tileSize)
+	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData)
 	{
 		m_world.AddSystem<AnimationSystem>(app);
 		m_world.AddSystem<NetworkSyncSystem>();
@@ -32,39 +32,10 @@ namespace bw
 		physics.SetStepSize(1.f / 40.f);*/
 
 
-		// Create map collider
-		const Ndk::EntityHandle& map = m_world.CreateEntity();
-
-		std::vector<Nz::Collider2DRef> colliders;
-		for (std::size_t y = 0; y < layerData.height; ++y)
-		{
-			for (std::size_t x = 0; x < layerData.width; ++x)
-			{
-				if (layerData.tiles[y * layerData.width + x] != 0)
-				{
-					std::size_t startX = x++;
-
-					while (x < layerData.width && layerData.tiles[y * layerData.width + x] != 0) ++x;
-
-					std::cout << "[server] " << Nz::Rectf(startX * tileSize, y * tileSize, (x - startX) * tileSize, tileSize) << std::endl;
-					colliders.emplace_back(Nz::BoxCollider2D::New(Nz::Rectf(startX * tileSize, y * tileSize, (x - startX) * tileSize, tileSize)));
-				}
-			}
-		}
-
-		Nz::CompoundCollider2DRef collider = Nz::CompoundCollider2D::New(std::move(colliders));
-		collider->SetCollisionId(0);
-
-		map->AddComponent<Ndk::NodeComponent>().SetPosition(0.f, 0.f);
-		map->AddComponent<Ndk::CollisionComponent2D>(collider);
-		auto& theColliderPhys = map->AddComponent<Ndk::PhysicsComponent2D>();
-		theColliderPhys.SetMass(0.f);
-		theColliderPhys.SetFriction(1.f);
-
 		auto& entityStore = match.GetEntityStore();
-		for (const Map::Entity& entityData : layerData2.entities)
+		for (const Map::Entity& entityData : layerData.entities)
 		{
-			std::size_t entityTypeIndex = entityStore.GetElementIndex("entity_" + entityData.entityType);
+			std::size_t entityTypeIndex = entityStore.GetElementIndex(entityData.entityType);
 			if (entityTypeIndex == entityStore.InvalidIndex)
 			{
 				std::cerr << "Unknown entity type " + entityData.entityType << std::endl;

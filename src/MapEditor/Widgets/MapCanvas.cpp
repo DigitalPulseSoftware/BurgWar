@@ -9,6 +9,7 @@
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 #include <iostream>
 
@@ -19,6 +20,7 @@ namespace bw
 	m_editor(editor),
 	m_world(false)
 	{
+		m_world.AddSystem<Ndk::PhysicsSystem2D>();
 		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 

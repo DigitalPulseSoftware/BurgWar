@@ -24,8 +24,8 @@ namespace bw
 		return m_layers.size();
 	}
 
-	inline const MapData & Terrain::GetMapData() const
+	inline const Map& Terrain::GetMap() const
 	{
-		return m_mapData;
+		return m_map;
 	}
 }

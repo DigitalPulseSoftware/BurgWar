@@ -33,6 +33,9 @@ namespace sol
 	template<>
 	struct lua_type_of<Nz::Vector2f> : std::integral_constant<sol::type, sol::type::table> {};
 
+	template<>
+	struct lua_type_of<Nz::Vector2ui> : std::integral_constant<sol::type, sol::type::table> {};
+
 	namespace stack
 	{
 		template<>
@@ -59,6 +62,32 @@ namespace sol
 				return success;
 			}
 		};
+
+		template<>
+		struct checker<Nz::Vector2ui>
+		{
+			template<typename Handler>
+			static bool check(lua_State* L, int index, Handler&& handler, record& tracking)
+			{
+				int absoluteIndex = lua_absindex(L, index);
+				bool success = stack::check<sol::table>(L, absoluteIndex, handler);
+				if (success)
+				{
+					luaL_getmetatable(L, "vec2");
+					sol::stack_table expectedMetatable;
+
+					lua_getmetatable(L, absoluteIndex);
+
+					success = lua_rawequal(L, -1, -2);
+
+					lua_pop(L, 2);
+				}
+				tracking.use(1);
+
+				return success;
+			}
+		};
+
 
 		template <>
 		struct getter<Nz::Rectf>
@@ -97,6 +126,23 @@ namespace sol
 		};
 
 		template <>
+		struct getter<Nz::Vector2ui>
+		{
+			static Nz::Vector2ui get(lua_State* L, int index, record& tracking)
+			{
+				int absoluteIndex = lua_absindex(L, index);
+
+				sol::table vec(L, absoluteIndex);
+				unsigned int x = vec["x"];
+				unsigned int y = vec["y"];
+
+				tracking.use(1);
+
+				return Nz::Vector2ui(x, y);
+			}
+		};
+
+		template <>
 		struct pusher<bw::InputData>
 		{
 			static int push(lua_State* L, const bw::InputData& inputs)
@@ -116,6 +162,21 @@ namespace sol
 		struct pusher<Nz::Vector2f>
 		{
 			static int push(lua_State* L, const Nz::Vector2f& v)
+			{
+				lua_createtable(L, 0, 2);
+				luaL_setmetatable(L, "vec2");
+				sol::stack_table vec(L);
+				vec["x"] = v.x;
+				vec["y"] = v.y;
+
+				return 1;
+			}
+		};
+
+		template <>
+		struct pusher<Nz::Vector2ui>
+		{
+			static int push(lua_State* L, const Nz::Vector2ui& v)
 			{
 				lua_createtable(L, 0, 2);
 				luaL_setmetatable(L, "vec2");
