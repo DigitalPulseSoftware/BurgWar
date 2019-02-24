@@ -267,7 +267,13 @@ namespace bw
 			layerEntity.properties = entityInfo.properties;
 			layerEntity.rotation = entityInfo.rotation;
 
-			m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
+			//m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
+			m_canvas->DeleteEntity(canvasId);
+			m_entityIndexes.erase(canvasId);
+
+			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties);
+			m_entityIndexes.emplace(newCanvasId, entityIndex);
+			item->setData(Qt::UserRole + 1, newCanvasId);
 
 			bool resetItemName = false;
 			if (layerEntity.entityType != entityInfo.entityClass)
@@ -289,6 +295,12 @@ namespace bw
 					entryName = entryName % " (" % QString::fromStdString(layerEntity.name) % ")";
 
 				item->setText(entryName);
+			}
+
+			if (item->isSelected())
+			{
+				item->setSelected(false);
+				item->setSelected(true);
 			}
 		});
 

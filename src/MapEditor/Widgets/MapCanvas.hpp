@@ -28,6 +28,7 @@ namespace bw
 			void ClearEntitySelection();
 
 			Ndk::EntityId CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
+			void DeleteEntity(Ndk::EntityId entityId);
 
 			void EditEntityPosition(Ndk::EntityId entityId);
 

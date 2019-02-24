@@ -23,6 +23,8 @@ namespace bw
 			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity);
 			~PositionGizmo() = default;
 
+			inline const Ndk::EntityHandle& GetMovedEntity() const;
+
 			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*newPosition*/);
 
 		private:
@@ -52,6 +54,6 @@ namespace bw
 	};
 }
 
-#include <MapEditor/Widgets/MapCanvas.inl>
+#include <MapEditor/Gizmos/PositionGizmo.inl>
 
 #endif

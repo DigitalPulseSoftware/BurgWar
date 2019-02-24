@@ -55,6 +55,7 @@ namespace bw
 			entity->Kill();
 
 		m_mapEntities.Clear();
+		m_positionGizmo.reset();
 	}
 
 	void MapCanvas::ClearEntitySelection()
@@ -73,6 +74,17 @@ namespace bw
 		m_mapEntities.Insert(entity);
 
 		return entity->GetId();
+	}
+
+	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)
+	{
+		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
+		assert(entity);
+
+		if (m_positionGizmo && m_positionGizmo->GetMovedEntity() == entity) 
+			m_positionGizmo.reset();
+
+		entity->Kill();
 	}
 
 	void MapCanvas::EditEntityPosition(Ndk::EntityId entityId)
