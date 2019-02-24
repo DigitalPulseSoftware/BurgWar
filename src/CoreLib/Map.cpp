@@ -342,10 +342,10 @@ namespace bw
 
 					switch (propertyType)
 					{
-						case 0: Unserialize(bool()); break;
-						case 1: Unserialize(float()); break;
-						case 2: Unserialize(Nz::Int64()); break;
-						case 3: Unserialize(std::string()); break;
+						case 0: case 1: Unserialize(bool()); break;
+						case 2: case 3: Unserialize(float()); break;
+						case 4: case 5: Unserialize(Nz::Int64()); break;
+						case 6: case 7: Unserialize(std::string()); break;
 
 						default:
 							throw std::runtime_error("Unexpected type index " + std::to_string(propertyType) + " for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
