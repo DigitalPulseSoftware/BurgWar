@@ -27,34 +27,41 @@ namespace bw
 	PropertyType ParsePropertyType(const std::string_view& str);
 
 	template<typename T> 
-	class EntityPropertyContainer
+	class EntityPropertyArray
 	{
 		public:
 			using StoredType = T;
 
-			explicit EntityPropertyContainer(bool isArray, std::size_t elementCount);
-			explicit EntityPropertyContainer(const T& value);
-			explicit EntityPropertyContainer(T&& value);
-			EntityPropertyContainer(const EntityPropertyContainer&);
-			EntityPropertyContainer(EntityPropertyContainer&&) noexcept = default;
-			~EntityPropertyContainer() = default;
-
-			bool IsArray() const;
+			explicit EntityPropertyArray(std::size_t elementCount);
+			EntityPropertyArray(const EntityPropertyArray&);
+			EntityPropertyArray(EntityPropertyArray&&) noexcept = default;
+			~EntityPropertyArray() = default;
 
 			T& GetElement(std::size_t i);
 			const T& GetElement(std::size_t i) const;
 			std::size_t GetSize() const;
 
-			EntityPropertyContainer& operator=(const EntityPropertyContainer&);
-			EntityPropertyContainer& operator=(EntityPropertyContainer&&) noexcept = default;
+			T& operator[](std::size_t i);
+			const T& operator[](std::size_t i) const;
+
+			// To allow range-for loops
+			T* begin() const;
+			T* end() const;
+			std::size_t size() const;
+
+			EntityPropertyArray& operator=(const EntityPropertyArray&);
+			EntityPropertyArray& operator=(EntityPropertyArray&&) noexcept = default;
 
 		private:
-			std::optional<T> m_singleData;
-			std::size_t m_elementCount;
+			std::size_t m_size;
 			std::unique_ptr<T[]> m_arrayData;
 	};
 
-	using EntityProperty = std::variant<std::monostate, EntityPropertyContainer<bool>, EntityPropertyContainer<float>, EntityPropertyContainer<Nz::Int64>, EntityPropertyContainer<std::string>>;
+	using EntityProperty = std::variant<bool, EntityPropertyArray<bool>,
+	                                    float, EntityPropertyArray<float>,
+	                                    Nz::Int64, EntityPropertyArray<Nz::Int64>,
+	                                    std::string, EntityPropertyArray<std::string>>;
+	
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
 }
 

@@ -12,6 +12,7 @@
 #include <hopscotch/hopscotch_map.h>
 #include <sol2/sol.hpp>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace bw
@@ -21,7 +22,7 @@ namespace bw
 		struct Property
 		{
 			PropertyType type;
-			EntityProperty defaultValue;
+			std::optional<EntityProperty> defaultValue;
 			bool isArray = false;
 			bool shared = false;
 		};

@@ -107,7 +107,7 @@ namespace bw
 
 			struct Properties
 			{
-				using PropertyValue = std::variant<std::monostate, std::vector<bool>, std::vector<float>, std::vector<Nz::Int64>, std::vector<std::string>>;
+				using PropertyValue = std::variant<std::vector<bool>, std::vector<float>, std::vector<Nz::Int64>, std::vector<std::string>>;
 
 				CompressedUnsigned<Nz::UInt32> name;
 				PropertyValue value;

@@ -133,7 +133,7 @@ namespace bw
 					serializer &= property.isArray;
 
 					// Read/write value
-					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 5);
+					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 4);
 
 					// Waiting for template lambda in C++20
 					auto SerializeValue = [&](auto dummyType)
@@ -162,13 +162,7 @@ namespace bw
 
 					switch (dataType)
 					{
-						case 0: // std::monostate
-							if (!serializer.IsWriting())
-								property.value = std::monostate{};
-
-							break;
-
-						case 1:
+						case 0:
 						{
 							// Handle std::vector<bool> specialization
 							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(property.value) : property.value.emplace<std::vector<bool>>();
@@ -193,10 +187,10 @@ namespace bw
 							break;
 						}
 
-						case 2: SerializeValue(float()); break;
-						case 3: SerializeValue(Nz::Int64()); break;
+						case 1: SerializeValue(float()); break;
+						case 2: SerializeValue(Nz::Int64()); break;
 
-						case 4: // std::string
+						case 3: // std::string
 						{
 							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
 

@@ -37,6 +37,26 @@ namespace bw
 		}
 	};
 
+	// std::is_same but for containers
+	template<template<typename...> typename T, typename U>
+	struct IsSameTpl
+	{
+		using ContainedType = void;
+
+		static constexpr bool value = false;
+	};
+
+	template<template<typename...> typename T, template<typename...> typename U, typename Us>
+	struct IsSameTpl<T, U<Us>>
+	{
+		using ContainedType = Us;
+
+		static constexpr bool value = std::is_same_v<T<Us>, U<Us>>;
+	};
+
+	template<template<typename...> typename T, typename U>
+	inline constexpr bool IsSameTpl_v = IsSameTpl<T, U>::value;
+
 	template<typename... Args> constexpr OverloadResolver<Args...> Overload = {};
 
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);

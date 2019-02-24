@@ -108,8 +108,6 @@ namespace bw
 							for (std::size_t i = 0; i < elementCount; ++i)
 								vec.emplace_back(std::move(value.GetElement(i)));
 						}
-						else if constexpr (std::is_same_v<T, std::monostate>)
-							; // Nothing to do
 						else
 							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 

@@ -8,95 +8,78 @@
 namespace bw
 {
 	template<typename T>
-	EntityPropertyContainer<T>::EntityPropertyContainer(bool isArray, std::size_t elementCount) :
-	m_elementCount(elementCount)
+	EntityPropertyArray<T>::EntityPropertyArray(std::size_t elementCount) :
+	m_size(elementCount)
 	{
-		if (isArray)
-			m_arrayData = std::make_unique<T[]>(m_elementCount);
-		else
-		{
-			assert(m_elementCount == 1);
-			m_singleData.emplace();
-		}
+		m_arrayData = std::make_unique<T[]>(m_size);
 	}
 
 	template<typename T>
-	EntityPropertyContainer<T>::EntityPropertyContainer(const T& value) :
-	m_elementCount(1)
-	{
-		m_singleData.emplace(value);
-	}
-
-	template<typename T>
-	EntityPropertyContainer<T>::EntityPropertyContainer(T&& value) :
-	m_elementCount(1)
-	{
-		m_singleData.emplace(std::move(value));
-	}
-
-	template<typename T>
-	EntityPropertyContainer<T>::EntityPropertyContainer(const EntityPropertyContainer& container)
+	EntityPropertyArray<T>::EntityPropertyArray(const EntityPropertyArray& container)
 	{
 		*this = container;
 	}
 
 	template<typename T>
-	T& EntityPropertyContainer<T>::GetElement(std::size_t i)
+	T& EntityPropertyArray<T>::GetElement(std::size_t i)
 	{
-		if (IsArray())
-		{
-			assert(i < m_elementCount);
-			return m_arrayData[i];
-		}
-		else
-		{
-			assert(i == 0);
-			return m_singleData.value();
-		}
+		assert(i < m_size);
+		return m_arrayData[i];
 	}
 
 	template<typename T>
-	const T& EntityPropertyContainer<T>::GetElement(std::size_t i) const
+	const T& EntityPropertyArray<T>::GetElement(std::size_t i) const
 	{
-		if (IsArray())
-		{
-			assert(i < m_elementCount);
-			return m_arrayData[i];
-		}
-		else
-		{
-			assert(i == 0);
-			return m_singleData.value();
-		}
+		assert(i < m_size);
+		return m_arrayData[i];
 	}
 
 	template<typename T>
-	std::size_t EntityPropertyContainer<T>::GetSize() const
+	std::size_t EntityPropertyArray<T>::GetSize() const
 	{
-		return m_elementCount;
+		return m_size;
 	}
 
 	template<typename T>
-	EntityPropertyContainer<T>& EntityPropertyContainer<T>::operator=(const EntityPropertyContainer& container)
+	T& EntityPropertyArray<T>::operator[](std::size_t i)
+	{
+		return GetElement(i);
+	}
+
+	template<typename T>
+	const T& EntityPropertyArray<T>::operator[](std::size_t i) const
+	{
+		return GetElement(i);
+	}
+
+	template<typename T>
+	inline T* EntityPropertyArray<T>::begin() const
+	{
+		return &m_arrayData[0];
+	}
+
+	template<typename T>
+	inline T* EntityPropertyArray<T>::end() const
+	{
+		return &m_arrayData[m_size];
+	}
+
+	template<typename T>
+	std::size_t EntityPropertyArray<T>::size() const
+	{
+		return GetSize();
+	}
+
+	template<typename T>
+	EntityPropertyArray<T>& EntityPropertyArray<T>::operator=(const EntityPropertyArray& container)
 	{
 		if (this == &container)
 			return *this;
 
-		m_elementCount = container.m_elementCount;
-		if (container.m_singleData.has_value())
-			m_singleData = container.m_singleData;
-		else
-		{
-			m_arrayData = std::make_unique<T[]>(m_elementCount);
-			std::copy(container.m_arrayData.get(), container.m_arrayData.get() + m_elementCount, m_arrayData.get());
-		}
+		m_size = container.m_size;
+		m_arrayData = std::make_unique<T[]>(m_size);
+		std::copy(container.m_arrayData.get(), container.m_arrayData.get() + m_size, m_arrayData.get());
 
 		return *this;
-	}
-
-	template<typename T>
-	bool EntityPropertyContainer<T>::IsArray() const
-	{
-		return !m_singleData.has_value();
 	}
 }

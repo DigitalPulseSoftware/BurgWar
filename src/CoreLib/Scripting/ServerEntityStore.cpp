@@ -21,14 +21,10 @@ namespace bw
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
-		std::string spritePath;
 		bool playerControlled;
-		float scale;
 		try
 		{
 			playerControlled = entityClass->elementTable["PlayerControlled"];
-			scale = entityClass->elementTable["Scale"];
-			spritePath = entityClass->elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
@@ -36,9 +32,6 @@ namespace bw
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 
-
-		Nz::ImageRef boxImage = Nz::ImageManager::Get(spritePath);
-		Nz::Vector2f imageSize = Nz::Vector2f(Nz::Vector3f(boxImage->GetSize())) * scale;
 
 		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 

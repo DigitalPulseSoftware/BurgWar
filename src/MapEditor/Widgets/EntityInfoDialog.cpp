@@ -163,14 +163,27 @@ namespace bw
 
 		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
 
-		// Build property list
+		// Build property list and ensure relevant properties are stored
+		EntityProperties oldProperties = std::move(m_entityInfo.properties);
+		m_entityInfo.properties.clear(); // Put back in a valid state
+
 		m_properties.clear();
 		for (const auto& propertyInfo : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
+			propertyData.defaultValue = *propertyInfo.second.defaultValue;
 			propertyData.keyName = propertyInfo.first;
 			propertyData.visualName = propertyData.keyName; //< FIXME
 			propertyData.type = propertyInfo.second.type;
+
+			if (auto it = oldProperties.find(propertyData.keyName); it != oldProperties.end())
+			{
+				// Only keep old property value if types are compatibles
+				if (it->second.index() == propertyInfo.second.defaultValue->index())
+					m_entityInfo.properties.emplace(std::move(it.key()), std::move(it.value()));
+
+				oldProperties.erase(it);
+			}
 		}
 
 		std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.keyName < second.keyName; });
@@ -201,26 +214,87 @@ namespace bw
 			if (auto it = m_entityInfo.properties.find(propertyInfo.keyName); it != m_entityInfo.properties.end())
 				return it->second;
 			else
-			{
-				static EntityProperty emptyProperty;
-				return emptyProperty;
-			}
+				return propertyInfo.defaultValue;
 		};
 
 		const EntityProperty& property = GetProperty();
 
 		QVBoxLayout* layout = new QVBoxLayout;
+
+		/*std::visit([&](auto&& propertyValue)
+		{
+			using T = std::decay_t<decltype(propertyValue)>;
+			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+			using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+
+			if constexpr (!IsArray) //< FIXME
+			{
+				if constexpr (std::is_same_v<PropertyType, bool>)
+				{
+					QCheckBox* checkBox = new QCheckBox;
+					checkBox->setChecked(propertyValue);
+
+					connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName](bool checked)
+					{
+						m_entityInfo.properties[keyName] = checked;
+					});
+
+					layout->addWidget(checkBox);
+				}
+				else if constexpr (std::is_same_v<PropertyType, float>)
+				{
+					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
+					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
+					spinbox->setValue(propertyValue);
+
+					connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = float(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+				}
+				else if constexpr (std::is_same_v<PropertyType, Nz::Int64>)
+				{
+					// TODO: Handle properly int64
+					QSpinBox* spinbox = new QSpinBox;
+					spinbox->setValue(propertyValue);
+
+					connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+				}
+				else if constexpr (std::is_same_v<PropertyType, std::string>)
+				{
+					QLineEdit* lineEdit = new QLineEdit;
+					if (std::holds_alternative<EntityPropertyContainer<std::string>>(property))
+						lineEdit->setText(QString::fromStdString(std::get<EntityPropertyContainer<std::string>>(property).GetElement(0)));
+
+					connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = EntityPropertyContainer(lineEdit->text().toStdString());
+					});
+				}
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+			}
+
+		}, property);*/
+
 		switch (propertyInfo.type)
 		{
 			case PropertyType::Bool:
 			{
 				QCheckBox* checkBox = new QCheckBox;
-				if (std::holds_alternative<EntityPropertyContainer<bool>>(property))
-					checkBox->setChecked(std::get<EntityPropertyContainer<bool>>(property).GetElement(0));
+				if (std::holds_alternative<bool>(property))
+					checkBox->setChecked(std::get<bool>(property));
 
 				connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName](bool checked)
 				{
-					m_entityInfo.properties[keyName] = EntityPropertyContainer(checked);
+					m_entityInfo.properties[keyName] = checked;
 				});
 
 				layout->addWidget(checkBox);
@@ -231,12 +305,12 @@ namespace bw
 			{
 				QDoubleSpinBox* spinbox = new QDoubleSpinBox;
 				spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-				if (std::holds_alternative<EntityPropertyContainer<float>>(property))
-					spinbox->setValue(std::get<EntityPropertyContainer<float>>(property).GetElement(0));
+				if (std::holds_alternative<float>(property))
+					spinbox->setValue(std::get<float>(property));
 
 				connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = EntityPropertyContainer(float(spinbox->value()));
+					m_entityInfo.properties[keyName] = float(spinbox->value());
 				});
 
 				layout->addWidget(spinbox);
@@ -247,12 +321,12 @@ namespace bw
 			{
 				// TODO: Handle properly int64
 				QSpinBox* spinbox = new QSpinBox;
-				if (std::holds_alternative<EntityPropertyContainer<Nz::Int64>>(property))
-					spinbox->setValue(std::get<EntityPropertyContainer<Nz::Int64>>(property).GetElement(0));
+				if (std::holds_alternative<Nz::Int64>(property))
+					spinbox->setValue(std::get<Nz::Int64>(property));
 
 				connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = EntityPropertyContainer(Nz::Int64(spinbox->value()));
+					m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
 				});
 
 				layout->addWidget(spinbox);
@@ -263,12 +337,12 @@ namespace bw
 			case PropertyType::Texture:
 			{
 				QLineEdit* lineEdit = new QLineEdit;
-				if (std::holds_alternative<EntityPropertyContainer<std::string>>(property))
-					lineEdit->setText(QString::fromStdString(std::get<EntityPropertyContainer<std::string>>(property).GetElement(0)));
+				if (std::holds_alternative<std::string>(property))
+					lineEdit->setText(QString::fromStdString(std::get<std::string>(property)));
 
 				connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName]()
 				{
-					m_entityInfo.properties[keyName] = EntityPropertyContainer(lineEdit->text().toStdString());
+					m_entityInfo.properties[keyName] = lineEdit->text().toStdString();
 				});
 
 				layout->addWidget(lineEdit);

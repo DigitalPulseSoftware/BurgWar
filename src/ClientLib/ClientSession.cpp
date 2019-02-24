@@ -143,15 +143,17 @@ namespace bw
 					{
 						using StoredType = typename T::value_type;
 
-						EntityPropertyContainer<StoredType> elements(property.isArray, value.size());
+						if (property.isArray)
+						{
+							EntityPropertyArray<StoredType> elements(value.size());
+							for (std::size_t i = 0; i < value.size(); ++i)
+								elements[i] = value[i];
 
-						for (std::size_t i = 0; i < value.size(); ++i)
-							elements.GetElement(i) = value[i];
-
-						properties.emplace(propertyName, std::move(elements));
+							properties.emplace(propertyName, std::move(elements));
+						}
+						else
+							properties.emplace(propertyName, value.front());
 					}
-					else if constexpr (std::is_same_v<T, std::monostate>)
-						properties.emplace(propertyName, std::monostate{});
 					else
 						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 

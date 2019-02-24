@@ -98,32 +98,31 @@ namespace bw
 			if (propertyVal.has_value())
 			{
 				const EntityProperty& property = propertyVal.value();
-				assert(!std::holds_alternative<std::monostate>(property));
 
 				return std::visit([&](auto&& value) -> sol::object
 				{
 					using T = std::decay_t<decltype(value)>;
+					constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+					using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-					if constexpr (std::is_same_v<T, EntityPropertyContainer<bool>> || 
-					              std::is_same_v<T, EntityPropertyContainer<float>> || 
-					              std::is_same_v<T, EntityPropertyContainer<Nz::Int64>> || 
-					              std::is_same_v<T, EntityPropertyContainer<std::string>>)
+					if constexpr (std::is_same_v<PropertyType, bool> || 
+					              std::is_same_v<PropertyType, float> || 
+					              std::is_same_v<PropertyType, Nz::Int64> || 
+					              std::is_same_v<PropertyType, std::string>)
 					{
-						if (value.IsArray())
+						if constexpr (IsArray)
 						{
 							std::size_t elementCount = value.GetSize();
 							sol::table content = lua.create_table(int(elementCount));
 
 							for (std::size_t i = 0; i < elementCount; ++i)
-								content[i + 1] = sol::make_object(lua, value.GetElement(i));
+								content[i + 1] = sol::make_object(lua, value[i]);
 							
 							return content;
 						}
 						else
-							return sol::make_object(lua, value.GetElement(0));
+							return sol::make_object(lua, value);
 					}
-					else if constexpr (std::is_same_v<T, std::monostate>)
-						throw std::runtime_error("Unexpected monostate in property");
 					else
 						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
@@ -203,41 +202,38 @@ namespace bw
 						property.isArray = propertyArray.as<bool>();
 
 					sol::object propertyDefault = propertyTable["Default"];
-					if (propertyDefault)
+					
+					// Waiting for C++20 template lambda
+					auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
 					{
-						// Waiting for C++20 template lambda
+						using T = std::decay_t<decltype(dummyType)>;
 
-						auto PropertyChecker = [&](auto dummyType, std::initializer_list<PropertyType> expectedTypes)
+						if (property.isArray)
 						{
-							using T = std::decay_t<decltype(dummyType)>;
-
-							if (property.isArray)
+							assert(!"Todo");
+							return false;
+						}
+						else
+						{
+							if (propertyDefault.is<T>())
 							{
-								assert(!"Todo");
-								return false;
+								if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
+									throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
+
+								property.defaultValue = propertyDefault.as<T>();
+								return true;
 							}
 							else
-							{
-								if (propertyDefault.is<T>())
-								{
-									if (std::find(expectedTypes.begin(), expectedTypes.end(), property.type) == expectedTypes.end())
-										throw std::runtime_error("Property " + propertyName + " default value doesn't match property type");
-
-									property.defaultValue = EntityPropertyContainer<T>(propertyDefault.as<T>());
-									return true;
-								}
-								else
-									return false;
-							}
-						};
-
-						if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
-						    !PropertyChecker(float(), { PropertyType::Float }) &&
-						    !PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
-						    !PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
-						{
-							throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
+								return false;
 						}
+					};
+
+					if (!PropertyChecker(bool(), { PropertyType::Bool }) &&
+					    !PropertyChecker(float(), { PropertyType::Float }) &&
+					    !PropertyChecker(Nz::Int64(), { PropertyType::Integer }) &&
+					    !PropertyChecker(std::string(), { PropertyType::String, PropertyType::Texture }))
+					{
+						throw std::runtime_error("Property " + propertyName + " default value has unhandled type");
 					}
 
 					auto it = element->properties.find(propertyName);
@@ -286,14 +282,16 @@ namespace bw
 
 				//TODO: Check property type
 
-				filteredProperties[propertyName] = it->second;
+				filteredProperties.emplace(propertyName, it->second);
 			}
+/*
 			else
 			{
 				// Property doesn't exist, check for it's default value
-				if (std::holds_alternative<std::monostate>(propertyInfo.defaultValue))
+				if (!propertyInfo.defaultValue)
 					throw std::runtime_error("Missing property " + propertyName);
 			}
+*/
 		}
 
 		const auto& scriptingContext = GetScriptingContext();

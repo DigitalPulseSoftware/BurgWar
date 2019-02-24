@@ -57,6 +57,7 @@ namespace bw
 			{
 				std::string keyName;
 				std::string visualName;
+				EntityProperty defaultValue;
 				PropertyType type;
 			};
 
