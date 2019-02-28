@@ -376,6 +376,7 @@ namespace bw
 		if (isArray)
 		{
 			QSpinBox* spinbox = new QSpinBox;
+			spinbox->setRange(0, std::numeric_limits<int>::max());
 			spinbox->setValue(arraySize);
 
 			QPushButton* updateButton = new QPushButton(tr("Update"));
@@ -433,11 +434,7 @@ namespace bw
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
 					tableView->setModel(model);
 
-					model->setRowCount(arraySize);
-
-					QStringList headerLabels;
-					headerLabels << "Enabled";
-					model->setHorizontalHeaderLabels(headerLabels);
+					model->setHorizontalHeaderLabels({ QString("Enabled") });
 
 					for (std::size_t i = 0; i < arraySize; ++i)
 					{
@@ -447,6 +444,14 @@ namespace bw
 
 						model->setItem(i, 0, item);
 					}
+
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
+					{
+						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+
+						int rowIndex = item->index().row();
+						propertyArray[rowIndex] = (item->checkState() == Qt::Checked);
+					});
 
 					layout->addWidget(tableView);
 					break;
@@ -463,17 +468,18 @@ namespace bw
 					tableView->setModel(model);
 					tableView->setItemDelegate(new FloatPropertyDelegate); //FIXME
 
-					model->setRowCount(arraySize);
-
-					QStringList headerLabels;
-					headerLabels << "Value";
-					model->setHorizontalHeaderLabels(headerLabels);
+					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (std::size_t i = 0; i < arraySize; ++i)
+						model->setData(model->index(i, 0), double(propertyArray[i]), Qt::EditRole);
+
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
 					{
-						QModelIndex index = model->index(i, 0, QModelIndex());
-						model->setData(index, double(propertyArray[i]), Qt::EditRole);
-					}
+						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+
+						int rowIndex = item->index().row();
+						propertyArray[rowIndex] = item->data(Qt::EditRole).toDouble();
+					});
 
 					layout->addWidget(tableView);
 					break;
@@ -491,14 +497,18 @@ namespace bw
 
 					tableView->setItemDelegate(new IntegerPropertyDelegate); //FIXME
 
-					model->setRowCount(arraySize);
-
-					QStringList headerLabels;
-					headerLabels << "Value";
-					model->setHorizontalHeaderLabels(headerLabels);
+					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (std::size_t i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), int(propertyArray[i]), Qt::EditRole); //< FIXME
+
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
+					{
+						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+
+						int rowIndex = item->index().row();
+						propertyArray[rowIndex] = item->data(Qt::EditRole).toInt();
+					});
 
 					layout->addWidget(tableView);
 					break;
@@ -507,6 +517,27 @@ namespace bw
 				case PropertyType::String:
 				case PropertyType::Texture:
 				{
+					using T = EntityPropertyArray<std::string>;
+
+					auto& propertyArray = std::get<T>(property);
+
+					QTableWidget* table = new QTableWidget(arraySize, 1);
+					table->setHorizontalHeaderLabels({ QString("Value") });
+					table->setSelectionMode(QAbstractItemView::NoSelection);
+					table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
+
+					QAbstractItemModel* model = table->model();
+					for (std::size_t i = 0; i < arraySize; ++i)
+						model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
+
+					connect(table, &QTableWidget::cellChanged, [this, keyName = propertyInfo.keyName, table](int row, int column)
+					{
+						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+						propertyArray[row] = table->item(row, column)->text().toStdString();
+					});
+
+					layout->addWidget(table);
+					break;
 				}
 
 				default:
