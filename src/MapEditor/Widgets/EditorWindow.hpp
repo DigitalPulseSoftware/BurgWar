@@ -8,9 +8,9 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
 #include <NDK/Prerequisites.hpp>
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
+#include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
 #include <tsl/hopscotch_map.h>
 #include <filesystem>
@@ -35,7 +35,7 @@ namespace bw
 
 			void ClearWorkingMap();
 
-			inline const ClientEntityStore& GetEntityStore() const;
+			inline const EditorEntityStore& GetEntityStore() const;
 
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
@@ -55,7 +55,7 @@ namespace bw
 			void RegisterEntity(std::size_t entityIndex);
 
 			std::filesystem::path m_workingMapPath;
-			std::optional<ClientEntityStore> m_clientEntityStore;
+			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<int> m_currentLayer;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;

@@ -29,12 +29,12 @@ namespace bw
 		m_scriptingContext = std::make_shared<ClientScriptingContext>(virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
 
-		m_clientEntityStore.emplace(m_scriptingContext);
+		m_entityStore.emplace(m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 
 		if (virtualDir->GetEntry("entities", &entry))
-			m_clientEntityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
+			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		// GUI
 		BuildMenu();

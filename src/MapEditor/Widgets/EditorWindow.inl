@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline const ClientEntityStore& EditorWindow::GetEntityStore() const
+	inline const EditorEntityStore& EditorWindow::GetEntityStore() const
 	{
-		return *m_clientEntityStore;
+		return *m_entityStore;
 	}
 }

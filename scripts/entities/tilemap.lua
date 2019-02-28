@@ -14,6 +14,36 @@ ENTITY.Properties = {
 	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true }
 }
 
+if (EDITOR) then
+	ENTITY.EditorActions = {
+		{ 
+			Name = "editTilemap",  
+			Label = "Edit Tilemap", 
+			OnTrigger = function (properties)
+				print("Oh j'édite une tilemap !")
+				--[[local tilemap = Editor:EditTileMap({
+					width = properties.width,
+					height = properties.height,
+					cellWidth = properties.cellWidth,
+					cellHeight = properties.cellHeight,
+					content = properties.content,
+					tiles = {
+						{ }
+					}
+				})
+
+				if (not tilemap) then
+					return
+				end]]
+
+				print(properties.width)
+
+				properties.width = 42
+			end
+		}
+	}
+end
+
 function ENTITY:Initialize()
 	local width = self:GetProperty("width")
 	local height = self:GetProperty("height")
