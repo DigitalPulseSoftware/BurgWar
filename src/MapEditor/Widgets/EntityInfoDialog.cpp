@@ -5,6 +5,7 @@
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <MapEditor/Widgets/PositionEditWidget.hpp>
+#include <QtGui/QStandardItemModel>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialogButtonBox>
@@ -16,6 +17,8 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QStyledItemDelegate>
+#include <QtWidgets/QTableView>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <iostream>
@@ -23,6 +26,75 @@
 
 namespace bw
 {
+	class FloatPropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				QDoubleSpinBox* editor = new QDoubleSpinBox(parent);
+				editor->setFrame(false);
+				editor->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
+
+				return editor;
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
+				spinBox->setValue(index.model()->data(index, Qt::EditRole).toDouble());
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
+				spinBox->interpretText();
+
+				model->setData(index, spinBox->value(), Qt::EditRole);
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+
+	class IntegerPropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				//TODO: Subclass for int64
+				QSpinBox* editor = new QSpinBox(parent);
+				editor->setFrame(false);
+				editor->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
+
+				return editor;
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
+				spinBox->setValue(index.model()->data(index, Qt::EditRole).toInt());
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
+				spinBox->interpretText();
+
+				model->setData(index, spinBox->value(), Qt::EditRole);
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+
 	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
@@ -349,104 +421,92 @@ namespace bw
 
 			layout->addLayout(arraySizeLayout);
 
-			QScrollArea* scrollarea = new QScrollArea;
-
-			QVBoxLayout* widgetList = new QVBoxLayout;
-			scrollarea->setLayout(widgetList);
-
-			layout->addWidget(scrollarea);
-
 			switch (propertyInfo.type)
 			{
 				case PropertyType::Bool:
 				{
+					using T = EntityPropertyArray<bool>;
+
+					auto& propertyArray = std::get<T>(property);
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setModel(model);
+
+					model->setRowCount(arraySize);
+
+					QStringList headerLabels;
+					headerLabels << "Enabled";
+					model->setHorizontalHeaderLabels(headerLabels);
+
 					for (std::size_t i = 0; i < arraySize; ++i)
 					{
-						QCheckBox* checkBox = new QCheckBox;
+						QStandardItem* item = new QStandardItem(1);
+						item->setCheckable(true);
+						item->setCheckState((propertyArray[i]) ? Qt::Checked : Qt::Unchecked);
 
-						using T = EntityPropertyArray<bool>;
-
-						auto& propertyArray = std::get<T>(property);
-						checkBox->setChecked(propertyArray[i]);
-
-						connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName, i](bool checked)
-						{
-							auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
-							propertyArray[i] = checked;
-						});
-
-						widgetList->addWidget(checkBox);
+						model->setItem(i, 0, item);
 					}
+
+					layout->addWidget(tableView);
 					break;
 				}
 
 				case PropertyType::Float:
 				{
+					using T = EntityPropertyArray<float>;
+
+					auto& propertyArray = std::get<T>(property);
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setModel(model);
+					tableView->setItemDelegate(new FloatPropertyDelegate); //FIXME
+
+					model->setRowCount(arraySize);
+
+					QStringList headerLabels;
+					headerLabels << "Value";
+					model->setHorizontalHeaderLabels(headerLabels);
+
 					for (std::size_t i = 0; i < arraySize; ++i)
 					{
-						QDoubleSpinBox* spinbox = new QDoubleSpinBox;
-						spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-
-						using T = EntityPropertyArray<float>;
-
-						auto& propertyArray = std::get<T>(property);
-						spinbox->setValue(propertyArray[i]);
-
-						connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName, i]()
-						{
-							auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
-							propertyArray[i] = float(spinbox->value());
-						});
-
-						widgetList->addWidget(spinbox);
+						QModelIndex index = model->index(i, 0, QModelIndex());
+						model->setData(index, double(propertyArray[i]), Qt::EditRole);
 					}
+
+					layout->addWidget(tableView);
 					break;
 				}
 
 				case PropertyType::Integer:
 				{
+					using T = EntityPropertyArray<Nz::Int64>;
+
+					auto& propertyArray = std::get<T>(property);
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setModel(model);
+
+					tableView->setItemDelegate(new IntegerPropertyDelegate); //FIXME
+
+					model->setRowCount(arraySize);
+
+					QStringList headerLabels;
+					headerLabels << "Value";
+					model->setHorizontalHeaderLabels(headerLabels);
+
 					for (std::size_t i = 0; i < arraySize; ++i)
-					{
-						// TODO: Handle properly int64
-						QSpinBox* spinbox = new QSpinBox;
-						
-						using T = EntityPropertyArray<Nz::Int64>;
+						model->setData(model->index(i, 0), int(propertyArray[i]), Qt::EditRole); //< FIXME
 
-						auto& propertyArray = std::get<T>(property);
-						spinbox->setValue(propertyArray[i]);
-
-						connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName, i]()
-						{
-							auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
-							propertyArray[i] = Nz::Int64(spinbox->value());
-						});
-
-						widgetList->addWidget(spinbox);
-					}
+					layout->addWidget(tableView);
 					break;
 				}
 
 				case PropertyType::String:
 				case PropertyType::Texture:
 				{
-					for (std::size_t i = 0; i < arraySize; ++i)
-					{
-						QLineEdit* lineEdit = new QLineEdit;
-
-						using T = EntityPropertyArray<std::string>;
-
-						auto& propertyArray = std::get<T>(property);
-						lineEdit->setText(QString::fromStdString(propertyArray[i]));
-
-						connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName, i]()
-						{
-							auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
-							propertyArray[i] = lineEdit->text().toStdString();
-						});
-
-						widgetList->addWidget(lineEdit);
-					}
-					break;
 				}
 
 				default:
