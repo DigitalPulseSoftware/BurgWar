@@ -17,6 +17,7 @@ class QComboBox;
 class QDoubleSpinBox;
 class QFormLayout;
 class QLabel;
+class QLayout;
 class QLineEdit;
 class QTableWidget;
 class QTextEdit;
@@ -25,6 +26,7 @@ class QWidget;
 namespace bw
 {
 	class ClientEntityStore;
+	class ClientScriptingContext;
 	class PositionEditWidget;
 
 	struct EntityInfo
@@ -39,8 +41,8 @@ namespace bw
 	class EntityInfoDialog : public QDialog
 	{
 		public:
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, QWidget* parent = nullptr);
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, EntityInfo entityInfo, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, EntityInfo entityInfo, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
 			const EntityInfo& GetEntityInfo() const;
@@ -64,14 +66,19 @@ namespace bw
 			std::size_t m_entityTypeIndex;
 			std::vector<PropertyData> m_properties;
 			std::vector<std::string> m_entityTypes;
+			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;
+			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			ClientEntityStore& m_entityStore;
+			ClientScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;
 			PositionEditWidget* m_positionWidget;
 			QDoubleSpinBox* m_rotationWidget;
 			QLabel* m_propertyTitle;
 			QLabel* m_propertyDescription;
+			QLayout* m_editorActionLayout;
 			QLineEdit* m_nameWidget;
+			QWidget* m_editorActionWidget;
 			QWidget* m_propertyContentWidget;
 			QTableWidget* m_propertiesList;
 	};

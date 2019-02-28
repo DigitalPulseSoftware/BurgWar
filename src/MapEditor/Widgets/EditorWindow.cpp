@@ -201,7 +201,7 @@ namespace bw
 	{
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
-		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(*m_clientEntityStore, this);
+		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, this);
 		connect(createEntityDialog, &QDialog::accepted, [this, createEntityDialog, layerIndex]()
 		{
 			const EntityInfo& entityInfo = createEntityDialog->GetEntityInfo();
@@ -254,7 +254,7 @@ namespace bw
 		entityInfo.properties = layerEntity.properties;
 		entityInfo.rotation = layerEntity.rotation;
 
-		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_clientEntityStore, std::move(entityInfo), this);
+		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, std::move(entityInfo), this);
 		connect(editEntityDialog, &QDialog::accepted, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId]()
 		{
 			const EntityInfo& entityInfo = editEntityDialog->GetEntityInfo();

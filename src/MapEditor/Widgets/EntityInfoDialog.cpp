@@ -4,6 +4,8 @@
 
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <ClientLib/Scripting/ClientScriptingContext.hpp>
+#include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/PositionEditWidget.hpp>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QCheckBox>
@@ -95,10 +97,11 @@ namespace bw
 			}
 	};
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
-	m_entityStore(clientEntityStore)
+	m_entityStore(clientEntityStore),
+	m_scriptingContext(scriptingContext)
 	{
 		m_entityInfo.position = Nz::Vector2f::Zero();
 		m_entityInfo.rotation = 0.f;
@@ -191,9 +194,14 @@ namespace bw
 		connect(button, &QDialogButtonBox::accepted, this, &EntityInfoDialog::OnAccept);
 		connect(button, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+		m_editorActionWidget = new QWidget;
+		m_editorActionLayout = new QHBoxLayout;
+		m_editorActionWidget->setLayout(m_editorActionLayout);
+
 		QVBoxLayout* verticalLayout = new QVBoxLayout;
 		verticalLayout->addLayout(genericPropertyLayout);
 		verticalLayout->addLayout(propertyLayout);
+		verticalLayout->addWidget(m_editorActionWidget);
 		verticalLayout->addWidget(button);
 
 		setLayout(verticalLayout);
@@ -201,8 +209,8 @@ namespace bw
 		OnEntityTypeUpdate();
 	}
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, EntityInfo entityInfo, QWidget* parent) :
-	EntityInfoDialog(clientEntityStore, parent)
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, EntityInfo entityInfo, QWidget* parent) :
+	EntityInfoDialog(clientEntityStore, scriptingContext, parent)
 	{
 		m_entityInfo = std::move(entityInfo);
 
@@ -237,13 +245,14 @@ namespace bw
 	{
 		m_propertiesList->clearContents();
 
-		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
+		auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore.GetElement(m_entityTypeIndex));
 
 		// Build property list and ensure relevant properties are stored
 		EntityProperties oldProperties = std::move(m_entityInfo.properties);
 		m_entityInfo.properties.clear(); // Put back in a valid state
 
 		m_properties.clear();
+		std::size_t i = 0;
 		for (const auto& propertyInfo : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
@@ -251,6 +260,8 @@ namespace bw
 			propertyData.keyName = propertyInfo.first;
 			propertyData.visualName = propertyData.keyName; //< FIXME
 			propertyData.type = propertyInfo.second.type;
+
+			m_propertyByName.emplace(propertyData.keyName, i);
 
 			if (auto it = oldProperties.find(propertyData.keyName); it != oldProperties.end())
 			{
@@ -260,9 +271,11 @@ namespace bw
 
 				oldProperties.erase(it);
 			}
+
+			i++;
 		}
 
-		std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.keyName < second.keyName; });
+		//std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.keyName < second.keyName; });
 
 		m_propertiesList->setRowCount(int(m_properties.size()));
 
@@ -273,6 +286,97 @@ namespace bw
 			m_propertiesList->setItem(rowIndex, 1, new QTableWidgetItem("Value"));
 
 			++rowIndex;
+		}
+
+
+		while (QWidget* w = m_editorActionWidget->findChild<QWidget*>())
+			delete w;
+
+		m_editorActionByName.clear();
+
+		i = 0;
+		for (auto&& editorAction : entityTypeInfo->editorActions)
+		{
+			m_editorActionByName.emplace(editorAction.name, i);
+
+			QPushButton* button = new QPushButton(QString::fromStdString(editorAction.label));
+			connect(button, &QPushButton::released, [this, name = editorAction.name]()
+			{
+				auto it = m_editorActionByName.find(name);
+				assert(it != m_editorActionByName.end());
+
+				auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore.GetElement(m_entityTypeIndex));
+
+				const auto& action = entityTypeInfo->editorActions[it->second];
+
+				sol::state& lua = m_scriptingContext.GetLuaState();
+				sol::table metatable = lua.create_table();
+				metatable["__index"] = [this, &lua](sol::this_state state, sol::table table, const std::string& key)
+				{
+					const bw::EntityProperty* property;
+
+					auto it = m_entityInfo.properties.find(key);
+					if (it != m_entityInfo.properties.end())
+						property = &it->second;
+					else
+					{
+						auto propertyIt = m_propertyByName.find(key);
+						if (propertyIt == m_propertyByName.end())
+							throw std::runtime_error("Property " + key + " does not exist");
+
+						const auto& propertyData = m_properties[propertyIt->second];
+						property = &propertyData.defaultValue;
+					}
+
+					return std::visit([&](auto&& value) -> sol::object
+					{
+						using T = std::decay_t<decltype(value)>;
+						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+
+						if constexpr (std::is_same_v<PropertyType, bool> || 
+						              std::is_same_v<PropertyType, float> || 
+						              std::is_same_v<PropertyType, Nz::Int64> || 
+						              std::is_same_v<PropertyType, std::string>)
+						{
+							if constexpr (IsArray)
+							{
+								std::size_t elementCount = value.GetSize();
+								sol::table content = lua.create_table(int(elementCount));
+
+								for (std::size_t i = 0; i < elementCount; ++i)
+									content[i + 1] = sol::make_object(lua, value[i]);
+							
+								return content;
+							}
+							else
+								return sol::make_object(lua, value);
+						}
+						else
+							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+					}, *property);
+				};
+
+				metatable["__newindex"] = [](sol::this_state state, sol::table table, const std::string& key, sol::object newValue)
+				{
+					std::cout << "__newindex: " << key << std::endl;
+				};
+
+				sol::table propertyTable = m_scriptingContext.GetLuaState().create_table();
+				propertyTable[sol::metatable_key] = metatable;
+
+				auto result = action.onTrigger(propertyTable);
+				if (!result.valid())
+				{
+					sol::error err = result;
+					std::cerr << "Editor action " << name << "::OnTrigger failed: " << err.what() << std::endl;
+				}
+			});
+
+			m_editorActionLayout->addWidget(button);
+
+			i++;
 		}
 	}
 
