@@ -11,7 +11,7 @@ namespace bw
 	void EditorScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
-		state["CLIENT"] = false;
+		state["CLIENT"] = true;
 		state["SERVER"] = false;
 		state["EDITOR"] = true;
 

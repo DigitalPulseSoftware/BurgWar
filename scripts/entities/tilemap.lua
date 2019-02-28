@@ -50,7 +50,7 @@ function ENTITY:Initialize()
 	self:SetCollider(colliders)
 	self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 
-	if (CLIENT or EDITOR) then
+	if (CLIENT) then
 		self:AddTilemap("../resources/dirt.png", Vec2(width, height), Vec2(cellWidth, cellHeight), content)
 	end
 end
