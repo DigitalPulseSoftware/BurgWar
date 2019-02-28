@@ -170,7 +170,7 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		std::shared_ptr<Element> element = std::make_shared<Element>();
+		std::shared_ptr<Element> element = CreateElement();
 		element->name = std::move(elementName);
 		element->fullName = m_elementTypeName + "_" + element->name;
 		element->elementTable = std::move(elementTable);
@@ -291,6 +291,12 @@ namespace bw
 		m_elements.emplace_back(std::move(element));
 
 		return true;
+	}
+
+	template<typename Element>
+	std::shared_ptr<Element> ScriptStore<Element>::CreateElement() const
+	{
+		return std::make_shared<Element>();
 	}
 
 	template<typename Element>

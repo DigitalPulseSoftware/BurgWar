@@ -44,6 +44,7 @@ namespace bw
 		protected:
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
+			virtual std::shared_ptr<Element> CreateElement() const;
 			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const;
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
