@@ -24,6 +24,22 @@ namespace bw
 
 	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
+		elementTable["GetPosition"] = [](const sol::table& table)
+		{
+			const Ndk::EntityHandle& entity = table["Entity"];
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.GetPosition());
+		};
+
+		elementTable["GetRotation"] = [](const sol::table& table)
+		{
+			const Ndk::EntityHandle& entity = table["Entity"];
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetRotation().ToEulerAngles().roll;
+		};
+
 		auto InitRigidBody = [](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
