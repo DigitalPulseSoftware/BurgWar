@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_ENTITYPROPERTIES_HPP
 
 #include <Nazara/Prerequisites.hpp>
+#include <sol2/sol.hpp>
 #include <tsl/hopscotch_map.h>
 #include <optional>
 #include <memory>
@@ -63,6 +64,9 @@ namespace bw
 	                                    std::string, EntityPropertyArray<std::string>>;
 	
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
+
+	EntityProperty TranslateEntityPropertyFromLua(const sol::object& value, PropertyType expectedType, bool isArray);
+	sol::object TranslateEntityPropertyToLua(sol::state& lua, const EntityProperty& property);
 }
 
 #include <CoreLib/EntityProperties.inl>

@@ -98,35 +98,7 @@ namespace bw
 			if (propertyVal.has_value())
 			{
 				const EntityProperty& property = propertyVal.value();
-
-				return std::visit([&](auto&& value) -> sol::object
-				{
-					using T = std::decay_t<decltype(value)>;
-					constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-					using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-					if constexpr (std::is_same_v<PropertyType, bool> || 
-					              std::is_same_v<PropertyType, float> || 
-					              std::is_same_v<PropertyType, Nz::Int64> || 
-					              std::is_same_v<PropertyType, std::string>)
-					{
-						if constexpr (IsArray)
-						{
-							std::size_t elementCount = value.GetSize();
-							sol::table content = lua.create_table(int(elementCount));
-
-							for (std::size_t i = 0; i < elementCount; ++i)
-								content[i + 1] = sol::make_object(lua, value[i]);
-							
-							return content;
-						}
-						else
-							return sol::make_object(lua, value);
-					}
-					else
-						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-				}, property);
+				return TranslateEntityPropertyToLua(lua, property);
 			}
 			else
 				return sol::nil;

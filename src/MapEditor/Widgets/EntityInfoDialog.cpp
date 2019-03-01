@@ -256,6 +256,7 @@ namespace bw
 		for (const auto& propertyInfo : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
+			propertyData.isArray = propertyInfo.second.isArray;
 			propertyData.defaultValue = *propertyInfo.second.defaultValue;
 			propertyData.keyName = propertyInfo.first;
 			propertyData.visualName = propertyData.keyName; //< FIXME
@@ -328,39 +329,19 @@ namespace bw
 						property = &propertyData.defaultValue;
 					}
 
-					return std::visit([&](auto&& value) -> sol::object
-					{
-						using T = std::decay_t<decltype(value)>;
-						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-						if constexpr (std::is_same_v<PropertyType, bool> || 
-						              std::is_same_v<PropertyType, float> || 
-						              std::is_same_v<PropertyType, Nz::Int64> || 
-						              std::is_same_v<PropertyType, std::string>)
-						{
-							if constexpr (IsArray)
-							{
-								std::size_t elementCount = value.GetSize();
-								sol::table content = lua.create_table(int(elementCount));
-
-								for (std::size_t i = 0; i < elementCount; ++i)
-									content[i + 1] = sol::make_object(lua, value[i]);
-							
-								return content;
-							}
-							else
-								return sol::make_object(lua, value);
-						}
-						else
-							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-					}, *property);
+					return TranslateEntityPropertyToLua(lua, *property);
 				};
 
 				metatable["__newindex"] = [](sol::this_state state, sol::table table, const std::string& key, sol::object newValue)
 				{
-					std::cout << "__newindex: " << key << std::endl;
+					auto propertyIt = m_propertyByName.find(key);
+					if (propertyIt == m_propertyByName.end())
+						throw std::runtime_error("Property " + key + " does not exist");
+
+					std::size_t propertyIndex = propertyIt->second;
+					const auto& propertyData = m_properties[propertyIndex];
+
+					m_entityInfo.properties.insert_or_assign(key, TranslateEntityPropertyFromLua(newValue, propertyData.type, propertyData.isArray));
 				};
 
 				sol::table propertyTable = m_scriptingContext.GetLuaState().create_table();
@@ -400,69 +381,6 @@ namespace bw
 		const EntityProperty& property = GetProperty();
 
 		QVBoxLayout* layout = new QVBoxLayout;
-
-		/*std::visit([&](auto&& propertyValue)
-		{
-			using T = std::decay_t<decltype(propertyValue)>;
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-			using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-			if constexpr (!IsArray) //< FIXME
-			{
-				if constexpr (std::is_same_v<PropertyType, bool>)
-				{
-					QCheckBox* checkBox = new QCheckBox;
-					checkBox->setChecked(propertyValue);
-
-					connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName](bool checked)
-					{
-						m_entityInfo.properties[keyName] = checked;
-					});
-
-					layout->addWidget(checkBox);
-				}
-				else if constexpr (std::is_same_v<PropertyType, float>)
-				{
-					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
-					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-					spinbox->setValue(propertyValue);
-
-					connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
-					{
-						m_entityInfo.properties[keyName] = float(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-				}
-				else if constexpr (std::is_same_v<PropertyType, Nz::Int64>)
-				{
-					// TODO: Handle properly int64
-					QSpinBox* spinbox = new QSpinBox;
-					spinbox->setValue(propertyValue);
-
-					connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
-					{
-						m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-				}
-				else if constexpr (std::is_same_v<PropertyType, std::string>)
-				{
-					QLineEdit* lineEdit = new QLineEdit;
-					if (std::holds_alternative<EntityPropertyContainer<std::string>>(property))
-						lineEdit->setText(QString::fromStdString(std::get<EntityPropertyContainer<std::string>>(property).GetElement(0)));
-
-					connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName]()
-					{
-						m_entityInfo.properties[keyName] = EntityPropertyContainer(lineEdit->text().toStdString());
-					});
-				}
-				else
-					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-			}
-
-		}, property);*/
 
 		bool isArray;
 		std::size_t arraySize;

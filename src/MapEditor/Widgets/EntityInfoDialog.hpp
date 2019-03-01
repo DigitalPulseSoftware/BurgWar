@@ -61,6 +61,7 @@ namespace bw
 				std::string visualName;
 				EntityProperty defaultValue;
 				PropertyType type;
+				bool isArray;
 			};
 
 			std::size_t m_entityTypeIndex;
