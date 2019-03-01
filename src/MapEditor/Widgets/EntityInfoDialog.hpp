@@ -48,12 +48,13 @@ namespace bw
 			const EntityInfo& GetEntityInfo() const;
 
 		private:
+			void OnAccept();
 			void OnEntityTypeUpdate();
 
 			void RefreshEntityType();
-			void RefreshPropertyEditor(int propertyIndex);
+			void RefreshPropertyEditor(std::size_t propertyIndex);
 
-			void OnAccept();
+			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
 			struct PropertyData
 			{
@@ -65,6 +66,7 @@ namespace bw
 			};
 
 			std::size_t m_entityTypeIndex;
+			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;
 			std::vector<std::string> m_entityTypes;
 			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;

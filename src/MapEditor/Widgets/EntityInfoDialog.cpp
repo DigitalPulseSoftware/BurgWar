@@ -100,6 +100,7 @@ namespace bw
 	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
+	m_propertyTypeIndex(InvalidIndex),
 	m_entityStore(clientEntityStore),
 	m_scriptingContext(scriptingContext)
 	{
@@ -239,6 +240,7 @@ namespace bw
 		m_entityTypeIndex = elementIndex;
 
 		RefreshEntityType();
+		RefreshPropertyEditor(InvalidIndex);
 	}
 
 	void EntityInfoDialog::RefreshEntityType()
@@ -332,7 +334,8 @@ namespace bw
 					return TranslateEntityPropertyToLua(lua, *property);
 				};
 
-				metatable["__newindex"] = [](sol::this_state state, sol::table table, const std::string& key, sol::object newValue)
+				bool refreshPropertyEditor = false;
+				metatable["__newindex"] = [this, &refreshPropertyEditor](sol::this_state state, sol::table table, const std::string& key, const sol::object& newValue)
 				{
 					auto propertyIt = m_propertyByName.find(key);
 					if (propertyIt == m_propertyByName.end())
@@ -342,6 +345,9 @@ namespace bw
 					const auto& propertyData = m_properties[propertyIndex];
 
 					m_entityInfo.properties.insert_or_assign(key, TranslateEntityPropertyFromLua(newValue, propertyData.type, propertyData.isArray));
+
+					if (m_propertyTypeIndex == propertyIndex)
+						refreshPropertyEditor = true;
 				};
 
 				sol::table propertyTable = m_scriptingContext.GetLuaState().create_table();
@@ -353,6 +359,9 @@ namespace bw
 					sol::error err = result;
 					std::cerr << "Editor action " << name << "::OnTrigger failed: " << err.what() << std::endl;
 				}
+
+				if (refreshPropertyEditor)
+					RefreshPropertyEditor(m_propertyTypeIndex);
 			});
 
 			m_editorActionLayout->addWidget(button);
@@ -361,11 +370,20 @@ namespace bw
 		}
 	}
 
-	void EntityInfoDialog::RefreshPropertyEditor(int propertyIndex)
+	void EntityInfoDialog::RefreshPropertyEditor(std::size_t propertyIndex)
 	{
+		while (QWidget* w = m_propertyContentWidget->findChild<QWidget*>())
+			delete w;
+
+		delete m_propertyContentWidget->layout();
+
+		m_propertyTypeIndex = propertyIndex;
+		if (m_propertyTypeIndex == InvalidIndex)
+			return;
+
 		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
 
-		assert(propertyIndex < int(m_properties.size()));
+		assert(propertyIndex < m_properties.size());
 		const auto& propertyInfo = m_properties[propertyIndex];
 
 		m_propertyTitle->setText(QString::fromStdString(propertyInfo.visualName));
@@ -637,11 +655,6 @@ namespace bw
 					break;
 			}
 		}
-
-		while (QWidget* w = m_propertyContentWidget->findChild<QWidget*>())
-			delete w;
-
-		delete m_propertyContentWidget->layout();
 
 		m_propertyContentWidget->setLayout(layout);
 	}
