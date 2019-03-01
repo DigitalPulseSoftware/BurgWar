@@ -96,9 +96,9 @@ namespace bw
 			using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
 			if constexpr (std::is_same_v<PropertyType, bool> ||
-				std::is_same_v<PropertyType, float> ||
-				std::is_same_v<PropertyType, Nz::Int64> ||
-				std::is_same_v<PropertyType, std::string>)
+			              std::is_same_v<PropertyType, float> ||
+			              std::is_same_v<PropertyType, Nz::Int64> ||
+			              std::is_same_v<PropertyType, std::string>)
 			{
 				if constexpr (IsArray)
 				{
