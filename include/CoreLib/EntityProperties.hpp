@@ -66,7 +66,7 @@ namespace bw
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
 
 	EntityProperty TranslateEntityPropertyFromLua(const sol::object& value, PropertyType expectedType, bool isArray);
-	sol::object TranslateEntityPropertyToLua(sol::state& lua, const EntityProperty& property);
+	sol::object TranslateEntityPropertyToLua(sol::state_view& lua, const EntityProperty& property);
 }
 
 #include <CoreLib/EntityProperties.inl>

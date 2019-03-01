@@ -87,7 +87,7 @@ namespace bw
 		throw std::runtime_error("Unhandled type");
 	}
 
-	sol::object TranslateEntityPropertyToLua(sol::state& lua, const EntityProperty& property)
+	sol::object TranslateEntityPropertyToLua(sol::state_view& lua, const EntityProperty& property)
 	{
 		return std::visit([&](auto&& value) -> sol::object
 		{
