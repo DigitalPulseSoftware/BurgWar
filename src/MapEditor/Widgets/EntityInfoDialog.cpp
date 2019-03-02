@@ -401,7 +401,7 @@ namespace bw
 		QVBoxLayout* layout = new QVBoxLayout;
 
 		bool isArray;
-		std::size_t arraySize;
+		int arraySize;
 
 		std::visit([&](auto&& propertyValue)
 		{
@@ -409,7 +409,7 @@ namespace bw
 
 			isArray = IsArray;
 			if constexpr (IsArray)
-				arraySize = propertyValue.size();
+				arraySize = int(propertyValue.size());
 
 		}, property);
 
@@ -476,7 +476,7 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Enabled") });
 
-					for (std::size_t i = 0; i < arraySize; ++i)
+					for (int i = 0; i < arraySize; ++i)
 					{
 						QStandardItem* item = new QStandardItem(1);
 						item->setCheckable(true);
@@ -510,7 +510,7 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
-					for (std::size_t i = 0; i < arraySize; ++i)
+					for (int i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), double(propertyArray[i]), Qt::EditRole);
 
 					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
@@ -539,7 +539,7 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
-					for (std::size_t i = 0; i < arraySize; ++i)
+					for (int i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), int(propertyArray[i]), Qt::EditRole); //< FIXME
 
 					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
@@ -567,7 +567,7 @@ namespace bw
 					table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
 
 					QAbstractItemModel* model = table->model();
-					for (std::size_t i = 0; i < arraySize; ++i)
+					for (int i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
 
 					connect(table, &QTableWidget::cellChanged, [this, keyName = propertyInfo.keyName, table](int row, int column)
