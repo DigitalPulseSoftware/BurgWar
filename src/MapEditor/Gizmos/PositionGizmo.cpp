@@ -68,8 +68,8 @@ namespace bw
 		if (m_arrowEntity->IsEnabled())
 		{
 			auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f));
-			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 1.f));
+			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
+			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
 
 			auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
 
@@ -119,11 +119,11 @@ namespace bw
 		if (m_arrowEntity->IsEnabled())
 		{
 			auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseMoved.x, mouseMoved.y, 0.f));
+			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
 
 			if (m_movementType == MovementType::None)
 			{
-				Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseMoved.x, mouseMoved.y, 1.f));
+				Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 1.f));
 
 				auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
 

@@ -31,7 +31,7 @@ namespace bw
 		m_isActive = true;
 
 		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		m_originalWorldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f)));
+		m_originalWorldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f)));
 
 		return true;
 	}
@@ -54,7 +54,7 @@ namespace bw
 
 		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
 		auto& cameraNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
-		Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(mouseMoved.x, mouseMoved.y, 0.f));
+		Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
 
 		cameraNode.Move(-Nz::Vector2f(worldPosition - m_originalWorldPos), Nz::CoordSys_Global);
 
