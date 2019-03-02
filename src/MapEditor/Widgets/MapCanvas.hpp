@@ -9,7 +9,7 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <MapEditor/Gizmos/CameraMovement.hpp>
-#include <MapEditor/Gizmos/PositionGizmo.hpp>
+#include <MapEditor/Gizmos/EditorGizmo.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/World.hpp>
@@ -46,7 +46,7 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			std::optional<CameraMovement> m_cameraMovement;
-			std::unique_ptr<PositionGizmo> m_positionGizmo;
+			std::unique_ptr<EditorGizmo> m_entityGizmo;
 			EditorWindow& m_editor;
 			Ndk::EntityHandle m_cameraEntity;
 			Ndk::EntityList m_mapEntities;

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/MapCanvas.hpp>
+#include <MapEditor/Gizmos/PositionGizmo.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -57,12 +58,12 @@ namespace bw
 			entity->Kill();
 
 		m_mapEntities.Clear();
-		m_positionGizmo.reset();
+		m_entityGizmo.reset();
 	}
 
 	void MapCanvas::ClearEntitySelection()
 	{
-		m_positionGizmo.reset();
+		m_entityGizmo.reset();
 	}
 
 	Ndk::EntityId MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
@@ -83,8 +84,8 @@ namespace bw
 		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
 		assert(entity);
 
-		if (m_positionGizmo && m_positionGizmo->GetMovedEntity() == entity) 
-			m_positionGizmo.reset();
+		if (m_entityGizmo && m_entityGizmo->GetTargetEntity() == entity) 
+			m_entityGizmo.reset();
 
 		entity->Kill();
 	}
@@ -94,11 +95,13 @@ namespace bw
 		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
 		assert(entity);
 
-		m_positionGizmo = std::make_unique<PositionGizmo>(m_cameraEntity, entity);
-		m_positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(m_cameraEntity, entity);
+		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
 		{
 			OnEntityPositionUpdated(this, entityId, newPosition);
 		});
+
+		m_entityGizmo = std::move(positionGizmo);
 	}
 
 	void MapCanvas::UpdateBackgroundColor(Nz::Color color)
@@ -118,9 +121,9 @@ namespace bw
 
 	void MapCanvas::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (m_positionGizmo)
+		if (m_entityGizmo)
 		{
-			if (m_positionGizmo->OnMouseButtonPressed(mouseButton))
+			if (m_entityGizmo->OnMouseButtonPressed(mouseButton))
 				return;
 		}
 
@@ -130,9 +133,9 @@ namespace bw
 
 	void MapCanvas::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (m_positionGizmo)
+		if (m_entityGizmo)
 		{
-			if (m_positionGizmo->OnMouseButtonReleased(mouseButton))
+			if (m_entityGizmo->OnMouseButtonReleased(mouseButton))
 				return;
 		}
 
@@ -162,9 +165,9 @@ namespace bw
 
 	void MapCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
-		if (m_positionGizmo)
+		if (m_entityGizmo)
 		{
-			if (m_positionGizmo->OnMouseMoved(mouseMoved))
+			if (m_entityGizmo->OnMouseMoved(mouseMoved))
 				return;
 		}
 

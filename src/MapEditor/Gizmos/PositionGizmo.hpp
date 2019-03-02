@@ -7,31 +7,28 @@
 #ifndef BURGWAR_MAPEDITOR_GIZMOS_POSITION_HPP
 #define BURGWAR_MAPEDITOR_GIZMOS_POSITION_HPP
 
-#include <MapEditor/Widgets/NazaraCanvas.hpp>
+#include <MapEditor/Gizmos/EditorGizmo.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <array>
 
 namespace bw
 {
-	class PositionGizmo
+	class PositionGizmo : public EditorGizmo
 	{
-		friend class MapCanvas;
-
 		public:
 			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity);
 			~PositionGizmo() = default;
 
-			inline const Ndk::EntityHandle& GetMovedEntity() const;
+			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
 
 			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*newPosition*/);
 
 		private:
-			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
-
 			enum MovementType
 			{
 				None = 0xFF,
@@ -47,7 +44,6 @@ namespace bw
 			MovementType m_hoveredAction;
 			MovementType m_movementType;
 			Ndk::EntityHandle m_cameraEntity;
-			Ndk::EntityHandle m_movedEntity;
 			Ndk::EntityOwner m_arrowEntity;
 			Nz::Vector2f m_originalPosition;
 			Nz::Vector2f m_movementStartPos;

@@ -12,6 +12,7 @@
 namespace bw
 {
 	PositionGizmo::PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity) :
+	EditorGizmo(entity),
 	m_hoveredAction(MovementType::None),
 	m_movementType(MovementType::None),
 	m_cameraEntity(camera)
@@ -48,8 +49,6 @@ namespace bw
 		m_arrowEntity = entity->GetWorld()->CreateEntity();
 		m_arrowEntity->AddComponent<Ndk::NodeComponent>();
 
-		m_movedEntity = entity;
-
 		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
 		gfx.Attach(m_sprites[MovementType::XYAxis], 2);
 		gfx.Attach(m_sprites[MovementType::XAxis], 1);
@@ -58,7 +57,7 @@ namespace bw
 		auto& node = m_arrowEntity->GetComponent<Ndk::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
-		node.SetParent(m_movedEntity);
+		node.SetParent(GetTargetEntity());
 	}
 
 	bool PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -89,7 +88,7 @@ namespace bw
 
 			if (m_movementType != MovementType::None)
 			{
-				auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
+				auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
 				m_originalPosition = Nz::Vector2f(node.GetPosition());
 				m_movementStartPos = Nz::Vector2f(start);
 
@@ -106,7 +105,7 @@ namespace bw
 		{
 			m_movementType = MovementType::None;
 
-			auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
+			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
 			OnPositionUpdated(this, Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global)));
 
 			return true;
@@ -168,7 +167,7 @@ namespace bw
 
 				Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
 
-				auto& node = m_movedEntity->GetComponent<Ndk::NodeComponent>();
+				auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
 				node.SetPosition(m_originalPosition + allowedMovement * delta, Nz::CoordSys_Global);
 
 				return true;
