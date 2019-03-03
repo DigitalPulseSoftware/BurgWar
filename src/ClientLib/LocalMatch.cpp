@@ -68,10 +68,10 @@ namespace bw
 		for (auto& input : m_inputPacket.inputs)
 			input.emplace();
 
-		m_inputControllers.reserve(playerCount);
+		m_playerData.reserve(playerCount);
 		assert(playerCount != 0xFF);
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
-			m_inputControllers.emplace_back(i);
+			m_playerData.emplace_back(i);
 	}
 
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
@@ -145,12 +145,16 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_GetPlayerPosition"] = [&]()
+		state["engine_GetPlayerPosition"] = [&](Nz::UInt8 playerIndex)
 		{
-			if (!m_playerControlledEntity)
-				return Nz::Vector2f::Zero();
+			if (playerIndex >= m_playerData.size())
+				throw std::runtime_error("Invalid player index");
 
-			return Nz::Vector2f(m_playerControlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
+			auto& playerData = m_playerData[playerIndex];
+			if (playerData.controlledEntity)
+				return Nz::Vector2f(playerData.controlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
+			else
+				return Nz::Vector2f::Zero();
 		};
 
 		state["engine_SetCameraPosition"] = [&](const Nz::Vector2f& position)
@@ -255,14 +259,14 @@ namespace bw
 			m_gamemode->ExecuteCallback("OnTick");
 	}
 
-	void LocalMatch::ControlEntity(Nz::UInt32 serverId)
+	void LocalMatch::ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId)
 	{
 		auto it = m_serverEntityIdToClient.find(serverId);
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
 		const ServerEntity& serverEntity = it->second;
-		m_playerControlledEntity = serverEntity.entity;
+		m_playerData[playerIndex].controlledEntity = serverEntity.entity;
 		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
@@ -430,13 +434,13 @@ namespace bw
 
 	void LocalMatch::SendInputs()
 	{
-		assert(m_inputControllers.size() == m_inputPacket.inputs.size());
+		assert(m_playerData.size() == m_inputPacket.inputs.size());
 
 		bool hasInputData = false;
-		for (std::size_t i = 0; i < m_inputControllers.size(); ++i)
+		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
-			auto& controllerData = m_inputControllers[i];
-			InputData input = controllerData.controller.Poll();
+			auto& controllerData = m_playerData[i];
+			InputData input = controllerData.inputController.Poll();
 
 			if (controllerData.lastInputData != input)
 			{

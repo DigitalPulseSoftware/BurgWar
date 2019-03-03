@@ -45,7 +45,7 @@ namespace bw
 			void Update(float elapsedTime);
 
 		private:
-			void ControlEntity(Nz::UInt32 serverId);
+			void ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId);
 			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
@@ -62,14 +62,15 @@ namespace bw
 				Nz::SpriteRef healthSprite;
 			};
 
-			struct InputController
+			struct PlayerData
 			{
-				InputController(Nz::UInt8 playerIndex) :
-				controller(playerIndex)
+				PlayerData(Nz::UInt8 playerIndex) :
+				inputController(playerIndex)
 				{
 				}
 
-				LocalInputController controller;
+				Ndk::EntityHandle controlledEntity;
+				LocalInputController inputController;
 				InputData lastInputData;
 			};
 
@@ -90,10 +91,9 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;
-			std::vector<InputController> m_inputControllers;
+			std::vector<PlayerData> m_playerData;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
-			Ndk::EntityHandle m_playerControlledEntity;
 			Ndk::World m_world;
 			AnimationManager m_animationManager;
 			BurgApp& m_application;
