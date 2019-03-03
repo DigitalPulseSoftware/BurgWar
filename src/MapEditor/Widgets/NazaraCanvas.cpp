@@ -12,6 +12,8 @@ namespace bw
 	NazaraCanvas::NazaraCanvas(QWidget* parent) :
 	QWidget(parent)
 	{
+		std::cout << this << std::endl;
+
 		// Setup some states to allow direct rendering into the widget
 		setAttribute(Qt::WA_PaintOnScreen);
 		setAttribute(Qt::WA_OpaquePaintEvent);
@@ -35,7 +37,10 @@ namespace bw
 		m_updateTimer.start();
 	}
 
-	NazaraCanvas::~NazaraCanvas() = default;
+	NazaraCanvas::~NazaraCanvas()
+	{
+		m_updateTimer.stop();
+	}
 
 	Nz::Vector2ui NazaraCanvas::GetSize() const
 	{
@@ -78,6 +83,16 @@ namespace bw
 	{
 		ProcessEvents();
 		Display();
+	}
+
+	void NazaraCanvas::closeEvent(QCloseEvent* event)
+	{
+		m_updateTimer.stop();
+	}
+
+	void NazaraCanvas::hideEvent(QHideEvent* event)
+	{
+		m_updateTimer.stop();
 	}
 
 	void NazaraCanvas::paintEvent(QPaintEvent*)

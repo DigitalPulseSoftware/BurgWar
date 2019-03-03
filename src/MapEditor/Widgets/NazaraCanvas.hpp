@@ -28,6 +28,8 @@ namespace bw
 			virtual void OnUpdate(float elasedTime);
 
 		private:
+			void closeEvent(QCloseEvent *event) override;
+			void hideEvent(QHideEvent *event) override;
 			void paintEvent(QPaintEvent*) override;
 			QPaintEngine* paintEngine() const override;
 			void resizeEvent(QResizeEvent*) override;
