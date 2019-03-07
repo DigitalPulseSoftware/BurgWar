@@ -25,6 +25,7 @@ class Gamemode;
 namespace bw
 {
 	class ClientScriptingContext;
+	class EditorMode;
 	class MapCanvas;
 
 	class EditorWindow : public BurgApp, public QMainWindow
@@ -37,6 +38,12 @@ namespace bw
 
 			inline const EditorEntityStore& GetEntityStore() const;
 
+			inline MapCanvas* GetMapCanvas();
+			inline const MapCanvas* GetMapCanvas() const;
+
+			void SelectEntity(Ndk::EntityId entityId);
+
+			void UpdateEditorMode(std::shared_ptr<EditorMode> editorMode);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 		private:
@@ -58,6 +65,7 @@ namespace bw
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<int> m_currentLayer;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::shared_ptr<EditorMode> m_currentMode;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;

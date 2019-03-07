@@ -29,15 +29,18 @@ namespace bw
 			entity->Kill();
 
 		m_mapEntities.Clear();
+
+		m_onGizmoEntityDestroyed.Disconnect(); //< Force disconnection because entity destruction does not occur until the world next update
 		m_entityGizmo.reset();
 	}
 
 	void MapCanvas::ClearEntitySelection()
 	{
+		m_onGizmoEntityDestroyed.Disconnect();
 		m_entityGizmo.reset();
 	}
 
-	Ndk::EntityId MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
+	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
 		const ClientEntityStore& entityStore = m_editor.GetEntityStore();
 
@@ -47,16 +50,13 @@ namespace bw
 		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
 		m_mapEntities.Insert(entity);
 
-		return entity->GetId();
+		return entity;
 	}
 
 	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)
 	{
 		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 		assert(entity);
-
-		if (m_entityGizmo && m_entityGizmo->GetTargetEntity() == entity) 
-			m_entityGizmo.reset();
 
 		entity->Kill();
 	}
@@ -73,6 +73,13 @@ namespace bw
 		});
 
 		m_entityGizmo = std::move(positionGizmo);
+		m_onGizmoEntityDestroyed.Connect(entity->OnEntityDestruction, [this](Ndk::Entity* entity)
+		{
+			assert(m_entityGizmo->GetTargetEntity() == entity);
+			NazaraUnused(entity);
+
+			m_entityGizmo.reset();
+		});
 	}
 
 	void MapCanvas::UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
@@ -94,6 +101,8 @@ namespace bw
 			if (m_entityGizmo->OnMouseButtonPressed(mouseButton))
 				return;
 		}
+
+		OnCanvasMouseButtonPressed(this, mouseButton);
 	}
 
 	void MapCanvas::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -106,25 +115,7 @@ namespace bw
 				return;
 		}
 
-		if (mouseButton.button == Nz::Mouse::Left)
-		{
-			auto& cameraComponent = GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f));
-			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 1.f));
-
-			Nz::Rayf ray(start, end - start);
-			for (const Ndk::EntityHandle& entity : m_mapEntities)
-			{
-				assert(entity->HasComponent<Ndk::GraphicsComponent>());
-
-				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-				if (ray.Intersect(gfxComponent.GetAABB()))
-				{
-					OnEntitySelected(this, entity->GetId());
-					return;
-				}
-			}
-		}
+		OnCanvasMouseButtonReleased(this, mouseButton);
 	}
 
 	void MapCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
@@ -136,5 +127,7 @@ namespace bw
 			if (m_entityGizmo->OnMouseMoved(mouseMoved))
 				return;
 		}
+
+		OnCanvasMouseMoved(this, mouseMoved);
 	}
 }

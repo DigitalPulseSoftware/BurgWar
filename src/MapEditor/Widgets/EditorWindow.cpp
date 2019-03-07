@@ -4,6 +4,7 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <ClientLib/Scripting/ClientScriptingContext.hpp>
+#include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <MapEditor/Widgets/LayerInfoDialog.hpp>
@@ -44,7 +45,7 @@ namespace bw
 		m_canvas->OnEntityPositionUpdated.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex, const Nz::Vector2f& newPosition)
 		{
 			assert(m_currentLayer.has_value());
-		
+
 			auto it = m_entityIndexes.find(canvasIndex);
 			assert(it != m_entityIndexes.end());
 
@@ -56,15 +57,19 @@ namespace bw
 			layerEntity.position = newPosition;
 		});
 
-		m_canvas->OnEntitySelected.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex)
+		m_canvas->OnCanvasMouseButtonPressed.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
-			auto it = m_entityIndexes.find(canvasIndex);
-			assert(it != m_entityIndexes.end());
+			m_currentMode->OnMouseButtonPressed(*this, mouseButton);
+		});
 
-			std::size_t entityIndex = it.value();
+		m_canvas->OnCanvasMouseButtonReleased.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+		{
+			m_currentMode->OnMouseButtonReleased(*this, mouseButton);
+		});
 
-			m_entityList->clearSelection();
-			m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
+		m_canvas->OnCanvasMouseMoved.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& mouseMove)
+		{
+			m_currentMode->OnMouseMoved(*this, mouseMove);
 		});
 
 		setCentralWidget(m_canvas);
@@ -93,7 +98,7 @@ namespace bw
 		QAction* createMap = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/file-48.png")), tr("Create map..."));
 		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
 
-		QAction* openMap =  toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/opened_folder-48.png")), tr("Open map..."));
+		QAction* openMap = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/opened_folder-48.png")), tr("Open map..."));
 		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
 		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/icons8-save-48.png")), tr("Save map..."));
@@ -112,9 +117,12 @@ namespace bw
 		resize(1280, 720);
 		setWindowTitle(tr("Burg'war map editor"));
 
-		statusBar()->showMessage(tr("Ready"), 0);
-
 		ClearWorkingMap();
+
+		m_currentMode = std::make_shared<BasicEditorMode>();
+		m_currentMode->OnEnter(*this);
+
+		statusBar()->showMessage(tr("Ready"), 0);
 	}
 
 	EditorWindow::~EditorWindow()
@@ -126,6 +134,24 @@ namespace bw
 	void EditorWindow::ClearWorkingMap()
 	{
 		UpdateWorkingMap(Map());
+	}
+
+	void EditorWindow::SelectEntity(Ndk::EntityId entityId)
+	{
+		auto it = m_entityIndexes.find(entityId);
+		assert(it != m_entityIndexes.end());
+
+		std::size_t entityIndex = it.value();
+
+		m_entityList->clearSelection();
+		m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
+	}
+
+	void EditorWindow::UpdateEditorMode(std::shared_ptr<EditorMode> editorMode)
+	{
+		m_currentMode->OnLeave(*this);
+		m_currentMode = std::move(editorMode);
+		m_currentMode->OnEnter(*this);
 	}
 
 	void EditorWindow::UpdateWorkingMap(Map map, std::filesystem::path mapPath)
@@ -1325,9 +1351,10 @@ namespace bw
 
 			//m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
 			m_canvas->DeleteEntity(canvasId);
+			m_canvas->GetWorld().GetEntity(canvasId)->Kill();
 			m_entityIndexes.erase(canvasId);
 
-			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties);
+			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties)->GetId();
 			m_entityIndexes.emplace(newCanvasId, entityIndex);
 			item->setData(Qt::UserRole + 1, newCanvasId);
 
@@ -1529,7 +1556,7 @@ namespace bw
 		QListWidgetItem* item = new QListWidgetItem(entryName);
 		item->setData(Qt::UserRole, entityIndex);
 
-		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties);
+		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties)->GetId();
 		item->setData(Qt::UserRole + 1, canvasId);
 
 		m_entityList->addItem(item);

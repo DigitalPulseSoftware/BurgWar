@@ -26,20 +26,26 @@ namespace bw
 			void ClearEntities();
 			void ClearEntitySelection();
 
-			Ndk::EntityId CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
+			const Ndk::EntityHandle& CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
 			void DeleteEntity(Ndk::EntityId entityId);
+
+			inline const Ndk::EntityList& GetMapEntities() const;
 
 			void EditEntityPosition(Ndk::EntityId entityId);
 
 			void UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
 
+			NazaraSignal(OnCanvasMouseButtonPressed, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
+			NazaraSignal(OnCanvasMouseButtonReleased, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
+			NazaraSignal(OnCanvasMouseMoved, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& /*mouseButton*/);
 			NazaraSignal(OnEntityPositionUpdated, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/, const Nz::Vector2f& /*position*/);
-			NazaraSignal(OnEntitySelected, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/);
 
 		private:
 			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
+
+			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onGizmoEntityDestroyed);
 
 			std::unique_ptr<EditorGizmo> m_entityGizmo;
 			EditorWindow& m_editor;
