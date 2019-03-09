@@ -34,7 +34,6 @@ namespace bw
 		{
 			OnUpdate(m_updateTimer.intervalAsDuration().count() / 1000.f);
 		});
-		m_updateTimer.start();
 	}
 
 	NazaraCanvas::~NazaraCanvas()
@@ -72,6 +71,8 @@ namespace bw
 
 			Nz::RenderWindow::Create(reinterpret_cast<Nz::WindowHandle>(winId()));
 		}
+
+		m_updateTimer.start();
 	}
 
 	QPaintEngine* NazaraCanvas::paintEngine() const
