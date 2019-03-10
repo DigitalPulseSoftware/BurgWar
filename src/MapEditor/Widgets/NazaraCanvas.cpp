@@ -134,7 +134,7 @@ namespace bw
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					GetEventHandler().Dispatch(event);
+					PushEvent(event);
 					return true;
 				}
 			}
@@ -154,18 +154,32 @@ namespace bw
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					GetEventHandler().Dispatch(event);
+					PushEvent(event);
 					return true;
 				}
 			}
 
 			case QEvent::HoverEnter:
-				//hoverEnter(static_cast<QHoverEvent*>(e));
+			{
+				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
+
+				Nz::WindowEvent event;
+				event.type = Nz::WindowEventType_MouseEntered;
+
+				PushEvent(event);
 				return true;
+			}
 
 			case QEvent::HoverLeave:
-				//hoverLeave(static_cast<QHoverEvent*>(e));
+			{
+				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
+
+				Nz::WindowEvent event;
+				event.type = Nz::WindowEventType_MouseLeft;
+
+				PushEvent(event);
 				return true;
+			}
 
 			case QEvent::HoverMove:
 			{
@@ -180,7 +194,7 @@ namespace bw
 				event.mouseMove.deltaX = newPos.x() - oldPos.x();
 				event.mouseMove.deltaY = newPos.y() - oldPos.y();
 
-				GetEventHandler().Dispatch(event);
+				PushEvent(event);
 				return true;
 			}
 

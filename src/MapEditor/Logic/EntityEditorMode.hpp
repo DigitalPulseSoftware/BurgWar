@@ -17,11 +17,11 @@ namespace bw
 	class EntityEditorMode : public EditorMode
 	{
 		public:
-			EntityEditorMode(const Ndk::EntityHandle& targetEntity);
+			EntityEditorMode(const Ndk::EntityHandle& targetEntity, EditorWindow& editorWindow);
 			~EntityEditorMode() = default;
 
-			void OnEnter(EditorWindow& editor) override;
-			void OnLeave(EditorWindow& editor) override;
+			void OnEnter() override;
+			void OnLeave() override;
 
 		private:
 			struct Renderable

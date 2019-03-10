@@ -10,17 +10,18 @@
 
 namespace bw
 {
-	EntityEditorMode::EntityEditorMode(const Ndk::EntityHandle& targetEntity) :
+	EntityEditorMode::EntityEditorMode(const Ndk::EntityHandle& targetEntity, EditorWindow& editorWindow) :
+	EditorMode(editorWindow),
 	m_targetEntity(targetEntity)
 	{
 	}
 
-	void EntityEditorMode::OnEnter(EditorWindow& editor)
+	void EntityEditorMode::OnEnter()
 	{
 		Nz::MaterialRef translucentMaterial = Nz::Material::New("Translucent2D");
 		translucentMaterial->SetDiffuseColor(Nz::Color(255, 255, 255, 180));
 
-		MapCanvas* canvas = editor.GetMapCanvas();
+		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 		for (const Ndk::EntityHandle& entity : canvas->GetMapEntities())
 		{
 			assert(entity->HasComponent<Ndk::GraphicsComponent>());
@@ -45,7 +46,7 @@ namespace bw
 			m_targetEntity->Disable();
 	}
 
-	void EntityEditorMode::OnLeave(EditorWindow& editor)
+	void EntityEditorMode::OnLeave()
 	{
 		if (m_targetEntity)
 			m_targetEntity->Enable();

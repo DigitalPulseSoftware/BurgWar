@@ -14,10 +14,10 @@ namespace bw
 	class BasicEditorMode : public EditorMode
 	{
 		public:
-			BasicEditorMode() = default;
+			using EditorMode::EditorMode;
 			~BasicEditorMode() = default;
 
-			void OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 	};
 }
 

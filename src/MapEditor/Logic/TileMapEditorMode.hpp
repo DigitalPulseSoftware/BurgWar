@@ -8,10 +8,12 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_TILEMAP_EDITOR_MODE_HPP
 
 #include <MapEditor/Logic/EntityEditorMode.hpp>
+#include <MapEditor/Widgets/TileSelectionWidget.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
+#include <Nazara/Platform/Cursor.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <optional>
 
@@ -20,19 +22,33 @@ namespace bw
 	class TileMapEditorMode : public EntityEditorMode
 	{
 		public:
-			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation, 
-			                  const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt8> content);
+			struct TileData;
+
+			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation,
+			                  const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
+			                  const std::vector<TileData>& tiles, EditorWindow& editor);
 			~TileMapEditorMode() = default;
 
-			void OnEnter(EditorWindow& editor) override;
-			void OnLeave(EditorWindow& editor) override;
+			void EnableClearMode(bool clearMode);
 
-			void OnMouseButtonPressed(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
-			void OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
-			void OnMouseMoved(EditorWindow& editor, const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
+			void OnEnter() override;
+			void OnLeave() override;
+
+			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			void OnMouseEntered() override;
+			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
+
+			struct TileData
+			{
+				Nz::MaterialRef material;
+				Nz::Rectf texCoords;
+			};
 
 		private:
-			std::optional<Nz::Vector2ui> GetTilePositionFromMouse(EditorWindow& editor, int mouseX, int mouseY) const;
+			void ApplyTile(std::optional<Nz::Vector2ui> tilePosition);
+			std::optional<Nz::Vector2ui> GetTilePositionFromMouse(int mouseX, int mouseY) const;
+			void OnTileSelected(std::size_t tileIndex);
 
 			enum class EditionMode
 			{
@@ -41,16 +57,21 @@ namespace bw
 				None
 			};
 
-			std::vector<Nz::UInt8> m_tilemapContent;
-			Ndk::EntityOwner m_tilePreviewEntity;
+			std::size_t m_selectedTile;
+			std::vector<Nz::MaterialRef> m_materials;
+			std::vector<Nz::UInt32> m_tilemapContent;
+			std::vector<TileSelectionWidget::TileData> m_tileData;
+			Ndk::EntityOwner m_tileSelectionEntity;
 			Ndk::EntityOwner m_tilemapEntity;
+			Nz::CursorRef m_eraserCursor;
 			Nz::DegreeAnglef m_rotation;
-			Nz::SpriteRef m_tileSprite;
+			Nz::SpriteRef m_hoveringTileSprite;
 			Nz::TileMapRef m_tileMap;
 			Nz::Vector2f m_origin;
 			Nz::Vector2f m_tileSize;
 			Nz::Vector2ui m_mapSize;
 			EditionMode m_editionMode;
+			bool m_clearMode;
 	};
 }
 

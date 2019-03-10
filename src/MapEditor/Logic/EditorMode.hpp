@@ -16,16 +16,25 @@ namespace bw
 	class EditorMode
 	{
 		public:
-			EditorMode() = default;
+			inline EditorMode(EditorWindow& editor);
 			virtual ~EditorMode();
 
-			virtual void OnEnter(EditorWindow& editor);
-			virtual void OnLeave(EditorWindow& editor);
+			virtual void OnEnter();
+			virtual void OnLeave();
 
 			// Canvas events
-			virtual void OnMouseButtonPressed(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			virtual void OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton);
-			virtual void OnMouseMoved(EditorWindow& editor, const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
+			virtual void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
+			virtual void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
+			virtual void OnMouseEntered();
+			virtual void OnMouseLeft();
+			virtual void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
+
+		protected:
+			inline EditorWindow& GetEditorWindow();
+			inline const EditorWindow& GetEditorWindow() const;
+
+		private:
+			EditorWindow& m_editor;
 	};
 }
 

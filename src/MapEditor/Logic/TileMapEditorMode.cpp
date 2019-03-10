@@ -15,41 +15,112 @@
 
 namespace bw
 {
-	TileMapEditorMode::TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation, 
-	                                     const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt8> content) :
-	EntityEditorMode(targetEntity),
+	TileMapEditorMode::TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation,
+	                                     const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
+	                                     const std::vector<TileData>& tiles, EditorWindow& editor) :
+	EntityEditorMode(targetEntity, editor),
 	m_tilemapContent(std::move(content)),
 	m_rotation(rotation),
 	m_origin(origin),
 	m_tileSize(tileSize),
 	m_mapSize(mapSize),
-	m_editionMode(EditionMode::None)
+	m_editionMode(EditionMode::None),
+	m_clearMode(false)
 	{
+		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("../resources/eraser.png");
+
+		m_eraserCursor = Nz::Cursor::New();
+		m_eraserCursor->Create(*eraserImage, Nz::Vector2i(3, 31), Nz::SystemCursor_Default);
+
+		// Compute tilemap
+		tsl::hopscotch_map<Nz::MaterialRef /*material*/, std::size_t /*materialIndex*/> materials;
+		for (const auto& tile : tiles)
+		{
+			auto it = materials.find(tile.material);
+			if (it == materials.end())
+			{
+				materials.emplace(tile.material, materials.size());
+				m_materials.emplace_back(tile.material);
+			}
+		}
+
+		m_tileData.resize(tiles.size());
+		for (std::size_t i = 0; i < tiles.size(); ++i)
+		{
+			const auto& tile = tiles[i];
+
+			auto it = materials.find(tile.material);
+			assert(it != materials.end());
+
+			auto& widgetTile = m_tileData[i];
+			widgetTile.materialIndex = it->second;
+			widgetTile.texCoords = tile.texCoords;
+		}
+
+		Nz::MaterialRef selectionMaterial = Nz::Material::New("Translucent2D");
+		selectionMaterial->SetDiffuseMap("../resources/tile_selection.png");
+
+		m_hoveringTileSprite = Nz::Sprite::New();
+		m_hoveringTileSprite->SetMaterial(selectionMaterial);
+		m_hoveringTileSprite->SetSize(m_tileSize);
 	}
 
-	void TileMapEditorMode::OnEnter(EditorWindow& editor)
+	void TileMapEditorMode::EnableClearMode(bool clearMode)
 	{
-		EntityEditorMode::OnEnter(editor);
+		if (m_clearMode == clearMode)
+			return;
 
-		QDockWidget* tileSelectorDock = new QDockWidget(QObject::tr("Tile selector"), &editor);
+		m_clearMode = clearMode;
+
+		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
+		if (m_clearMode)
+		{
+			canvas->SetCursor(m_eraserCursor);
+			m_hoveringTileSprite->SetColor(Nz::Color::Red);
+		}
+		else
+		{
+			canvas->SetCursor(Nz::SystemCursor_Default);
+			m_hoveringTileSprite->SetColor(Nz::Color::White);
+		}
+	}
+
+	void TileMapEditorMode::OnEnter()
+	{
+		EntityEditorMode::OnEnter();
+
+		EditorWindow& editorWindow = GetEditorWindow();
+
+		QDockWidget* tileSelectorDock = new QDockWidget(QObject::tr("Tile selector"), &editorWindow);
 		tileSelectorDock->setFloating(true);
 
-		TileSelectionWidget* tileWidget = new TileSelectionWidget;
+		TileSelectionWidget* tileWidget = new TileSelectionWidget(m_tileData, m_materials);
+		tileWidget->OnNoTileSelected.Connect([this](TileSelectionWidget* tileSelection)
+		{
+			EnableClearMode(true);
+		});
+
+		tileWidget->OnTileSelected.Connect([this](TileSelectionWidget* tileSelection, std::size_t tileIndex)
+		{
+			EnableClearMode(false);
+			OnTileSelected(tileIndex);
+		});
+
+		tileWidget->SelectTile(0);
+
 		tileWidget->resize(256, 256); //< FIXME: This is ignored for some reason
 
 		tileSelectorDock->setWidget(tileWidget);
 
-		editor.addDockWidget(Qt::LeftDockWidgetArea, tileSelectorDock);
+		editorWindow.addDockWidget(Qt::LeftDockWidgetArea, tileSelectorDock);
 
-		MapCanvas* mapCanvas = editor.GetMapCanvas();
+		MapCanvas* mapCanvas = editorWindow.GetMapCanvas();
 
 		m_tilemapEntity = mapCanvas->GetWorld().CreateEntity();
 
-		Nz::MaterialRef tileMapMat = Nz::Material::New("Translucent2D");
-		tileMapMat->SetDiffuseMap("../resources/dirt.png");
-
-		m_tileMap = Nz::TileMap::New(m_mapSize, m_tileSize);
-		m_tileMap->SetMaterial(0, tileMapMat);
+		m_tileMap = Nz::TileMap::New(m_mapSize, m_tileSize, m_materials.size());
+		for (std::size_t matIndex = 0; matIndex < m_materials.size(); ++matIndex)
+			m_tileMap->SetMaterial(matIndex, m_materials[matIndex]);
 
 		for (std::size_t i = 0; i < m_mapSize.x * m_mapSize.y; ++i)
 		{
@@ -57,7 +128,12 @@ namespace bw
 
 			Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % m_mapSize.x), static_cast<unsigned int>(i / m_mapSize.x) };
 			if (value > 0)
-				m_tileMap->EnableTile(tilePos, Nz::Rectf(0.f, 0.f, 1.f, 1.f));
+			{
+				assert(value - 1 < m_tileData.size());
+
+				const auto& tileData = m_tileData[value - 1];
+				m_tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
+			}
 		}
 
 		auto& tileMapNode = m_tilemapEntity->AddComponent<Ndk::NodeComponent>();
@@ -67,118 +143,106 @@ namespace bw
 		auto& tileMapGraphics = m_tilemapEntity->AddComponent<Ndk::GraphicsComponent>();
 		tileMapGraphics.Attach(m_tileMap, 1);
 
-		m_tilePreviewEntity = mapCanvas->GetWorld().CreateEntity();
+		m_tileSelectionEntity = mapCanvas->GetWorld().CreateEntity();
 
-		Nz::MaterialRef tileMat = Nz::Material::New(*tileMapMat);
-		tileMat->SetDiffuseColor(Nz::Color(255, 255, 255, 200));
+		m_tileSelectionEntity->AddComponent<Ndk::NodeComponent>();
 
-		m_tileSprite = Nz::Sprite::New();
-		m_tileSprite->SetMaterial(tileMat);
-		m_tileSprite->SetSize(m_tileSize);
-
-		m_tilePreviewEntity->AddComponent<Ndk::NodeComponent>();
-
-		auto& spriteTexture = m_tilePreviewEntity->AddComponent<Ndk::GraphicsComponent>();
-		spriteTexture.Attach(m_tileSprite, 2);
+		auto& spriteTexture = m_tileSelectionEntity->AddComponent<Ndk::GraphicsComponent>();
+		spriteTexture.Attach(m_hoveringTileSprite, 2);
 	}
 
-	void TileMapEditorMode::OnLeave(EditorWindow& editor)
+	void TileMapEditorMode::OnLeave()
 	{
-		EntityEditorMode::OnLeave(editor);
+		EntityEditorMode::OnLeave();
 
 		m_tileMap.Reset();
-		m_tileSprite.Reset();
 		m_tilemapEntity.Reset();
 	}
 
-	void TileMapEditorMode::OnMouseButtonPressed(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	void TileMapEditorMode::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		switch (mouseButton.button)
-		{
-			case Nz::Mouse::Left:
-				m_editionMode = EditionMode::EnableTile;
-				break;
+		if (mouseButton.button != Nz::Mouse::Left)
+			return;
 
-			case Nz::Mouse::Right:
-				m_editionMode = EditionMode::DisableTile;
-				break;
+		m_editionMode = (m_clearMode) ? EditionMode::DisableTile : EditionMode::EnableTile;
 
-			default:
-				break;
-		}
+		if (std::optional<Nz::Vector2ui> tilePosition = GetTilePositionFromMouse(mouseButton.x, mouseButton.y))
+			ApplyTile(tilePosition);
 	}
 
-	void TileMapEditorMode::OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	void TileMapEditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		Nz::Mouse::Button modeButton;
-
-		switch (m_editionMode)
-		{
-			case EditionMode::DisableTile:
-				modeButton = Nz::Mouse::Right;
-				break;
-
-			case EditionMode::EnableTile:
-				modeButton = Nz::Mouse::Left;
-				break;
-
-			case EditionMode::None:
-			default:
-				return;
-		}
-
-		if (mouseButton.button != modeButton)
+		if (mouseButton.button != Nz::Mouse::Left)
 			return;
 
 		m_editionMode = EditionMode::None;
 	}
 
-	void TileMapEditorMode::OnMouseMoved(EditorWindow& editor, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
+	void TileMapEditorMode::OnMouseEntered()
 	{
-		MapCanvas* canvas = editor.GetMapCanvas();
+		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 
-		std::optional<Nz::Vector2ui> tilePosition = GetTilePositionFromMouse(editor, mouseMoved.x, mouseMoved.y);
-		if (tilePosition)
-		{
-			auto& node = m_tilePreviewEntity->GetComponent<Ndk::NodeComponent>();
-			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tileSize + m_origin);
-
-			switch (m_editionMode)
-			{
-				case EditionMode::DisableTile:
-				{
-					m_tileMap->DisableTile(*tilePosition);
-
-					std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
-
-					assert(tileIndex < m_tilemapContent.size());
-					m_tilemapContent[tileIndex] = 0;
-					break;
-				}
-
-				case EditionMode::EnableTile:
-				{
-					m_tileMap->EnableTile(*tilePosition, Nz::Rectf(0.f, 0.f, 1.f, 1.f));
-
-					std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
-
-					assert(tileIndex < m_tilemapContent.size());
-					m_tilemapContent[tileIndex] = 1;
-					break;
-				}
-
-				case EditionMode::None:
-				default:
-					break;
-			}
-		}
+		if (m_clearMode)
+			canvas->SetCursor(m_eraserCursor);
 		else
-			m_tilePreviewEntity->Disable();
+			canvas->SetCursor(Nz::SystemCursor_Default);
 	}
 
-	std::optional<Nz::Vector2ui> TileMapEditorMode::GetTilePositionFromMouse(EditorWindow& editor, int mouseX, int mouseY) const
+	void TileMapEditorMode::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
-		MapCanvas* canvas = editor.GetMapCanvas();
+		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
+
+		std::optional<Nz::Vector2ui> tilePosition = GetTilePositionFromMouse(mouseMoved.x, mouseMoved.y);
+		if (tilePosition)
+		{
+			m_tileSelectionEntity->Enable();
+
+			auto& node = m_tileSelectionEntity->GetComponent<Ndk::NodeComponent>();
+			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tileSize + m_origin);
+
+			ApplyTile(tilePosition);
+		}
+		else
+			m_tileSelectionEntity->Disable();
+	}
+	
+	void TileMapEditorMode::ApplyTile(std::optional<Nz::Vector2ui> tilePosition)
+	{
+		switch (m_editionMode)
+		{
+			case EditionMode::DisableTile:
+			{
+				m_tileMap->DisableTile(*tilePosition);
+
+				std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
+
+				assert(tileIndex < m_tilemapContent.size());
+				m_tilemapContent[tileIndex] = 0;
+				break;
+			}
+
+			case EditionMode::EnableTile:
+			{
+				const auto& tileData = m_tileData[m_selectedTile];
+
+				m_tileMap->EnableTile(*tilePosition, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
+
+				std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
+
+				assert(tileIndex < m_tilemapContent.size());
+				m_tilemapContent[tileIndex] = static_cast<Nz::UInt32>(m_selectedTile + 1);
+				break;
+			}
+
+			case EditionMode::None:
+			default:
+				break;
+		}
+	}
+
+	std::optional<Nz::Vector2ui> TileMapEditorMode::GetTilePositionFromMouse(int mouseX, int mouseY) const
+	{
+		const MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 
 		auto& cameraComponent = canvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
 		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(mouseX, mouseY, 0.f)));
@@ -186,8 +250,6 @@ namespace bw
 		Nz::Rectf tilemapRect(m_origin.x, m_origin.y, m_mapSize.x * m_tileSize.x, m_mapSize.y * m_tileSize.y);
 		if (tilemapRect.Contains(worldPos))
 		{
-			m_tilePreviewEntity->Enable();
-
 			Nz::Vector2f relativePosition = worldPos - m_origin;
 			relativePosition.x = std::floor(relativePosition.x / m_tileSize.x);
 			relativePosition.y = std::floor(relativePosition.y / m_tileSize.y);
@@ -196,5 +258,12 @@ namespace bw
 		}
 		else
 			return std::nullopt;
+	}
+
+	void TileMapEditorMode::OnTileSelected(std::size_t tileIndex)
+	{
+		assert(tileIndex < m_tileData.size());
+
+		m_selectedTile = tileIndex;
 	}
 }

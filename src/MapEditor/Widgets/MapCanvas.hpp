@@ -37,12 +37,16 @@ namespace bw
 
 			NazaraSignal(OnCanvasMouseButtonPressed, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
 			NazaraSignal(OnCanvasMouseButtonReleased, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
+			NazaraSignal(OnCanvasMouseEntered, MapCanvas* /*emitter*/);
+			NazaraSignal(OnCanvasMouseLeft, MapCanvas* /*emitter*/);
 			NazaraSignal(OnCanvasMouseMoved, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& /*mouseButton*/);
 			NazaraSignal(OnEntityPositionUpdated, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/, const Nz::Vector2f& /*position*/);
 
 		private:
 			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+			void OnMouseEntered() override;
+			void OnMouseLeft() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
 
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onGizmoEntityDestroyed);

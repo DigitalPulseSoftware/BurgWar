@@ -9,23 +9,31 @@ namespace bw
 {
 	EditorMode::~EditorMode() = default;
 
-	void EditorMode::OnEnter(EditorWindow& /*editor*/)
+	void EditorMode::OnEnter()
 	{
 	}
 
-	void EditorMode::OnLeave(EditorWindow& /*editor*/)
+	void EditorMode::OnLeave()
 	{
 	}
 
-	void EditorMode::OnMouseButtonPressed(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/)
+	void EditorMode::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
 	}
 	
-	void EditorMode::OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/)
+	void EditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	{
+	}
+
+	void EditorMode::OnMouseEntered()
+	{
+	}
+
+	void EditorMode::OnMouseLeft()
 	{
 	}
 	
-	void EditorMode::OnMouseMoved(EditorWindow& editor, const Nz::WindowEvent::MouseMoveEvent& /*mouseMoved*/)
+	void EditorMode::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
 	}
 }

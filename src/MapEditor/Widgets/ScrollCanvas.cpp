@@ -26,7 +26,6 @@ namespace bw
 		m_canvas->setMinimumSize(64, 64);
 		m_canvas->setMaximumSize(m_contentSize.x, m_contentSize.y);
 		//m_canvas->resize(std::max(m_contentSize.x, 640), std::max(m_contentSize.y, 360));
-		m_canvas->UpdateBackgroundColor(Nz::Color::Cyan);
 		m_canvas->OnCameraMoved.Connect(this, &ScrollCanvas::OnCameraMoved);
 
 		m_scrollbarH = new QScrollBar(Qt::Horizontal);

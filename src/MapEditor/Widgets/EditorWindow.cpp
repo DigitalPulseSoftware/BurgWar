@@ -60,17 +60,27 @@ namespace bw
 
 		m_canvas->OnCanvasMouseButtonPressed.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
-			m_currentMode->OnMouseButtonPressed(*this, mouseButton);
+			m_currentMode->OnMouseButtonPressed(mouseButton);
 		});
 
 		m_canvas->OnCanvasMouseButtonReleased.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
-			m_currentMode->OnMouseButtonReleased(*this, mouseButton);
+			m_currentMode->OnMouseButtonReleased(mouseButton);
+		});
+
+		m_canvas->OnCanvasMouseEntered.Connect([this](MapCanvas* /*emitter*/)
+		{
+			m_currentMode->OnMouseEntered();
+		});
+
+		m_canvas->OnCanvasMouseLeft.Connect([this](MapCanvas* /*emitter*/)
+		{
+			m_currentMode->OnMouseLeft();
 		});
 
 		m_canvas->OnCanvasMouseMoved.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& mouseMove)
 		{
-			m_currentMode->OnMouseMoved(*this, mouseMove);
+			m_currentMode->OnMouseMoved(mouseMove);
 		});
 
 		setCentralWidget(m_canvas);
@@ -120,15 +130,15 @@ namespace bw
 
 		ClearWorkingMap();
 
-		m_currentMode = std::make_shared<BasicEditorMode>();
-		m_currentMode->OnEnter(*this);
+		m_currentMode = std::make_shared<BasicEditorMode>(*this);
+		m_currentMode->OnEnter();
 
 		statusBar()->showMessage(tr("Ready"), 0);
 	}
 
 	EditorWindow::~EditorWindow()
 	{
-		m_currentMode->OnLeave(*this);
+		m_currentMode->OnLeave();
 		m_currentMode.reset();
 
 		// Delete canvas before releasing everything else
@@ -153,9 +163,9 @@ namespace bw
 
 	void EditorWindow::UpdateEditorMode(std::shared_ptr<EditorMode> editorMode)
 	{
-		m_currentMode->OnLeave(*this);
+		m_currentMode->OnLeave();
 		m_currentMode = std::move(editorMode);
-		m_currentMode->OnEnter(*this);
+		m_currentMode->OnEnter();
 	}
 
 	void EditorWindow::UpdateWorkingMap(Map map, std::filesystem::path mapPath)
@@ -206,7 +216,7 @@ namespace bw
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
 
-		std::vector<Nz::UInt8> content = {
+		std::vector<Nz::UInt32> content = {
 	1,
 				0,
 				0,
@@ -1249,6 +1259,16 @@ namespace bw
 				1
 		};
 
+		std::vector<TileMapEditorMode::TileData> tiles;
+		for (std::size_t i = 1; i <= 18; ++i)
+		{
+			auto& tileData = tiles.emplace_back();
+
+			tileData.material = Nz::Material::New("Translucent2D");
+			tileData.material->SetDiffuseMap("../resources/tiles/" + std::to_string(i) + ".png");
+
+			tileData.texCoords = Nz::Rectf(0.f, 0.f, 1.f, 1.f);
+		}
 
 		QMenu* testMenu = menuBar()->addMenu(tr("&Test"));
 		QAction* oldTilemapTest = testMenu->addAction(tr("Test (old) TileMap editor..."));
@@ -1263,9 +1283,9 @@ namespace bw
 		});
 
 		QAction* tilemapTest = testMenu->addAction(tr("Test (new) TileMap editor..."));
-		connect(tilemapTest, &QAction::triggered, [this, content]()
+		connect(tilemapTest, &QAction::triggered, [this, content, tiles]()
 		{
-			UpdateEditorMode(std::make_shared<TileMapEditorMode>(Ndk::EntityHandle::InvalidHandle, Nz::Vector2f::Zero(), Nz::DegreeAnglef::Zero(), Nz::Vector2ui(80, 13), Nz::Vector2f(64, 64), content));
+			UpdateEditorMode(std::make_shared<TileMapEditorMode>(Ndk::EntityHandle::InvalidHandle, Nz::Vector2f::Zero(), Nz::DegreeAnglef::Zero(), Nz::Vector2ui(80, 13), Nz::Vector2f(64, 64), content, tiles, *this));
 		});
 
 		QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));

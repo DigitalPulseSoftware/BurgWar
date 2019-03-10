@@ -7,4 +7,18 @@
 
 namespace bw
 {
+	inline EditorMode::EditorMode(EditorWindow& editor) :
+	m_editor(editor)
+	{
+	}
+
+	inline EditorWindow& EditorMode::GetEditorWindow()
+	{
+		return m_editor;
+	}
+
+	inline const EditorWindow& EditorMode::GetEditorWindow() const
+	{
+		return m_editor;
+	}
 }

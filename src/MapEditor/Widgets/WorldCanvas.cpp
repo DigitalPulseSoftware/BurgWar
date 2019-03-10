@@ -36,6 +36,15 @@ namespace bw
 			OnMouseButtonReleased(mouseButton);
 		});
 
+		eventHandler.OnMouseEntered.Connect([this](const Nz::EventHandler*)
+		{
+			OnMouseEntered();
+		});
+
+		eventHandler.OnMouseLeft.Connect([this](const Nz::EventHandler*)
+		{
+			OnMouseLeft();
+		});
 		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 		{
 			OnMouseMoved(mouseMoved);
@@ -83,6 +92,14 @@ namespace bw
 	{
 		if (m_cameraMovement && m_cameraMovement->OnMouseButtonReleased(mouseButton))
 			return;
+	}
+
+	void WorldCanvas::OnMouseEntered()
+	{
+	}
+
+	void WorldCanvas::OnMouseLeft()
+	{
 	}
 
 	void WorldCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)

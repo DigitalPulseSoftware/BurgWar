@@ -118,6 +118,16 @@ namespace bw
 		OnCanvasMouseButtonReleased(this, mouseButton);
 	}
 
+	void MapCanvas::OnMouseEntered()
+	{
+		OnCanvasMouseEntered(this);
+	}
+
+	void MapCanvas::OnMouseLeft()
+	{
+		OnCanvasMouseLeft(this);
+	}
+
 	void MapCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
 		WorldCanvas::OnMouseMoved(mouseMoved);

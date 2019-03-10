@@ -31,6 +31,8 @@ namespace bw
 			const Ndk::EntityHandle& GetCameraEntity();
 			Ndk::World& GetWorld();
 			const Ndk::World& GetWorld() const;
+			inline WorldCanvas* GetWorldCanvas();
+			inline const WorldCanvas* GetWorldCanvas() const;
 
 			void SetContentSize(const Nz::Vector2i& contentSize);
 
@@ -51,6 +53,6 @@ namespace bw
 }
 
 
-#include <MapEditor/Widgets/TileMapEditorDialog.inl>
+#include <MapEditor/Widgets/ScrollCanvas.inl>
 
 #endif

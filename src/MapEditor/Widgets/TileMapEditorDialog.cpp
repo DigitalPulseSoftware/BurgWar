@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	TileMapEditorDialog::TileMapEditorDialog(const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, const std::vector<Nz::UInt8>& content, QWidget* parent) :
+	TileMapEditorDialog::TileMapEditorDialog(const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, const std::vector<Nz::UInt32>& content, QWidget* parent) :
 	QDialog(parent)
 	{
 		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);

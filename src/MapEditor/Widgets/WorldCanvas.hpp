@@ -23,6 +23,7 @@ namespace bw
 			void EnableCameraControl(bool enable);
 
 			inline const Ndk::EntityHandle& GetCameraEntity();
+			inline const Ndk::EntityHandle& GetCameraEntity() const;
 			inline Ndk::World& GetWorld();
 			inline const Ndk::World& GetWorld() const;
 
@@ -33,6 +34,8 @@ namespace bw
 		protected:
 			virtual void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			virtual void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
+			virtual void OnMouseEntered();
+			virtual void OnMouseLeft();
 			virtual void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
 
 		private:

@@ -22,7 +22,7 @@ namespace bw
 	class TileMapEditorDialog : public QDialog
 	{
 		public:
-			TileMapEditorDialog(const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, const std::vector<Nz::UInt8>& content, QWidget* parent = nullptr);
+			TileMapEditorDialog(const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, const std::vector<Nz::UInt32>& content, QWidget* parent = nullptr);
 			~TileMapEditorDialog() = default;
 
 		private:

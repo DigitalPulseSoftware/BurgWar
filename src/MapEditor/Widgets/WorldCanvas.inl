@@ -11,6 +11,11 @@ namespace bw
 		return m_cameraEntity;
 	}
 
+	inline const Ndk::EntityHandle& WorldCanvas::GetCameraEntity() const
+	{
+		return m_cameraEntity;
+	}
+
 	inline Ndk::World& WorldCanvas::GetWorld()
 	{
 		return m_world;

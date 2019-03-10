@@ -12,11 +12,12 @@
 
 namespace bw
 {
-	void BasicEditorMode::OnMouseButtonReleased(EditorWindow& editor, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	void BasicEditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
 		if (mouseButton.button == Nz::Mouse::Left)
 		{
-			MapCanvas* canvas = editor.GetMapCanvas();
+			EditorWindow& editorWindow = GetEditorWindow();
+			MapCanvas* canvas = editorWindow.GetMapCanvas();
 
 			auto& cameraComponent = canvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
 			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f));
@@ -30,7 +31,7 @@ namespace bw
 				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
 				if (ray.Intersect(gfxComponent.GetAABB()))
 				{
-					editor.SelectEntity(entity->GetId());
+					editorWindow.SelectEntity(entity->GetId());
 					return;
 				}
 			}

@@ -7,7 +7,12 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_TILESELECTIONWIDGET_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_TILESELECTIONWIDGET_HPP
 
+#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Graphics/Material.hpp>
+#include <Nazara/Platform/Event.hpp>
+#include <NDK/EntityOwner.hpp>
 #include <QtWidgets/QWidget>
+#include <vector>
 
 class QScrollBar;
 
@@ -18,10 +23,32 @@ namespace bw
 	class TileSelectionWidget : public QWidget
 	{
 		public:
-			TileSelectionWidget(QWidget* parent = nullptr);
+			struct TileData;
+
+			TileSelectionWidget(const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent = nullptr);
 			~TileSelectionWidget() = default;
 
+			void SelectTile(std::size_t tileIndex);
+			void UnselectTile();
+
+			NazaraSignal(OnNoTileSelected, TileSelectionWidget* /*emitter*/);
+			NazaraSignal(OnTileSelected, TileSelectionWidget* /*emitter*/, std::size_t /*tileIndex*/);
+
+			struct TileData
+			{
+				std::size_t materialIndex;
+				Nz::Rectf texCoords;
+			};
+
 		private:
+			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent);
+			void SelectRect(std::size_t rectIndex);
+
+			std::size_t m_tileCount;
+			Ndk::EntityOwner m_selectedEntity;
+			Ndk::EntityOwner m_tileMapEntity;
+			Nz::Vector2ui m_mapSize;
+			Nz::Vector2f m_tileSize;
 			ScrollCanvas* m_tileSelectionCanvas;
 	};
 }
