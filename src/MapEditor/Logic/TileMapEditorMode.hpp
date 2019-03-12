@@ -23,6 +23,7 @@ namespace bw
 	{
 		public:
 			struct TileData;
+			struct TileMapData;
 
 			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation,
 			                  const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
@@ -30,6 +31,8 @@ namespace bw
 			~TileMapEditorMode() = default;
 
 			void EnableClearMode(bool clearMode);
+
+			const TileMapData& GetTileMapData() const;
 
 			void OnEnter() override;
 			void OnLeave() override;
@@ -43,6 +46,15 @@ namespace bw
 			{
 				Nz::MaterialRef material;
 				Nz::Rectf texCoords;
+			};
+
+			struct TileMapData
+			{
+				std::vector<Nz::UInt32> content;
+				Nz::DegreeAnglef rotation;
+				Nz::Vector2f origin;
+				Nz::Vector2f tileSize;
+				Nz::Vector2ui mapSize;
 			};
 
 		private:
@@ -59,18 +71,14 @@ namespace bw
 
 			std::size_t m_selectedTile;
 			std::vector<Nz::MaterialRef> m_materials;
-			std::vector<Nz::UInt32> m_tilemapContent;
 			std::vector<TileSelectionWidget::TileData> m_tileData;
 			Ndk::EntityOwner m_tileSelectionEntity;
 			Ndk::EntityOwner m_tilemapEntity;
 			Nz::CursorRef m_eraserCursor;
-			Nz::DegreeAnglef m_rotation;
 			Nz::SpriteRef m_hoveringTileSprite;
 			Nz::TileMapRef m_tileMap;
-			Nz::Vector2f m_origin;
-			Nz::Vector2f m_tileSize;
-			Nz::Vector2ui m_mapSize;
 			EditionMode m_editionMode;
+			TileMapData m_tilemapData;
 			bool m_clearMode;
 	};
 }

@@ -19,14 +19,15 @@ namespace bw
 	                                     const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
 	                                     const std::vector<TileData>& tiles, EditorWindow& editor) :
 	EntityEditorMode(targetEntity, editor),
-	m_tilemapContent(std::move(content)),
-	m_rotation(rotation),
-	m_origin(origin),
-	m_tileSize(tileSize),
-	m_mapSize(mapSize),
 	m_editionMode(EditionMode::None),
 	m_clearMode(false)
 	{
+		m_tilemapData.content = std::move(content);
+		m_tilemapData.mapSize = mapSize;
+		m_tilemapData.origin = origin;
+		m_tilemapData.rotation = rotation;
+		m_tilemapData.tileSize = tileSize;
+
 		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("../resources/eraser.png");
 
 		m_eraserCursor = Nz::Cursor::New();
@@ -62,7 +63,7 @@ namespace bw
 
 		m_hoveringTileSprite = Nz::Sprite::New();
 		m_hoveringTileSprite->SetMaterial(selectionMaterial);
-		m_hoveringTileSprite->SetSize(m_tileSize);
+		m_hoveringTileSprite->SetSize(m_tilemapData.tileSize);
 	}
 
 	void TileMapEditorMode::EnableClearMode(bool clearMode)
@@ -118,15 +119,15 @@ namespace bw
 
 		m_tilemapEntity = mapCanvas->GetWorld().CreateEntity();
 
-		m_tileMap = Nz::TileMap::New(m_mapSize, m_tileSize, m_materials.size());
+		m_tileMap = Nz::TileMap::New(m_tilemapData.mapSize, m_tilemapData.tileSize, m_materials.size());
 		for (std::size_t matIndex = 0; matIndex < m_materials.size(); ++matIndex)
 			m_tileMap->SetMaterial(matIndex, m_materials[matIndex]);
 
-		for (std::size_t i = 0; i < m_mapSize.x * m_mapSize.y; ++i)
+		for (std::size_t i = 0; i < m_tilemapData.mapSize.x * m_tilemapData.mapSize.y; ++i)
 		{
-			unsigned int value = m_tilemapContent[i];
-
-			Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % m_mapSize.x), static_cast<unsigned int>(i / m_mapSize.x) };
+			Nz::UInt32 value = m_tilemapData.content[i];
+			
+			Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % m_tilemapData.mapSize.x), static_cast<unsigned int>(i / m_tilemapData.mapSize.x) };
 			if (value > 0)
 			{
 				assert(value - 1 < m_tileData.size());
@@ -137,8 +138,8 @@ namespace bw
 		}
 
 		auto& tileMapNode = m_tilemapEntity->AddComponent<Ndk::NodeComponent>();
-		tileMapNode.SetPosition(m_origin);
-		tileMapNode.SetRotation(m_rotation);
+		tileMapNode.SetPosition(m_tilemapData.origin);
+		tileMapNode.SetRotation(m_tilemapData.rotation);
 
 		auto& tileMapGraphics = m_tilemapEntity->AddComponent<Ndk::GraphicsComponent>();
 		tileMapGraphics.Attach(m_tileMap, 1);
@@ -198,7 +199,7 @@ namespace bw
 			m_tileSelectionEntity->Enable();
 
 			auto& node = m_tileSelectionEntity->GetComponent<Ndk::NodeComponent>();
-			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tileSize + m_origin);
+			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tilemapData.tileSize + m_tilemapData.origin);
 
 			ApplyTile(tilePosition);
 		}
@@ -214,10 +215,10 @@ namespace bw
 			{
 				m_tileMap->DisableTile(*tilePosition);
 
-				std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
+				std::size_t tileIndex = tilePosition->y * m_tilemapData.tileSize.x + tilePosition->x;
 
-				assert(tileIndex < m_tilemapContent.size());
-				m_tilemapContent[tileIndex] = 0;
+				assert(tileIndex < m_tilemapData.content.size());
+				m_tilemapData.content[tileIndex] = 0;
 				break;
 			}
 
@@ -227,10 +228,10 @@ namespace bw
 
 				m_tileMap->EnableTile(*tilePosition, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
 
-				std::size_t tileIndex = tilePosition->y * m_mapSize.x + tilePosition->x;
+				std::size_t tileIndex = tilePosition->y * m_tilemapData.tileSize.x + tilePosition->x;
 
-				assert(tileIndex < m_tilemapContent.size());
-				m_tilemapContent[tileIndex] = static_cast<Nz::UInt32>(m_selectedTile + 1);
+				assert(tileIndex < m_tilemapData.content.size());
+				m_tilemapData.content[tileIndex] = static_cast<Nz::UInt32>(m_selectedTile + 1);
 				break;
 			}
 
@@ -247,12 +248,12 @@ namespace bw
 		auto& cameraComponent = canvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
 		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(mouseX, mouseY, 0.f)));
 
-		Nz::Rectf tilemapRect(m_origin.x, m_origin.y, m_mapSize.x * m_tileSize.x, m_mapSize.y * m_tileSize.y);
+		Nz::Rectf tilemapRect(m_tilemapData.origin.x, m_tilemapData.origin.y, m_tilemapData.mapSize.x * m_tilemapData.tileSize.x, m_tilemapData.mapSize.y * m_tilemapData.tileSize.y);
 		if (tilemapRect.Contains(worldPos))
 		{
-			Nz::Vector2f relativePosition = worldPos - m_origin;
-			relativePosition.x = std::floor(relativePosition.x / m_tileSize.x);
-			relativePosition.y = std::floor(relativePosition.y / m_tileSize.y);
+			Nz::Vector2f relativePosition = worldPos - m_tilemapData.origin;
+			relativePosition.x = std::floor(relativePosition.x / m_tilemapData.tileSize.x);
+			relativePosition.y = std::floor(relativePosition.y / m_tilemapData.tileSize.y);
 
 			return Nz::Vector2ui(relativePosition);
 		}
