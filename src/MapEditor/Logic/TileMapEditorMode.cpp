@@ -231,7 +231,7 @@ namespace bw
 			{
 				m_tileMap->DisableTile(*tilePosition);
 
-				std::size_t tileIndex = tilePosition->y * m_tilemapData.tileSize.x + tilePosition->x;
+				std::size_t tileIndex = tilePosition->y * m_tilemapData.mapSize.x + tilePosition->x;
 
 				assert(tileIndex < m_tilemapData.content.size());
 				m_tilemapData.content[tileIndex] = 0;
@@ -244,7 +244,7 @@ namespace bw
 
 				m_tileMap->EnableTile(*tilePosition, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
 
-				std::size_t tileIndex = tilePosition->y * m_tilemapData.tileSize.x + tilePosition->x;
+				std::size_t tileIndex = tilePosition->y * m_tilemapData.mapSize.x + tilePosition->x;
 
 				assert(tileIndex < m_tilemapData.content.size());
 				m_tilemapData.content[tileIndex] = static_cast<Nz::UInt32>(m_selectedTile + 1);
