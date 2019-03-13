@@ -41,6 +41,8 @@ namespace bw
 			};
 
 		private:
+			void closeEvent(QCloseEvent* event) override;
+
 			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent);
 			void SelectRect(std::size_t rectIndex);
 

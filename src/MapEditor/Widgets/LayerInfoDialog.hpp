@@ -45,7 +45,6 @@ namespace bw
 	};
 }
 
-
-#include <MapEditor/Widgets/EntityInfoDialog.inl>
+#include <MapEditor/Widgets/LayerInfoDialog.inl>
 
 #endif

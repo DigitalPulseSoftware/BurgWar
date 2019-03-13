@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	auto TileMapEditorMode::GetTileMapData() const -> const TileMapData&
+	inline auto TileMapEditorMode::GetTileMapData() const -> const TileMapData&
 	{
 		return m_tilemapData;
 	}

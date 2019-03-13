@@ -210,10 +210,11 @@ namespace bw
 		OnEntityTypeUpdate();
 	}
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, EntityInfo entityInfo, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent) :
 	EntityInfoDialog(clientEntityStore, scriptingContext, parent)
 	{
 		m_entityInfo = std::move(entityInfo);
+		m_targetEntity = targetEntity;
 
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
 		m_positionWidget->setValue(Nz::Vector2d(m_entityInfo.position));
@@ -222,9 +223,59 @@ namespace bw
 		m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
 	}
 
-	const EntityInfo& EntityInfoDialog::GetEntityInfo() const
+	const EntityProperty& EntityInfoDialog::GetProperty(const std::string& propertyName) const
 	{
-		return m_entityInfo;
+		const bw::EntityProperty* property;
+
+		auto it = m_entityInfo.properties.find(propertyName);
+		if (it != m_entityInfo.properties.end())
+			property = &it->second;
+		else
+		{
+			auto propertyIt = m_propertyByName.find(propertyName);
+			if (propertyIt == m_propertyByName.end())
+				throw std::runtime_error("Property " + propertyName + " does not exist");
+
+			const auto& propertyData = m_properties[propertyIt->second];
+			property = &propertyData.defaultValue;
+		}
+
+		return *property;
+	}
+
+	std::pair<PropertyType, bool> EntityInfoDialog::GetPropertyType(const std::string & propertyName) const
+	{
+		auto propertyIt = m_propertyByName.find(propertyName);
+		if (propertyIt == m_propertyByName.end())
+			throw std::runtime_error("Property " + propertyName + " does not exist");
+
+		const auto& propertyData = m_properties[propertyIt->second];
+
+		return std::make_pair(propertyData.type, propertyData.isArray);
+	}
+
+	void EntityInfoDialog::SetEntityPosition(const Nz::Vector2f& position)
+	{
+		m_entityInfo.position = position;
+		m_positionWidget->setValue(Nz::Vector2d(position));
+	}
+
+	void EntityInfoDialog::SetEntityRotation(const Nz::DegreeAnglef& rotation)
+	{
+		m_entityInfo.rotation = rotation;
+		m_rotationWidget->setValue(rotation.ToDegrees());
+	}
+
+	void EntityInfoDialog::SetProperty(const std::string& propertyName, EntityProperty propertyValue)
+	{
+		m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue));
+
+		// Check if we should reload panel
+		auto propertyIt = m_propertyByName.find(propertyName);
+		assert(propertyIt != m_propertyByName.end());
+
+		if (m_propertyTypeIndex == propertyIt->second)
+			RefreshPropertyEditor(m_propertyTypeIndex);
 	}
 
 	void EntityInfoDialog::OnEntityTypeUpdate()
@@ -312,7 +363,7 @@ namespace bw
 
 				const auto& action = entityTypeInfo->editorActions[it->second];
 
-				sol::state& lua = m_scriptingContext.GetLuaState();
+				/*sol::state& lua = m_scriptingContext.GetLuaState();
 				sol::table metatable = lua.create_table();
 				metatable["__index"] = [this, &lua](sol::this_state state, sol::table table, const std::string& key)
 				{
@@ -351,17 +402,17 @@ namespace bw
 				};
 
 				sol::table propertyTable = m_scriptingContext.GetLuaState().create_table();
-				propertyTable[sol::metatable_key] = metatable;
+				propertyTable[sol::metatable_key] = metatable;*/
 
-				auto result = action.onTrigger(propertyTable);
+				auto result = action.onTrigger(this);
 				if (!result.valid())
 				{
 					sol::error err = result;
 					std::cerr << "Editor action " << name << "::OnTrigger failed: " << err.what() << std::endl;
 				}
 
-				if (refreshPropertyEditor)
-					RefreshPropertyEditor(m_propertyTypeIndex);
+				//if (refreshPropertyEditor)
+				//	RefreshPropertyEditor(m_propertyTypeIndex);
 			});
 
 			m_editorActionLayout->addWidget(button);

@@ -17,6 +17,8 @@
 #include <NDK/EntityOwner.hpp>
 #include <optional>
 
+class QDockWidget;
+
 namespace bw
 {
 	class TileMapEditorMode : public EntityEditorMode
@@ -25,14 +27,12 @@ namespace bw
 			struct TileData;
 			struct TileMapData;
 
-			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation,
-			                  const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
-			                  const std::vector<TileData>& tiles, EditorWindow& editor);
+			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileData>& tiles, EditorWindow& editor);
 			~TileMapEditorMode() = default;
 
 			void EnableClearMode(bool clearMode);
 
-			const TileMapData& GetTileMapData() const;
+			inline const TileMapData& GetTileMapData() const;
 
 			void OnEnter() override;
 			void OnLeave() override;
@@ -57,6 +57,9 @@ namespace bw
 				Nz::Vector2ui mapSize;
 			};
 
+			NazaraSignal(OnEditionCancelled, TileMapEditorMode* /*editorMode*/);
+			NazaraSignal(OnEditionFinished, TileMapEditorMode* /*editorMode*/, const TileMapData& /*tileMapData*/);
+
 		private:
 			void ApplyTile(std::optional<Nz::Vector2ui> tilePosition);
 			std::optional<Nz::Vector2ui> GetTilePositionFromMouse(int mouseX, int mouseY) const;
@@ -79,6 +82,7 @@ namespace bw
 			Nz::TileMapRef m_tileMap;
 			EditionMode m_editionMode;
 			TileMapData m_tilemapData;
+			QDockWidget* m_tileEditorWidget;
 			bool m_clearMode;
 	};
 }

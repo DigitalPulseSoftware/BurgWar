@@ -100,6 +100,12 @@ namespace bw
 			OnNoTileSelected(this);
 	}
 
+	void TileSelectionWidget::closeEvent(QCloseEvent* event)
+	{
+		QWidget::closeEvent(event);
+		std::cout << "Tile selection closed" << std::endl;
+	}
+
 	void TileSelectionWidget::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
 	{
 		if (mouseEvent.button != Nz::Mouse::Left)

@@ -43,7 +43,7 @@ namespace bw
 
 			void SelectEntity(Ndk::EntityId entityId);
 
-			void UpdateEditorMode(std::shared_ptr<EditorMode> editorMode);
+			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 		private:

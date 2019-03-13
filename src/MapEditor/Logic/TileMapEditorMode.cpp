@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
+#include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/TileSelectionWidget.hpp>
@@ -11,23 +12,17 @@
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtWidgets/QDockWidget>
+#include <QtWidgets/QMessageBox>
 #include <iostream>
 
 namespace bw
 {
-	TileMapEditorMode::TileMapEditorMode(const Ndk::EntityHandle& targetEntity, const Nz::Vector2f& origin, const Nz::DegreeAnglef& rotation,
-	                                     const Nz::Vector2ui& mapSize, const Nz::Vector2f& tileSize, std::vector<Nz::UInt32> content, 
-	                                     const std::vector<TileData>& tiles, EditorWindow& editor) :
+	TileMapEditorMode::TileMapEditorMode(const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileData>& tiles, EditorWindow& editor) :
 	EntityEditorMode(targetEntity, editor),
 	m_editionMode(EditionMode::None),
+	m_tilemapData(std::move(tilemapData)),
 	m_clearMode(false)
 	{
-		m_tilemapData.content = std::move(content);
-		m_tilemapData.mapSize = mapSize;
-		m_tilemapData.origin = origin;
-		m_tilemapData.rotation = rotation;
-		m_tilemapData.tileSize = tileSize;
-
 		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("../resources/eraser.png");
 
 		m_eraserCursor = Nz::Cursor::New();
@@ -92,8 +87,27 @@ namespace bw
 
 		EditorWindow& editorWindow = GetEditorWindow();
 
-		QDockWidget* tileSelectorDock = new QDockWidget(QObject::tr("Tile selector"), &editorWindow);
-		tileSelectorDock->setFloating(true);
+		m_tileEditorWidget = new QDockWidget(QObject::tr("Tile selector"), &editorWindow);
+		m_tileEditorWidget->setAttribute(Qt::WA_DeleteOnClose);
+		m_tileEditorWidget->setFloating(true);
+		QObject::connect(m_tileEditorWidget, &QObject::destroyed, [this](QObject* w)
+		{
+			assert(m_tileEditorWidget == w);
+
+			m_tileEditorWidget = nullptr;
+
+			EditorWindow& editorWindow = GetEditorWindow();
+
+			QMessageBox::StandardButton button = QMessageBox::question(&editorWindow, QObject::tr("Save work?"), QObject::tr("Do you want to save and apply your modifications?"));
+			if (button == QMessageBox::Yes)
+				OnEditionFinished(this, GetTileMapData());
+			else
+				OnEditionCancelled(this);
+
+			editorWindow.SwitchToMode(std::make_shared<BasicEditorMode>(editorWindow));
+
+			// Warning: this is destroyed at this point
+		});
 
 		TileSelectionWidget* tileWidget = new TileSelectionWidget(m_tileData, m_materials);
 		tileWidget->OnNoTileSelected.Connect([this](TileSelectionWidget* tileSelection)
@@ -111,9 +125,9 @@ namespace bw
 
 		tileWidget->resize(256, 256); //< FIXME: This is ignored for some reason
 
-		tileSelectorDock->setWidget(tileWidget);
+		m_tileEditorWidget->setWidget(tileWidget);
 
-		editorWindow.addDockWidget(Qt::LeftDockWidgetArea, tileSelectorDock);
+		editorWindow.addDockWidget(Qt::LeftDockWidgetArea, m_tileEditorWidget);
 
 		MapCanvas* mapCanvas = editorWindow.GetMapCanvas();
 
@@ -155,6 +169,8 @@ namespace bw
 	void TileMapEditorMode::OnLeave()
 	{
 		EntityEditorMode::OnLeave();
+
+		m_tileEditorWidget->deleteLater();
 
 		m_tileMap.Reset();
 		m_tilemapEntity.Reset();

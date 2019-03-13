@@ -31,6 +31,7 @@ namespace bw
 
 		m_scriptingContext = std::make_shared<ClientScriptingContext>(virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
+		m_scriptingContext->GetLuaState()["Editor"] = this;
 
 		m_entityStore.emplace(m_scriptingContext);
 
@@ -161,7 +162,7 @@ namespace bw
 		m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
 	}
 
-	void EditorWindow::UpdateEditorMode(std::shared_ptr<EditorMode> editorMode)
+	void EditorWindow::SwitchToMode(std::shared_ptr<EditorMode> editorMode)
 	{
 		m_currentMode->OnLeave();
 		m_currentMode = std::move(editorMode);
@@ -1285,7 +1286,14 @@ namespace bw
 		QAction* tilemapTest = testMenu->addAction(tr("Test (new) TileMap editor..."));
 		connect(tilemapTest, &QAction::triggered, [this, content, tiles]()
 		{
-			UpdateEditorMode(std::make_shared<TileMapEditorMode>(Ndk::EntityHandle::InvalidHandle, Nz::Vector2f::Zero(), Nz::DegreeAnglef::Zero(), Nz::Vector2ui(80, 13), Nz::Vector2f(64, 64), content, tiles, *this));
+			TileMapEditorMode::TileMapData tilemapData;
+			tilemapData.content = content;
+			tilemapData.mapSize = Nz::Vector2ui(80, 13);
+			tilemapData.origin = Nz::Vector2f::Zero();
+			tilemapData.rotation = Nz::DegreeAnglef::Zero();
+			tilemapData.tileSize = Nz::Vector2f(64, 64);
+
+			SwitchToMode(std::make_shared<TileMapEditorMode>(Ndk::EntityHandle::InvalidHandle, tilemapData, tiles, *this));
 		});
 
 		QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -1367,7 +1375,9 @@ namespace bw
 		entityInfo.properties = layerEntity.properties;
 		entityInfo.rotation = layerEntity.rotation;
 
-		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, std::move(entityInfo), this);
+		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
+
+		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, entity, std::move(entityInfo), this);
 		connect(editEntityDialog, &QDialog::accepted, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId]()
 		{
 			const EntityInfo& entityInfo = editEntityDialog->GetEntityInfo();

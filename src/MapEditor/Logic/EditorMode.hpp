@@ -8,12 +8,13 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_EDITOR_MODE_HPP
 
 #include <Nazara/Platform/Event.hpp>
+#include <memory>
 
 namespace bw
 {
 	class EditorWindow;
 
-	class EditorMode
+	class EditorMode : public std::enable_shared_from_this<EditorMode>
 	{
 		public:
 			inline EditorMode(EditorWindow& editor);
