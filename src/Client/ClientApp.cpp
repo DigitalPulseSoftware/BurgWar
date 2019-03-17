@@ -40,6 +40,8 @@ namespace bw
 	{
 		while (Application::Run())
 		{
+			m_mainWindow.Display();
+
 			BurgApp::Update();
 
 			m_networkReactors.Update();
@@ -49,8 +51,6 @@ namespace bw
 
 			for (const auto& localMatchPtr : m_localMatches)
 				localMatchPtr->Update(GetUpdateTime());
-
-			m_mainWindow.Display();
 		}
 
 		return 0;
