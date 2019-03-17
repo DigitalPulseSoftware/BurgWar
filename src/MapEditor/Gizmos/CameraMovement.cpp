@@ -57,6 +57,7 @@ namespace bw
 		Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
 
 		cameraNode.Move(-Nz::Vector2f(worldPosition - m_originalWorldPos), Nz::CoordSys_Global);
+		OnCameraMoved(this);
 
 		return true;
 	}

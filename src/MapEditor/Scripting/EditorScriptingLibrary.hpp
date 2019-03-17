@@ -18,6 +18,11 @@ namespace bw
 			~EditorScriptingLibrary() = default;
 
 			void RegisterLibrary(SharedScriptingContext& context) override;
+
+		private:
+			void BindEditorWindow(SharedScriptingContext& context);
+			void BindEntityInfoDialog(SharedScriptingContext& context);
+			void BindTileMapEditorMode(SharedScriptingContext& context);
 	};
 }
 

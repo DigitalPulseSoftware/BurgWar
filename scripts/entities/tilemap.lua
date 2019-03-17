@@ -19,26 +19,126 @@ if (EDITOR) then
 		{ 
 			Name = "editTilemap",  
 			Label = "Edit Tilemap", 
-			OnTrigger = function (properties)
-				print("Oh j'édite une tilemap !")
-				--[[local tilemap = Editor:EditTileMap({
-					width = properties.width,
-					height = properties.height,
-					cellWidth = properties.cellWidth,
-					cellHeight = properties.cellHeight,
-					content = properties.content,
-					tiles = {
-						{ }
+			OnTrigger = function (entityEditor)
+				local tileMapEditor = TileMapEditorMode.new(entityEditor:GetTargetEntity(), {
+					mapSize = Vec2(entityEditor:GetProperty("width"), entityEditor:GetProperty("height")),
+					tileSize = Vec2(entityEditor:GetProperty("cellWidth"), entityEditor:GetProperty("cellHeight")),
+					origin = entityEditor:GetEntityPosition(),
+					rotation = entityEditor:GetEntityRotation(),
+					content = entityEditor:GetProperty("content")
+				}, {
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
+					},
+					{
+						material = "osef",
+						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
 					}
-				})
+				}, Editor)
 
-				if (not tilemap) then
-					return
-				end]]
+				tileMapEditor:SetFinishedCallback(function (tileMapData)
+					if (tileMapData) then
+						entityEditor:SetEntityPosition(tileMapData.origin)
+						entityEditor:SetEntityRotation(tileMapData.rotation)
 
-				print(properties.width)
+						local mapSize = tileMapData.mapSize
+						entityEditor:SetProperty("width", mapSize.x)
+						entityEditor:SetProperty("height", mapSize.y)
 
-				properties.width = 42
+						local tileSize = tileMapData.tileSize
+						entityEditor:SetProperty("cellWidth", tileSize.x)
+						entityEditor:SetProperty("cellHeight", tileSize.y)
+
+						print(tileMapData.content[0], tileMapData.content[1], tileMapData.content[2])
+						entityEditor:SetProperty("content", tileMapData.content)
+					end
+
+					entityEditor:Show()
+				end)
+
+				Editor:SwitchToMode(tileMapEditor)
+				entityEditor:Hide()
 			end
 		}
 	}

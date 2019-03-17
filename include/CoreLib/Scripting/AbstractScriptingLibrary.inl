@@ -3,10 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
-#include <sol2/sol.hpp>
-#include <CoreLib/InputData.hpp>
+#include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <CoreLib/InputData.hpp>
+#include <sol2/sol.hpp>
 #include <cassert>
 
 namespace bw
@@ -19,10 +20,16 @@ namespace sol
 	struct lua_size<bw::InputData> : std::integral_constant<int, 1> {};
 
 	template<>
+	struct lua_size<Nz::DegreeAnglef> : std::integral_constant<int, 1> {};
+
+	template<>
 	struct lua_size<Nz::Rectf> : std::integral_constant<int, 1> {};
 
 	template<>
 	struct lua_size<Nz::Vector2f> : std::integral_constant<int, 1> {};
+
+	template<>
+	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
 	template<>
 	struct lua_type_of<bw::InputData> : std::integral_constant<sol::type, sol::type::table> {};
@@ -90,6 +97,18 @@ namespace sol
 
 
 		template <>
+		struct getter<Nz::DegreeAnglef>
+		{
+			static Nz::DegreeAnglef get(lua_State* L, int index, record& tracking)
+			{
+				int absoluteIndex = lua_absindex(L, index);
+
+				sol::stack_object obj(L, absoluteIndex);
+				return Nz::DegreeAnglef(obj.as<float>());
+			}
+		};
+
+		template <>
 		struct getter<Nz::Rectf>
 		{
 			static Nz::Rectf get(lua_State* L, int index, record& tracking) 
@@ -153,6 +172,17 @@ namespace sol
 				vec["isJumping"] = inputs.isJumping;
 				vec["isMovingLeft"] = inputs.isMovingLeft;
 				vec["isMovingRight"] = inputs.isMovingRight;
+
+				return 1;
+			}
+		};
+
+		template <>
+		struct pusher<Nz::DegreeAnglef>
+		{
+			static int push(lua_State* L, const Nz::DegreeAnglef& degreeAngle)
+			{
+				lua_pushnumber(L, degreeAngle.ToDegrees());
 
 				return 1;
 			}

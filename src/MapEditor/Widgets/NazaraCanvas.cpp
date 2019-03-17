@@ -12,6 +12,8 @@ namespace bw
 	NazaraCanvas::NazaraCanvas(QWidget* parent) :
 	QWidget(parent)
 	{
+		std::cout << this << std::endl;
+
 		// Setup some states to allow direct rendering into the widget
 		setAttribute(Qt::WA_PaintOnScreen);
 		setAttribute(Qt::WA_OpaquePaintEvent);
@@ -32,10 +34,12 @@ namespace bw
 		{
 			OnUpdate(m_updateTimer.intervalAsDuration().count() / 1000.f);
 		});
-		m_updateTimer.start();
 	}
 
-	NazaraCanvas::~NazaraCanvas() = default;
+	NazaraCanvas::~NazaraCanvas()
+	{
+		m_updateTimer.stop();
+	}
 
 	Nz::Vector2ui NazaraCanvas::GetSize() const
 	{
@@ -67,6 +71,8 @@ namespace bw
 
 			Nz::RenderWindow::Create(reinterpret_cast<Nz::WindowHandle>(winId()));
 		}
+
+		m_updateTimer.start();
 	}
 
 	QPaintEngine* NazaraCanvas::paintEngine() const
@@ -78,6 +84,16 @@ namespace bw
 	{
 		ProcessEvents();
 		Display();
+	}
+
+	void NazaraCanvas::closeEvent(QCloseEvent* event)
+	{
+		m_updateTimer.stop();
+	}
+
+	void NazaraCanvas::hideEvent(QHideEvent* event)
+	{
+		m_updateTimer.stop();
 	}
 
 	void NazaraCanvas::paintEvent(QPaintEvent*)
@@ -118,7 +134,7 @@ namespace bw
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					GetEventHandler().Dispatch(event);
+					PushEvent(event);
 					return true;
 				}
 			}
@@ -138,18 +154,32 @@ namespace bw
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					GetEventHandler().Dispatch(event);
+					PushEvent(event);
 					return true;
 				}
 			}
 
 			case QEvent::HoverEnter:
-				//hoverEnter(static_cast<QHoverEvent*>(e));
+			{
+				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
+
+				Nz::WindowEvent event;
+				event.type = Nz::WindowEventType_MouseEntered;
+
+				PushEvent(event);
 				return true;
+			}
 
 			case QEvent::HoverLeave:
-				//hoverLeave(static_cast<QHoverEvent*>(e));
+			{
+				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
+
+				Nz::WindowEvent event;
+				event.type = Nz::WindowEventType_MouseLeft;
+
+				PushEvent(event);
 				return true;
+			}
 
 			case QEvent::HoverMove:
 			{
@@ -164,7 +194,7 @@ namespace bw
 				event.mouseMove.deltaX = newPos.x() - oldPos.x();
 				event.mouseMove.deltaY = newPos.y() - oldPos.y();
 
-				GetEventHandler().Dispatch(event);
+				PushEvent(event);
 				return true;
 			}
 

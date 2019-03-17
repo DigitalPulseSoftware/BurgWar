@@ -38,7 +38,7 @@ namespace bw
 
 				EntityPropertyArray<T> container(elementCount);
 				for (std::size_t i = 0; i < elementCount; ++i)
-					container[i] = content[i];
+					container[i] = content[i + 1];
 
 				return container;
 			};

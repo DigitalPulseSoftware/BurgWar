@@ -16,17 +16,17 @@ namespace bw
 {
 	class CameraMovement
 	{
-		friend class MapCanvas;
-
 		public:
 			CameraMovement(Nz::CursorController& cursorController, Ndk::Entity* camera);
 			~CameraMovement();
 
-		private:
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
 
+			NazaraSignal(OnCameraMoved, CameraMovement* /*emitter*/);
+
+		private:
 			Nz::CursorController& m_cursorController;
 			Nz::Vector2f m_originalWorldPos;
 			Ndk::EntityHandle m_cameraEntity;

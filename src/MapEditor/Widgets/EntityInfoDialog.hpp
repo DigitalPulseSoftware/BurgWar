@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
+#include <NDK/Entity.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
@@ -42,10 +43,21 @@ namespace bw
 	{
 		public:
 			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent = nullptr);
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, EntityInfo entityInfo, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
-			const EntityInfo& GetEntityInfo() const;
+			inline const EntityInfo& GetEntityInfo() const;
+			inline const Nz::Vector2f& GetEntityPosition() const;
+			inline const Nz::DegreeAnglef& GetEntityRotation() const;
+
+			const EntityProperty& GetProperty(const std::string& propertyName) const;
+			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
+
+			inline const Ndk::EntityHandle& GetTargetEntity() const;
+
+			void SetEntityPosition(const Nz::Vector2f& position);
+			void SetEntityRotation(const Nz::DegreeAnglef& rotation);
+			void SetProperty(const std::string& propertyName, EntityProperty propertyValue);
 
 		private:
 			void OnAccept();
@@ -65,6 +77,7 @@ namespace bw
 				bool isArray;
 			};
 
+			Ndk::EntityHandle m_targetEntity;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;

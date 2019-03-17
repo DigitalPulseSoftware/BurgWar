@@ -10,4 +10,14 @@ namespace bw
 	{
 		return *m_entityStore;
 	}
+
+	inline MapCanvas* EditorWindow::GetMapCanvas()
+	{
+		return m_canvas;
+	}
+
+	inline const MapCanvas* EditorWindow::GetMapCanvas() const
+	{
+		return m_canvas;
+	}
 }

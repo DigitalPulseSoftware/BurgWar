@@ -17,39 +17,10 @@
 namespace bw
 {
 	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
-	NazaraCanvas(parent),
-	m_editor(editor),
-	m_world(false)
+	WorldCanvas(parent),
+	m_editor(editor)
 	{
-		m_world.AddSystem<Ndk::PhysicsSystem2D>();
-		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
-
-		m_cameraEntity = m_world.CreateEntity();
-		m_cameraEntity->AddComponent<Ndk::NodeComponent>();
-
-		Ndk::CameraComponent& viewer = m_cameraEntity->AddComponent<Ndk::CameraComponent>();
-		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
-		viewer.SetTarget(this);
-
-		m_cameraMovement.emplace(GetCursorController(), m_cameraEntity);
-
-		Nz::EventHandler& eventHandler = GetEventHandler();
-
-		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
-		{
-			OnMouseButtonPressed(mouseButton);
-		});
-
-		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
-		{
-			OnMouseButtonReleased(mouseButton);
-		});
-
-		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
-		{
-			OnMouseMoved(mouseMoved);
-		});
+		EnableCameraControl(true);
 	}
 
 	void MapCanvas::ClearEntities()
@@ -58,60 +29,62 @@ namespace bw
 			entity->Kill();
 
 		m_mapEntities.Clear();
+
+		m_onGizmoEntityDestroyed.Disconnect(); //< Force disconnection because entity destruction does not occur until the world next update
 		m_entityGizmo.reset();
 	}
 
 	void MapCanvas::ClearEntitySelection()
 	{
+		m_onGizmoEntityDestroyed.Disconnect();
 		m_entityGizmo.reset();
 	}
 
-	Ndk::EntityId MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
+	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
 		const ClientEntityStore& entityStore = m_editor.GetEntityStore();
 
 		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
 		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash
 
-		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_world, classIndex, position, rotation, properties);
+		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
 		m_mapEntities.Insert(entity);
 
-		return entity->GetId();
+		return entity;
 	}
 
 	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)
 	{
-		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
+		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 		assert(entity);
-
-		if (m_entityGizmo && m_entityGizmo->GetTargetEntity() == entity) 
-			m_entityGizmo.reset();
 
 		entity->Kill();
 	}
 
 	void MapCanvas::EditEntityPosition(Ndk::EntityId entityId)
 	{
-		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
+		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 		assert(entity);
 
-		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(m_cameraEntity, entity);
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCameraEntity(), entity);
 		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
 		{
 			OnEntityPositionUpdated(this, entityId, newPosition);
 		});
 
 		m_entityGizmo = std::move(positionGizmo);
-	}
+		m_onGizmoEntityDestroyed.Connect(entity->OnEntityDestruction, [this](Ndk::Entity* entity)
+		{
+			assert(m_entityGizmo->GetTargetEntity() == entity);
+			NazaraUnused(entity);
 
-	void MapCanvas::UpdateBackgroundColor(Nz::Color color)
-	{
-		m_world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(color));
+			m_entityGizmo.reset();
+		});
 	}
 
 	void MapCanvas::UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
 	{
-		const Ndk::EntityHandle& entity = m_world.GetEntity(entityId);
+		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 		assert(entity);
 
 		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
@@ -121,64 +94,50 @@ namespace bw
 
 	void MapCanvas::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
+		WorldCanvas::OnMouseButtonPressed(mouseButton);
+
 		if (m_entityGizmo)
 		{
 			if (m_entityGizmo->OnMouseButtonPressed(mouseButton))
 				return;
 		}
 
-		if (m_cameraMovement->OnMouseButtonPressed(mouseButton))
-			return;
+		OnCanvasMouseButtonPressed(this, mouseButton);
 	}
 
 	void MapCanvas::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
+		WorldCanvas::OnMouseButtonReleased(mouseButton);
+
 		if (m_entityGizmo)
 		{
 			if (m_entityGizmo->OnMouseButtonReleased(mouseButton))
 				return;
 		}
 
-		if (m_cameraMovement->OnMouseButtonReleased(mouseButton))
-			return;
+		OnCanvasMouseButtonReleased(this, mouseButton);
+	}
 
-		if (mouseButton.button == Nz::Mouse::Left)
-		{
-			auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f));
-			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 1.f));
+	void MapCanvas::OnMouseEntered()
+	{
+		OnCanvasMouseEntered(this);
+	}
 
-			Nz::Rayf ray(start, end - start);
-			for (const Ndk::EntityHandle& entity : m_mapEntities)
-			{
-				assert(entity->HasComponent<Ndk::GraphicsComponent>());
-
-				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-				if (ray.Intersect(gfxComponent.GetAABB()))
-				{
-					OnEntitySelected(this, entity->GetId());
-					return;
-				}
-			}
-		}
+	void MapCanvas::OnMouseLeft()
+	{
+		OnCanvasMouseLeft(this);
 	}
 
 	void MapCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
+		WorldCanvas::OnMouseMoved(mouseMoved);
+
 		if (m_entityGizmo)
 		{
 			if (m_entityGizmo->OnMouseMoved(mouseMoved))
 				return;
 		}
 
-		if (m_cameraMovement->OnMouseMoved(mouseMoved))
-			return;
-	}
-
-	void MapCanvas::OnUpdate(float elapsedTime)
-	{
-		m_world.Update(elapsedTime);
-
-		NazaraCanvas::OnUpdate(elapsedTime);
+		OnCanvasMouseMoved(this, mouseMoved);
 	}
 }
