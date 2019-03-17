@@ -2,7 +2,7 @@ RegisterClientScript("tilemap.lua")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 1000
+ENTITY.MaxHealth = 0
 
 ENTITY.Properties = {
 	{ Name = "width", Type = PropertyType.Integer, Default = 1, Shared = true },
