@@ -24,7 +24,7 @@ function WEAPON:OnAttack()
 	end
 
 	self:PlayAnim("attack")
-	self:DealDamage(100, Rect(pos + mins, pos + maxs))
+	self:DealDamage(100, Rect(pos + mins, pos + maxs), 50000)
 end
 
 if (CLIENT) then

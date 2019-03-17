@@ -17,5 +17,5 @@ function ENTITY:Initialize()
 	rect.height = size[2] - 3 + 20
 
 	self:SetCollider(rect)
-	self:InitRigidBody(300, 10, false)
+	self:InitRigidBody(50, 10, false)
 end

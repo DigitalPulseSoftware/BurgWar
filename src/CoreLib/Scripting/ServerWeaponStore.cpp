@@ -34,7 +34,7 @@ namespace bw
 	{
 		SharedWeaponStore::InitializeElementTable(elementTable);
 
-		elementTable["DealDamage"] = [](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone)
+		auto DealDamage = [](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
 			const Ndk::EntityHandle& entity = weaponTable["Entity"];
 			Ndk::World* world = entity->GetWorld();
@@ -52,9 +52,16 @@ namespace bw
 				if (hitEntity->HasComponent<HealthComponent>())
 					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
 
-				std::cout << hitEntity << std::endl;
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - pos) * pushbackForce);
+				}
 			}
 		};
+
+		elementTable["DealDamage"] = sol::overload(DealDamage,
+			[=](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(weaponTable, damage, damageZone); });
 
 		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{

@@ -115,7 +115,7 @@ namespace sol
 			{
 				int absoluteIndex = lua_absindex(L, index);
 
-				sol::stack_table rect(L, absoluteIndex);
+				sol::table rect(L, absoluteIndex);
 				float x = rect["x"];
 				float y = rect["y"];
 				float width = rect["width"];
