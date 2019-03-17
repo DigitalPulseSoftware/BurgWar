@@ -168,6 +168,7 @@ namespace sol
 			{
 				lua_createtable(L, 0, 4);
 				sol::stack_table vec(L);
+				vec["aimDirection"] = inputs.aimDirection;
 				vec["isAttacking"] = inputs.isAttacking;
 				vec["isJumping"] = inputs.isJumping;
 				vec["isMovingLeft"] = inputs.isMovingLeft;

@@ -4,6 +4,7 @@
 
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/ClientSession.hpp>
+#include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
@@ -26,8 +27,9 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
 	SharedMatch(burgApp),
+	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_application(burgApp),
 	m_session(session),
@@ -62,7 +64,7 @@ namespace bw
 
 		auto& layerData = matchData.layers.front();
 
-		constexpr Nz::UInt8 playerCount = 1;
+		constexpr Nz::UInt8 playerCount = 2;
 
 		m_inputPacket.inputs.resize(playerCount);
 		for (auto& input : m_inputPacket.inputs)
@@ -467,7 +469,7 @@ namespace bw
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
-			InputData input = controllerData.inputController.Poll();
+			InputData input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
 			{

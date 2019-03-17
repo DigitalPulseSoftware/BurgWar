@@ -99,13 +99,24 @@ namespace bw
 			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
 			inputComponent.UpdateInputs(inputData);
 
-			if (inputData.isAttacking)
+			if (m_playerWeapon)
 			{
-				if (m_playerWeapon)
+				auto& weaponNode = m_playerWeapon->GetComponent<Ndk::NodeComponent>();
+
+				if (inputData.isAttacking)
 				{
 					auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
 					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
 				}
+
+				Nz::RadianAnglef angle(std::atan2(inputData.aimDirection.y, inputData.aimDirection.x));
+				if (weaponNode.GetScale().x < 0.f)
+					angle += Nz::RadianAnglef(float(M_PI));
+
+				weaponNode.SetRotation(angle);
+
+				if (m_playerWeapon->HasComponent<NetworkSyncComponent>())
+					m_playerWeapon->GetComponent<NetworkSyncComponent>().Invalidate();
 			}
 		}
 	}

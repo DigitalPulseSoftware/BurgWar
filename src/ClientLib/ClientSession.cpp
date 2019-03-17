@@ -255,7 +255,7 @@ namespace bw
 		std::cout << "Connected" << std::endl;
 
 		Packets::Auth auth;
-		auth.playerCount = 1;
+		auth.playerCount = 2;
 
 		SendPacket(auth);
 	}

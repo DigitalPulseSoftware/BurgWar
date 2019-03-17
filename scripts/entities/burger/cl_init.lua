@@ -6,8 +6,6 @@ ENTITY.IsMoving = false
 ENTITY.IsHoping = false
 
 function ENTITY:OnInputUpdate(input)
-	print("[client] Input changed")
-
 	local isMoving = input.isMovingLeft or input.isMovingRight
 	if (self.IsMoving ~= isMoving) then
 		self.IsMoving = isMoving
@@ -24,8 +22,6 @@ function ENTITY:OnInputUpdate(input)
 				end
 				self.IsHoping = false
 			end
-		else
-			print("Stopped move")
 		end
 	end
 end

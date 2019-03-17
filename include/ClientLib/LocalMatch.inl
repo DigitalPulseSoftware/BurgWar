@@ -10,4 +10,14 @@ namespace bw
 	{
 		return m_animationManager;
 	}
+
+	inline BurgApp& LocalMatch::GetApplication()
+	{
+		return m_application;
+	}
+
+	inline const Ndk::EntityHandle& LocalMatch::GetCamera()
+	{
+		return m_camera;
+	}
 }

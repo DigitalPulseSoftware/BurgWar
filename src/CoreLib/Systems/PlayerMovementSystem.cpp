@@ -117,6 +117,10 @@ namespace bw
 				isFacingRight = false;
 			else if (inputs.isMovingRight)
 				isFacingRight = true;
+			else if (inputs.aimDirection.x > 0.f)
+				isFacingRight = true;
+			else if (inputs.aimDirection.x < 0.f)
+				isFacingRight = false;
 
 			playerMovementComponent.UpdateWasJumpingState(inputs.isJumping);
 

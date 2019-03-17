@@ -8,7 +8,6 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/EntityProperties.hpp>
-#include <ClientLib/LocalInputController.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientScriptingContext.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -28,6 +27,7 @@ namespace bw
 {
 	class BurgApp;
 	class ClientGamemode;
+	class InputController;
 	class VirtualDirectory;
 
 	class LocalMatch : public SharedMatch
@@ -35,10 +35,12 @@ namespace bw
 		friend class ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData);
+			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
 			~LocalMatch() = default;
 
 			inline AnimationManager& GetAnimationManager();
+			inline BurgApp& GetApplication();
+			inline const Ndk::EntityHandle& GetCamera();
 
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
@@ -70,12 +72,12 @@ namespace bw
 			struct PlayerData
 			{
 				PlayerData(Nz::UInt8 playerIndex) :
-				inputController(playerIndex)
+				playerIndex(playerIndex)
 				{
 				}
 
 				Ndk::EntityHandle controlledEntity;
-				LocalInputController inputController;
+				Nz::UInt8 playerIndex;
 				InputData lastInputData;
 			};
 
@@ -96,6 +98,7 @@ namespace bw
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
