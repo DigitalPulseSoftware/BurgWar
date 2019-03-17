@@ -106,7 +106,7 @@ namespace bw
 
 			editorWindow.SwitchToMode(std::make_shared<BasicEditorMode>(editorWindow));
 
-			// Warning: this is destroyed at this point
+			// Warning: "this" is potentially destroyed at this point
 		});
 
 		TileSelectionWidget* tileWidget = new TileSelectionWidget(m_tileData, m_materials);

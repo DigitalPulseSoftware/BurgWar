@@ -97,7 +97,10 @@ namespace bw
 						if constexpr (std::is_same_v<PropertyType, bool> ||
 						              std::is_same_v<PropertyType, float> ||
 						              std::is_same_v<PropertyType, Nz::Int64> ||
-						              std::is_same_v<PropertyType, std::string>)
+						              std::is_same_v<PropertyType, std::string> ||
+						              std::is_same_v<PropertyType, Nz::Vector2f> ||
+						              std::is_same_v<PropertyType, Nz::Vector2i64>)
+
 						{
 							propertyData.isArray = IsArray;
 

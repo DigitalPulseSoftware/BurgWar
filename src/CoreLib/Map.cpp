@@ -18,7 +18,8 @@ namespace Nz
 		j = nlohmann::json{ {"r", color.r}, {"g", color.g}, {"b", color.b} };
 	}
 
-	void to_json(nlohmann::json& j, const Nz::Vector2f& vec)
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::Vector2<T>& vec)
 	{
 		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y} };
 	}
@@ -30,7 +31,8 @@ namespace Nz
 		j.at("b").get_to(color.b);
 	}
 
-	void from_json(const nlohmann::json& j, Nz::Vector2f& vec)
+	template<typename T>
+	void from_json(const nlohmann::json& j, Nz::Vector2<T>& vec)
 	{
 		j.at("x").get_to(vec.x);
 		j.at("y").get_to(vec.y);
@@ -81,15 +83,22 @@ namespace bw
 				{
 					const std::string& keyName = propertyPair.first;
 
+					auto [internalType, isArray] = ExtractPropertyType(propertyPair.second);
+
+					auto propertyData = nlohmann::json::object();
+					propertyData["type"] = ToString(internalType);
+
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
 						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
 						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-						if constexpr (std::is_same_v<PropertyType, bool> || 
-						              std::is_same_v<PropertyType, float> || 
+						if constexpr (std::is_same_v<PropertyType, bool> ||
+						              std::is_same_v<PropertyType, float> ||
 						              std::is_same_v<PropertyType, Nz::Int64> ||
+						              std::is_same_v<PropertyType, Nz::Vector2f> ||
+						              std::is_same_v<PropertyType, Nz::Vector2i64> ||
 						              std::is_same_v<PropertyType, std::string>)
 						{
 							if constexpr (IsArray)
@@ -98,15 +107,18 @@ namespace bw
 								for (std::size_t i = 0; i < propertyValue.size(); ++i)
 									elementArray.push_back(propertyValue[i]);
 
-								propertiesObject[keyName] = std::move(elementArray);
+								propertyData["isArray"] = true;
+								propertyData["value"] = std::move(elementArray);
 							}
 							else
-								propertiesObject[keyName] = propertyValue;
+								propertyData["value"] = propertyValue;
 						}
 						else
 							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 					}, propertyPair.second);
+
+					propertiesObject[keyName] = std::move(propertyData);
 				}
 				entityInfo["properties"] = std::move(propertiesObject);
 
@@ -165,17 +177,18 @@ namespace bw
 				{
 					stream << key;
 
-					Nz::UInt8 propertyType = Nz::UInt8(value.index());
+					auto [internalType, isArray] = ExtractPropertyType(value);
+
+					Nz::UInt8 propertyType = Nz::UInt8(internalType);
 					stream << propertyType;
+
+					stream << Nz::UInt8((isArray) ? 1 : 0);
 
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
 						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
 						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-						Nz::UInt8 isArray = (IsArray) ? 1 : 0;
-						stream << isArray;
 
 						auto Serialize = [&](const auto& value)
 						{
@@ -186,7 +199,11 @@ namespace bw
 								Nz::UInt8 boolValue = (value) ? 1 : 0;
 								stream << boolValue;
 							}
-							else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>)
+							else if constexpr (std::is_same_v<T, float>          ||
+							                   std::is_same_v<T, Nz::Int64>      ||
+							                   std::is_same_v<T, Nz::Vector2f>   ||
+							                   std::is_same_v<T, Nz::Vector2i64> ||
+							                   std::is_same_v<T, std::string>)
 							{
 								stream << value;
 							}
@@ -305,8 +322,10 @@ namespace bw
 					std::string propertyName;
 					stream >> propertyName;
 
-					Nz::UInt8 propertyType;
-					stream >> propertyType;
+					Nz::UInt8 propertyTypeInt;
+					stream >> propertyTypeInt;
+
+					PropertyInternalType propertyType = static_cast<PropertyInternalType>(propertyTypeInt);
 
 					Nz::UInt8 isArrayInt;
 					stream >> isArrayInt;
@@ -317,8 +336,6 @@ namespace bw
 					auto Unserialize = [&](auto dummyType)
 					{
 						using T = std::decay_t<decltype(dummyType)>;
-
-						static_assert(std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64> || std::is_same_v<T, std::string>);
 
 						if (isArray)
 						{
@@ -342,13 +359,12 @@ namespace bw
 
 					switch (propertyType)
 					{
-						case 0: case 1: Unserialize(bool()); break;
-						case 2: case 3: Unserialize(float()); break;
-						case 4: case 5: Unserialize(Nz::Int64()); break;
-						case 6: case 7: Unserialize(std::string()); break;
-
-						default:
-							throw std::runtime_error("Unexpected type index " + std::to_string(propertyType) + " for property " + propertyName + " for entity #" + std::to_string(entityIndex) + " in layer #" + std::to_string(layerIndex));
+						case PropertyInternalType::Bool: Unserialize(bool()); break;
+						case PropertyInternalType::Float: Unserialize(float()); break;
+						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
+						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
+						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
+						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}
 
@@ -400,61 +416,44 @@ namespace bw
 				entity.position = entityInfo.at("position");
 				entity.rotation = Nz::DegreeAnglef(float(entityInfo.at("rotation")));
 
-				for (auto&& [key, value] : entityInfo["properties"].items())
+				for (auto&&[propertyName, propertyData] : entityInfo["properties"].items())
 				{
-					if (value.is_array())
+					bool isArray = propertyData.value<bool>("isArray", false);
+					PropertyInternalType propertyType = ParsePropertyInternalType(propertyData.at("type"));
+					auto&& value = propertyData.at("value");
+
+					// Waiting for template lambda in C++20
+					auto Unserialize = [&](auto dummyType)
 					{
-						std::size_t elementCount = value.size();
-						if (elementCount == 0)
-							continue; //< Ignore empty arrays
+						using T = std::decay_t<decltype(dummyType)>;
 
-						if (value[0].is_boolean())
+						if (isArray)
 						{
-							EntityPropertyArray<bool> elements(elementCount);
+							if (!value.is_array())
+								throw std::runtime_error("Expected array");
+
+							std::size_t elementCount = value.size();
+							if (elementCount == 0)
+								return; //< Ignore empty arrays
+
+							EntityPropertyArray<T> elements(elementCount);
 							for (std::size_t i = 0; i < elementCount; ++i)
 								elements[i] = value[i];
 
-							entity.properties.emplace(key, std::move(elements));
-						}
-						else if (value[0].is_number_integer())
-						{
-							EntityPropertyArray<Nz::Int64> elements(elementCount);
-							for (std::size_t i = 0; i < elementCount; ++i)
-								elements[i] = value[i];
-
-							entity.properties.emplace(key, std::move(elements));
-						}
-						else if (value[0].is_number_float())
-						{
-							EntityPropertyArray<float> elements(elementCount);
-							for (std::size_t i = 0; i < elementCount; ++i)
-								elements[i] = value[i];
-
-							entity.properties.emplace(key, std::move(elements));
-						}
-						else if (value[0].is_string())
-						{
-							EntityPropertyArray<std::string> elements(elementCount);
-							for (std::size_t i = 0; i < elementCount; ++i)
-								elements[i] = value[i];
-
-							entity.properties.emplace(key, std::move(elements));
+							entity.properties.emplace(std::move(propertyName), std::move(elements));
 						}
 						else
-							std::cerr << "Invalid type for property " << key << ": (" << value.type_name() << ")" << std::endl;
-					}
-					else
+							entity.properties.emplace(std::move(propertyName), T(value));
+					};
+
+					switch (propertyType)
 					{
-						if (value.is_boolean())
-							entity.properties.emplace(key, bool(value));
-						else if (value.is_number_integer())
-							entity.properties.emplace(key, Nz::Int64(value));
-						else if (value.is_number_float())
-							entity.properties.emplace(key, float(value));
-						else if (value.is_string())
-							entity.properties.emplace(key, std::string(value));
-						else
-							std::cerr << "Invalid type for property " << key << ": (" << value.type_name() << ")" << std::endl;
+						case PropertyInternalType::Bool: Unserialize(bool()); break;
+						case PropertyInternalType::Float: Unserialize(float()); break;
+						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
+						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
+						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
+						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}
 			}

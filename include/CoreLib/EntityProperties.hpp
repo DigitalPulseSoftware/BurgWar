@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_ENTITYPROPERTIES_HPP
 
 #include <Nazara/Prerequisites.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <sol2/sol.hpp>
 #include <tsl/hopscotch_map.h>
 #include <optional>
@@ -18,14 +19,26 @@ namespace bw
 {
 	enum class PropertyType
 	{
-		Bool,
-		Float,
-		Integer,
-		String,
-		Texture
+		Bool            = 0,
+		Float           = 1,
+		FloatPosition   = 2,
+		FloatSize       = 3,
+		Integer         = 4,
+		IntegerPosition = 5,
+		IntegerSize     = 6,
+		String          = 7,
+		Texture         = 8
 	};
 
-	PropertyType ParsePropertyType(const std::string_view& str);
+	enum class PropertyInternalType
+	{
+		Bool     = 0,
+		Float    = 1,
+		Float2   = 2,
+		Integer  = 3,
+		Integer2 = 4,
+		String   = 5
+	};
 
 	template<typename T> 
 	class EntityPropertyArray
@@ -61,9 +74,20 @@ namespace bw
 	using EntityProperty = std::variant<bool, EntityPropertyArray<bool>,
 	                                    float, EntityPropertyArray<float>,
 	                                    Nz::Int64, EntityPropertyArray<Nz::Int64>,
-	                                    std::string, EntityPropertyArray<std::string>>;
+	                                    Nz::Vector2f, EntityPropertyArray<Nz::Vector2f>,
+	                                    Nz::Vector2i64, EntityPropertyArray<Nz::Vector2i64>,
+	                                    std::string, EntityPropertyArray<std::string>
+	>;
 	
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
+
+	std::pair<PropertyInternalType, bool> ExtractPropertyType(const EntityProperty& property);
+
+	PropertyType ParsePropertyType(const std::string_view& str);
+	PropertyInternalType ParsePropertyInternalType(const std::string_view& str);
+
+	const char* ToString(PropertyType propertyType);
+	const char* ToString(PropertyInternalType propertyType);
 
 	EntityProperty TranslateEntityPropertyFromLua(const sol::object& value, PropertyType expectedType, bool isArray);
 	sol::object TranslateEntityPropertyToLua(sol::state_view& lua, const EntityProperty& property);

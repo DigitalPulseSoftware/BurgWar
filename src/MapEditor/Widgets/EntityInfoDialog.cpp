@@ -670,6 +670,22 @@ namespace bw
 					break;
 				}
 
+				case PropertyType::FloatPosition:
+				case PropertyType::FloatSize:
+				{
+					PositionEditWidget* spinbox = new PositionEditWidget;
+					if (std::holds_alternative<Nz::Vector2f>(property))
+						spinbox->setValue(Nz::Vector2d(std::get<Nz::Vector2f>(property)));
+
+					connect(spinbox, &PositionEditWidget::valueChanged, [this, spinbox, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = Nz::Vector2f(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
 				case PropertyType::Integer:
 				{
 					// TODO: Handle properly int64

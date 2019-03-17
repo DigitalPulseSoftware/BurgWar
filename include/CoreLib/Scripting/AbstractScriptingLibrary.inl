@@ -25,8 +25,8 @@ namespace sol
 	template<>
 	struct lua_size<Nz::Rectf> : std::integral_constant<int, 1> {};
 
-	template<>
-	struct lua_size<Nz::Vector2f> : std::integral_constant<int, 1> {};
+	template<typename T>
+	struct lua_size<Nz::Vector2<T>> : std::integral_constant<int, 1> {};
 
 	template<>
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
@@ -37,42 +37,16 @@ namespace sol
 	template<>
 	struct lua_type_of<Nz::Rectf> : std::integral_constant<sol::type, sol::type::table> {};
 
-	template<>
-	struct lua_type_of<Nz::Vector2f> : std::integral_constant<sol::type, sol::type::table> {};
-
-	template<>
-	struct lua_type_of<Nz::Vector2ui> : std::integral_constant<sol::type, sol::type::table> {};
+	template<typename T>
+	struct lua_type_of<Nz::Vector2<T>> : std::integral_constant<sol::type, sol::type::table> {};
 
 	namespace stack
 	{
-		template<>
-		struct checker<Nz::Vector2f>
+		template<typename T>
+		struct checker<Nz::Vector2<T>>
 		{
-			template<typename Handler>
-			static bool check(lua_State* L, int index, Handler&& handler, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
-				bool success = stack::check<sol::table>(L, absoluteIndex, handler);
-				if (success)
-				{
-					luaL_getmetatable(L, "vec2");
-					sol::stack_table expectedMetatable;
+			static_assert(std::is_arithmetic_v<T>);
 
-					lua_getmetatable(L, absoluteIndex);
-
-					success = lua_rawequal(L, -1, -2);
-
-					lua_pop(L, 2);
-				}
-				tracking.use(1);
-
-				return success;
-			}
-		};
-
-		template<>
-		struct checker<Nz::Vector2ui>
-		{
 			template<typename Handler>
 			static bool check(lua_State* L, int index, Handler&& handler, record& tracking)
 			{
@@ -127,37 +101,22 @@ namespace sol
 			}
 		};
 
-		template <>
-		struct getter<Nz::Vector2f>
+		template<typename T>
+		struct getter<Nz::Vector2<T>>
 		{
-			static Nz::Vector2f get(lua_State* L, int index, record& tracking)
+			static_assert(std::is_arithmetic_v<T>);
+
+			static Nz::Vector2<T> get(lua_State* L, int index, record& tracking)
 			{
 				int absoluteIndex = lua_absindex(L, index);
 
 				sol::table vec(L, absoluteIndex);
-				float x = vec["x"];
-				float y = vec["y"];
+				T x = vec["x"];
+				T y = vec["y"];
 
 				tracking.use(1);
 
-				return Nz::Vector2f(x, y);
-			}
-		};
-
-		template <>
-		struct getter<Nz::Vector2ui>
-		{
-			static Nz::Vector2ui get(lua_State* L, int index, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
-
-				sol::table vec(L, absoluteIndex);
-				unsigned int x = vec["x"];
-				unsigned int y = vec["y"];
-
-				tracking.use(1);
-
-				return Nz::Vector2ui(x, y);
+				return Nz::Vector2<T>(x, y);
 			}
 		};
 
@@ -188,25 +147,12 @@ namespace sol
 			}
 		};
 
-		template <>
-		struct pusher<Nz::Vector2f>
+		template<typename T>
+		struct pusher<Nz::Vector2<T>>
 		{
-			static int push(lua_State* L, const Nz::Vector2f& v)
-			{
-				lua_createtable(L, 0, 2);
-				luaL_setmetatable(L, "vec2");
-				sol::stack_table vec(L);
-				vec["x"] = v.x;
-				vec["y"] = v.y;
+			static_assert(std::is_arithmetic_v<T>);
 
-				return 1;
-			}
-		};
-
-		template <>
-		struct pusher<Nz::Vector2ui>
-		{
-			static int push(lua_State* L, const Nz::Vector2ui& v)
+			static int push(lua_State* L, const Nz::Vector2<T>& v)
 			{
 				lua_createtable(L, 0, 2);
 				luaL_setmetatable(L, "vec2");

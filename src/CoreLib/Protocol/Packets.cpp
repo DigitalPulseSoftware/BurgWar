@@ -133,14 +133,11 @@ namespace bw
 					serializer &= property.isArray;
 
 					// Read/write value
-					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 4);
 
 					// Waiting for template lambda in C++20
 					auto SerializeValue = [&](auto dummyType)
 					{
 						using T = std::decay_t<decltype(dummyType)>;
-
-						static_assert(std::is_same_v<T, bool> || std::is_same_v<T, float> || std::is_same_v<T, Nz::Int64>);
 
 						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(property.value) : property.value.emplace<std::vector<T>>();
 						
@@ -160,6 +157,8 @@ namespace bw
 						}
 					};
 
+
+					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 6);
 					switch (dataType)
 					{
 						case 0:
@@ -189,8 +188,10 @@ namespace bw
 
 						case 1: SerializeValue(float()); break;
 						case 2: SerializeValue(Nz::Int64()); break;
+						case 3: SerializeValue(Nz::Vector2f()); break;
+						case 4: SerializeValue(Nz::Vector2i64()); break;
 
-						case 3: // std::string
+						case 5: // std::string
 						{
 							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
 

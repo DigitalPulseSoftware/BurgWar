@@ -221,8 +221,18 @@ namespace bw
 							property.defaultValue = PropertyChecker(float());
 							break;
 
+						case PropertyType::FloatPosition:
+						case PropertyType::FloatSize:
+							property.defaultValue = PropertyChecker(Nz::Vector2f());
+							break;
+
 						case PropertyType::Integer:
 							property.defaultValue = PropertyChecker(Nz::Int64());
+							break;
+
+						case PropertyType::IntegerPosition:
+						case PropertyType::IntegerSize:
+							property.defaultValue = PropertyChecker(Nz::Vector2i64());
 							break;
 
 						case PropertyType::String:
