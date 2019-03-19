@@ -45,7 +45,13 @@ namespace sol
 					lua_geti(L, absoluteIndex, i + 1);
 					{
 						sol::stack_table tileTable(L);
-						tileData.material = Nz::Material::New(); //< FIXME !
+
+						std::string materialPath = tileTable["material"];
+
+						tileData.material = Nz::MaterialManager::Get(materialPath);
+						if (!tileData.material)
+							tileData.material = Nz::Material::GetDefault();
+
 						tileData.texCoords = tileTable["texCoords"];
 					}
 					lua_pop(L, 1);
