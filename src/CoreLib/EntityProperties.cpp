@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in Prerequisites.hpp
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Utils.hpp>
 
 namespace bw
