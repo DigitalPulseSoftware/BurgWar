@@ -8,6 +8,8 @@ ENTITY.Properties = {
 	{ Name = "mapSize", Type = PropertyType.IntegerSize, Default = Vec2(1, 1), Shared = true },
 	{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
 	{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
+	{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
+	{ Name = "textureCells", Type = PropertyType.FloatSize, Array = true, Default = { Vec2(1, 1) }, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
 	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true }
 }
