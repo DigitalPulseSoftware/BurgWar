@@ -153,6 +153,7 @@ namespace bw
 		{
 			sol::table elementProperties = properties.as<sol::table>();
 
+			std::size_t propertyIndex = 0;
 			for (const auto& kv : elementProperties)
 			{
 				sol::table propertyTable = kv.second;
@@ -162,7 +163,7 @@ namespace bw
 				try
 				{
 					ScriptedElement::Property property;
-
+					property.index = propertyIndex;
 					property.type = propertyTable["Type"];
 					
 					sol::object propertyShared = propertyTable["Shared"];
@@ -254,6 +255,8 @@ namespace bw
 				{
 					std::cerr << "Failed to load property " << propertyName << " for entity " << element->name << ": " << e.what() << std::endl;
 				}
+
+				propertyIndex++;
 			}
 		}
 

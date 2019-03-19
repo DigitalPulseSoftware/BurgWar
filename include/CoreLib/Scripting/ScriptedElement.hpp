@@ -23,6 +23,7 @@ namespace bw
 		{
 			PropertyType type;
 			std::optional<EntityProperty> defaultValue;
+			std::size_t index;
 			bool isArray = false;
 			bool shared = false;
 		};
