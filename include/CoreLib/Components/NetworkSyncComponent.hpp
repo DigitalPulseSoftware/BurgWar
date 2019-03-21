@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 
+#include <Nazara/Core/Signal.hpp>
 #include <NDK/Component.hpp>
 #include <vector>
 
@@ -21,7 +22,11 @@ namespace bw
 			inline const std::string& GetEntityClass() const;
 			inline const Ndk::EntityHandle& GetParent() const;
 
+			inline void Invalidate();
+
 			static Ndk::ComponentIndex componentIndex;
+
+			NazaraSignal(OnInvalidated, NetworkSyncComponent* /*emitter*/);
 
 		private:
 			Ndk::EntityHandle m_parent;

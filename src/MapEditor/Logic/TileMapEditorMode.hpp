@@ -10,6 +10,8 @@
 #include <MapEditor/Logic/EntityEditorMode.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <MapEditor/Widgets/TileSelectionWidget.hpp>
+#include <Nazara/Math/Angle.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/Cursor.hpp>

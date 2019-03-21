@@ -8,7 +8,6 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/EntityProperties.hpp>
-#include <ClientLib/LocalInputController.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientScriptingContext.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -28,6 +27,7 @@ namespace bw
 {
 	class BurgApp;
 	class ClientGamemode;
+	class InputController;
 	class VirtualDirectory;
 
 	class LocalMatch : public SharedMatch
@@ -35,18 +35,25 @@ namespace bw
 		friend class ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData);
+			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
 			~LocalMatch() = default;
 
 			inline AnimationManager& GetAnimationManager();
+			inline BurgApp& GetApplication();
+			inline const Ndk::EntityHandle& GetCamera();
 
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
 			void Update(float elapsedTime);
 
 		private:
+			struct ServerEntity;
+
 			void ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId);
 			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties);
+
+			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
+
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
 			void PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId);
@@ -58,19 +65,19 @@ namespace bw
 			{
 				float spriteWidth;
 				Nz::UInt16 currentHealth;
-				Nz::UInt16 maxHealth;
 				Nz::SpriteRef healthSprite;
+				Ndk::EntityOwner healthBarEntity;
 			};
 
 			struct PlayerData
 			{
 				PlayerData(Nz::UInt8 playerIndex) :
-				inputController(playerIndex)
+				playerIndex(playerIndex)
 				{
 				}
 
 				Ndk::EntityHandle controlledEntity;
-				LocalInputController inputController;
+				Nz::UInt8 playerIndex;
 				InputData lastInputData;
 			};
 
@@ -80,6 +87,7 @@ namespace bw
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
+				Nz::UInt16 maxHealth;
 				bool isPhysical;
 			};
 
@@ -90,6 +98,7 @@ namespace bw
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;

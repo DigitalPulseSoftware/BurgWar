@@ -44,8 +44,11 @@ namespace bw
 			void HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData);
 			void SendMatchState(float elapsedTime);
 
+			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
+
 			NazaraSlot(NetworkSyncSystem, OnEntityCreated, m_onEntityCreatedSlot);
 			NazaraSlot(NetworkSyncSystem, OnEntityDeleted, m_onEntityDeletedSlot);
+			NazaraSlot(NetworkSyncSystem, OnEntityInvalidated, m_onEntityInvalidated);
 			NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation, m_onEntityPlayAnimation);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, m_onEntitiesHealthUpdate);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate, m_onEntitiesInputUpdate);
@@ -57,6 +60,7 @@ namespace bw
 			PendingCreationEventMap m_creationEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityInputs> m_inputUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityHealth> m_healthUpdateEvents;
+			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityMovement> m_staticMovementUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> m_playAnimationEvents;
 			tsl::hopscotch_set<Nz::UInt32 /*entityId*/> m_destructionEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;

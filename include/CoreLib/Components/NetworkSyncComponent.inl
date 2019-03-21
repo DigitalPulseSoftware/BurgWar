@@ -21,4 +21,9 @@ namespace bw
 	{
 		return m_parent;
 	}
+
+	inline void NetworkSyncComponent::Invalidate()
+	{
+		OnInvalidated(this);
+	}
 }

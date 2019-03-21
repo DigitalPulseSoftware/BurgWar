@@ -52,7 +52,7 @@ namespace bw
 				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
-				entityData.id = eventData->id;
+				entityData.id = eventData->entityId;
 				entityData.entityClass = networkStringStore.CheckStringIndex(eventData->entityClass);
 				entityData.position = eventData->position;
 				entityData.rotation = eventData->rotation;
@@ -143,7 +143,7 @@ namespace bw
 
 				auto& entityData = m_healthUpdatePacket.entities.emplace_back();
 				entityData.currentHealth = eventData.currentHealth;
-				entityData.id = eventData.id;
+				entityData.id = eventData.entityId;
 			}
 			m_healthUpdateEvents.clear();
 
@@ -159,7 +159,7 @@ namespace bw
 				auto& eventData = pair.second;
 
 				auto& entityData = m_inputUpdatePacket.entities.emplace_back();
-				entityData.id = eventData.id;
+				entityData.id = eventData.entityId;
 				entityData.inputs = eventData.inputs;
 			}
 			m_inputUpdateEvents.clear();
@@ -252,6 +252,14 @@ namespace bw
 				HandleEntityDestruction(entityDestruction);
 			});
 
+			m_onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
+			{
+				if (!m_visibleEntities.UnboundedTest(entityMovement.entityId))
+					return;
+
+				m_staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
+			});
+
 			m_onEntityPlayAnimation.Connect(syncSystem.OnEntityPlayAnimation, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityPlayAnimation& entityPlayAnimation)
 			{
 				if (!m_visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
@@ -264,10 +272,10 @@ namespace bw
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
-					if (!m_visibleEntities.UnboundedTest(events[i].id))
+					if (!m_visibleEntities.UnboundedTest(events[i].entityId))
 						return;
 
-					m_healthUpdateEvents[events[i].id] = events[i];
+					m_healthUpdateEvents[events[i].entityId] = events[i];
 				}
 			});
 
@@ -275,10 +283,10 @@ namespace bw
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
-					if (!m_visibleEntities.UnboundedTest(events[i].id))
+					if (!m_visibleEntities.UnboundedTest(events[i].entityId))
 						return;
 
-					m_inputUpdateEvents[events[i].id] = events[i];
+					m_inputUpdateEvents[events[i].entityId] = events[i];
 				}
 			});
 
@@ -292,25 +300,26 @@ namespace bw
 
 	void MatchClientVisibility::HandleEntityCreation(const NetworkSyncSystem::EntityCreation& eventData)
 	{
-		m_creationEvents[eventData.id] = eventData;
+		m_creationEvents[eventData.entityId] = eventData;
 
-		m_visibleEntities.UnboundedSet(eventData.id);
+		m_visibleEntities.UnboundedSet(eventData.entityId);
 	}
 
 	void MatchClientVisibility::HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData)
 	{
 		// Only send entity destruction packet if this entity was already created client-side
-		auto it = m_creationEvents.find(eventData.id);
+		auto it = m_creationEvents.find(eventData.entityId);
 		if (it != m_creationEvents.end())
 			m_creationEvents.erase(it);
 		else
-			m_destructionEvents.insert(eventData.id);
+			m_destructionEvents.insert(eventData.entityId);
 
-		m_inputUpdateEvents.erase(eventData.id);
-		m_healthUpdateEvents.erase(eventData.id);
-		m_playAnimationEvents.erase(eventData.id);
+		m_inputUpdateEvents.erase(eventData.entityId);
+		m_healthUpdateEvents.erase(eventData.entityId);
+		m_playAnimationEvents.erase(eventData.entityId);
+		m_staticMovementUpdateEvents.erase(eventData.entityId);
 
-		m_visibleEntities.UnboundedReset(eventData.id);
+		m_visibleEntities.UnboundedReset(eventData.entityId);
 	}
 
 	void MatchClientVisibility::SendMatchState(float elapsedTime)
@@ -320,32 +329,38 @@ namespace bw
 		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 		m_matchStatePacket.entities.clear();
+
+		for (auto&& pair : m_staticMovementUpdateEvents)
+			BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);
+
+		m_staticMovementUpdateEvents.clear();
 		syncSystem.MoveEntities([&](const NetworkSyncSystem::EntityMovement* entitiesMovement, std::size_t entityCount)
 		{
 			for (std::size_t i = 0; i < entityCount; ++i)
-			{
-				const auto& eventData = entitiesMovement[i];
-
-				auto& entityData = m_matchStatePacket.entities.emplace_back();
-				entityData.id = eventData.id;
-				entityData.position = eventData.position;
-				entityData.rotation = eventData.rotation;
-
-				if (eventData.playerMovement.has_value())
-				{
-					entityData.playerMovement.emplace();
-					entityData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
-				}
-
-				if (eventData.physicsProperties.has_value())
-				{
-					entityData.physicsProperties.emplace();
-					entityData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
-					entityData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
-				}
-			}
+				BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), entitiesMovement[i]);
 		});
 
 		m_session.SendPacket(m_matchStatePacket);
 	}
+
+	void MatchClientVisibility::BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData)
+	{
+		packetData.id = eventData.entityId;
+		packetData.position = eventData.position;
+		packetData.rotation = eventData.rotation;
+
+		if (eventData.playerMovement.has_value())
+		{
+			packetData.playerMovement.emplace();
+			packetData.playerMovement->isFacingRight = eventData.playerMovement->isFacingRight;
+		}
+
+		if (eventData.physicsProperties.has_value())
+		{
+			packetData.physicsProperties.emplace();
+			packetData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
+			packetData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
+		}
+	}
+
 }

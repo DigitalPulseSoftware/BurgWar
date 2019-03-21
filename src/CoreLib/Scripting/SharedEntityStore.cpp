@@ -44,12 +44,12 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
 
-			auto& burgerPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-			burgerPhys.SetMass(mass);
-			burgerPhys.SetFriction(friction);
+			auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
+			entityPhys.SetMass(mass);
+			entityPhys.SetFriction(friction);
 
 			if (!canRotate)
-				burgerPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+				entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 		};
 
 		elementTable["InitRigidBody"] = sol::overload(InitRigidBody,

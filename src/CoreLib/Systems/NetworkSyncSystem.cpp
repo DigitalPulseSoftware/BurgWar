@@ -25,7 +25,7 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : GetEntities())
 		{
 			EntityCreation& creationEvent = m_creationEvents.emplace_back();
-			CreateEntity(creationEvent, entity);
+			BuildEvent(creationEvent, entity);
 		}
 
 		callback(m_creationEvents.data(), m_creationEvents.size());
@@ -38,7 +38,7 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : GetEntities())
 		{
 			EntityDestruction& destructionEvent = m_destructionEvents.emplace_back();
-			DeleteEntity(destructionEvent, entity);
+			BuildEvent(destructionEvent, entity);
 		}
 
 		callback(m_destructionEvents.data(), m_destructionEvents.size());
@@ -49,45 +49,16 @@ namespace bw
 		m_movementEvents.clear();
 
 		for (const Ndk::EntityHandle& entity : m_physicsEntities)
-		{
-			EntityMovement& movementEvent = m_movementEvents.emplace_back();
-			movementEvent.id = entity->GetId();
-
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				//TODO: Handle parents?
-				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				movementEvent.position = entityPhys.GetPosition();
-				movementEvent.rotation = entityPhys.GetRotation();
-
-				movementEvent.physicsProperties.emplace();
-				movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
-				movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
-			}
-			else
-			{
-				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-				movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-				movementEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
-			}
-
-			if (entity->HasComponent<PlayerMovementComponent>())
-			{
-				auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
-
-				movementEvent.playerMovement.emplace();
-				movementEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
-			}
-		}
+			BuildEvent(m_movementEvents.emplace_back(), entity);
 
 		callback(m_movementEvents.data(), m_movementEvents.size());
 	}
 
-	void NetworkSyncSystem::CreateEntity(EntityCreation& creationEvent, Ndk::Entity* entity) const
+	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
 		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
 
-		creationEvent.id = entity->GetId();
+		creationEvent.entityId = entity->GetId();
 		creationEvent.entityClass = syncComponent.GetEntityClass();
 
 		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
@@ -155,26 +126,65 @@ namespace bw
 		}
 	}
 
-	void NetworkSyncSystem::DeleteEntity(EntityDestruction& deleteEvent, Ndk::Entity* entity) const
+	void NetworkSyncSystem::BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const
 	{
-		deleteEvent.id = entity->GetId();
+		deleteEvent.entityId = entity->GetId();
+	}
+
+	void NetworkSyncSystem::BuildEvent(EntityMovement& movementEvent, Ndk::Entity* entity) const
+	{
+		movementEvent.entityId = entity->GetId();
+
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			//TODO: Handle parents?
+			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			movementEvent.position = entityPhys.GetPosition();
+			movementEvent.rotation = entityPhys.GetRotation();
+
+			movementEvent.physicsProperties.emplace();
+			movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
+			movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
+		}
+		else
+		{
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
+			movementEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+		}
+
+		if (entity->HasComponent<PlayerMovementComponent>())
+		{
+			auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
+
+			movementEvent.playerMovement.emplace();
+			movementEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
+		}
 	}
 
 	void NetworkSyncSystem::OnEntityAdded(Ndk::Entity* entity)
 	{
 		EntityCreation creationEvent;
-		CreateEntity(creationEvent, entity);
+		BuildEvent(creationEvent, entity);
 
 		OnEntityCreated(this, creationEvent);
+
+		assert(m_entitySlots.find(entity->GetId()) == m_entitySlots.end());
+		auto& slots = m_entitySlots.emplace(entity->GetId(), EntitySlots()).first.value();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			m_physicsEntities.Insert(entity);
 		else
+		{
 			m_staticEntities.Insert(entity);
+			slots.onInvalidated.Connect(entity->GetComponent<NetworkSyncComponent>().OnInvalidated, [&](NetworkSyncComponent* netSync)
+			{
+				EntityMovement movementEvent;
+				BuildEvent(movementEvent, netSync->GetEntity());
 
-
-		assert(m_entitySlots.find(entity->GetId()) == m_entitySlots.end());
-		auto& slots = m_entitySlots.emplace(entity->GetId(), EntitySlots()).first.value();
+				OnEntityInvalidated(this, movementEvent);
+			});
+		}
 
 		if (entity->HasComponent<AnimationComponent>())
 		{
@@ -209,7 +219,7 @@ namespace bw
 	void NetworkSyncSystem::OnEntityRemoved(Ndk::Entity* entity)
 	{
 		EntityDestruction destructionEvent;
-		DeleteEntity(destructionEvent, entity);
+		BuildEvent(destructionEvent, entity);
 
 		OnEntityDeleted(this, destructionEvent);
 
@@ -232,7 +242,7 @@ namespace bw
 			for (const auto& entity : m_healthUpdateEntities)
 			{
 				EntityHealth& healthEvent = m_healthEvents.emplace_back();
-				healthEvent.id = entity->GetId();
+				healthEvent.entityId = entity->GetId();
 				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
 			}
 
@@ -248,7 +258,7 @@ namespace bw
 			for (const auto& entity : m_inputUpdateEntities)
 			{
 				EntityInputs& inputEvent = m_inputEvents.emplace_back();
-				inputEvent.id = entity->GetId();
+				inputEvent.entityId = entity->GetId();
 				inputEvent.inputs = entity->GetComponent<InputComponent>().GetInputData();
 			}
 

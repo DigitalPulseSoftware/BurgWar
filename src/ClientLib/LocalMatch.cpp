@@ -4,6 +4,7 @@
 
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/ClientSession.hpp>
+#include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
@@ -26,8 +27,9 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
 	SharedMatch(burgApp),
+	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_application(burgApp),
 	m_session(session),
@@ -62,7 +64,7 @@ namespace bw
 
 		auto& layerData = matchData.layers.front();
 
-		constexpr Nz::UInt8 playerCount = 1;
+		constexpr Nz::UInt8 playerCount = 2;
 
 		m_inputPacket.inputs.resize(playerCount);
 		for (auto& input : m_inputPacket.inputs)
@@ -245,6 +247,25 @@ namespace bw
 			}
 		}
 
+		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+		{
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			if (serverEntity.health)
+			{
+				auto& healthData = serverEntity.health.value();
+				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				auto& entityGfx = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
+
+				const Nz::Boxf& aabb = entityGfx.GetAABB();
+
+				auto& healthBarNode = healthData.healthBarEntity->GetComponent<Ndk::NodeComponent>();
+				healthBarNode.SetPosition(aabb.GetCenter() - Nz::Vector3f(0.f, aabb.height / 2.f + 3.f, 0.f));
+			}
+		}
+
 		constexpr float MaxInputSendInterval = 1.f / 60.f;
 
 		m_playerInputTimer += elapsedTime;
@@ -321,46 +342,54 @@ namespace bw
 			ServerEntity serverEntity;
 			serverEntity.entity = entity;
 			serverEntity.isPhysical = isPhysical;
+			serverEntity.maxHealth = maxHealth;
 
-			if (maxHealth != 0)
-			{
-				auto& healthData = serverEntity.health.emplace();
-				healthData.currentHealth = currentHealth;
-				healthData.maxHealth = maxHealth;
-
-				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-
-				Nz::Boxf aabb = gfxComponent.GetAABB();
-
-				Nz::MaterialRef testMat = Nz::Material::New();
-				testMat->EnableDepthBuffer(false);
-				testMat->EnableFaceCulling(false);
-
-				Nz::SpriteRef lostHealthBar = Nz::Sprite::New();
-				lostHealthBar->SetMaterial(testMat);
-				lostHealthBar->SetSize(aabb.width, 10);
-				lostHealthBar->SetColor(Nz::Color::Red);
-
-				Nz::SpriteRef healthBar = Nz::Sprite::New();
-				healthBar->SetMaterial(testMat);
-				healthBar->SetSize(aabb.width * healthData.currentHealth / healthData.maxHealth, 10);
-				healthBar->SetColor(Nz::Color::Green);
-
-				Nz::Vector3f position = aabb.GetPosition() - Nz::Vector3f(0.f, healthBar->GetSize().y + 3.f, 0.f);
-				position -= nodeComponent.GetPosition();
-
-				gfxComponent.Attach(healthBar, Nz::Matrix4f::Translate(position), 2);
-				gfxComponent.Attach(lostHealthBar, Nz::Matrix4f::Translate(position), 1);
-
-				healthData.spriteWidth = aabb.width;
-				healthData.healthSprite = healthBar;
-			}
+			if (currentHealth != maxHealth && maxHealth != 0)
+				CreateHealthBar(serverEntity, currentHealth);
 
 			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
 		}
 
 		return entity;
+	}
+
+	void LocalMatch::CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth)
+	{
+		auto& healthData = serverEntity.health.emplace();
+		healthData.currentHealth = currentHealth;
+
+		auto& gfxComponent = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
+		auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+
+		const Nz::Boxf& aabb = gfxComponent.GetAABB();
+
+		healthData.spriteWidth = std::max(aabb.width, aabb.height) * 0.85f;
+
+		Nz::MaterialRef testMat = Nz::Material::New();
+		testMat->EnableDepthBuffer(false);
+		testMat->EnableFaceCulling(false);
+
+		Nz::SpriteRef lostHealthBar = Nz::Sprite::New();
+		lostHealthBar->SetMaterial(testMat);
+		lostHealthBar->SetSize(healthData.spriteWidth, 10);
+		lostHealthBar->SetColor(Nz::Color::Red);
+		lostHealthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, lostHealthBar->GetSize().y));
+
+		Nz::SpriteRef healthBar = Nz::Sprite::New();
+		healthBar->SetMaterial(testMat);
+		healthBar->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
+		healthBar->SetColor(Nz::Color::Green);
+		healthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, healthBar->GetSize().y));
+
+		healthData.healthSprite = healthBar;
+
+		healthData.healthBarEntity = m_world.CreateEntity();
+
+		auto& healthBarGfx = healthData.healthBarEntity->AddComponent<Ndk::GraphicsComponent>();
+		healthBarGfx.Attach(healthBar, 2);
+		healthBarGfx.Attach(lostHealthBar, 1);
+
+		healthData.healthBarEntity->AddComponent<Ndk::NodeComponent>();
 	}
 
 	void LocalMatch::DeleteEntity(Nz::UInt32 serverId)
@@ -440,7 +469,7 @@ namespace bw
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
-			InputData input = controllerData.inputController.Poll();
+			InputData input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
 			{
@@ -466,10 +495,14 @@ namespace bw
 		if (!serverEntity.entity)
 			return;
 
-		assert(serverEntity.health);
-		HealthData& healthData = serverEntity.health.value();
-		healthData.currentHealth = newHealth;
-		healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
+		if (serverEntity.health)
+		{
+			HealthData& healthData = serverEntity.health.value();
+			healthData.currentHealth = newHealth;
+			healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
+		}
+		else
+			CreateHealthBar(serverEntity, newHealth);
 	}
 
 	void LocalMatch::UpdateEntityInput(Nz::UInt32 serverId, const InputData& inputs)

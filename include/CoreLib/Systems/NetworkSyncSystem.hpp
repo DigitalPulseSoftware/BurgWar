@@ -10,6 +10,7 @@
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
+#include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -65,7 +66,7 @@ namespace bw
 
 			struct EntityCreation
 			{
-				Ndk::EntityId id;
+				Ndk::EntityId entityId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<Ndk::EntityId> parent;
@@ -79,24 +80,24 @@ namespace bw
 
 			struct EntityDestruction
 			{
-				Ndk::EntityId id;
+				Ndk::EntityId entityId;
 			};
 
 			struct EntityHealth
 			{
-				Ndk::EntityId id;
+				Ndk::EntityId entityId;
 				Nz::UInt16 currentHealth;
 			};
 
 			struct EntityInputs
 			{
-				Ndk::EntityId id;
+				Ndk::EntityId entityId;
 				InputData inputs;
 			};
 
 			struct EntityMovement
 			{
-				Ndk::EntityId id;
+				Ndk::EntityId entityId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
@@ -106,12 +107,14 @@ namespace bw
 			NazaraSignal(OnEntityCreated, NetworkSyncSystem* /*emitter*/, const EntityCreation& /*event*/);
 			NazaraSignal(OnEntityDeleted, NetworkSyncSystem* /*emitter*/, const EntityDestruction& /*event*/);
 			NazaraSignal(OnEntityPlayAnimation, NetworkSyncSystem* /*emitter*/, const EntityPlayAnimation& /*event*/);
+			NazaraSignal(OnEntityInvalidated, NetworkSyncSystem* /*emitter*/, const EntityMovement& /*event*/);
 			NazaraSignal(OnEntitiesInputUpdate, NetworkSyncSystem* /*emitter*/, const EntityInputs* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
 
 		private:
-			void CreateEntity(EntityCreation& creationEvent, Ndk::Entity* entity) const;
-			void DeleteEntity(EntityDestruction& deleteEvent, Ndk::Entity* entity) const;
+			void BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const;
+			void BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const;
+			void BuildEvent(EntityMovement &movementEvent, Ndk::Entity* entity) const;
 
 			void OnEntityAdded(Ndk::Entity* entity) override;
 			void OnEntityRemoved(Ndk::Entity* entity) override;
@@ -122,6 +125,7 @@ namespace bw
 				NazaraSlot(AnimationComponent, OnAnimationStart, onAnimationStart);
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
 				NazaraSlot(InputComponent, OnInputUpdate, onInputUpdate);
+				NazaraSlot(NetworkSyncComponent, OnInvalidated, onInvalidated);
 			};
 
 			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
@@ -130,6 +134,7 @@ namespace bw
 			Ndk::EntityList m_healthUpdateEntities;
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
+			Ndk::EntityList m_invalidatedEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<EntityHealth> m_healthEvents;

@@ -12,11 +12,11 @@ ENTITY.Properties = {
 function ENTITY:Initialize()
 	local size = self:GetProperty("size")
 
-	local colliderSize = 256 * 0.2 / 2 * size
-	self:SetCollider(Rect(Vec2(-colliderSize, -colliderSize), Vec2(colliderSize, colliderSize)))
-	self:InitRigidBody(100, 10)
+	local colliderSize = Vec2(0.2 * size, 0.2) * 256 / 2
+	self:SetCollider(Rect(-colliderSize, colliderSize))
+	self:InitRigidBody(size * 50, 10)
 
-	if (CLIENT or EDITOR) then
-		self:AddSprite("../resources/box.png", Vec2(0.2, 0.2) * size)
+	if (CLIENT) then
+		self:AddSprite("../resources/box.png", Vec2(0.2 * size, 0.2))
 	end
 end

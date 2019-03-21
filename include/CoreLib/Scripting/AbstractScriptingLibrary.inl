@@ -32,6 +32,9 @@ namespace sol
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
 	template<>
+	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
+
+	template<>
 	struct lua_type_of<bw::InputData> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
@@ -83,13 +86,25 @@ namespace sol
 		};
 
 		template <>
+		struct getter<Nz::DegreeAnglef>
+		{
+			static Nz::DegreeAnglef get(lua_State* L, int index, record& tracking)
+			{
+				int absoluteIndex = lua_absindex(L, index);
+
+				sol::stack_object obj(L, absoluteIndex);
+				return Nz::DegreeAnglef(obj.as<float>());
+			}
+		};
+
+		template <>
 		struct getter<Nz::Rectf>
 		{
 			static Nz::Rectf get(lua_State* L, int index, record& tracking) 
 			{
 				int absoluteIndex = lua_absindex(L, index);
 
-				sol::stack_table rect(L, absoluteIndex);
+				sol::table rect(L, absoluteIndex);
 				float x = rect["x"];
 				float y = rect["y"];
 				float width = rect["width"];
@@ -127,6 +142,7 @@ namespace sol
 			{
 				lua_createtable(L, 0, 4);
 				sol::stack_table vec(L);
+				vec["aimDirection"] = inputs.aimDirection;
 				vec["isAttacking"] = inputs.isAttacking;
 				vec["isJumping"] = inputs.isJumping;
 				vec["isMovingLeft"] = inputs.isMovingLeft;

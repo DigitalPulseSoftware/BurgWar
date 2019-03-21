@@ -5,6 +5,7 @@
 #include <Client/ClientApp.hpp>
 #include <CoreLib/Match.hpp>
 #include <ClientLib/ClientSession.hpp>
+#include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
@@ -24,7 +25,9 @@ namespace bw
 
 		auto CreateMatch = [this](ClientSession& session, const Packets::MatchData& matchData) -> std::shared_ptr<LocalMatch>
 		{
-			return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, &m_mainWindow, session, matchData));
+			auto inputController = std::make_shared<KeyboardAndMouseController>(m_mainWindow);
+
+			return m_localMatches.emplace_back(std::make_shared<LocalMatch>(*this, &m_mainWindow, session, matchData, inputController));
 		};
 
 		m_clientSession = std::make_unique<ClientSession>(*this, m_commandStore, CreateMatch);
@@ -37,6 +40,8 @@ namespace bw
 	{
 		while (Application::Run())
 		{
+			m_mainWindow.Display();
+
 			BurgApp::Update();
 
 			m_networkReactors.Update();
@@ -46,8 +51,6 @@ namespace bw
 
 			for (const auto& localMatchPtr : m_localMatches)
 				localMatchPtr->Update(GetUpdateTime());
-
-			m_mainWindow.Display();
 		}
 
 		return 0;
