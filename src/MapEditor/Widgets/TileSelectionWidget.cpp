@@ -13,6 +13,7 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include <iostream>
@@ -22,7 +23,8 @@ namespace bw
 {
 	TileSelectionWidget::TileSelectionWidget(const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent) :
 	QWidget(parent),
-	m_tileSize(64.f, 64.f)
+	m_tileSize(64.f, 64.f),
+	m_selectedTile(0)
 	{
 		setWindowTitle(tr("Tile selector"));
 
@@ -42,9 +44,9 @@ namespace bw
 		for (std::size_t matIndex = 0; matIndex < materials.size(); ++matIndex)
 			tileMap->SetMaterial(matIndex, materials[matIndex]);
 
-		for (std::size_t tileId = 1; tileId <= m_tileCount; ++tileId)
+		for (std::size_t tileId = 0; tileId < m_tileCount; ++tileId)
 		{
-			const auto& tile = tileData[tileId - 1];
+			const auto& tile = tileData[tileId];
 
 			Nz::Vector2ui tilePosition(Nz::Vector2<std::size_t>(tileId % tileMapSide, tileId / tileMapSide));
 			tileMap->EnableTile(tilePosition, tile.texCoords, Nz::Color::White, tile.materialIndex);
@@ -60,31 +62,35 @@ namespace bw
 		Nz::MaterialRef selectionMaterial = Nz::Material::New("Translucent2D");
 		selectionMaterial->SetDiffuseMap("../resources/tile_selection.png");
 
-		Nz::SpriteRef selectionSprite = Nz::Sprite::New();
-		selectionSprite->SetColor(Nz::Color::Red);
-		selectionSprite->SetMaterial(selectionMaterial);
-		selectionSprite->SetSize(tileMap->GetTileSize());
+		m_selectionSprite = Nz::Sprite::New();
+		m_selectionSprite->SetMaterial(selectionMaterial);
+		m_selectionSprite->SetSize(tileMap->GetTileSize());
 
 		m_selectedEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
 		m_selectedEntity->AddComponent<Ndk::NodeComponent>();
-		m_selectedEntity->AddComponent<Ndk::GraphicsComponent>().Attach(selectionSprite, 1);
+		m_selectedEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_selectionSprite, 1);
+
+		QToolBar* toolbar = new QToolBar;
+		QAction* tileAction = toolbar->addAction(QIcon(QPixmap("../resources/gui/icons/cloth-24.png")), tr("Tile mode"));
+		connect(tileAction, &QAction::triggered, [this](bool) { EnableTileMode(); });
+
+		QAction* clearAction = toolbar->addAction(QIcon(QPixmap("../resources/gui/icons/remove_image-24.png")), tr("Clear mode"));
+		connect(clearAction, &QAction::triggered, [this](bool) { EnableClearMode(); });
 
 		QVBoxLayout* layout = new QVBoxLayout;
+		layout->addWidget(toolbar);
 		layout->addWidget(m_tileSelectionCanvas);
 
 		setLayout(layout);
+
+		EnableTileMode();
 	}
 
 	void TileSelectionWidget::SelectTile(std::size_t tileIndex)
 	{
 		assert(tileIndex < m_tileCount);
 
-		SelectRect(tileIndex + 1);
-	}
-
-	void TileSelectionWidget::UnselectTile()
-	{
-		SelectRect(0);
+		SelectRect(tileIndex);
 	}
 
 	void TileSelectionWidget::SelectRect(std::size_t rectIndex)
@@ -94,16 +100,25 @@ namespace bw
 		auto& selectedEntityNode = m_selectedEntity->GetComponent<Ndk::NodeComponent>();
 		selectedEntityNode.SetPosition(Nz::Vector2f(rectIndex % m_mapSize.x, rectIndex / m_mapSize.y) * m_tileSize);
 
-		if (rectIndex > 0 && rectIndex <= m_tileCount)
-			OnTileSelected(this, rectIndex - 1);
+		if (rectIndex >= 0 && rectIndex < m_tileCount)
+		{
+			m_selectedTile = rectIndex;
+			EnableTileMode();
+		}
 		else
-			OnNoTileSelected(this);
+			EnableClearMode();
 	}
 
-	void TileSelectionWidget::closeEvent(QCloseEvent* event)
+	void TileSelectionWidget::EnableClearMode()
 	{
-		QWidget::closeEvent(event);
-		std::cout << "Tile selection closed" << std::endl;
+		m_selectionSprite->SetColor(Nz::Color(128, 128, 128));
+		OnNoTileSelected(this);
+	}
+
+	void TileSelectionWidget::EnableTileMode()
+	{
+		m_selectionSprite->SetColor(Nz::Color::White);
+		OnTileSelected(this, m_selectedTile);
 	}
 
 	void TileSelectionWidget::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
