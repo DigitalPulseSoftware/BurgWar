@@ -9,10 +9,29 @@ ENTITY.Properties = {
 	{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
 	{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
 	{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
-	{ Name = "textureCells", Type = PropertyType.FloatSize, Array = true, Default = { Vec2(1, 1) }, Shared = true },
+	{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { Vec2(1, 1) }, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
 	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true }
 }
+
+local function GenerateTiles(textures, textureCells)
+	local textureCount = math.min(#textures, #textureCells)
+	
+	local tiles = {}
+	for i = 1, textureCount do
+		local cellCount = textureCells[i]
+		for y = 1, cellCount.y do
+			for x = 1, cellCount.x do
+				table.insert(tiles, {
+					material = textures[i],
+					texCoords = Rect(Vec2((x - 1) / cellCount.x, (y - 1) / cellCount.y), Vec2(x / cellCount.x, y / cellCount.y))
+				})
+			end
+		end
+	end
+
+	return tiles
+end
 
 if (EDITOR) then
 	ENTITY.EditorActions = {
@@ -26,96 +45,7 @@ if (EDITOR) then
 					origin = entityEditor:GetEntityPosition(),
 					rotation = entityEditor:GetEntityRotation(),
 					content = entityEditor:GetProperty("content")
-				}, {
-					{
-						material = "../resources/tiles/1.png",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "../resources/tiles/2.png",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					},
-					{
-						material = "osef",
-						texCoords = Rect(Vec2(0, 0), Vec2(1, 1))
-					}
-				}, Editor)
+				}, GenerateTiles(entityEditor:GetProperty("textures"), entityEditor:GetProperty("textureCells")), Editor)
 
 				tileMapEditor:SetFinishedCallback(function (tileMapData)
 					if (tileMapData) then
@@ -168,10 +98,12 @@ function ENTITY:Initialize()
 		y = y + 1
 	end
 
-	self:SetCollider(colliders)
-	self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
+	if (#colliders > 0) then 
+		self:SetCollider(colliders)
+		self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 
-	if (CLIENT) then
-		self:AddTilemap("../resources/dirt.png", mapSize, cellSize, content)
+		if (CLIENT) then
+			self:AddTilemap(mapSize, cellSize, content, GenerateTiles(self:GetProperty("textures"), self:GetProperty("textureCells")))
+		end
 	end
 end

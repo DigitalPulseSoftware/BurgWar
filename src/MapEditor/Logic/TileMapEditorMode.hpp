@@ -8,9 +8,8 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_TILEMAP_EDITOR_MODE_HPP
 
 #include <MapEditor/Logic/EntityEditorMode.hpp>
+#include <ClientLib/Utility/TileMapData.hpp>
 #include <MapEditor/Widgets/TileSelectionWidget.hpp>
-#include <Nazara/Math/Angle.hpp>
-#include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/Cursor.hpp>
@@ -24,9 +23,6 @@ namespace bw
 	class TileMapEditorMode : public EntityEditorMode
 	{
 		public:
-			struct TileData;
-			struct TileMapData;
-
 			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileData>& tiles, EditorWindow& editor);
 			~TileMapEditorMode() = default;
 
@@ -41,21 +37,6 @@ namespace bw
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseEntered() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
-
-			struct TileData
-			{
-				Nz::MaterialRef material;
-				Nz::Rectf texCoords;
-			};
-
-			struct TileMapData
-			{
-				std::vector<Nz::UInt32> content;
-				Nz::DegreeAnglef rotation;
-				Nz::Vector2f origin;
-				Nz::Vector2f tileSize;
-				Nz::Vector2ui mapSize;
-			};
 
 			NazaraSignal(OnEditionCancelled, TileMapEditorMode* /*editorMode*/);
 			NazaraSignal(OnEditionFinished, TileMapEditorMode* /*editorMode*/, const TileMapData& /*tileMapData*/);

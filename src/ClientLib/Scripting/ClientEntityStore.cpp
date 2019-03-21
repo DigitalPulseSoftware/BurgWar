@@ -5,6 +5,8 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <ClientLib/Utility/TileMapData.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <NDK/Components.hpp>
@@ -98,17 +100,22 @@ namespace bw
 			gfxComponent.Attach(sprite);
 		};
 
-		elementTable["AddTilemap"] = [](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content)
+		elementTable["AddTilemap"] = [](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
 
-			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(texturePath);
-			auto& sampler = mat->GetDiffuseSampler();
-			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+			// Compute tilemap
+			tsl::hopscotch_map<Nz::MaterialRef /*material*/, std::size_t /*materialIndex*/> materials;
+			for (const auto& tile : tiles)
+			{
+				auto it = materials.find(tile.material);
+				if (it == materials.end())
+					materials.emplace(tile.material, materials.size());
+			}
 
-			Nz::TileMapRef tilemap = Nz::TileMap::New(mapSize, cellSize);
-			tilemap->SetMaterial(0, mat);
+			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
+			for (auto&& [material, matIndex] : materials)
+				tileMap->SetMaterial(matIndex, material);
 
 			std::size_t cellCount = content.size();
 			std::size_t expectedCellCount = mapSize.x * mapSize.y;
@@ -120,15 +127,25 @@ namespace bw
 
 			for (std::size_t i = 0; i < cellCount; ++i)
 			{
-				unsigned int value = content[i + 1]; //< Lua arrays start at 1
+				unsigned int value = content[i + 1];
 
 				Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % mapSize.x), static_cast<unsigned int>(i / mapSize.x) };
 				if (value > 0)
-					tilemap->EnableTile(tilePos, Nz::Rectf(0.f, 0.f, 1.f, 1.f));
+				{
+					if (value - 1 >= content.size())
+						throw std::runtime_error("");
+
+					const auto& tileData = tiles[value - 1];
+
+					auto matIt = materials.find(tileData.material);
+					assert(matIt != materials.end());
+
+					tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+				}
 			}
 
 			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(tilemap);
+			gfxComponent.Attach(tileMap);
 		};
 	}
 
