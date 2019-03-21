@@ -9,12 +9,6 @@
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <iostream>
 
-struct my_data {
-	int first = 4;
-	int second = 8;
-	int third = 12;
-};
-
 namespace bw
 {
 	void EditorScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)

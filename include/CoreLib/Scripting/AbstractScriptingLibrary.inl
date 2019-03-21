@@ -32,9 +32,6 @@ namespace sol
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
 	template<>
-	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
-
-	template<>
 	struct lua_type_of<bw::InputData> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
@@ -72,18 +69,6 @@ namespace sol
 			}
 		};
 
-
-		template <>
-		struct getter<Nz::DegreeAnglef>
-		{
-			static Nz::DegreeAnglef get(lua_State* L, int index, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
-
-				sol::stack_object obj(L, absoluteIndex);
-				return Nz::DegreeAnglef(obj.as<float>());
-			}
-		};
 
 		template <>
 		struct getter<Nz::DegreeAnglef>
