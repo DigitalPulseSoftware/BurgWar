@@ -28,7 +28,7 @@ namespace bw
 {
 	class ClientEntityStore;
 	class ClientScriptingContext;
-	class PositionEditWidget;
+	class Float2SpinBox;
 
 	struct EntityInfo
 	{
@@ -70,6 +70,7 @@ namespace bw
 
 			struct PropertyData
 			{
+				std::size_t index;
 				std::string keyName;
 				std::string visualName;
 				EntityProperty defaultValue;
@@ -88,7 +89,7 @@ namespace bw
 			ClientScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;
-			PositionEditWidget* m_positionWidget;
+			Float2SpinBox* m_positionWidget;
 			QDoubleSpinBox* m_rotationWidget;
 			QLabel* m_propertyTitle;
 			QLabel* m_propertyDescription;

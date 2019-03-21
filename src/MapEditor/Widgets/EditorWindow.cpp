@@ -1260,7 +1260,7 @@ namespace bw
 				1
 		};
 
-		std::vector<TileMapEditorMode::TileData> tiles;
+		std::vector<TileData> tiles;
 		for (std::size_t i = 1; i <= 18; ++i)
 		{
 			auto& tileData = tiles.emplace_back();
@@ -1286,7 +1286,7 @@ namespace bw
 		QAction* tilemapTest = testMenu->addAction(tr("Test (new) TileMap editor..."));
 		connect(tilemapTest, &QAction::triggered, [this, content, tiles]()
 		{
-			TileMapEditorMode::TileMapData tilemapData;
+			TileMapData tilemapData;
 			tilemapData.content = content;
 			tilemapData.mapSize = Nz::Vector2ui(80, 13);
 			tilemapData.origin = Nz::Vector2f::Zero();

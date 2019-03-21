@@ -139,6 +139,8 @@ namespace bw
 					if constexpr (std::is_same_v<T, std::vector<bool>> ||
 					              std::is_same_v<T, std::vector<float>> ||
 					              std::is_same_v<T, std::vector<Nz::Int64>> ||
+					              std::is_same_v<T, std::vector<Nz::Vector2f>> ||
+					              std::is_same_v<T, std::vector<Nz::Vector2i64>> ||
 					              std::is_same_v<T, std::vector<std::string>>)
 					{
 						using StoredType = typename T::value_type;

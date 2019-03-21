@@ -23,11 +23,15 @@ function enums.Create(content)
 	return setmetatable({ __content = content }, enumMt)
 end
 
--- FIXME
+-- FIXME: This shouldn't be here
 PropertyType = enums.Create({
-	Boolean  = 0,
-	Float    = 1,
-	Integer  = 2,
-	String   = 3,
-	Texture  = 4
+	Boolean         = 0,
+	Float           = 1,
+	FloatPosition   = 2,
+	FloatSize       = 3,
+	Integer         = 4,
+	IntegerPosition = 5,
+	IntegerSize     = 6,
+	String          = 7,
+	Texture         = 8
 })

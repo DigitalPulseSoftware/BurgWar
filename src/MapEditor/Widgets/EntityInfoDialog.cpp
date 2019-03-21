@@ -6,7 +6,8 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientScriptingContext.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
-#include <MapEditor/Widgets/PositionEditWidget.hpp>
+#include <MapEditor/Widgets/Float2SpinBox.hpp>
+#include <MapEditor/Widgets/Integer2SpinBox.hpp>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -33,6 +34,11 @@ namespace bw
 		public:
 			using QStyledItemDelegate::QStyledItemDelegate;
 
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, float value) const
+			{
+				model->setData(index, value, Qt::EditRole);
+			}
+
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 			{
 				QDoubleSpinBox* editor = new QDoubleSpinBox(parent);
@@ -42,10 +48,15 @@ namespace bw
 				return editor;
 			}
 
+			float RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).toFloat();
+			}
+
 			void setEditorData(QWidget* editor, const QModelIndex& index) const override
 			{
 				QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
-				spinBox->setValue(index.model()->data(index, Qt::EditRole).toDouble());
+				spinBox->setValue(RetrieveModelData(index));
 			}
 
 			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
@@ -53,7 +64,53 @@ namespace bw
 				QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
 				spinBox->interpretText();
 
-				model->setData(index, spinBox->value(), Qt::EditRole);
+				ApplyModelData(model, index, float(spinBox->value()));
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+	
+	class Float2PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector2f& value) const
+			{
+				model->setData(index, QPointF(value.x, value.y), Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				return new Float2SpinBox(Float2SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				QPointF point = value.toPointF();
+				return QString("(%1; %2)").arg(locale.toString(point.x())).arg(locale.toString(point.y()));
+			}
+
+			Nz::Vector2f RetrieveModelData(const QModelIndex& index) const
+			{
+				QPointF point = index.model()->data(index, Qt::EditRole).toPointF();
+				return { float(point.x()), float(point.y()) };
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Float2SpinBox* spinBox = static_cast<Float2SpinBox*>(editor);
+				spinBox->setValue(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Float2SpinBox* spinBox = static_cast<Float2SpinBox*>(editor);
+
+				ApplyModelData(model, index, spinBox->value());
 			}
 
 			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -67,6 +124,11 @@ namespace bw
 		public:
 			using QStyledItemDelegate::QStyledItemDelegate;
 
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, Nz::Int64 value) const
+			{
+				model->setData(index, int(value), Qt::EditRole);
+			}
+
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 			{
 				//TODO: Subclass for int64
@@ -77,10 +139,15 @@ namespace bw
 				return editor;
 			}
 
+			Nz::Int64 RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).toInt();
+			}
+
 			void setEditorData(QWidget* editor, const QModelIndex& index) const override
 			{
 				QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
-				spinBox->setValue(index.model()->data(index, Qt::EditRole).toInt());
+				spinBox->setValue(RetrieveModelData(index));
 			}
 
 			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
@@ -88,7 +155,53 @@ namespace bw
 				QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
 				spinBox->interpretText();
 
-				model->setData(index, spinBox->value(), Qt::EditRole);
+				ApplyModelData(model, index, spinBox->value());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+	
+	class Integer2PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector2i64& value) const
+			{
+				model->setData(index, QPoint(value.x, value.y), Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				return new Integer2SpinBox(Integer2SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				QPoint point = value.toPoint();
+				return QString("(%1; %2)").arg(locale.toString(point.x())).arg(locale.toString(point.y()));
+			}
+
+			Nz::Vector2i64 RetrieveModelData(const QModelIndex& index) const
+			{
+				QPoint point = index.model()->data(index, Qt::EditRole).toPoint();
+				return { Nz::Int64(point.x()), Nz::Int64(point.y()) };
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Integer2SpinBox* spinBox = static_cast<Integer2SpinBox*>(editor);
+				spinBox->setValue(Nz::Vector2i(RetrieveModelData(index)));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Integer2SpinBox* spinBox = static_cast<Integer2SpinBox*>(editor);
+
+				ApplyModelData(model, index, Nz::Vector2i64(spinBox->value()));
 			}
 
 			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -171,10 +284,10 @@ namespace bw
 			m_entityInfo.entityName = text.toStdString();
 		});
 
-		m_positionWidget = new PositionEditWidget;
-		connect(m_positionWidget, &PositionEditWidget::valueChanged, [this](Nz::Vector2d value)
+		m_positionWidget = new Float2SpinBox(Float2SpinBox::LabelMode::PositionLabel, QBoxLayout::LeftToRight);
+		connect(m_positionWidget, &Float2SpinBox::valueChanged, [this](Nz::Vector2f value)
 		{
-			m_entityInfo.position = Nz::Vector2f(value);
+			m_entityInfo.position = value;
 		});
 
 		m_rotationWidget = new QDoubleSpinBox;
@@ -217,7 +330,7 @@ namespace bw
 		m_targetEntity = targetEntity;
 
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
-		m_positionWidget->setValue(Nz::Vector2d(m_entityInfo.position));
+		m_positionWidget->setValue(m_entityInfo.position);
 		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
 		m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
@@ -257,7 +370,7 @@ namespace bw
 	void EntityInfoDialog::SetEntityPosition(const Nz::Vector2f& position)
 	{
 		m_entityInfo.position = position;
-		m_positionWidget->setValue(Nz::Vector2d(position));
+		m_positionWidget->setValue(position);
 	}
 
 	void EntityInfoDialog::SetEntityRotation(const Nz::DegreeAnglef& rotation)
@@ -305,31 +418,31 @@ namespace bw
 		m_entityInfo.properties.clear(); // Put back in a valid state
 
 		m_properties.clear();
-		std::size_t i = 0;
-		for (const auto& propertyInfo : entityTypeInfo->properties)
+		for (const auto& [propertyName, propertyInfo] : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
-			propertyData.isArray = propertyInfo.second.isArray;
-			propertyData.defaultValue = *propertyInfo.second.defaultValue;
-			propertyData.keyName = propertyInfo.first;
+			propertyData.index = propertyInfo.index;
+			propertyData.isArray = propertyInfo.isArray;
+			propertyData.defaultValue = *propertyInfo.defaultValue;
+			propertyData.keyName = propertyName;
 			propertyData.visualName = propertyData.keyName; //< FIXME
-			propertyData.type = propertyInfo.second.type;
-
-			m_propertyByName.emplace(propertyData.keyName, i);
+			propertyData.type = propertyInfo.type;
 
 			if (auto it = oldProperties.find(propertyData.keyName); it != oldProperties.end())
 			{
 				// Only keep old property value if types are compatibles
-				if (it->second.index() == propertyInfo.second.defaultValue->index())
+				if (it->second.index() == propertyInfo.defaultValue->index())
 					m_entityInfo.properties.emplace(std::move(it.key()), std::move(it.value()));
 
 				oldProperties.erase(it);
 			}
-
-			i++;
 		}
 
-		//std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.keyName < second.keyName; });
+		std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.index < second.index; });
+
+		m_propertyByName.clear();
+		for (std::size_t i = 0; i < m_properties.size(); ++i)
+			m_propertyByName.emplace(m_properties[i].keyName, i);
 
 		m_propertiesList->setRowCount(int(m_properties.size()));
 
@@ -348,10 +461,10 @@ namespace bw
 
 		m_editorActionByName.clear();
 
-		i = 0;
+		std::size_t actionIndex = 0;
 		for (auto&& editorAction : entityTypeInfo->editorActions)
 		{
-			m_editorActionByName.emplace(editorAction.name, i);
+			m_editorActionByName.emplace(editorAction.name, actionIndex++);
 
 			QPushButton* button = new QPushButton(QString::fromStdString(editorAction.label));
 			connect(button, &QPushButton::released, [this, name = editorAction.name]()
@@ -363,61 +476,17 @@ namespace bw
 
 				const auto& action = entityTypeInfo->editorActions[it->second];
 
-				/*sol::state& lua = m_scriptingContext.GetLuaState();
-				sol::table metatable = lua.create_table();
-				metatable["__index"] = [this, &lua](sol::this_state state, sol::table table, const std::string& key)
-				{
-					const bw::EntityProperty* property;
-
-					auto it = m_entityInfo.properties.find(key);
-					if (it != m_entityInfo.properties.end())
-						property = &it->second;
-					else
-					{
-						auto propertyIt = m_propertyByName.find(key);
-						if (propertyIt == m_propertyByName.end())
-							throw std::runtime_error("Property " + key + " does not exist");
-
-						const auto& propertyData = m_properties[propertyIt->second];
-						property = &propertyData.defaultValue;
-					}
-
-					return TranslateEntityPropertyToLua(lua, *property);
-				};
-
-				bool refreshPropertyEditor = false;
-				metatable["__newindex"] = [this, &refreshPropertyEditor](sol::this_state state, sol::table table, const std::string& key, const sol::object& newValue)
-				{
-					auto propertyIt = m_propertyByName.find(key);
-					if (propertyIt == m_propertyByName.end())
-						throw std::runtime_error("Property " + key + " does not exist");
-
-					std::size_t propertyIndex = propertyIt->second;
-					const auto& propertyData = m_properties[propertyIndex];
-
-					m_entityInfo.properties.insert_or_assign(key, TranslateEntityPropertyFromLua(newValue, propertyData.type, propertyData.isArray));
-
-					if (m_propertyTypeIndex == propertyIndex)
-						refreshPropertyEditor = true;
-				};
-
-				sol::table propertyTable = m_scriptingContext.GetLuaState().create_table();
-				propertyTable[sol::metatable_key] = metatable;*/
-
 				auto result = action.onTrigger(this);
 				if (!result.valid())
 				{
 					sol::error err = result;
 					std::cerr << "Editor action " << name << "::OnTrigger failed: " << err.what() << std::endl;
 				}
-
-				//if (refreshPropertyEditor)
-				//	RefreshPropertyEditor(m_propertyTypeIndex);
 			});
 
 			m_editorActionLayout->addWidget(button);
 
-			i++;
+			actionIndex++;
 		}
 	}
 
@@ -536,9 +605,13 @@ namespace bw
 						model->setItem(i, 0, item);
 					}
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
 					{
-						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
 
 						int rowIndex = item->index().row();
 						propertyArray[rowIndex] = (item->checkState() == Qt::Checked);
@@ -550,26 +623,67 @@ namespace bw
 
 				case PropertyType::Float:
 				{
+					static FloatPropertyDelegate delegate; //FIXME?
+
 					using T = EntityPropertyArray<float>;
 
 					auto& propertyArray = std::get<T>(property);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&delegate);
 					tableView->setModel(model);
-					tableView->setItemDelegate(new FloatPropertyDelegate); //FIXME
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						model->setData(model->index(i, 0), double(propertyArray[i]), Qt::EditRole);
+						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
 					{
-						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
 
 						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = item->data(Qt::EditRole).toDouble();
+						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
+				case PropertyType::FloatPosition:
+				case PropertyType::FloatSize:
+				{
+					static Float2PropertyDelegate delegate; //< FIXME?
+
+					using T = EntityPropertyArray<Nz::Vector2f>;
+
+					auto& propertyArray = std::get<T>(property);
+					
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ QString("Value") });
+
+					for (int i = 0; i < arraySize; ++i)
+						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					{
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
+
+						int rowIndex = item->index().row();
+						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -578,27 +692,67 @@ namespace bw
 
 				case PropertyType::Integer:
 				{
+					static IntegerPropertyDelegate delegate; //FIXME?
+					
 					using T = EntityPropertyArray<Nz::Int64>;
 
 					auto& propertyArray = std::get<T>(property);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&delegate);
 					tableView->setModel(model);
-
-					tableView->setItemDelegate(new IntegerPropertyDelegate); //FIXME
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						model->setData(model->index(i, 0), int(propertyArray[i]), Qt::EditRole); //< FIXME
+						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
 					{
-						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
 
 						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = item->data(Qt::EditRole).toInt();
+						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
+				{
+					static Integer2PropertyDelegate delegate; //< FIXME?
+
+					using T = EntityPropertyArray<Nz::Vector2i64>;
+
+					auto& propertyArray = std::get<T>(property);
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ QString("Value") });
+
+					for (int i = 0; i < arraySize; ++i)
+						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+
+					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					{
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
+
+						int rowIndex = item->index().row();
+						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -621,9 +775,13 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
 
-					connect(table, &QTableWidget::cellChanged, [this, keyName = propertyInfo.keyName, table](int row, int column)
+					connect(table, &QTableWidget::cellChanged, [this, keyName = propertyInfo.keyName, table, arraySize](int row, int column)
 					{
-						auto& propertyArray = std::get<T>(m_entityInfo.properties[keyName]);
+						auto it = m_entityInfo.properties.find(keyName);
+						if (it == m_entityInfo.properties.end())
+							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
+
+						auto& propertyArray = std::get<T>(it.value());
 						propertyArray[row] = table->item(row, column)->text().toStdString();
 					});
 
@@ -670,6 +828,23 @@ namespace bw
 					break;
 				}
 
+				case PropertyType::FloatPosition:
+				case PropertyType::FloatSize:
+				{
+					Float2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Float2SpinBox::LabelMode::PositionLabel : Float2SpinBox::LabelMode::SizeLabel;
+					Float2SpinBox* spinbox = new Float2SpinBox(labelMode, QBoxLayout::TopToBottom);
+					if (std::holds_alternative<Nz::Vector2f>(property))
+						spinbox->setValue(std::get<Nz::Vector2f>(property));
+
+					connect(spinbox, &Float2SpinBox::valueChanged, [this, spinbox, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = Nz::Vector2f(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
 				case PropertyType::Integer:
 				{
 					// TODO: Handle properly int64
@@ -680,6 +855,24 @@ namespace bw
 					connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
 					{
 						m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
+				{
+					// TODO: Handle properly int64
+					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
+					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
+					if (std::holds_alternative<Nz::Vector2i64>(property))
+						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(property)));
+
+					connect(spinbox, &Integer2SpinBox::valueChanged, [this, spinbox, keyName = propertyInfo.keyName]()
+					{
+						m_entityInfo.properties[keyName] = Nz::Vector2i64(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
