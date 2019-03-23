@@ -24,9 +24,11 @@ namespace bw
 	m_clearMode(false)
 	{
 		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("../resources/eraser.png");
-
-		m_eraserCursor = Nz::Cursor::New();
-		m_eraserCursor->Create(*eraserImage, Nz::Vector2i(3, 31), Nz::SystemCursor_Default);
+		if (eraserImage)
+		{
+			m_eraserCursor = Nz::Cursor::New();
+			m_eraserCursor->Create(*eraserImage, Nz::Vector2i(3, 31), Nz::SystemCursor_Default);
+		}
 
 		// Compute tilemap
 		tsl::hopscotch_map<Nz::MaterialRef /*material*/, std::size_t /*materialIndex*/> materials;
@@ -71,7 +73,9 @@ namespace bw
 		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 		if (m_clearMode)
 		{
-			canvas->SetCursor(m_eraserCursor);
+			if (m_eraserCursor)
+				canvas->SetCursor(m_eraserCursor);
+
 			m_hoveringTileSprite->SetColor(Nz::Color::Red);
 		}
 		else
@@ -200,7 +204,10 @@ namespace bw
 		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 
 		if (m_clearMode)
-			canvas->SetCursor(m_eraserCursor);
+		{
+			if (m_eraserCursor)
+				canvas->SetCursor(m_eraserCursor);
+		}
 		else
 			canvas->SetCursor(Nz::SystemCursor_Default);
 	}
