@@ -172,8 +172,11 @@ namespace bw
 				return Nz::Vector2f::Zero();
 		};
 
-		state["engine_SetCameraPosition"] = [&](const Nz::Vector2f& position)
+		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
 		{
+			position.x = std::floor(position.x);
+			position.y = std::floor(position.y);
+
 			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
 		};
 
