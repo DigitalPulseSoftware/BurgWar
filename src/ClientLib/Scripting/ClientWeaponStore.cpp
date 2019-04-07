@@ -6,9 +6,12 @@
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
+#include <NDK/Systems.hpp>
 #include <iostream>
 
 namespace bw
@@ -41,6 +44,50 @@ namespace bw
 		SharedWeaponStore::InitializeElementTable(elementTable);
 
 		elementTable["Scale"] = 1.f;
+
+		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
+		{
+			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
+
+			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
+
+			float hitDistance = 1000.f;
+
+			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * hitDistance, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
+			{
+				hitDistance *= hitInfo.fraction;
+
+				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
+				}
+			}
+
+			const auto& localMatchComponent = entity->GetComponent<LocalMatchComponent>();
+			const auto& localMatchPtr = localMatchComponent.GetLocalMatch();
+
+			const auto& trailEntity = world->CreateEntity();
+			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
+
+			trailNode.SetPosition(startPos);
+			trailNode.SetRotation(Nz::Quaternionf::RotationBetween(Nz::Vector3f::UnitX(), direction));
+
+			const float trailSpeed = 2500.f;
+
+			const Nz::SpriteRef& trailSprite = localMatchPtr->GetTrailSprite();
+			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
+			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
+			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);
+		};
+
+		elementTable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
 	}
 
 	void ClientWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

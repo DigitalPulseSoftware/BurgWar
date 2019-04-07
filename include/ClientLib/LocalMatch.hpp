@@ -20,6 +20,7 @@
 #include <NDK/World.hpp>
 #include <tsl/hopscotch_map.h>
 #include <Nazara/Platform/EventHandler.hpp>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -30,7 +31,7 @@ namespace bw
 	class InputController;
 	class VirtualDirectory;
 
-	class LocalMatch : public SharedMatch
+	class LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
 	{
 		friend class ClientSession;
 
@@ -41,6 +42,7 @@ namespace bw
 			inline AnimationManager& GetAnimationManager();
 			inline BurgApp& GetApplication();
 			inline const Ndk::EntityHandle& GetCamera();
+			inline const Nz::SpriteRef& GetTrailSprite() const;
 
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
@@ -53,7 +55,7 @@ namespace bw
 			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties);
 
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
-
+			void DebugEntityId(ServerEntity& serverEntity);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
 			void PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId);
@@ -88,6 +90,8 @@ namespace bw
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
 				Nz::UInt16 maxHealth;
+				Nz::UInt32 serverEntityId;
+				Nz::UInt32 weaponEntityId = 0xFFFFFFFF;
 				bool isPhysical;
 			};
 
@@ -104,6 +108,7 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;
+			Nz::SpriteRef m_trailSpriteTest;
 			AnimationManager m_animationManager;
 			BurgApp& m_application;
 			ClientSession& m_session;

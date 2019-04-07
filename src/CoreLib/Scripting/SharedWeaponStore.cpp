@@ -23,6 +23,19 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
+		elementTable["GetDirection"] = [](const sol::table& table)
+		{
+			const Ndk::EntityHandle& entity = table["Entity"];
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+
+			Nz::Vector2f direction(nodeComponent.GetRotation() * Nz::Vector2f::UnitX());
+			if (nodeComponent.GetScale().x < 0.f)
+				direction = -direction;
+
+			return direction;
+		};
+
 		elementTable["GetPosition"] = [](const sol::table& table)
 		{
 			const Ndk::EntityHandle& entity = table["Entity"];

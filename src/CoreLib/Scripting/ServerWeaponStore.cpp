@@ -63,6 +63,33 @@ namespace bw
 		elementTable["DealDamage"] = sol::overload(DealDamage,
 			[=](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(weaponTable, damage, damageZone); });
 
+		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
+		{
+			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
+
+			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
+
+			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * 1000.f, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
+			{
+				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+
+				if (hitEntity->HasComponent<HealthComponent>())
+					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
+				}
+			}
+		};
+
+		elementTable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
+
 		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{
 			const Ndk::EntityHandle& entity = weaponTable["Entity"];

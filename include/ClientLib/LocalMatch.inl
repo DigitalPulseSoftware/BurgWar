@@ -20,4 +20,9 @@ namespace bw
 	{
 		return m_camera;
 	}
+
+	inline const Nz::SpriteRef& LocalMatch::GetTrailSprite() const
+	{
+		return m_trailSpriteTest;
+	}
 }

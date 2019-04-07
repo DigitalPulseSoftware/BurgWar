@@ -70,7 +70,7 @@ namespace bw
 			UpdateControlledEntity(burger);
 
 			// Create weapon
-			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_sword_emmentalibur"); weaponIndex != ServerEntityStore::InvalidIndex)
+			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_rifle"); weaponIndex != ServerEntityStore::InvalidIndex)
 				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, burger);
 
 			return burger;

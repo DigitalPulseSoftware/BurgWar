@@ -27,6 +27,14 @@ function vec2meta:__div(divider)
 	end
 end
 
+function vec2meta:__sub(other)
+	if (getmetatable(other) == vec2meta) then
+		return Vec2(self.x - other.x, self.y - other.y)
+	else
+		error("Must be a vector")
+	end
+end
+
 function vec2meta:__unm()
 	return Vec2(-self.x, -self.y)
 end

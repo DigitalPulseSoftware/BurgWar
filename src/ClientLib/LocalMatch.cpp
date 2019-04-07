@@ -6,6 +6,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <CoreLib/BurgApp.hpp>
@@ -18,8 +19,10 @@
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
+#include <Nazara/Graphics/TextSprite.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
+#include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
@@ -62,9 +65,19 @@ namespace bw
 		viewer.SetTarget(renderTarget);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
+		Nz::Color trailColor(242, 255, 168);
+
+		m_trailSpriteTest = Nz::Sprite::New();
+		m_trailSpriteTest->SetMaterial(Nz::Material::New("Translucent2D"));
+		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_LeftBottom, trailColor * Nz::Color(128, 128, 128, 0));
+		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_LeftTop, trailColor * Nz::Color(128, 128, 128, 0));
+		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightTop, trailColor);
+		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
+		m_trailSpriteTest->SetSize(64.f, 2.f);
+
 		auto& layerData = matchData.layers.front();
 
-		constexpr Nz::UInt8 playerCount = 2;
+		constexpr Nz::UInt8 playerCount = 1;
 
 		m_inputPacket.inputs.resize(playerCount);
 		for (auto& input : m_inputPacket.inputs)
@@ -296,13 +309,14 @@ namespace bw
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
 
-		const ServerEntity* parent = nullptr;
+		/*const*/ ServerEntity* parent = nullptr;
 		if (parentId)
 		{
 			auto it = m_serverEntityIdToClient.find(parentId.value());
 			assert(it != m_serverEntityIdToClient.end());
 
-			parent = &it->second;
+			//parent = &it->second;
+			parent = &it.value();
 		}
 
 		Ndk::EntityHandle entity;
@@ -322,6 +336,8 @@ namespace bw
 			if (std::size_t weaponIndex = m_weaponStore->GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
 			{
 				assert(parent);
+
+				parent->weaponEntityId = serverId; //< TEMPORARY
 
 				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, properties, parent->entity);
 				if (!entity)
@@ -343,6 +359,11 @@ namespace bw
 			serverEntity.entity = entity;
 			serverEntity.isPhysical = isPhysical;
 			serverEntity.maxHealth = maxHealth;
+			serverEntity.serverEntityId = serverId;
+
+			entity->AddComponent<LocalMatchComponent>(shared_from_this());
+			//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
+			//DebugEntityId(serverEntity);
 
 			if (currentHealth != maxHealth && maxHealth != 0)
 				CreateHealthBar(serverEntity, currentHealth);
@@ -359,7 +380,6 @@ namespace bw
 		healthData.currentHealth = currentHealth;
 
 		auto& gfxComponent = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
-		auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
 
 		const Nz::Boxf& aabb = gfxComponent.GetAABB();
 
@@ -390,6 +410,20 @@ namespace bw
 		healthBarGfx.Attach(lostHealthBar, 1);
 
 		healthData.healthBarEntity->AddComponent<Ndk::NodeComponent>();
+	}
+
+	void LocalMatch::DebugEntityId(ServerEntity& serverEntity)
+	{
+		auto& gfxComponent = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
+		auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+
+		const Nz::Boxf& aabb = gfxComponent.GetAABB();
+		Nz::Vector3f offset = nodeComponent.GetPosition() - aabb.GetCenter();
+
+		Nz::TextSpriteRef text = Nz::TextSprite::New(Nz::SimpleTextDrawer::Draw("S: " + std::to_string(serverEntity.serverEntityId) + ", C: " + std::to_string(serverEntity.entity->GetId()), 36));
+		Nz::Boxf volume = text->GetBoundingVolume().obb.localBox;
+
+		gfxComponent.Attach(text, Nz::Matrix4f::Translate(Nz::Vector3f(aabb.width / 2.f - volume.width / 2.f, aabb.height / 2 - 5 - volume.height / 2.f, 0.f)));
 	}
 
 	void LocalMatch::DeleteEntity(Nz::UInt32 serverId)
@@ -516,5 +550,23 @@ namespace bw
 			return;
 
 		serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(inputs);
+
+		// TEMPORARY
+		if (serverEntity.weaponEntityId != 0xFFFFFFFF)
+		{
+			auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
+			if (weaponIt == m_serverEntityIdToClient.end())
+				return;
+
+			ServerEntity& weaponEntity = weaponIt.value();
+			if (!weaponEntity.entity)
+				return;
+
+			if (inputs.isAttacking)
+			{
+				auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
+				weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+			}
+		}
 	}
 }
