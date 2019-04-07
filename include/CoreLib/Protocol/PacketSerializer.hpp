@@ -42,4 +42,4 @@ namespace bw
 
 #include <CoreLib/Protocol/PacketSerializer.inl>
 
-#endif // EREWHON_SHARED_NETWORK_PACKETSERIALIZER_HPP
+#endif

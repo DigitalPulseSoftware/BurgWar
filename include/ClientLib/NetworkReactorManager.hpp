@@ -24,7 +24,7 @@ namespace bw
 			inline std::size_t AddReactor(std::unique_ptr<NetworkReactor> reactor);
 			inline void ClearReactors();
 
-			std::shared_ptr<NetworkSessionBridge> ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
+			std::shared_ptr<NetworkSessionBridge> ConnectToServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data);
 
 			inline const std::unique_ptr<NetworkReactor>& GetReactor(std::size_t reactorId);
 			inline std::size_t GetReactorCount() const;

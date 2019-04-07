@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	std::shared_ptr<NetworkSessionBridge> NetworkReactorManager::ConnectNewServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
+	std::shared_ptr<NetworkSessionBridge> NetworkReactorManager::ConnectToServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
 	{
 		constexpr std::size_t MaxPeerCount = 1;
 

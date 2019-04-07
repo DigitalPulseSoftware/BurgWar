@@ -6,8 +6,6 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
-#include <ClientLib/LocalCommandStore.hpp>
-#include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
@@ -27,7 +25,7 @@ namespace bw
 
 		m_onDisconnectedSlot.Connect(m_bridge->OnDisconnected, [this](Nz::UInt32 /*data*/)
 		{
-			OnDisconnected();
+			OnSessionDisconnected();
 		});
 
 		m_onIncomingPacketSlot.Connect(m_bridge->OnIncomingPacket, [this](Nz::NetPacket& packet)
@@ -39,11 +37,11 @@ namespace bw
 		{
 			m_onConnectedSlot.Connect(m_bridge->OnConnected, [this](Nz::UInt32 /*data*/)
 			{
-				OnConnected();
+				OnSessionConnected();
 			});
 		}
 		else
-			OnConnected();
+			OnSessionConnected();
 
 		return true;
 	}
@@ -53,7 +51,7 @@ namespace bw
 		if (m_bridge)
 		{
 			m_bridge->Disconnect();
-			OnDisconnected();
+			OnSessionDisconnected();
 		}
 	}
 
@@ -252,18 +250,21 @@ namespace bw
 		m_localMatch->PlayAnimation(packet.entityId, packet.animId);
 	}
 
-	void ClientSession::OnConnected()
+	void ClientSession::OnSessionConnected()
 	{
 		std::cout << "Connected" << std::endl;
 
+		OnConnected(this);
+
 		Packets::Auth auth;
-		auth.playerCount = 2;
+		auth.playerCount = 1;
 
 		SendPacket(auth);
 	}
 
-	void ClientSession::OnDisconnected()
+	void ClientSession::OnSessionDisconnected()
 	{
 		m_bridge.reset();
+		OnDisconnected(this);
 	}
 }

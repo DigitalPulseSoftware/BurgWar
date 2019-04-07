@@ -271,4 +271,4 @@ namespace bw
 
 #include <CoreLib/Protocol/Packets.inl>
 
-#endif // EREWHON_SHARED_NETWORK_PACKETS_HPP
+#endif

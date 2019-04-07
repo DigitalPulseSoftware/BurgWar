@@ -12,6 +12,7 @@
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <NDK/Application.hpp>
+#include <NDK/StateMachine.hpp>
 #include <vector>
 
 namespace bw
@@ -20,6 +21,7 @@ namespace bw
 	class Match;
 	class NetworkReactor;
 	class NetworkSessionBridge;
+	struct StateData;
 
 	class ClientApp : public Ndk::Application, public BurgApp
 	{
@@ -27,14 +29,14 @@ namespace bw
 			ClientApp(int argc, char* argv[]);
 			~ClientApp();
 
+			inline NetworkReactorManager& GetReactorManager();
+
 			int Run();
 
 		private:
-			std::vector<std::shared_ptr<LocalMatch>> m_localMatches;
-			std::unique_ptr<Match> m_match;
-			std::unique_ptr<ClientSession> m_clientSession;
+			std::shared_ptr<StateData> m_stateData;
+			Ndk::StateMachine m_stateMachine;
 			Nz::RenderWindow& m_mainWindow;
-			LocalCommandStore m_commandStore;
 			NetworkReactorManager m_networkReactors;
 	};
 }

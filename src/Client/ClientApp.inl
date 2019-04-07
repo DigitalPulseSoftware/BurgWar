@@ -6,4 +6,8 @@
 
 namespace bw
 {
+	inline NetworkReactorManager& ClientApp::GetReactorManager()
+	{
+		return m_networkReactors;
+	}
 }

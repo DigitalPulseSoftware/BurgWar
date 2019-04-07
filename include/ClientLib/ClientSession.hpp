@@ -7,9 +7,10 @@
 #ifndef BURGWAR_CLIENTLIB_CLIENTSESSION_HPP
 #define BURGWAR_CLIENTLIB_CLIENTSESSION_HPP
 
-#include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
+#include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <ClientLib/ClientScriptDownloadManager.hpp>
+#include <ClientLib/LocalCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <memory>
@@ -18,7 +19,6 @@
 namespace bw
 {
 	class BurgApp;
-	class LocalCommandStore;
 	class LocalMatch;
 	class NetworkReactorManager;
 	class VirtualDirectory;
@@ -31,7 +31,7 @@ namespace bw
 			struct ConnectionInfo;
 			using MatchFactory = std::function<std::shared_ptr<LocalMatch>(ClientSession& session, const Packets::MatchData& matchData)>;
 
-			inline ClientSession(BurgApp& app, const LocalCommandStore& commandStore, MatchFactory matchFactory);
+			inline ClientSession(BurgApp& app, MatchFactory matchFactory);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
@@ -55,7 +55,9 @@ namespace bw
 			ClientSession& operator=(const ClientSession&) = delete;
 			ClientSession& operator=(ClientSession&&) = delete;
 
+			NazaraSignal(OnConnected, ClientSession* /*server*/);
 			NazaraSignal(OnConnectionInfoUpdate, ClientSession* /*server*/, const ConnectionInfo& /*info*/);
+			NazaraSignal(OnDisconnected, ClientSession* /*server*/);
 
 			struct ConnectionInfo
 			{
@@ -82,8 +84,8 @@ namespace bw
 			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
 			void HandleIncomingPacket(const Packets::PlayAnimation& packet);
 
-			void OnConnected();
-			void OnDisconnected();
+			void OnSessionConnected();
+			void OnSessionDisconnected();
 			
 			NazaraSlot(SessionBridge, OnConnected, m_onConnectedSlot);
 			NazaraSlot(SessionBridge, OnDisconnected, m_onDisconnectedSlot);
@@ -94,7 +96,7 @@ namespace bw
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			BurgApp& m_application;
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
-			const LocalCommandStore& m_commandStore;
+			LocalCommandStore m_commandStore;
 			MatchFactory m_matchFactory;
 			NetworkStringStore m_stringStore;
 			ConnectionInfo m_connectionInfo;
