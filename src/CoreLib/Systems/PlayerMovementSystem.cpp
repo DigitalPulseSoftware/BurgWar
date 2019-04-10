@@ -113,11 +113,11 @@ namespace bw
 
 			bool isFacingRight = playerMovementComponent.IsFacingRight();
 
-			if (inputs.isMovingLeft)
+			/*if (inputs.isMovingLeft)
 				isFacingRight = false;
 			else if (inputs.isMovingRight)
 				isFacingRight = true;
-			else if (inputs.aimDirection.x > 0.f)
+			else */if (inputs.aimDirection.x > 0.f)
 				isFacingRight = true;
 			else if (inputs.aimDirection.x < 0.f)
 				isFacingRight = false;
