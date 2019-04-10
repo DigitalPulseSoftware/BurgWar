@@ -14,7 +14,10 @@ namespace bw
 	{
 		void Serialize(PacketSerializer& serializer, Auth& data)
 		{
-			serializer &= data.playerCount;
+			serializer.SerializeArraySize(data.players);
+
+			for (auto& player : data.players)
+				serializer &= player.nickname;
 		}
 
 		void Serialize(PacketSerializer& serializer, AuthFailure& data)
@@ -51,6 +54,7 @@ namespace bw
 				bool hasParent;
 				bool hasMovementData;
 				bool hasPhysicsProps;
+				bool hasName;
 
 				if (serializer.IsWriting())
 				{
@@ -59,6 +63,7 @@ namespace bw
 					hasParent = entity.parentId.has_value();
 					hasMovementData = entity.playerMovement.has_value();
 					hasPhysicsProps = entity.physicsProperties.has_value();
+					hasName = entity.name.has_value();
 				}
 
 				serializer &= hasHealth;
@@ -66,6 +71,7 @@ namespace bw
 				serializer &= hasParent;
 				serializer &= hasMovementData;
 				serializer &= hasPhysicsProps;
+				serializer &= hasName;
 
 				if (!serializer.IsWriting())
 				{
@@ -83,6 +89,9 @@ namespace bw
 
 					if (hasPhysicsProps)
 						entity.physicsProperties.emplace();
+
+					if (hasName)
+						entity.name.emplace();
 				}
 			}
 
@@ -102,6 +111,9 @@ namespace bw
 
 				if (entity.inputs)
 					Serialize(serializer, entity.inputs.value());
+
+				if (entity.name)
+					serializer &= entity.name.value();
 
 				if (entity.parentId)
 					serializer &= entity.parentId.value();

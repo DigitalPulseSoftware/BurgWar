@@ -16,6 +16,7 @@ namespace bw
 {
 	struct ScriptedWeapon : ScriptedElement
 	{
+		Nz::UInt32 cooldown;
 		Nz::Vector2f spriteOrigin;
 		Nz::Vector2f weaponOrigin;
 		Nz::Vector2f weaponOffset;

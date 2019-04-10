@@ -11,6 +11,7 @@
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
@@ -280,6 +281,19 @@ namespace bw
 				auto& healthBarNode = healthData.healthBarEntity->GetComponent<Ndk::NodeComponent>();
 				healthBarNode.SetPosition(aabb.GetCenter() - Nz::Vector3f(0.f, aabb.height / 2.f + 3.f, 0.f));
 			}
+
+			if (serverEntity.name)
+			{
+				auto& nameData = serverEntity.name.value();
+
+				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				auto& entityGfx = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
+
+				const Nz::Boxf& aabb = entityGfx.GetAABB();
+
+				auto& nameNode = nameData.nameEntity->GetComponent<Ndk::NodeComponent>();
+				nameNode.SetPosition(aabb.GetCenter() - Nz::Vector3f(0.f, aabb.height / 2.f + 15, 0.f));
+			}
 		}
 
 		constexpr float MaxInputSendInterval = 1.f / 60.f;
@@ -307,7 +321,7 @@ namespace bw
 		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 
-	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties)
+	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties, const std::string& name)
 	{
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
@@ -371,6 +385,9 @@ namespace bw
 			if (currentHealth != maxHealth && maxHealth != 0)
 				CreateHealthBar(serverEntity, currentHealth);
 
+			if (!name.empty())
+				CreateName(serverEntity, name);
+
 			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
 		}
 
@@ -413,6 +430,30 @@ namespace bw
 		healthBarGfx.Attach(lostHealthBar, 1);
 
 		healthData.healthBarEntity->AddComponent<Ndk::NodeComponent>();
+	}
+
+	void LocalMatch::CreateName(ServerEntity& serverEntity, const std::string& name)
+	{
+		auto& nameData = serverEntity.name.emplace();
+		
+		Nz::TextSpriteRef nameSprite = Nz::TextSprite::New();
+		nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular));
+
+		Nz::Boxf spriteBox = nameSprite->GetBoundingVolume().obb.localBox;
+
+		constexpr float backgroundPadding = 10.f;
+
+		Nz::SpriteRef backgroundSprite = Nz::Sprite::New();
+		backgroundSprite->SetMaterial(Nz::Material::New("Translucent2D"));
+		backgroundSprite->SetColor(Nz::Color(0, 0, 0, 64));
+		backgroundSprite->SetSize(spriteBox.width + backgroundPadding, spriteBox.height);
+
+		nameData.nameEntity = m_world.CreateEntity();
+		nameData.nameEntity->AddComponent<Ndk::NodeComponent>();
+	
+		auto& gfxComponent = nameData.nameEntity->AddComponent<Ndk::GraphicsComponent>();
+		gfxComponent.Attach(nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-spriteBox.width / 2.f, -spriteBox.height)), 4);
+		gfxComponent.Attach(backgroundSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-(spriteBox.width + backgroundPadding) / 2.f, -spriteBox.height)), 3);
 	}
 
 	void LocalMatch::DebugEntityId(ServerEntity& serverEntity)
@@ -508,7 +549,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			InputData input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
-			if (controllerData.lastInputData != input)
+			if (true/*controllerData.lastInputData != input*/)
 			{
 				hasInputData = true;
 				controllerData.lastInputData = input;
@@ -567,8 +608,12 @@ namespace bw
 
 			if (inputs.isAttacking)
 			{
-				auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
-				weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+				auto& weaponCooldown = weaponEntity.entity->GetComponent<CooldownComponent>();
+				if (weaponCooldown.Trigger(m_application.GetAppTime()))
+				{
+					auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
+					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+				}
 			}
 		}
 	}

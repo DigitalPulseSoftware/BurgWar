@@ -16,7 +16,7 @@
 
 namespace bw
 {
-	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote) :
+	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName) :
 	AbstractState(std::move(stateData))
 	{
 		ClientApp* app = GetStateData().app;
@@ -35,7 +35,7 @@ namespace bw
 			return gameState->GetMatch();
 		};
 
-		m_clientSession = std::make_shared<ClientSession>(*app, CreateMatch);
+		m_clientSession = std::make_shared<ClientSession>(*app, CreateMatch, std::move(playerName));
 
 		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this] (ClientSession*)
 		{

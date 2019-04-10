@@ -160,7 +160,11 @@ namespace bw
 				}, property.value);
 			}
 
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth, properties);
+			std::string name;
+			if (entityData.name.has_value())
+				name = entityData.name.value();
+
+			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth, properties, name);
 		}
 	}
 
@@ -257,7 +261,8 @@ namespace bw
 		OnConnected(this);
 
 		Packets::Auth auth;
-		auth.playerCount = 1;
+		auto& playerData = auth.players.emplace_back();
+		playerData.nickname = m_playerName;
 
 		SendPacket(auth);
 	}

@@ -11,6 +11,9 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
+#include <CoreLib/Terrain.hpp>
+#include <CoreLib/TerrainLayer.hpp>
+#include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
@@ -35,8 +38,14 @@ namespace bw
 			m_match->Leave(this);
 	}
 
-	const Ndk::EntityHandle& Player::CreateEntity(Ndk::World& world)
+	void Player::Spawn()
 	{
+		if (!m_match)
+			return;
+
+		Terrain& terrain = m_match->GetTerrain();
+		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld();
+
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
@@ -44,7 +53,7 @@ namespace bw
 			static unsigned int huglyCount = 0;
 			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, { 200.f + (huglyCount++) * 100.f, 100.f }, 0.f, {});
 			if (!burger)
-				return Ndk::EntityHandle::InvalidHandle;
+				return;
 
 			burger->AddComponent<InputComponent>();
 			burger->AddComponent<PlayerControlledComponent>(CreateHandle());
@@ -58,12 +67,7 @@ namespace bw
 					if (!ply)
 						return;
 
-					/*ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", [&](Nz::LuaState& state)
-					{
-						state.PushLightUserdata(ply.GetObject());
-						state.Push(attacker);
-						return 2;
-					});*/
+					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", ply, attacker);
 				});
 			}
 
@@ -72,11 +76,12 @@ namespace bw
 			// Create weapon
 			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_rifle"); weaponIndex != ServerEntityStore::InvalidIndex)
 				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, burger);
-
-			return burger;
 		}
+	}
 
-		return Ndk::EntityHandle::InvalidHandle;
+	std::string Player::ToString() const
+	{
+		return "Player(" + m_name + ")";
 	}
 
 	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
@@ -105,8 +110,12 @@ namespace bw
 
 				if (inputData.isAttacking)
 				{
-					auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
-					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+					auto& weaponCooldown = m_playerWeapon->GetComponent<CooldownComponent>();
+					if (weaponCooldown.Trigger(m_match->GetApp().GetAppTime()))
+					{
+						auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
+						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+					}
 				}
 
 				Nz::RadianAnglef angle(std::atan2(inputData.aimDirection.y, inputData.aimDirection.x));

@@ -46,6 +46,7 @@ namespace bw
 
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 
+			inline BurgApp& GetApp();
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
 			inline sol::state& GetLuaState();
@@ -85,6 +86,7 @@ namespace bw
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
+			BurgApp& m_app;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
 	};

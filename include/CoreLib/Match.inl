@@ -7,6 +7,11 @@
 
 namespace bw
 {
+	inline BurgApp & Match::GetApp()
+	{
+		return m_app;
+	}
+
 	inline ServerEntityStore& Match::GetEntityStore()
 	{
 		return *m_entityStore;

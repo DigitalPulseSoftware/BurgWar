@@ -22,6 +22,8 @@ namespace bw
 			void RegisterLibrary(SharedScriptingContext& context) override;
 
 		private:
+			void RegisterPlayer(SharedScriptingContext& context);
+
 			Match& GetMatch();
 	};
 }

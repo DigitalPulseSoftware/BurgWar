@@ -58,7 +58,12 @@ namespace bw
 
 		DeclarePacket(Auth)
 		{
-			Nz::UInt8 playerCount;
+			struct Player
+			{
+				std::string nickname;
+			};
+
+			std::vector<Player> players;
 		};
 
 		DeclarePacket(AuthFailure)
@@ -127,6 +132,7 @@ namespace bw
 				CompressedUnsigned<Nz::UInt32> entityClass;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
+				std::optional<std::string> name;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
 				std::optional<InputData> inputs;

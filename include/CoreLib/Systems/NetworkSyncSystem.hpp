@@ -69,6 +69,7 @@ namespace bw
 				Ndk::EntityId entityId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
+				std::optional<std::string> name;
 				std::optional<Ndk::EntityId> parent;
 				std::optional<HealthProperties> healthProperties;
 				std::optional<InputData> inputs;

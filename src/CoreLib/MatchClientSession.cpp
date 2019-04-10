@@ -47,21 +47,21 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
 	{
-		std::cout << "[Server] Auth request for " << +packet.playerCount << " players" << std::endl;
+		std::size_t playerCount = packet.players.size();
 
-		if (packet.playerCount == 0 || packet.playerCount >= 8) //< For now, we don't have any spectator
+		std::cout << "[Server] Auth request for " << playerCount << " players" << std::endl;
+
+		if (playerCount == 0 || playerCount >= 8) //< For now, we don't have any spectator
 		{
 			SendPacket(Packets::AuthFailure());
 			Disconnect();
 			return;
 		}
 
-		assert(packet.playerCount != 0xFF);
-
 		std::vector<Player> players;
-		for (Nz::UInt8 i = 0; i < packet.playerCount; ++i)
+		for (std::size_t i = 0; i < packet.players.size(); ++i)
 		{
-			Player& player = players.emplace_back(*this, i, "Noname");
+			Player& player = players.emplace_back(*this, static_cast<Nz::UInt8>(i), packet.players[i].nickname);
 			if (!m_match.Join(&player))
 			{
 				SendPacket(Packets::AuthFailure());

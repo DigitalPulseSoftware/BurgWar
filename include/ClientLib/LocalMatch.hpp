@@ -52,9 +52,10 @@ namespace bw
 			struct ServerEntity;
 
 			void ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId);
-			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties);
+			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties, const std::string& name);
 
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
+			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
 			void DeleteEntity(Nz::UInt32 serverId);
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
@@ -69,6 +70,11 @@ namespace bw
 				Nz::UInt16 currentHealth;
 				Nz::SpriteRef healthSprite;
 				Ndk::EntityOwner healthBarEntity;
+			};
+
+			struct NameData
+			{
+				Ndk::EntityOwner nameEntity;
 			};
 
 			struct PlayerData
@@ -86,6 +92,7 @@ namespace bw
 			struct ServerEntity
 			{
 				std::optional<HealthData> health;
+				std::optional<NameData> name;
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();

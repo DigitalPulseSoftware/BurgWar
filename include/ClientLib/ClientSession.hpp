@@ -31,7 +31,7 @@ namespace bw
 			struct ConnectionInfo;
 			using MatchFactory = std::function<std::shared_ptr<LocalMatch>(ClientSession& session, const Packets::MatchData& matchData)>;
 
-			inline ClientSession(BurgApp& app, MatchFactory matchFactory);
+			inline ClientSession(BurgApp& app, MatchFactory matchFactory, std::string playerName);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
@@ -94,6 +94,7 @@ namespace bw
 			std::shared_ptr<LocalMatch> m_localMatch;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
+			std::string m_playerName;
 			BurgApp& m_application;
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
 			LocalCommandStore m_commandStore;

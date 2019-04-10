@@ -64,7 +64,7 @@ namespace bw
 		MatchClientSession* session = m_peerIdToSession[peerId];
 		assert(session);
 
-		std::cout << "Peer #" << peerId << " sent packet" << std::endl;
+		//std::cout << "Peer #" << peerId << " sent packet" << std::endl;
 		session->HandleIncomingPacket(packet);
 	}
 }

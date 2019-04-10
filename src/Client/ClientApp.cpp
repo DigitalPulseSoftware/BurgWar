@@ -70,12 +70,6 @@ namespace bw
 			m_networkReactors.Update();
 
 			m_stateMachine.Update(GetUpdateTime());
-
-			/*if (m_match)
-				m_match->Update(GetUpdateTime());
-
-			for (const auto& localMatchPtr : m_localMatches)
-				localMatchPtr->Update(GetUpdateTime());*/
 		}
 
 		return 0;

@@ -20,7 +20,7 @@ namespace bw
 	class ConnectionState final : public AbstractState
 	{
 		public:
-			ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote);
+			ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName);
 			~ConnectionState() = default;
 
 		private:

@@ -22,7 +22,8 @@ namespace bw
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_name(std::move(matchName))
+	m_name(std::move(matchName)),
+	m_app(app)
 	{
 		m_scriptingContext = std::make_shared<ServerScriptingContext>();
 		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
@@ -121,7 +122,8 @@ namespace bw
 		player->UpdateMatch(this);
 
 		player->UpdateLayer(0);
-		player->CreateEntity(m_terrain->GetLayer(0).GetWorld());
+
+		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
 
 		return true;
 	}

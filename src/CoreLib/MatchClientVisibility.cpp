@@ -70,6 +70,9 @@ namespace bw
 					entityData.health->maxHealth = eventData->healthProperties->maxHealth;
 				}
 
+				if (eventData->name.has_value())
+					entityData.name.emplace(eventData->name.value());
+
 				if (eventData->playerMovement.has_value())
 				{
 					entityData.playerMovement.emplace();

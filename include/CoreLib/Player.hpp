@@ -30,14 +30,17 @@ namespace bw
 			Player(Player&&) noexcept = default;
 			~Player();
 
-			const Ndk::EntityHandle& CreateEntity(Ndk::World& world);
-
 			inline std::size_t GetLayerIndex() const;
 			inline Match* GetMatch() const;
+			inline const std::string& GetName() const;
 
 			inline bool IsInMatch() const;
 
+			void Spawn();
+
 			template<typename T> void SendPacket(const T& packet);
+
+			std::string ToString() const;
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const InputData& inputData);

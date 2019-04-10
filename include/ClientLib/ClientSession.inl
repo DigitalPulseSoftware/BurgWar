@@ -7,7 +7,8 @@
 
 namespace bw
 {
-	inline ClientSession::ClientSession(BurgApp& application, MatchFactory matchFactory) :
+	inline ClientSession::ClientSession(BurgApp& application, MatchFactory matchFactory, std::string playerName) :
+	m_playerName(std::move(playerName)),
 	m_application(application),
 	m_matchFactory(std::move(matchFactory))
 	{

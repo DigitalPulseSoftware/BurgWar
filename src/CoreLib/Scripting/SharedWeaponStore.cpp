@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
@@ -63,14 +64,16 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
+		weapon.cooldown = static_cast<Nz::UInt32>(elementTable.get_or("Cooldown", 0.f) * 1000);
 		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
-		sol::table animations = elementTable["Animations"];
+		sol::object animations = elementTable["Animations"];
 		if (animations)
 		{
+			sol::table animationTable = animations;
 			std::vector<AnimationStore::AnimationData> animData;
 
-			for (const auto& kv : animations)
+			for (const auto& kv : animationTable)
 			{
 				sol::table animTable = kv.second;
 
@@ -87,6 +90,8 @@ namespace bw
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
 	{
+		entity->AddComponent<CooldownComponent>(weaponClass.cooldown);
+
 		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);

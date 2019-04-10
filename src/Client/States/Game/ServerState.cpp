@@ -10,9 +10,10 @@
 
 namespace bw
 {
-	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort) :
+	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, std::string name) :
 	AbstractState(std::move(stateDataPtr)),
-	m_match(*GetStateData().app, "unnamed match", "test", 64)
+	m_match(*GetStateData().app, "unnamed match", "test", 64),
+	m_name(std::move(name))
 	{
 		MatchSessions& sessions = m_match.GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();
@@ -24,7 +25,7 @@ namespace bw
 
 	void ServerState::Enter(Ndk::StateMachine& fsm)
 	{
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager));
+		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager, std::move(m_name)));
 	}
 
 	bool ServerState::Update(Ndk::StateMachine& /*fsm*/, float elapsedTime)

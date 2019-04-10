@@ -4,7 +4,6 @@ WEAPON.Scale = 0.6
 WEAPON.Sprite = "../resources/emmentalibur.png"
 WEAPON.SpriteOrigin = Vec2(40, 284) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
-WEAPON.Cooldown = 0.3
 WEAPON.Animations = {
 	{"attack", 0.3}
 }

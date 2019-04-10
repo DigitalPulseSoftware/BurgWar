@@ -19,7 +19,7 @@ namespace bw
 	class ServerState final : public AbstractState
 	{
 		public:
-			ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort);
+			ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, std::string name);
 			~ServerState() = default;
 
 			inline Match& GetMatch();
@@ -32,6 +32,7 @@ namespace bw
 			Match m_match;
 			LocalSessionManager* m_localSessionManager;
 			NetworkSessionManager* m_networkSessionManager;
+			std::string m_name;
 	};
 }
 

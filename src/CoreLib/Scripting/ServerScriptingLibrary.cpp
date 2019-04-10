@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Match.hpp>
+#include <CoreLib/Player.hpp>
 #include <iostream>
 
 namespace bw
@@ -27,6 +28,30 @@ namespace bw
 		});
 
 		context.Load("../../scripts/autorun");
+		RegisterPlayer(context);
+
+	}
+
+	void ServerScriptingLibrary::RegisterPlayer(SharedScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<PlayerHandle>("Player", 
+			"new", sol::no_constructor,
+			"GetName", [](const PlayerHandle& player) -> std::string
+			{
+				if (!player)
+					return "<Disconnected>";
+
+				return player->GetName();
+			},
+			"Spawn", [](const PlayerHandle& player)
+			{
+				if (!player)
+					return;
+
+				return player->Spawn();
+			}
+		);
 	}
 
 	Match& ServerScriptingLibrary::GetMatch()

@@ -16,6 +16,11 @@ namespace bw
 		return m_match;
 	}
 
+	inline const std::string& Player::GetName() const
+	{
+		return m_name;
+	}
+
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;
