@@ -416,14 +416,14 @@ namespace bw
 				entity.position = entityInfo.at("position");
 				entity.rotation = Nz::DegreeAnglef(float(entityInfo.at("rotation")));
 
-				for (auto&&[propertyName, propertyData] : entityInfo["properties"].items())
+				for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
 				{
 					bool isArray = propertyData.value<bool>("isArray", false);
 					PropertyInternalType propertyType = ParsePropertyInternalType(propertyData.at("type"));
 					auto&& value = propertyData.at("value");
 
 					// Waiting for template lambda in C++20
-					auto Unserialize = [&](auto dummyType)
+					auto Unserialize = [&, propertyName = propertyName](auto dummyType)
 					{
 						using T = std::decay_t<decltype(dummyType)>;
 
