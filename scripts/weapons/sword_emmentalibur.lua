@@ -1,7 +1,7 @@
 RegisterClientScript("sword_emmentalibur.lua")
 
 WEAPON.Scale = 0.6
-WEAPON.Sprite = "../resources/emmentalibur.png"
+WEAPON.Sprite = "resources/emmentalibur.png"
 WEAPON.SpriteOrigin = Vec2(40, 284) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
 WEAPON.Animations = {

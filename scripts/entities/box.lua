@@ -17,6 +17,6 @@ function ENTITY:Initialize()
 	self:InitRigidBody(size * 50, 10)
 
 	if (CLIENT) then
-		self:AddSprite("../resources/box.png", Vec2(0.2 * size, 0.2))
+		self:AddSprite("resources/box.png", Vec2(0.2 * size, 0.2))
 	end
 end

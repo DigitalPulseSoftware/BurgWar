@@ -23,7 +23,7 @@ namespace bw
 	m_tilemapData(std::move(tilemapData)),
 	m_clearMode(false)
 	{
-		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("../resources/eraser.png");
+		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("resources/eraser.png");
 		if (eraserImage)
 		{
 			m_eraserCursor = Nz::Cursor::New();
@@ -56,7 +56,7 @@ namespace bw
 		}
 
 		Nz::MaterialRef selectionMaterial = Nz::Material::New("Translucent2D");
-		selectionMaterial->SetDiffuseMap("../resources/tile_selection.png");
+		selectionMaterial->SetDiffuseMap("resources/tile_selection.png");
 
 		m_hoveringTileSprite = Nz::Sprite::New();
 		m_hoveringTileSprite->SetMaterial(selectionMaterial);

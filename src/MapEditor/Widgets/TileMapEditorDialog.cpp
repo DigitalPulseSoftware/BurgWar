@@ -26,7 +26,7 @@ namespace bw
 		m_tileSelectionCanvas = new ScrollCanvas;
 
 		Nz::SpriteRef tiles = Nz::Sprite::New();
-		tiles->SetTexture("../resources/terrain_atlas.png");
+		tiles->SetTexture("resources/terrain_atlas.png");
 
 		const Ndk::EntityHandle& atlasEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
 		atlasEntity->AddComponent<Ndk::NodeComponent>();
@@ -38,7 +38,7 @@ namespace bw
 		m_tilemapCanvas->SetContentSize({ maxWidth, maxHeight });
 
 		Nz::MaterialRef tileMapMat = Nz::Material::New("Translucent2D");
-		tileMapMat->SetDiffuseMap("../resources/dirt.png");
+		tileMapMat->SetDiffuseMap("resources/dirt.png");
 
 		m_tileMap = Nz::TileMap::New(mapSize, tileSize);
 		m_tileMap->SetMaterial(0, tileMapMat);

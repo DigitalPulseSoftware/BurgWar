@@ -19,7 +19,7 @@ namespace bw
 	{
 		Nz::MaterialRef arrowMat = Nz::Material::New("Translucent2D");
 		arrowMat->EnableDepthBuffer(false);
-		arrowMat->SetDiffuseMap("../resources/arrow.png");
+		arrowMat->SetDiffuseMap("resources/arrow.png");
 
 		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red;
 		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue;

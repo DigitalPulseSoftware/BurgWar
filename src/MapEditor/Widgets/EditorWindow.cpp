@@ -27,7 +27,7 @@ namespace bw
 {
 	EditorWindow::EditorWindow()
 	{
-		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>("../../scripts");
+		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>("scripts");
 
 		m_scriptingContext = std::make_shared<ClientScriptingContext>(virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
@@ -107,18 +107,18 @@ namespace bw
 		addDockWidget(Qt::RightDockWidgetArea, entityListDock);
 
 		QToolBar* toolBar = new QToolBar;
-		QAction* createMap = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/file-48.png")), tr("Create map..."));
+		QAction* createMap = toolBar->addAction(QIcon(QPixmap("resources/gui/icons/file-48.png")), tr("Create map..."));
 		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
 
-		QAction* openMap = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/opened_folder-48.png")), tr("Open map..."));
+		QAction* openMap = toolBar->addAction(QIcon(QPixmap("resources/gui/icons/opened_folder-48.png")), tr("Open map..."));
 		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
-		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/icons8-save-48.png")), tr("Save map..."));
+		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap("resources/gui/icons/icons8-save-48.png")), tr("Save map..."));
 		connect(m_saveMapToolbar, &QAction::triggered, this, &EditorWindow::OnSaveMap);
 
 		toolBar->addSeparator();
 
-		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap("../resources/gui/icons/idea-48.png")), tr("Create entity"));
+		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap("resources/gui/icons/idea-48.png")), tr("Create entity"));
 		connect(m_createEntityActionToolbar, &QAction::triggered, this, &EditorWindow::OnCreateEntity);
 
 		QDockWidget* toolbarDock = new QDockWidget("Toolbar", this);
@@ -1266,7 +1266,7 @@ namespace bw
 			auto& tileData = tiles.emplace_back();
 
 			tileData.material = Nz::Material::New("Translucent2D");
-			tileData.material->SetDiffuseMap("../resources/tiles/" + std::to_string(i) + ".png");
+			tileData.material->SetDiffuseMap("resources/tiles/" + std::to_string(i) + ".png");
 
 			tileData.texCoords = Nz::Rectf(0.f, 0.f, 1.f, 1.f);
 		}

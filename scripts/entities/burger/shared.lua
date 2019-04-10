@@ -1,6 +1,6 @@
 print(ENTITY.Name)
 ENTITY.IsNetworked = true
-ENTITY.Sprite = "../resources/burger.png"
+ENTITY.Sprite = "resources/burger.png"
 ENTITY.Scale = 0.33
 ENTITY.CollisionType = 1 -- Player
 ENTITY.PlayerControlled = true
