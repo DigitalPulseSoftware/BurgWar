@@ -6,6 +6,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <NDK/World.hpp>
 #include <cassert>
 #include <filesystem>
 
