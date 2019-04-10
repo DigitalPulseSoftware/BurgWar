@@ -41,6 +41,7 @@ namespace bw
 		m_serverAddressArea->Resize({ 250.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
 		m_serverAddressArea->SetTextColor(Nz::Color::Black);
+		m_serverAddressArea->SetText("malcolm.digitalpulsesoftware.net");
 
 		m_serverPortArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
 		m_serverPortArea->EnableBackground(true);
@@ -48,6 +49,7 @@ namespace bw
 		m_serverPortArea->Resize({ 50.f, 36.f });
 		m_serverPortArea->SetMaximumWidth(100.f);
 		m_serverPortArea->SetTextColor(Nz::Color::Black);
+		m_serverPortArea->SetText("14768");
 		m_serverPortArea->SetCharacterFilter([](Nz::UInt32 character) 
 		{
 			if (character < U'0' || character > U'9')
@@ -67,6 +69,7 @@ namespace bw
 		m_loginArea->SetBackgroundColor(Nz::Color::White);
 		m_loginArea->Resize({ 200.f, 36.f });
 		m_loginArea->SetTextColor(Nz::Color::Black);
+		m_loginArea->SetText("mingebag");
 
 		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
@@ -147,7 +150,7 @@ namespace bw
 			return;
 		}
 
-		m_nextState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address);
+		m_nextState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address, login.ToStdString());
 	}
 
 	void LoginState::OnStartServerPressed()
@@ -179,7 +182,7 @@ namespace bw
 			return;
 		}
 
-		m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort));
+		m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), login.ToStdString());
 	}
 
 	void LoginState::OnQuitPressed()
