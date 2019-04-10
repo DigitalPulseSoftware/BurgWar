@@ -28,10 +28,10 @@ namespace bw
 		m_scriptingContext = std::make_shared<ServerScriptingContext>();
 		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
 
-		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "../../scripts" / m_gamemodePath);
+		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "scripts" / m_gamemodePath);
 
 		m_entityStore.emplace(m_scriptingContext);
-		m_entityStore->Load("../../scripts/entities");
+		m_entityStore->Load("scripts/entities");
 
 		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
 		{
@@ -48,7 +48,7 @@ namespace bw
 		});
 
 		m_weaponStore.emplace(app, m_scriptingContext);
-		m_weaponStore->Load("../../scripts/weapons");
+		m_weaponStore->Load("scripts/weapons");
 
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
 		{
@@ -130,7 +130,7 @@ namespace bw
 
 	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
 	{
-		std::filesystem::path scriptPath = "../../scripts";
+		std::filesystem::path scriptPath = "scripts";
 		std::string relativePath = std::filesystem::relative(clientScript, scriptPath).generic_u8string();
 
 		if (m_clientScripts.find(relativePath) != m_clientScripts.end())

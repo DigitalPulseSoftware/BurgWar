@@ -27,9 +27,9 @@ namespace bw
 			GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);
 		});
 
-		context.Load("../../scripts/autorun");
 		RegisterPlayer(context);
 
+		context.Load("scripts/autorun");
 	}
 
 	void ServerScriptingLibrary::RegisterPlayer(SharedScriptingContext& context)
