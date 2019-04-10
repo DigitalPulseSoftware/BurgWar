@@ -555,7 +555,7 @@ namespace bw
 				{
 					using T = std::decay_t<decltype(propertyValue)>;
 					constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-					using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+					using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
 					// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
 					assert(IsArray);

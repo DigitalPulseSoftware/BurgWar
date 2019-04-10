@@ -92,7 +92,7 @@ namespace bw
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
 						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
 						if constexpr (std::is_same_v<PropertyType, bool> ||
 						              std::is_same_v<PropertyType, float> ||
@@ -188,7 +188,7 @@ namespace bw
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
 						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
 						auto Serialize = [&](const auto& value)
 						{
