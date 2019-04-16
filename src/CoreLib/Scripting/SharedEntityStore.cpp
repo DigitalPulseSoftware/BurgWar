@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/SharedEntityStore.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
@@ -24,6 +25,32 @@ namespace bw
 
 	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
+		elementTable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			if (!entity->HasComponent<HealthComponent>())
+				return 0;
+
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+			return entityHealth.GetHealth();
+		};
+
+		elementTable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			if (!entity->HasComponent<HealthComponent>())
+				return;
+
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+			entityHealth.Damage(damage, Ndk::EntityHandle::InvalidHandle);
+		};
+
 		elementTable["GetPosition"] = [](const sol::table& table)
 		{
 			const Ndk::EntityHandle& entity = table["Entity"];

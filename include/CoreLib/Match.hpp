@@ -42,6 +42,8 @@ namespace bw
 
 			Packets::ClientScriptList BuildClientFileListPacket() const;
 
+			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+
 			void Leave(Player* player);
 
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);

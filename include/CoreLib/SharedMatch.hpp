@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
 #include <CoreLib/TimerManager.hpp>
+#include <NDK/Entity.hpp>
 
 namespace bw
 {
@@ -18,6 +19,8 @@ namespace bw
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
+
+			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
 
 			inline TimerManager& GetTimerManager();
 

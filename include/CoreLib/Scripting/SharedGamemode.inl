@@ -8,20 +8,24 @@
 namespace bw
 {
 	template<typename... Args>
-	void SharedGamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	sol::object SharedGamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
 	{
 		sol::protected_function callback = m_gamemodeTable[callbackName];
 		if (callback)
 		{
-			auto result = callback(m_gamemodeTable, std::forward<Args>(args)...);
+			auto co = m_context->CreateCoroutine(callback);
+
+			auto result = co(m_gamemodeTable, std::forward<Args>(args)...);
 			if (!result.valid())
 			{
 				sol::error err = result;
 				std::cerr << callbackName << " gamemode callback failed: " << err.what() << std::endl;
 			}
-
-			//TODO: Handle return
+			
+			return result;
 		}
+		else
+			return sol::nil;
 	}
 
 	inline const std::filesystem::path& SharedGamemode::GetGamemodePath() const

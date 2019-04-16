@@ -10,6 +10,12 @@ function GM:OnPlayerJoin(player)
 end
 
 function GM:OnTick()
+	for _, burger in pairs(GetEntitiesByClass("entity_burger")) do
+		local pos = burger:GetPosition()
+		if (pos.y > 2000) then
+			burger:Damage(burger:GetHealth())
+		end
+	end
 end
 
 function GM:OnInit()
@@ -20,4 +26,11 @@ function GM:OnInit()
 			size = math.random(10, 20) / 10.0
 		})
 	end
+end
+
+function GM:ChoosePlayerSpawnPosition()
+	local spawnpoints = GetEntitiesByClass("entity_spawnpoint")
+	local spawnpointIndex = math.random(1, #spawnpoints)
+
+	return spawnpoints[spawnpointIndex]:GetPosition()
 end

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <iostream>
@@ -42,6 +43,25 @@ namespace bw
 					std::cerr << "engine_SetTimer callback failed: " << err.what() << std::endl;
 				}
 			});
+		};
+
+		luaState["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass)
+		{
+			sol::state_view state(s);
+			sol::table result = state.create_table();
+
+			std::size_t index = 1;
+			m_match.ForEachEntity([&](const Ndk::EntityHandle& entity)
+			{
+				if (!entity->HasComponent<ScriptComponent>())
+					return;
+
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				if (entityScript.GetElement()->fullName == entityClass)
+					result[index++] = entityScript.GetTable();
+			});
+
+			return result;
 		};
 	}
 }

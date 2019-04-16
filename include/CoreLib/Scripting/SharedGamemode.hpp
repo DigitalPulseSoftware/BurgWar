@@ -20,7 +20,7 @@ namespace bw
 			~SharedGamemode() = default;
 
 			template<typename... Args>
-			void ExecuteCallback(const std::string& callbackName, Args&&... args);
+			sol::object ExecuteCallback(const std::string& callbackName, Args&&... args);
 
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 

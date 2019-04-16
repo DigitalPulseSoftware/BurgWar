@@ -39,6 +39,8 @@ namespace bw
 			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
 			~LocalMatch() = default;
 
+			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+
 			inline AnimationManager& GetAnimationManager();
 			inline BurgApp& GetApplication();
 			inline const Ndk::EntityHandle& GetCamera();

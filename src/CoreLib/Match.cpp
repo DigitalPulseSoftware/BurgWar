@@ -98,6 +98,17 @@ namespace bw
 		return clientScript;
 	}
 
+	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	{
+		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
+		{
+			auto& layer = m_terrain->GetLayer(i);
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
+				func(entity);
+
+		}
+	}
+
 	void Match::Leave(Player* player)
 	{
 		assert(player->GetMatch() == this);

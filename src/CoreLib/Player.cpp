@@ -50,8 +50,8 @@ namespace bw
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			static unsigned int huglyCount = 0;
-			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, { 200.f + (huglyCount++) * 100.f, 100.f }, 0.f, {});
+			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
+			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, spawnPosition, 0.f, {});
 			if (!burger)
 				return;
 
@@ -67,7 +67,7 @@ namespace bw
 					if (!ply)
 						return;
 
-					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", ply, attacker);
+					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", ply->CreateHandle(), attacker);
 				});
 			}
 
