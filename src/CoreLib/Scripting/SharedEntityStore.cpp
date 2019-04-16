@@ -59,11 +59,19 @@ namespace bw
 		elementTable["IsPlayerOnGround"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
 
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");
 
 			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
+		};
+
+		elementTable["IsValid"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			return entity.IsValid();
 		};
 
 		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
