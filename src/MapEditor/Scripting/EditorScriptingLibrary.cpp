@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	void EditorScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)
+	void EditorScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 		state["CLIENT"] = true;
@@ -32,7 +32,7 @@ namespace bw
 		BindTileMapEditorMode(context);
 	}
 
-	void EditorScriptingLibrary::BindEditorWindow(SharedScriptingContext& context)
+	void EditorScriptingLibrary::BindEditorWindow(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 
@@ -46,7 +46,7 @@ namespace bw
 		);
 	}
 
-	void EditorScriptingLibrary::BindEntityInfoDialog(SharedScriptingContext& context)
+	void EditorScriptingLibrary::BindEntityInfoDialog(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 
@@ -76,7 +76,7 @@ namespace bw
 		);
 	}
 
-	void EditorScriptingLibrary::BindTileMapEditorMode(SharedScriptingContext& context)
+	void EditorScriptingLibrary::BindTileMapEditorMode(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 

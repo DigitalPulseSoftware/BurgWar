@@ -23,22 +23,36 @@ namespace bw
 	m_tilemapData(std::move(tilemapData)),
 	m_clearMode(false)
 	{
-		Nz::ImageRef eraserImage = Nz::Image::LoadFromFile("resources/eraser.png");
+		Nz::ImageRef eraserImage = Nz::ImageLibrary::Get("Eraser");
 		if (eraserImage)
 		{
 			m_eraserCursor = Nz::Cursor::New();
 			m_eraserCursor->Create(*eraserImage, Nz::Vector2i(3, 31), Nz::SystemCursor_Default);
 		}
 
-		// Compute tilemap
-		tsl::hopscotch_map<Nz::MaterialRef /*material*/, std::size_t /*materialIndex*/> materials;
+		// Compute tilemap and load materials
+
+		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.ResourceFolder");
+
+		tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
 		for (const auto& tile : tiles)
 		{
-			auto it = materials.find(tile.material);
+			auto it = materials.find(tile.materialPath);
 			if (it == materials.end())
 			{
-				materials.emplace(tile.material, materials.size());
-				m_materials.emplace_back(tile.material);
+				materials.emplace(tile.materialPath, materials.size());
+
+				Nz::MaterialRef material = Nz::MaterialManager::Get(gameAssetsFolder + "/" + tile.materialPath);
+				if (material)
+				{
+					// Force alpha blending
+					material->Configure("Translucent2D");
+					material->SetDiffuseMap(gameAssetsFolder + "/" + tile.materialPath); //< FIXME
+				}
+				else
+					material = Nz::Material::GetDefault();
+
+				m_materials.emplace_back(material);
 			}
 		}
 
@@ -47,7 +61,7 @@ namespace bw
 		{
 			const auto& tile = tiles[i];
 
-			auto it = materials.find(tile.material);
+			auto it = materials.find(tile.materialPath);
 			assert(it != materials.end());
 
 			auto& widgetTile = m_tileData[i];
@@ -55,11 +69,8 @@ namespace bw
 			widgetTile.texCoords = tile.texCoords;
 		}
 
-		Nz::MaterialRef selectionMaterial = Nz::Material::New("Translucent2D");
-		selectionMaterial->SetDiffuseMap("resources/tile_selection.png");
-
 		m_hoveringTileSprite = Nz::Sprite::New();
-		m_hoveringTileSprite->SetMaterial(selectionMaterial);
+		m_hoveringTileSprite->SetMaterial(Nz::MaterialLibrary::Get("TileSelection"));
 		m_hoveringTileSprite->SetSize(m_tilemapData.tileSize);
 	}
 
@@ -113,7 +124,9 @@ namespace bw
 			// Warning: "this" is potentially destroyed at this point
 		});
 
-		TileSelectionWidget* tileWidget = new TileSelectionWidget(m_tileData, m_materials);
+		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.EditorFolder");
+
+		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tileData, m_materials);
 		tileWidget->OnNoTileSelected.Connect([this](TileSelectionWidget* tileSelection)
 		{
 			EnableClearMode(true);

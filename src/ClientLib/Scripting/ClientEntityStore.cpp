@@ -43,7 +43,7 @@ namespace bw
 		if (entityClass->name == "burger")
 		{
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(spritePath);
+			mat->SetDiffuseMap(m_resourceFolder + "/" + spritePath);
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -80,12 +80,12 @@ namespace bw
 	{
 		SharedEntityStore::InitializeElementTable(elementTable);
 		
-		elementTable["AddSprite"] = [](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
+		elementTable["AddSprite"] = [this](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(texturePath);
+			mat->SetDiffuseMap(m_resourceFolder + "/" + texturePath);
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -100,22 +100,34 @@ namespace bw
 			gfxComponent.Attach(sprite);
 		};
 
-		elementTable["AddTilemap"] = [](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
+		elementTable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
 
 			// Compute tilemap
-			tsl::hopscotch_map<Nz::MaterialRef /*material*/, std::size_t /*materialIndex*/> materials;
+			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
 			for (const auto& tile : tiles)
 			{
-				auto it = materials.find(tile.material);
+				auto it = materials.find(tile.materialPath);
 				if (it == materials.end())
-					materials.emplace(tile.material, materials.size());
+					materials.emplace(tile.materialPath, materials.size());
 			}
 
 			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
-			for (auto&& [material, matIndex] : materials)
+			for (auto&& [materialPath, matIndex] : materials)
+			{
+				Nz::MaterialRef material = Nz::MaterialManager::Get(m_resourceFolder + "/" + materialPath);
+				if (material)
+				{
+					// Force alpha blending
+					material->Configure("Translucent2D");
+					material->SetDiffuseMap(m_resourceFolder + "/" + materialPath); //< FIXME
+				}
+				else
+					material = Nz::Material::GetDefault();
+			
 				tileMap->SetMaterial(matIndex, material);
+			}
 
 			std::size_t cellCount = content.size();
 			std::size_t expectedCellCount = mapSize.x * mapSize.y;
@@ -137,7 +149,7 @@ namespace bw
 
 					const auto& tileData = tiles[value - 1];
 
-					auto matIt = materials.find(tileData.material);
+					auto matIt = materials.find(tileData.materialPath);
 					assert(matIt != materials.end());
 
 					tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);

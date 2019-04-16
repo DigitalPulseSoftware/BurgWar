@@ -8,8 +8,8 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
-#include <ClientLib/Scripting/ClientScriptingContext.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <CoreLib/AnimationManager.hpp>
 #include <CoreLib/SharedMatch.hpp>
@@ -108,7 +108,7 @@ namespace bw
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::shared_ptr<ClientGamemode> m_gamemode;
-			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;

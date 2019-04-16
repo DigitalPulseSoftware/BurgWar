@@ -34,7 +34,7 @@ namespace bw
 		return m_gamemodeTable;
 	}
 
-	inline const std::shared_ptr<SharedScriptingContext>& SharedGamemode::GetScriptingContext() const
+	inline const std::shared_ptr<ScriptingContext>& SharedGamemode::GetScriptingContext() const
 	{
 		return m_context;
 	}

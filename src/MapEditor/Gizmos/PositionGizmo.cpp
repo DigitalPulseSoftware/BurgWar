@@ -17,10 +17,6 @@ namespace bw
 	m_movementType(MovementType::None),
 	m_cameraEntity(camera)
 	{
-		Nz::MaterialRef arrowMat = Nz::Material::New("Translucent2D");
-		arrowMat->EnableDepthBuffer(false);
-		arrowMat->SetDiffuseMap("resources/arrow.png");
-
 		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red;
 		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue;
 		m_spriteDefaultColors[MovementType::XYAxis] = Nz::Color(255, 255, 255, 128);
@@ -34,7 +30,7 @@ namespace bw
 		m_sprites[MovementType::XYAxis]->SetOrigin(Nz::Vector2f(0.f, 16.f));
 
 		m_sprites[MovementType::XAxis] = Nz::Sprite::New();
-		m_sprites[MovementType::XAxis]->SetMaterial(arrowMat);
+		m_sprites[MovementType::XAxis]->SetMaterial(Nz::MaterialLibrary::Get("GizmoArrow"));
 		m_sprites[MovementType::XAxis]->SetColor(m_spriteDefaultColors[MovementType::XAxis]);
 		m_sprites[MovementType::XAxis]->SetSize(m_sprites[MovementType::XAxis]->GetSize() / 2.f);
 		m_sprites[MovementType::XAxis]->SetOrigin(Nz::Vector2f(0.f, m_sprites[MovementType::XAxis]->GetSize().y / 2.f));

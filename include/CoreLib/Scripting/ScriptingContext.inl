@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/InputData.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -10,8 +10,13 @@
 
 namespace bw
 {
+	ScriptingContext::ScriptingContext(std::shared_ptr<VirtualDirectory> scriptDir) :
+	m_scriptDirectory(std::move(scriptDir))
+	{
+	}
+
 	template<typename... Args>
-	sol::coroutine SharedScriptingContext::CreateCoroutine(Args&&... args)
+	sol::coroutine ScriptingContext::CreateCoroutine(Args&&... args)
 	{
 		auto CreateThread = [&]() -> sol::thread&
 		{
@@ -31,17 +36,17 @@ namespace bw
 		return sol::coroutine(thread.state(), std::forward<Args>(args)...);
 	}
 
-	inline const std::filesystem::path& SharedScriptingContext::GetCurrentFolder() const
+	inline const std::filesystem::path& ScriptingContext::GetCurrentFolder() const
 	{
 		return m_currentFolder;
 	}
 
-	inline sol::state& SharedScriptingContext::GetLuaState()
+	inline sol::state& ScriptingContext::GetLuaState()
 	{
 		return m_luaState;
 	}
 
-	inline const sol::state& SharedScriptingContext::GetLuaState() const
+	inline const sol::state& ScriptingContext::GetLuaState() const
 	{
 		return m_luaState;
 	}

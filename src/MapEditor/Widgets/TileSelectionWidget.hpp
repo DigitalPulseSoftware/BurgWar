@@ -26,7 +26,7 @@ namespace bw
 		public:
 			struct TileData;
 
-			TileSelectionWidget(const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent = nullptr);
+			TileSelectionWidget(const std::string& editorResourceFolder, const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent = nullptr);
 			~TileSelectionWidget() = default;
 
 			void SelectTile(std::size_t tileIndex);

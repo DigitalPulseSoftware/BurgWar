@@ -7,17 +7,17 @@
 #ifndef BURGWAR_CLIENTLIB_UTILITY_TILEMAPDATA_HPP
 #define BURGWAR_CLIENTLIB_UTILITY_TILEMAPDATA_HPP
 
-#include <Nazara/Graphics/Material.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <string>
 #include <vector>
 
 namespace bw
 {
 	struct TileData
 	{
-		Nz::MaterialRef material;
+		std::string materialPath;
 		Nz::Rectf texCoords;
 	};
 

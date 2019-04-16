@@ -9,7 +9,7 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <NDK/Entity.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
@@ -28,7 +28,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer);
+			inline ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -50,14 +50,14 @@ namespace bw
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 
 			sol::state& GetLuaState();
-			const std::shared_ptr<SharedScriptingContext>& GetScriptingContext() const;
+			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
 			void SetElementTypeName(std::string typeName);
 			void SetTableName(std::string tableName);
 
 		private:
 			std::shared_ptr<SharedGamemode> m_gamemode;
-			std::shared_ptr<SharedScriptingContext> m_context;
+			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;
 			std::vector<std::shared_ptr<Element>> m_elements;

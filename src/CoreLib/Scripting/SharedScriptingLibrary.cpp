@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <iostream>
 
@@ -16,7 +16,7 @@ namespace bw
 
 	SharedScriptingLibrary::~SharedScriptingLibrary() = default;
 
-	void SharedScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)
+	void SharedScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
 		luaState.open_libraries();
@@ -26,7 +26,7 @@ namespace bw
 		RegisterTimerLibrary(context);
 	}
 
-	void SharedScriptingLibrary::RegisterTimerLibrary(SharedScriptingContext& context)
+	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
 		luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)

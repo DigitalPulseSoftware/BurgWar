@@ -25,13 +25,21 @@ namespace bw
 	m_name(std::move(matchName)),
 	m_app(app)
 	{
-		m_scriptingContext = std::make_shared<ServerScriptingContext>();
+		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+
+		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
+
+		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
 
-		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, "scripts" / m_gamemodePath);
+		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodePath);
+
+		VirtualDirectory::Entry entry;
 
 		m_entityStore.emplace(m_scriptingContext);
-		m_entityStore->Load("scripts/entities");
+
+		if (scriptDir->GetEntry("entities", &entry))
+			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
 		{
@@ -48,7 +56,9 @@ namespace bw
 		});
 
 		m_weaponStore.emplace(app, m_scriptingContext);
-		m_weaponStore->Load("scripts/weapons");
+
+		if (scriptDir->GetEntry("weapons", &entry))
+			m_weaponStore->Load("weapons", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
 		{
@@ -130,14 +140,15 @@ namespace bw
 
 	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
 	{
-		std::filesystem::path scriptPath = "scripts";
-		std::string relativePath = std::filesystem::relative(clientScript, scriptPath).generic_u8string();
+		std::string relativePath = clientScript.generic_u8string();
 
 		if (m_clientScripts.find(relativePath) != m_clientScripts.end())
 			return;
 
-		std::string filePath = clientScript.generic_u8string();
-		if (!std::filesystem::is_regular_file(clientScript))
+		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+
+		std::string filePath = scriptFolder + "/" + clientScript.generic_u8string();
+		if (!std::filesystem::is_regular_file(filePath))
 			throw std::runtime_error(filePath + " is not a file");
 
 		Nz::File file(filePath);

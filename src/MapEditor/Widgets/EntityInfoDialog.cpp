@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
-#include <ClientLib/Scripting/ClientScriptingContext.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
@@ -210,7 +210,7 @@ namespace bw
 			}
 	};
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
 	m_propertyTypeIndex(InvalidIndex),
@@ -323,7 +323,7 @@ namespace bw
 		OnEntityTypeUpdate();
 	}
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent) :
 	EntityInfoDialog(clientEntityStore, scriptingContext, parent)
 	{
 		m_entityInfo = std::move(entityInfo);

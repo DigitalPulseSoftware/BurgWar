@@ -13,7 +13,7 @@ namespace bw
 	{
 	}
 
-	void ClientScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)
+	void ClientScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
 		SharedScriptingLibrary::RegisterLibrary(context);
 

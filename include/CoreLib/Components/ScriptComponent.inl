@@ -25,7 +25,7 @@ namespace bw
 		}
 	}
 
-	inline const std::shared_ptr<SharedScriptingContext>& ScriptComponent::GetContext()
+	inline const std::shared_ptr<ScriptingContext>& ScriptComponent::GetContext()
 	{
 		return m_context;
 	}

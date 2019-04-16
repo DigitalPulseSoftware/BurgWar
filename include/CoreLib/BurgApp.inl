@@ -13,4 +13,9 @@ namespace bw
 	{
 		return m_appTime;
 	}
+
+	inline const ConfigFile& BurgApp::GetConfig() const
+	{
+		return m_config;
+	}
 }

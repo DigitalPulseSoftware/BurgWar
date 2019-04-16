@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	SharedEntityStore::SharedEntityStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	SharedEntityStore::SharedEntityStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
 	ScriptStore(std::move(context), isServer)
 	{
 		SetElementTypeName("entity");

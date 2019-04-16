@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTINGCONTEXT_HPP
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <sol2/sol.hpp>
 #include <filesystem>
 #include <memory>
@@ -15,11 +16,11 @@
 
 namespace bw
 {
-	class SharedScriptingContext
+	class ScriptingContext
 	{
 		public:
-			SharedScriptingContext() = default;
-			virtual ~SharedScriptingContext();
+			inline ScriptingContext(std::shared_ptr<VirtualDirectory> scriptDir);
+			~ScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
 
@@ -27,17 +28,14 @@ namespace bw
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
 
-			virtual bool Load(const std::filesystem::path& folderOrFile) = 0;
+			bool Load(const std::filesystem::path& folderOrFile);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
 			void Update();
 
-		protected:
-			void RegisterLibrary();
-
-			std::filesystem::path m_currentFolder;
-
 		private:
+			std::filesystem::path m_currentFolder;
+			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			std::vector<std::shared_ptr<AbstractScriptingLibrary>> m_libraries;
 			std::vector<sol::thread> m_availableThreads;
 			std::vector<sol::thread> m_runningThreads;
@@ -45,6 +43,6 @@ namespace bw
 	};
 }
 
-#include <CoreLib/Scripting/SharedScriptingContext.inl>
+#include <CoreLib/Scripting/ScriptingContext.inl>
 
 #endif

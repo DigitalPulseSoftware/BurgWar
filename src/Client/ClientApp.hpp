@@ -34,6 +34,8 @@ namespace bw
 			int Run();
 
 		private:
+			void RegisterClientConfig();
+
 			std::shared_ptr<StateData> m_stateData;
 			Ndk::StateMachine m_stateMachine;
 			Nz::RenderWindow& m_mainWindow;

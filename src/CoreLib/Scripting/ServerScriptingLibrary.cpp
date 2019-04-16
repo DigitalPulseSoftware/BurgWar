@@ -14,7 +14,7 @@ namespace bw
 	{
 	}
 
-	void ServerScriptingLibrary::RegisterLibrary(SharedScriptingContext& context)
+	void ServerScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
 		SharedScriptingLibrary::RegisterLibrary(context);
 
@@ -29,10 +29,10 @@ namespace bw
 
 		RegisterPlayer(context);
 
-		context.Load("scripts/autorun");
+		context.Load("autorun");
 	}
 
-	void ServerScriptingLibrary::RegisterPlayer(SharedScriptingContext& context)
+	void ServerScriptingLibrary::RegisterPlayer(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<PlayerHandle>("Player", 

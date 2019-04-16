@@ -20,7 +20,7 @@ namespace bw
 			ClientScriptingLibrary(LocalMatch& match);
 			~ClientScriptingLibrary() = default;
 
-			void RegisterLibrary(SharedScriptingContext& context) override;
+			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
 			LocalMatch& GetMatch();

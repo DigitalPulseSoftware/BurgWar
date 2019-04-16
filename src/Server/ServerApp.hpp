@@ -23,6 +23,8 @@ namespace bw
 			int Run();
 
 		private:
+			void RegisterServerConfig();
+
 			std::unique_ptr<Match> m_match;
 	};
 }

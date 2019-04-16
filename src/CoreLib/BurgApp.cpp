@@ -35,6 +35,8 @@ namespace bw
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();
+
+		RegisterBaseConfig();
 	}
 
 	void BurgApp::Update()
@@ -43,5 +45,11 @@ namespace bw
 		Nz::UInt64 elapsedTime = now - m_lastTime;
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
+	}
+
+	void BurgApp::RegisterBaseConfig()
+	{
+		m_config.RegisterStringOption("Assets.ResourceFolder");
+		m_config.RegisterStringOption("Assets.ScriptFolder");
 	}
 }

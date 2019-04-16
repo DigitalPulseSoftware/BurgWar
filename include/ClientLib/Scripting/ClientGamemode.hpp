@@ -16,7 +16,7 @@ namespace bw
 	class ClientGamemode : public SharedGamemode
 	{
 		public:
-			inline ClientGamemode(LocalMatch& localMatch, std::shared_ptr<SharedScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			inline ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
 			~ClientGamemode() = default;
 
 		private:

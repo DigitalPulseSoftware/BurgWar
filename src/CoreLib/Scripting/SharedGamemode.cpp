@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	SharedGamemode::SharedGamemode(std::shared_ptr<SharedScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
+	SharedGamemode::SharedGamemode(std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
 	m_gamemodePath(std::move(gamemodePath)),
 	m_context(std::move(scriptingContext))
 	{

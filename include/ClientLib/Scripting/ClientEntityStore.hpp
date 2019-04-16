@@ -18,7 +18,8 @@ namespace bw
 	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ClientEntityStore(std::shared_ptr<SharedScriptingContext> context);
+			inline ClientEntityStore(std::string resourceFolder, std::shared_ptr<ScriptingContext> context);
+			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
 			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
@@ -26,6 +27,9 @@ namespace bw
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+
+		private:
+			std::string m_resourceFolder;
 	};
 }
 

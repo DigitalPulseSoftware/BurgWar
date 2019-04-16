@@ -20,13 +20,13 @@ namespace bw
 			SharedScriptingLibrary(SharedMatch& sharedMatch);
 			virtual ~SharedScriptingLibrary();
 
-			void RegisterLibrary(SharedScriptingContext& context) override;
+			void RegisterLibrary(ScriptingContext& context) override;
 
 		protected:
 			inline SharedMatch& GetSharedMatch();
 
 		private:
-			void RegisterTimerLibrary(SharedScriptingContext& context);
+			void RegisterTimerLibrary(ScriptingContext& context);
 
 			SharedMatch& m_match;
 	};

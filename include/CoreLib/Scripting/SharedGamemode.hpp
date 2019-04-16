@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <string>
 
 namespace bw
@@ -15,7 +15,7 @@ namespace bw
 	class SharedGamemode
 	{
 		public:
-			SharedGamemode(std::shared_ptr<SharedScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			SharedGamemode(std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
 			SharedGamemode(const SharedGamemode&) = delete;
 			~SharedGamemode() = default;
 
@@ -27,11 +27,11 @@ namespace bw
 		protected:
 			inline const std::filesystem::path& GetGamemodePath() const;
 			inline sol::table& GetGamemodeTable();
-			inline const std::shared_ptr<SharedScriptingContext>& GetScriptingContext() const;
+			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
 		private:
 			std::filesystem::path m_gamemodePath;
-			std::shared_ptr<SharedScriptingContext> m_context;
+			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_gamemodeTable;
 	};
 }

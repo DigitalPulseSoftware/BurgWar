@@ -17,12 +17,12 @@ namespace bw
 			using AbstractScriptingLibrary::AbstractScriptingLibrary;
 			~EditorScriptingLibrary() = default;
 
-			void RegisterLibrary(SharedScriptingContext& context) override;
+			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void BindEditorWindow(SharedScriptingContext& context);
-			void BindEntityInfoDialog(SharedScriptingContext& context);
-			void BindTileMapEditorMode(SharedScriptingContext& context);
+			void BindEditorWindow(ScriptingContext& context);
+			void BindEntityInfoDialog(ScriptingContext& context);
+			void BindTileMapEditorMode(ScriptingContext& context);
 	};
 }
 

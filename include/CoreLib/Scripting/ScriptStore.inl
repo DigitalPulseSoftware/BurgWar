@@ -13,7 +13,7 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(std::shared_ptr<SharedScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
 	m_isServer(isServer)
 	{
@@ -332,7 +332,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	const std::shared_ptr<SharedScriptingContext>& ScriptStore<Element>::GetScriptingContext() const
+	const std::shared_ptr<ScriptingContext>& ScriptStore<Element>::GetScriptingContext() const
 	{
 		return m_context;
 	}

@@ -12,7 +12,7 @@
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
-#include <CoreLib/Scripting/ServerScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
 #include <tsl/hopscotch_map.h>
@@ -81,7 +81,7 @@ namespace bw
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
 			std::shared_ptr<ServerGamemode> m_gamemode;
-			std::shared_ptr<ServerScriptingContext> m_scriptingContext;
+			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;

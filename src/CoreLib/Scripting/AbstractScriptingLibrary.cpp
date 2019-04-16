@@ -3,14 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <iostream>
 
 namespace bw
 {
 	AbstractScriptingLibrary::~AbstractScriptingLibrary() = default;
 
-	void AbstractScriptingLibrary::RegisterGlobalLibrary(SharedScriptingContext& context)
+	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
 		luaState["include"] = [&](const std::string& scriptName)
@@ -22,7 +22,7 @@ namespace bw
 		};
 	}
 
-	void AbstractScriptingLibrary::RegisterMetatableLibrary(SharedScriptingContext& context)
+	void AbstractScriptingLibrary::RegisterMetatableLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
 		luaState["RegisterMetatable"] = [](sol::this_state s, const char* metaname)

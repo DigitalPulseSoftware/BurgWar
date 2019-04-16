@@ -9,7 +9,7 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <CoreLib/Scripting/SharedScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <NDK/Component.hpp>
 #include <functional>
 #include <optional>
@@ -21,13 +21,13 @@ namespace bw
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<SharedScriptingContext> context, sol::table entityTable, EntityProperties properties);
+			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
 			~ScriptComponent();
 
 			template<typename... Args>
 			void ExecuteCallback(const std::string& callbackName, Args&&... args);
 
-			inline const std::shared_ptr<SharedScriptingContext>& GetContext();
+			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
 			inline const EntityProperties& GetProperties() const;
@@ -37,7 +37,7 @@ namespace bw
 
 		private:
 			std::shared_ptr<const ScriptedElement> m_element;
-			std::shared_ptr<SharedScriptingContext> m_context;
+			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_entityTable;
 			EntityProperties m_properties;
 	};

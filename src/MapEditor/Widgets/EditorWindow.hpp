@@ -24,7 +24,7 @@ class Gamemode;
 
 namespace bw
 {
-	class ClientScriptingContext;
+	class ScriptingContext;
 	class EditorMode;
 	class MapCanvas;
 
@@ -59,12 +59,13 @@ namespace bw
 			void OnOpenMap();
 			void OnSaveMap();
 
+			void RegisterEditorConfig();
 			void RegisterEntity(std::size_t entityIndex);
 
 			std::filesystem::path m_workingMapPath;
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<int> m_currentLayer;
-			std::shared_ptr<ClientScriptingContext> m_scriptingContext;
+			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			QAction* m_compileMap;

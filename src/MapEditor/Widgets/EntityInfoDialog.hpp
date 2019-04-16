@@ -27,7 +27,7 @@ class QWidget;
 namespace bw
 {
 	class ClientEntityStore;
-	class ClientScriptingContext;
+	class ScriptingContext;
 	class Float2SpinBox;
 
 	struct EntityInfo
@@ -42,8 +42,8 @@ namespace bw
 	class EntityInfoDialog : public QDialog
 	{
 		public:
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, QWidget* parent = nullptr);
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ClientScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
 			inline const EntityInfo& GetEntityInfo() const;
@@ -86,7 +86,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			ClientEntityStore& m_entityStore;
-			ClientScriptingContext& m_scriptingContext;
+			ScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;
 			Float2SpinBox* m_positionWidget;

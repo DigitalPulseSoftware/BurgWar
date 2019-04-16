@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	class SharedScriptingContext;
+	class ScriptingContext;
 
 	class AbstractScriptingLibrary
 	{
@@ -19,11 +19,11 @@ namespace bw
 			AbstractScriptingLibrary() = default;
 			virtual ~AbstractScriptingLibrary();
 
-			virtual void RegisterLibrary(SharedScriptingContext& context) = 0;
+			virtual void RegisterLibrary(ScriptingContext& context) = 0;
 
 		protected:
-			void RegisterGlobalLibrary(SharedScriptingContext& context);
-			void RegisterMetatableLibrary(SharedScriptingContext& context);
+			void RegisterGlobalLibrary(ScriptingContext& context);
+			void RegisterMetatableLibrary(ScriptingContext& context);
 	};
 }
 

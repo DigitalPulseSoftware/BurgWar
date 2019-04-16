@@ -21,7 +21,7 @@
 
 namespace bw
 {
-	TileSelectionWidget::TileSelectionWidget(const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent) :
+	TileSelectionWidget::TileSelectionWidget(const std::string& editorResourceFolder, const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent) :
 	QWidget(parent),
 	m_tileSize(64.f, 64.f),
 	m_selectedTile(0)
@@ -59,11 +59,8 @@ namespace bw
 		Nz::Vector2f tileMapSize = Nz::Vector2f(tileMap->GetMapSize()) * tileMap->GetTileSize();
 		m_tileSelectionCanvas->SetContentSize(Nz::Vector2i(std::ceil(tileMapSize.x), std::ceil(tileMapSize.y)));
 
-		Nz::MaterialRef selectionMaterial = Nz::Material::New("Translucent2D");
-		selectionMaterial->SetDiffuseMap("resources/tile_selection.png");
-
 		m_selectionSprite = Nz::Sprite::New();
-		m_selectionSprite->SetMaterial(selectionMaterial);
+		m_selectionSprite->SetMaterial(Nz::MaterialLibrary::Get("TileSelection"));
 		m_selectionSprite->SetSize(tileMap->GetTileSize());
 
 		m_selectedEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
@@ -71,10 +68,10 @@ namespace bw
 		m_selectedEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_selectionSprite, 1);
 
 		QToolBar* toolbar = new QToolBar;
-		QAction* tileAction = toolbar->addAction(QIcon(QPixmap("resources/gui/icons/cloth-24.png")), tr("Tile mode"));
+		QAction* tileAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/gui/icons/cloth-24.png").c_str())), tr("Tile mode"));
 		connect(tileAction, &QAction::triggered, [this](bool) { EnableTileMode(); });
 
-		QAction* clearAction = toolbar->addAction(QIcon(QPixmap("resources/gui/icons/remove_image-24.png")), tr("Clear mode"));
+		QAction* clearAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/gui/icons/remove_image-24.png").c_str())), tr("Clear mode"));
 		connect(clearAction, &QAction::triggered, [this](bool) { EnableClearMode(); });
 
 		QVBoxLayout* layout = new QVBoxLayout;

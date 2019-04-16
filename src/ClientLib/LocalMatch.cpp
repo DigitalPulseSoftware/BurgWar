@@ -92,13 +92,15 @@ namespace bw
 
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
-		m_scriptingContext = std::make_shared<ClientScriptingContext>(scriptDir);
+		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<ClientScriptingLibrary>(*this));
 
 		m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
 
-		m_entityStore.emplace(m_scriptingContext);
-		m_weaponStore.emplace(m_scriptingContext);
+		const std::string& gameResourceFolder = m_application.GetConfig().GetStringOption("Assets.ResourceFolder");
+
+		m_entityStore.emplace(gameResourceFolder, m_scriptingContext);
+		m_weaponStore.emplace(gameResourceFolder, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 

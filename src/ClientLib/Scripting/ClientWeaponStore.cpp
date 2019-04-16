@@ -21,7 +21,7 @@ namespace bw
 		const auto& weaponClass = GetElement(entityIndex);
 
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(weaponClass->spriteName);
+		mat->SetDiffuseMap(m_resourceFolder + "/" + weaponClass->spriteName);
 		auto& sampler = mat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 

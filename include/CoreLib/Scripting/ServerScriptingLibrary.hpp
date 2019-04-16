@@ -19,15 +19,15 @@ namespace bw
 			ServerScriptingLibrary(Match& match);
 			~ServerScriptingLibrary() = default;
 
-			void RegisterLibrary(SharedScriptingContext& context) override;
+			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void RegisterPlayer(SharedScriptingContext& context);
+			void RegisterPlayer(ScriptingContext& context);
 
 			Match& GetMatch();
 	};
 }
 
-#include <CoreLib/Scripting/ServerScriptingContext.inl>
+#include <CoreLib/Scripting/ServerScriptingLibrary.inl>
 
 #endif

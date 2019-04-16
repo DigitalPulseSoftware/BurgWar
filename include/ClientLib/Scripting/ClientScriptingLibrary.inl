@@ -48,18 +48,7 @@ namespace sol
 					{
 						sol::stack_table tileTable(L);
 
-						std::string materialPath = tileTable["material"];
-
-						tileData.material = Nz::MaterialManager::Get(materialPath);
-						if (tileData.material)
-						{
-							// Force alpha blending
-							tileData.material->Configure("Translucent2D");
-							tileData.material->SetDiffuseMap(tileData.material->GetDiffuseMap()); //< FIXME
-						}
-						else
-							tileData.material = Nz::Material::GetDefault();
-
+						tileData.materialPath = tileTable["material"];
 						tileData.texCoords = tileTable["texCoords"];
 					}
 					lua_pop(L, 1);
