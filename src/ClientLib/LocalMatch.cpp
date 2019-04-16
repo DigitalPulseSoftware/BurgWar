@@ -90,6 +90,12 @@ namespace bw
 			m_playerData.emplace_back(i);
 	}
 
+	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	{
+		for (const Ndk::EntityHandle& entity : m_world.GetEntities())
+			func(entity);
+	}
+
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
 		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
@@ -439,23 +445,15 @@ namespace bw
 		auto& nameData = serverEntity.name.emplace();
 		
 		Nz::TextSpriteRef nameSprite = Nz::TextSprite::New();
-		nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular));
+		nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
 
-		Nz::Boxf spriteBox = nameSprite->GetBoundingVolume().obb.localBox;
-
-		constexpr float backgroundPadding = 10.f;
-
-		Nz::SpriteRef backgroundSprite = Nz::Sprite::New();
-		backgroundSprite->SetMaterial(Nz::Material::New("Translucent2D"));
-		backgroundSprite->SetColor(Nz::Color(0, 0, 0, 64));
-		backgroundSprite->SetSize(spriteBox.width + backgroundPadding, spriteBox.height);
+		Nz::Boxf textBox = nameSprite->GetBoundingVolume().obb.localBox;
 
 		nameData.nameEntity = m_world.CreateEntity();
 		nameData.nameEntity->AddComponent<Ndk::NodeComponent>();
 	
 		auto& gfxComponent = nameData.nameEntity->AddComponent<Ndk::GraphicsComponent>();
-		gfxComponent.Attach(nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-spriteBox.width / 2.f, -spriteBox.height)), 4);
-		gfxComponent.Attach(backgroundSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-(spriteBox.width + backgroundPadding) / 2.f, -spriteBox.height)), 3);
+		gfxComponent.Attach(nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-textBox.width / 2.f, -textBox.height)), 3);
 	}
 
 	void LocalMatch::DebugEntityId(ServerEntity& serverEntity)
