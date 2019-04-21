@@ -443,7 +443,10 @@ namespace bw
 							entity.properties.emplace(std::move(propertyName), std::move(elements));
 						}
 						else
-							entity.properties.emplace(std::move(propertyName), T(value));
+						{
+							T propertyValue = value;
+							entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
+						}
 					};
 
 					switch (propertyType)
