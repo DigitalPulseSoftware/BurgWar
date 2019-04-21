@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -83,6 +84,8 @@ namespace bw
 		elementTable["AddSprite"] = [this](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			mat->SetDiffuseMap(m_resourceFolder + "/" + texturePath);
@@ -103,6 +106,8 @@ namespace bw
 		elementTable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -158,6 +163,21 @@ namespace bw
 
 			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
 			gfxComponent.Attach(tileMap);
+		};
+
+		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+
+			if (!entity->HasComponent<SoundEmitterComponent>())
+				entity->AddComponent<SoundEmitterComponent>();
+
+			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
+			return soundEmitter.PlaySound(m_resourceFolder + "/" + soundPath, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
 		};
 	}
 

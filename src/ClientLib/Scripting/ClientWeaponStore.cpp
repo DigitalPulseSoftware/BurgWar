@@ -8,6 +8,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
@@ -44,6 +45,21 @@ namespace bw
 		SharedWeaponStore::InitializeElementTable(elementTable);
 
 		elementTable["Scale"] = 1.f;
+
+		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+
+			if (!entity->HasComponent<SoundEmitterComponent>())
+				entity->AddComponent<SoundEmitterComponent>();
+
+			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
+			return soundEmitter.PlaySound(m_resourceFolder + "/" + soundPath, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+		};
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{

@@ -12,6 +12,8 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <ClientLib/Systems/SoundSystem.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/LoginState.hpp>
 #include <iostream>
@@ -25,6 +27,8 @@ namespace bw
 	{
 		//FIXME: This should be a part of ClientLib
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
+		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
+		Ndk::InitializeSystem<SoundSystem>();
 
 		RegisterClientConfig();
 

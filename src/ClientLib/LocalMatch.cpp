@@ -9,6 +9,7 @@
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <ClientLib/Systems/SoundSystem.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
@@ -45,6 +46,7 @@ namespace bw
 
 		m_world.AddSystem<AnimationSystem>(burgApp);
 		m_world.AddSystem<PlayerMovementSystem>();
+		m_world.AddSystem<SoundSystem>();
 		m_world.AddSystem<TickCallbackSystem>();
 
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
@@ -325,7 +327,13 @@ namespace bw
 			return;
 
 		const ServerEntity& serverEntity = it->second;
+
+		if (m_playerData[playerIndex].controlledEntity)
+			m_playerData[playerIndex].controlledEntity->RemoveComponent<Ndk::ListenerComponent>();
+
 		m_playerData[playerIndex].controlledEntity = serverEntity.entity;
+		m_playerData[playerIndex].controlledEntity->AddComponent<Ndk::ListenerComponent>();
+
 		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
 	}
 

@@ -6,7 +6,17 @@ WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
 WEAPON.Cooldown = 0.05
 
+WEAPON.ShootSound = {
+    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav", 
+    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR2_stereo.wav",
+    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR3_stereo.wav",  
+}
+
 function WEAPON:OnAttack()
+	if (CLIENT) then
+		self:PlaySound(self.ShootSound[math.random(1, 3)], true, false, true)
+	end
+
 	local shootDir = self:GetDirection()
 	local shootPos = self:GetPosition() + shootDir * 740 * self.Scale
 
