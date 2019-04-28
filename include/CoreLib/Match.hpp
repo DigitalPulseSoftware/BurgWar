@@ -35,7 +35,7 @@ namespace bw
 		public:
 			struct ClientScript;
 
-			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount);
+			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -44,11 +44,8 @@ namespace bw
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 
-			void Leave(Player* player);
-
-			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
-
 			inline BurgApp& GetApp();
+			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
 			inline sol::state& GetLuaState();
@@ -62,6 +59,7 @@ namespace bw
 			inline ServerWeaponStore& GetWeaponStore();
 			inline const ServerWeaponStore& GetWeaponStore() const;
 
+			void Leave(Player* player);
 			bool Join(Player* player);
 
 			void RegisterClientScript(const std::filesystem::path& clientScript);
@@ -78,6 +76,8 @@ namespace bw
 			};
 
 		private:
+			void OnTick() override;
+
 			std::filesystem::path m_gamemodePath;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;

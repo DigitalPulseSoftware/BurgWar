@@ -36,13 +36,14 @@ namespace bw
 		DeleteEntities,
 		DownloadClientScriptRequest,
 		DownloadClientScriptResponse,
+		EntitiesAnimation,
 		EntitiesInputs,
+		InputTimingCorrection,
 		HealthUpdate,
 		HelloWorld,
 		MatchData,
 		MatchState,
 		NetworkStrings,
-		PlayAnimation,
 		PlayersInput,
 		Ready
 	};
@@ -87,6 +88,7 @@ namespace bw
 
 		DeclarePacket(ControlEntity)
 		{
+			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
 			CompressedUnsigned<Nz::UInt32> entityId;
 		};
@@ -141,6 +143,7 @@ namespace bw
 				std::vector<Properties> properties;
 			};
 
+			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
 
@@ -151,6 +154,7 @@ namespace bw
 				CompressedUnsigned<Nz::UInt32> id;
 			};
 
+			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
 
@@ -172,6 +176,7 @@ namespace bw
 				InputData inputs;
 			};
 
+			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
 
@@ -183,12 +188,19 @@ namespace bw
 				Nz::UInt16 currentHealth;
 			};
 
+			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(HelloWorld)
 		{
 			std::string str;
+		};
+
+		DeclarePacket(InputTimingCorrection)
+		{
+			Nz::UInt16 serverTick;
+			CompressedSigned<Nz::Int32> tickError;
 		};
 
 		DeclarePacket(MatchData)
@@ -200,6 +212,8 @@ namespace bw
 
 			std::vector<Layer> layers;
 			std::string gamemodePath;
+			Nz::UInt16 currentTick;
+			float tickDuration;
 		};
 
 		DeclarePacket(MatchState)
@@ -224,6 +238,7 @@ namespace bw
 				std::optional<PhysicsProperties> physicsProperties;
 			};
 
+			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
 
@@ -233,14 +248,21 @@ namespace bw
 			std::vector<std::string> strings;
 		};
 
-		DeclarePacket(PlayAnimation)
+		DeclarePacket(EntitiesAnimation)
 		{
-			CompressedUnsigned<Nz::UInt32> entityId;
-			Nz::UInt8 animId;
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> entityId;
+				Nz::UInt8 animId;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(PlayersInput)
 		{
+			Nz::UInt16 estimatedServerTick;
 			std::vector<std::optional<InputData>> inputs;
 		};
 
@@ -260,13 +282,14 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
+		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
+		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
-		void Serialize(PacketSerializer& serializer, PlayAnimation& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
 

@@ -34,7 +34,7 @@ namespace bw
 
 			template<typename T> void SendEntityPacket(Nz::UInt32 entityId, T&& packet);
 
-			void Update(float elapsedTime);
+			void Update();
 			void UpdateLayer(std::size_t layerIndex);
 
 			static constexpr std::size_t NoLayer = std::numeric_limits<std::size_t>::max();
@@ -42,7 +42,7 @@ namespace bw
 		private:
 			void HandleEntityCreation(const NetworkSyncSystem::EntityCreation& eventData);
 			void HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData);
-			void SendMatchState(float elapsedTime);
+			void SendMatchState();
 
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 
@@ -67,14 +67,13 @@ namespace bw
 			Nz::Bitset<Nz::UInt64> m_visibleEntities;
 			Match& m_match;
 			MatchClientSession& m_session;
-			float m_entityMovementSendInterval;
-			float m_entityMovementSendTimer;
 
-			Packets::CreateEntities m_createEntitiesPacket;
-			Packets::DeleteEntities m_deleteEntitiesPacket;
-			Packets::HealthUpdate   m_healthUpdatePacket;
-			Packets::EntitiesInputs m_inputUpdatePacket;
-			Packets::MatchState     m_matchStatePacket;
+			Packets::CreateEntities    m_createEntitiesPacket;
+			Packets::DeleteEntities    m_deleteEntitiesPacket;
+			Packets::HealthUpdate      m_healthUpdatePacket;
+			Packets::EntitiesAnimation m_entitiesAnimationPacket;
+			Packets::EntitiesInputs    m_inputUpdatePacket;
+			Packets::MatchState        m_matchStatePacket;
 	};
 }
 

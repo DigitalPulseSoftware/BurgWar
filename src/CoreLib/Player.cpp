@@ -111,7 +111,7 @@ namespace bw
 				if (inputData.isAttacking)
 				{
 					auto& weaponCooldown = m_playerWeapon->GetComponent<CooldownComponent>();
-					if (weaponCooldown.Trigger(m_match->GetApp().GetAppTime()))
+					if (weaponCooldown.Trigger(m_match->GetCurrentTime()))
 					{
 						auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
 						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());

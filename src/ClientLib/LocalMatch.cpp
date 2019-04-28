@@ -33,9 +33,11 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
-	SharedMatch(burgApp),
+	SharedMatch(burgApp, matchData.tickDuration),
 	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
+	m_currentServerTick(matchData.currentTick),
+	m_averageTickError(20),
 	m_application(burgApp),
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
@@ -55,10 +57,14 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
-		physics.SetMaximumUpdateRate(30.f);
-		/*physics.SetMaximumUpdateRate(20.f);
-		physics.SetMaxStepCount(3);
-		physics.SetStepSize(1.f / 40.f);*/
+		physics.SetStepSize(GetTickDuration());
+
+		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.SetFixedUpdateRate(0.f);
+			system.SetMaximumUpdateRate(0.f);
+		});
+
 
 		m_camera = m_world.CreateEntity();
 		auto& cameraNode = m_camera->AddComponent<Ndk::NodeComponent>();
@@ -77,8 +83,6 @@ namespace bw
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightTop, trailColor);
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
 		m_trailSpriteTest->SetSize(64.f, 2.f);
-
-		auto& layerData = matchData.layers.front();
 
 		constexpr Nz::UInt8 playerCount = 1;
 
@@ -196,12 +200,12 @@ namespace bw
 
 	void LocalMatch::Update(float elapsedTime)
 	{
-		SharedMatch::Update(elapsedTime);
-
 		if (m_scriptingContext)
 			m_scriptingContext->Update();
 
-		m_world.Update(elapsedTime);
+		PrepareTickUpdate();
+
+		SharedMatch::Update(elapsedTime);
 
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
@@ -268,7 +272,7 @@ namespace bw
 				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
 				auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-				// Apply new position/rotation
+				// Apply new visual position/rotation
 				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
 				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
 			}
@@ -307,17 +311,25 @@ namespace bw
 		}
 
 		constexpr float MaxInputSendInterval = 1.f / 60.f;
+		constexpr float MinInputSendInterval = 1.f / 10.f;
 
 		m_playerInputTimer += elapsedTime;
+		m_timeSinceLastInputSending += elapsedTime;
+
 		if (m_playerInputTimer >= MaxInputSendInterval)
 		{
 			m_playerInputTimer -= MaxInputSendInterval;
-			SendInputs();
+			if (SendInputs(m_timeSinceLastInputSending >= MinInputSendInterval))
+				m_timeSinceLastInputSending = 0.f;
 		}
 
 		m_animationManager.Update(elapsedTime);
 		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
+			m_gamemode->ExecuteCallback("OnFrame");
+
+		PrepareClientUpdate();
+
+		m_world.Update(elapsedTime);
 	}
 
 	void LocalMatch::ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId)
@@ -488,6 +500,11 @@ namespace bw
 		m_serverEntityIdToClient.erase(it);
 	}
 
+	Nz::UInt16 LocalMatch::EstimateServerTick() const
+	{
+		return m_currentServerTick - m_averageTickError.GetAverageValue();
+	}
+
 	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight)
 	{
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
@@ -533,6 +550,21 @@ namespace bw
 		}
 	}
 
+	void LocalMatch::HandleTickError(Nz::Int32 tickError)
+	{
+		m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
+	}
+
+	void LocalMatch::OnTick()
+	{
+		m_world.Update(GetTickDuration());
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
+
+		m_currentServerTick++;
+	}
+
 	void LocalMatch::PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId)
 	{
 		auto it = m_serverEntityIdToClient.find(serverId);
@@ -547,9 +579,42 @@ namespace bw
 		animComponent.Play(animId, m_application.GetAppTime());
 	}
 
-	void LocalMatch::SendInputs()
+	void LocalMatch::PrepareClientUpdate()
+	{
+		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		m_world.GetSystem<Ndk::DebugSystem>().Enable(true);
+		m_world.GetSystem<Ndk::ListenerSystem>().Enable(true);
+		m_world.GetSystem<Ndk::ParticleSystem>().Enable(true);
+		m_world.GetSystem<Ndk::RenderSystem>().Enable(true);
+		m_world.GetSystem<AnimationSystem>().Enable(true);
+		m_world.GetSystem<SoundSystem>().Enable(true);
+	}
+
+	void LocalMatch::PrepareTickUpdate()
+	{
+		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		m_world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
+		m_world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
+		m_world.GetSystem<Ndk::VelocitySystem>().Enable(true);
+		m_world.GetSystem<PlayerMovementSystem>().Enable(true);
+		m_world.GetSystem<TickCallbackSystem>().Enable(true);
+	}
+
+	bool LocalMatch::SendInputs(bool force)
 	{
 		assert(m_playerData.size() == m_inputPacket.inputs.size());
+
+		m_inputPacket.estimatedServerTick = EstimateServerTick();
+		std::cout << "Estimated server tick at " << m_inputPacket.estimatedServerTick << " on " << m_application.GetAppTime() << std::endl;
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -557,7 +622,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			InputData input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
-			if (true/*controllerData.lastInputData != input*/)
+			if (controllerData.lastInputData != input)
 			{
 				hasInputData = true;
 				controllerData.lastInputData = input;
@@ -567,8 +632,13 @@ namespace bw
 				m_inputPacket.inputs[i].reset();
 		}
 
-		if (hasInputData)
+		if (hasInputData || force)
+		{
 			m_session.SendPacket(m_inputPacket);
+			return true;
+		}
+		else
+			return false;
 	}
 
 	void LocalMatch::UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth)
@@ -617,7 +687,7 @@ namespace bw
 			if (inputs.isAttacking)
 			{
 				auto& weaponCooldown = weaponEntity.entity->GetComponent<CooldownComponent>();
-				if (weaponCooldown.Trigger(m_application.GetAppTime()))
+				if (weaponCooldown.Trigger(GetCurrentTime()))
 				{
 					auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
 					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());

@@ -15,13 +15,16 @@ namespace bw
 	class SharedMatch
 	{
 		public:
-			inline SharedMatch(BurgApp& app);
+			inline SharedMatch(BurgApp& app, float tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
 
 			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
 
+			inline Nz::UInt16 GetCurrentTick() const;
+			inline Nz::UInt64 GetCurrentTime() const;
+			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 
 			void Update(float elapsedTime);
@@ -29,8 +32,16 @@ namespace bw
 			SharedMatch& operator=(const SharedMatch&) = delete;
 			SharedMatch& operator=(SharedMatch&&) = delete;
 
+		protected:
+			virtual void OnTick() = 0;
+
 		private:
 			TimerManager m_timerManager;
+			Nz::UInt16 m_currentTick;
+			Nz::UInt64 m_currentTime;
+			float m_floatingTime;
+			float m_tickDuration;
+			float m_tickTimer;
 	};
 }
 

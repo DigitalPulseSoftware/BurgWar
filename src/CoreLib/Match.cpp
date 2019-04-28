@@ -17,8 +17,8 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount) :
-	SharedMatch(app),
+	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
+	SharedMatch(app, tickDuration),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
@@ -105,7 +105,6 @@ namespace bw
 			auto& layer = m_terrain->GetLayer(i);
 			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
-
 		}
 	}
 
@@ -183,10 +182,16 @@ namespace bw
 
 	void Match::Update(float elapsedTime)
 	{
-		SharedMatch::Update(elapsedTime);
-
-		m_scriptingContext->Update();
 		m_sessions.Poll();
+		m_scriptingContext->Update();
+
+		SharedMatch::Update(elapsedTime);
+	}
+
+	void Match::OnTick()
+	{
+		float elapsedTime = GetTickDuration();
+
 		m_terrain->Update(elapsedTime);
 
 		m_sessions.ForEachSession([&](MatchClientSession* session)

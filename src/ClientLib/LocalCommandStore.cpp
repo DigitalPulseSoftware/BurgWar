@@ -24,13 +24,14 @@ namespace bw
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
 		IncomingCommand(DownloadClientScriptResponse);
+		IncomingCommand(EntitiesAnimation);
 		IncomingCommand(EntitiesInputs);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(HelloWorld);
+		IncomingCommand(InputTimingCorrection);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
-		IncomingCommand(PlayAnimation);
 
 		// Outgoing commands
 		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);

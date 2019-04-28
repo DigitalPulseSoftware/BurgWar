@@ -42,7 +42,7 @@ namespace bw
 
 	void MatchClientSession::Update(float elapsedTime)
 	{
-		m_visibility->Update(elapsedTime);
+		m_visibility->Update();
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
@@ -79,7 +79,9 @@ namespace bw
 		const Map& mapData = m_match.GetTerrain().GetMap();
 
 		Packets::MatchData matchData;
+		matchData.currentTick = m_match.GetCurrentTick();
 		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
+		matchData.tickDuration = m_match.GetTickDuration();
 
 		matchData.layers.reserve(mapData.GetLayerCount());
 		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
@@ -124,6 +126,23 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
+		// Compute client error
+
+		Nz::Int32 tickError = static_cast<Nz::Int32>(packet.estimatedServerTick) - static_cast<Nz::Int32>(m_match.GetCurrentTick());
+		std::cout << "[Server] tick error: " << tickError << " (tick: " << m_match.GetCurrentTick() << ") at " << m_match.GetApp().GetAppTime() << std::endl;
+
+		if (tickError != 0)
+		{
+			Packets::InputTimingCorrection correctionPacket;
+			correctionPacket.serverTick = packet.estimatedServerTick;
+			correctionPacket.tickError = tickError;
+
+			SendPacket(correctionPacket);
+
+		}
+
+		//std::cout << "Received input packet at tick " << m_match.GetCurrentTick() << " (estimated " << packet.estimatedServerTick << ")" << std::endl;
+
 		if (packet.inputs.size() != m_players.size())
 		{
 			std::cerr << "Player input count doesn't match player count" << std::endl;

@@ -54,11 +54,10 @@ namespace Nz
 		using UnsignedT = std::make_unsigned_t<T>;
 
 		T signedValue = value;
-		UnsignedT unsignedValue = reinterpret_cast<UnsignedT>(signedValue);
 
 		// ZigZag encoding:
 		// https://developers.google.com/protocol-buffers/docs/encoding
-		unsignedValue = (unsignedValue << 1) ^ (unsignedValue >> (CHAR_BIT * sizeof(UnsignedT) - 1));
+		UnsignedT unsignedValue = (signedValue << 1) ^ (signedValue >> (CHAR_BIT * sizeof(UnsignedT) - 1));
 
 		return Serialize(context, bw::CompressedUnsigned<UnsignedT>(unsignedValue));
 	}
@@ -97,9 +96,9 @@ namespace Nz
 		// ZigZag decoding:
 		// https://developers.google.com/protocol-buffers/docs/encoding
 		UnsignedT unsignedValue = compressedValue;
-		unsignedValue = (unsignedValue >> 1) ^ (-(unsignedValue & 1));
+		unsignedValue = (unsignedValue >> 1) - (unsignedValue & 1) * unsignedValue;
 
-		*value = reinterpret_cast<T>(unsignedValue);
+		*value = reinterpret_cast<T&>(unsignedValue);
 		return true;
 	}
 

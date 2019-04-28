@@ -9,9 +9,7 @@ namespace bw
 	inline MatchClientVisibility::MatchClientVisibility(Match& match, MatchClientSession& session) :
 	m_match(match),
 	m_session(session),
-	m_activeLayer(NoLayer),
-	m_entityMovementSendInterval(1.f / 20.f),
-	m_entityMovementSendTimer(0.f)
+	m_activeLayer(NoLayer)
 	{
 	}
 	

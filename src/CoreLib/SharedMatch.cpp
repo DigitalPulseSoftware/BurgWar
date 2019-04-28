@@ -12,5 +12,19 @@ namespace bw
 	void SharedMatch::Update(float elapsedTime)
 	{
 		m_timerManager.Update();
+
+		m_tickTimer += std::min(elapsedTime, 0.25f);
+		while (m_tickTimer >= m_tickDuration)
+		{
+			m_tickTimer -= m_tickDuration;
+
+			OnTick();
+
+			m_currentTick++;
+			m_floatingTime += m_tickDuration * 1000.f;
+			Nz::UInt64 elapsedTimeMs = static_cast<Nz::UInt64>(m_floatingTime);
+			m_currentTime += elapsedTimeMs;
+			m_floatingTime -= elapsedTimeMs;
+		}
 	}
 }

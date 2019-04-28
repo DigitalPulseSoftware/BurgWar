@@ -45,6 +45,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, CreateEntities& data)
 		{
+			serializer &= data.stateTick;
 			serializer.SerializeArraySize(data.entities);
 
 			for (auto& entity : data.entities)
@@ -241,8 +242,10 @@ namespace bw
 			serializer &= data.entityId;
 		}
 
-		void Serialize(PacketSerializer & serializer, DeleteEntities& data)
+		void Serialize(PacketSerializer& serializer, DeleteEntities& data)
 		{
+			serializer &= data.stateTick;
+
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 				serializer &= entity.id;
@@ -262,8 +265,22 @@ namespace bw
 				serializer.Read(data.fileContent.data(), data.fileContent.size());
 		}
 
+		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data)
+		{
+			serializer &= data.stateTick;
+
+			serializer.SerializeArraySize(data.entities);
+			for (auto& entity : data.entities)
+			{
+				serializer &= entity.entityId;
+				serializer &= entity.animId;
+			}
+		}
+
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data)
 		{
+			serializer &= data.stateTick;
+
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 			{
@@ -272,8 +289,10 @@ namespace bw
 			}
 		}
 
-		void Serialize(PacketSerializer & serializer, HealthUpdate & data)
+		void Serialize(PacketSerializer& serializer, HealthUpdate& data)
 		{
+			serializer &= data.stateTick;
+
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 			{
@@ -287,8 +306,17 @@ namespace bw
 			serializer &= data.str;
 		}
 
+		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data)
+		{
+			serializer &= data.serverTick;
+			serializer &= data.tickError;
+		}
+
 		void Serialize(PacketSerializer& serializer, MatchData& data)
 		{
+			serializer &= data.currentTick;
+			serializer &= data.tickDuration;
+
 			serializer &= data.gamemodePath;
 
 			serializer.SerializeArraySize(data.layers);
@@ -298,6 +326,8 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)
 		{
+			serializer &= data.stateTick;
+
 			serializer.SerializeArraySize(data.entities);
 
 			for (auto& entity : data.entities)
@@ -353,14 +383,10 @@ namespace bw
 				serializer &= string;
 		}
 
-		void Serialize(PacketSerializer& serializer, PlayAnimation& data)
-		{
-			serializer &= data.entityId;
-			serializer &= data.animId;
-		}
-
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
+			serializer &= data.estimatedServerTick;
+
 			serializer.SerializeArraySize(data.inputs);
 
 			for (auto& input : data.inputs)

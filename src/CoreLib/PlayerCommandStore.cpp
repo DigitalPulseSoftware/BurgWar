@@ -31,13 +31,14 @@ namespace bw
 		OutgoingCommand(CreateEntities,               Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(DeleteEntities,               Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(EntitiesInputs,                 Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(EntitiesAnimation,            Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(EntitiesInputs,               Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HelloWorld,                   Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(InputTimingCorrection,        Nz::ENetPacketFlag_Unsequenced, 0);
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(MatchState,                   0,                           1);
 		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayAnimation,                Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand
 #undef OutgoingCommand

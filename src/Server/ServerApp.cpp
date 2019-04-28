@@ -17,7 +17,7 @@ namespace bw
 		if (!m_config.LoadFromFile("serverconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
-		m_match = std::make_unique<Match>(*this, "Je suis un match sur le serveur", "test", 10);
+		m_match = std::make_unique<Match>(*this, "Je suis un match sur le serveur", "test", 10, 1.f / m_config.GetFloatOption<float>("GameSettings.TickRate"));
 		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 64);
 	}
 

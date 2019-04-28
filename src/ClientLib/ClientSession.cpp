@@ -206,6 +206,12 @@ namespace bw
 		std::cout << "[Client] Hello world: " << packet.str << std::endl;
 	}
 
+	void ClientSession::HandleIncomingPacket(const Packets::InputTimingCorrection& packet)
+	{
+		std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
+		m_localMatch->HandleTickError(packet.tickError);
+	}
+
 	void ClientSession::HandleIncomingPacket(const Packets::MatchData& matchData)
 	{
 		std::cout << "[Client] Got match data" << std::endl;
@@ -248,10 +254,13 @@ namespace bw
 		m_stringStore.FillStore(packet.startId, packet.strings);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::PlayAnimation& packet)
+	void ClientSession::HandleIncomingPacket(const Packets::EntitiesAnimation& packet)
 	{
-		std::cout << "[Client] Entity #" << packet.entityId << " plays animation " << +packet.animId << std::endl;
-		m_localMatch->PlayAnimation(packet.entityId, packet.animId);
+		for (const auto& animations : packet.entities)
+		{
+			std::cout << "[Client] Entity #" << animations.entityId << " plays animation " << +animations.animId << std::endl;
+			m_localMatch->PlayAnimation(animations.entityId, animations.animId);
+		}
 	}
 
 	void ClientSession::OnSessionConnected()

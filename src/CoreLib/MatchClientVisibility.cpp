@@ -14,11 +14,13 @@
 
 namespace bw
 {
-	void MatchClientVisibility::Update(float elapsedTime)
+	void MatchClientVisibility::Update()
 	{
 		// Send packet in fixed order
 		if (!m_destructionEvents.empty())
 		{
+			m_deleteEntitiesPacket.stateTick = m_match.GetCurrentTick();
+
 			m_deleteEntitiesPacket.entities.clear();
 			for (Nz::UInt32 entityId : m_destructionEvents)
 			{
@@ -51,6 +53,7 @@ namespace bw
 
 				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
+				m_createEntitiesPacket.stateTick = m_match.GetCurrentTick();
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
 				entityData.id = eventData->entityId;
 				entityData.entityClass = networkStringStore.CheckStringIndex(eventData->entityClass);
@@ -138,6 +141,7 @@ namespace bw
 
 		if (!m_healthUpdateEvents.empty())
 		{
+			m_healthUpdatePacket.stateTick = m_match.GetCurrentTick();
 			m_healthUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_healthUpdateEvents)
@@ -155,6 +159,7 @@ namespace bw
 
 		if (!m_inputUpdateEvents.empty())
 		{
+			m_inputUpdatePacket.stateTick = m_match.GetCurrentTick();
 			m_inputUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_inputUpdateEvents)
@@ -172,28 +177,24 @@ namespace bw
 
 		if (!m_playAnimationEvents.empty())
 		{
+			m_entitiesAnimationPacket.stateTick = m_match.GetCurrentTick();
+			m_entitiesAnimationPacket.entities.clear();
+
 			for (auto&& pair : m_playAnimationEvents)
 			{
 				auto& eventData = pair.second;
 
-				Packets::PlayAnimation animPacket;
-				animPacket.animId = static_cast<Nz::UInt8>(eventData.animId);
-				animPacket.entityId = static_cast<Nz::UInt32>(eventData.entityId);
-
-				m_session.SendPacket(animPacket);
+				auto& animData = m_entitiesAnimationPacket.entities.emplace_back();
+				animData.animId = static_cast<Nz::UInt8>(eventData.animId);
+				animData.entityId = static_cast<Nz::UInt32>(eventData.entityId);
 			}
-
 			m_playAnimationEvents.clear();
+
+			m_session.SendPacket(m_entitiesAnimationPacket);
 		}
 
-		m_entityMovementSendTimer += elapsedTime;
-		if (m_entityMovementSendTimer >= m_entityMovementSendInterval)
-		{
-			m_entityMovementSendTimer -= m_entityMovementSendInterval;
-
-			if (m_activeLayer != NoLayer)
-				SendMatchState(elapsedTime);
-		}
+		if (m_activeLayer != NoLayer)
+			SendMatchState();
 
 		for (auto it = m_pendingEntitiesEvent.begin(); it != m_pendingEntitiesEvent.end();)
 		{
@@ -325,13 +326,14 @@ namespace bw
 		m_visibleEntities.UnboundedReset(eventData.entityId);
 	}
 
-	void MatchClientVisibility::SendMatchState(float elapsedTime)
+	void MatchClientVisibility::SendMatchState()
 	{
 		Terrain& terrain = m_match.GetTerrain();
 		TerrainLayer& layer = terrain.GetLayer(m_activeLayer);
 		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 		m_matchStatePacket.entities.clear();
+		m_matchStatePacket.stateTick = m_match.GetCurrentTick();
 
 		for (auto&& pair : m_staticMovementUpdateEvents)
 			BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);

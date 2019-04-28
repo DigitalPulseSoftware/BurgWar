@@ -79,10 +79,11 @@ namespace bw
 			void HandleIncomingPacket(const Packets::EntitiesInputs& packet);
 			void HandleIncomingPacket(const Packets::HealthUpdate& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
+			void HandleIncomingPacket(const Packets::InputTimingCorrection& packet);
 			void HandleIncomingPacket(const Packets::MatchData& packet);
 			void HandleIncomingPacket(const Packets::MatchState& packet);
 			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
-			void HandleIncomingPacket(const Packets::PlayAnimation& packet);
+			void HandleIncomingPacket(const Packets::EntitiesAnimation& packet);
 
 			void OnSessionConnected();
 			void OnSessionDisconnected();

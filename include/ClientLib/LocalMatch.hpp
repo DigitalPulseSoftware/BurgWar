@@ -14,6 +14,7 @@
 #include <CoreLib/AnimationManager.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
+#include <CoreLib/Utility/AverageValues.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/EntityOwner.hpp>
@@ -22,6 +23,7 @@
 #include <Nazara/Platform/EventHandler.hpp>
 #include <memory>
 #include <optional>
+#include <variant>
 #include <vector>
 
 namespace bw
@@ -60,9 +62,14 @@ namespace bw
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
 			void DeleteEntity(Nz::UInt32 serverId);
+			Nz::UInt16 EstimateServerTick() const;
 			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
+			void HandleTickError(Nz::Int32 tickError);
+			void OnTick() override;
 			void PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId);
-			void SendInputs();
+			void PrepareClientUpdate();
+			void PrepareTickUpdate();
+			bool SendInputs(bool force);
 			void UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth);
 			void UpdateEntityInput(Nz::UInt32 serverId, const InputData& inputs);
 
@@ -118,13 +125,16 @@ namespace bw
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;
 			Nz::SpriteRef m_trailSpriteTest;
+			Nz::UInt16 m_currentServerTick;
 			AnimationManager m_animationManager;
+			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;
+			float m_timeSinceLastInputSending;
 	};
 }
 
