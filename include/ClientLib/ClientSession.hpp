@@ -69,21 +69,21 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
-			void HandleIncomingPacket(const Packets::AuthFailure& packet);
-			void HandleIncomingPacket(const Packets::AuthSuccess& packet);
-			void HandleIncomingPacket(const Packets::ClientScriptList& packet);
-			void HandleIncomingPacket(const Packets::ControlEntity& packet);
-			void HandleIncomingPacket(const Packets::CreateEntities& packet);
-			void HandleIncomingPacket(const Packets::DeleteEntities& packet);
-			void HandleIncomingPacket(const Packets::DownloadClientScriptResponse& packet);
-			void HandleIncomingPacket(const Packets::EntitiesInputs& packet);
-			void HandleIncomingPacket(const Packets::HealthUpdate& packet);
-			void HandleIncomingPacket(const Packets::HelloWorld& packet);
-			void HandleIncomingPacket(const Packets::InputTimingCorrection& packet);
-			void HandleIncomingPacket(const Packets::MatchData& packet);
-			void HandleIncomingPacket(const Packets::MatchState& packet);
-			void HandleIncomingPacket(const Packets::NetworkStrings& packet);
-			void HandleIncomingPacket(const Packets::EntitiesAnimation& packet);
+			void HandleIncomingPacket(Packets::AuthFailure&& packet);
+			void HandleIncomingPacket(Packets::AuthSuccess&& packet);
+			void HandleIncomingPacket(Packets::ClientScriptList&& packet);
+			void HandleIncomingPacket(Packets::ControlEntity&& packet);
+			void HandleIncomingPacket(Packets::CreateEntities&& packet);
+			void HandleIncomingPacket(Packets::DeleteEntities&& packet);
+			void HandleIncomingPacket(Packets::DownloadClientScriptResponse&& packet);
+			void HandleIncomingPacket(Packets::EntitiesAnimation&& packet);
+			void HandleIncomingPacket(Packets::EntitiesInputs&& packet);
+			void HandleIncomingPacket(Packets::HealthUpdate&& packet);
+			void HandleIncomingPacket(Packets::HelloWorld&& packet);
+			void HandleIncomingPacket(Packets::InputTimingCorrection&& packet);
+			void HandleIncomingPacket(Packets::MatchData&& packet);
+			void HandleIncomingPacket(Packets::MatchState&& packet);
+			void HandleIncomingPacket(Packets::NetworkStrings&& packet);
 
 			void OnSessionConnected();
 			void OnSessionDisconnected();

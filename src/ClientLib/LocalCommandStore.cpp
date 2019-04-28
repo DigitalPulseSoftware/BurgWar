@@ -10,9 +10,9 @@ namespace bw
 {
 	LocalCommandStore::LocalCommandStore()
 	{
-#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, const Packets::Type& packet) \
+#define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, Packets::Type&& packet) \
 { \
-	session->HandleIncomingPacket(packet); \
+	session->HandleIncomingPacket(std::move(packet)); \
 })
 #define OutgoingCommand(Type, Flags, Channel) RegisterOutgoingCommand<Packets::Type>(#Type, Flags, Channel)
 

@@ -61,7 +61,7 @@ namespace bw
 				return false;
 			}
 
-			cb(peer, data);
+			cb(peer, std::move(data));
 			return true;
 		};
 		newCommand.name = name;

@@ -65,17 +65,17 @@ namespace bw
 		m_commandStore.UnserializePacket(this, packet);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::AuthFailure& packet)
+	void ClientSession::HandleIncomingPacket(Packets::AuthFailure&& packet)
 	{
 		std::cout << "[Client] Auth failed" << std::endl;
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::AuthSuccess& packet)
+	void ClientSession::HandleIncomingPacket(Packets::AuthSuccess&& packet)
 	{
 		std::cout << "[Client] Auth succeeded" << std::endl;
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::ClientScriptList& packet)
+	void ClientSession::HandleIncomingPacket(Packets::ClientScriptList&& packet)
 	{
 		std::cout << "[Client] Got client script list" << std::endl;
 
@@ -103,13 +103,13 @@ namespace bw
 		m_downloadManager->HandlePacket(packet);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::ControlEntity& packet)
+	void ClientSession::HandleIncomingPacket(Packets::ControlEntity&& packet)
 	{
 		std::cout << "[Client] Control entity #" << packet.entityId << std::endl;
 		m_localMatch->ControlEntity(packet.playerIndex, packet.entityId);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::CreateEntities& packet)
+	void ClientSession::HandleIncomingPacket(Packets::CreateEntities&& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
@@ -168,7 +168,7 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::DeleteEntities& packet)
+	void ClientSession::HandleIncomingPacket(Packets::DeleteEntities&& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
@@ -177,13 +177,13 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptResponse& packet)
+	void ClientSession::HandleIncomingPacket(Packets::DownloadClientScriptResponse&& packet)
 	{
 		assert(m_downloadManager.has_value());
 		m_downloadManager->HandlePacket(packet);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::EntitiesInputs& packet)
+	void ClientSession::HandleIncomingPacket(Packets::EntitiesInputs&& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
@@ -192,7 +192,7 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::HealthUpdate& packet)
+	void ClientSession::HandleIncomingPacket(Packets::HealthUpdate&& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
@@ -201,24 +201,24 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
+	void ClientSession::HandleIncomingPacket(Packets::HelloWorld&& packet)
 	{
 		std::cout << "[Client] Hello world: " << packet.str << std::endl;
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::InputTimingCorrection& packet)
+	void ClientSession::HandleIncomingPacket(Packets::InputTimingCorrection&& packet)
 	{
 		std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
 		m_localMatch->HandleTickError(packet.tickError);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::MatchData& matchData)
+	void ClientSession::HandleIncomingPacket(Packets::MatchData&& matchData)
 	{
 		std::cout << "[Client] Got match data" << std::endl;
 		m_localMatch = m_matchFactory(*this, matchData);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::MatchState& packet)
+	void ClientSession::HandleIncomingPacket(Packets::MatchState&& packet)
 	{
 		for (const auto& entityData : packet.entities)
 		{
@@ -246,7 +246,7 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::NetworkStrings& packet)
+	void ClientSession::HandleIncomingPacket(Packets::NetworkStrings&& packet)
 	{
 		if (packet.startId == 0)
 			m_stringStore.Clear(); //< Reset string store
@@ -254,7 +254,7 @@ namespace bw
 		m_stringStore.FillStore(packet.startId, packet.strings);
 	}
 
-	void ClientSession::HandleIncomingPacket(const Packets::EntitiesAnimation& packet)
+	void ClientSession::HandleIncomingPacket(Packets::EntitiesAnimation&& packet)
 	{
 		for (const auto& animations : packet.entities)
 		{
