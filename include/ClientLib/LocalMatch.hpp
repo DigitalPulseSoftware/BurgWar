@@ -55,23 +55,34 @@ namespace bw
 		private:
 			struct ServerEntity;
 
-			void ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId);
-			Ndk::EntityHandle CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties, const std::string& name);
+			using TickPacketContent = std::variant<
+				Packets::ControlEntity,
+				Packets::CreateEntities,
+				Packets::DeleteEntities,
+				Packets::EntitiesAnimation,
+				Packets::EntitiesInputs,
+				Packets::HealthUpdate,
+				Packets::MatchState
+			>;
 
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
-			void DeleteEntity(Nz::UInt32 serverId);
 			Nz::UInt16 EstimateServerTick() const;
-			void MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight);
+			void HandleTickPacket(TickPacketContent&& packet);
+			void HandleTickPacket(Packets::ControlEntity&& packet);
+			void HandleTickPacket(Packets::CreateEntities&& packet);
+			void HandleTickPacket(Packets::DeleteEntities&& packet);
+			void HandleTickPacket(Packets::EntitiesAnimation&& packet);
+			void HandleTickPacket(Packets::EntitiesInputs&& packet);
+			void HandleTickPacket(Packets::HealthUpdate&& packet);
+			void HandleTickPacket(Packets::MatchState&& packet);
 			void HandleTickError(Nz::Int32 tickError);
 			void OnTick() override;
-			void PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId);
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
+			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
 			bool SendInputs(bool force);
-			void UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth);
-			void UpdateEntityInput(Nz::UInt32 serverId, const InputData& inputs);
 
 			struct HealthData
 			{
@@ -111,6 +122,12 @@ namespace bw
 				bool isPhysical;
 			};
 
+			struct TickPacket
+			{
+				Nz::UInt16 tick;
+				TickPacketContent content;
+			};
+
 			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
 			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
 
@@ -121,6 +138,7 @@ namespace bw
 			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
+			std::vector<TickPacket> m_tickedPackets;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;

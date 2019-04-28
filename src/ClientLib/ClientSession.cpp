@@ -105,76 +105,20 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::ControlEntity&& packet)
 	{
-		std::cout << "[Client] Control entity #" << packet.entityId << std::endl;
-		m_localMatch->ControlEntity(packet.playerIndex, packet.entityId);
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::CreateEntities&& packet)
 	{
-		for (const auto& entityData : packet.entities)
-		{
-			const std::string& entityClass = m_stringStore.GetString(entityData.entityClass);
-			std::cout << "[Client] Entity #" << entityData.id << " of type " << entityClass << " created at " << entityData.position << std::endl;
-
-			Nz::UInt16 currentHealth = 0;
-			Nz::UInt16 maxHealth = 0;
-
-			if (entityData.health.has_value())
-			{
-				currentHealth = entityData.health->currentHealth;
-				maxHealth = entityData.health->maxHealth;
-			}
-
-			EntityProperties properties;
-			for (const auto& property : entityData.properties)
-			{
-				const std::string& propertyName = m_stringStore.GetString(property.name);
-
-				std::visit([&](auto&& value)
-				{
-					using T = std::decay_t<decltype(value)>;
-
-					if constexpr (std::is_same_v<T, std::vector<bool>> ||
-					              std::is_same_v<T, std::vector<float>> ||
-					              std::is_same_v<T, std::vector<Nz::Int64>> ||
-					              std::is_same_v<T, std::vector<Nz::Vector2f>> ||
-					              std::is_same_v<T, std::vector<Nz::Vector2i64>> ||
-					              std::is_same_v<T, std::vector<std::string>>)
-					{
-						using StoredType = typename T::value_type;
-
-						if (property.isArray)
-						{
-							EntityPropertyArray<StoredType> elements(value.size());
-							for (std::size_t i = 0; i < value.size(); ++i)
-								elements[i] = value[i];
-
-							properties.emplace(propertyName, std::move(elements));
-						}
-						else
-							properties.emplace(propertyName, value.front());
-					}
-					else
-						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-				}, property.value);
-			}
-
-			std::string name;
-			if (entityData.name.has_value())
-				name = entityData.name.value();
-
-			m_localMatch->CreateEntity(entityData.id, entityClass, entityData.position, entityData.playerMovement.has_value(), entityData.inputs.has_value(), entityData.physicsProperties.has_value(), entityData.parentId, currentHealth, maxHealth, properties, name);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::DeleteEntities&& packet)
 	{
-		for (const auto& entityData : packet.entities)
-		{
-			std::cout << "[Client] Entity #" << entityData.id << " deleted" << std::endl;
-			m_localMatch->DeleteEntity(entityData.id);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::DownloadClientScriptResponse&& packet)
@@ -185,20 +129,14 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::EntitiesInputs&& packet)
 	{
-		for (const auto& entityData : packet.entities)
-		{
-			//std::cout << "[Client] Input update for entity " << entityData.id << std::endl;
-			m_localMatch->UpdateEntityInput(entityData.id, entityData.inputs);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::HealthUpdate&& packet)
 	{
-		for (const auto& entityData : packet.entities)
-		{
-			std::cout << "[Client] Health update for entity " << entityData.id << " (now at " << entityData.currentHealth << ')' << std::endl;
-			m_localMatch->UpdateEntityHealth(entityData.id, entityData.currentHealth);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::HelloWorld&& packet)
@@ -220,30 +158,8 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::MatchState&& packet)
 	{
-		for (const auto& entityData : packet.entities)
-		{
-			bool isFacingRight = false;
-
-			//std::cout << "[Client] Entity #" << entityData.id << " is now at " << entityData.position;
-			if (entityData.playerMovement.has_value())
-			{
-				isFacingRight = entityData.playerMovement->isFacingRight;
-				//std::cout << " and has player entity data (facing right=" << isFacingRight << ")";
-			}
-
-			//std::cout << "\n";
-
-			Nz::RadianAnglef angularVelocity = 0.f;
-			Nz::Vector2f linearVelocity = Nz::Vector2f::Zero();
-
-			if (entityData.physicsProperties.has_value())
-			{
-				angularVelocity = entityData.physicsProperties->angularVelocity;
-				linearVelocity = entityData.physicsProperties->linearVelocity;
-			}
-
-			m_localMatch->MoveEntity(entityData.id, entityData.position, linearVelocity, entityData.rotation, angularVelocity, isFacingRight);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::NetworkStrings&& packet)
@@ -256,11 +172,8 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::EntitiesAnimation&& packet)
 	{
-		for (const auto& animations : packet.entities)
-		{
-			std::cout << "[Client] Entity #" << animations.entityId << " plays animation " << +animations.animId << std::endl;
-			m_localMatch->PlayAnimation(animations.entityId, animations.animId);
-		}
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::OnSessionConnected()

@@ -238,6 +238,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, ControlEntity& data)
 		{
+			serializer &= data.stateTick;
 			serializer &= data.playerIndex;
 			serializer &= data.entityId;
 		}

@@ -25,6 +25,11 @@ namespace bw
 		if (it == m_pendingEntitiesEvent.end())
 			it = m_pendingEntitiesEvent.emplace(entityId, std::vector<EntityPacketSendFunction>()).first;
 
-		it.value().emplace_back([this, packet = std::forward<T>(packet)]() { m_session.SendPacket(packet); });
+		it.value().emplace_back([this, packet = std::forward<T>(packet)]() mutable
+		{ 
+			packet.stateTick = m_match.GetCurrentTick();
+
+			m_session.SendPacket(packet); 
+		});
 	}
 }

@@ -127,21 +127,13 @@ namespace bw
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
 		// Compute client error
-
 		Nz::Int32 tickError = static_cast<Nz::Int32>(packet.estimatedServerTick) - static_cast<Nz::Int32>(m_match.GetCurrentTick());
-		std::cout << "[Server] tick error: " << tickError << " (tick: " << m_match.GetCurrentTick() << ") at " << m_match.GetApp().GetAppTime() << std::endl;
 
-		if (tickError != 0)
-		{
-			Packets::InputTimingCorrection correctionPacket;
-			correctionPacket.serverTick = packet.estimatedServerTick;
-			correctionPacket.tickError = tickError;
+		Packets::InputTimingCorrection correctionPacket;
+		correctionPacket.serverTick = packet.estimatedServerTick;
+		correctionPacket.tickError = tickError;
 
-			SendPacket(correctionPacket);
-
-		}
-
-		//std::cout << "Received input packet at tick " << m_match.GetCurrentTick() << " (estimated " << packet.estimatedServerTick << ")" << std::endl;
+		SendPacket(correctionPacket);
 
 		if (packet.inputs.size() != m_players.size())
 		{

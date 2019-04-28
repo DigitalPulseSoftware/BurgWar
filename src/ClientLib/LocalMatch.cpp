@@ -332,96 +332,6 @@ namespace bw
 		m_world.Update(elapsedTime);
 	}
 
-	void LocalMatch::ControlEntity(Nz::UInt8 playerIndex, Nz::UInt32 serverId)
-	{
-		auto it = m_serverEntityIdToClient.find(serverId);
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		const ServerEntity& serverEntity = it->second;
-
-		if (m_playerData[playerIndex].controlledEntity)
-			m_playerData[playerIndex].controlledEntity->RemoveComponent<Ndk::ListenerComponent>();
-
-		m_playerData[playerIndex].controlledEntity = serverEntity.entity;
-		m_playerData[playerIndex].controlledEntity->AddComponent<Ndk::ListenerComponent>();
-
-		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
-	}
-
-	Ndk::EntityHandle LocalMatch::CreateEntity(Nz::UInt32 serverId, const std::string& entityClassName, const Nz::Vector2f& createPosition, bool hasPlayerMovement, bool hasInputs, bool isPhysical, std::optional<Nz::UInt32> parentId, Nz::UInt16 currentHealth, Nz::UInt16 maxHealth, const EntityProperties& properties, const std::string& name)
-	{
-		static std::string entityPrefix = "entity_";
-		static std::string weaponPrefix = "weapon_";
-
-		/*const*/ ServerEntity* parent = nullptr;
-		if (parentId)
-		{
-			auto it = m_serverEntityIdToClient.find(parentId.value());
-			assert(it != m_serverEntityIdToClient.end());
-
-			//parent = &it->second;
-			parent = &it.value();
-		}
-
-		Ndk::EntityHandle entity;
-		if (entityClassName.compare(0, entityPrefix.size(), entityPrefix) == 0)
-		{
-			// Entity
-			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClassName); entityIndex != ClientEntityStore::InvalidIndex)
-			{
-				entity = m_entityStore->InstantiateEntity(m_world, entityIndex, createPosition, 0, properties);
-				if (!entity)
-					return Ndk::EntityHandle::InvalidHandle;
-			}
-		}
-		else if (entityClassName.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
-		{
-			// Weapon
-			if (std::size_t weaponIndex = m_weaponStore->GetElementIndex(entityClassName); weaponIndex != ClientEntityStore::InvalidIndex)
-			{
-				assert(parent);
-
-				parent->weaponEntityId = serverId; //< TEMPORARY
-
-				entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, properties, parent->entity);
-				if (!entity)
-					return Ndk::EntityHandle::InvalidHandle;
-
-				entity->GetComponent<Ndk::NodeComponent>().SetPosition(createPosition);
-			}
-		}
-		else
-		{
-			// Unknown
-			std::cerr << "Failed to decode entity type: " << entityClassName << std::endl;
-			return Ndk::EntityHandle::InvalidHandle;
-		}
-
-		if (entity)
-		{
-			ServerEntity serverEntity;
-			serverEntity.entity = entity;
-			serverEntity.isPhysical = isPhysical;
-			serverEntity.maxHealth = maxHealth;
-			serverEntity.serverEntityId = serverId;
-
-			entity->AddComponent<LocalMatchComponent>(shared_from_this());
-			//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
-			//DebugEntityId(serverEntity);
-
-			if (currentHealth != maxHealth && maxHealth != 0)
-				CreateHealthBar(serverEntity, currentHealth);
-
-			if (!name.empty())
-				CreateName(serverEntity, name);
-
-			m_serverEntityIdToClient.emplace(serverId, std::move(serverEntity));
-		}
-
-		return entity;
-	}
-
 	void LocalMatch::CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth)
 	{
 		auto& healthData = serverEntity.health.emplace();
@@ -490,63 +400,288 @@ namespace bw
 		gfxComponent.Attach(text, Nz::Matrix4f::Translate(Nz::Vector3f(aabb.width / 2.f - volume.width / 2.f, aabb.height / 2 - 5 - volume.height / 2.f, 0.f)));
 	}
 
-	void LocalMatch::DeleteEntity(Nz::UInt32 serverId)
-	{
-		auto it = m_serverEntityIdToClient.find(serverId);
-		//assert(it != m_serverEntityIdToClient.end());
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		m_serverEntityIdToClient.erase(it);
-	}
-
 	Nz::UInt16 LocalMatch::EstimateServerTick() const
 	{
 		return m_currentServerTick - m_averageTickError.GetAverageValue();
 	}
 
-	void LocalMatch::MoveEntity(Nz::UInt32 serverId, const Nz::Vector2f& newPos, const Nz::Vector2f& newLinearVel, Nz::RadianAnglef newRot, Nz::RadianAnglef newAngularVel, bool isFacingRight)
+	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)
+	{
+		std::visit([this](auto&& packet)
+		{
+			HandleTickPacket(std::move(packet));
+		}, std::move(packet));
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::ControlEntity&& packet)
+	{
+		auto it = m_serverEntityIdToClient.find(packet.entityId);
+		if (it == m_serverEntityIdToClient.end())
+			return;
+
+		const ServerEntity& serverEntity = it->second;
+
+		if (m_playerData[packet.playerIndex].controlledEntity)
+			m_playerData[packet.playerIndex].controlledEntity->RemoveComponent<Ndk::ListenerComponent>();
+
+		m_playerData[packet.playerIndex].controlledEntity = serverEntity.entity;
+		m_playerData[packet.playerIndex].controlledEntity->AddComponent<Ndk::ListenerComponent>();
+
+		//m_camera->GetComponent<Ndk::NodeComponent>().SetParent(serverEntity.entity);
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::CreateEntities&& packet)
+	{
+		static std::string entityPrefix = "entity_";
+		static std::string weaponPrefix = "weapon_";
+
+		const NetworkStringStore& networkStringStore = m_session.GetNetworkStringStore();
+
+		for (auto&& entityData : packet.entities)
+		{
+			const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
+
+			EntityProperties properties;
+			for (const auto& property : entityData.properties)
+			{
+				const std::string& propertyName = networkStringStore.GetString(property.name);
+
+				std::visit([&](auto&& value)
+				{
+					using T = std::decay_t<decltype(value)>;
+
+					if constexpr (std::is_same_v<T, std::vector<bool>> ||
+						std::is_same_v<T, std::vector<float>> ||
+						std::is_same_v<T, std::vector<Nz::Int64>> ||
+						std::is_same_v<T, std::vector<Nz::Vector2f>> ||
+						std::is_same_v<T, std::vector<Nz::Vector2i64>> ||
+						std::is_same_v<T, std::vector<std::string>>)
+					{
+						using StoredType = typename T::value_type;
+
+						if (property.isArray)
+						{
+							EntityPropertyArray<StoredType> elements(value.size());
+							for (std::size_t i = 0; i < value.size(); ++i)
+								elements[i] = value[i];
+
+							properties.emplace(propertyName, std::move(elements));
+						}
+						else
+							properties.emplace(propertyName, value.front());
+					}
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+				}, property.value);
+			}
+
+			/*const*/ ServerEntity* parent = nullptr;
+			if (entityData.parentId)
+			{
+				auto it = m_serverEntityIdToClient.find(entityData.parentId.value());
+				assert(it != m_serverEntityIdToClient.end());
+
+				//parent = &it->second;
+				parent = &it.value();
+			}
+
+			Ndk::EntityHandle entity;
+			if (entityClass.compare(0, entityPrefix.size(), entityPrefix) == 0)
+			{
+				// Entity
+				if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClass); entityIndex != ClientEntityStore::InvalidIndex)
+				{
+					entity = m_entityStore->InstantiateEntity(m_world, entityIndex, entityData.position, entityData.rotation, properties);
+					if (!entity)
+						continue;
+				}
+			}
+			else if (entityClass.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
+			{
+				// Weapon
+				if (std::size_t weaponIndex = m_weaponStore->GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)
+				{
+					assert(parent);
+
+					parent->weaponEntityId = entityData.id; //< TEMPORARY
+
+					entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, properties, parent->entity);
+					if (!entity)
+						continue;
+
+					entity->GetComponent<Ndk::NodeComponent>().SetPosition(entityData.position);
+				}
+			}
+			else
+			{
+				// Unknown
+				std::cerr << "Failed to decode entity type: " << entityClass << std::endl;
+				continue;
+			}
+
+			if (entity)
+			{
+				ServerEntity serverEntity;
+				serverEntity.entity = entity;
+				serverEntity.isPhysical = entityData.physicsProperties.has_value();
+				serverEntity.maxHealth = (entityData.health.has_value()) ? entityData.health->maxHealth : 0;
+				serverEntity.serverEntityId = entityData.id;
+
+				entity->AddComponent<LocalMatchComponent>(shared_from_this());
+				//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
+				//DebugEntityId(serverEntity);
+
+				if (entityData.health && entityData.health->currentHealth != entityData.health->maxHealth)
+					CreateHealthBar(serverEntity, entityData.health->currentHealth);
+
+				if (entityData.name)
+					CreateName(serverEntity, entityData.name.value());
+
+				m_serverEntityIdToClient.emplace(entityData.id, std::move(serverEntity));
+			}
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::DeleteEntities&& packet)
+	{
+		for (auto&& entityData : packet.entities)
+		{
+			auto it = m_serverEntityIdToClient.find(entityData.id);
+			//assert(it != m_serverEntityIdToClient.end());
+			if (it == m_serverEntityIdToClient.end())
+				return;
+
+			m_serverEntityIdToClient.erase(it);
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::EntitiesAnimation&& packet)
+	{
+		for (auto&& entityData : packet.entities)
+		{
+			auto it = m_serverEntityIdToClient.find(entityData.entityId);
+			if (it == m_serverEntityIdToClient.end())
+				continue;
+
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			auto& animComponent = serverEntity.entity->GetComponent<AnimationComponent>();
+			animComponent.Play(entityData.animId, m_application.GetAppTime());
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::EntitiesInputs&& packet)
+	{
+		for (auto&& entityData : packet.entities)
+		{
+			auto it = m_serverEntityIdToClient.find(entityData.id);
+			if (it == m_serverEntityIdToClient.end())
+				continue;
+
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(entityData.inputs);
+
+			// TEMPORARY
+			if (serverEntity.weaponEntityId != 0xFFFFFFFF)
+			{
+				auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
+				if (weaponIt == m_serverEntityIdToClient.end())
+					return;
+
+				ServerEntity& weaponEntity = weaponIt.value();
+				if (!weaponEntity.entity)
+					return;
+
+				if (entityData.inputs.isAttacking)
+				{
+					auto& weaponCooldown = weaponEntity.entity->GetComponent<CooldownComponent>();
+					if (weaponCooldown.Trigger(GetCurrentTime()))
+					{
+						auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
+						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+					}
+				}
+			}
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::HealthUpdate&& packet)
+	{
+		for (auto&& entityData : packet.entities)
+		{
+			auto it = m_serverEntityIdToClient.find(entityData.id);
+			if (it == m_serverEntityIdToClient.end())
+				continue;
+
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			if (serverEntity.health)
+			{
+				HealthData& healthData = serverEntity.health.value();
+				healthData.currentHealth = entityData.currentHealth;
+				healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
+			}
+			else
+				CreateHealthBar(serverEntity, entityData.currentHealth);
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
 	{
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
-		auto it = m_serverEntityIdToClient.find(serverId);
-		//assert(it != m_serverEntityIdToClient.end());
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		ServerEntity& serverEntity = it.value();
-		if (!serverEntity.entity)
-			return;
-
-		if (serverEntity.isPhysical)
+		for (auto&& entityData : packet.entities)
 		{
-			auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto it = m_serverEntityIdToClient.find(entityData.id);
+			//assert(it != m_serverEntityIdToClient.end());
+			if (it == m_serverEntityIdToClient.end())
+				return;
 
-			serverEntity.positionError += physComponent.GetPosition() - newPos;
-			serverEntity.rotationError += physComponent.GetRotation() - newRot;
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				return;
 
-			if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
+			if (serverEntity.isPhysical)
 			{
-				auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
+				assert(entityData.physicsProperties);
 
-				if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+				auto& physComponent = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+				serverEntity.positionError += physComponent.GetPosition() - entityData.position;
+				serverEntity.rotationError += physComponent.GetRotation() - entityData.rotation;
+
+				if (serverEntity.entity->HasComponent<PlayerMovementComponent>())
 				{
-					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-					entityNode.Scale(-1.f, 1.f);
-				}
-			}
+					auto& playerMovementComponent = serverEntity.entity->GetComponent<PlayerMovementComponent>();
 
-			physComponent.SetAngularVelocity(newAngularVel);
-			physComponent.SetPosition(newPos);
-			physComponent.SetRotation(newRot);
-			physComponent.SetVelocity(newLinearVel);
-		}
-		else
-		{
-			auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-			nodeComponent.SetPosition(newPos);
-			nodeComponent.SetRotation(newRot);
+					if (playerMovementComponent.UpdateFacingRightState(entityData.playerMovement->isFacingRight))
+					{
+						auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+						entityNode.Scale(-1.f, 1.f);
+					}
+				}
+
+				physComponent.SetPosition(entityData.position);
+				physComponent.SetRotation(entityData.rotation);
+
+				physComponent.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
+				physComponent.SetVelocity(entityData.physicsProperties->linearVelocity);
+			}
+			else
+			{
+				auto& nodeComponent = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				nodeComponent.SetPosition(entityData.position);
+				nodeComponent.SetRotation(entityData.rotation);
+			}
 		}
 	}
 
@@ -557,26 +692,22 @@ namespace bw
 
 	void LocalMatch::OnTick()
 	{
+		Nz::UInt16 estimatedServerTick = EstimateServerTick() /* + 3 for network jitter */;
+
+		auto it = m_tickedPackets.begin();
+		while (it != m_tickedPackets.end() && estimatedServerTick >= it->tick)
+		{
+			HandleTickPacket(std::move(it->content));
+			++it;
+		}
+		m_tickedPackets.erase(m_tickedPackets.begin(), it);
+
 		m_world.Update(GetTickDuration());
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback("OnTick");
 
 		m_currentServerTick++;
-	}
-
-	void LocalMatch::PlayAnimation(Nz::UInt32 serverId, Nz::UInt8 animId)
-	{
-		auto it = m_serverEntityIdToClient.find(serverId);
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		ServerEntity& serverEntity = it.value();
-		if (!serverEntity.entity)
-			return;
-
-		auto& animComponent = serverEntity.entity->GetComponent<AnimationComponent>();
-		animComponent.Play(animId, m_application.GetAppTime());
 	}
 
 	void LocalMatch::PrepareClientUpdate()
@@ -609,12 +740,25 @@ namespace bw
 		m_world.GetSystem<TickCallbackSystem>().Enable(true);
 	}
 
+	void LocalMatch::PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet)
+	{
+		TickPacket newPacket;
+		newPacket.tick = tick;
+		newPacket.content = std::move(packet);
+
+		auto it = std::upper_bound(m_tickedPackets.begin(), m_tickedPackets.end(), newPacket, [](const TickPacket& a, const TickPacket& b)
+		{
+			return a.tick < b.tick;
+		});
+
+		m_tickedPackets.emplace(it, std::move(newPacket));
+	}
+
 	bool LocalMatch::SendInputs(bool force)
 	{
 		assert(m_playerData.size() == m_inputPacket.inputs.size());
 
 		m_inputPacket.estimatedServerTick = EstimateServerTick();
-		std::cout << "Estimated server tick at " << m_inputPacket.estimatedServerTick << " on " << m_application.GetAppTime() << std::endl;
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -639,60 +783,5 @@ namespace bw
 		}
 		else
 			return false;
-	}
-
-	void LocalMatch::UpdateEntityHealth(Nz::UInt32 serverId, Nz::UInt16 newHealth)
-	{
-		auto it = m_serverEntityIdToClient.find(serverId);
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		ServerEntity& serverEntity = it.value();
-		if (!serverEntity.entity)
-			return;
-
-		if (serverEntity.health)
-		{
-			HealthData& healthData = serverEntity.health.value();
-			healthData.currentHealth = newHealth;
-			healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
-		}
-		else
-			CreateHealthBar(serverEntity, newHealth);
-	}
-
-	void LocalMatch::UpdateEntityInput(Nz::UInt32 serverId, const InputData& inputs)
-	{
-		auto it = m_serverEntityIdToClient.find(serverId);
-		if (it == m_serverEntityIdToClient.end())
-			return;
-
-		ServerEntity& serverEntity = it.value();
-		if (!serverEntity.entity)
-			return;
-
-		serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(inputs);
-
-		// TEMPORARY
-		if (serverEntity.weaponEntityId != 0xFFFFFFFF)
-		{
-			auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
-			if (weaponIt == m_serverEntityIdToClient.end())
-				return;
-
-			ServerEntity& weaponEntity = weaponIt.value();
-			if (!weaponEntity.entity)
-				return;
-
-			if (inputs.isAttacking)
-			{
-				auto& weaponCooldown = weaponEntity.entity->GetComponent<CooldownComponent>();
-				if (weaponCooldown.Trigger(GetCurrentTime()))
-				{
-					auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
-					weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
-				}
-			}
-		}
 	}
 }
