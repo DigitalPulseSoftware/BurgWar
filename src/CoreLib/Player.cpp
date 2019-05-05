@@ -55,6 +55,8 @@ namespace bw
 			if (!burger)
 				return;
 
+			std::cout << "[Server] Creating player entity #" << burger->GetId() << std::endl;
+
 			burger->AddComponent<InputComponent>();
 			burger->AddComponent<PlayerControlledComponent>(CreateHandle());
 

@@ -60,6 +60,9 @@ namespace bw
 	template<typename... Args> constexpr OverloadResolver<Args...> Overload = {};
 
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);
+	template<typename T> bool IsMoreRecent(T a, T b);
 }
+
+#include <CoreLib/Utils.inl>
 
 #endif

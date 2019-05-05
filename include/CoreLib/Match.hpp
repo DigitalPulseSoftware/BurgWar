@@ -9,6 +9,7 @@
 
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
@@ -78,7 +79,14 @@ namespace bw
 		private:
 			void OnTick() override;
 
+			struct Debug
+			{
+				Nz::UdpSocket socket;
+				Nz::UInt64 lastBroadcastTime = 0;
+			};
+
 			std::filesystem::path m_gamemodePath;
+			std::optional<Debug> m_debug;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;

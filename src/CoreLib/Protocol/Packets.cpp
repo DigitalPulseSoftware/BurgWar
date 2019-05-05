@@ -327,6 +327,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)
 		{
+			serializer &= data.lastInputTime;
 			serializer &= data.stateTick;
 
 			serializer.SerializeArraySize(data.entities);
@@ -386,6 +387,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
+			serializer &= data.inputTime;
 			serializer &= data.estimatedServerTick;
 
 			serializer.SerializeArraySize(data.inputs);

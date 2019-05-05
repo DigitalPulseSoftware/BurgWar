@@ -90,5 +90,6 @@ namespace bw
 
 	void ClientApp::RegisterClientConfig()
 	{
+		m_config.RegisterBoolOption("Debug.ShowServerGhosts");
 	}
 }

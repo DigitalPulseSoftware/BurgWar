@@ -19,7 +19,8 @@ namespace bw
 	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
-	m_bridge(std::move(bridge))
+	m_bridge(std::move(bridge)),
+	m_lastInputClientTime(0)
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
 		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
@@ -140,6 +141,8 @@ namespace bw
 			std::cerr << "Player input count doesn't match player count" << std::endl;
 			return;
 		}
+
+		UpdateLastInputClientTime(packet.inputTime);
 
 		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
 		{

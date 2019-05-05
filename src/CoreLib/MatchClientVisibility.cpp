@@ -334,6 +334,7 @@ namespace bw
 
 		m_matchStatePacket.entities.clear();
 		m_matchStatePacket.stateTick = m_match.GetCurrentTick();
+		m_matchStatePacket.lastInputTime = m_session.GetLastInputClientTime();
 
 		for (auto&& pair : m_staticMovementUpdateEvents)
 			BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);
@@ -367,5 +368,4 @@ namespace bw
 			packetData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
 		}
 	}
-
 }

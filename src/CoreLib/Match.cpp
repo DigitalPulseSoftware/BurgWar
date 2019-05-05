@@ -3,12 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Match.hpp>
+#include <Nazara/Network/Algorithm.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
+#include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <Nazara/Core/File.hpp>
@@ -75,6 +77,27 @@ namespace bw
 		m_terrain = std::make_unique<Terrain>(app, *this, std::move(map));
 
 		m_gamemode->ExecuteCallback("OnInit");
+
+		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
+		{
+			m_debug.emplace();
+			if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+			{
+				m_debug->socket.EnableBlocking(false);
+				//m_debug->socket.EnableBroadcasting(true);
+
+				/*if (m_debug->socket.Bind(42000) != Nz::SocketState_Bound)
+				{
+					std::cerr << "Failed to bind debug socket";
+					m_debug.reset();
+				}*/
+			}
+			else
+			{
+				std::cerr << "Failed to create debug socket";
+				m_debug.reset();
+			}
+		}
 	}
 
 	Match::~Match() = default;
@@ -186,6 +209,67 @@ namespace bw
 		m_scriptingContext->Update();
 
 		SharedMatch::Update(elapsedTime);
+
+		if (m_debug && m_app.GetAppTime() - m_debug->lastBroadcastTime > 1000 / 60)
+		{
+			m_debug->lastBroadcastTime = m_app.GetAppTime();
+
+			// Send all entities state
+			Nz::NetPacket debugPacket(1);
+
+			std::size_t offset = debugPacket.GetStream()->GetCursorPos();
+
+			Nz::UInt32 entityCount = 0;
+			debugPacket << entityCount;
+
+			ForEachEntity([&](const Ndk::EntityHandle& entity)
+			{
+				if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
+					return;
+
+				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+
+				entityCount++;
+
+				CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
+				debugPacket << entityId;
+
+				bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
+
+				debugPacket << isPhysical;
+
+				Nz::Vector2f entityPosition;
+				Nz::RadianAnglef entityRotation;
+
+				if (isPhysical)
+				{
+					auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+					entityPosition = entityPhys.GetPosition();
+					entityRotation = entityPhys.GetRotation();
+
+					debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
+				}
+				else
+				{
+					entityPosition = Nz::Vector2f(entityNode.GetPosition());
+					entityRotation = Nz::RadianAnglef::FromDegrees(entityNode.GetRotation().ToEulerAngles().roll);
+				}
+
+				debugPacket << entityPosition << entityRotation;
+			});
+
+			debugPacket.GetStream()->SetCursorPos(offset);
+			debugPacket << entityCount;
+
+			Nz::IpAddress broadcastAddress = Nz::IpAddress::LoopbackIpV4;
+			broadcastAddress.SetPort(42000);
+
+			if (!m_debug->socket.SendPacket(broadcastAddress, debugPacket))
+			{
+				std::cerr << "Failed to send debug packet: " << Nz::ErrorToString(m_debug->socket.GetLastError()) << std::endl;
+			}
+		}
 	}
 
 	void Match::OnTick()

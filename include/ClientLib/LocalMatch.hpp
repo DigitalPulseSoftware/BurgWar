@@ -17,6 +17,7 @@
 #include <CoreLib/Utility/AverageValues.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
+#include <Nazara/Network/UdpSocket.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <tsl/hopscotch_map.h>
@@ -55,6 +56,11 @@ namespace bw
 		private:
 			struct ServerEntity;
 
+			struct Debug
+			{
+				Nz::UdpSocket socket;
+			};
+
 			using TickPacketContent = std::variant<
 				Packets::ControlEntity,
 				Packets::CreateEntities,
@@ -65,8 +71,10 @@ namespace bw
 				Packets::MatchState
 			>;
 
+			void CreateGhostEntity(ServerEntity& serverEntity);
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
+			const Ndk::EntityHandle& CreateReconciliationEntity(const Ndk::EntityHandle& serverEntity);
 			void DebugEntityId(ServerEntity& serverEntity);
 			Nz::UInt16 EstimateServerTick() const;
 			void HandleTickPacket(TickPacketContent&& packet);
@@ -81,6 +89,7 @@ namespace bw
 			void OnTick() override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
+			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
 			bool SendInputs(bool force);
 
@@ -105,14 +114,35 @@ namespace bw
 				}
 
 				Ndk::EntityHandle controlledEntity;
+				Ndk::EntityOwner reconciliationEntity;
 				Nz::UInt8 playerIndex;
+				Nz::UInt32 controlledEntityServerId;
 				InputData lastInputData;
+			};
+
+			struct PredictedInput
+			{
+				Nz::UInt64 inputTime;
+				std::vector<InputData> inputs;
+			};
+
+			struct PredictionData
+			{
+				PredictionData() : 
+				reconciliationWorld(false)
+				{
+				}
+
+				std::vector<PredictedInput> predictedInputs;
+				Ndk::World reconciliationWorld;
+				tsl::hopscotch_map<Ndk::EntityId, Ndk::EntityOwner> reconciliationEntities;
 			};
 
 			struct ServerEntity
 			{
 				std::optional<HealthData> health;
 				std::optional<NameData> name;
+				Ndk::EntityHandle serverGhost;
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
@@ -120,6 +150,7 @@ namespace bw
 				Nz::UInt32 serverEntityId;
 				Nz::UInt32 weaponEntityId = 0xFFFFFFFF;
 				bool isPhysical;
+				bool isLocalPlayerControlled;
 			};
 
 			struct TickPacket
@@ -133,6 +164,7 @@ namespace bw
 
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
+			std::optional<Debug> m_debug;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
@@ -149,6 +181,7 @@ namespace bw
 			BurgApp& m_application;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;
+			PredictionData m_prediction;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;

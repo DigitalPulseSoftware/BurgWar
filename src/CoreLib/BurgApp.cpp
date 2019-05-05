@@ -51,6 +51,7 @@ namespace bw
 	{
 		m_config.RegisterStringOption("Assets.ResourceFolder");
 		m_config.RegisterStringOption("Assets.ScriptFolder");
+		m_config.RegisterBoolOption("Debug.SendServerState");
 		m_config.RegisterFloatOption("GameSettings.TickRate");
 	}
 }
