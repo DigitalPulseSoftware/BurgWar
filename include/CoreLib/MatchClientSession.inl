@@ -6,11 +6,6 @@
 
 namespace bw
 {
-	inline Nz::UInt64 MatchClientSession::GetLastInputClientTime() const
-	{
-		return m_lastInputClientTime;
-	}
-
 	inline std::size_t MatchClientSession::GetSessionId() const
 	{
 		return m_sessionId;
@@ -24,11 +19,6 @@ namespace bw
 	inline const MatchClientVisibility& MatchClientSession::GetVisibility() const
 	{
 		return *m_visibility;
-	}
-
-	void MatchClientSession::UpdateLastInputClientTime(Nz::UInt64 inputId)
-	{
-		m_lastInputClientTime = inputId;
 	}
 
 	template<typename T>

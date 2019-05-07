@@ -238,7 +238,6 @@ namespace bw
 				std::optional<PhysicsProperties> physicsProperties;
 			};
 
-			CompressedUnsigned<Nz::UInt64> lastInputTime;
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 		};
@@ -263,7 +262,6 @@ namespace bw
 
 		DeclarePacket(PlayersInput)
 		{
-			CompressedUnsigned<Nz::UInt64> inputTime;
 			Nz::UInt16 estimatedServerTick;
 			std::vector<std::optional<InputData>> inputs;
 		};

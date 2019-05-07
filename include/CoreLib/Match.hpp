@@ -77,7 +77,7 @@ namespace bw
 			};
 
 		private:
-			void OnTick() override;
+			void OnTick(bool lastTick) override;
 
 			struct Debug
 			{

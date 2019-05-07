@@ -26,6 +26,7 @@ namespace bw
 {
 	Player::Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string playerName) :
 	m_layerIndex(std::numeric_limits<std::size_t>::max()),
+	m_inputIndex(0),
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
 	m_session(session)
@@ -86,6 +87,18 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
+	void Player::OnTick()
+	{
+		if (auto& inputOpt = m_inputBuffer[m_inputIndex])
+		{
+			UpdateInputs(inputOpt.value());
+			inputOpt.reset();
+		}
+
+		if (++m_inputIndex >= m_inputBuffer.size())
+			m_inputIndex = 0;
+	}
+
 	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
 	{
 		m_playerEntity = entity;
@@ -130,6 +143,14 @@ namespace bw
 					m_playerWeapon->GetComponent<NetworkSyncComponent>().Invalidate();
 			}
 		}
+	}
+
+	void Player::UpdateInputs(std::size_t tickDelay, InputData inputData)
+	{
+		assert(tickDelay < m_inputBuffer.size());
+		std::size_t index = (m_inputIndex + tickDelay) % m_inputBuffer.size();
+
+		m_inputBuffer[index] = std::move(inputData);
 	}
 
 	void Player::UpdateLayer(std::size_t layerIndex)

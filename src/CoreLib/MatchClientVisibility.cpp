@@ -19,7 +19,7 @@ namespace bw
 		// Send packet in fixed order
 		if (!m_destructionEvents.empty())
 		{
-			m_deleteEntitiesPacket.stateTick = m_match.GetCurrentTick();
+			m_deleteEntitiesPacket.stateTick = m_match.GetCurrentTick() - 2;
 
 			m_deleteEntitiesPacket.entities.clear();
 			for (Nz::UInt32 entityId : m_destructionEvents)
@@ -53,7 +53,7 @@ namespace bw
 
 				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
-				m_createEntitiesPacket.stateTick = m_match.GetCurrentTick();
+				m_createEntitiesPacket.stateTick = m_match.GetCurrentTick() - 2;
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
 				entityData.id = eventData->entityId;
 				entityData.entityClass = networkStringStore.CheckStringIndex(eventData->entityClass);
@@ -141,7 +141,7 @@ namespace bw
 
 		if (!m_healthUpdateEvents.empty())
 		{
-			m_healthUpdatePacket.stateTick = m_match.GetCurrentTick();
+			m_healthUpdatePacket.stateTick = m_match.GetCurrentTick() - 2;
 			m_healthUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_healthUpdateEvents)
@@ -159,7 +159,7 @@ namespace bw
 
 		if (!m_inputUpdateEvents.empty())
 		{
-			m_inputUpdatePacket.stateTick = m_match.GetCurrentTick();
+			m_inputUpdatePacket.stateTick = m_match.GetCurrentTick() - 2;
 			m_inputUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_inputUpdateEvents)
@@ -177,7 +177,7 @@ namespace bw
 
 		if (!m_playAnimationEvents.empty())
 		{
-			m_entitiesAnimationPacket.stateTick = m_match.GetCurrentTick();
+			m_entitiesAnimationPacket.stateTick = m_match.GetCurrentTick() - 2;
 			m_entitiesAnimationPacket.entities.clear();
 
 			for (auto&& pair : m_playAnimationEvents)
@@ -333,8 +333,7 @@ namespace bw
 		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 		m_matchStatePacket.entities.clear();
-		m_matchStatePacket.stateTick = m_match.GetCurrentTick();
-		m_matchStatePacket.lastInputTime = m_session.GetLastInputClientTime();
+		m_matchStatePacket.stateTick = m_match.GetCurrentTick() - 2;
 
 		for (auto&& pair : m_staticMovementUpdateEvents)
 			BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);

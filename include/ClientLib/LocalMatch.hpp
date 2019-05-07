@@ -86,12 +86,12 @@ namespace bw
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
 			void HandleTickError(Nz::Int32 tickError);
-			void OnTick() override;
+			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
 			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
-			bool SendInputs(bool force);
+			bool SendInputs(Nz::UInt16 serverTick, bool force);
 
 			struct HealthData
 			{
@@ -122,7 +122,7 @@ namespace bw
 
 			struct PredictedInput
 			{
-				Nz::UInt64 inputTime;
+				Nz::UInt16 serverTick;
 				std::vector<InputData> inputs;
 			};
 

@@ -55,6 +55,7 @@ namespace bw
 		m_prediction.reconciliationWorld.AddSystem<Ndk::VelocitySystem>();
 		auto& reconciliationPhysics = m_prediction.reconciliationWorld.AddSystem<Ndk::PhysicsSystem2D>();
 		reconciliationPhysics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		reconciliationPhysics.SetMaxStepCount(1);
 		reconciliationPhysics.SetStepSize(GetTickDuration());
 
 		m_prediction.reconciliationWorld.ForEachSystem([](Ndk::BaseSystem& system)
@@ -69,6 +70,7 @@ namespace bw
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		physics.SetMaxStepCount(1);
 		physics.SetStepSize(GetTickDuration());
 
 		m_world.ForEachSystem([](Ndk::BaseSystem& system)
@@ -585,6 +587,7 @@ namespace bw
 
 		m_playerData[packet.playerIndex].reconciliationEntity = CreateReconciliationEntity(serverEntity.entity);
 		m_playerData[packet.playerIndex].reconciliationEntity->AddComponent<InputComponent>();
+		m_playerData[packet.playerIndex].reconciliationEntity->AddComponent<PlayerMovementComponent>();
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::CreateEntities&& packet)
@@ -801,10 +804,12 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
+		Nz::Vector2f serverPos;
+
 		// Remove treated inputs
-		auto firstClientInput = std::find_if(m_prediction.predictedInputs.begin(), m_prediction.predictedInputs.end(), [lastInputTime = packet.lastInputTime](const PredictedInput& input)
+		auto firstClientInput = std::find_if(m_prediction.predictedInputs.begin(), m_prediction.predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
 		{
-			return input.inputTime > lastInputTime;
+			return input.serverTick > stateTick;
 		});
 		m_prediction.predictedInputs.erase(m_prediction.predictedInputs.begin(), firstClientInput);
 
@@ -847,6 +852,9 @@ namespace bw
 					entityPhys.SetRotation(entityData.rotation);
 					entityPhys.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
 					entityPhys.SetVelocity(entityData.physicsProperties->linearVelocity);
+
+					//std::cout << "Server position: " << entityData.position << std::endl;
+					serverPos = entityData.position;
 				}
 				else
 				{
@@ -891,6 +899,8 @@ namespace bw
 				}
 			}
 		}
+
+		//return;
 
 		// Reconciliate player entities
 		auto& physicsSystem = m_world.GetSystem<Ndk::PhysicsSystem2D>();
@@ -956,11 +966,31 @@ namespace bw
 			}
 		}
 
-		Nz::UInt64 lastInputTime = packet.lastInputTime;
+		for (std::size_t i = 0; i < m_playerData.size(); ++i)
+		{
+			auto& controllerData = m_playerData[i];
+			if (controllerData.controlledEntity)
+			{
+				assert(controllerData.reconciliationEntity);
+
+				if (controllerData.controlledEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
+
+					//std::cout << "Before prediction position: " << reconciliationPhys.GetPosition() << std::endl;
+
+					if (reconciliationPhys.GetVelocity().x > 0.f)
+					{
+						//std::cout << "Let's go" << std::endl;
+					}
+				}
+			}
+		}
+
+		//std::cout << m_prediction.predictedInputs.size() << " inputs pending" << std::endl;
+
 		for (const PredictedInput& input : m_prediction.predictedInputs)
 		{
-			Nz::UInt64 elapsedTime = input.inputTime - lastInputTime;
-
 			for (std::size_t i = 0; i < m_playerData.size(); ++i)
 			{
 				auto& controllerData = m_playerData[i];
@@ -969,12 +999,47 @@ namespace bw
 					InputComponent& entityInputs = controllerData.reconciliationEntity->GetComponent<InputComponent>();
 					entityInputs.UpdateInputs(input.inputs[i]);
 				}
+			} 
+
+			m_prediction.reconciliationWorld.Update(GetTickDuration());
+
+			for (std::size_t i = 0; i < m_playerData.size(); ++i)
+			{
+				auto& controllerData = m_playerData[i];
+				if (controllerData.controlledEntity)
+				{
+					assert(controllerData.reconciliationEntity);
+
+					if (controllerData.controlledEntity->HasComponent<Ndk::PhysicsComponent2D>())
+					{
+						auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
+
+						if ((reconciliationPhys.GetPosition() - serverPos).GetLength() > 100)
+						{
+							//std::cout << "Wtf" << std::endl;
+						}
+
+						//std::cout << "[Client][Reconciliation] After world update (by " << GetTickDuration() << "ms) position: " << reconciliationPhys.GetPosition() << std::endl;
+					}
+				}
 			}
-
-			m_prediction.reconciliationWorld.Update(elapsedTime / 1000.f);
-
-			lastInputTime = input.inputTime;
 		}
+
+		/*for (std::size_t i = 0; i < m_playerData.size(); ++i)
+		{
+			auto& controllerData = m_playerData[i];
+			if (controllerData.controlledEntity)
+			{
+				assert(controllerData.reconciliationEntity);
+
+				if (controllerData.controlledEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
+
+					std::cout << "Final position: " << reconciliationPhys.GetPosition() << std::endl;
+				}
+			}
+		}*/
 
 		// Apply back predicted entities states to main world
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -990,16 +1055,18 @@ namespace bw
 					auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
 					Nz::Vector2f positionError = realPhys.GetPosition() - reconciliationPhys.GetPosition();
-					/*if (positionError.GetSquaredLength() < Nz::IntegralPow(100, 2))
+					//std::cout << "POSITION ERROR: " << positionError << std::endl;
+					if (positionError.GetSquaredLength() < Nz::IntegralPow(100, 2))
 					{
 						auto serverEntry = m_serverEntityIdToClient.find(controllerData.controlledEntityServerId);
 						assert(serverEntry != m_serverEntityIdToClient.end());
 
-						serverEntry.value().positionError = positionError;
+						//serverEntry.value().positionError += positionError;
+						realPhys.SetPosition(Nz::Lerp(realPhys.GetPosition(), reconciliationPhys.GetPosition(), 0.1f));
 					}
-					else*/
+					else
 					{
-						std::cout << "Teleport!" << std::endl;
+						//std::cout << "Teleport!" << std::endl;
 						realPhys.SetPosition(reconciliationPhys.GetPosition());
 					}
 
@@ -1024,19 +1091,56 @@ namespace bw
 		m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
 	}
 
-	void LocalMatch::OnTick()
+	void LocalMatch::OnTick(bool lastTick)
 	{
-		Nz::UInt16 estimatedServerTick = EstimateServerTick() - 3 /* for network jitter */;
+		Nz::UInt16 estimatedServerTick = EstimateServerTick();
+
+		Nz::UInt16 handledTick = estimatedServerTick - 3; //< To handle network jitter
 
 		auto it = m_tickedPackets.begin();
-		while (it != m_tickedPackets.end() && (it->tick == estimatedServerTick || IsMoreRecent(estimatedServerTick, it->tick)))
+		while (it != m_tickedPackets.end() && (it->tick == handledTick || IsMoreRecent(handledTick, it->tick)))
 		{
 			HandleTickPacket(std::move(it->content));
 			++it;
 		}
 		m_tickedPackets.erase(m_tickedPackets.begin(), it);
 
+		if (lastTick)
+		{
+			SendInputs(estimatedServerTick, true);
+
+			// Remember inputs for reconciliation
+			PredictedInput predictedInputs;
+			predictedInputs.serverTick = estimatedServerTick;
+
+			predictedInputs.inputs.resize(m_playerData.size());
+			for (std::size_t i = 0; i < m_playerData.size(); ++i)
+			{
+				auto& controllerData = m_playerData[i];
+
+				// Remember and apply inputs
+				predictedInputs.inputs[i] = controllerData.lastInputData;
+
+				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<InputComponent>())
+				{
+					auto& entityInputs = controllerData.controlledEntity->GetComponent<InputComponent>();
+					entityInputs.UpdateInputs(controllerData.lastInputData);
+				}
+			}
+
+			m_prediction.predictedInputs.emplace_back(std::move(predictedInputs));
+		}
+
 		m_world.Update(GetTickDuration());
+
+		ForEachEntity([&](const Ndk::EntityHandle& entity)
+		{
+			if (entity->HasComponent<InputComponent>())
+			{
+				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				//std::cout << "[Client]" << EstimateServerTick() << ": " << entityPhys.GetPosition() << std::endl;
+			}
+		});
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback("OnTick");
@@ -1076,7 +1180,7 @@ namespace bw
 
 	void LocalMatch::ProcessInputs(float elapsedTime)
 	{
-		constexpr float MaxInputSendInterval = 1.f / 60.f;
+		/*constexpr float MaxInputSendInterval = 1.f / 60.f;
 		constexpr float MinInputSendInterval = 1.f / 10.f;
 
 		m_playerInputTimer += elapsedTime;
@@ -1087,7 +1191,7 @@ namespace bw
 		if (m_playerInputTimer >= MaxInputSendInterval)
 		{
 			m_playerInputTimer -= MaxInputSendInterval;
-			if (SendInputs(m_timeSinceLastInputSending >= MinInputSendInterval))
+			if (SendInputs(TODO,m_timeSinceLastInputSending >= MinInputSendInterval))
 				inputUpdated = true;
 		}
 
@@ -1097,7 +1201,7 @@ namespace bw
 
 			// Remember inputs for reconciliation
 			PredictedInput predictedInputs;
-			predictedInputs.inputTime = m_application.GetAppTime();
+			predictedInputs.serverTick = m_inputPacket.estimatedServerTick;
 
 			predictedInputs.inputs.resize(m_playerData.size());
 			for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -1115,7 +1219,7 @@ namespace bw
 			}
 
 			m_prediction.predictedInputs.emplace_back(std::move(predictedInputs));
-		}
+		}*/
 	}
 
 	void LocalMatch::PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet)
@@ -1132,11 +1236,11 @@ namespace bw
 		m_tickedPackets.emplace(it, std::move(newPacket));
 	}
 
-	bool LocalMatch::SendInputs(bool force)
+	bool LocalMatch::SendInputs(Nz::UInt16 serverTick, bool force)
 	{
 		assert(m_playerData.size() == m_inputPacket.inputs.size());
 
-		m_inputPacket.estimatedServerTick = EstimateServerTick();
+		m_inputPacket.estimatedServerTick = serverTick;
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -1156,7 +1260,6 @@ namespace bw
 
 		if (hasInputData || force)
 		{
-			m_inputPacket.inputTime = m_application.GetAppTime();
 			m_session.SendPacket(m_inputPacket);
 
 			return true;

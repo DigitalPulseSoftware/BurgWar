@@ -272,15 +272,30 @@ namespace bw
 		}
 	}
 
-	void Match::OnTick()
+	void Match::OnTick(bool lastTick)
 	{
 		float elapsedTime = GetTickDuration();
 
+		if (lastTick)
+		{
+			m_sessions.ForEachSession([&](MatchClientSession* session)
+			{
+				session->Update(elapsedTime);
+			});
+		}
+
+		for (Player* player : m_players)
+			player->OnTick();
+
 		m_terrain->Update(elapsedTime);
 
-		m_sessions.ForEachSession([&](MatchClientSession* session)
+		ForEachEntity([&](const Ndk::EntityHandle& entity)
 		{
-			session->Update(elapsedTime);
+			if (entity->HasComponent<InputComponent>())
+			{
+				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				//std::cout << "[Server]" << GetCurrentTick() << ": " << entityPhys.GetPosition() << std::endl;
+			}
 		});
 
 		m_gamemode->ExecuteCallback("OnTick");

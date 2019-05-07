@@ -19,8 +19,7 @@ namespace bw
 	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
-	m_bridge(std::move(bridge)),
-	m_lastInputClientTime(0)
+	m_bridge(std::move(bridge))
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
 		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
@@ -127,8 +126,22 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
+		if (packet.inputs.size() != m_players.size())
+		{
+			std::cerr << "Player input count doesn't match player count" << std::endl;
+			return;
+		}
+
 		// Compute client error
-		Nz::Int32 tickError = static_cast<Nz::Int32>(packet.estimatedServerTick) - static_cast<Nz::Int32>(m_match.GetCurrentTick());
+		Nz::UInt16 currentTick = m_match.GetCurrentTick();
+		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
+
+		// Prevent overflow/underflow
+		Nz::Int32 tickError;
+		if (estimatedServerTick >= currentTick)
+			tickError = static_cast<Nz::Int32>(estimatedServerTick - currentTick);
+		else
+			tickError = -static_cast<Nz::Int32>(currentTick - estimatedServerTick);
 
 		Packets::InputTimingCorrection correctionPacket;
 		correctionPacket.serverTick = packet.estimatedServerTick;
@@ -136,13 +149,13 @@ namespace bw
 
 		SendPacket(correctionPacket);
 
-		if (packet.inputs.size() != m_players.size())
-		{
-			std::cerr << "Player input count doesn't match player count" << std::endl;
-			return;
-		}
+		if (estimatedServerTick < currentTick)
+			return; //< Tick has already been simulated, ignore
 
-		UpdateLastInputClientTime(packet.inputTime);
+		if (estimatedServerTick > currentTick + 8)
+			return; //< Tick is way off prediction
+
+		std::size_t tickDelay = estimatedServerTick - currentTick;
 
 		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
 		{
@@ -150,7 +163,7 @@ namespace bw
 			if (!inputOpt.has_value())
 				continue;
 
-			m_players[playerIndex].UpdateInputs(*inputOpt);
+			m_players[playerIndex].UpdateInputs(tickDelay + 2, *inputOpt); // Prevent network jitter
 		}
 	}
 

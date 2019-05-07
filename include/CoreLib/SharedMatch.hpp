@@ -33,7 +33,7 @@ namespace bw
 			SharedMatch& operator=(SharedMatch&&) = delete;
 
 		protected:
-			virtual void OnTick() = 0;
+			virtual void OnTick(bool lastTick) = 0;
 
 		private:
 			TimerManager m_timerManager;

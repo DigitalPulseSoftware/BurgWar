@@ -33,7 +33,6 @@ namespace bw
 
 			void Disconnect();
 
-			inline Nz::UInt64 GetLastInputClientTime() const;
 			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;
@@ -43,7 +42,6 @@ namespace bw
 			template<typename T> void SendPacket(const T& packet);
 
 			void Update(float elapsedTime);
-			inline void UpdateLastInputClientTime(Nz::UInt64 inputId);
 
 			MatchClientSession& operator=(const MatchClientSession&) = delete;
 			MatchClientSession& operator=(MatchClientSession&&) = delete;
@@ -61,7 +59,6 @@ namespace bw
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
 			std::vector<Player> m_players;
-			Nz::UInt64 m_lastInputClientTime;
 	};
 }
 
