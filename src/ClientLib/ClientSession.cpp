@@ -146,8 +146,8 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::InputTimingCorrection&& packet)
 	{
-		//std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
-		m_localMatch->HandleTickError(packet.tickError);
+		std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
+		m_localMatch->HandleTickError(packet.serverTick, packet.tickError);
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::MatchData&& matchData)

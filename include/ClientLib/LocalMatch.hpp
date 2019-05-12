@@ -85,7 +85,7 @@ namespace bw
 			void HandleTickPacket(Packets::EntitiesInputs&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
-			void HandleTickError(Nz::Int32 tickError);
+			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
@@ -124,6 +124,12 @@ namespace bw
 			{
 				Nz::UInt16 serverTick;
 				std::vector<InputData> inputs;
+			};
+
+			struct TickPrediction
+			{
+				Nz::UInt16 serverTick;
+				Nz::Int32 tickError;
 			};
 
 			struct PredictionData
@@ -171,6 +177,7 @@ namespace bw
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			std::vector<TickPacket> m_tickedPackets;
+			std::vector<TickPrediction> m_tickPredictions;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;

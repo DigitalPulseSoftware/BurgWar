@@ -1086,9 +1086,27 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickError(Nz::Int32 tickError)
+	void LocalMatch::HandleTickError(Nz::UInt16 stateTick, Nz::Int32 tickError)
 	{
-		m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
+		for (auto it = m_tickPredictions.begin(); it != m_tickPredictions.end(); ++it)
+		{
+			if (it->serverTick == stateTick)
+			{
+				m_averageTickError.InsertValue(it->tickError + tickError);
+				m_tickPredictions.erase(it);
+				return;
+			}
+		}
+
+		std::cout << "input not found: " << stateTick << std::endl;
+
+		//m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
+
+		/*std::cout << "----" << std::endl;
+		std::cout << "Current tick error: " << m_tickError << std::endl;
+		std::cout << "Target tick error: " << tickError << std::endl;
+		m_tickError = Nz::Approach(m_tickError, m_tickError + tickError, std::abs(std::max(10, 1)));
+		std::cout << "New tick error: " << m_tickError << std::endl;*/
 	}
 
 	void LocalMatch::OnTick(bool lastTick)
@@ -1108,6 +1126,14 @@ namespace bw
 		if (lastTick)
 		{
 			SendInputs(estimatedServerTick, true);
+
+			// Remember predicted ticks for improving over time
+			if (m_tickPredictions.size() >= static_cast<std::size_t>(std::ceil(2 / GetTickDuration()))) //< Remember at most 2s of inputs
+				m_tickPredictions.erase(m_tickPredictions.begin());
+
+			auto& prediction = m_tickPredictions.emplace_back();
+			prediction.serverTick = estimatedServerTick;
+			prediction.tickError = m_averageTickError.GetAverageValue();
 
 			// Remember inputs for reconciliation
 			PredictedInput predictedInputs;
