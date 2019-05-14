@@ -122,8 +122,21 @@ namespace bw
 
 			struct PredictedInput
 			{
+				struct MovementData
+				{
+					bool wasJumping;
+					bool isOnGround;
+					float jumpTime;
+				};
+
+				struct PlayerData
+				{
+					InputData input;
+					std::optional<MovementData> movement;
+				};
+
 				Nz::UInt16 serverTick;
-				std::vector<InputData> inputs;
+				std::vector<PlayerData> inputs;
 			};
 
 			struct TickPrediction

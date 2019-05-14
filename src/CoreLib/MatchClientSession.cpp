@@ -134,7 +134,7 @@ namespace bw
 
 		// Compute client error
 		Nz::UInt16 currentTick = m_match.GetCurrentTick(); // Prevent network jitter
-		Nz::UInt16 adjustedTick = currentTick /*+ 2*/; // Prevent network jitter
+		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter
 		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
 
 		std::cout << "[Server] Estimated server tick: " << estimatedServerTick << " (current tick: " << adjustedTick << ")" << std::endl;

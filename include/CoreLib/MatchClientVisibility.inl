@@ -27,7 +27,7 @@ namespace bw
 
 		it.value().emplace_back([this, packet = std::forward<T>(packet)]() mutable
 		{ 
-			packet.stateTick = m_match.GetCurrentTick() - 2;
+			packet.stateTick = m_match.GetCurrentTick();
 
 			m_session.SendPacket(packet); 
 		});

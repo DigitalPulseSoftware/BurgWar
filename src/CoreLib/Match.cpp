@@ -276,14 +276,6 @@ namespace bw
 	{
 		float elapsedTime = GetTickDuration();
 
-		if (lastTick)
-		{
-			m_sessions.ForEachSession([&](MatchClientSession* session)
-			{
-				session->Update(elapsedTime);
-			});
-		}
-
 		for (Player* player : m_players)
 			player->OnTick();
 
@@ -299,5 +291,13 @@ namespace bw
 		});
 
 		m_gamemode->ExecuteCallback("OnTick");
+
+		if (lastTick)
+		{
+			m_sessions.ForEachSession([&](MatchClientSession* session)
+			{
+				session->Update(elapsedTime);
+			});
+		}
 	}
 }

@@ -997,7 +997,16 @@ namespace bw
 				if (controllerData.reconciliationEntity)
 				{
 					InputComponent& entityInputs = controllerData.reconciliationEntity->GetComponent<InputComponent>();
-					entityInputs.UpdateInputs(input.inputs[i]);
+					const auto& playerInputData = input.inputs[i];
+					entityInputs.UpdateInputs(playerInputData.input);
+				
+					if (playerInputData.movement)
+					{
+						auto& playerMovement = controllerData.reconciliationEntity->GetComponent<PlayerMovementComponent>();
+						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
+						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
+						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
+					}
 				}
 			} 
 
@@ -1014,10 +1023,6 @@ namespace bw
 					{
 						auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
-						if ((reconciliationPhys.GetPosition() - serverPos).GetLength() > 100)
-						{
-							//std::cout << "Wtf" << std::endl;
-						}
 
 						//std::cout << "[Client][Reconciliation] After world update (by " << GetTickDuration() << "ms) position: " << reconciliationPhys.GetPosition() << std::endl;
 					}
@@ -1143,6 +1148,19 @@ namespace bw
 			for (std::size_t i = 0; i < m_playerData.size(); ++i)
 			{
 				auto& controllerData = m_playerData[i];
+
+				PredictedInput::PlayerData playerData;
+				playerData.input = controllerData.lastInputData;
+
+				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<PlayerMovementComponent>())
+				{
+					auto& playerMovement = controllerData.controlledEntity->GetComponent<PlayerMovementComponent>();
+
+					auto& movementData = playerData.movement.emplace();
+					movementData.isOnGround = playerMovement.IsOnGround();
+					movementData.jumpTime = playerMovement.GetJumpTime();
+					movementData.wasJumping = playerMovement.WasJumping();
+				}
 
 				// Remember and apply inputs
 				predictedInputs.inputs[i] = controllerData.lastInputData;
