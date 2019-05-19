@@ -124,9 +124,11 @@ namespace bw
 			{
 				struct MovementData
 				{
+					Nz::Vector2f surfaceVelocity;
 					bool wasJumping;
 					bool isOnGround;
 					float jumpTime;
+					float friction;
 				};
 
 				struct PlayerData

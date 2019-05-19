@@ -16,6 +16,7 @@
 #include <Nazara/Core/File.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
+#include <fstream>
 
 namespace bw
 {
@@ -262,12 +263,15 @@ namespace bw
 			debugPacket.GetStream()->SetCursorPos(offset);
 			debugPacket << entityCount;
 
-			Nz::IpAddress broadcastAddress = Nz::IpAddress::LoopbackIpV4;
-			broadcastAddress.SetPort(42000);
-
-			if (!m_debug->socket.SendPacket(broadcastAddress, debugPacket))
+			Nz::IpAddress localAddress = Nz::IpAddress::LoopbackIpV4;
+			for (std::size_t i = 0; i < 4; ++i)
 			{
-				std::cerr << "Failed to send debug packet: " << Nz::ErrorToString(m_debug->socket.GetLastError()) << std::endl;
+				localAddress.SetPort(42000 + i);
+
+				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
+				{
+					std::cerr << "Failed to send debug packet: " << Nz::ErrorToString(m_debug->socket.GetLastError()) << std::endl;
+				}
 			}
 		}
 	}
@@ -286,6 +290,10 @@ namespace bw
 			if (entity->HasComponent<InputComponent>())
 			{
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+				static std::ofstream debugFile("server.csv", std::ios::trunc);
+				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isMovingRight) ? "Moving;" : ";") << GetCurrentTick() << ";" << entityPhys.GetPosition().x << ";" << entityPhys.GetVelocity().x << '\n';
+
 				//std::cout << "[Server]" << GetCurrentTick() << ": " << entityPhys.GetPosition() << std::endl;
 			}
 		});

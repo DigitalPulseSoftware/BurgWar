@@ -137,7 +137,7 @@ namespace bw
 		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter
 		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
 
-		std::cout << "[Server] Estimated server tick: " << estimatedServerTick << " (current tick: " << adjustedTick << ")" << std::endl;
+		//std::cout << "[Server] Estimated server tick: " << estimatedServerTick << " (current tick: " << adjustedTick << ")" << std::endl;
 
 		// Prevent overflow/underflow
 		Nz::Int32 tickError;

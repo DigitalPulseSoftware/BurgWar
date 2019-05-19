@@ -29,6 +29,7 @@
 #include <NDK/Systems.hpp>
 #include <cassert>
 #include <iostream>
+#include <fstream>
 
 namespace bw
 {
@@ -117,9 +118,19 @@ namespace bw
 				m_debug->socket.EnableBlocking(false);
 
 				Nz::IpAddress localhost = Nz::IpAddress::LoopbackIpV4;
-				localhost.SetPort(42000);
+				for (std::size_t i = 0; i < 4; ++i)
+				{
+					localhost.SetPort(42000 + i);
 
-				if (m_debug->socket.Bind(localhost) != Nz::SocketState_Bound)
+					if (m_debug->socket.Bind(localhost) == Nz::SocketState_Bound)
+						break;
+				}
+
+				if (m_debug->socket.GetState() == Nz::SocketState_Bound)
+				{
+					std::cout << "Debug socket bound to port " << m_debug->socket.GetBoundPort() << std::endl;
+				}
+				else
 				{
 					std::cerr << "Failed to bind debug socket";
 					m_debug.reset();
@@ -804,7 +815,12 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
+		static std::ofstream debugFile("prediction.txt", std::ios::trunc);
+		debugFile << "---------------------------------------------------\n";
+		debugFile << "Received match state for tick #" << packet.stateTick << " (current estimation: " << EstimateServerTick() << ")\n";
 		Nz::Vector2f serverPos;
+
+		//std::cout << "Received tick packet: " << packet.stateTick << std::endl;
 
 		// Remove treated inputs
 		auto firstClientInput = std::find_if(m_prediction.predictedInputs.begin(), m_prediction.predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
@@ -852,6 +868,9 @@ namespace bw
 					entityPhys.SetRotation(entityData.rotation);
 					entityPhys.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
 					entityPhys.SetVelocity(entityData.physicsProperties->linearVelocity);
+
+					debugFile << "Burger position: " << entityData.position.x << "\n";
+					debugFile << "Burger velocity: " << entityData.physicsProperties->linearVelocity.x << "\n";
 
 					//std::cout << "Server position: " << entityData.position << std::endl;
 					serverPos = entityData.position;
@@ -966,7 +985,7 @@ namespace bw
 			}
 		}
 
-		for (std::size_t i = 0; i < m_playerData.size(); ++i)
+		/*for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
 			if (controllerData.controlledEntity)
@@ -985,7 +1004,7 @@ namespace bw
 					}
 				}
 			}
-		}
+		}*/
 
 		//std::cout << m_prediction.predictedInputs.size() << " inputs pending" << std::endl;
 
@@ -999,13 +1018,19 @@ namespace bw
 					InputComponent& entityInputs = controllerData.reconciliationEntity->GetComponent<InputComponent>();
 					const auto& playerInputData = input.inputs[i];
 					entityInputs.UpdateInputs(playerInputData.input);
-				
+
+					debugFile << "---- prediction (input tick: #" << input.serverTick << ", moving: " << std::boolalpha << playerInputData.input.isMovingRight << ")\n";
+
 					if (playerInputData.movement)
 					{
 						auto& playerMovement = controllerData.reconciliationEntity->GetComponent<PlayerMovementComponent>();
+						auto& playerPhysics = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
 						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
 						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
+
+						playerPhysics.SetFriction(playerInputData.movement->friction);
+						playerPhysics.SetSurfaceVelocity(playerInputData.movement->surfaceVelocity);
 					}
 				}
 			} 
@@ -1023,6 +1048,8 @@ namespace bw
 					{
 						auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
+						debugFile << "new position: " << reconciliationPhys.GetPosition().x << "\n";
+						debugFile << "new velocity: " << reconciliationPhys.GetVelocity().x << "\n";
 
 						//std::cout << "[Client][Reconciliation] After world update (by " << GetTickDuration() << "ms) position: " << reconciliationPhys.GetPosition() << std::endl;
 					}
@@ -1030,7 +1057,7 @@ namespace bw
 			}
 		}
 
-		/*for (std::size_t i = 0; i < m_playerData.size(); ++i)
+		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
 			if (controllerData.controlledEntity)
@@ -1041,10 +1068,12 @@ namespace bw
 				{
 					auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
-					std::cout << "Final position: " << reconciliationPhys.GetPosition() << std::endl;
+					debugFile << "--\n";
+					debugFile << "final position: " << reconciliationPhys.GetPosition().x << "\n";
+					debugFile << "final velocity: " << reconciliationPhys.GetVelocity().x << "\n";
 				}
 			}
-		}*/
+		}
 
 		// Apply back predicted entities states to main world
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -1060,7 +1089,11 @@ namespace bw
 					auto& reconciliationPhys = controllerData.reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
 					Nz::Vector2f positionError = realPhys.GetPosition() - reconciliationPhys.GetPosition();
-					//std::cout << "POSITION ERROR: " << positionError << std::endl;
+
+
+					debugFile << "position error: " << positionError.GetLength() << "\n" << std::endl;
+
+					std::cout << "POSITION ERROR: " << positionError.GetLength() << std::endl;
 					if (positionError.GetSquaredLength() < Nz::IntegralPow(100, 2))
 					{
 						auto serverEntry = m_serverEntityIdToClient.find(controllerData.controlledEntityServerId);
@@ -1071,7 +1104,7 @@ namespace bw
 					}
 					else
 					{
-						//std::cout << "Teleport!" << std::endl;
+						std::cout << "Teleport!" << std::endl;
 						realPhys.SetPosition(reconciliationPhys.GetPosition());
 					}
 
@@ -1155,15 +1188,19 @@ namespace bw
 				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<PlayerMovementComponent>())
 				{
 					auto& playerMovement = controllerData.controlledEntity->GetComponent<PlayerMovementComponent>();
+					auto& playerPhysics = controllerData.controlledEntity->GetComponent<Ndk::PhysicsComponent2D>();
 
 					auto& movementData = playerData.movement.emplace();
 					movementData.isOnGround = playerMovement.IsOnGround();
 					movementData.jumpTime = playerMovement.GetJumpTime();
 					movementData.wasJumping = playerMovement.WasJumping();
+
+					movementData.friction = playerPhysics.GetFriction();
+					movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity();
 				}
 
 				// Remember and apply inputs
-				predictedInputs.inputs[i] = controllerData.lastInputData;
+				predictedInputs.inputs[i] = std::move(playerData);
 
 				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<InputComponent>())
 				{
@@ -1182,7 +1219,9 @@ namespace bw
 			if (entity->HasComponent<InputComponent>())
 			{
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				//std::cout << "[Client]" << EstimateServerTick() << ": " << entityPhys.GetPosition() << std::endl;
+				
+				static std::ofstream debugFile("client.csv", std::ios::trunc);
+				debugFile << m_application.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isMovingRight) ? "Moving;" : ";") << estimatedServerTick << ";" << entityPhys.GetPosition().x << ";" << entityPhys.GetVelocity().x << '\n';
 			}
 		});
 
