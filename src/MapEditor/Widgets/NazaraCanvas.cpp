@@ -12,8 +12,6 @@ namespace bw
 	NazaraCanvas::NazaraCanvas(QWidget* parent) :
 	QWidget(parent)
 	{
-		std::cout << this << std::endl;
-
 		// Setup some states to allow direct rendering into the widget
 		setAttribute(Qt::WA_PaintOnScreen);
 		setAttribute(Qt::WA_OpaquePaintEvent);
@@ -102,6 +100,17 @@ namespace bw
 
 	bool NazaraCanvas::event(QEvent* e)
 	{
+		auto TranslateKey = [](Qt::Key key) -> std::optional<Nz::Keyboard::Key>
+		{
+			switch (key)
+			{
+				case Qt::Key_Delete: return Nz::Keyboard::Key::Delete;
+
+				default:
+					return std::nullopt;
+			}
+		};
+
 		auto TranslateMouseButton = [](Qt::MouseButton mouseButton) -> std::optional<Nz::Mouse::Button>
 		{
 			switch (mouseButton)
@@ -119,6 +128,54 @@ namespace bw
 
 		switch (e->type())
 		{
+			case QEvent::KeyPress:
+			{
+				QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+				auto key = TranslateKey(static_cast<Qt::Key>(keyEvent->key()));
+
+				if (key)
+				{
+					Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+
+					Nz::WindowEvent event;
+					event.type = Nz::WindowEventType_KeyPressed;
+					event.key.alt = modifiers & Qt::AltModifier;
+					event.key.code = key.value();
+					event.key.control = modifiers & Qt::ControlModifier;
+					event.key.repeated = keyEvent->isAutoRepeat();
+					event.key.shift = modifiers & Qt::ShiftModifier;
+					event.key.system = modifiers & Qt::MetaModifier;
+
+					PushEvent(event);
+					return true;
+				}
+				break;
+			}
+
+			case QEvent::KeyRelease:
+			{
+				QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+				auto key = TranslateKey(static_cast<Qt::Key>(keyEvent->key()));
+
+				if (key)
+				{
+					Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+
+					Nz::WindowEvent event;
+					event.type = Nz::WindowEventType_KeyReleased;
+					event.key.alt = modifiers & Qt::AltModifier;
+					event.key.code = key.value();
+					event.key.control = modifiers & Qt::ControlModifier;
+					event.key.repeated = keyEvent->isAutoRepeat();
+					event.key.shift = modifiers & Qt::ShiftModifier;
+					event.key.system = modifiers & Qt::MetaModifier;
+
+					PushEvent(event);
+					return true;
+				}
+				break;
+			}
+
 			case QEvent::MouseButtonPress:
 			{
 				QMouseEvent* mouseButtonEvent = static_cast<QMouseEvent*>(e);

@@ -26,6 +26,16 @@ namespace bw
 
 		Nz::EventHandler& eventHandler = GetEventHandler();
 
+		eventHandler.OnKeyPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
+		{
+			OnKeyPressed(keyEvent);
+		});
+
+		eventHandler.OnKeyReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
+		{
+			OnKeyReleased(keyEvent);
+		});
+
 		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
 			OnMouseButtonPressed(mouseButton);
@@ -45,6 +55,7 @@ namespace bw
 		{
 			OnMouseLeft();
 		});
+
 		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 		{
 			OnMouseMoved(mouseMoved);
@@ -80,6 +91,14 @@ namespace bw
 
 		NazaraCanvas::OnUpdate(elapsedTime);
 		SetActive(false);
+	}
+
+	void WorldCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& key)
+	{
+	}
+
+	void WorldCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& key)
+	{
 	}
 
 	void WorldCanvas::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)

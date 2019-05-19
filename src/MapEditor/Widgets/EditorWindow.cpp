@@ -12,6 +12,7 @@
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
 #include <QtCore/QStringBuilder>
+#include <QtGui/QKeyEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QFileDialog>
@@ -67,6 +68,15 @@ namespace bw
 		BuildMenu();
 
 		m_canvas = new MapCanvas(*this);
+
+		m_canvas->OnDeleteEntity.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex)
+		{
+			auto it = m_entityIndexes.find(canvasIndex);
+			assert(it != m_entityIndexes.end());
+
+			OnDeleteEntity(it.value());
+		});
+
 		m_canvas->OnEntityPositionUpdated.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex, const Nz::Vector2f& newPosition)
 		{
 			assert(m_currentLayer.has_value());
@@ -219,6 +229,21 @@ namespace bw
 		}
 	}
 
+	bool EditorWindow::event(QEvent* e)
+	{
+		switch (e->type())
+		{
+			case QEvent::KeyPress:
+			{
+				QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+				if (keyEvent->key() == Qt::Key_Delete)
+					OnDeleteEntity();
+			}
+		}
+
+		return QMainWindow::event(e);
+	}
+
 	void EditorWindow::BuildMenu()
 	{
 		QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
@@ -299,6 +324,55 @@ namespace bw
 		createMapDialog->exec();
 	}
 
+	void EditorWindow::OnDeleteEntity()
+	{
+		QList<QListWidgetItem*> items = m_entityList->selectedItems();
+		if (!items.empty())
+		{
+			assert(items.size() == 1);
+
+			QListWidgetItem* item = items.front();
+			std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
+
+			OnDeleteEntity(entityIndex);
+
+			m_entityList->clearSelection();
+		}
+	}
+
+	void EditorWindow::OnDeleteEntity(std::size_t entityIndex)
+	{
+		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+
+		auto& layerEntity = layer.entities[entityIndex];
+
+		QString warningText = tr("You are about to delete entity %1 of type %2, are you sure you want to do that?").arg(QString::fromStdString(layerEntity.name)).arg(QString::fromStdString(layerEntity.entityType));
+		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
+		if (response == QMessageBox::Yes)
+		{
+			QListWidgetItem* item = m_entityList->takeItem(int(entityIndex));
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+			delete item;
+
+			m_canvas->DeleteEntity(canvasId);
+
+			m_entityIndexes.erase(canvasId);
+
+			layer.entities.erase(layer.entities.begin() + entityIndex);
+
+			// FIXME...
+			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+			{
+				if (it->second >= entityIndex)
+				{
+					std::size_t newEntityIndex = --it.value();
+					m_entityList->item(newEntityIndex)->setData(Qt::UserRole, newEntityIndex);
+				}
+			}
+		}
+	}
+
 	void EditorWindow::OnEntityDoubleClicked(QListWidgetItem* item)
 	{
 		if (!item)
@@ -336,7 +410,6 @@ namespace bw
 
 			//m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
 			m_canvas->DeleteEntity(canvasId);
-			m_canvas->GetWorld().GetEntity(canvasId)->Kill();
 			m_entityIndexes.erase(canvasId);
 
 			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties)->GetId();

@@ -40,9 +40,12 @@ namespace bw
 			NazaraSignal(OnCanvasMouseEntered, MapCanvas* /*emitter*/);
 			NazaraSignal(OnCanvasMouseLeft, MapCanvas* /*emitter*/);
 			NazaraSignal(OnCanvasMouseMoved, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& /*mouseButton*/);
+			NazaraSignal(OnDeleteEntity, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/);
 			NazaraSignal(OnEntityPositionUpdated, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/, const Nz::Vector2f& /*position*/);
 
 		private:
+			void OnKeyPressed(const Nz::WindowEvent::KeyEvent& key) override;
+			void OnKeyReleased(const Nz::WindowEvent::KeyEvent& key) override;
 			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseEntered() override;

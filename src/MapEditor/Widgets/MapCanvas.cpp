@@ -92,6 +92,27 @@ namespace bw
 		nodeComponent.SetRotation(rotation);
 	}
 
+	void MapCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& key)
+	{
+		switch (key.code)
+		{
+			case Nz::Keyboard::Key::Delete:
+			{
+				if (m_entityGizmo)
+					OnDeleteEntity(this, m_entityGizmo->GetTargetEntity()->GetId());
+
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
+
+	void MapCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& key)
+	{
+	}
+
 	void MapCanvas::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
 		WorldCanvas::OnMouseButtonPressed(mouseButton);

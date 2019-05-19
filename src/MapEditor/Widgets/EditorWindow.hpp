@@ -47,10 +47,14 @@ namespace bw
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 		private:
+			virtual bool event(QEvent* e) override;
+
 			void BuildMenu();
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
+			void OnDeleteEntity();
+			void OnDeleteEntity(std::size_t entityIndex);
 			void OnEntityDoubleClicked(QListWidgetItem* item);
 			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);

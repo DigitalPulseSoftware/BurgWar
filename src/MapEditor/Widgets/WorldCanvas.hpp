@@ -32,6 +32,8 @@ namespace bw
 			NazaraSignal(OnCameraMoved, WorldCanvas* /*emitter*/);
 
 		protected:
+			virtual void OnKeyPressed(const Nz::WindowEvent::KeyEvent& key);
+			virtual void OnKeyReleased(const Nz::WindowEvent::KeyEvent& key);
 			virtual void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			virtual void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			virtual void OnMouseEntered();
