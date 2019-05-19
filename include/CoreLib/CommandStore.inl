@@ -115,7 +115,7 @@ namespace bw
 
 		if (m_incomingCommands.size() <= opcode || !m_incomingCommands[opcode].enabled)
 		{
-			std::cerr << "Client :derp: sent invalid or disabled opcode " << opcode << std::endl;
+			std::cerr << "Client :derp: sent invalid or disabled opcode " << +opcode << std::endl;
 			return false;
 		}
 

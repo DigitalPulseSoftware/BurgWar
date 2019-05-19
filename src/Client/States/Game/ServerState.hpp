@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_STATES_STATES_GAMESTATE_HPP
-#define BURGWAR_STATES_STATES_GAMESTATE_HPP
+#ifndef BURGWAR_STATES_GAME_GAMESTATE_HPP
+#define BURGWAR_STATES_GAME_GAMESTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
 #include <CoreLib/Match.hpp>

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_STATES_STATES_CONNECTIONSTATE_HPP
-#define BURGWAR_STATES_STATES_CONNECTIONSTATE_HPP
+#ifndef BURGWAR_STATES_GAME_CONNECTIONSTATE_HPP
+#define BURGWAR_STATES_GAME_CONNECTIONSTATE_HPP
 
 #include <ClientLib/ClientSession.hpp>
 #include <Client/States/AbstractState.hpp>
