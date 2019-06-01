@@ -41,6 +41,7 @@ namespace bw
 	m_averageTickError(20),
 	m_application(burgApp),
 	m_session(session),
+	m_prediction(*this),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -51,19 +52,6 @@ namespace bw
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<SoundSystem>();
 		m_world.AddSystem<TickCallbackSystem>();
-
-		m_prediction.reconciliationWorld.AddSystem<PlayerMovementSystem>();
-		m_prediction.reconciliationWorld.AddSystem<Ndk::VelocitySystem>();
-		auto& reconciliationPhysics = m_prediction.reconciliationWorld.AddSystem<Ndk::PhysicsSystem2D>();
-		reconciliationPhysics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
-		reconciliationPhysics.SetMaxStepCount(1);
-		reconciliationPhysics.SetStepSize(GetTickDuration());
-
-		m_prediction.reconciliationWorld.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.SetFixedUpdateRate(0.f);
-			system.SetMaximumUpdateRate(0.f);
-		});
 
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -411,10 +399,6 @@ namespace bw
 									}
 								}
 							}
-							else
-							{
-								std::cout << "Couldn't find entity #" << entityId << std::endl;
-							}
 						}
 
 						break;
@@ -526,32 +510,6 @@ namespace bw
 	
 		auto& gfxComponent = nameData.nameEntity->AddComponent<Ndk::GraphicsComponent>();
 		gfxComponent.Attach(nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-textBox.width / 2.f, -textBox.height)), 3);
-	}
-
-	const Ndk::EntityHandle& LocalMatch::CreateReconciliationEntity(const Ndk::EntityHandle& serverEntity)
-	{
-		const Ndk::EntityHandle& entity = m_prediction.reconciliationWorld.CreateEntity();
-		entity->AddComponent<Ndk::NodeComponent>();
-
-		if (serverEntity->HasComponent<Ndk::PhysicsComponent2D>())
-		{
-			const auto& originalPhys = serverEntity->GetComponent<Ndk::PhysicsComponent2D>();
-
-			entity->AddComponent(serverEntity->GetComponent<Ndk::CollisionComponent2D>().Clone());
-			auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-			entityPhys.SetAngularDamping(originalPhys.GetAngularDamping());
-			entityPhys.SetElasticity(originalPhys.GetElasticity());
-			entityPhys.SetFriction(originalPhys.GetFriction());
-			entityPhys.SetMass(originalPhys.GetMass());
-			entityPhys.SetMassCenter(originalPhys.GetMassCenter());
-			entityPhys.SetMomentOfInertia(originalPhys.GetMomentOfInertia());
-			entityPhys.SetSurfaceVelocity(originalPhys.GetSurfaceVelocity());
-		}
-
-		assert(m_prediction.reconciliationEntities.find(serverEntity->GetId()) == m_prediction.reconciliationEntities.end());
-		m_prediction.reconciliationEntities.emplace(serverEntity->GetId(), entity);
-
-		return entity;
 	}
 
 	void LocalMatch::DebugEntityId(ServerEntity& serverEntity)
@@ -721,7 +679,7 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			m_prediction.reconciliationEntities.erase(entityData.id);
+			m_prediction.OnEntityDeletion(entityData.id);
 
 			auto it = m_serverEntityIdToClient.find(entityData.id);
 			//assert(it != m_serverEntityIdToClient.end());
@@ -829,6 +787,8 @@ namespace bw
 		});
 		m_prediction.predictedInputs.erase(m_prediction.predictedInputs.begin(), firstClientInput);
 
+		Nz::Bitset<> predictedEntities;
+
 		for (auto&& entityData : packet.entities)
 		{
 			auto it = m_serverEntityIdToClient.find(entityData.id);
@@ -840,22 +800,7 @@ namespace bw
 			if (!serverEntity.entity)
 				return;
 
-			// Check if controlled by local player (should be predicted)
-			bool shouldBePredicted = false;
-			std::size_t playerIndex = 0;
-
-			for (; playerIndex < m_playerData.size(); ++playerIndex)
-			{
-				auto& controllerData = m_playerData[playerIndex];
-
-				if (controllerData.controlledEntity == serverEntity.entity)
-				{
-					shouldBePredicted = true;
-					break;
-				}
-			}
-
-			if (shouldBePredicted)
+			/*if (playerEntity)
 			{
 				auto& controllerData = m_playerData[playerIndex];
 
@@ -869,9 +814,6 @@ namespace bw
 					entityPhys.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
 					entityPhys.SetVelocity(entityData.physicsProperties->linearVelocity);
 
-					debugFile << "Burger position: " << entityData.position.x << "\n";
-					debugFile << "Burger velocity: " << entityData.physicsProperties->linearVelocity.x << "\n";
-
 					//std::cout << "Server position: " << entityData.position << std::endl;
 					serverPos = entityData.position;
 				}
@@ -883,7 +825,7 @@ namespace bw
 				}
 			}
 			else
-			{
+			{*/
 				if (serverEntity.isPhysical)
 				{
 					assert(entityData.physicsProperties);
@@ -904,10 +846,9 @@ namespace bw
 						}
 					}
 
+					physComponent.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
 					physComponent.SetPosition(entityData.position);
 					physComponent.SetRotation(entityData.rotation);
-
-					physComponent.SetAngularVelocity(entityData.physicsProperties->angularVelocity);
 					physComponent.SetVelocity(entityData.physicsProperties->linearVelocity);
 				}
 				else
@@ -916,6 +857,24 @@ namespace bw
 					nodeComponent.SetPosition(entityData.position);
 					nodeComponent.SetRotation(entityData.rotation);
 				}
+			//}
+		}
+
+		// Player entities and surrounding entities should be predicted
+
+
+		// Check if controlled by local player (should be predicted)
+		bool playerEntity = false;
+		std::size_t playerIndex = 0;
+
+		for (; playerIndex < m_playerData.size(); ++playerIndex)
+		{
+			auto& controllerData = m_playerData[playerIndex];
+
+			if (controllerData.controlledEntity == serverEntity.entity)
+			{
+				playerEntity = true;
+				break;
 			}
 		}
 
@@ -1174,7 +1133,7 @@ namespace bw
 			prediction.tickError = m_averageTickError.GetAverageValue();
 
 			// Remember inputs for reconciliation
-			PredictedInput predictedInputs;
+			LocalMatchPrediction::PredictedInput predictedInputs;
 			predictedInputs.serverTick = estimatedServerTick;
 
 			predictedInputs.inputs.resize(m_playerData.size());
@@ -1182,7 +1141,7 @@ namespace bw
 			{
 				auto& controllerData = m_playerData[i];
 
-				PredictedInput::PlayerData playerData;
+				auto& playerData = predictedInputs.inputs[i];
 				playerData.input = controllerData.lastInputData;
 
 				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<PlayerMovementComponent>())
@@ -1199,9 +1158,6 @@ namespace bw
 					movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity();
 				}
 
-				// Remember and apply inputs
-				predictedInputs.inputs[i] = std::move(playerData);
-
 				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<InputComponent>())
 				{
 					auto& entityInputs = controllerData.controlledEntity->GetComponent<InputComponent>();
@@ -1209,7 +1165,7 @@ namespace bw
 				}
 			}
 
-			m_prediction.predictedInputs.emplace_back(std::move(predictedInputs));
+			m_prediction.PushInput(std::move(predictedInputs));
 		}
 
 		m_world.Update(GetTickDuration());
@@ -1244,6 +1200,19 @@ namespace bw
 		m_world.GetSystem<Ndk::RenderSystem>().Enable(true);
 		m_world.GetSystem<AnimationSystem>().Enable(true);
 		m_world.GetSystem<SoundSystem>().Enable(true);
+	}
+
+	void LocalMatch::PrepareReconciliationUpdate()
+	{
+		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
+		m_world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
+		m_world.GetSystem<Ndk::VelocitySystem>().Enable(true);
+		m_world.GetSystem<PlayerMovementSystem>().Enable(true);
 	}
 
 	void LocalMatch::PrepareTickUpdate()

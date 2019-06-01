@@ -7,14 +7,15 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
-#include <CoreLib/EntityProperties.hpp>
-#include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
-#include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <CoreLib/AnimationManager.hpp>
+#include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
+#include <ClientLib/LocalMatchPrediction.hpp>
+#include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
@@ -88,6 +89,7 @@ namespace bw
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
+			void PrepareReconciliationUpdate();
 			void PrepareTickUpdate();
 			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
@@ -120,43 +122,10 @@ namespace bw
 				InputData lastInputData;
 			};
 
-			struct PredictedInput
-			{
-				struct MovementData
-				{
-					Nz::Vector2f surfaceVelocity;
-					bool wasJumping;
-					bool isOnGround;
-					float jumpTime;
-					float friction;
-				};
-
-				struct PlayerData
-				{
-					InputData input;
-					std::optional<MovementData> movement;
-				};
-
-				Nz::UInt16 serverTick;
-				std::vector<PlayerData> inputs;
-			};
-
 			struct TickPrediction
 			{
 				Nz::UInt16 serverTick;
 				Nz::Int32 tickError;
-			};
-
-			struct PredictionData
-			{
-				PredictionData() : 
-				reconciliationWorld(false)
-				{
-				}
-
-				std::vector<PredictedInput> predictedInputs;
-				Ndk::World reconciliationWorld;
-				tsl::hopscotch_map<Ndk::EntityId, Ndk::EntityOwner> reconciliationEntities;
 			};
 
 			struct ServerEntity
@@ -202,8 +171,8 @@ namespace bw
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;
 			ClientSession& m_session;
+			LocalMatchPrediction m_prediction;
 			Packets::PlayersInput m_inputPacket;
-			PredictionData m_prediction;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;
