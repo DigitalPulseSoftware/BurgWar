@@ -75,7 +75,6 @@ namespace bw
 			void CreateGhostEntity(ServerEntity& serverEntity);
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
-			const Ndk::EntityHandle& CreateReconciliationEntity(const Ndk::EntityHandle& serverEntity);
 			void DebugEntityId(ServerEntity& serverEntity);
 			Nz::UInt16 EstimateServerTick() const;
 			void HandleTickPacket(TickPacketContent&& packet);
@@ -89,7 +88,6 @@ namespace bw
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
-			void PrepareReconciliationUpdate();
 			void PrepareTickUpdate();
 			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
@@ -116,10 +114,30 @@ namespace bw
 				}
 
 				Ndk::EntityHandle controlledEntity;
-				Ndk::EntityOwner reconciliationEntity;
 				Nz::UInt8 playerIndex;
 				Nz::UInt32 controlledEntityServerId;
 				InputData lastInputData;
+			};
+
+			struct PredictedInput
+			{
+				struct MovementData
+				{
+					Nz::Vector2f surfaceVelocity;
+					bool wasJumping;
+					bool isOnGround;
+					float jumpTime;
+					float friction;
+				};
+
+				struct PlayerData
+				{
+					InputData input;
+					std::optional<MovementData> movement;
+				};
+
+				Nz::UInt16 serverTick;
+				std::vector<PlayerData> inputs;
 			};
 
 			struct TickPrediction
@@ -155,11 +173,13 @@ namespace bw
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::optional<Debug> m_debug;
+			std::optional<LocalMatchPrediction> m_prediction;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
+			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
@@ -171,7 +191,6 @@ namespace bw
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;
 			ClientSession& m_session;
-			LocalMatchPrediction m_prediction;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

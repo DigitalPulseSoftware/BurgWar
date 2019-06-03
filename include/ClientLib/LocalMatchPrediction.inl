@@ -2,27 +2,54 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/LocalMatchPrediction.hpp>
 
 namespace bw
 {
-	inline AnimationManager& LocalMatch::GetAnimationManager()
+	inline void LocalMatchPrediction::DeleteEntity(Ndk::EntityId entityId)
 	{
-		return m_animationManager;
+		m_entities.erase(entityId);
 	}
 
-	inline BurgApp& LocalMatch::GetApplication()
+	inline void LocalMatchPrediction::DeleteUnregisteredEntities()
 	{
-		return m_application;
+		for (auto it = m_entities.begin(); it != m_entities.end();)
+		{
+			if (m_registeredEntities.Test(it->first))
+				++it;
+			else
+				it = m_entities.erase(it);
+		}
+
+		m_registeredEntities.Clear();
 	}
 
-	inline const Ndk::EntityHandle& LocalMatch::GetCamera()
+	inline const Ndk::EntityHandle& LocalMatchPrediction::GetEntity(Ndk::EntityId entityId)
 	{
-		return m_camera;
+		auto it = m_entities.find(entityId);
+		if (it != m_entities.end())
+			return it->second;
+
+		return Ndk::EntityHandle::InvalidHandle;
 	}
 
-	inline const Nz::SpriteRef& LocalMatch::GetTrailSprite() const
+	inline bool LocalMatchPrediction::IsRegistered(Ndk::EntityId entityId) const
 	{
-		return m_trailSpriteTest;
+		return m_registeredEntities.UnboundedTest(entityId);
+	}
+
+	inline void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity)
+	{
+		return RegisterForPrediction(entity, SynchronizeEntity);
+	}
+
+	inline void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor)
+	{
+		return RegisterForPrediction(entity, constructor, SynchronizeEntity);
+	}
+
+	inline void LocalMatchPrediction::Tick()
+	{
+		m_world.Update(m_tickDuration);
 	}
 }
