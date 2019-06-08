@@ -83,16 +83,7 @@ namespace bw
 		{
 			m_debug.emplace();
 			if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
-			{
 				m_debug->socket.EnableBlocking(false);
-				//m_debug->socket.EnableBroadcasting(true);
-
-				/*if (m_debug->socket.Bind(42000) != Nz::SocketState_Bound)
-				{
-					std::cerr << "Failed to bind debug socket";
-					m_debug.reset();
-				}*/
-			}
 			else
 			{
 				std::cerr << "Failed to create debug socket";
@@ -285,18 +276,18 @@ namespace bw
 
 		m_terrain->Update(elapsedTime);
 
+#ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
 		{
 			if (entity->HasComponent<InputComponent>())
 			{
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-
+				
 				static std::ofstream debugFile("server.csv", std::ios::trunc);
 				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isJumping) ? "Jumping;" : ";") << GetCurrentTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
-
-				//std::cout << "[Server]" << GetCurrentTick() << ": " << entityPhys.GetPosition() << std::endl;
 			}
 		});
+#endif
 
 		m_gamemode->ExecuteCallback("OnTick");
 

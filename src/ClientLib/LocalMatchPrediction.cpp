@@ -73,8 +73,6 @@ namespace bw
 			entityPhys.SetMassCenter(originalPhys.GetMassCenter());
 			entityPhys.SetMomentOfInertia(originalPhys.GetMomentOfInertia());
 			entityPhys.SetSurfaceVelocity(originalPhys.GetSurfaceVelocity());
-	
-			//entityPhys.SetMass(0.f); //< Make it kinematic
 		}
 
 		assert(m_entities.find(serverEntity->GetId()) == m_entities.end());

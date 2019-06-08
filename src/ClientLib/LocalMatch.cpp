@@ -770,11 +770,11 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
+#ifdef DEBUG_PREDICTION
 		static std::ofstream debugFile("prediction.txt", std::ios::trunc);
 		debugFile << "---------------------------------------------------\n";
 		debugFile << "Received match state for tick #" << packet.stateTick << " (current estimation: " << EstimateServerTick() << ")\n";
-
-		//std::cout << "Received tick packet: " << packet.stateTick << std::endl;
+#endif
 
 		// Remove treated inputs
 		auto firstClientInput = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
@@ -805,11 +805,13 @@ namespace bw
 				{
 					isPredicted = true;
 
+#ifdef DEBUG_PREDICTION
 					if (serverEntity.entity->HasComponent<InputComponent>())
 					{
 						debugFile << "Burger position: " << entityData.position.y << "\n";
 						debugFile << "Burger velocity: " << entityData.physicsProperties->linearVelocity.y << "\n";
 					}
+#endif
 
 					m_prediction->RegisterForPrediction(controllerData.controlledEntity, [](const Ndk::EntityHandle& entity)
 					{
@@ -880,8 +882,15 @@ namespace bw
 
 					physicsSystem.RegionQuery(Nz::Rectf(position.x - 500, position.y - 500, 1000.f, 1000.f), 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& entity)
 					{
+						// Prevent registering player entities a second time (as it would resync their physics which we don't want)
 						if (!m_prediction->IsRegistered(entity->GetId()))
-							m_prediction->RegisterForPrediction(entity);
+						{
+							m_prediction->RegisterForPrediction(entity, [](const Ndk::EntityHandle& entity)
+							{
+								if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+									entity->GetComponent<Ndk::PhysicsComponent2D>().SetMass(0.f, false); //< Treat every dynamic object as kinematic
+							});
+						}
 					});
 				}
 			}
@@ -903,7 +912,9 @@ namespace bw
 					const auto& playerInputData = input.inputs[i];
 					entityInputs.UpdateInputs(playerInputData.input);
 
+#ifdef DEBUG_PREDICTION
 					debugFile << "---- prediction (input tick: #" << input.serverTick << ", jumping: " << std::boolalpha << playerInputData.input.isJumping << ")\n";
+#endif
 
 					if (playerInputData.movement)
 					{
@@ -921,6 +932,7 @@ namespace bw
 
 			m_prediction->Tick();
 
+#ifdef DEBUG_PREDICTION
 			for (std::size_t i = 0; i < m_playerData.size(); ++i)
 			{
 				auto& controllerData = m_playerData[i];
@@ -935,8 +947,10 @@ namespace bw
 					debugFile << "new velocity: " << reconciliationPhys.GetVelocity().y << "\n";
 				}
 			}
+#endif
 		}
 
+#ifdef DEBUG_PREDICTION
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
@@ -952,6 +966,7 @@ namespace bw
 				debugFile << "final velocity: " << reconciliationPhys.GetVelocity().y << "\n";
 			}
 		}
+#endif
 
 		// Apply back predicted entities states to main world
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -969,7 +984,6 @@ namespace bw
 
 					Nz::Vector2f positionError = realPhys.GetPosition() - reconciliationPhys.GetPosition();
 
-					std::cout << "POSITION ERROR: " << positionError.GetLength() << std::endl;
 					if (positionError.GetSquaredLength() < Nz::IntegralPow(100, 2))
 					{
 						auto serverEntry = m_serverEntityIdToClient.find(controllerData.controlledEntityServerId);
@@ -1086,6 +1100,7 @@ namespace bw
 
 		m_world.Update(GetTickDuration());
 
+#ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
 		{
 			if (entity->HasComponent<InputComponent>())
@@ -1096,6 +1111,7 @@ namespace bw
 				debugFile << m_application.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isJumping) ? "Jumping;" : ";") << estimatedServerTick << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
 			}
 		});
+#endif
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback("OnTick");
