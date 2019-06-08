@@ -3,6 +3,9 @@ Assets = {
 	ResourceFolder = "resources",
 	ScriptFolder  = "scripts"
 }
+Debug = {
+	SendServerState = false
+}
 GameSettings = {
 	TickRate = 33,
 }

@@ -367,5 +367,4 @@ namespace bw
 			packetData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
 		}
 	}
-
 }

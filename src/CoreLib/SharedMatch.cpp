@@ -3,7 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/Components/InputComponent.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
+#include <iostream>
 
 namespace bw
 {
@@ -13,12 +16,12 @@ namespace bw
 	{
 		m_timerManager.Update();
 
-		m_tickTimer += std::min(elapsedTime, 0.25f);
+		m_tickTimer += elapsedTime;
 		while (m_tickTimer >= m_tickDuration)
 		{
 			m_tickTimer -= m_tickDuration;
 
-			OnTick();
+			OnTick(m_tickTimer < m_tickDuration);
 
 			m_currentTick++;
 			m_floatingTime += m_tickDuration * 1000.f;

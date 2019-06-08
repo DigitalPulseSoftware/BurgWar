@@ -126,8 +126,25 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
+		if (packet.inputs.size() != m_players.size())
+		{
+			std::cerr << "Player input count doesn't match player count" << std::endl;
+			return;
+		}
+
 		// Compute client error
-		Nz::Int32 tickError = static_cast<Nz::Int32>(packet.estimatedServerTick) - static_cast<Nz::Int32>(m_match.GetCurrentTick());
+		Nz::UInt16 currentTick = m_match.GetCurrentTick(); // Prevent network jitter
+		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter
+		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
+
+		//std::cout << "[Server] Estimated server tick: " << estimatedServerTick << " (current tick: " << adjustedTick << ")" << std::endl;
+
+		// Prevent overflow/underflow
+		Nz::Int32 tickError;
+		if (estimatedServerTick >= adjustedTick)
+			tickError = static_cast<Nz::Int32>(estimatedServerTick - adjustedTick);
+		else
+			tickError = -static_cast<Nz::Int32>(adjustedTick - estimatedServerTick);
 
 		Packets::InputTimingCorrection correctionPacket;
 		correctionPacket.serverTick = packet.estimatedServerTick;
@@ -135,11 +152,13 @@ namespace bw
 
 		SendPacket(correctionPacket);
 
-		if (packet.inputs.size() != m_players.size())
-		{
-			std::cerr << "Player input count doesn't match player count" << std::endl;
-			return;
-		}
+		if (estimatedServerTick < currentTick)
+			return; //< Tick has already been simulated, ignore
+
+		if (estimatedServerTick >= currentTick + 10)
+			return; //< Tick is way off prediction
+
+		std::size_t tickDelay = estimatedServerTick - currentTick;
 
 		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
 		{
@@ -147,7 +166,7 @@ namespace bw
 			if (!inputOpt.has_value())
 				continue;
 
-			m_players[playerIndex].UpdateInputs(*inputOpt);
+			m_players[playerIndex].UpdateInputs(tickDelay, *inputOpt);
 		}
 	}
 

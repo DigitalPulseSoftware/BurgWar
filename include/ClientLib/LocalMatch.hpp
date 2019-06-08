@@ -7,16 +7,18 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
-#include <CoreLib/EntityProperties.hpp>
-#include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
-#include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <CoreLib/AnimationManager.hpp>
+#include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
+#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
+#include <ClientLib/LocalMatchPrediction.hpp>
+#include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
+#include <Nazara/Network/UdpSocket.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <tsl/hopscotch_map.h>
@@ -55,6 +57,11 @@ namespace bw
 		private:
 			struct ServerEntity;
 
+			struct Debug
+			{
+				Nz::UdpSocket socket;
+			};
+
 			using TickPacketContent = std::variant<
 				Packets::ControlEntity,
 				Packets::CreateEntities,
@@ -65,6 +72,7 @@ namespace bw
 				Packets::MatchState
 			>;
 
+			void CreateGhostEntity(ServerEntity& serverEntity);
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
@@ -77,12 +85,13 @@ namespace bw
 			void HandleTickPacket(Packets::EntitiesInputs&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
-			void HandleTickError(Nz::Int32 tickError);
-			void OnTick() override;
+			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
+			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
+			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
-			bool SendInputs(bool force);
+			bool SendInputs(Nz::UInt16 serverTick, bool force);
 
 			struct HealthData
 			{
@@ -106,13 +115,42 @@ namespace bw
 
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
+				Nz::UInt32 controlledEntityServerId;
 				InputData lastInputData;
+			};
+
+			struct PredictedInput
+			{
+				struct MovementData
+				{
+					Nz::Vector2f surfaceVelocity;
+					bool wasJumping;
+					bool isOnGround;
+					float jumpTime;
+					float friction;
+				};
+
+				struct PlayerData
+				{
+					InputData input;
+					std::optional<MovementData> movement;
+				};
+
+				Nz::UInt16 serverTick;
+				std::vector<PlayerData> inputs;
+			};
+
+			struct TickPrediction
+			{
+				Nz::UInt16 serverTick;
+				Nz::Int32 tickError;
 			};
 
 			struct ServerEntity
 			{
 				std::optional<HealthData> health;
 				std::optional<NameData> name;
+				Ndk::EntityHandle serverGhost;
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
@@ -120,6 +158,7 @@ namespace bw
 				Nz::UInt32 serverEntityId;
 				Nz::UInt32 weaponEntityId = 0xFFFFFFFF;
 				bool isPhysical;
+				bool isLocalPlayerControlled;
 			};
 
 			struct TickPacket
@@ -133,12 +172,16 @@ namespace bw
 
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
+			std::optional<Debug> m_debug;
+			std::optional<LocalMatchPrediction> m_prediction;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
+			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
+			std::vector<TickPrediction> m_tickPredictions;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;
