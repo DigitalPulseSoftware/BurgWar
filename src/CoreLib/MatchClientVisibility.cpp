@@ -6,7 +6,6 @@
 #include <Nazara/Core/StackArray.hpp>
 #include <Nazara/Core/StackVector.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
-#include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <cassert>

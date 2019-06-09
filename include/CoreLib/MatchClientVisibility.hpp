@@ -10,6 +10,7 @@
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/EntityList.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
@@ -21,7 +22,6 @@
 
 namespace bw
 {
-	class Match;
 	class MatchClientSession;
 
 	class MatchClientVisibility final
