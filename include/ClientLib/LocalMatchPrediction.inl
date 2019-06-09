@@ -15,7 +15,7 @@ namespace bw
 	{
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			if (m_registeredEntities.Test(it->first))
+			if (m_registeredEntities.UnboundedTest(it->first))
 				++it;
 			else
 				it = m_entities.erase(it);

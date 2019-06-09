@@ -816,7 +816,7 @@ namespace bw
 			for (std::size_t playerIndex = 0; playerIndex < m_playerData.size(); ++playerIndex)
 			{
 				auto& controllerData = m_playerData[playerIndex];
-				if (controllerData.controlledEntityServerId == entityData.id)
+				if (controllerData.controlledEntityServerId == entityData.id && controllerData.controlledEntity)
 				{
 					isPredicted = true;
 
@@ -1000,13 +1000,7 @@ namespace bw
 					Nz::Vector2f positionError = realPhys.GetPosition() - reconciliationPhys.GetPosition();
 
 					if (positionError.GetSquaredLength() < Nz::IntegralPow(100, 2))
-					{
-						auto serverEntry = m_serverEntityIdToClient.find(controllerData.controlledEntityServerId);
-						assert(serverEntry != m_serverEntityIdToClient.end());
-
-						//serverEntry.value().positionError += positionError;
 						realPhys.SetPosition(Nz::Lerp(realPhys.GetPosition(), reconciliationPhys.GetPosition(), 0.1f));
-					}
 					else
 					{
 						std::cout << "Teleport!" << std::endl;
