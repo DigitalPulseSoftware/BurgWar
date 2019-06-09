@@ -257,7 +257,7 @@ namespace bw
 			Nz::IpAddress localAddress = Nz::IpAddress::LoopbackIpV4;
 			for (std::size_t i = 0; i < 4; ++i)
 			{
-				localAddress.SetPort(42000 + i);
+				localAddress.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
 				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
 				{

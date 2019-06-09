@@ -75,6 +75,11 @@ namespace bw
 		std::cout << "[Client] Auth succeeded" << std::endl;
 	}
 
+	void ClientSession::HandleIncomingPacket(Packets::ChatMessage&& packet)
+	{
+		m_localMatch->HandleChatMessage(std::move(packet));
+	}
+
 	void ClientSession::HandleIncomingPacket(Packets::ClientScriptList&& packet)
 	{
 		std::cout << "[Client] Got client script list" << std::endl;
@@ -146,7 +151,7 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::InputTimingCorrection&& packet)
 	{
-		std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
+		//std::cout << "[Client] Server tick error: " << packet.tickError << std::endl;
 		m_localMatch->HandleTickError(packet.serverTick, packet.tickError);
 	}
 

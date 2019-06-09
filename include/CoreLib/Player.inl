@@ -21,6 +21,11 @@ namespace bw
 		return m_name;
 	}
 
+	inline const MatchClientSession& Player::GetSession() const
+	{
+		return m_session;
+	}
+
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;

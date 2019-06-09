@@ -124,6 +124,17 @@ namespace bw
 		SendPacket(hw);
 	}
 
+	void MatchClientSession::HandleIncomingPacket(Packets::PlayerChat&& packet)
+	{
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = std::move(packet.message);
+
+		m_match.ForEachPlayer([&](Player* player)
+		{
+			SendPacket(chatPacket);
+		});
+	}
+
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
 		if (packet.inputs.size() != m_players.size())
@@ -133,7 +144,7 @@ namespace bw
 		}
 
 		// Compute client error
-		Nz::UInt16 currentTick = m_match.GetCurrentTick(); // Prevent network jitter
+		Nz::UInt16 currentTick = m_match.GetCurrentTick();
 		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter
 		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
 

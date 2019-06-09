@@ -33,19 +33,20 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
 	SharedMatch(burgApp, matchData.tickDuration),
 	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_currentServerTick(matchData.currentTick),
 	m_averageTickError(20),
 	m_application(burgApp),
+	m_chatBox(window, canvas),
 	m_session(session),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
 	{
-		assert(renderTarget);
+		assert(window);
 
 		m_world.AddSystem<AnimationSystem>(burgApp);
 		m_world.AddSystem<PlayerMovementSystem>();
@@ -73,7 +74,7 @@ namespace bw
 		cameraNode.SetPosition(-Nz::Vector2f(640.f, 360.f));
 
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
-		viewer.SetTarget(renderTarget);
+		viewer.SetTarget(window);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
 		Nz::Color trailColor(242, 255, 168);
@@ -99,6 +100,14 @@ namespace bw
 
 		m_prediction.emplace(*this);
 
+		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
+		{
+			Packets::PlayerChat chatPacket;
+			chatPacket.message = message;
+
+			m_session.SendPacket(chatPacket);
+		});
+
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
 			m_debug.emplace();
@@ -109,7 +118,7 @@ namespace bw
 				Nz::IpAddress localhost = Nz::IpAddress::LoopbackIpV4;
 				for (std::size_t i = 0; i < 4; ++i)
 				{
-					localhost.SetPort(42000 + i);
+					localhost.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
 					if (m_debug->socket.Bind(localhost) == Nz::SocketState_Bound)
 						break;
@@ -530,6 +539,11 @@ namespace bw
 	Nz::UInt16 LocalMatch::EstimateServerTick() const
 	{
 		return m_currentServerTick - m_averageTickError.GetAverageValue();
+	}
+
+	void LocalMatch::HandleChatMessage(Packets::ChatMessage&& packet)
+	{
+		m_chatBox.PrintMessage(packet.content);
 	}
 
 	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)
@@ -1093,7 +1107,6 @@ namespace bw
 				{
 					auto& entityInputs = controllerData.controlledEntity->GetComponent<InputComponent>();
 					entityInputs.UpdateInputs(controllerData.lastInputData);
-					std::cout << controllerData.lastInputData.isJumping << std::endl;
 				}
 			}
 		}
@@ -1217,7 +1230,10 @@ namespace bw
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
-			InputData input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
+			InputData input;
+			
+			if (!m_chatBox.IsTyping())
+				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
 			{

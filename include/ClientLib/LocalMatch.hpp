@@ -13,16 +13,17 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
+#include <ClientLib/Chatbox.hpp>
 #include <ClientLib/LocalMatchPrediction.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <Nazara/Renderer/RenderTarget.hpp>
+#include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
+#include <NDK/Canvas.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
 #include <tsl/hopscotch_map.h>
-#include <Nazara/Platform/EventHandler.hpp>
 #include <memory>
 #include <optional>
 #include <variant>
@@ -40,7 +41,7 @@ namespace bw
 		friend class ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderTarget* renderTarget, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
+			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch() = default;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
@@ -77,6 +78,7 @@ namespace bw
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
 			Nz::UInt16 EstimateServerTick() const;
+			void HandleChatMessage(Packets::ChatMessage&& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);
@@ -167,9 +169,6 @@ namespace bw
 				TickPacketContent content;
 			};
 
-			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
-			NazaraSlot(Nz::EventHandler, OnKeyReleased, m_onKeyReleasedSlot);
-
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::optional<Debug> m_debug;
@@ -190,6 +189,7 @@ namespace bw
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;
+			Chatbox m_chatBox;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;

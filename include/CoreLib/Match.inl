@@ -7,7 +7,17 @@
 
 namespace bw
 {
-	inline BurgApp & Match::GetApp()
+	template<typename F>
+	void Match::ForEachPlayer(F&& func)
+	{
+		for (Player* player : m_players)
+		{
+			if (player)
+				func(player);
+		}
+	}
+
+	inline BurgApp& Match::GetApp()
 	{
 		return m_app;
 	}

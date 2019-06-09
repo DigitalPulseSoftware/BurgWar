@@ -50,6 +50,7 @@ namespace bw
 			void HandleIncomingPacket(const Packets::Auth& packet);
 			void HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet);
 			void HandleIncomingPacket(const Packets::HelloWorld& packet);
+			void HandleIncomingPacket(Packets::PlayerChat&& packet);
 			void HandleIncomingPacket(const Packets::PlayersInput& packet);
 			void HandleIncomingPacket(const Packets::Ready& packet);
 

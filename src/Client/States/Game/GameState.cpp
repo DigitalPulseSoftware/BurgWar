@@ -20,7 +20,7 @@ namespace bw
 
 		auto inputController = std::make_shared<KeyboardAndMouseController>(*stateData.window);
 
-		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, *m_clientSession, matchData, inputController);
+		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, &stateData.canvas.value(),  *m_clientSession, matchData, inputController);
 	}
 
 	void GameState::Enter(Ndk::StateMachine& fsm)

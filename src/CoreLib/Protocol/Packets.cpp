@@ -28,6 +28,11 @@ namespace bw
 		{
 		}
 
+		void Serialize(PacketSerializer& serializer, ChatMessage& data)
+		{
+			serializer &= data.content;
+		}
+
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data)
 		{
 			serializer.SerializeArraySize(data.scripts);
@@ -382,6 +387,11 @@ namespace bw
 			serializer.SerializeArraySize(data.strings);
 			for (auto& string : data.strings)
 				serializer &= string;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerChat& data)
+		{
+			serializer &= data.message;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)

@@ -33,6 +33,7 @@ namespace bw
 			inline std::size_t GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
+			inline const MatchClientSession& GetSession() const;
 
 			inline bool IsInMatch() const;
 

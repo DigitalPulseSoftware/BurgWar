@@ -44,6 +44,7 @@ namespace bw
 			Packets::ClientScriptList BuildClientFileListPacket() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+			template<typename F> void ForEachPlayer(F&& func);
 
 			inline BurgApp& GetApp();
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);

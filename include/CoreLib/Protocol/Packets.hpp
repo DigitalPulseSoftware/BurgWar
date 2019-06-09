@@ -30,6 +30,7 @@ namespace bw
 		Auth,
 		AuthFailure,
 		AuthSuccess,
+		ChatMessage,
 		ClientScriptList,
 		ControlEntity,
 		CreateEntities,
@@ -44,6 +45,7 @@ namespace bw
 		MatchData,
 		MatchState,
 		NetworkStrings,
+		PlayerChat,
 		PlayersInput,
 		Ready
 	};
@@ -73,6 +75,11 @@ namespace bw
 
 		DeclarePacket(AuthSuccess)
 		{
+		};
+
+		DeclarePacket(ChatMessage)
+		{
+			std::string content;
 		};
 
 		DeclarePacket(ClientScriptList)
@@ -260,6 +267,11 @@ namespace bw
 			std::vector<Entity> entities;
 		};
 
+		DeclarePacket(PlayerChat)
+		{
+			std::string message;
+		};
+
 		DeclarePacket(PlayersInput)
 		{
 			Nz::UInt16 estimatedServerTick;
@@ -276,6 +288,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, Auth& data);
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
+		void Serialize(PacketSerializer& serializer, ChatMessage& data);
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
@@ -290,6 +303,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
+		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
 

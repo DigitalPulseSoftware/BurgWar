@@ -19,6 +19,7 @@ namespace bw
 		// Incoming commands
 		IncomingCommand(AuthFailure);
 		IncomingCommand(AuthSuccess);
+		IncomingCommand(ChatMessage);
 		IncomingCommand(ClientScriptList);
 		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
@@ -38,6 +39,7 @@ namespace bw
 		OutgoingCommand(DownloadClientScriptRequest, Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(HelloWorld,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);
 
