@@ -134,6 +134,15 @@ namespace bw
 
 		player->UpdateLayer(std::numeric_limits<std::size_t>::max());
 		player->UpdateMatch(nullptr);
+
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = player->GetName() + " has left.";
+
+		//FIXME: Should be for each session
+		ForEachPlayer([&](Player* player)
+		{
+			player->SendPacket(chatPacket);
+		});
 	}
 
 	bool Match::GetClientScript(const std::string& filePath, const ClientScript** clientScriptData)
@@ -159,6 +168,15 @@ namespace bw
 		player->UpdateLayer(0);
 
 		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
+
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = player->GetName() + " has joined.";
+
+		//FIXME: Should be for each session
+		ForEachPlayer([&](Player* player)
+		{
+			player->SendPacket(chatPacket);
+		});
 
 		return true;
 	}

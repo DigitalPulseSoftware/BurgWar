@@ -391,6 +391,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, PlayerChat& data)
 		{
+			serializer &= data.playerIndex;
 			serializer &= data.message;
 		}
 

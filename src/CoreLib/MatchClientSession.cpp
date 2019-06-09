@@ -126,12 +126,16 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(Packets::PlayerChat&& packet)
 	{
-		Packets::ChatMessage chatPacket;
-		chatPacket.content = std::move(packet.message);
+		if (packet.playerIndex >= m_players.size())
+			return;
 
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = m_players[packet.playerIndex].GetName() + ": " + std::move(packet.message);
+
+		//FIXME: Should be for each session
 		m_match.ForEachPlayer([&](Player* player)
 		{
-			SendPacket(chatPacket);
+			player->SendPacket(chatPacket);
 		});
 	}
 

@@ -269,6 +269,7 @@ namespace bw
 
 		DeclarePacket(PlayerChat)
 		{
+			Nz::UInt8 playerIndex;
 			std::string message;
 		};
 
