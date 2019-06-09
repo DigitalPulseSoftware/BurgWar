@@ -39,6 +39,7 @@ namespace bw
 	m_gamemodePath(matchData.gamemodePath),
 	m_currentServerTick(matchData.currentTick),
 	m_averageTickError(20),
+	m_window(window),
 	m_application(burgApp),
 	m_chatBox(window, canvas),
 	m_session(session),
@@ -1232,7 +1233,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			InputData input;
 			
-			if (!m_chatBox.IsTyping())
+			if (!m_chatBox.IsTyping() && m_window->HasFocus())
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)

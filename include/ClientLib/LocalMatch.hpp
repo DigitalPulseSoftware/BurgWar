@@ -189,6 +189,7 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
 			Ndk::World m_world;
+			Nz::RenderWindow* m_window;
 			Nz::SpriteRef m_trailSpriteTest;
 			Nz::UInt16 m_currentServerTick;
 			AnimationManager m_animationManager;
