@@ -668,7 +668,7 @@ namespace bw
 				serverEntity.maxHealth = (entityData.health.has_value()) ? entityData.health->maxHealth : 0;
 				serverEntity.serverEntityId = entityData.id;
 
-				entity->AddComponent<LocalMatchComponent>(shared_from_this());
+				entity->AddComponent<LocalMatchComponent>(*this);
 				//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
 				//DebugEntityId(serverEntity);
 

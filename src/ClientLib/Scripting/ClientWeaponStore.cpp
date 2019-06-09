@@ -87,7 +87,7 @@ namespace bw
 			}
 
 			const auto& localMatchComponent = entity->GetComponent<LocalMatchComponent>();
-			const auto& localMatchPtr = localMatchComponent.GetLocalMatch();
+			LocalMatch& localMatch = localMatchComponent.GetLocalMatch();
 
 			const auto& trailEntity = world->CreateEntity();
 			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
@@ -97,7 +97,7 @@ namespace bw
 
 			const float trailSpeed = 2500.f;
 
-			const Nz::SpriteRef& trailSprite = localMatchPtr->GetTrailSprite();
+			const Nz::SpriteRef& trailSprite = localMatch.GetTrailSprite();
 			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
 			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
 			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);

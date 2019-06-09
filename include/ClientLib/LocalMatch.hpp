@@ -41,6 +41,8 @@ namespace bw
 		friend class ClientSession;
 
 		public:
+			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
+			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch() = default;
 
@@ -54,6 +56,9 @@ namespace bw
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
 			void Update(float elapsedTime);
+
+			LocalMatch& operator=(const LocalMatch&) = delete;
+			LocalMatch& operator=(LocalMatch&&) = delete;
 
 		private:
 			struct ServerEntity;

@@ -8,7 +8,6 @@
 #define BURGWAR_CLIENTLIB_COMPONENTS_LOCALMATCHCOMPONENT_HPP
 
 #include <NDK/Component.hpp>
-#include <memory>
 
 namespace bw
 {
@@ -17,15 +16,15 @@ namespace bw
 	class LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
 	{
 		public:
-			inline LocalMatchComponent(std::shared_ptr<LocalMatch> animStore);
+			inline LocalMatchComponent(LocalMatch& animStore);
 			~LocalMatchComponent() = default;
 
-			inline const std::shared_ptr<LocalMatch>& GetLocalMatch() const;
+			inline LocalMatch& GetLocalMatch() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			std::shared_ptr<LocalMatch> m_localMatch;
+			LocalMatch& m_localMatch;
 	};
 }
 

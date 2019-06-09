@@ -6,12 +6,12 @@
 
 namespace bw
 {
-	inline LocalMatchComponent::LocalMatchComponent(std::shared_ptr<LocalMatch> localMatch) :
-	m_localMatch(std::move(localMatch))
+	inline LocalMatchComponent::LocalMatchComponent(LocalMatch& localMatch) :
+	m_localMatch(localMatch)
 	{
 	}
 
-	inline const std::shared_ptr<LocalMatch>& LocalMatchComponent::GetLocalMatch() const
+	inline LocalMatch& LocalMatchComponent::GetLocalMatch() const
 	{
 		return m_localMatch;
 	}
