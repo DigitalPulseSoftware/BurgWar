@@ -104,6 +104,7 @@ namespace bw
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
 			Packets::PlayerChat chatPacket;
+			chatPacket.playerIndex = 0;
 			chatPacket.message = message;
 
 			m_session.SendPacket(chatPacket);
