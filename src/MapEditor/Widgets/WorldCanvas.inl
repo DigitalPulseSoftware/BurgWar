@@ -6,6 +6,11 @@
 
 namespace bw
 {
+	inline const CameraMovement& WorldCanvas::GetCameraController() const
+	{
+		return *m_cameraMovement;
+	}
+
 	inline const Ndk::EntityHandle& WorldCanvas::GetCameraEntity()
 	{
 		return m_cameraEntity;

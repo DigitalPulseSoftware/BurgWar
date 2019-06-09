@@ -60,6 +60,12 @@ namespace bw
 		{
 			OnMouseMoved(mouseMoved);
 		});
+
+		eventHandler.OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& mouseWheel)
+		{
+			OnMouseWheelMoved(mouseWheel);
+		});
+
 	}
 
 	void WorldCanvas::EnableCameraControl(bool enable)
@@ -124,6 +130,12 @@ namespace bw
 	void WorldCanvas::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
 		if (m_cameraMovement && m_cameraMovement->OnMouseMoved(mouseMoved))
+			return;
+	}
+
+	void WorldCanvas::OnMouseWheelMoved(const Nz::WindowEvent::MouseWheelEvent& mouseWheel)
+	{
+		if (m_cameraMovement && m_cameraMovement->OnMouseWheelMoved(mouseWheel))
 			return;
 	}
 }

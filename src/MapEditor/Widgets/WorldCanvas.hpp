@@ -22,6 +22,7 @@ namespace bw
 
 			void EnableCameraControl(bool enable);
 
+			inline const CameraMovement& GetCameraController() const;
 			inline const Ndk::EntityHandle& GetCameraEntity();
 			inline const Ndk::EntityHandle& GetCameraEntity() const;
 			inline Ndk::World& GetWorld();
@@ -39,6 +40,7 @@ namespace bw
 			virtual void OnMouseEntered();
 			virtual void OnMouseLeft();
 			virtual void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
+			virtual void OnMouseWheelMoved(const Nz::WindowEvent::MouseWheelEvent& mouseWheel);
 
 		private:
 			void OnUpdate(float elapsedTime) override;

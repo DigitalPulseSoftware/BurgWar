@@ -69,6 +69,11 @@ namespace bw
 
 		m_canvas = new MapCanvas(*this);
 
+		m_canvas->OnCameraZoomFactorUpdated.Connect([this](MapCanvas* /*emitter*/, float factor)
+		{
+			statusBar()->showMessage(tr("Zoom level: %1%").arg(static_cast<int>(std::round(factor * 100.f))));
+		});
+
 		m_canvas->OnDeleteEntity.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex)
 		{
 			auto it = m_entityIndexes.find(canvasIndex);

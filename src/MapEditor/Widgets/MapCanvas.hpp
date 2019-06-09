@@ -35,6 +35,7 @@ namespace bw
 
 			void UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
 
+			NazaraSignal(OnCameraZoomFactorUpdated, MapCanvas* /*emitter*/, float /*zoomFactor*/);
 			NazaraSignal(OnCanvasMouseButtonPressed, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
 			NazaraSignal(OnCanvasMouseButtonReleased, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/);
 			NazaraSignal(OnCanvasMouseEntered, MapCanvas* /*emitter*/);

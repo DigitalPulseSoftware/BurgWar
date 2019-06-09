@@ -20,17 +20,24 @@ namespace bw
 			CameraMovement(Nz::CursorController& cursorController, Ndk::Entity* camera);
 			~CameraMovement();
 
+			float ComputeZoomFactor() const;
+
+			inline float GetZoomLevel() const;
+
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton);
 			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
+			bool OnMouseWheelMoved(const Nz::WindowEvent::MouseWheelEvent& mouseWheel);
 
 			NazaraSignal(OnCameraMoved, CameraMovement* /*emitter*/);
+			NazaraSignal(OnCameraZoomUpdated, CameraMovement* /*emitter*/);
 
 		private:
 			Nz::CursorController& m_cursorController;
 			Nz::Vector2f m_originalWorldPos;
 			Ndk::EntityHandle m_cameraEntity;
 			bool m_isActive;
+			float m_zoomLevel;
 	};
 }
 

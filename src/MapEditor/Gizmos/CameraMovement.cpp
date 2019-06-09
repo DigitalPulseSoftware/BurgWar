@@ -9,17 +9,30 @@
 #include <NDK/World.hpp>
 #include <iostream>
 
+constexpr float zoomLevel = 10.f;
+constexpr float maxZoomLevel = zoomLevel - 1.f;
+constexpr float minZoomLevel = -zoomLevel;
+
 namespace bw
 {
 	CameraMovement::CameraMovement(Nz::CursorController& cursorController, Ndk::Entity* camera) :
 	m_cursorController(cursorController),
 	m_cameraEntity(camera),
-	m_isActive(false)
+	m_isActive(false),
+	m_zoomLevel(0.f)
 	{
 	}
 
 	CameraMovement::~CameraMovement()
 	{
+	}
+
+	float CameraMovement::ComputeZoomFactor() const
+	{
+		constexpr float minZoomFactor = 1.f / zoomLevel;
+		constexpr float halfZoomLevel = zoomLevel / 2.f;
+
+		return minZoomFactor + (zoomLevel + m_zoomLevel) * minZoomFactor;
 	}
 
 	bool CameraMovement::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -58,6 +71,19 @@ namespace bw
 
 		cameraNode.Move(-Nz::Vector2f(worldPosition - m_originalWorldPos), Nz::CoordSys_Global);
 		OnCameraMoved(this);
+
+		return true;
+	}
+
+	bool CameraMovement::OnMouseWheelMoved(const Nz::WindowEvent::MouseWheelEvent& mouseWheel)
+	{
+		m_zoomLevel = Nz::Clamp(m_zoomLevel - mouseWheel.delta, minZoomLevel, maxZoomLevel);
+
+		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
+		Nz::Vector2f viewportSize = Nz::Vector2f(cameraComponent.GetTarget()->GetSize());
+
+		cameraComponent.SetSize(ComputeZoomFactor() * viewportSize);
+		OnCameraZoomUpdated(this);
 
 		return true;
 	}

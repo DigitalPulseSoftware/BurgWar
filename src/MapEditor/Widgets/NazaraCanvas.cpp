@@ -255,6 +255,18 @@ namespace bw
 				return true;
 			}
 
+			case QEvent::Wheel:
+			{
+				QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(e);
+
+				Nz::WindowEvent event;
+				event.type = Nz::WindowEventType_MouseWheelMoved;
+				event.mouseWheel.delta = wheelEvent->angleDelta().ry() / 120.f;
+
+				PushEvent(event);
+				return true;
+			}
+
 			default:
 				break;
 		}

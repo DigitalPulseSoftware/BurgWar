@@ -7,4 +7,8 @@
 
 namespace bw
 {
+	inline float bw::CameraMovement::GetZoomLevel() const
+	{
+		return m_zoomLevel;
+	}
 }

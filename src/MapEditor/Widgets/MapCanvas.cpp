@@ -21,6 +21,11 @@ namespace bw
 	m_editor(editor)
 	{
 		EnableCameraControl(true);
+
+		GetCameraController().OnCameraZoomUpdated.Connect([this](CameraMovement* controller)
+		{
+			OnCameraZoomFactorUpdated(this, controller->ComputeZoomFactor());
+		});
 	}
 
 	void MapCanvas::ClearEntities()
