@@ -28,6 +28,11 @@ namespace bw
 			return sol::nil;
 	}
 
+	inline sol::table& SharedGamemode::GetTable()
+	{
+		return m_gamemodeTable;
+	}
+
 	inline const std::filesystem::path& SharedGamemode::GetGamemodePath() const
 	{
 		return m_gamemodePath;

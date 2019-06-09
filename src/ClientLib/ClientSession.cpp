@@ -77,6 +77,9 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::ChatMessage&& packet)
 	{
+		if (!m_localMatch)
+			return;
+
 		m_localMatch->HandleChatMessage(std::move(packet));
 	}
 

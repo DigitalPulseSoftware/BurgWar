@@ -23,7 +23,5 @@ namespace bw
 		const std::filesystem::path& gamemodePath = GetGamemodePath();
 		Load(gamemodePath / "shared.lua");
 		Load(gamemodePath / "cl_init.lua");
-
-		state["GM"] = nullptr;
 	}
 }

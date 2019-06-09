@@ -7,7 +7,7 @@
 namespace bw
 {
 	template<typename... Args>
-	void ScriptComponent::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	std::optional<sol::object> ScriptComponent::ExecuteCallback(const std::string& callbackName, Args&&... args)
 	{
 		sol::protected_function callback = m_entityTable[callbackName];
 		if (callback)
@@ -19,10 +19,13 @@ namespace bw
 			{
 				sol::error err = result;
 				std::cerr << callbackName << " entity callback failed: " << err.what() << std::endl;
+				return std::nullopt;
 			}
 
-			//TODO: Handle return
+			return result;
 		}
+		else
+			return sol::nil;
 	}
 
 	inline const std::shared_ptr<ScriptingContext>& ScriptComponent::GetContext()

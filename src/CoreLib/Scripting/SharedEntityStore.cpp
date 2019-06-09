@@ -25,6 +25,19 @@ namespace bw
 
 	void SharedEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
+		elementTable["IsFullHealth"] = [](const sol::table& entityTable) -> bool
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			if (!entity->HasComponent<HealthComponent>())
+				return 0;
+
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+			return entityHealth.GetHealth() == entityHealth.GetMaxHealth();
+		};
+
 		elementTable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
@@ -49,6 +62,19 @@ namespace bw
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 			entityHealth.Damage(damage, Ndk::EntityHandle::InvalidHandle);
+		};
+
+		elementTable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity)
+				throw std::runtime_error("Invalid or dead entity");
+
+			if (!entity->HasComponent<HealthComponent>())
+				return;
+
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+			entityHealth.Heal(value);
 		};
 
 		elementTable["GetPosition"] = [](const sol::table& table)
@@ -99,6 +125,13 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
 			return entity.IsValid();
+		};
+
+		elementTable["Kill"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (entity)
+				entity->Kill();
 		};
 
 		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)

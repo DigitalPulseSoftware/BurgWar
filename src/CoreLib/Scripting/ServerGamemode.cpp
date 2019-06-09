@@ -28,8 +28,6 @@ namespace bw
 		Load(gamemodePath / "shared.lua");
 		Load(gamemodePath / "sv_init.lua");
 
-		state["GM"] = nullptr;
-
 		sol::table& gamemodeTable = GetGamemodeTable();
 		gamemodeTable["CreateEntity"] = [&](const sol::table& gmTable, const std::string& entityType, const Nz::Vector2f& spawnPos, const sol::object& properties)
 		{
@@ -55,7 +53,8 @@ namespace bw
 				if (!entity)
 					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
-				return entity;
+				auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+				return scriptComponent.GetTable();
 			}
 			else
 				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");

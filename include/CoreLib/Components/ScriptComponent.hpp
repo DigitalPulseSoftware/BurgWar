@@ -25,7 +25,7 @@ namespace bw
 			~ScriptComponent();
 
 			template<typename... Args>
-			void ExecuteCallback(const std::string& callbackName, Args&&... args);
+			std::optional<sol::object> ExecuteCallback(const std::string& callbackName, Args&&... args);
 
 			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;

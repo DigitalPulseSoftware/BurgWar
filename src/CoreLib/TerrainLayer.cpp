@@ -30,6 +30,30 @@ namespace bw
 		physics.SetMaxStepCount(1);
 		physics.SetStepSize(match.GetTickDuration());
 
+		Ndk::PhysicsSystem2D::Callback triggerCallbacks;
+		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)
+		{
+			bool shouldCollide = true;
+
+			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			{
+				if (first->HasComponent<ScriptComponent>() && second->HasComponent<ScriptComponent>())
+				{
+					auto& firstScript = first->GetComponent<ScriptComponent>();
+					auto& secondScript = second->GetComponent<ScriptComponent>();
+					if (auto ret = firstScript.ExecuteCallback("OnCollisionStart", secondScript.GetTable()); ret->valid())
+						shouldCollide = ret->as<bool>();
+				}
+			};
+
+			HandleCollision(bodyA, bodyB);
+			HandleCollision(bodyB, bodyA);
+
+			return shouldCollide;
+		};
+
+		physics.RegisterCallbacks(1, 3, triggerCallbacks);
+
 		m_world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.SetFixedUpdateRate(0.f);

@@ -22,6 +22,8 @@ namespace bw
 			template<typename... Args>
 			sol::object ExecuteCallback(const std::string& callbackName, Args&&... args);
 
+			inline sol::table& GetTable();
+
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 
 		protected:
