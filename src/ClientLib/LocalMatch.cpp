@@ -256,17 +256,6 @@ namespace bw
 
 		SharedMatch::Update(elapsedTime);
 
-		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
-		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
-		{
-			for (std::size_t i = 0; i < vertexCount - 1; ++i)
-				Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
-
-			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
-		};
-
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
-
 		constexpr float ErrorCorrectionPerSecond = 60;
 
 		m_errorCorrectionTimer += elapsedTime;
@@ -428,6 +417,17 @@ namespace bw
 		PrepareClientUpdate();
 
 		m_world.Update(elapsedTime);
+
+		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
+		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
+		{
+			for (std::size_t i = 0; i < vertexCount - 1; ++i)
+				Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
+
+			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
+		};
+
+		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 	}
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
