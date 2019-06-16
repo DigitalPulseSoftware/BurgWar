@@ -4,12 +4,12 @@ WEAPON.Scale = 0.2
 WEAPON.Sprite = "rifle-30349_640.png"
 WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
-WEAPON.Cooldown = 0.05
+WEAPON.Cooldown = 0.1
 
 WEAPON.ShootSound = {
-    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav", 
+    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav",
     "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR2_stereo.wav",
-    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR3_stereo.wav",  
+    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR3_stereo.wav",
 }
 
 function WEAPON:OnAttack()

@@ -1,5 +1,6 @@
 RegisterClientScript("sword_emmentalibur.lua")
 
+WEAPON.Cooldown = 0.5
 WEAPON.Scale = 0.6
 WEAPON.Sprite = "emmentalibur.png"
 WEAPON.SpriteOrigin = Vec2(40, 284) * WEAPON.Scale
@@ -10,10 +11,6 @@ WEAPON.Animations = {
 
 if (SERVER) then
 	function WEAPON:OnAttack()
-		if (self:IsPlayingAnimation()) then
-			return
-		end
-
 		local pos = self:GetPosition()
 		local maxs = Vec2(128, 66)
 		local mins = Vec2(28, -76)
