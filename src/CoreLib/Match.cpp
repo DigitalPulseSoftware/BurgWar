@@ -302,7 +302,7 @@ namespace bw
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				
 				static std::ofstream debugFile("server.csv", std::ios::trunc);
-				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isJumping) ? "Jumping;" : ";") << GetCurrentTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
+				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << GetCurrentTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
 			}
 		});
 #endif

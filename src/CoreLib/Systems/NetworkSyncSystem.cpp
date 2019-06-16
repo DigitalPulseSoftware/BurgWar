@@ -78,7 +78,7 @@ namespace bw
 		{
 			auto& entityInputs = entity->GetComponent<InputComponent>();
 
-			creationEvent.inputs = entityInputs.GetInputData();
+			creationEvent.inputs = entityInputs.GetInputs();
 		}
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -266,7 +266,7 @@ namespace bw
 			{
 				EntityInputs& inputEvent = m_inputEvents.emplace_back();
 				inputEvent.entityId = entity->GetId();
-				inputEvent.inputs = entity->GetComponent<InputComponent>().GetInputData();
+				inputEvent.inputs = entity->GetComponent<InputComponent>().GetInputs();
 			}
 
 			m_inputUpdateEntities.Clear();

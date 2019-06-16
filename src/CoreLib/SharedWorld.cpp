@@ -8,6 +8,7 @@
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
+#include <CoreLib/Systems/WeaponSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <cassert>
 #include <iostream>
@@ -19,6 +20,7 @@ namespace bw
 		m_world.AddSystem<AnimationSystem>(app);
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>();
+		m_world.AddSystem<WeaponSystem>(match);
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));

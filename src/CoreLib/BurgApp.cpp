@@ -12,10 +12,12 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
+#include <CoreLib/Systems/WeaponSystem.hpp>
 
 namespace bw
 {
@@ -31,10 +33,12 @@ namespace bw
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
 		Ndk::InitializeComponent<ScriptComponent>("Script");
+		Ndk::InitializeComponent<WeaponComponent>("Weapon");
 		Ndk::InitializeSystem<AnimationSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();
+		Ndk::InitializeSystem<WeaponSystem>();
 
 		RegisterBaseConfig();
 	}

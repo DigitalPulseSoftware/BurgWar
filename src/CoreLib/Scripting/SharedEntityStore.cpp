@@ -230,7 +230,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = input->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback("OnInputUpdate", input->GetInputData());
+				entityScript.ExecuteCallback("OnInputUpdate", input->GetInputs());
 			});
 		}
 

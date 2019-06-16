@@ -19,6 +19,7 @@
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
+#include <CoreLib/Systems/WeaponSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
@@ -556,7 +557,8 @@ namespace bw
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
-		const ServerEntity& serverEntity = it->second;
+		ServerEntity& serverEntity = it.value();
+		serverEntity.isLocalPlayerControlled = true;
 
 		if (m_playerData[packet.playerIndex].controlledEntity)
 			m_playerData[packet.playerIndex].controlledEntity->RemoveComponent<Ndk::ListenerComponent>();
@@ -642,8 +644,6 @@ namespace bw
 				{
 					assert(parent);
 
-					parent->weaponEntityId = entityData.id; //< TEMPORARY
-
 					entity = m_weaponStore->InstantiateWeapon(world, weaponIndex, properties, parent->entity);
 					if (!entity)
 						continue;
@@ -728,41 +728,8 @@ namespace bw
 			if (!serverEntity.entity)
 				continue;
 
-			//serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(entityData.inputs);
-
-			// TEMPORARY
-			if (serverEntity.weaponEntityId != 0xFFFFFFFF)
-			{
-				auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
-				if (weaponIt == m_serverEntityIdToClient.end())
-					return;
-
-				ServerEntity& weaponEntity = weaponIt.value();
-				if (!weaponEntity.entity)
-					return;
-
-				if (entityData.inputs.isAttacking)
-				{
-					auto& weaponCooldown = weaponEntity.entity->GetComponent<CooldownComponent>();
-					if (weaponCooldown.Trigger(GetCurrentTime()))
-					{
-						auto& weaponScript = weaponEntity.entity->GetComponent<ScriptComponent>();
-						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
-					}
-				}
-
-				Ndk::NodeComponent& playerNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				Ndk::NodeComponent& weaponNode = weaponEntity.entity->GetComponent<Ndk::NodeComponent>();
-
-				Nz::RadianAnglef angle(std::atan2(entityData.inputs.aimDirection.y, entityData.inputs.aimDirection.x));
-				if (std::signbit(playerNode.GetScale().x) != std::signbit(weaponNode.GetScale().x))
-					weaponNode.Scale(-1.f, 1.f);
-
-				if (weaponNode.GetScale().x < 0.f)
-					angle += Nz::RadianAnglef(float(M_PI));
-
-				weaponNode.SetRotation(angle);
-			}
+			if (!serverEntity.isLocalPlayerControlled)
+				serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(entityData.inputs);
 		}
 	}
 
@@ -1128,7 +1095,7 @@ namespace bw
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				
 				static std::ofstream debugFile("client.csv", std::ios::trunc);
-				debugFile << m_application.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputData().isJumping) ? "Jumping;" : ";") << estimatedServerTick << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
+				debugFile << m_application.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << estimatedServerTick << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
 			}
 		});
 #endif
@@ -1171,6 +1138,7 @@ namespace bw
 		world.GetSystem<Ndk::VelocitySystem>().Enable(true);
 		world.GetSystem<PlayerMovementSystem>().Enable(true);
 		world.GetSystem<TickCallbackSystem>().Enable(true);
+		world.GetSystem<WeaponSystem>().Enable(true);
 	}
 
 	void LocalMatch::ProcessInputs(float elapsedTime)
@@ -1243,7 +1211,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			InputData input;
 			
-			if (!m_chatBox.IsTyping() && m_window->HasFocus())
+			if (!m_chatBox.IsTyping() /*&& m_window->HasFocus()*/)
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)

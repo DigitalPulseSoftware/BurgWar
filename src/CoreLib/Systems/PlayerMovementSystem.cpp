@@ -23,7 +23,7 @@ namespace bw
 			auto& inputComponent = entity->GetComponent<InputComponent>();
 			auto& movementComponent = entity->GetComponent<PlayerMovementComponent>();
 
-			const auto& inputs = inputComponent.GetInputData();
+			const auto& inputs = inputComponent.GetInputs();
 
 			Nz::Vector2f up = Nz::Vector2f::UnitY();
 
@@ -98,7 +98,7 @@ namespace bw
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			auto& physicsComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
-			const auto& inputs = inputComponent.GetInputData();
+			const auto& inputs = inputComponent.GetInputs();
 
 			if (inputs.isJumping && !playerMovementComponent.WasJumping() && playerMovementComponent.IsOnGround())
 			{

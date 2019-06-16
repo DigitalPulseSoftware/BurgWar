@@ -7,6 +7,7 @@
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -91,6 +92,8 @@ namespace bw
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
 	{
 		entity->AddComponent<CooldownComponent>(weaponClass.cooldown);
+
+		entity->AddComponent<WeaponComponent>(parent);
 
 		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
 		weaponNode.SetParent(parent);

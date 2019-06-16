@@ -16,7 +16,7 @@ namespace bw
 	{
 	}
 
-	inline const InputData& InputComponent::GetInputData() const
+	inline const InputData& InputComponent::GetInputs() const
 	{
 		return m_inputData;
 	}

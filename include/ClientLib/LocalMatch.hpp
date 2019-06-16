@@ -163,9 +163,8 @@ namespace bw
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
 				Nz::UInt16 maxHealth;
 				Nz::UInt32 serverEntityId;
-				Nz::UInt32 weaponEntityId = 0xFFFFFFFF;
 				bool isPhysical;
-				bool isLocalPlayerControlled;
+				bool isLocalPlayerControlled = false;
 			};
 
 			struct TickPacket

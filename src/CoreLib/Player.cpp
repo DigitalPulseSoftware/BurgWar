@@ -52,18 +52,18 @@ namespace bw
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
 			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
-			const Ndk::EntityHandle& burger = entityStore.InstantiateEntity(world, entityIndex, spawnPosition, 0.f, {});
-			if (!burger)
+			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(world, entityIndex, spawnPosition, 0.f, {});
+			if (!playerEntity)
 				return;
 
-			std::cout << "[Server] Creating player entity #" << burger->GetId() << std::endl;
+			std::cout << "[Server] Creating player entity #" << playerEntity->GetId() << std::endl;
 
-			burger->AddComponent<InputComponent>();
-			burger->AddComponent<PlayerControlledComponent>(CreateHandle());
+			playerEntity->AddComponent<InputComponent>();
+			playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
 
-			if (burger->HasComponent<HealthComponent>())
+			if (playerEntity->HasComponent<HealthComponent>())
 			{
-				auto& healthComponent = burger->GetComponent<HealthComponent>();
+				auto& healthComponent = playerEntity->GetComponent<HealthComponent>();
 
 				healthComponent.OnDied.Connect([ply = CreateHandle()](const HealthComponent* health, const Ndk::EntityHandle& attacker)
 				{
@@ -74,11 +74,11 @@ namespace bw
 				});
 			}
 
-			UpdateControlledEntity(burger);
+			UpdateControlledEntity(playerEntity);
 
 			// Create weapon
 			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_rifle"); weaponIndex != ServerEntityStore::InvalidIndex)
-				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, burger);
+				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, playerEntity);
 		}
 	}
 
@@ -118,31 +118,6 @@ namespace bw
 
 			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
 			inputComponent.UpdateInputs(inputData);
-
-			if (m_playerWeapon)
-			{
-				auto& playerNode = m_playerEntity->GetComponent<Ndk::NodeComponent>();
-				auto& weaponNode = m_playerWeapon->GetComponent<Ndk::NodeComponent>();
-
-				if (inputData.isAttacking)
-				{
-					auto& weaponCooldown = m_playerWeapon->GetComponent<CooldownComponent>();
-					if (weaponCooldown.Trigger(m_match->GetCurrentTime()))
-					{
-						auto& weaponScript = m_playerWeapon->GetComponent<ScriptComponent>();
-						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
-					}
-				}
-
-				Nz::RadianAnglef angle(std::atan2(inputData.aimDirection.y, inputData.aimDirection.x));
-				if (std::signbit(playerNode.GetScale().x) != std::signbit(weaponNode.GetScale().x))
-					weaponNode.Scale(-1.f, 1.f);
-
-				if (weaponNode.GetScale().x < 0.f)
-					angle += Nz::RadianAnglef(float(M_PI));
-
-				weaponNode.SetRotation(angle);
-			}
 		}
 	}
 

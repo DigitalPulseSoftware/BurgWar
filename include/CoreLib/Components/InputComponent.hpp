@@ -20,7 +20,7 @@ namespace bw
 			inline InputComponent(const InputData& inputData);
 			inline InputComponent(const InputComponent& inputComponent);
 
-			inline const InputData& GetInputData() const;
+			inline const InputData& GetInputs() const;
 
 			inline void UpdateInputs(const InputData& inputData);
 
