@@ -121,6 +121,7 @@ namespace bw
 
 			if (m_playerWeapon)
 			{
+				auto& playerNode = m_playerEntity->GetComponent<Ndk::NodeComponent>();
 				auto& weaponNode = m_playerWeapon->GetComponent<Ndk::NodeComponent>();
 
 				if (inputData.isAttacking)
@@ -134,13 +135,13 @@ namespace bw
 				}
 
 				Nz::RadianAnglef angle(std::atan2(inputData.aimDirection.y, inputData.aimDirection.x));
+				if (std::signbit(playerNode.GetScale().x) != std::signbit(weaponNode.GetScale().x))
+					weaponNode.Scale(-1.f, 1.f);
+
 				if (weaponNode.GetScale().x < 0.f)
 					angle += Nz::RadianAnglef(float(M_PI));
 
 				weaponNode.SetRotation(angle);
-
-				if (m_playerWeapon->HasComponent<NetworkSyncComponent>())
-					m_playerWeapon->GetComponent<NetworkSyncComponent>().Invalidate();
 			}
 		}
 	}

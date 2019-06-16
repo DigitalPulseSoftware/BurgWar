@@ -750,6 +750,18 @@ namespace bw
 						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
 					}
 				}
+
+				Ndk::NodeComponent& playerNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
+				Ndk::NodeComponent& weaponNode = weaponEntity.entity->GetComponent<Ndk::NodeComponent>();
+
+				Nz::RadianAnglef angle(std::atan2(entityData.inputs.aimDirection.y, entityData.inputs.aimDirection.x));
+				if (std::signbit(playerNode.GetScale().x) != std::signbit(weaponNode.GetScale().x))
+					weaponNode.Scale(-1.f, 1.f);
+
+				if (weaponNode.GetScale().x < 0.f)
+					angle += Nz::RadianAnglef(float(M_PI));
+
+				weaponNode.SetRotation(angle);
 			}
 		}
 	}

@@ -95,6 +95,8 @@ namespace bw
 		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
 		weaponNode.SetParent(parent);
 		weaponNode.SetPosition(weaponClass.weaponOffset);
+		weaponNode.SetInheritRotation(false);
+		weaponNode.SetInheritScale(false);
 
 		if (weaponClass.animations)
 		{
