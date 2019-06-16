@@ -72,7 +72,7 @@ Projects = {
 		LinkStatic = {},
 		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d"},
 		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua"},
-		Libs = os.istarget("windows") and {} or {"pthread"},
+		Libs = {},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}
@@ -91,7 +91,7 @@ Projects = {
 		LinkStatic = {},
 		LinkStaticDebug = {"CoreLib-d", "Lua-d"},
 		LinkStaticRelease = {"CoreLib", "Lua"},
-		Libs = os.istarget("windows") and {} or {"pthread"},
+		Libs = {},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
 		AdditionalDependencies = {"Newton"}
@@ -225,6 +225,12 @@ workspace("Burgwar")
 					links(projectData.LinkStaticRelease)
 					optimize("On")
 
+				filter "action:gmake or gmake2"
+					links "stdc++fs"
+					links "pthread"
+
+				filter {}
+
 			for framework, dir in pairs(frameworkFolders) do
 				filter {}
 					includedirs(dir .. "/include")
@@ -318,11 +324,6 @@ workspace("Burgwar")
 			end
 		end
 	end
-
-	filter "action:gmake or gmake2"
-		links "stdc++fs"
-
-	filter {}
 
 	newoption({
 		trigger     = "buildarch",
