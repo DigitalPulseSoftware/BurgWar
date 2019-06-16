@@ -9,7 +9,6 @@ namespace bw
 	AbstractState::AbstractState(std::shared_ptr<StateData> stateData) :
 	m_stateData(std::move(stateData))
 	{
-		m_onTargetChangeSizeSlot.Connect(m_stateData->window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*) { LayoutWidgets(); });
 	}
 
 	AbstractState::~AbstractState()
@@ -23,12 +22,18 @@ namespace bw
 
 	void AbstractState::Enter(Ndk::StateMachine& fsm)
 	{
+		m_onTargetChangeSizeSlot.Connect(m_stateData->window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*) { LayoutWidgets(); });
+
 		for (Ndk::BaseWidget* widget : m_widgets)
 			widget->Show(true);
+
+		LayoutWidgets();
 	}
 
 	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
 	{
+		m_onTargetChangeSizeSlot.Disconnect();
+
 		for (Ndk::BaseWidget* widget : m_widgets)
 			widget->Show(false);
 	}
