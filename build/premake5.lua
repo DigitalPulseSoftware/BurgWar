@@ -155,9 +155,6 @@ workspace("Burgwar")
 	filter "action:vs*"
 		defines "_CRT_SECURE_NO_WARNINGS"
 
-	filter "action:gmake or gmake2"
-		links "stdc++fs"
-
 	filter({})
 
 	flags { "MultiProcessorCompile", "NoMinimalRebuild" }
@@ -259,7 +256,7 @@ workspace("Burgwar")
 				filter {"architecture:x86_64", "system:Windows", "configurations:Debug"}
 					libdirs(dir .. "/lib/debug")
 					libdirs(dir .. "/lib/x64/debug")
-				
+
 				filter {"architecture:x86_64", "system:Windows"}
 					libdirs(dir .. "/lib")
 					libdirs(dir .. "/lib/x64")
@@ -275,7 +272,7 @@ workspace("Burgwar")
 						end
 					end
 
-					for k,filePath in pairs(headerFiles) do						
+					for k,filePath in pairs(headerFiles) do
 						local input, err = io.open(filePath, "r")
 						if (not input) then
 							error(string.format("Failed to open input file %s: %s", filePath, err))
@@ -321,6 +318,11 @@ workspace("Burgwar")
 			end
 		end
 	end
+
+	filter "action:gmake or gmake2"
+		links "stdc++fs"
+
+	filter {}
 
 	newoption({
 		trigger     = "buildarch",
@@ -415,7 +417,7 @@ workspace("Burgwar")
 						if (not ok) then
 							error("Failed to copy " .. targetPath .. ": " .. tostring(err))
 						end
-						
+
 						-- Copying using os.copyfile doesn't update modified time...
 						local ok, err = os.touchfile(targetPath)
 						if (not ok) then
