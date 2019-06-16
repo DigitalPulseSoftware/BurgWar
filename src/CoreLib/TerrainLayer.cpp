@@ -18,48 +18,11 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData)
+	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData) :
+	m_world(app, match)
 	{
-		m_world.AddSystem<AnimationSystem>(app);
-		m_world.AddSystem<NetworkSyncSystem>();
-		m_world.AddSystem<PlayerMovementSystem>();
-		m_world.AddSystem<TickCallbackSystem>();
-
-		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
-		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
-		physics.SetMaxStepCount(1);
-		physics.SetStepSize(match.GetTickDuration());
-
-		Ndk::PhysicsSystem2D::Callback triggerCallbacks;
-		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)
-		{
-			bool shouldCollide = true;
-
-			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
-			{
-				if (first->HasComponent<ScriptComponent>() && second->HasComponent<ScriptComponent>())
-				{
-					auto& firstScript = first->GetComponent<ScriptComponent>();
-					auto& secondScript = second->GetComponent<ScriptComponent>();
-					if (auto ret = firstScript.ExecuteCallback("OnCollisionStart", secondScript.GetTable()); ret->valid())
-						shouldCollide = ret->as<bool>();
-				}
-			};
-
-			HandleCollision(bodyA, bodyB);
-			HandleCollision(bodyB, bodyA);
-
-			return shouldCollide;
-		};
-
-		physics.RegisterCallbacks(1, 3, triggerCallbacks);
-
-		m_world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.SetFixedUpdateRate(0.f);
-			system.SetMaximumUpdateRate(0.f);
-		});
-
+		Ndk::World& world = m_world.GetWorld();
+		world.AddSystem<NetworkSyncSystem>();
 
 		auto& entityStore = match.GetEntityStore();
 		for (const Map::Entity& entityData : layerData.entities)
@@ -71,12 +34,13 @@ namespace bw
 				continue;
 			}
 
-			entityStore.InstantiateEntity(m_world, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+			entityStore.InstantiateEntity(world, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
 		}
 	}
 
 	void TerrainLayer::Update(float elapsedTime)
 	{
-		m_world.Update(elapsedTime);
+		Ndk::World& world = m_world.GetWorld();
+		world.Update(elapsedTime);
 	}
 }

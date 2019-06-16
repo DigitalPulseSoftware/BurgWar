@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_TERRAINLAYER_HPP
 
 #include <CoreLib/Map.hpp>
-#include <NDK/World.hpp>
+#include <CoreLib/SharedWorld.hpp>
 
 namespace bw
 {
@@ -20,7 +20,7 @@ namespace bw
 		public:
 			TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
-			TerrainLayer(TerrainLayer&&) = default;
+			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;
 
 			inline Ndk::World& GetWorld();
@@ -28,11 +28,11 @@ namespace bw
 			void Update(float elapsedTime);
 
 			TerrainLayer& operator=(const TerrainLayer&) = delete;
-			TerrainLayer& operator=(TerrainLayer&&) = default;
+			TerrainLayer& operator=(TerrainLayer&&) noexcept = default;
 
 		private:
 			Ndk::EntityHandle m_camera;
-			Ndk::World m_world;
+			SharedWorld m_world;
 	};
 }
 

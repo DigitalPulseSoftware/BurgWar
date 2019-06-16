@@ -10,6 +10,7 @@
 #include <CoreLib/AnimationManager.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/SharedWorld.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
@@ -22,7 +23,6 @@
 #include <Nazara/Network/UdpSocket.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/EntityOwner.hpp>
-#include <NDK/World.hpp>
 #include <tsl/hopscotch_map.h>
 #include <memory>
 #include <optional>
@@ -188,7 +188,6 @@ namespace bw
 			std::vector<TickPrediction> m_tickPredictions;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::EntityHandle m_camera;
-			Ndk::World m_world;
 			Nz::RenderWindow* m_window;
 			Nz::SpriteRef m_trailSpriteTest;
 			Nz::UInt16 m_currentServerTick;
@@ -197,6 +196,7 @@ namespace bw
 			BurgApp& m_application;
 			Chatbox m_chatBox;
 			ClientSession& m_session;
+			SharedWorld m_world;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

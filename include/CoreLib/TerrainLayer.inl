@@ -8,6 +8,6 @@ namespace bw
 {
 	inline Ndk::World& TerrainLayer::GetWorld()
 	{
-		return m_world;
+		return m_world.GetWorld();
 	}
 }

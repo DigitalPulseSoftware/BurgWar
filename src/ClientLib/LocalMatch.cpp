@@ -43,34 +43,21 @@ namespace bw
 	m_application(burgApp),
 	m_chatBox(window, canvas),
 	m_session(session),
+	m_world(burgApp, *this),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
 	{
 		assert(window);
 
-		m_world.AddSystem<AnimationSystem>(burgApp);
-		m_world.AddSystem<PlayerMovementSystem>();
-		m_world.AddSystem<SoundSystem>();
-		m_world.AddSystem<TickCallbackSystem>();
+		Ndk::World& world = m_world.GetWorld();
+		world.AddSystem<SoundSystem>();
 
-		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
+		Ndk::RenderSystem& renderSystem = world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(Nz::ColorBackground::New(matchData.layers.front().backgroundColor));
 
-		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
-		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
-		physics.SetMaxStepCount(1);
-		physics.SetStepSize(GetTickDuration());
-
-		m_world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.SetFixedUpdateRate(0.f);
-			system.SetMaximumUpdateRate(0.f);
-		});
-
-
-		m_camera = m_world.CreateEntity();
+		m_camera = world.CreateEntity();
 		auto& cameraNode = m_camera->AddComponent<Ndk::NodeComponent>();
 		cameraNode.SetPosition(-Nz::Vector2f(640.f, 360.f));
 
@@ -146,7 +133,8 @@ namespace bw
 
 	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
-		for (const Ndk::EntityHandle& entity : m_world.GetEntities())
+		Ndk::World& world = m_world.GetWorld();
+		for (const Ndk::EntityHandle& entity : world.GetEntities())
 			func(entity);
 	}
 
@@ -417,7 +405,8 @@ namespace bw
 
 		PrepareClientUpdate();
 
-		m_world.Update(elapsedTime);
+		Ndk::World& world = m_world.GetWorld();
+		world.Update(elapsedTime);
 
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
@@ -433,7 +422,8 @@ namespace bw
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
 	{
-		serverEntity.serverGhost = m_world.CreateEntity();
+		Ndk::World& world = m_world.GetWorld();
+		serverEntity.serverGhost = world.CreateEntity();
 		serverEntity.serverGhost->AddComponent(serverEntity.entity->GetComponent<Ndk::NodeComponent>().Clone());
 
 		if (serverEntity.entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -472,6 +462,8 @@ namespace bw
 
 	void LocalMatch::CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth)
 	{
+		Ndk::World& world = m_world.GetWorld();
+		
 		auto& healthData = serverEntity.health.emplace();
 		healthData.currentHealth = currentHealth;
 
@@ -499,7 +491,7 @@ namespace bw
 
 		healthData.healthSprite = healthBar;
 
-		healthData.healthBarEntity = m_world.CreateEntity();
+		healthData.healthBarEntity = world.CreateEntity();
 
 		auto& healthBarGfx = healthData.healthBarEntity->AddComponent<Ndk::GraphicsComponent>();
 		healthBarGfx.Attach(healthBar, 2);
@@ -510,6 +502,8 @@ namespace bw
 
 	void LocalMatch::CreateName(ServerEntity& serverEntity, const std::string& name)
 	{
+		Ndk::World& world = m_world.GetWorld();
+		
 		auto& nameData = serverEntity.name.emplace();
 		
 		Nz::TextSpriteRef nameSprite = Nz::TextSprite::New();
@@ -517,7 +511,7 @@ namespace bw
 
 		Nz::Boxf textBox = nameSprite->GetBoundingVolume().obb.localBox;
 
-		nameData.nameEntity = m_world.CreateEntity();
+		nameData.nameEntity = world.CreateEntity();
 		nameData.nameEntity->AddComponent<Ndk::NodeComponent>();
 	
 		auto& gfxComponent = nameData.nameEntity->AddComponent<Ndk::GraphicsComponent>();
@@ -577,6 +571,8 @@ namespace bw
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
 
+		Ndk::World& world = m_world.GetWorld();
+
 		const NetworkStringStore& networkStringStore = m_session.GetNetworkStringStore();
 
 		for (auto&& entityData : packet.entities)
@@ -634,7 +630,7 @@ namespace bw
 				// Entity
 				if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClass); entityIndex != ClientEntityStore::InvalidIndex)
 				{
-					entity = m_entityStore->InstantiateEntity(m_world, entityIndex, entityData.position, entityData.rotation, properties);
+					entity = m_entityStore->InstantiateEntity(world, entityIndex, entityData.position, entityData.rotation, properties);
 					if (!entity)
 						continue;
 				}
@@ -648,7 +644,7 @@ namespace bw
 
 					parent->weaponEntityId = entityData.id; //< TEMPORARY
 
-					entity = m_weaponStore->InstantiateWeapon(m_world, weaponIndex, properties, parent->entity);
+					entity = m_weaponStore->InstantiateWeapon(world, weaponIndex, properties, parent->entity);
 					if (!entity)
 						continue;
 
@@ -786,6 +782,8 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
+		Ndk::World& world = m_world.GetWorld();
+
 #ifdef DEBUG_PREDICTION
 		static std::ofstream debugFile("prediction.txt", std::ios::trunc);
 		debugFile << "---------------------------------------------------\n";
@@ -799,7 +797,7 @@ namespace bw
 		});
 		m_predictedInputs.erase(m_predictedInputs.begin(), firstClientInput);
 
-		auto& physicsSystem = m_world.GetSystem<Ndk::PhysicsSystem2D>();
+		auto& physicsSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 		for (auto&& entityData : packet.entities)
 		{
@@ -1107,7 +1105,8 @@ namespace bw
 			}
 		}
 
-		m_world.Update(GetTickDuration());
+		Ndk::World& world = m_world.GetWorld();
+		world.Update(GetTickDuration());
 
 #ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
@@ -1130,32 +1129,36 @@ namespace bw
 
 	void LocalMatch::PrepareClientUpdate()
 	{
-		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		Ndk::World& world = m_world.GetWorld();
+
+		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
 		});
 
-		m_world.GetSystem<Ndk::DebugSystem>().Enable(true);
-		m_world.GetSystem<Ndk::ListenerSystem>().Enable(true);
-		m_world.GetSystem<Ndk::ParticleSystem>().Enable(true);
-		m_world.GetSystem<Ndk::RenderSystem>().Enable(true);
-		m_world.GetSystem<AnimationSystem>().Enable(true);
-		m_world.GetSystem<SoundSystem>().Enable(true);
+		world.GetSystem<Ndk::DebugSystem>().Enable(true);
+		world.GetSystem<Ndk::ListenerSystem>().Enable(true);
+		world.GetSystem<Ndk::ParticleSystem>().Enable(true);
+		world.GetSystem<Ndk::RenderSystem>().Enable(true);
+		world.GetSystem<AnimationSystem>().Enable(true);
+		world.GetSystem<SoundSystem>().Enable(true);
 	}
 
 	void LocalMatch::PrepareTickUpdate()
 	{
-		m_world.ForEachSystem([](Ndk::BaseSystem& system)
+		Ndk::World& world = m_world.GetWorld();
+
+		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
 		});
 
-		m_world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
-		m_world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
-		m_world.GetSystem<Ndk::VelocitySystem>().Enable(true);
-		m_world.GetSystem<PlayerMovementSystem>().Enable(true);
-		m_world.GetSystem<TickCallbackSystem>().Enable(true);
+		world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
+		world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
+		world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
+		world.GetSystem<Ndk::VelocitySystem>().Enable(true);
+		world.GetSystem<PlayerMovementSystem>().Enable(true);
+		world.GetSystem<TickCallbackSystem>().Enable(true);
 	}
 
 	void LocalMatch::ProcessInputs(float elapsedTime)
