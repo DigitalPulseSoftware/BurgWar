@@ -26,8 +26,6 @@ namespace bw
 
 		for (Ndk::BaseWidget* widget : m_widgets)
 			widget->Show(true);
-
-		LayoutWidgets();
 	}
 
 	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
