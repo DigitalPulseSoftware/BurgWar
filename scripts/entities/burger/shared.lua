@@ -2,7 +2,6 @@ print(ENTITY.Name)
 ENTITY.IsNetworked = true
 ENTITY.Sprite = "burger.png"
 ENTITY.Scale = 0.33
-ENTITY.CollisionType = 1 -- Player
 ENTITY.PlayerControlled = true
 ENTITY.MaxHealth = 1000
 ENTITY.HasInputs = true

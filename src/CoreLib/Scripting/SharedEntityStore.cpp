@@ -137,7 +137,6 @@ namespace bw
 		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
 			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			unsigned int collisionType = entityTable["CollisionType"];
 
 			auto ParseCollider = [&L](const sol::table& collider) -> Nz::Collider2DRef
 			{
@@ -184,9 +183,22 @@ namespace bw
 				collider = Nz::CompoundCollider2D::New(std::move(colliders));
 			}
 
-			collider->SetCollisionId(collisionType);
-
 			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
+		};
+
+		elementTable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
+		{
+			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			if (!entity->HasComponent<Ndk::CollisionComponent2D>())
+				throw std::runtime_error("Entity has no colliders");
+
+			auto& collisionComponent = entity->GetComponent<Ndk::CollisionComponent2D>();
+
+			// FIXME: For now, collision changes are only taken in account on SetGeom
+			Nz::Collider2DRef geom = collisionComponent.GetGeom();
+			geom->SetCollisionId((enable) ? 1 : 0);
+
+			collisionComponent.SetGeom(std::move(geom));
 		};
 	}
 
