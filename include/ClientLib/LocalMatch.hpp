@@ -33,12 +33,13 @@ namespace bw
 {
 	class BurgApp;
 	class ClientGamemode;
+	class ClientSession;
 	class InputController;
 	class VirtualDirectory;
 
 	class LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
 	{
-		friend class ClientSession;
+		friend ClientSession;
 
 		public:
 			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
