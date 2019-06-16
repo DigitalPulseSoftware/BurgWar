@@ -8,22 +8,24 @@ WEAPON.Animations = {
 	{"attack", 0.3}
 }
 
-function WEAPON:OnAttack()
-	if (self:IsPlayingAnimation()) then
-		return
+if (SERVER) then
+	function WEAPON:OnAttack()
+		if (self:IsPlayingAnimation()) then
+			return
+		end
+
+		local pos = self:GetPosition()
+		local maxs = Vec2(128, 66)
+		local mins = Vec2(28, -76)
+
+		if (not self:IsLookingRight()) then
+			maxs = maxs * -1
+			mins = mins * -1
+		end
+
+		self:PlayAnim("attack")
+		self:DealDamage(100, Rect(pos + mins, pos + maxs), 50000)
 	end
-
-	local pos = self:GetPosition()
-	local maxs = Vec2(128, 66)
-	local mins = Vec2(28, -76)
-
-	if (not self:IsLookingRight()) then
-		maxs = maxs * -1
-		mins = mins * -1
-	end
-
-	self:PlayAnim("attack")
-	self:DealDamage(100, Rect(pos + mins, pos + maxs), 50000)
 end
 
 if (CLIENT) then

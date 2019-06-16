@@ -59,7 +59,7 @@ namespace bw
 			std::size_t m_sessionId;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
-			std::vector<Player> m_players;
+			std::vector<std::unique_ptr<Player>> m_players;
 	};
 }
 

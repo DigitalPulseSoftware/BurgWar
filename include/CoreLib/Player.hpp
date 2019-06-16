@@ -11,7 +11,10 @@
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <CoreLib/MatchClientSession.hpp>
+#include <tsl/hopscotch_map.h>
+#include <limits>
 #include <string>
+#include <vector>
 
 namespace bw
 {
@@ -35,6 +38,10 @@ namespace bw
 			inline const std::string& GetName() const;
 			inline const MatchClientSession& GetSession() const;
 
+			bool GiveWeapon(std::string weaponClass);
+
+			inline bool HasWeapon(const std::string& weaponClass);
+
 			inline bool IsInMatch() const;
 
 			void Spawn();
@@ -52,6 +59,8 @@ namespace bw
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) noexcept = default;
 
+			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
+
 		private:
 			void UpdateLayer(std::size_t layerIndex);
 			void UpdateMatch(Match* match);
@@ -59,9 +68,10 @@ namespace bw
 			std::array<std::optional<InputData>, 10> m_inputBuffer;
 			std::size_t m_layerIndex;
 			std::size_t m_inputIndex;
+			std::size_t m_weaponIndex = NoWeapon;
 			std::string m_name;
+			tsl::hopscotch_map<std::string /*weaponClass*/, Ndk::EntityOwner /*weapon*/> m_weapons;
 			Ndk::EntityOwner m_playerEntity;
-			Ndk::EntityOwner m_playerWeapon;
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;

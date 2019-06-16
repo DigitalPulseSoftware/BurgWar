@@ -26,6 +26,11 @@ namespace bw
 		return m_session;
 	}
 
+	inline bool Player::HasWeapon(const std::string& weaponClass)
+	{
+		return m_weapons.find(weaponClass) != m_weapons.end();
+	}
+
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;

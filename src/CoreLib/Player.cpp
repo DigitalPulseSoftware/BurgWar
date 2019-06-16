@@ -39,6 +39,35 @@ namespace bw
 			m_match->Leave(this);
 	}
 
+	bool Player::GiveWeapon(std::string weaponClass)
+	{
+		if (!m_match)
+			return false;
+
+		if (!m_playerEntity)
+			return false;
+
+		if (HasWeapon(weaponClass))
+			return false;
+
+		Terrain& terrain = m_match->GetTerrain();
+		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld();
+
+		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
+
+		// Create weapon
+		if (std::size_t weaponIndex = weaponStore.GetElementIndex(weaponClass); weaponIndex != ServerEntityStore::InvalidIndex)
+		{
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, m_playerEntity);
+			if (!weapon)
+				return false;
+
+			m_weapons.emplace(std::move(weaponClass), weapon);
+		}
+
+		return true;
+	}
+
 	void Player::Spawn()
 	{
 		if (!m_match)
@@ -48,7 +77,6 @@ namespace bw
 		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld();
 
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
-		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
 			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
@@ -76,9 +104,10 @@ namespace bw
 
 			UpdateControlledEntity(playerEntity);
 
-			// Create weapon
-			if (std::size_t weaponIndex = weaponStore.GetElementIndex("weapon_rifle"); weaponIndex != ServerEntityStore::InvalidIndex)
-				m_playerWeapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, playerEntity);
+			if (!GiveWeapon("weapon_sword_emmentalibur"))
+				std::cout << "Failed to give weapon" << std::endl;
+
+			GiveWeapon("weapon_rifle");
 		}
 	}
 

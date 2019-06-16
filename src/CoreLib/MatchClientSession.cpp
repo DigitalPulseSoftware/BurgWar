@@ -58,16 +58,18 @@ namespace bw
 			return;
 		}
 
-		std::vector<Player> players;
+		std::vector<std::unique_ptr<Player>> players;
 		for (std::size_t i = 0; i < packet.players.size(); ++i)
 		{
-			Player& player = players.emplace_back(*this, static_cast<Nz::UInt8>(i), packet.players[i].nickname);
-			if (!m_match.Join(&player))
+			std::unique_ptr<Player> player = std::make_unique<Player>(*this, static_cast<Nz::UInt8>(i), packet.players[i].nickname);
+			if (!m_match.Join(player.get()))
 			{
 				SendPacket(Packets::AuthFailure());
 				Disconnect();
 				return;
 			}
+
+			players.emplace_back(std::move(player));
 		}
 
 		m_players = std::move(players);
@@ -130,7 +132,7 @@ namespace bw
 			return;
 
 		Packets::ChatMessage chatPacket;
-		chatPacket.content = m_players[packet.playerIndex].GetName() + ": " + std::move(packet.message);
+		chatPacket.content = m_players[packet.playerIndex]->GetName() + ": " + std::move(packet.message);
 
 		//FIXME: Should be for each session
 		m_match.ForEachPlayer([&](Player* player)
@@ -181,7 +183,7 @@ namespace bw
 			if (!inputOpt.has_value())
 				continue;
 
-			m_players[playerIndex].UpdateInputs(tickDelay, *inputOpt);
+			m_players[playerIndex]->UpdateInputs(tickDelay, *inputOpt);
 		}
 	}
 
