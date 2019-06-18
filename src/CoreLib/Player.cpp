@@ -197,7 +197,7 @@ namespace bw
 		m_session.GetVisibility().PushEntityPacket(controlEntity.entityId, controlEntity);
 	}
 
-	void Player::UpdateInputs(const InputData& inputData)
+	void Player::UpdateInputs(const PlayerInputData& inputData)
 	{
 		if (m_playerEntity)
 		{
@@ -208,7 +208,7 @@ namespace bw
 		}
 	}
 
-	void Player::UpdateInputs(std::size_t tickDelay, InputData inputData)
+	void Player::UpdateInputs(std::size_t tickDelay, PlayerInputData inputData)
 	{
 		assert(tickDelay < m_inputBuffer.size());
 		std::size_t index = (m_inputIndex + tickDelay) % m_inputBuffer.size();

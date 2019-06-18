@@ -72,7 +72,7 @@ namespace bw
 				std::optional<std::string> name;
 				std::optional<Ndk::EntityId> parent;
 				std::optional<HealthProperties> healthProperties;
-				std::optional<InputData> inputs;
+				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
@@ -93,7 +93,7 @@ namespace bw
 			struct EntityInputs
 			{
 				Ndk::EntityId entityId;
-				InputData inputs;
+				PlayerInputData inputs;
 			};
 
 			struct EntityMovement

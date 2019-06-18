@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 #define BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/PacketSerializer.hpp>
 #include <Nazara/Prerequisites.hpp>
@@ -147,7 +147,7 @@ namespace bw
 				std::optional<std::string> name;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
-				std::optional<InputData> inputs;
+				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::vector<Properties> properties;
@@ -183,7 +183,7 @@ namespace bw
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
-				InputData inputs;
+				PlayerInputData inputs;
 			};
 
 			Nz::UInt16 stateTick;
@@ -286,7 +286,7 @@ namespace bw
 		DeclarePacket(PlayersInput)
 		{
 			Nz::UInt16 estimatedServerTick;
-			std::vector<std::optional<InputData>> inputs;
+			std::vector<std::optional<PlayerInputData>> inputs;
 		};
 
 		DeclarePacket(PlayerSelectWeapon)
@@ -337,7 +337,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, Ready& data);
 
 		// Helpers
-		void Serialize(PacketSerializer& serializer, InputData& data);
+		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
 	}
 }
 

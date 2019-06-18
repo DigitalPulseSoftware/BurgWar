@@ -2,16 +2,16 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 
 namespace bw
 {
-	inline bool InputData::operator==(const InputData& rhs)
+	inline bool PlayerInputData::operator==(const PlayerInputData& rhs)
 	{
 		return aimDirection == rhs.aimDirection && isAttacking == rhs.isAttacking && isJumping == rhs.isJumping && isMovingLeft == rhs.isMovingLeft && isMovingRight == rhs.isMovingRight;
 	}
 
-	inline bool InputData::operator!=(const InputData& rhs)
+	inline bool PlayerInputData::operator!=(const PlayerInputData& rhs)
 	{
 		return !operator==(rhs);
 	}

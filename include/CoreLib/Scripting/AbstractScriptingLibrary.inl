@@ -6,7 +6,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 #include <sol2/sol.hpp>
 #include <cassert>
 
@@ -17,7 +17,7 @@ namespace bw
 namespace sol
 {
 	template<>
-	struct lua_size<bw::InputData> : std::integral_constant<int, 1> {};
+	struct lua_size<bw::PlayerInputData> : std::integral_constant<int, 1> {};
 
 	template<>
 	struct lua_size<Nz::DegreeAnglef> : std::integral_constant<int, 1> {};
@@ -32,7 +32,7 @@ namespace sol
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
 	template<>
-	struct lua_type_of<bw::InputData> : std::integral_constant<sol::type, sol::type::table> {};
+	struct lua_type_of<bw::PlayerInputData> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
 	struct lua_type_of<Nz::Rectf> : std::integral_constant<sol::type, sol::type::table> {};
@@ -121,9 +121,9 @@ namespace sol
 		};
 
 		template <>
-		struct pusher<bw::InputData>
+		struct pusher<bw::PlayerInputData>
 		{
-			static int push(lua_State* L, const bw::InputData& inputs)
+			static int push(lua_State* L, const bw::PlayerInputData& inputs)
 			{
 				lua_createtable(L, 0, 4);
 				sol::stack_table vec(L);

@@ -20,7 +20,7 @@ namespace bw
 			inline KeyboardAndMouseController(const Nz::Window& window);
 			~KeyboardAndMouseController() = default;
 
-			InputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) override;
+			PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) override;
 
 		private:
 			const Nz::Window& m_window;

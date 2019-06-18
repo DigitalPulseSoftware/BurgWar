@@ -446,7 +446,7 @@ namespace bw
 		{
 		}
 
-		void Serialize(PacketSerializer& serializer, InputData& input)
+		void Serialize(PacketSerializer& serializer, PlayerInputData& input)
 		{
 			serializer &= input.isAttacking;
 			serializer &= input.isJumping;

@@ -4,14 +4,14 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_INPUTDATA_HPP
-#define BURGWAR_CORELIB_INPUTDATA_HPP
+#ifndef BURGWAR_CORELIB_PLAYERINPUTDATA_HPP
+#define BURGWAR_CORELIB_PLAYERINPUTDATA_HPP
 
 #include <Nazara/Math/Vector2.hpp>
 
 namespace bw
 {
-	struct InputData
+	struct PlayerInputData
 	{
 		Nz::Vector2f aimDirection = Nz::Vector2f::UnitX();
 		bool isAttacking = false;
@@ -19,11 +19,11 @@ namespace bw
 		bool isMovingLeft = false;
 		bool isMovingRight = false;
 
-		inline bool operator==(const InputData& rhs);
-		inline bool operator!=(const InputData& rhs);
+		inline bool operator==(const PlayerInputData& rhs);
+		inline bool operator!=(const PlayerInputData& rhs);
 	};
 }
 
-#include <CoreLib/InputData.inl>
+#include <CoreLib/PlayerInputData.inl>
 
 #endif

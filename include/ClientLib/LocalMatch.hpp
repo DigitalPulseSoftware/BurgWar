@@ -129,7 +129,7 @@ namespace bw
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
 				Nz::UInt32 controlledEntityServerId;
-				InputData lastInputData;
+				PlayerInputData lastInputData;
 			};
 
 			struct PredictedInput
@@ -145,7 +145,7 @@ namespace bw
 
 				struct PlayerData
 				{
-					InputData input;
+					PlayerInputData input;
 					std::optional<MovementData> movement;
 				};
 

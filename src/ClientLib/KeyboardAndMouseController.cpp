@@ -11,9 +11,9 @@
 
 namespace bw
 {
-	InputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity)
 	{
-		InputData inputData;
+		PlayerInputData inputData;
 
 		switch (localPlayerIndex)
 		{

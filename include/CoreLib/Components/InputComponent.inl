@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline InputComponent::InputComponent(const InputData& inputData) :
+	inline InputComponent::InputComponent(const PlayerInputData& inputData) :
 	m_inputData(inputData)
 	{
 	}
@@ -16,12 +16,12 @@ namespace bw
 	{
 	}
 
-	inline const InputData& InputComponent::GetInputs() const
+	inline const PlayerInputData& InputComponent::GetInputs() const
 	{
 		return m_inputData;
 	}
 
-	inline void InputComponent::UpdateInputs(const InputData& inputData)
+	inline void InputComponent::UpdateInputs(const PlayerInputData& inputData)
 	{
 		m_inputData = std::move(inputData);
 

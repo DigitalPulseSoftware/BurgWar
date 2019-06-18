@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
 #define BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
 
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
@@ -20,7 +20,7 @@ namespace bw
 			InputController() = default;
 			virtual ~InputController();
 
-			virtual InputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) = 0;
+			virtual PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) = 0;
 	};
 }
 

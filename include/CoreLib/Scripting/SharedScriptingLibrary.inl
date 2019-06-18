@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <cassert>

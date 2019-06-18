@@ -1302,7 +1302,7 @@ namespace bw
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
 		{
 			auto& controllerData = m_playerData[i];
-			InputData input;
+			PlayerInputData input;
 			
 			if (!m_chatBox.IsTyping() /*&& m_window->HasFocus()*/)
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);

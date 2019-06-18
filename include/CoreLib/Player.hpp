@@ -56,8 +56,8 @@ namespace bw
 			void OnTick(bool lastTick);
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
-			void UpdateInputs(const InputData& inputData);
-			void UpdateInputs(std::size_t tickDelay, InputData inputData);
+			void UpdateInputs(const PlayerInputData& inputData);
+			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) noexcept = default;
@@ -70,7 +70,7 @@ namespace bw
 			void UpdateLayer(std::size_t layerIndex);
 			void UpdateMatch(Match* match);
 
-			std::array<std::optional<InputData>, 10> m_inputBuffer;
+			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::size_t m_layerIndex;
 			std::size_t m_inputIndex;
 			std::size_t m_weaponIndex = NoWeapon;

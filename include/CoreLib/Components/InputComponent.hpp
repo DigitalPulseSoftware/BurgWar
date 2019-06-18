@@ -9,7 +9,7 @@
 
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Components.hpp>
-#include <CoreLib/InputData.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 
 namespace bw
 {
@@ -17,19 +17,19 @@ namespace bw
 	{
 		public:
 			InputComponent() = default;
-			inline InputComponent(const InputData& inputData);
+			inline InputComponent(const PlayerInputData& inputData);
 			inline InputComponent(const InputComponent& inputComponent);
 
-			inline const InputData& GetInputs() const;
+			inline const PlayerInputData& GetInputs() const;
 
-			inline void UpdateInputs(const InputData& inputData);
+			inline void UpdateInputs(const PlayerInputData& inputData);
 
 			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnInputUpdate, InputComponent* /*input*/);
 
 		private:
-			InputData m_inputData;
+			PlayerInputData m_inputData;
 	};
 }
 
