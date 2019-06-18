@@ -37,6 +37,7 @@ namespace bw
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
 			inline const MatchClientSession& GetSession() const;
+			inline std::size_t GetWeaponCount() const;
 
 			bool GiveWeapon(std::string weaponClass);
 
@@ -48,9 +49,11 @@ namespace bw
 
 			template<typename T> void SendPacket(const T& packet);
 
+			void SelectWeapon(std::size_t weaponIndex);
+
 			std::string ToString() const;
 
-			void OnTick();
+			void OnTick(bool lastTick);
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const InputData& inputData);
@@ -62,6 +65,8 @@ namespace bw
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
 		private:
+			void OnDeath(const Ndk::EntityHandle& attacker);
+
 			void UpdateLayer(std::size_t layerIndex);
 			void UpdateMatch(Match* match);
 
@@ -70,11 +75,13 @@ namespace bw
 			std::size_t m_inputIndex;
 			std::size_t m_weaponIndex = NoWeapon;
 			std::string m_name;
-			tsl::hopscotch_map<std::string /*weaponClass*/, Ndk::EntityOwner /*weapon*/> m_weapons;
+			std::vector<Ndk::EntityOwner> m_weapons;
+			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
 			Ndk::EntityOwner m_playerEntity;
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;
+			bool m_shouldSendWeapons;
 	};
 }
 

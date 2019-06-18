@@ -16,6 +16,7 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
@@ -97,6 +98,28 @@ namespace bw
 
 			m_session.SendPacket(chatPacket);
 		});
+
+		// HAAAAAAAAAAAAAX
+		window->GetEventHandler().OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		{
+			if (event.delta > 0.f)
+			{
+				if (++m_weaponIndex > m_weaponCount)
+					m_weaponIndex = 0;
+			}
+			else
+			{
+				if (m_weaponIndex-- == 0)
+					m_weaponIndex = m_weaponCount;
+			}
+
+			Packets::PlayerSelectWeapon selectPacket;
+			selectPacket.playerIndex = 0;
+			selectPacket.newWeaponIndex = (m_weaponIndex < m_weaponCount) ? m_weaponIndex : selectPacket.NoWeapon;
+
+			m_session.SendPacket(selectPacket);
+		});
+		// HAAAAAAAAAAAAAX
 
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
@@ -649,6 +672,7 @@ namespace bw
 						continue;
 
 					entity->GetComponent<Ndk::NodeComponent>().SetPosition(entityData.position);
+					entity->Disable(); //< Disable weapon entities by default
 				}
 			}
 			else
@@ -730,6 +754,51 @@ namespace bw
 
 			if (!serverEntity.isLocalPlayerControlled)
 				serverEntity.entity->GetComponent<InputComponent>().UpdateInputs(entityData.inputs);
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
+	{
+		auto it = m_serverEntityIdToClient.find(packet.entityId);
+		if (it == m_serverEntityIdToClient.end())
+			return;
+
+		ServerEntity& serverEntity = it.value();
+		if (!serverEntity.entity)
+			return;
+
+		if (serverEntity.weaponEntityId != ServerEntity::NoWeapon)
+		{
+			auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
+			if (weaponIt != m_serverEntityIdToClient.end())
+			{
+				ServerEntity& serverEntity = weaponIt.value();
+				if (serverEntity.entity)
+				{
+					auto& entityWeapon = serverEntity.entity->GetComponent<WeaponComponent>();
+					entityWeapon.SetActive(false);
+				}
+
+				serverEntity.entity->Disable();
+			}
+		}
+
+		serverEntity.weaponEntityId = packet.weaponEntityId;
+
+		if (serverEntity.weaponEntityId != ServerEntity::NoWeapon)
+		{
+			auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
+			if (weaponIt != m_serverEntityIdToClient.end())
+			{
+				ServerEntity& serverEntity = weaponIt.value();
+				if (serverEntity.entity)
+				{
+					auto& entityWeapon = serverEntity.entity->GetComponent<WeaponComponent>();
+					entityWeapon.SetActive(true);
+				}
+
+				serverEntity.entity->Enable();
+			}
 		}
 	}
 
@@ -999,6 +1068,30 @@ namespace bw
 				}
 			}
 		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)
+	{
+		auto& playerData = m_playerData[packet.playerIndex];
+		playerData.weapons.clear();
+		for (Nz::UInt32 weaponEntityIndex : packet.weaponEntities)
+		{
+			auto it = m_serverEntityIdToClient.find(weaponEntityIndex);
+			assert(it != m_serverEntityIdToClient.end());
+
+			ServerEntity& serverEntity = it.value();
+			assert(serverEntity.entity); //< TODO: Change to if + continue (in case client failed to create entity)
+
+			assert(serverEntity.entity->HasComponent<WeaponComponent>());
+
+			playerData.weapons.emplace_back(serverEntity.entity);
+
+			auto& scriptComponent = serverEntity.entity->GetComponent<ScriptComponent>();
+			std::cout << "Local player #" << +packet.playerIndex << " has weapon " << scriptComponent.GetElement()->fullName << std::endl;
+		}
+
+		m_weaponCount = playerData.weapons.size();
+		m_weaponIndex = playerData.weapons.size();
 	}
 
 	void LocalMatch::HandleTickError(Nz::UInt16 stateTick, Nz::Int32 tickError)

@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_NETWORK_PACKETSERIALIZER_HPP
 
 #include <Nazara/Network/NetPacket.hpp>
+#include <vector>
 
 namespace bw
 {
@@ -24,6 +25,7 @@ namespace bw
 			inline void Write(const void* ptr, std::size_t size);
 
 			template<typename DataType> void Serialize(DataType& data);
+			template<typename DataType> void Serialize(std::vector<DataType>& dataVec);
 			template<typename DataType> void Serialize(const DataType& data) const;
 			template<typename PacketType, typename DataType> void Serialize(DataType& data);
 			template<typename PacketType, typename DataType> void Serialize(const DataType& data) const;

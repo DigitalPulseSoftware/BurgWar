@@ -42,6 +42,14 @@ namespace bw
 	}
 
 	template<typename DataType>
+	void PacketSerializer::Serialize(std::vector<DataType>& dataVec)
+	{
+		SerializeArraySize(dataVec);
+		for (DataType& data : dataVec)
+			Serialize(data);
+	}
+
+	template<typename DataType>
 	void PacketSerializer::Serialize(const DataType& data) const
 	{
 		assert(IsWriting());

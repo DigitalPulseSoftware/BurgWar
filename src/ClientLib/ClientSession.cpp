@@ -141,6 +141,12 @@ namespace bw
 		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
+	void ClientSession::HandleIncomingPacket(Packets::EntityWeapon&& packet)
+	{
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
+	}
+
 	void ClientSession::HandleIncomingPacket(Packets::HealthUpdate&& packet)
 	{
 		Nz::UInt16 stateTick = packet.stateTick;
@@ -176,6 +182,12 @@ namespace bw
 			m_stringStore.Clear(); //< Reset string store
 
 		m_stringStore.FillStore(packet.startId, packet.strings);
+	}
+
+	void ClientSession::HandleIncomingPacket(Packets::PlayerWeapons&& packet)
+	{
+		Nz::UInt16 stateTick = packet.stateTick;
+		m_localMatch->PushTickPacket(stateTick, std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::EntitiesAnimation&& packet)

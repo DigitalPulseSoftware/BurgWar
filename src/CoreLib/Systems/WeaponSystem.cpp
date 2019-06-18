@@ -24,6 +24,9 @@ namespace bw
 		for (const Ndk::EntityHandle& weapon : GetEntities())
 		{
 			auto& weaponComponent = weapon->GetComponent<WeaponComponent>();
+			if (!weaponComponent.IsActive())
+				continue;
+
 			if (const Ndk::EntityHandle& owner = weaponComponent.GetOwner())
 			{
 				InputComponent& ownerInputs = owner->GetComponent<InputComponent>();

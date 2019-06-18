@@ -32,7 +32,8 @@ namespace bw
 
 			inline std::size_t GetActiveLayer() const;
 
-			template<typename T> void SendEntityPacket(Nz::UInt32 entityId, T&& packet);
+			template<typename T> void PushEntityPacket(Nz::UInt32 entityId, T&& packet);
+			template<typename T> void PushEntitiesPacket(Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 
 			void Update();
 			void UpdateLayer(std::size_t layerIndex);
@@ -56,6 +57,12 @@ namespace bw
 			using EntityPacketSendFunction = std::function<void()>;
 			using PendingCreationEventMap = tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::optional<NetworkSyncSystem::EntityCreation>>;
 
+			struct PendingMultipleEntities
+			{
+				Nz::Bitset<Nz::UInt64> entitiesId;
+				EntityPacketSendFunction sendFunction;
+			};
+
 			std::size_t m_activeLayer;
 			PendingCreationEventMap m_creationEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityInputs> m_inputUpdateEvents;
@@ -64,6 +71,8 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> m_playAnimationEvents;
 			tsl::hopscotch_set<Nz::UInt32 /*entityId*/> m_destructionEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;
+			std::vector<PendingMultipleEntities> m_multiplePendingEntitiesEvent;
+			Nz::Bitset<Nz::UInt64> m_tempBitset;
 			Nz::Bitset<Nz::UInt64> m_visibleEntities;
 			Match& m_match;
 			MatchClientSession& m_session;

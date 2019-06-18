@@ -79,12 +79,14 @@ namespace bw
 			void HandleIncomingPacket(Packets::DownloadClientScriptResponse&& packet);
 			void HandleIncomingPacket(Packets::EntitiesAnimation&& packet);
 			void HandleIncomingPacket(Packets::EntitiesInputs&& packet);
+			void HandleIncomingPacket(Packets::EntityWeapon&& packet);
 			void HandleIncomingPacket(Packets::HealthUpdate&& packet);
 			void HandleIncomingPacket(Packets::HelloWorld&& packet);
 			void HandleIncomingPacket(Packets::InputTimingCorrection&& packet);
 			void HandleIncomingPacket(Packets::MatchData&& packet);
 			void HandleIncomingPacket(Packets::MatchState&& packet);
 			void HandleIncomingPacket(Packets::NetworkStrings&& packet);
+			void HandleIncomingPacket(Packets::PlayerWeapons&& packet);
 
 			void OnSessionConnected();
 			void OnSessionDisconnected();

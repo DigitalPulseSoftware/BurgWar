@@ -187,6 +187,19 @@ namespace bw
 		}
 	}
 
+	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerSelectWeapon& packet)
+	{
+		if (packet.playerIndex >= m_players.size())
+			return;
+
+		Player* player = m_players[packet.playerIndex].get();
+
+		if (packet.newWeaponIndex != packet.NoWeapon && packet.newWeaponIndex >= player->GetWeaponCount())
+			return;
+
+		player->SelectWeapon((packet.newWeaponIndex != packet.NoWeapon) ? packet.newWeaponIndex : Player::NoWeapon);
+	}
+
 	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& packet)
 	{
 		// HAAAAAX

@@ -208,6 +208,19 @@ namespace bw
 			else
 				++it;
 		}
+
+		for (auto it = m_multiplePendingEntitiesEvent.begin(); it != m_multiplePendingEntitiesEvent.end();)
+		{
+			m_tempBitset.PerformsAND(m_visibleEntities, it->entitiesId);
+			if (m_tempBitset == it->entitiesId)
+			{
+				it->sendFunction();
+
+				it = m_multiplePendingEntitiesEvent.erase(it);
+			}
+			else
+				++it;
+		}
 	}
 
 	void MatchClientVisibility::UpdateLayer(std::size_t layerIndex)

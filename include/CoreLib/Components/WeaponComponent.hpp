@@ -19,10 +19,15 @@ namespace bw
 
 			inline const Ndk::EntityHandle& GetOwner() const;
 
+			inline bool IsActive() const;
+
+			inline void SetActive(bool isActive);
+
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			Ndk::EntityHandle m_owner;
+			bool m_isActive;
 	};
 }
 

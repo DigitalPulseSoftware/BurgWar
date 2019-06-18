@@ -20,6 +20,7 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 
 namespace bw
@@ -29,7 +30,8 @@ namespace bw
 	m_inputIndex(0),
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
-	m_session(session)
+	m_session(session),
+	m_shouldSendWeapons(false)
 	{
 	}
 
@@ -56,13 +58,17 @@ namespace bw
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 
 		// Create weapon
-		if (std::size_t weaponIndex = weaponStore.GetElementIndex(weaponClass); weaponIndex != ServerEntityStore::InvalidIndex)
+		if (std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); weaponEntityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(world, weaponIndex, {}, m_playerEntity);
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(world, weaponEntityIndex, {}, m_playerEntity);
 			if (!weapon)
 				return false;
 
-			m_weapons.emplace(std::move(weaponClass), weapon);
+			std::size_t weaponIndex = m_weapons.size();
+			m_weapons.emplace_back(weapon);
+			m_weaponByName.emplace(std::move(weaponClass), weaponIndex);
+
+			m_shouldSendWeapons = true;
 		}
 
 		return true;
@@ -98,7 +104,7 @@ namespace bw
 					if (!ply)
 						return;
 
-					ply->GetMatch()->GetGamemode()->ExecuteCallback("OnPlayerDeath", ply->CreateHandle(), attacker);
+					ply->OnDeath(attacker);
 				});
 			}
 
@@ -111,13 +117,65 @@ namespace bw
 		}
 	}
 
+	void Player::SelectWeapon(std::size_t weaponIndex)
+	{
+		assert(weaponIndex == NoWeapon || weaponIndex < m_weapons.size());
+
+		if (m_weaponIndex == weaponIndex || !m_playerEntity)
+			return;
+
+		if (m_weaponIndex != NoWeapon)
+		{
+			auto& weapon = m_weapons[m_weaponIndex]->GetComponent<WeaponComponent>();
+			weapon.SetActive(false);
+		}
+
+		m_weaponIndex = weaponIndex;
+		if (m_weaponIndex != NoWeapon)
+		{
+			auto& weapon = m_weapons[m_weaponIndex]->GetComponent<WeaponComponent>();
+			weapon.SetActive(true);
+		}
+
+		Packets::EntityWeapon weaponPacket;
+		weaponPacket.entityId = m_playerEntity->GetId();
+		weaponPacket.weaponEntityId = (m_weaponIndex != NoWeapon) ? m_weapons[m_weaponIndex]->GetId() : 0xFFFFFFFF;
+
+		Nz::Bitset<Nz::UInt64> entityIds;
+		entityIds.UnboundedSet(weaponPacket.entityId);
+
+		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
+			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
+
+		m_session.GetVisibility().PushEntitiesPacket(std::move(entityIds), std::move(weaponPacket));
+	}
+
 	std::string Player::ToString() const
 	{
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::OnTick()
+	void Player::OnTick(bool lastTick)
 	{
+		if (lastTick && m_shouldSendWeapons)
+		{
+			Packets::PlayerWeapons weaponPacket;
+			weaponPacket.playerIndex = m_playerIndex;
+
+			Nz::Bitset<Nz::UInt64> weaponIds;
+			for (const Ndk::EntityHandle& weapon : m_weapons)
+			{
+				assert(weapon);
+
+				weaponPacket.weaponEntities.emplace_back(weapon->GetId());
+				weaponIds.UnboundedSet(weapon->GetId());
+			}
+
+			m_session.GetVisibility().PushEntitiesPacket(std::move(weaponIds), std::move(weaponPacket));
+
+			m_shouldSendWeapons = false;
+		}
+
 		if (auto& inputOpt = m_inputBuffer[m_inputIndex])
 		{
 			UpdateInputs(inputOpt.value());
@@ -136,7 +194,7 @@ namespace bw
 		controlEntity.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
 		controlEntity.playerIndex = m_playerIndex;
 
-		m_session.GetVisibility().SendEntityPacket(controlEntity.entityId, controlEntity);
+		m_session.GetVisibility().PushEntityPacket(controlEntity.entityId, controlEntity);
 	}
 
 	void Player::UpdateInputs(const InputData& inputData)
@@ -156,6 +214,26 @@ namespace bw
 		std::size_t index = (m_inputIndex + tickDelay) % m_inputBuffer.size();
 
 		m_inputBuffer[index] = std::move(inputData);
+	}
+
+	void Player::OnDeath(const Ndk::EntityHandle& attacker)
+	{
+		Packets::ChatMessage chatPacket;
+		if (attacker && attacker->HasComponent<PlayerControlledComponent>())
+			chatPacket.content = attacker->GetComponent<PlayerControlledComponent>().GetOwner()->GetName() + " killed " + GetName();
+		else
+			chatPacket.content = GetName() + " suicided";
+
+		m_match->ForEachPlayer([&](Player* otherPlayer)
+		{
+			otherPlayer->SendPacket(chatPacket);
+		});
+
+		m_match->GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attacker);
+
+		m_weapons.clear();
+		m_weaponByName.clear();
+		m_weaponIndex = NoWeapon;
 	}
 
 	void Player::UpdateLayer(std::size_t layerIndex)

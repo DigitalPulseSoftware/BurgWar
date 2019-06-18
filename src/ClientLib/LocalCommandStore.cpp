@@ -27,12 +27,14 @@ namespace bw
 		IncomingCommand(DownloadClientScriptResponse);
 		IncomingCommand(EntitiesAnimation);
 		IncomingCommand(EntitiesInputs);
+		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(HelloWorld);
 		IncomingCommand(InputTimingCorrection);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
+		IncomingCommand(PlayerWeapons);
 
 		// Outgoing commands
 		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);
@@ -41,6 +43,7 @@ namespace bw
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayerSelectWeapon,          Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);
 
 #undef IncomingCommand

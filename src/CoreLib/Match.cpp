@@ -290,7 +290,7 @@ namespace bw
 		float elapsedTime = GetTickDuration();
 
 		for (Player* player : m_players)
-			player->OnTick();
+			player->OnTick(lastTick);
 
 		m_terrain->Update(elapsedTime);
 

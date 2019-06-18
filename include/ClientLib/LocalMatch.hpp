@@ -75,8 +75,10 @@ namespace bw
 				Packets::DeleteEntities,
 				Packets::EntitiesAnimation,
 				Packets::EntitiesInputs,
+				Packets::EntityWeapon,
 				Packets::HealthUpdate,
-				Packets::MatchState
+				Packets::MatchState,
+				Packets::PlayerWeapons
 			>;
 
 			void CreateGhostEntity(ServerEntity& serverEntity);
@@ -91,8 +93,10 @@ namespace bw
 			void HandleTickPacket(Packets::DeleteEntities&& packet);
 			void HandleTickPacket(Packets::EntitiesAnimation&& packet);
 			void HandleTickPacket(Packets::EntitiesInputs&& packet);
+			void HandleTickPacket(Packets::EntityWeapon&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
+			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
@@ -121,6 +125,7 @@ namespace bw
 				{
 				}
 
+				std::vector<Ndk::EntityHandle> weapons;
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
 				Nz::UInt32 controlledEntityServerId;
@@ -164,8 +169,11 @@ namespace bw
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
 				Nz::UInt16 maxHealth;
 				Nz::UInt32 serverEntityId;
+				Nz::UInt32 weaponEntityId = NoWeapon;
 				bool isPhysical;
 				bool isLocalPlayerControlled = false;
+
+				static constexpr Nz::UInt32 NoWeapon = 0xFFFFFFFF;
 			};
 
 			struct TickPacket
@@ -181,6 +189,8 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
+			std::size_t m_weaponIndex; //< TEMP
+			std::size_t m_weaponCount; //< TEMP
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;

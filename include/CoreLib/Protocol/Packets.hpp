@@ -39,6 +39,7 @@ namespace bw
 		DownloadClientScriptResponse,
 		EntitiesAnimation,
 		EntitiesInputs,
+		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
 		HelloWorld,
@@ -47,6 +48,8 @@ namespace bw
 		NetworkStrings,
 		PlayerChat,
 		PlayersInput,
+		PlayerSelectWeapon,
+		PlayerWeapons,
 		Ready
 	};
 
@@ -187,6 +190,13 @@ namespace bw
 			std::vector<Entity> entities;
 		};
 
+		DeclarePacket(EntityWeapon)
+		{
+			Nz::UInt16 stateTick;
+			CompressedUnsigned<Nz::UInt32> entityId;
+			CompressedUnsigned<Nz::UInt32> weaponEntityId;
+		};
+
 		DeclarePacket(HealthUpdate)
 		{
 			struct Entity
@@ -279,6 +289,21 @@ namespace bw
 			std::vector<std::optional<InputData>> inputs;
 		};
 
+		DeclarePacket(PlayerSelectWeapon)
+		{
+			Nz::UInt8 playerIndex;
+			Nz::UInt8 newWeaponIndex;
+
+			static constexpr std::size_t NoWeapon = 0xFF;
+		};
+
+		DeclarePacket(PlayerWeapons)
+		{
+			Nz::UInt16 stateTick;
+			Nz::UInt8 playerIndex;
+			std::vector<CompressedUnsigned<Nz::UInt32>> weaponEntities;
+		};
+
 		DeclarePacket(Ready)
 		{
 		};
@@ -298,6 +323,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
+		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, HelloWorld& data);
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
@@ -306,6 +332,8 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
+		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
+		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
 
 		// Helpers

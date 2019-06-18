@@ -26,9 +26,14 @@ namespace bw
 		return m_session;
 	}
 
+	inline std::size_t Player::GetWeaponCount() const
+	{
+		return m_weapons.size();
+	}
+
 	inline bool Player::HasWeapon(const std::string& weaponClass)
 	{
-		return m_weapons.find(weaponClass) != m_weapons.end();
+		return m_weaponByName.find(weaponClass) != m_weaponByName.end();
 	}
 
 	inline bool Player::IsInMatch() const

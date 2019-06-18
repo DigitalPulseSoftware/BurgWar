@@ -295,6 +295,13 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, EntityWeapon& data)
+		{
+			serializer &= data.stateTick;
+			serializer &= data.entityId;
+			serializer &= data.weaponEntityId;
+		}
+
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data)
 		{
 			serializer &= data.stateTick;
@@ -420,6 +427,19 @@ namespace bw
 
 				Serialize(serializer, *input);
 			}
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.newWeaponIndex;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerWeapons& data)
+		{
+			serializer &= data.stateTick;
+			serializer &= data.playerIndex;
+			serializer &= data.weaponEntities;
 		}
 
 		void Serialize(PacketSerializer& /*serializer*/, Ready& /*data*/)

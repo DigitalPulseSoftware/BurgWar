@@ -7,12 +7,23 @@
 namespace bw
 {
 	inline WeaponComponent::WeaponComponent(Ndk::EntityHandle owner) :
-	m_owner(std::move(owner))
+	m_owner(std::move(owner)),
+	m_isActive(false)
 	{
 	}
 
 	inline const Ndk::EntityHandle& WeaponComponent::GetOwner() const
 	{
 		return m_owner;
+	}
+
+	inline bool WeaponComponent::IsActive() const
+	{
+		return m_isActive;
+	}
+
+	inline void WeaponComponent::SetActive(bool isActive)
+	{
+		m_isActive = isActive;
 	}
 }
