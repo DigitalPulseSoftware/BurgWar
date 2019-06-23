@@ -17,13 +17,13 @@ namespace bw
 	class KeyboardAndMouseController : public InputController
 	{
 		public:
-			inline KeyboardAndMouseController(const Nz::Window& window);
+			KeyboardAndMouseController(Nz::Window& window);
 			~KeyboardAndMouseController() = default;
 
 			PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) override;
 
 		private:
-			const Nz::Window& m_window;
+			Nz::Window& m_window;
 	};
 }
 

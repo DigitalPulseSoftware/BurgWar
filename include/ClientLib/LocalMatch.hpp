@@ -125,6 +125,7 @@ namespace bw
 				{
 				}
 
+				std::size_t selectedWeapon;
 				std::vector<Ndk::EntityHandle> weapons;
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
@@ -189,8 +190,6 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
-			std::size_t m_weaponIndex; //< TEMP
-			std::size_t m_weaponCount; //< TEMP
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;

@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
 
 #include <CoreLib/PlayerInputData.hpp>
+#include <Nazara/Core/Signal.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
@@ -21,6 +22,8 @@ namespace bw
 			virtual ~InputController();
 
 			virtual PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) = 0;
+
+			NazaraSignal(OnSwitchWeapon, InputController* /*emitter*/, Nz::UInt8 /*localPlayerIndex*/, bool /*direction*/);
 	};
 }
 

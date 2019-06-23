@@ -36,6 +36,7 @@ namespace bw
 			inline std::size_t GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
+			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
 			inline std::size_t GetWeaponCount() const;
 

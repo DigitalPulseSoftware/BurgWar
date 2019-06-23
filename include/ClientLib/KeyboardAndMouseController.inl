@@ -6,8 +6,4 @@
 
 namespace bw
 {
-	inline KeyboardAndMouseController::KeyboardAndMouseController(const Nz::Window& window) :
-	m_window(window)
-	{
-	}
 }

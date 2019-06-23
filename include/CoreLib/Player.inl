@@ -21,6 +21,11 @@ namespace bw
 		return m_name;
 	}
 
+	inline MatchClientSession& Player::GetSession()
+	{
+		return m_session;
+	}
+
 	inline const MatchClientSession& Player::GetSession() const
 	{
 		return m_session;

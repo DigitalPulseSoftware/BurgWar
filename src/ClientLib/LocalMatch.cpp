@@ -99,27 +99,28 @@ namespace bw
 			m_session.SendPacket(chatPacket);
 		});
 
-		// HAAAAAAAAAAAAAX
-		window->GetEventHandler().OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		m_inputController->OnSwitchWeapon.Connect([this](InputController* /*emitter*/, Nz::UInt8 localPlayerIndex, bool direction)
 		{
-			if (event.delta > 0.f)
+			assert(localPlayerIndex < m_playerData.size());
+			auto& playerData = m_playerData[localPlayerIndex];
+
+			if (direction)
 			{
-				if (++m_weaponIndex > m_weaponCount)
-					m_weaponIndex = 0;
+				if (++playerData.selectedWeapon > playerData.weapons.size())
+					playerData.selectedWeapon = 0;
 			}
 			else
 			{
-				if (m_weaponIndex-- == 0)
-					m_weaponIndex = m_weaponCount;
+				if (playerData.selectedWeapon-- == 0)
+					playerData.selectedWeapon = playerData.weapons.size();
 			}
 
 			Packets::PlayerSelectWeapon selectPacket;
-			selectPacket.playerIndex = 0;
-			selectPacket.newWeaponIndex = (m_weaponIndex < m_weaponCount) ? m_weaponIndex : selectPacket.NoWeapon;
+			selectPacket.playerIndex = localPlayerIndex;
+			selectPacket.newWeaponIndex = (playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon;
 
 			m_session.SendPacket(selectPacket);
 		});
-		// HAAAAAAAAAAAAAX
 
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
@@ -1090,8 +1091,7 @@ namespace bw
 			std::cout << "Local player #" << +packet.playerIndex << " has weapon " << scriptComponent.GetElement()->fullName << std::endl;
 		}
 
-		m_weaponCount = playerData.weapons.size();
-		m_weaponIndex = playerData.weapons.size();
+		playerData.selectedWeapon = playerData.weapons.size();
 	}
 
 	void LocalMatch::HandleTickError(Nz::UInt16 stateTick, Nz::Int32 tickError)
@@ -1304,7 +1304,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			PlayerInputData input;
 			
-			if (!m_chatBox.IsTyping() /*&& m_window->HasFocus()*/)
+			if (!m_chatBox.IsTyping() && m_window->HasFocus())
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)

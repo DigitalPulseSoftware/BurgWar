@@ -147,7 +147,11 @@ namespace bw
 		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
 			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
 
-		m_session.GetVisibility().PushEntitiesPacket(std::move(entityIds), std::move(weaponPacket));
+		m_match->ForEachPlayer([&](Player* ply)
+		{
+			MatchClientSession& session = ply->GetSession();
+			session.GetVisibility().PushEntitiesPacket(entityIds, weaponPacket);
+		});
 	}
 
 	std::string Player::ToString() const

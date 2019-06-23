@@ -11,6 +11,15 @@
 
 namespace bw
 {
+	KeyboardAndMouseController::KeyboardAndMouseController(Nz::Window& window) :
+	m_window(window)
+	{
+		m_window.GetEventHandler().OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		{
+			OnSwitchWeapon(this, 0, event.delta > 0.f);
+		});
+	}
+
 	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
