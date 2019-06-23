@@ -9,7 +9,7 @@
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
-#include <sol2/sol.hpp>
+#include <sol3/sol.hpp>
 #include <filesystem>
 #include <memory>
 #include <vector>

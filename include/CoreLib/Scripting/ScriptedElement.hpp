@@ -10,7 +10,7 @@
 #include <CoreLib/EntityProperties.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <tsl/hopscotch_map.h>
-#include <sol2/sol.hpp>
+#include <sol3/sol.hpp>
 #include <memory>
 #include <optional>
 #include <string>

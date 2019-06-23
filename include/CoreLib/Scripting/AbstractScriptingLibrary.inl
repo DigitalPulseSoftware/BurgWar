@@ -7,7 +7,7 @@
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <CoreLib/PlayerInputData.hpp>
-#include <sol2/sol.hpp>
+#include <sol3/sol.hpp>
 #include <cassert>
 
 namespace bw
@@ -40,129 +40,94 @@ namespace sol
 	template<typename T>
 	struct lua_type_of<Nz::Vector2<T>> : std::integral_constant<sol::type, sol::type::table> {};
 
-	namespace stack
+	template <typename T, typename Handler>
+	bool sol_lua_check(sol::types<Nz::Vector2<T>>, lua_State* L, int index, Handler&& handler, sol::stack::record& tracking)
 	{
-		template<typename T>
-		struct checker<Nz::Vector2<T>, sol::type::table> //< FIXME
+		int absoluteIndex = lua_absindex(L, index);
+		bool success = stack::check<sol::table>(L, absoluteIndex, handler);
+		if (success)
 		{
-			static_assert(std::is_arithmetic_v<T>);
+			luaL_getmetatable(L, "vec2");
+			sol::stack_table expectedMetatable;
 
-			template<typename Handler>
-			static bool check(lua_State* L, int index, Handler&& handler, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
-				bool success = stack::check<sol::table>(L, absoluteIndex, handler);
-				if (success)
-				{
-					luaL_getmetatable(L, "vec2");
-					sol::stack_table expectedMetatable;
+			lua_getmetatable(L, absoluteIndex);
 
-					lua_getmetatable(L, absoluteIndex);
+			success = lua_rawequal(L, -1, -2);
 
-					success = lua_rawequal(L, -1, -2);
+			lua_pop(L, 2);
+		}
+		tracking.use(1);
 
-					lua_pop(L, 2);
-				}
-				tracking.use(1);
+		return success;
+	}
 
-				return success;
-			}
-		};
+	Nz::DegreeAnglef sol_lua_get(sol::types<Nz::DegreeAnglef>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
 
+		float angle = sol::stack::get<float>(L, absoluteIndex);
+		tracking.use(1);
 
-		template <>
-		struct getter<Nz::DegreeAnglef>
-		{
-			static Nz::DegreeAnglef get(lua_State* L, int index, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
+		return Nz::DegreeAnglef(angle);
+	}
 
-				sol::stack_object obj(L, absoluteIndex);
-				return Nz::DegreeAnglef(obj.as<float>());
-			}
-		};
+	Nz::Rectf sol_lua_get(sol::types<Nz::Rectf>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
 
-		template <>
-		struct getter<Nz::Rectf>
-		{
-			static Nz::Rectf get(lua_State* L, int index, record& tracking) 
-			{
-				int absoluteIndex = lua_absindex(L, index);
+		sol::table rect = sol::stack::get<sol::table>(L, absoluteIndex);
+		float x = rect["x"];
+		float y = rect["y"];
+		float width = rect["width"];
+		float height = rect["height"];
 
-				sol::table rect(L, absoluteIndex);
-				float x = rect["x"];
-				float y = rect["y"];
-				float width = rect["width"];
-				float height = rect["height"];
+		tracking.use(1);
 
-				tracking.use(1);
+		return Nz::Rectf(x, y, width, height);
+	}
 
-				return Nz::Rectf(x, y, width, height);
-			}
-		};
+	template<typename T>
+	Nz::Vector2<T> sol_lua_get(sol::types<Nz::Vector2<T>>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
 
-		template<typename T>
-		struct getter<Nz::Vector2<T>>
-		{
-			static_assert(std::is_arithmetic_v<T>);
+		sol::table rect = sol::stack::get<sol::table>(L, absoluteIndex);
+		T x = rect["x"];
+		T y = rect["y"];
 
-			static Nz::Vector2<T> get(lua_State* L, int index, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
+		tracking.use(1);
 
-				sol::table vec(L, absoluteIndex);
-				T x = vec["x"];
-				T y = vec["y"];
+		return Nz::Vector2<T>(x, y);
+	}
 
-				tracking.use(1);
+	int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
+	{
+		lua_createtable(L, 0, 5);
+		sol::stack_table vec(L);
+		vec["aimDirection"] = inputs.aimDirection;
+		vec["isAttacking"] = inputs.isAttacking;
+		vec["isJumping"] = inputs.isJumping;
+		vec["isMovingLeft"] = inputs.isMovingLeft;
+		vec["isMovingRight"] = inputs.isMovingRight;
 
-				return Nz::Vector2<T>(x, y);
-			}
-		};
+		return 1;
+	}
 
-		template <>
-		struct pusher<bw::PlayerInputData>
-		{
-			static int push(lua_State* L, const bw::PlayerInputData& inputs)
-			{
-				lua_createtable(L, 0, 4);
-				sol::stack_table vec(L);
-				vec["aimDirection"] = inputs.aimDirection;
-				vec["isAttacking"] = inputs.isAttacking;
-				vec["isJumping"] = inputs.isJumping;
-				vec["isMovingLeft"] = inputs.isMovingLeft;
-				vec["isMovingRight"] = inputs.isMovingRight;
+	template<typename T>
+	int sol_lua_push(sol::types<Nz::DegreeAngle<T>>, lua_State* L, const Nz::DegreeAngle<T>& angle)
+	{
+		return sol::stack::push(L, angle.ToDegrees());
+	}
 
-				return 1;
-			}
-		};
+	template<typename T>
+	int sol_lua_push(sol::types<Nz::Vector2<T>>, lua_State* L, const Nz::Vector2<T>& v)
+	{
+		lua_createtable(L, 0, 2);
+		luaL_setmetatable(L, "vec2");
+		sol::stack_table vec(L);
+		vec["x"] = v.x;
+		vec["y"] = v.y;
 
-		template <>
-		struct pusher<Nz::DegreeAnglef>
-		{
-			static int push(lua_State* L, const Nz::DegreeAnglef& degreeAngle)
-			{
-				lua_pushnumber(L, degreeAngle.ToDegrees());
-
-				return 1;
-			}
-		};
-
-		template<typename T>
-		struct pusher<Nz::Vector2<T>>
-		{
-			static_assert(std::is_arithmetic_v<T>);
-
-			static int push(lua_State* L, const Nz::Vector2<T>& v)
-			{
-				lua_createtable(L, 0, 2);
-				luaL_setmetatable(L, "vec2");
-				sol::stack_table vec(L);
-				vec["x"] = v.x;
-				vec["y"] = v.y;
-
-				return 1;
-			}
-		};
+		return 1;
 	}
 }
