@@ -20,6 +20,8 @@ namespace bw
 			inline TimerManager(BurgApp& app);
 			~TimerManager() = default;
 
+			inline void Clear();
+
 			inline void PushCallback(Nz::UInt64 expirationTime, Callback finish);
 
 			inline void Update();

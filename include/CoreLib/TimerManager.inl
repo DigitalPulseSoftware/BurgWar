@@ -11,6 +11,11 @@ namespace bw
 	{
 	}
 
+	inline void TimerManager::Clear()
+	{
+		m_pendingTimers.clear();
+	}
+
 	inline void TimerManager::PushCallback(Nz::UInt64 expirationTime, Callback callback)
 	{
 		Timer& timer = m_pendingTimers.emplace_back();
