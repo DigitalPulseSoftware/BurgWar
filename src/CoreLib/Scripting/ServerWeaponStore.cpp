@@ -34,35 +34,6 @@ namespace bw
 	{
 		SharedWeaponStore::InitializeElementTable(elementTable);
 
-		auto DealDamage = [](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
-		{
-			const Ndk::EntityHandle& entity = weaponTable["Entity"];
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-
-			Nz::Vector2f pos = Nz::Vector2f(nodeComponent.GetPosition());
-
-			std::vector<Ndk::EntityHandle> hitEntities;
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitEntities);
-
-			for (const Ndk::EntityHandle& hitEntity : hitEntities)
-			{
-				if (hitEntity->HasComponent<HealthComponent>())
-					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - pos) * pushbackForce);
-				}
-			}
-		};
-
-		elementTable["DealDamage"] = sol::overload(DealDamage,
-			[=](const sol::table& weaponTable, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(weaponTable, damage, damageZone); });
-
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{
 			const Ndk::EntityHandle& entity = weaponTable["Entity"];

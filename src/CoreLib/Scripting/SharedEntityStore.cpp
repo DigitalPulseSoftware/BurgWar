@@ -200,6 +200,16 @@ namespace bw
 
 			collisionComponent.SetGeom(std::move(geom));
 		};
+
+		elementTable["SetVelocity"] = [](const sol::table& table, const Nz::Vector2f& velocity)
+		{
+			const Ndk::EntityHandle& entity = table["Entity"];
+			if (!entity || !entity->HasComponent<Ndk::PhysicsComponent2D>())
+				return;
+
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetVelocity(velocity);
+		};
 	}
 
 	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
@@ -233,6 +243,13 @@ namespace bw
 				entityScript.ExecuteCallback("OnInputUpdate", input->GetInputs());
 			});
 		}
+
+		entity->OnEntityDestruction.Connect([&](Ndk::Entity* entity)
+		{
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+			entityScript.ExecuteCallback("OnKilled");
+		});
 
 		return true;
 	}
