@@ -39,7 +39,6 @@ namespace bw
 	SharedMatch(burgApp, matchData.tickDuration),
 	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
-	m_currentServerTick(matchData.currentTick),
 	m_averageTickError(20),
 	m_window(window),
 	m_application(burgApp),
@@ -51,6 +50,8 @@ namespace bw
 	m_playerInputTimer(0.f)
 	{
 		assert(window);
+
+		m_averageTickError.InsertValue(-static_cast<Nz::Int32>(matchData.currentTick));
 
 		Ndk::World& world = m_world.GetWorld();
 		world.AddSystem<SoundSystem>();
@@ -156,11 +157,22 @@ namespace bw
 		}
 	}
 
+	LocalMatch::~LocalMatch()
+	{
+		// Clear timer manager before scripting context gets deleted
+		GetTimerManager().Clear();
+	}
+
 	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
 		Ndk::World& world = m_world.GetWorld();
 		for (const Ndk::EntityHandle& entity : world.GetEntities())
 			func(entity);
+	}
+
+	SharedWorld& LocalMatch::GetWorld()
+	{
+		return m_world;
 	}
 
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
@@ -236,16 +248,16 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_GetPlayerPosition"] = [&](Nz::UInt8 playerIndex)
+		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 playerIndex) -> sol::object
 		{
 			if (playerIndex >= m_playerData.size())
 				throw std::runtime_error("Invalid player index");
 
 			auto& playerData = m_playerData[playerIndex];
 			if (playerData.controlledEntity)
-				return Nz::Vector2f(playerData.controlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
+				return sol::make_object(lua, Nz::Vector2f(playerData.controlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition()));
 			else
-				return Nz::Vector2f::Zero();
+				return sol::nil;
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
@@ -557,9 +569,9 @@ namespace bw
 		gfxComponent.Attach(text, Nz::Matrix4f::Translate(Nz::Vector3f(aabb.width / 2.f - volume.width / 2.f, aabb.height / 2 - 5 - volume.height / 2.f, 0.f)));
 	}
 
-	Nz::UInt16 LocalMatch::EstimateServerTick() const
+	Nz::UInt64 LocalMatch::EstimateServerTick() const
 	{
-		return m_currentServerTick - m_averageTickError.GetAverageValue();
+		return GetCurrentTick() - m_averageTickError.GetAverageValue();
 	}
 
 	void LocalMatch::HandleChatMessage(Packets::ChatMessage&& packet)
@@ -1038,7 +1050,8 @@ namespace bw
 			if (controllerData.controlledEntity)
 			{
 				const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(controllerData.controlledEntity->GetId());
-				assert(reconciliationEntity);
+				if (!reconciliationEntity)
+					continue;
 
 				if (controllerData.controlledEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
@@ -1119,9 +1132,9 @@ namespace bw
 
 	void LocalMatch::OnTick(bool lastTick)
 	{
-		Nz::UInt16 estimatedServerTick = EstimateServerTick();
+		Nz::UInt16 estimatedServerTick = GetNetworkTick(EstimateServerTick());
 
-		Nz::UInt16 handledTick = estimatedServerTick - 3; //< To handle network jitter
+		Nz::UInt16 handledTick = AdjustServerTick(estimatedServerTick); //< To handle network jitter
 
 		auto it = m_tickedPackets.begin();
 		while (it != m_tickedPackets.end() && (it->tick == handledTick || IsMoreRecent(handledTick, it->tick)))
@@ -1177,6 +1190,9 @@ namespace bw
 			}
 		}
 
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
+
 		Ndk::World& world = m_world.GetWorld();
 		world.Update(GetTickDuration());
 
@@ -1192,11 +1208,6 @@ namespace bw
 			}
 		});
 #endif
-
-		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
-
-		m_currentServerTick++;
 	}
 
 	void LocalMatch::PrepareClientUpdate()

@@ -12,6 +12,13 @@
 
 namespace bw
 {
+	ServerGamemode::ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
+	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodePath)),
+	m_match(match)
+	{
+		InitializeGamemode();
+	}
+
 	void ServerGamemode::InitializeGamemode()
 	{
 		auto& context = GetScriptingContext();
@@ -49,7 +56,7 @@ namespace bw
 					}
 				}
 
-				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld(), elementIndex, spawnPos, 0.f, entityProperties);
+				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld().GetWorld(), elementIndex, spawnPos, 0.f, entityProperties);
 				if (!entity)
 					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
@@ -58,6 +65,11 @@ namespace bw
 			}
 			else
 				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+		};
+
+		gamemodeTable["GetMatchTick"] = [&](const sol::table& gmTable)
+		{
+			return m_match.GetCurrentTick();
 		};
 	}
 }

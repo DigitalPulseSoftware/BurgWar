@@ -47,7 +47,7 @@ namespace bw
 		{
 			it.value().emplace_back([this, packet = std::forward<T>(packet)]() mutable
 			{
-				packet.stateTick = m_match.GetCurrentTick();
+				packet.stateTick = m_match.GetNetworkTick();
 
 				m_session.SendPacket(packet);
 			});
@@ -70,7 +70,7 @@ namespace bw
 				std::move(entitiesId),
 				[this, packet = std::forward<T>(packet)]() mutable
 				{
-					packet.stateTick = m_match.GetCurrentTick();
+					packet.stateTick = m_match.GetNetworkTick();
 
 					m_session.SendPacket(packet);
 				}

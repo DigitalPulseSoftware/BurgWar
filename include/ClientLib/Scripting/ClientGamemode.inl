@@ -7,10 +7,4 @@
 
 namespace bw
 {
-	inline ClientGamemode::ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
-	SharedGamemode(std::move(scriptingContext), std::move(gamemodePath)),
-	m_match(localMatch)
-	{
-		InitializeGamemode();
-	}
 }

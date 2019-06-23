@@ -60,6 +60,7 @@ namespace bw
 			inline const Terrain& GetTerrain() const;
 			inline ServerWeaponStore& GetWeaponStore();
 			inline const ServerWeaponStore& GetWeaponStore() const;
+			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
 			void Leave(Player* player);
 			bool Join(Player* player);

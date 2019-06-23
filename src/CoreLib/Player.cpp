@@ -53,7 +53,7 @@ namespace bw
 			return false;
 
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld();
+		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 
@@ -80,7 +80,7 @@ namespace bw
 			return;
 
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld();
+		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
@@ -110,10 +110,12 @@ namespace bw
 
 			UpdateControlledEntity(playerEntity);
 
-			if (!GiveWeapon("weapon_sword_emmentalibur"))
-				std::cout << "Failed to give weapon" << std::endl;
+			//if (!GiveWeapon("weapon_sword_emmentalibur"))
+			//	std::cout << "Failed to give weapon" << std::endl;
 
 			GiveWeapon("weapon_rifle");
+			GiveWeapon("weapon_grenade");
+			SelectWeapon(0);
 		}
 	}
 

@@ -17,9 +17,19 @@ namespace bw
 	{
 	}
 
-	inline Nz::UInt16 SharedMatch::GetCurrentTick() const
+	inline Nz::UInt64 SharedMatch::GetCurrentTick() const
 	{
 		return m_currentTick;
+	}
+
+	inline Nz::UInt16 SharedMatch::GetNetworkTick() const
+	{
+		return GetNetworkTick(m_currentTick);
+	}
+
+	inline Nz::UInt16 SharedMatch::GetNetworkTick(Nz::UInt64 tick) const
+	{
+		return static_cast<Nz::UInt16>(tick % (0xFFFFU + 1));
 	}
 
 	inline Nz::UInt64 SharedMatch::GetCurrentTime() const

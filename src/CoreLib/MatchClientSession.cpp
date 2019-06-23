@@ -81,7 +81,7 @@ namespace bw
 		const Map& mapData = m_match.GetTerrain().GetMap();
 
 		Packets::MatchData matchData;
-		matchData.currentTick = m_match.GetCurrentTick();
+		matchData.currentTick = m_match.GetNetworkTick();
 		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
 		matchData.tickDuration = m_match.GetTickDuration();
 
@@ -150,7 +150,7 @@ namespace bw
 		}
 
 		// Compute client error
-		Nz::UInt16 currentTick = m_match.GetCurrentTick();
+		Nz::UInt16 currentTick = m_match.GetNetworkTick();
 		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter
 		Nz::UInt16 estimatedServerTick = packet.estimatedServerTick;
 

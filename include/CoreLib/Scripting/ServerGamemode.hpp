@@ -16,7 +16,7 @@ namespace bw
 	class ServerGamemode : public SharedGamemode
 	{
 		public:
-			inline ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
 			~ServerGamemode() = default;
 
 		private:

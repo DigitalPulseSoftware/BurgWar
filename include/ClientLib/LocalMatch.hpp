@@ -45,7 +45,10 @@ namespace bw
 			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
-			~LocalMatch() = default;
+			~LocalMatch();
+
+			template<typename T> T AdjustServerTick(T tick);
+			Nz::UInt64 EstimateServerTick() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 
@@ -53,6 +56,7 @@ namespace bw
 			inline BurgApp& GetApplication();
 			inline const Ndk::EntityHandle& GetCamera();
 			inline const Nz::SpriteRef& GetTrailSprite() const;
+			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
@@ -85,7 +89,6 @@ namespace bw
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
-			Nz::UInt16 EstimateServerTick() const;
 			void HandleChatMessage(Packets::ChatMessage&& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
@@ -199,7 +202,6 @@ namespace bw
 			Ndk::EntityHandle m_camera;
 			Nz::RenderWindow* m_window;
 			Nz::SpriteRef m_trailSpriteTest;
-			Nz::UInt16 m_currentServerTick;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;

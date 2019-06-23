@@ -6,6 +6,12 @@
 
 namespace bw
 {
+	template<typename T>
+	T LocalMatch::AdjustServerTick(T tick)
+	{
+		return tick - 3;
+	}
+
 	inline AnimationManager& LocalMatch::GetAnimationManager()
 	{
 		return m_animationManager;

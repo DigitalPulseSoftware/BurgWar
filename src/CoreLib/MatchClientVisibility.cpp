@@ -18,7 +18,7 @@ namespace bw
 		// Send packet in fixed order
 		if (!m_destructionEvents.empty())
 		{
-			m_deleteEntitiesPacket.stateTick = m_match.GetCurrentTick();
+			m_deleteEntitiesPacket.stateTick = m_match.GetNetworkTick();
 
 			m_deleteEntitiesPacket.entities.clear();
 			for (Nz::UInt32 entityId : m_destructionEvents)
@@ -52,7 +52,7 @@ namespace bw
 
 				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
-				m_createEntitiesPacket.stateTick = m_match.GetCurrentTick();
+				m_createEntitiesPacket.stateTick = m_match.GetNetworkTick();
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
 				entityData.id = eventData->entityId;
 				entityData.entityClass = networkStringStore.CheckStringIndex(eventData->entityClass);
@@ -140,7 +140,7 @@ namespace bw
 
 		if (!m_healthUpdateEvents.empty())
 		{
-			m_healthUpdatePacket.stateTick = m_match.GetCurrentTick();
+			m_healthUpdatePacket.stateTick = m_match.GetNetworkTick();
 			m_healthUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_healthUpdateEvents)
@@ -158,7 +158,7 @@ namespace bw
 
 		if (!m_inputUpdateEvents.empty())
 		{
-			m_inputUpdatePacket.stateTick = m_match.GetCurrentTick();
+			m_inputUpdatePacket.stateTick = m_match.GetNetworkTick();
 			m_inputUpdatePacket.entities.clear();
 
 			for (auto&& pair : m_inputUpdateEvents)
@@ -176,7 +176,7 @@ namespace bw
 
 		if (!m_playAnimationEvents.empty())
 		{
-			m_entitiesAnimationPacket.stateTick = m_match.GetCurrentTick();
+			m_entitiesAnimationPacket.stateTick = m_match.GetNetworkTick();
 			m_entitiesAnimationPacket.entities.clear();
 
 			for (auto&& pair : m_playAnimationEvents)
@@ -236,7 +236,7 @@ namespace bw
 			/* Delete all visible entities */
 
 			TerrainLayer& layer = terrain.GetLayer(m_activeLayer);
-			const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
+			const NetworkSyncSystem& syncSystem = layer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
 
 			syncSystem.DeleteEntities([&](const NetworkSyncSystem::EntityDestruction* entitiesDestruction, std::size_t entityCount)
 			{
@@ -256,7 +256,7 @@ namespace bw
 		{
 			/* Create all newly visible entities */
 			TerrainLayer& layer = terrain.GetLayer(m_activeLayer);
-			NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
+			NetworkSyncSystem& syncSystem = layer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
 
 			m_onEntityCreatedSlot.Connect(syncSystem.OnEntityCreated, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityCreation& entityCreation)
 			{
@@ -342,10 +342,10 @@ namespace bw
 	{
 		Terrain& terrain = m_match.GetTerrain();
 		TerrainLayer& layer = terrain.GetLayer(m_activeLayer);
-		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
+		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
 
 		m_matchStatePacket.entities.clear();
-		m_matchStatePacket.stateTick = m_match.GetCurrentTick();
+		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
 
 		for (auto&& pair : m_staticMovementUpdateEvents)
 			BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);

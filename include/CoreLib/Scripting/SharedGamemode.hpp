@@ -12,10 +12,12 @@
 
 namespace bw
 {
+	class SharedMatch;
+
 	class SharedGamemode
 	{
 		public:
-			SharedGamemode(std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
 			SharedGamemode(const SharedGamemode&) = delete;
 			~SharedGamemode() = default;
 
@@ -32,9 +34,12 @@ namespace bw
 			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
 		private:
+			void InitializeGamemode();
+
 			std::filesystem::path m_gamemodePath;
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_gamemodeTable;
+			SharedMatch& m_sharedMatch;
 	};
 }
 

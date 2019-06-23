@@ -92,7 +92,10 @@ namespace bw
 		}
 	}
 
-	Match::~Match() = default;
+	Match::~Match()
+	{
+		GetTimerManager().Clear();
+	}
 
 	Packets::ClientScriptList Match::BuildClientFileListPacket() const
 	{
@@ -118,9 +121,14 @@ namespace bw
 		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
-			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetWorld().GetEntities())
 				func(entity);
 		}
+	}
+
+	SharedWorld& Match::GetWorld()
+	{
+		return m_terrain->GetLayer(0).GetWorld();
 	}
 
 	void Match::Leave(Player* player)
@@ -292,6 +300,8 @@ namespace bw
 		for (Player* player : m_players)
 			player->OnTick(lastTick);
 
+		m_gamemode->ExecuteCallback("OnTick");
+
 		m_terrain->Update(elapsedTime);
 
 #ifdef DEBUG_PREDICTION
@@ -302,12 +312,10 @@ namespace bw
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				
 				static std::ofstream debugFile("server.csv", std::ios::trunc);
-				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << GetCurrentTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
+				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << GetNetworkTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
 			}
 		});
 #endif
-
-		m_gamemode->ExecuteCallback("OnTick");
 
 		if (lastTick)
 		{

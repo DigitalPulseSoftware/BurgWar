@@ -23,7 +23,7 @@ namespace bw
 			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;
 
-			inline Ndk::World& GetWorld();
+			inline SharedWorld& GetWorld();
 
 			void Update(float elapsedTime);
 

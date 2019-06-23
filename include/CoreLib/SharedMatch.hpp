@@ -7,11 +7,14 @@
 #ifndef BURGWAR_CORELIB_SHAREDMATCH_HPP
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
+#include <CoreLib/SharedWorld.hpp>
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
 {
+	class ScriptingContext;
+
 	class SharedMatch
 	{
 		public:
@@ -22,10 +25,13 @@ namespace bw
 
 			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
 
-			inline Nz::UInt16 GetCurrentTick() const;
+			inline Nz::UInt64 GetCurrentTick() const;
+			inline Nz::UInt16 GetNetworkTick() const;
+			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
 			inline Nz::UInt64 GetCurrentTime() const;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
+			virtual SharedWorld& GetWorld() = 0; //< Temporary (while we don't have layers)
 
 			void Update(float elapsedTime);
 
@@ -37,7 +43,7 @@ namespace bw
 
 		private:
 			TimerManager m_timerManager;
-			Nz::UInt16 m_currentTick;
+			Nz::UInt64 m_currentTick;
 			Nz::UInt64 m_currentTime;
 			float m_floatingTime;
 			float m_tickDuration;
