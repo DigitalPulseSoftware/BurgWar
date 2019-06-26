@@ -9,7 +9,7 @@
 
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <sol2/sol.hpp>
+#include <sol3/sol.hpp>
 #include <tsl/hopscotch_map.h>
 #include <optional>
 #include <memory>
