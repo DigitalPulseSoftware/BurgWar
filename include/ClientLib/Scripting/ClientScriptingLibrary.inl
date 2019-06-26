@@ -6,7 +6,7 @@
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <Nazara/Graphics/Material.hpp>
-#include <sol2/sol.hpp>
+#include <sol3/sol.hpp>
 #include <cassert>
 #include <type_traits>
 #include <vector>
@@ -25,93 +25,78 @@ namespace sol
 	template<>
 	struct lua_type_of<bw::TileMapData> : std::integral_constant<sol::type, sol::type::table> {};
 
-	namespace stack
+	inline std::vector<bw::TileData> sol_lua_get(sol::types<std::vector<bw::TileData>>, lua_State* L, int index, sol::stack::record& tracking)
 	{
-		template <>
-		struct getter<std::vector<bw::TileData>>
+		int absoluteIndex = lua_absindex(L, index);
+
+		std::vector<bw::TileData> tileVec;
+
+		sol::table tileTable(L, absoluteIndex);
+		std::size_t tileCount = tileTable.size();
+
+		tileVec.resize(tileCount);
+		for (std::size_t i = 0; i < tileCount; ++i)
 		{
-			static std::vector<bw::TileData> get(lua_State* L, int index, record& tracking)
+			auto& tileData = tileVec[i];
+
+			lua_geti(L, absoluteIndex, i + 1);
 			{
-				int absoluteIndex = lua_absindex(L, index);
+				sol::stack_table tileTable(L);
 
-				std::vector<bw::TileData> tileVec;
-
-				sol::table tileTable(L, absoluteIndex);
-				std::size_t tileCount = tileTable.size();
-
-				tileVec.resize(tileCount);
-				for (std::size_t i = 0; i < tileCount; ++i)
-				{
-					auto& tileData = tileVec[i];
-
-					lua_geti(L, absoluteIndex, i + 1);
-					{
-						sol::stack_table tileTable(L);
-
-						tileData.materialPath = tileTable["material"];
-						tileData.texCoords = tileTable["texCoords"];
-					}
-					lua_pop(L, 1);
-				}
-
-				tracking.use(1);
-
-				return tileVec;
+				tileData.materialPath = tileTable["material"];
+				tileData.texCoords = tileTable["texCoords"];
 			}
-		};
+			lua_pop(L, 1);
+		}
 
-		template <>
-		struct getter<bw::TileMapData>
-		{
-			static bw::TileMapData get(lua_State* L, int index, record& tracking)
-			{
-				int absoluteIndex = lua_absindex(L, index);
+		tracking.use(1);
 
-				bw::TileMapData tileMapData;
+		return tileVec;
+	}
 
-				sol::table tileMapTable(L, absoluteIndex);
-				tileMapData.mapSize = tileMapTable["mapSize"];
-				tileMapData.origin = tileMapTable["origin"];
-				tileMapData.rotation = tileMapTable["rotation"];
-				tileMapData.tileSize = tileMapTable["tileSize"];
+	inline bw::TileMapData sol_lua_get(sol::types<bw::TileMapData>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
 
-				sol::table content = tileMapTable["content"];
-				std::size_t contentSize = content.size();
+		bw::TileMapData tileMapData;
 
-				tileMapData.content.resize(contentSize);
-				for (std::size_t i = 0; i < contentSize; ++i)
-					tileMapData.content[i] = content[i + 1];
+		sol::table tileMapTable(L, absoluteIndex);
+		tileMapData.mapSize = tileMapTable["mapSize"];
+		tileMapData.origin = tileMapTable["origin"];
+		tileMapData.rotation = tileMapTable["rotation"];
+		tileMapData.tileSize = tileMapTable["tileSize"];
 
-				tracking.use(1);
+		sol::table content = tileMapTable["content"];
+		std::size_t contentSize = content.size();
 
-				return tileMapData;
-			}
-		};
+		tileMapData.content.resize(contentSize);
+		for (std::size_t i = 0; i < contentSize; ++i)
+			tileMapData.content[i] = content[i + 1];
 
-		template <>
-		struct pusher<bw::TileMapData>
-		{
-			static int push(lua_State* L, const bw::TileMapData& tileMapData)
-			{
-				lua_createtable(L, 0, 5);
-				sol::stack_table vec(L);
-				vec["mapSize"] = tileMapData.mapSize;
-				vec["origin"] = tileMapData.origin;
-				vec["rotation"] = tileMapData.rotation;
-				vec["tileSize"] = tileMapData.tileSize;
+		tracking.use(1);
 
-				sol::state_view state(L);
+		return tileMapData;
+	}
 
-				sol::table content = state.create_table(tileMapData.content.size());
+	inline int sol_lua_push(sol::types<bw::TileMapData>, lua_State* L, const bw::TileMapData& tileMapData)
+	{
+		lua_createtable(L, 0, 5);
+		sol::stack_table vec(L);
+		vec["mapSize"] = tileMapData.mapSize;
+		vec["origin"] = tileMapData.origin;
+		vec["rotation"] = tileMapData.rotation;
+		vec["tileSize"] = tileMapData.tileSize;
 
-				std::size_t index = 1;
-				for (Nz::UInt32 tileType : tileMapData.content)
-					content[index++] = tileType;
+		sol::state_view state(L);
 
-				vec["content"] = content;
+		sol::table content = state.create_table(tileMapData.content.size());
 
-				return 1;
-			}
-		};
+		std::size_t index = 1;
+		for (Nz::UInt32 tileType : tileMapData.content)
+			content[index++] = tileType;
+
+		vec["content"] = content;
+
+		return 1;
 	}
 }

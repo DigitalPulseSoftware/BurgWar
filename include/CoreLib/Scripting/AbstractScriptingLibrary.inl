@@ -6,16 +6,26 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <NDK/Entity.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <sol3/sol.hpp>
 #include <cassert>
 
 namespace bw
 {
+	class Player;
+
+	using PlayerHandle = Nz::ObjectHandle<Player>;
 }
 
 namespace sol
 {
+	template <>
+	struct is_automagical<Ndk::EntityHandle> : std::false_type {};
+
+	template <>
+	struct is_automagical<bw::PlayerHandle> : std::false_type {};
+
 	template<>
 	struct lua_size<bw::PlayerInputData> : std::integral_constant<int, 1> {};
 
@@ -61,7 +71,7 @@ namespace sol
 		return success;
 	}
 
-	Nz::DegreeAnglef sol_lua_get(sol::types<Nz::DegreeAnglef>, lua_State* L, int index, sol::stack::record& tracking)
+	inline Nz::DegreeAnglef sol_lua_get(sol::types<Nz::DegreeAnglef>, lua_State* L, int index, sol::stack::record& tracking)
 	{
 		int absoluteIndex = lua_absindex(L, index);
 
@@ -71,7 +81,7 @@ namespace sol
 		return Nz::DegreeAnglef(angle);
 	}
 
-	Nz::Rectf sol_lua_get(sol::types<Nz::Rectf>, lua_State* L, int index, sol::stack::record& tracking)
+	inline Nz::Rectf sol_lua_get(sol::types<Nz::Rectf>, lua_State* L, int index, sol::stack::record& tracking)
 	{
 		int absoluteIndex = lua_absindex(L, index);
 
@@ -100,7 +110,7 @@ namespace sol
 		return Nz::Vector2<T>(x, y);
 	}
 
-	int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
+	inline int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
 	{
 		lua_createtable(L, 0, 5);
 		sol::stack_table vec(L);
