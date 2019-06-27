@@ -35,7 +35,7 @@ namespace bw
 	void ServerScriptingLibrary::RegisterPlayer(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
-		/*state.new_usertype<PlayerHandle>("Player", 
+		state.new_usertype<PlayerHandle>("Player", 
 			"new", sol::no_constructor,
 			"GetName", [](const PlayerHandle& player) -> std::string
 			{
@@ -44,6 +44,27 @@ namespace bw
 
 				return player->GetName();
 			},
+			"GiveWeapon", [](const PlayerHandle& player, std::string weaponName)
+			{
+				if (!player)
+					return false;
+
+				return player->GiveWeapon(std::move(weaponName));
+			},
+			"HasWeapon", [](const PlayerHandle& player, const std::string& weaponName)
+			{
+				if (!player)
+					return false;
+
+				return player->HasWeapon(weaponName);
+			},
+			"RemoveWeapon", [](const PlayerHandle& player, const std::string& weaponName)
+			{
+				if (!player)
+					return;
+
+				return player->RemoveWeapon(weaponName);
+			},
 			"Spawn", [](const PlayerHandle& player)
 			{
 				if (!player)
@@ -51,7 +72,7 @@ namespace bw
 
 				return player->Spawn();
 			}
-		);*/
+		);
 	}
 
 	Match& ServerScriptingLibrary::GetMatch()

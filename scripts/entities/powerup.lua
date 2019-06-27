@@ -6,7 +6,8 @@ ENTITY.PlayerControlled = false
 ENTITY.MaxHealth = 0
 
 ENTITY.Properties = {
-	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 }
+	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
+	{ Name = "powerup_type", Type = PropertyType.String, Default = "" }
 }
 
 ENTITY.CanSpawn = true
@@ -29,7 +30,7 @@ if (SERVER) then
 		local now = os.time()
 		if (now >= self.NextRespawn) then
 			if (self.CanSpawn) then
-				local powerup = GM:CreateEntity("entity_powerup_health", self:GetPosition() + Vec2(0, -10))
+				local powerup = GM:CreateEntity(self:GetProperty("powerup_type"), self:GetPosition() + Vec2(0, -10))
 				powerup.Parent = self
 
 				self.CanSpawn = false

@@ -17,6 +17,7 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
@@ -64,6 +65,8 @@ namespace bw
 			if (!weapon)
 				return false;
 
+			weapon->AddComponent<OwnerComponent>(CreateHandle());
+
 			std::size_t weaponIndex = m_weapons.size();
 			m_weapons.emplace_back(weapon);
 			m_weaponByName.emplace(std::move(weaponClass), weaponIndex);
@@ -72,6 +75,37 @@ namespace bw
 		}
 
 		return true;
+	}
+
+	void Player::RemoveWeapon(const std::string& weaponClass)
+	{
+		if (!m_match)
+			return;
+
+		if (!m_playerEntity)
+			return;
+
+		auto it = m_weaponByName.find(weaponClass);
+		if (it == m_weaponByName.end())
+			return;
+
+		std::size_t droppedIndex = it->second;
+
+		if (m_activeWeaponIndex == droppedIndex)
+			SelectWeapon(NoWeapon);
+
+		m_weaponByName.erase(it);
+		m_weapons.erase(m_weapons.begin() + droppedIndex);
+
+		// Shift indexes by one
+		for (auto it = m_weaponByName.begin(); it != m_weaponByName.end(); ++it)
+		{
+			std::size_t& weaponIndex = it.value();
+			if (weaponIndex > droppedIndex)
+				weaponIndex--;
+		}
+
+		m_shouldSendWeapons = true;
 	}
 
 	void Player::Spawn()
@@ -93,6 +127,7 @@ namespace bw
 			std::cout << "[Server] Creating player entity #" << playerEntity->GetId() << std::endl;
 
 			playerEntity->AddComponent<InputComponent>();
+			playerEntity->AddComponent<OwnerComponent>(CreateHandle());
 			playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
 
 			if (playerEntity->HasComponent<HealthComponent>())
@@ -110,11 +145,9 @@ namespace bw
 
 			UpdateControlledEntity(playerEntity);
 
-			//if (!GiveWeapon("weapon_sword_emmentalibur"))
-			//	std::cout << "Failed to give weapon" << std::endl;
+			if (!GiveWeapon("weapon_sword_emmentalibur"))
+				std::cout << "Failed to give weapon" << std::endl;
 
-			GiveWeapon("weapon_rifle");
-			GiveWeapon("weapon_grenade");
 			SelectWeapon(0);
 		}
 	}
@@ -123,25 +156,25 @@ namespace bw
 	{
 		assert(weaponIndex == NoWeapon || weaponIndex < m_weapons.size());
 
-		if (m_weaponIndex == weaponIndex || !m_playerEntity)
+		if (m_activeWeaponIndex == weaponIndex || !m_playerEntity)
 			return;
 
-		if (m_weaponIndex != NoWeapon)
+		if (m_activeWeaponIndex != NoWeapon)
 		{
-			auto& weapon = m_weapons[m_weaponIndex]->GetComponent<WeaponComponent>();
+			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
 			weapon.SetActive(false);
 		}
 
-		m_weaponIndex = weaponIndex;
-		if (m_weaponIndex != NoWeapon)
+		m_activeWeaponIndex = weaponIndex;
+		if (m_activeWeaponIndex != NoWeapon)
 		{
-			auto& weapon = m_weapons[m_weaponIndex]->GetComponent<WeaponComponent>();
+			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
 			weapon.SetActive(true);
 		}
 
 		Packets::EntityWeapon weaponPacket;
 		weaponPacket.entityId = m_playerEntity->GetId();
-		weaponPacket.weaponEntityId = (m_weaponIndex != NoWeapon) ? m_weapons[m_weaponIndex]->GetId() : 0xFFFFFFFF;
+		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : 0xFFFFFFFF;
 
 		Nz::Bitset<Nz::UInt64> entityIds;
 		entityIds.UnboundedSet(weaponPacket.entityId);
@@ -239,7 +272,7 @@ namespace bw
 
 		m_weapons.clear();
 		m_weaponByName.clear();
-		m_weaponIndex = NoWeapon;
+		m_activeWeaponIndex = NoWeapon;
 	}
 
 	void Player::UpdateLayer(std::size_t layerIndex)

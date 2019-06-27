@@ -36,7 +36,7 @@ namespace bw
 		return m_weapons.size();
 	}
 
-	inline bool Player::HasWeapon(const std::string& weaponClass)
+	inline bool Player::HasWeapon(const std::string& weaponClass) const
 	{
 		return m_weaponByName.find(weaponClass) != m_weaponByName.end();
 	}

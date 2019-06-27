@@ -44,7 +44,7 @@ function ENTITY:Explode()
 	local maxs = Vec2(256, 256)
 	local mins = Vec2(-256, -256)
 
-	GM:DealDamage(self:GetPosition(), 200, Rect(pos + mins, pos + maxs), 50000)
+	GM:DealDamage(self:GetPosition(), 200, Rect(pos + mins, pos + maxs), 100000)
 end
 
 if (CLIENT) then

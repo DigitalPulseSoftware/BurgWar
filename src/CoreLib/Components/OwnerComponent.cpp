@@ -2,10 +2,10 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/Components/PlayerControlledComponent.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 
 namespace bw
 {
-	Ndk::ComponentIndex PlayerControlledComponent::componentIndex;
+	Ndk::ComponentIndex OwnerComponent::componentIndex;
 }
 

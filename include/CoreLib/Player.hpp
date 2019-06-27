@@ -42,7 +42,9 @@ namespace bw
 
 			bool GiveWeapon(std::string weaponClass);
 
-			inline bool HasWeapon(const std::string& weaponClass);
+			inline bool HasWeapon(const std::string& weaponClass) const;
+
+			void RemoveWeapon(const std::string& weaponClass);
 
 			inline bool IsInMatch() const;
 
@@ -74,7 +76,7 @@ namespace bw
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::size_t m_layerIndex;
 			std::size_t m_inputIndex;
-			std::size_t m_weaponIndex = NoWeapon;
+			std::size_t m_activeWeaponIndex = NoWeapon;
 			std::string m_name;
 			std::vector<Ndk::EntityOwner> m_weapons;
 			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;

@@ -260,6 +260,11 @@ namespace bw
 				return sol::nil;
 		};
 
+		state["engine_GetCameraViewport"] = [&]()
+		{
+			return m_camera->GetComponent<Ndk::CameraComponent>().GetTarget()->GetSize();
+		};
+
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
 		{
 			position.x = std::floor(position.x);

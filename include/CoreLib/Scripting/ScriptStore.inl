@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ScriptStore.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
@@ -85,7 +86,22 @@ namespace bw
 		sol::table elementTable = state.create_table();
 		elementTable["__index"] = elementTable;
 
+		std::string fullName = m_elementTypeName + "_" + elementName;
+
+		elementTable["FullName"] = fullName;
 		elementTable["Name"] = elementName;
+
+		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
+		{
+			const Ndk::EntityHandle& entity = table["Entity"];
+			if (!entity)
+				return sol::nil;
+
+			if (!entity->HasComponent<OwnerComponent>())
+				return sol::nil;
+
+			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
+		};
 
 		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
@@ -145,7 +161,7 @@ namespace bw
 
 		std::shared_ptr<Element> element = CreateElement();
 		element->name = std::move(elementName);
-		element->fullName = m_elementTypeName + "_" + element->name;
+		element->fullName = std::move(fullName);
 		element->elementTable = std::move(elementTable);
 		element->tickFunction = element->elementTable["OnTick"];
 

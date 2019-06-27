@@ -13,5 +13,6 @@ if (SERVER) then
 		})
 
 		projectile:SetVelocity(self:GetDirection() * 1000)
+		self:GetOwner():RemoveWeapon(self.FullName)
 	end
 end
