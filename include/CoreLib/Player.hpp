@@ -63,7 +63,7 @@ namespace bw
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 
 			Player& operator=(const Player&) = delete;
-			Player& operator=(Player&&) noexcept = default;
+			Player& operator=(Player&&) = delete;
 
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
