@@ -69,7 +69,8 @@ namespace bw
 	void MapCanvas::EditEntityPosition(Ndk::EntityId entityId)
 	{
 		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
-		assert(entity);
+		if (!entity)
+			return;
 
 		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCameraEntity(), entity);
 		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
