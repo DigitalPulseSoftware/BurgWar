@@ -7,6 +7,8 @@ end
 function GM:OnPlayerJoin(player)
 	print(player:GetName() .. " joined")
 	player:Spawn()
+	player:GiveWeapon("weapon_sword_emmentalibur")
+	player:GiveWeapon("weapon_grenade")
 end
 
 function GM:OnTick()

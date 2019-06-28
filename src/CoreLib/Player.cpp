@@ -144,11 +144,6 @@ namespace bw
 			}
 
 			UpdateControlledEntity(playerEntity);
-
-			if (!GiveWeapon("weapon_sword_emmentalibur"))
-				std::cout << "Failed to give weapon" << std::endl;
-
-			SelectWeapon(0);
 		}
 	}
 
