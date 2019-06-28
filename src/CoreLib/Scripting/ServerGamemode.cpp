@@ -67,6 +67,11 @@ namespace bw
 				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
 		};
 
+		gamemodeTable["GetLocalTick"] = [&](const sol::table& gmTable)
+		{
+			return m_match.GetCurrentTick();
+		};
+
 		gamemodeTable["GetMatchTick"] = [&](const sol::table& gmTable)
 		{
 			return m_match.GetCurrentTick();

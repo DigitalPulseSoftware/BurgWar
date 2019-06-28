@@ -29,7 +29,7 @@ namespace bw
 		state["GM"] = GetGamemodeTable();
 
 		sol::table& gamemodeTable = GetGamemodeTable();
-		gamemodeTable["GetClientTick"] = [&](const sol::table& gmTable)
+		gamemodeTable["GetLocalTick"] = [&](const sol::table& gmTable)
 		{
 			return m_match.GetCurrentTick();
 		};
