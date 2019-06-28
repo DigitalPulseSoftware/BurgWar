@@ -35,7 +35,7 @@ namespace bw
 				return 0;
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
-			return entityHealth.GetHealth() == entityHealth.GetMaxHealth();
+			return entityHealth.GetHealth() >= entityHealth.GetMaxHealth();
 		};
 
 		elementTable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16

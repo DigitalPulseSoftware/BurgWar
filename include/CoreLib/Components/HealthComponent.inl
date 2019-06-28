@@ -68,6 +68,9 @@ namespace bw
 			// Overflow, just set to max value
 			newHealth = m_maxHealth;
 
+		if (newHealth > m_maxHealth)
+			newHealth = m_maxHealth;
+
 		if (m_currentHealth != newHealth)
 		{
 			m_currentHealth = newHealth;
