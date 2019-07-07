@@ -12,9 +12,14 @@
 namespace bw
 {
 	Float2SpinBox::Float2SpinBox(LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent) :
-	QWidget(parent)
+	QWidget(parent),
+	m_ignoreSignal(false)
 	{
-		auto onValueChanged = [this](double) { onSpinBoxValueChanged(); };
+		auto onValueChanged = [this](double) 
+		{ 
+			if (!m_ignoreSignal) 
+				onSpinBoxValueChanged(); 
+		};
 
 		m_xSpinbox = new QDoubleSpinBox;
 		m_xSpinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
@@ -86,8 +91,14 @@ namespace bw
 
 	void Float2SpinBox::setValue(const Nz::Vector2f& value)
 	{
+		m_ignoreSignal = true;
+
 		m_xSpinbox->setValue(value.x);
 		m_ySpinbox->setValue(value.y);
+
+		m_ignoreSignal = false;
+
+		onSpinBoxValueChanged();
 	}
 
 	Nz::Vector2f Float2SpinBox::value()

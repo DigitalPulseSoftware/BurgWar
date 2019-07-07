@@ -42,6 +42,7 @@ namespace bw
 
 			QDoubleSpinBox* m_xSpinbox;
 			QDoubleSpinBox* m_ySpinbox;
+			bool m_ignoreSignal;
 	};
 }
 
