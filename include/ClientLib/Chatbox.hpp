@@ -12,6 +12,7 @@
 #include <NDK/Canvas.hpp>
 #include <NDK/Entity.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <NDK/Widgets/ScrollAreaWidget.hpp>
 #include <NDK/Widgets/TextAreaWidget.hpp>
 
 namespace bw
