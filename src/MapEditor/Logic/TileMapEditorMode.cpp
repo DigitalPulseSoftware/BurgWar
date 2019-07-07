@@ -154,7 +154,8 @@ namespace bw
 		for (std::size_t matIndex = 0; matIndex < m_materials.size(); ++matIndex)
 			m_tileMap->SetMaterial(matIndex, m_materials[matIndex]);
 
-		for (std::size_t i = 0; i < m_tilemapData.mapSize.x * m_tilemapData.mapSize.y; ++i)
+		m_tilemapData.content.resize(m_tilemapData.mapSize.x * m_tilemapData.mapSize.y);
+		for (std::size_t i = 0; i < m_tilemapData.content.size(); ++i)
 		{
 			Nz::UInt32 value = m_tilemapData.content[i];
 			
