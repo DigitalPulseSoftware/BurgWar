@@ -44,6 +44,7 @@ namespace bw
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
 			std::vector<Nz::String> m_chatLines;
+			Ndk::ScrollAreaWidget* m_chatboxScrollArea;
 			Ndk::TextAreaWidget* m_chatBox;
 			Ndk::TextAreaWidget* m_chatEnteringBox;
 	};
