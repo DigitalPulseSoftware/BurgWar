@@ -31,6 +31,8 @@ namespace bw
 			bool Load(const std::filesystem::path& folderOrFile);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
+			void ReloadLibraries();
+
 			void Update();
 
 		private:

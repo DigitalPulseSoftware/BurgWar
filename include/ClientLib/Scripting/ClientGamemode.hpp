@@ -19,6 +19,8 @@ namespace bw
 			ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
 			~ClientGamemode() = default;
 
+			void Reload() override;
+
 		private:
 			void InitializeGamemode();
 

@@ -61,4 +61,9 @@ namespace bw
 	{
 		return m_entityTable;
 	}
+
+	inline void ScriptComponent::UpdateElement(std::shared_ptr<const ScriptedElement> element)
+	{
+		m_element = std::move(element);
+	}
 }

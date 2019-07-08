@@ -26,6 +26,11 @@ namespace bw
 		InitializeGamemode();
 	}
 
+	void SharedGamemode::Reload()
+	{
+		InitializeGamemode();
+	}
+
 	void SharedGamemode::InitializeGamemode()
 	{
 		m_gamemodeTable["GetTickDuration"] = [&](const sol::table& gmTable)

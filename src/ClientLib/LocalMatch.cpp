@@ -175,12 +175,28 @@ namespace bw
 		return m_world;
 	}
 
+	void LocalMatch::LoadScripts()
+	{
+		assert(m_scriptingDirectory);
+		LoadScripts(m_scriptingDirectory);
+	}
+
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
-		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
-		m_scriptingContext->LoadLibrary(std::make_shared<ClientScriptingLibrary>(*this));
+		m_scriptingDirectory = scriptDir;
 
-		m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
+		if (!m_scriptingContext)
+		{
+			std::shared_ptr<ClientScriptingLibrary> scriptingLibrary = std::make_shared<ClientScriptingLibrary>(*this);
+
+			m_scriptingContext = std::make_shared<ScriptingContext>(m_scriptingDirectory);
+			m_scriptingContext->LoadLibrary(scriptingLibrary);
+
+			if (!m_console)
+				m_console.emplace(m_window, m_canvas, scriptingLibrary, m_scriptingDirectory);
+		}
+		else
+			m_scriptingContext->ReloadLibraries();
 
 		const std::string& gameResourceFolder = m_application.GetConfig().GetStringOption("Assets.ResourceFolder");
 
@@ -189,10 +205,10 @@ namespace bw
 
 		VirtualDirectory::Entry entry;
 
-		if (scriptDir->GetEntry("entities", &entry))
+		if (m_scriptingDirectory->GetEntry("entities", &entry))
 			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
-		if (scriptDir->GetEntry("weapons", &entry))
+		if (m_scriptingDirectory->GetEntry("weapons", &entry))
 			m_weaponStore->Load("weapons", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
 
 		sol::state& state = m_scriptingContext->GetLuaState();
@@ -273,7 +289,23 @@ namespace bw
 			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
 		};
 
-		m_gamemode->ExecuteCallback("OnInit");
+		ForEachEntity([this](const Ndk::EntityHandle& entity)
+		{
+			if (entity->HasComponent<ScriptComponent>())
+			{
+				// Warning: ugly (FIXME)
+				m_entityStore->UpdateEntityElement(entity);
+				m_weaponStore->UpdateEntityElement(entity);
+			}
+		});
+
+		if (!m_gamemode)
+		{
+			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
+			m_gamemode->ExecuteCallback("OnInit");
+		}
+		else
+			m_gamemode->Reload();
 	}
 
 	void LocalMatch::Update(float elapsedTime)

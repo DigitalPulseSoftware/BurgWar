@@ -39,6 +39,8 @@ namespace bw
 			bool Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory);
 			bool Load(const std::filesystem::path& directoryPath);
 
+			void UpdateEntityElement(const Ndk::EntityHandle& entity);
+
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
 		protected:
@@ -56,7 +58,6 @@ namespace bw
 			void SetTableName(std::string tableName);
 
 		private:
-			std::shared_ptr<SharedGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_tableName;

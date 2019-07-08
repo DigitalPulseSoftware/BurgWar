@@ -73,6 +73,25 @@ namespace bw
 	}
 
 	template<typename Element>
+	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
+	{
+		assert(entity->HasComponent<ScriptComponent>());
+
+		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		const auto& entityElement = entityScript.GetElement();
+
+		if (auto it = m_elementsByName.find(entityElement->fullName); it != m_elementsByName.end())
+		{
+			const auto& newElement = m_elements[it->second];
+
+			sol::table& entityTable = entityScript.GetTable();
+			entityTable[sol::metatable_key] = newElement->elementTable;
+
+			entityScript.UpdateElement(newElement);
+		}
+	}
+
+	template<typename Element>
 	inline bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
 		sol::state& state = GetLuaState();

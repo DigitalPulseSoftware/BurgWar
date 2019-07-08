@@ -33,6 +33,8 @@ namespace bw
 			inline const EntityProperties& GetProperties() const;
 			inline sol::table& GetTable();
 
+			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
+
 			static Ndk::ComponentIndex componentIndex;
 
 		private:

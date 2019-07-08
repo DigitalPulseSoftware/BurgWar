@@ -93,7 +93,14 @@ namespace bw
 	{
 		library->RegisterLibrary(*this);
 
-		m_libraries.emplace_back(std::move(library)); //< Store library to ensure it won't be deleted
+		if (std::find(m_libraries.begin(), m_libraries.end(), library) == m_libraries.end())
+			m_libraries.emplace_back(std::move(library)); //< Store library to ensure it won't be deleted
+	}
+
+	void ScriptingContext::ReloadLibraries()
+	{
+		for (const auto& library : m_libraries)
+			library->RegisterLibrary(*this);
 	}
 
 	void ScriptingContext::Update()
@@ -108,7 +115,7 @@ namespace bw
 			{
 				case sol::thread_status::ok:
 					// Coroutine has finished without error, we can recycle its thread
-					m_availableThreads.emplace_back(std::move(runningThread));
+					//m_availableThreads.emplace_back(std::move(runningThread));
 					break;
 
 				case sol::thread_status::yielded:

@@ -23,7 +23,23 @@ namespace bw
 
 		state["RegisterClientScript"] = []() {}; // Dummy function
 
+		RegisterScriptLibrary(context);
+
 		context.Load("autorun");
+	}
+
+	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		sol::table script = state.create_table();
+
+		script["ReloadAll"] = [this]()
+		{
+			LocalMatch& match = GetMatch();
+			match.LoadScripts();
+		};
+
+		state["scripts"] = script;
 	}
 
 	LocalMatch& ClientScriptingLibrary::GetMatch()

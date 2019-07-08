@@ -19,6 +19,13 @@ namespace bw
 		InitializeGamemode();
 	}
 
+	void ServerGamemode::Reload()
+	{
+		SharedGamemode::Reload();
+
+		InitializeGamemode();
+	}
+
 	void ServerGamemode::InitializeGamemode()
 	{
 		auto& context = GetScriptingContext();

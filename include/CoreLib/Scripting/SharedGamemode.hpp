@@ -26,6 +26,8 @@ namespace bw
 
 			inline sol::table& GetTable();
 
+			virtual void Reload();
+
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 
 		protected:

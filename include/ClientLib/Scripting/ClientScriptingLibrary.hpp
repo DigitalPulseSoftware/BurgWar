@@ -23,6 +23,8 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
+			void RegisterScriptLibrary(ScriptingContext& context);
+
 			LocalMatch& GetMatch();
 	};
 }
