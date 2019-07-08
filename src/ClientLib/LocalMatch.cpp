@@ -40,6 +40,7 @@ namespace bw
 	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
+	m_canvas(canvas),
 	m_window(window),
 	m_application(burgApp),
 	m_chatBox(window, canvas),
@@ -127,6 +128,12 @@ namespace bw
 		{
 			switch (event.code)
 			{
+				case Nz::Keyboard::F9:
+					if (m_console)
+						m_console->Show(!m_console->IsVisible());
+
+					break;
+
 				case Nz::Keyboard::Return:
 					m_chatBox.Open(!m_chatBox.IsOpen());
 					break;
