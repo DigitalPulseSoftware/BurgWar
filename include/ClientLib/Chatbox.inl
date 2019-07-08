@@ -6,6 +6,16 @@
 
 namespace bw
 {
+	inline void Chatbox::Close()
+	{
+		return Open(false);
+	}
+
+	inline bool Chatbox::IsOpen() const
+	{
+		return m_chatEnteringBox->IsVisible();
+	}
+
 	inline bool Chatbox::IsTyping() const
 	{
 		return m_chatEnteringBox->IsVisible();

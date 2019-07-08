@@ -15,6 +15,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
 #include <ClientLib/Chatbox.hpp>
+#include <ClientLib/Console.hpp>
 #include <ClientLib/LocalMatchPrediction.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -204,6 +205,7 @@ namespace bw
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
 			Nz::RenderWindow* m_window;
 			Nz::SpriteRef m_trailSpriteTest;

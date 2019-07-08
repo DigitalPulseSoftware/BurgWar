@@ -33,10 +33,7 @@ namespace bw
 		m_chatEnteringBox->SetTextColor(Nz::Color::Black);
 		m_chatEnteringBox->Show(false);
 
-		Nz::EventHandler& eventHandler = window->GetEventHandler();
-
 		// Connect every slot
-		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, this, &Chatbox::OnKeyPressed);
 		m_onTargetChangeSizeSlot.Connect(window->OnRenderTargetSizeChange, this, &Chatbox::OnRenderTargetSizeChange);
 
 		OnRenderTargetSizeChange(window);
@@ -56,6 +53,31 @@ namespace bw
 		m_chatBox->Clear();
 	}
 
+	void Chatbox::Open(bool shouldOpen)
+	{
+		if (IsOpen() != shouldOpen)
+		{
+			if (shouldOpen)
+			{
+				m_chatBox->EnableBackground(true);
+				m_chatboxScrollArea->EnableScrollbar(true);
+				m_chatEnteringBox->Show(true);
+				m_chatEnteringBox->SetFocus();
+			}
+			else
+			{
+				Nz::String text = m_chatEnteringBox->GetText();
+				m_chatBox->EnableBackground(false);
+				m_chatboxScrollArea->EnableScrollbar(false);
+				m_chatEnteringBox->Clear();
+				m_chatEnteringBox->Show(false);
+
+				if (!text.IsEmpty())
+					OnChatMessage(text.ToStdString());
+			}
+		}
+	}
+
 	void Chatbox::PrintMessage(const std::string& message)
 	{
 		std::cout << message << std::endl;
@@ -73,31 +95,6 @@ namespace bw
 		m_chatboxScrollArea->SetPosition({ 5.f, m_chatEnteringBox->GetPosition().y - m_chatboxScrollArea->GetHeight() - 5, 0.f });
 
 		m_chatboxScrollArea->ScrollToRatio(1.f);
-	}
-
-	void Chatbox::OnKeyPressed(const Nz::EventHandler* /*eventHandler*/, const Nz::WindowEvent::KeyEvent& event)
-	{
-		if (event.code == Nz::Keyboard::Return)
-		{
-			if (m_chatEnteringBox->IsVisible())
-			{
-				Nz::String text = m_chatEnteringBox->GetText();
-				m_chatBox->EnableBackground(false);
-				m_chatboxScrollArea->EnableScrollbar(false);
-				m_chatEnteringBox->Clear();
-				m_chatEnteringBox->Show(false);
-
-				if (!text.IsEmpty())
-					OnChatMessage(text.ToStdString());
-			}
-			else
-			{
-				m_chatBox->EnableBackground(true);
-				m_chatboxScrollArea->EnableScrollbar(true);
-				m_chatEnteringBox->Show(true);
-				m_chatEnteringBox->SetFocus();
-			}
-		}
 	}
 
 	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget)

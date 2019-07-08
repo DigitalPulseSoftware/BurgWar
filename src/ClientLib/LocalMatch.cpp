@@ -123,6 +123,19 @@ namespace bw
 			m_session.SendPacket(selectPacket);
 		});
 
+		onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Return:
+					m_chatBox.Open(!m_chatBox.IsOpen());
+					break;
+
+				default:
+					break;
+			}
+		});
+
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
 			m_debug.emplace();
@@ -1352,7 +1365,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			PlayerInputData input;
 			
-			if (!m_chatBox.IsTyping() && m_window->HasFocus())
+			if (!m_chatBox.IsTyping() && (!m_console || !m_console->IsVisible()) && m_window->HasFocus())
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
