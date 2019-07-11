@@ -27,6 +27,7 @@ namespace bw
 	class BurgApp;
 	class Player;
 	class ServerGamemode;
+	class ServerScriptingLibrary;
 	class Terrain;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
@@ -56,6 +57,7 @@ namespace bw
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
+			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
 			inline ServerWeaponStore& GetWeaponStore();
@@ -66,6 +68,8 @@ namespace bw
 			bool Join(Player* player);
 
 			void RegisterClientScript(const std::filesystem::path& clientScript);
+
+			void ReloadScripts();
 
 			void Update(float elapsedTime);
 
@@ -94,6 +98,7 @@ namespace bw
 			std::size_t m_maxPlayerCount;
 			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
+			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;

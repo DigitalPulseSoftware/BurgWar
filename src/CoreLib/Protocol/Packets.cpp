@@ -48,6 +48,13 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, ConsoleAnswer& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.response;
+			serializer &= data.color;
+		}
+
 		void Serialize(PacketSerializer& serializer, CreateEntities& data)
 		{
 			serializer &= data.stateTick;
@@ -400,6 +407,12 @@ namespace bw
 		{
 			serializer &= data.playerIndex;
 			serializer &= data.message;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.command;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)

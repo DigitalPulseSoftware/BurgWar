@@ -141,6 +141,14 @@ namespace bw
 		});
 	}
 
+	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerConsoleCommand& packet)
+	{
+		if (packet.playerIndex >= m_players.size())
+			return;
+
+		m_players[packet.playerIndex]->HandleConsoleCommand(packet.command);
+	}
+
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
 	{
 		if (packet.inputs.size() != m_players.size())

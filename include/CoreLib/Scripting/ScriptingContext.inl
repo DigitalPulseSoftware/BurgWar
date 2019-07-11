@@ -50,4 +50,9 @@ namespace bw
 	{
 		return m_luaState;
 	}
+	
+	inline void ScriptingContext::UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir)
+	{
+		m_scriptDirectory = std::move(scriptDir);
+	}
 }

@@ -21,6 +21,11 @@ namespace bw
 		return m_name;
 	}
 
+	inline Nz::UInt8 Player::GetPlayerIndex() const
+	{
+		return m_playerIndex;
+	}
+
 	inline MatchClientSession& Player::GetSession()
 	{
 		return m_session;

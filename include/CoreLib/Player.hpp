@@ -11,8 +11,10 @@
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <CoreLib/MatchClientSession.hpp>
+#include <CoreLib/ScriptingEnvironment.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -36,11 +38,14 @@ namespace bw
 			inline std::size_t GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
+			inline Nz::UInt8 GetPlayerIndex() const;
 			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
 			inline std::size_t GetWeaponCount() const;
 
 			bool GiveWeapon(std::string weaponClass);
+
+			void HandleConsoleCommand(const std::string& str);
 
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
@@ -74,6 +79,7 @@ namespace bw
 			void UpdateMatch(Match* match);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
+			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			std::size_t m_layerIndex;
 			std::size_t m_inputIndex;
 			std::size_t m_activeWeaponIndex = NoWeapon;

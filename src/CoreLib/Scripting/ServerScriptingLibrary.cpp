@@ -29,6 +29,8 @@ namespace bw
 
 		RegisterPlayer(context);
 
+		RegisterScriptLibrary(context);
+
 		context.Load("autorun");
 	}
 
@@ -73,6 +75,20 @@ namespace bw
 				return player->Spawn();
 			}
 		);
+	}
+
+	void ServerScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		sol::table script = state.create_table();
+
+		script["ReloadAll"] = [this]()
+		{
+			Match& match = GetMatch();
+			match.ReloadScripts();
+		};
+
+		state["scripts"] = script;
 	}
 
 	Match& ServerScriptingLibrary::GetMatch()

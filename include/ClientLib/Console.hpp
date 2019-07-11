@@ -7,21 +7,21 @@
 #ifndef BURGWAR_CLIENTLIB_CONSOLE_HPP
 #define BURGWAR_CLIENTLIB_CONSOLE_HPP
 
-#include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Console.hpp>
+#include <functional>
 #include <memory>
 
 namespace bw
 {
-	class AbstractScriptingLibrary;
-
 	class Console
 	{
 		public:
-			Console(Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
+			using ExecuteCallback = std::function<bool(const std::string& command)>;
+
+			Console(Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			Console(const Console&) = delete;
 			Console(Console&&) = delete;
 			~Console() = default;
@@ -32,6 +32,9 @@ namespace bw
 
 			inline void Hide();
 
+			void Print(const std::string& str, Nz::Color color = Nz::Color::White);
+
+			void SetExecuteCallback(ExecuteCallback callback);
 			void Show(bool shouldShow);
 
 			Console& operator=(const Console&) = delete;
@@ -42,7 +45,7 @@ namespace bw
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
-			std::shared_ptr<ScriptingContext> m_scriptingContext;
+			ExecuteCallback m_callback;
 			Ndk::Console* m_widget;
 	};
 }

@@ -47,32 +47,6 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory)
-	{
-		directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-		{
-			LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), directoryPath / entryName);
-		});
-
-		sol::state& state = GetLuaState();
-		state[m_tableName] = nullptr;
-
-		return true;
-	}
-
-	template<typename Element>
-	bool ScriptStore<Element>::Load(const std::filesystem::path& directoryPath)
-	{
-		for (auto& p : std::filesystem::directory_iterator(directoryPath))
-			LoadElement(p.is_directory(), p.path());
-
-		sol::state& state = GetLuaState();
-		state[m_tableName] = nullptr;
-
-		return true;
-	}
-
-	template<typename Element>
 	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
 	{
 		assert(entity->HasComponent<ScriptComponent>());
@@ -177,6 +151,8 @@ namespace bw
 			else
 				LoadFile(elementPath / "cl_init.lua");
 		}
+
+		state[m_tableName] = nullptr;
 
 		std::shared_ptr<Element> element = CreateElement();
 		element->name = std::move(elementName);

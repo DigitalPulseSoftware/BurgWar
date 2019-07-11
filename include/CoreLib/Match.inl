@@ -62,6 +62,11 @@ namespace bw
 		return m_sessions;
 	}
 
+	inline const std::shared_ptr<ServerScriptingLibrary>& Match::GetScriptingLibrary() const
+	{
+		return m_scriptingLibrary;
+	}
+
 	inline Terrain& Match::GetTerrain()
 	{
 		assert(m_terrain);

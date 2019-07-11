@@ -28,51 +28,9 @@ namespace bw
 	m_name(std::move(matchName)),
 	m_app(app)
 	{
-		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
 
-		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
-
-		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
-		m_scriptingContext->LoadLibrary(std::make_shared<ServerScriptingLibrary>(*this));
-
-		m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodePath);
-
-		VirtualDirectory::Entry entry;
-
-		m_entityStore.emplace(m_scriptingContext);
-
-		if (scriptDir->GetEntry("entities", &entry))
-			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
-
-		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
-		{
-			if (entity.isNetworked)
-			{
-				m_networkStringStore.RegisterString(entity.fullName);
-
-				for (auto&& [propertyName, propertyData] : entity.properties)
-				{
-					if (propertyData.shared)
-						m_networkStringStore.RegisterString(propertyName);
-				}
-			}
-		});
-
-		m_weaponStore.emplace(app, m_scriptingContext);
-
-		if (scriptDir->GetEntry("weapons", &entry))
-			m_weaponStore->Load("weapons", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
-
-		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
-		{
-			m_networkStringStore.RegisterString(weapon.fullName);
-
-			for (auto&& [propertyName, propertyData] : weapon.properties)
-			{
-				if (propertyData.shared)
-					m_networkStringStore.RegisterString(propertyName);
-			}
-		});
+		ReloadScripts();
 
 		Map map = Map::LoadFromBinary("mapdetest.bmap");
 		m_terrain = std::make_unique<Terrain>(app, *this, std::move(map));
@@ -219,6 +177,103 @@ namespace bw
 		clientScriptData.content = std::move(content);
 
 		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
+	}
+
+	void Match::ReloadScripts()
+	{
+		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+
+		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
+
+		m_clientScripts.clear();
+
+		if (!m_scriptingContext)
+		{
+			m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
+			m_scriptingContext->LoadLibrary(m_scriptingLibrary);
+		}
+		else
+		{
+			m_scriptingContext->UpdateScriptDirectory(scriptDir);
+			m_scriptingContext->ReloadLibraries();
+		}
+
+		m_entityStore.emplace(m_scriptingContext);
+		m_weaponStore.emplace(m_app, m_scriptingContext);
+
+		VirtualDirectory::Entry entry;
+
+		if (scriptDir->GetEntry("entities", &entry))
+		{
+			std::filesystem::path path = "entities";
+
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
+
+		if (scriptDir->GetEntry("weapons", &entry))
+		{
+			std::filesystem::path path = "weapons";
+
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_weaponStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
+
+		if (!m_gamemode)
+			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodePath);
+		else
+			m_gamemode->Reload();
+
+		if (m_terrain)
+		{
+			ForEachEntity([this](const Ndk::EntityHandle& entity)
+			{
+				if (entity->HasComponent<ScriptComponent>())
+				{
+					// Warning: ugly (FIXME)
+					m_entityStore->UpdateEntityElement(entity);
+					m_weaponStore->UpdateEntityElement(entity);
+				}
+			});
+		}
+
+		m_entityStore->ForEachElement([&](const ScriptedEntity& entity)
+		{
+			if (entity.isNetworked)
+			{
+				m_networkStringStore.RegisterString(entity.fullName);
+
+				for (auto&& [propertyName, propertyData] : entity.properties)
+				{
+					if (propertyData.shared)
+						m_networkStringStore.RegisterString(propertyName);
+				}
+			}
+		});
+
+		m_weaponStore->ForEachElement([&](const ScriptedWeapon& weapon)
+		{
+			m_networkStringStore.RegisterString(weapon.fullName);
+
+			for (auto&&[propertyName, propertyData] : weapon.properties)
+			{
+				if (propertyData.shared)
+					m_networkStringStore.RegisterString(propertyName);
+			}
+		});
+
+		Packets::ClientScriptList clientScriptPacket = BuildClientFileListPacket();
+		// FIXME: Should be for each session
+		ForEachPlayer([&](Player* player)
+		{
+			player->SendPacket(clientScriptPacket);
+		});
 	}
 
 	void Match::Update(float elapsedTime)

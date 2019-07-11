@@ -21,6 +21,7 @@ namespace bw
 		IncomingCommand(AuthSuccess);
 		IncomingCommand(ChatMessage);
 		IncomingCommand(ClientScriptList);
+		IncomingCommand(ConsoleAnswer);
 		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
@@ -42,6 +43,7 @@ namespace bw
 		OutgoingCommand(HelloWorld,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayerConsoleCommand,        Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerSelectWeapon,          Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);

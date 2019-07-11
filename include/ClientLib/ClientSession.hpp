@@ -73,6 +73,7 @@ namespace bw
 			void HandleIncomingPacket(Packets::AuthSuccess&& packet);
 			void HandleIncomingPacket(Packets::ChatMessage&& packet);
 			void HandleIncomingPacket(Packets::ClientScriptList&& packet);
+			void HandleIncomingPacket(Packets::ConsoleAnswer&& packet);
 			void HandleIncomingPacket(Packets::ControlEntity&& packet);
 			void HandleIncomingPacket(Packets::CreateEntities&& packet);
 			void HandleIncomingPacket(Packets::DeleteEntities&& packet);

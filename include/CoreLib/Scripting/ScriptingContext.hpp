@@ -34,6 +34,7 @@ namespace bw
 			void ReloadLibraries();
 
 			void Update();
+			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
 
 		private:
 			std::filesystem::path m_currentFolder;

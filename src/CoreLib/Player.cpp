@@ -11,6 +11,7 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
+#include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
@@ -23,6 +24,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
+#include <iostream>
 
 namespace bw
 {
@@ -75,6 +77,30 @@ namespace bw
 		}
 
 		return true;
+	}
+
+	void Player::HandleConsoleCommand(const std::string& str)
+	{
+		if (!m_scriptingEnvironment)
+		{
+			const std::string& scriptFolder = m_match->GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
+
+			m_scriptingEnvironment.emplace(m_match->GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
+			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
+			{
+				if (!ply)
+					return;
+
+				Packets::ConsoleAnswer answer;
+				answer.color = color;
+				answer.playerIndex = ply->GetPlayerIndex();
+				answer.response = text;
+
+				ply->SendPacket(std::move(answer));
+			});
+		}
+
+		m_scriptingEnvironment->Execute(str);
 	}
 
 	void Player::RemoveWeapon(const std::string& weaponClass)

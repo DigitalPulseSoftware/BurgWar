@@ -32,6 +32,7 @@ namespace bw
 		AuthSuccess,
 		ChatMessage,
 		ClientScriptList,
+		ConsoleAnswer,
 		ControlEntity,
 		CreateEntities,
 		DeleteEntities,
@@ -47,6 +48,7 @@ namespace bw
 		MatchState,
 		NetworkStrings,
 		PlayerChat,
+		PlayerConsoleCommand,
 		PlayersInput,
 		PlayerSelectWeapon,
 		PlayerWeapons,
@@ -84,7 +86,7 @@ namespace bw
 		{
 			std::string content;
 		};
-
+		
 		DeclarePacket(ClientScriptList)
 		{
 			struct Script
@@ -94,6 +96,13 @@ namespace bw
 			};
 
 			std::vector<Script> scripts;
+		};
+
+		DeclarePacket(ConsoleAnswer)
+		{
+			Nz::UInt8 playerIndex;
+			std::string response;
+			Nz::Color color;
 		};
 
 		DeclarePacket(ControlEntity)
@@ -176,6 +185,18 @@ namespace bw
 		DeclarePacket(DownloadClientScriptResponse)
 		{
 			std::vector<Nz::UInt8> fileContent;
+		};
+
+		DeclarePacket(EntitiesAnimation)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> entityId;
+				Nz::UInt8 animId;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
 		};
 
 		DeclarePacket(EntitiesInputs)
@@ -265,22 +286,16 @@ namespace bw
 			std::vector<std::string> strings;
 		};
 
-		DeclarePacket(EntitiesAnimation)
-		{
-			struct Entity
-			{
-				CompressedUnsigned<Nz::UInt32> entityId;
-				Nz::UInt8 animId;
-			};
-
-			Nz::UInt16 stateTick;
-			std::vector<Entity> entities;
-		};
-
 		DeclarePacket(PlayerChat)
 		{
 			Nz::UInt8 playerIndex;
 			std::string message;
+		};
+
+		DeclarePacket(PlayerConsoleCommand)
+		{
+			Nz::UInt8 playerIndex;
+			std::string command;
 		};
 
 		DeclarePacket(PlayersInput)
@@ -316,6 +331,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
 		void Serialize(PacketSerializer& serializer, ChatMessage& data);
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
+		void Serialize(PacketSerializer& serializer, ConsoleAnswer& data);
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
@@ -331,6 +347,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, MatchState& data);
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
+		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);

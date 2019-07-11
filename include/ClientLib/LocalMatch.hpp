@@ -15,7 +15,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
 #include <ClientLib/Chatbox.hpp>
-#include <ClientLib/Console.hpp>
+#include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalMatchPrediction.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -59,7 +59,6 @@ namespace bw
 			inline const Nz::SpriteRef& GetTrailSprite() const;
 			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
-			void LoadScripts();
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
 			void Update(float elapsedTime);
@@ -92,6 +91,7 @@ namespace bw
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
 			void HandleChatMessage(Packets::ChatMessage&& packet);
+			void HandleConsoleAnswer(Packets::ConsoleAnswer&& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);
@@ -103,6 +103,7 @@ namespace bw
 			void HandleTickPacket(Packets::MatchState&& packet);
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
+			void InitializeRemoteConsole();
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
@@ -192,13 +193,13 @@ namespace bw
 
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
-			std::optional<Console> m_console;
+			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
+			std::optional<LocalConsole> m_localConsole;
 			std::optional<LocalMatchPrediction> m_prediction;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<InputController> m_inputController;
-			std::shared_ptr<VirtualDirectory> m_scriptingDirectory;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;
@@ -216,6 +217,7 @@ namespace bw
 			ClientSession& m_session;
 			SharedWorld m_world;
 			Packets::PlayersInput m_inputPacket;
+			bool m_isReady;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;

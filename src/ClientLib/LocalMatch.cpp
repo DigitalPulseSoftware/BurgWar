@@ -46,6 +46,7 @@ namespace bw
 	m_chatBox(window, canvas),
 	m_session(session),
 	m_world(burgApp, *this),
+	m_isReady(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -78,6 +79,8 @@ namespace bw
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightTop, trailColor);
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
 		m_trailSpriteTest->SetSize(64.f, 2.f);
+		InitializeRemoteConsole();
+
 
 		constexpr Nz::UInt8 playerCount = 1;
 
@@ -119,7 +122,7 @@ namespace bw
 
 			Packets::PlayerSelectWeapon selectPacket;
 			selectPacket.playerIndex = localPlayerIndex;
-			selectPacket.newWeaponIndex = (playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon;
+			selectPacket.newWeaponIndex = static_cast<Nz::UInt8>((playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon);
 
 			m_session.SendPacket(selectPacket);
 		});
@@ -129,8 +132,20 @@ namespace bw
 			switch (event.code)
 			{
 				case Nz::Keyboard::F9:
-					if (m_console)
-						m_console->Show(!m_console->IsVisible());
+					if (m_remoteConsole)
+						m_remoteConsole->Hide();
+
+					if (m_localConsole)
+						m_localConsole->Show(!m_localConsole->IsVisible());
+
+					break;
+
+				case Nz::Keyboard::F10:
+					if (m_localConsole)
+						m_localConsole->Hide();
+
+					if (m_remoteConsole)
+						m_remoteConsole->Show(!m_remoteConsole->IsVisible());
 
 					break;
 
@@ -195,28 +210,23 @@ namespace bw
 		return m_world;
 	}
 
-	void LocalMatch::LoadScripts()
-	{
-		assert(m_scriptingDirectory);
-		LoadScripts(m_scriptingDirectory);
-	}
-
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
-		m_scriptingDirectory = scriptDir;
-
 		if (!m_scriptingContext)
 		{
 			std::shared_ptr<ClientScriptingLibrary> scriptingLibrary = std::make_shared<ClientScriptingLibrary>(*this);
 
-			m_scriptingContext = std::make_shared<ScriptingContext>(m_scriptingDirectory);
+			m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
 			m_scriptingContext->LoadLibrary(scriptingLibrary);
 
-			if (!m_console)
-				m_console.emplace(m_window, m_canvas, scriptingLibrary, m_scriptingDirectory);
+			if (!m_localConsole)
+				m_localConsole.emplace(m_window, m_canvas, scriptingLibrary, scriptDir);
 		}
 		else
+		{
+			m_scriptingContext->UpdateScriptDirectory(scriptDir);
 			m_scriptingContext->ReloadLibraries();
+		}
 
 		const std::string& gameResourceFolder = m_application.GetConfig().GetStringOption("Assets.ResourceFolder");
 
@@ -225,11 +235,27 @@ namespace bw
 
 		VirtualDirectory::Entry entry;
 
-		if (m_scriptingDirectory->GetEntry("entities", &entry))
-			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
+		if (scriptDir->GetEntry("entities", &entry))
+		{
+			std::filesystem::path path = "entities";
 
-		if (m_scriptingDirectory->GetEntry("weapons", &entry))
-			m_weaponStore->Load("weapons", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
+
+		if (scriptDir->GetEntry("weapons", &entry))
+		{
+			std::filesystem::path path = "weapons";
+
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_weaponStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
 
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const Ndk::EntityHandle& entity, float fromAngle, float toAngle, float duration, sol::object callbackObject)
@@ -326,6 +352,13 @@ namespace bw
 		}
 		else
 			m_gamemode->Reload();
+
+		if (!m_isReady)
+		{
+			m_session.SendPacket(Packets::Ready{});
+
+			m_isReady = true;
+		}
 	}
 
 	void LocalMatch::Update(float elapsedTime)
@@ -520,11 +553,11 @@ namespace bw
 		serverEntity.serverGhost = world.CreateEntity();
 		serverEntity.serverGhost->AddComponent(serverEntity.entity->GetComponent<Ndk::NodeComponent>().Clone());
 
-		if (serverEntity.entity->HasComponent<Ndk::PhysicsComponent2D>())
+		/*if (serverEntity.entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
 			auto& ghostPhysics = static_cast<Ndk::PhysicsComponent2D&>(serverEntity.serverGhost->AddComponent(serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>().Clone()));
 			ghostPhysics.SetMass(0.f); //< Turns into kinematic
-		}
+		}*/
 
 		if (serverEntity.entity->HasComponent<Ndk::GraphicsComponent>())
 		{
@@ -634,6 +667,12 @@ namespace bw
 	void LocalMatch::HandleChatMessage(Packets::ChatMessage&& packet)
 	{
 		m_chatBox.PrintMessage(packet.content);
+	}
+
+	void LocalMatch::HandleConsoleAnswer(Packets::ConsoleAnswer&& packet)
+	{
+		if (m_remoteConsole)
+			m_remoteConsole->Print(packet.response, packet.color);
 	}
 
 	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)
@@ -1187,6 +1226,21 @@ namespace bw
 		std::cout << "New tick error: " << m_tickError << std::endl;*/
 	}
 
+	void LocalMatch::InitializeRemoteConsole()
+	{
+		m_remoteConsole.emplace(m_window, m_canvas);
+		m_remoteConsole->SetExecuteCallback([this](const std::string& command) -> bool
+		{
+			Packets::PlayerConsoleCommand commandPacket;
+			commandPacket.command = command;
+			commandPacket.playerIndex = 0;
+
+			m_session.SendPacket(commandPacket);
+
+			return true;
+		});
+	}
+
 	void LocalMatch::OnTick(bool lastTick)
 	{
 		Nz::UInt16 estimatedServerTick = GetNetworkTick(EstimateServerTick());
@@ -1365,6 +1419,11 @@ namespace bw
 		assert(m_playerData.size() == m_inputPacket.inputs.size());
 
 		m_inputPacket.estimatedServerTick = serverTick;
+		
+		bool checkInputs = !m_chatBox.IsTyping() &&
+			                (!m_localConsole || !m_localConsole->IsVisible()) &&
+			                (!m_remoteConsole || !m_remoteConsole->IsVisible()) &&
+			                (m_window->HasFocus());
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)
@@ -1372,7 +1431,7 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			PlayerInputData input;
 			
-			if (!m_chatBox.IsTyping() && (!m_console || !m_console->IsVisible()) && m_window->HasFocus())
+			if (checkInputs)
 				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)

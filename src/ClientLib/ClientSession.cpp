@@ -87,7 +87,6 @@ namespace bw
 	{
 		std::cout << "[Client] Got client script list" << std::endl;
 
-		assert(!m_downloadManager.has_value());
 		m_downloadManager.emplace(".scriptCache");
 
 		m_scriptDirectory = std::make_shared<VirtualDirectory>();
@@ -105,10 +104,14 @@ namespace bw
 		m_downloadManager->OnFinished.Connect([this](ClientScriptDownloadManager* downloadManager)
 		{
 			m_localMatch->LoadScripts(m_scriptDirectory);
-			SendPacket(Packets::Ready{});
 		});
 
 		m_downloadManager->HandlePacket(packet);
+	}
+
+	void ClientSession::HandleIncomingPacket(Packets::ConsoleAnswer&& packet)
+	{
+		m_localMatch->HandleConsoleAnswer(std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::ControlEntity&& packet)

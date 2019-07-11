@@ -8,67 +8,15 @@
 
 namespace bw
 {
-	Console::Console(Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir)
+	Console::Console(Nz::RenderWindow* window, Ndk::Canvas* canvas)
 	{
 		m_widget = canvas->Add<Ndk::Console>();
 		m_widget->Show(false);
 
-		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
-		m_scriptingContext->LoadLibrary(std::move(scriptingLibrary));
-		
-		sol::state& luaState = m_scriptingContext->GetLuaState();
-		luaState["print"] = [this](sol::this_state L, sol::variadic_args args)
-		{
-			bool first = true;
-
-			std::ostringstream oss;
-			for (auto v : args)
-			{
-				std::size_t length;
-				const char* str = luaL_tolstring(L, v.stack_index(), &length);
-				oss << std::string(str, length);
-				if (!first)
-					oss << "\t";
-
-				first = false;
-			}
-
-			m_widget->AddLine(oss.str());
-		};
-
 		m_widget->OnCommand.Connect([this](Ndk::Console*, const Nz::String& command)
 		{
-			if (command.IsEmpty())
-				return;
-
-			try
-			{
-				m_scriptingContext->Update();
-
-				sol::state& luaState = m_scriptingContext->GetLuaState();
-				sol::load_result loadResult = luaState.load(command.GetConstBuffer(), {}, sol::load_mode::text);
-				if (loadResult.valid())
-				{
-					sol::protected_function fun = loadResult;
-					sol::coroutine co = m_scriptingContext->CreateCoroutine(fun);
-
-					auto result = co();
-					if (!result.valid())
-					{
-						sol::error err = result;
-						m_widget->AddLine(err.what(), Nz::Color::Red);
-					}
-				}
-				else
-				{
-					sol::error err = loadResult;
-					m_widget->AddLine(err.what(), Nz::Color::Red);
-				}
-			}
-			catch (const std::exception& e)
-			{
-				m_widget->AddLine("PANIC: " + std::string(e.what()), Nz::Color::Red);
-			}
+			if (m_callback)
+				m_callback(command.ToStdString());
 		});
 
 		// Connect every slot
@@ -80,6 +28,16 @@ namespace bw
 	void Console::Clear()
 	{
 		m_widget->Clear();
+	}
+
+	void Console::Print(const std::string& str, Nz::Color color)
+	{
+		m_widget->AddLine(str, color);
+	}
+
+	void Console::SetExecuteCallback(ExecuteCallback callback)
+	{
+		m_callback = std::move(callback);
 	}
 
 	void Console::Show(bool shouldShow)

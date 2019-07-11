@@ -35,8 +35,7 @@ namespace bw
 
 		script["ReloadAll"] = [this]()
 		{
-			LocalMatch& match = GetMatch();
-			match.LoadScripts();
+			throw std::runtime_error("Only the server can reload scripts");
 		};
 
 		state["scripts"] = script;

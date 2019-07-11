@@ -23,6 +23,7 @@ namespace bw
 
 		private:
 			void RegisterPlayer(ScriptingContext& context);
+			void RegisterScriptLibrary(ScriptingContext& context);
 
 			Match& GetMatch();
 	};

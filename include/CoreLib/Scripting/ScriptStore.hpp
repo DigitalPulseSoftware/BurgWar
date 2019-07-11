@@ -36,16 +36,13 @@ namespace bw
 			inline const std::shared_ptr<Element>& GetElement(std::size_t index) const;
 			inline std::size_t GetElementIndex(const std::string& name) const;
 
-			bool Load(const std::filesystem::path& directoryPath, const std::shared_ptr<VirtualDirectory>& directory);
-			bool Load(const std::filesystem::path& directoryPath);
+			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 
 			void UpdateEntityElement(const Ndk::EntityHandle& entity);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
 		protected:
-			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
-
 			virtual std::shared_ptr<Element> CreateElement() const;
 			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const;
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
