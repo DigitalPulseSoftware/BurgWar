@@ -67,7 +67,7 @@ namespace bw
 			XFlush(QX11Info::display());
 			#endif
 
-			Nz::RenderWindow::Create(reinterpret_cast<Nz::WindowHandle>(winId()));
+			Nz::RenderWindow::Create(Nz::WindowHandle(winId()));
 		}
 
 		m_updateTimer.start();
