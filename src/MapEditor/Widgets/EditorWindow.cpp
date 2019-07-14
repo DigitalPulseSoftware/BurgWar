@@ -45,9 +45,17 @@ namespace bw
 		m_entityStore.emplace(gameResourceFolder, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
-
+		
 		if (virtualDir->GetEntry("entities", &entry))
-			m_entityStore->Load("entities", std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
+		{
+			std::filesystem::path path = "entities";
+
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
 
 		// Load some resources
 
@@ -227,7 +235,7 @@ namespace bw
 				const auto& layer = m_workingMap.GetLayer(layerIndex);
 
 				QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(layer.name));
-				item->setData(Qt::UserRole, layerIndex);
+				item->setData(Qt::UserRole, qulonglong(layerIndex));
 
 				m_layerList->addItem(item);
 			}
@@ -337,7 +345,7 @@ namespace bw
 			assert(items.size() == 1);
 
 			QListWidgetItem* item = items.front();
-			std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
 			OnDeleteEntity(entityIndex);
 
@@ -372,7 +380,7 @@ namespace bw
 				if (it->second >= entityIndex)
 				{
 					std::size_t newEntityIndex = --it.value();
-					m_entityList->item(newEntityIndex)->setData(Qt::UserRole, newEntityIndex);
+					m_entityList->item(newEntityIndex)->setData(Qt::UserRole, qulonglong(newEntityIndex));
 				}
 			}
 		}
@@ -383,7 +391,7 @@ namespace bw
 		if (!item)
 			return;
 
-		std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
+		std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
@@ -462,7 +470,7 @@ namespace bw
 
 			QListWidgetItem* item = items.front();
 
-			std::size_t entityIndex = item->data(Qt::UserRole).value<std::size_t>();
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 			std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
@@ -502,7 +510,7 @@ namespace bw
 
 	void EditorWindow::OnLayerDoubleClicked(QListWidgetItem* item)
 	{
-		std::size_t layerIndex = item->data(Qt::UserRole).value<std::size_t>();
+		std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -622,7 +630,7 @@ namespace bw
 			entryName = entryName % " (" % QString::fromStdString(entity.name) % ")";
 
 		QListWidgetItem* item = new QListWidgetItem(entryName);
-		item->setData(Qt::UserRole, entityIndex);
+		item->setData(Qt::UserRole, qulonglong(entityIndex));
 
 		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties)->GetId();
 		item->setData(Qt::UserRole + 1, canvasId);
