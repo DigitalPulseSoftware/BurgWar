@@ -4,6 +4,7 @@
 
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/Utility/TileMapData.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
@@ -60,9 +61,10 @@ namespace bw
 			"GetEntityRotation", &EntityInfoDialog::GetEntityRotation,
 			"GetTargetEntity", &EntityInfoDialog::GetTargetEntity,
 
-			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state state)
+			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state L)
 			{
-				return TranslateEntityPropertyToLua(sol::state_view(state), entityInfo.GetProperty(propertyName));
+				sol::state_view state(L);
+				return TranslateEntityPropertyToLua(state, entityInfo.GetProperty(propertyName));
 			},
 
 			"SetEntityPosition", &EntityInfoDialog::SetEntityPosition,
