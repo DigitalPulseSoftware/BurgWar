@@ -10,6 +10,7 @@
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <ClientLib/ClientScriptDownloadManager.hpp>
+#include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
@@ -52,6 +53,8 @@ namespace bw
 
 			template<typename T> void SendPacket(const T& packet);
 
+			void Update();
+
 			ClientSession& operator=(const ClientSession&) = delete;
 			ClientSession& operator=(ClientSession&&) = delete;
 
@@ -72,6 +75,7 @@ namespace bw
 			void HandleIncomingPacket(Packets::AuthFailure&& packet);
 			void HandleIncomingPacket(Packets::AuthSuccess&& packet);
 			void HandleIncomingPacket(Packets::ChatMessage&& packet);
+			void HandleIncomingPacket(Packets::ClientAssetList&& packet);
 			void HandleIncomingPacket(Packets::ClientScriptList&& packet);
 			void HandleIncomingPacket(Packets::ConsoleAnswer&& packet);
 			void HandleIncomingPacket(Packets::ControlEntity&& packet);
@@ -102,6 +106,7 @@ namespace bw
 			std::string m_playerName;
 			BurgApp& m_application;
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
+			std::optional<HttpDownloadManager> m_httpDownloadManager;
 			LocalCommandStore m_commandStore;
 			MatchFactory m_matchFactory;
 			NetworkStringStore m_stringStore;

@@ -55,6 +55,27 @@ namespace bw
 		GetTimerManager().Clear();
 	}
 
+	Packets::ClientAssetList Match::BuildAssetFileListPacket() const
+	{
+		Packets::ClientAssetList clientAsset;
+		clientAsset.fastDownloadUrls.emplace_back("https://burgwar.digitalpulsesoftware.net/resources");
+
+		for (const auto& pair : m_assets)
+		{
+			auto& assetData = clientAsset.assets.emplace_back();
+			assetData.path = pair.second.path;
+			assetData.size = pair.second.size;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(assetData.sha1Checksum.size() == checksum.size());
+			std::memcpy(assetData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientAsset.assets.begin(), clientAsset.assets.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
+
+		return clientAsset;
+	}
+
 	Packets::ClientScriptList Match::BuildClientFileListPacket() const
 	{
 		Packets::ClientScriptList clientScript;
@@ -147,6 +168,27 @@ namespace bw
 		return true;
 	}
 
+	void Match::RegisterAsset(const std::filesystem::path& assetPath)
+	{
+		std::string relativePath = assetPath.generic_u8string();
+
+		if (m_assets.find(relativePath) != m_assets.end())
+			return;
+
+		const std::string& resourceFolder = m_app.GetConfig().GetStringOption("Assets.ResourceFolder");
+
+		std::string filePath = resourceFolder + "/" + relativePath;
+		if (!std::filesystem::is_regular_file(filePath))
+			throw std::runtime_error(filePath + " is not a file");
+
+		Asset asset;
+		asset.checksum = Nz::File::ComputeHash(Nz::HashType_SHA1, filePath);
+		asset.path = relativePath;
+		asset.size = std::filesystem::file_size(filePath);
+
+		m_assets.emplace(std::move(filePath), std::move(asset));
+	}
+
 	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
 	{
 		std::string relativePath = clientScript.generic_u8string();
@@ -156,7 +198,7 @@ namespace bw
 
 		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
 
-		std::string filePath = scriptFolder + "/" + clientScript.generic_u8string();
+		std::string filePath = scriptFolder + "/" + relativePath;
 		if (!std::filesystem::is_regular_file(filePath))
 			throw std::runtime_error(filePath + " is not a file");
 
@@ -261,7 +303,7 @@ namespace bw
 		{
 			m_networkStringStore.RegisterString(weapon.fullName);
 
-			for (auto&&[propertyName, propertyData] : weapon.properties)
+			for (auto&& [propertyName, propertyData] : weapon.properties)
 			{
 				if (propertyData.shared)
 					m_networkStringStore.RegisterString(propertyName);

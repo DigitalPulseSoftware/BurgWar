@@ -30,6 +30,7 @@ namespace bw
 		OutgoingCommand(AuthFailure,                  Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(AuthSuccess,                  Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ChatMessage,                  Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(ClientAssetList,              Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ClientScriptList,             Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ConsoleAnswer,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(ControlEntity,                Nz::ENetPacketFlag_Reliable,    1);

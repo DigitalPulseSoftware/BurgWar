@@ -97,6 +97,7 @@ namespace bw
 		SendPacket(matchData);
 
 		// Send client-file script list
+		SendPacket(m_match.BuildAssetFileListPacket());
 		SendPacket(m_match.BuildClientFileListPacket());
 	}
 

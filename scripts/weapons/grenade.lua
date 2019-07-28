@@ -1,4 +1,5 @@
 RegisterClientScript("grenade.lua")
+RegisterAsset("grenade.png")
 
 WEAPON.Cooldown = 1
 WEAPON.Scale = 0.2

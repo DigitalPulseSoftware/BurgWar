@@ -22,6 +22,11 @@ namespace bw
 		state["CLIENT"] = false;
 		state["SERVER"] = true;
 
+		state.set_function("RegisterAsset", [&](const std::string& path)
+		{
+			GetMatch().RegisterAsset(path);
+		});
+
 		state.set_function("RegisterClientScript", [&](const std::string& path)
 		{
 			GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);

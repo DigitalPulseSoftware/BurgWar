@@ -35,6 +35,7 @@ namespace bw
 	class Match : public SharedMatch
 	{
 		public:
+			struct Asset;
 			struct ClientScript;
 
 			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration);
@@ -42,6 +43,7 @@ namespace bw
 			Match(Match&&) = delete;
 			~Match();
 
+			Packets::ClientAssetList BuildAssetFileListPacket() const;
 			Packets::ClientScriptList BuildClientFileListPacket() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
@@ -67,6 +69,7 @@ namespace bw
 			void Leave(Player* player);
 			bool Join(Player* player);
 
+			void RegisterAsset(const std::filesystem::path& assetPath);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
 
 			void ReloadScripts();
@@ -75,6 +78,13 @@ namespace bw
 
 			Match& operator=(const Match&) = delete;
 			Match& operator=(Match&&) = delete;
+
+			struct Asset
+			{
+				Nz::ByteArray checksum;
+				Nz::UInt64 size;
+				std::string path;
+			};
 
 			struct ClientScript
 			{
@@ -102,6 +112,7 @@ namespace bw
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
+			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			BurgApp& m_app;
 			MatchSessions m_sessions;

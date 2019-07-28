@@ -37,6 +37,8 @@ namespace bw
 			return true;
 		}
 
+		m_clientSession->Update();
+
 		m_match->Update(elapsedTime);
 
 		return true;

@@ -20,6 +20,7 @@ namespace bw
 		IncomingCommand(AuthFailure);
 		IncomingCommand(AuthSuccess);
 		IncomingCommand(ChatMessage);
+		IncomingCommand(ClientAssetList);
 		IncomingCommand(ClientScriptList);
 		IncomingCommand(ConsoleAnswer);
 		IncomingCommand(ControlEntity);

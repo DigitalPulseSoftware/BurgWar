@@ -1,4 +1,5 @@
 RegisterClientScript("box.lua")
+RegisterAsset("box.png")
 
 ENTITY.IsNetworked = true
 ENTITY.CollisionType = 2

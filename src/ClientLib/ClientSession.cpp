@@ -65,6 +65,12 @@ namespace bw
 		m_commandStore.UnserializePacket(this, packet);
 	}
 
+	void ClientSession::Update()
+	{
+		if (m_httpDownloadManager)
+			m_httpDownloadManager->Update();
+	}
+
 	void ClientSession::HandleIncomingPacket(Packets::AuthFailure&& packet)
 	{
 		std::cout << "[Client] Auth failed" << std::endl;
@@ -81,6 +87,36 @@ namespace bw
 			return;
 
 		m_localMatch->HandleChatMessage(std::move(packet));
+	}
+
+	void ClientSession::HandleIncomingPacket(Packets::ClientAssetList&& packet)
+	{
+		std::cout << "[Client] Got client asset list" << std::endl;
+
+		auto resourceDirectory = std::make_shared<VirtualDirectory>("../resources2");
+
+		m_httpDownloadManager.emplace(".assetCache", std::move(packet.fastDownloadUrls), resourceDirectory);
+
+		m_httpDownloadManager->OnFileChecked.Connect([this, resourceDirectory](HttpDownloadManager* downloadManager, const std::string& resourcePath, const std::filesystem::path& realPath)
+		{
+			resourceDirectory->StoreFile(resourcePath, realPath);
+		});
+
+		m_httpDownloadManager->OnFileCheckedMemory.Connect([&](HttpDownloadManager* downloadManager, const std::string& resourcePath, const std::vector<Nz::UInt8>& content)
+		{
+			resourceDirectory->StoreFile(resourcePath, content);
+		});
+
+		m_httpDownloadManager->OnFinished.Connect([this](HttpDownloadManager* downloadManager)
+		{
+			std::cout << "Asset download finished" << std::endl;
+			m_httpDownloadManager.reset();
+		});
+
+		for (const auto& asset : packet.assets)
+			m_httpDownloadManager->RegisterFile(asset.path, asset.sha1Checksum, asset.size);
+		
+		m_httpDownloadManager->Start();
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::ClientScriptList&& packet)
@@ -104,6 +140,7 @@ namespace bw
 		m_downloadManager->OnFinished.Connect([this](ClientScriptDownloadManager* downloadManager)
 		{
 			m_localMatch->LoadScripts(m_scriptDirectory);
+			m_downloadManager.reset();
 		});
 
 		m_downloadManager->HandlePacket(packet);

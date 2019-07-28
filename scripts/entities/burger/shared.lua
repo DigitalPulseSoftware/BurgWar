@@ -1,3 +1,5 @@
+RegisterAsset("burger.png")
+
 print(ENTITY.Name)
 ENTITY.IsNetworked = true
 ENTITY.Sprite = "burger.png"

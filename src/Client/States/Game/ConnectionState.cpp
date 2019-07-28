@@ -95,6 +95,8 @@ namespace bw
 			}
 		}
 
+		m_clientSession->Update();
+
 		return true;
 	}
 

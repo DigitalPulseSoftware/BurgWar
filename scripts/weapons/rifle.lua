@@ -6,6 +6,8 @@ WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
 WEAPON.Cooldown = 0.1
 
+RegisterAsset(WEAPON.Sprite)
+
 WEAPON.ShootSound = {
 --[[    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav",
     "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR2_stereo.wav",

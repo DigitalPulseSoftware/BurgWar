@@ -1,4 +1,5 @@
 RegisterClientScript("grenade.lua")
+RegisterAsset("grenade.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

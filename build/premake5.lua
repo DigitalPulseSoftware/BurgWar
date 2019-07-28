@@ -49,11 +49,11 @@ Projects = {
 			"../src/ClientLib/**.inl",
 			"../src/ClientLib/**.cpp"
 		},
-		Frameworks = {"Nazara"},
+		Frameworks = {"Curl", "Nazara"},
 		LinkStatic = {},
 		LinkStaticDebug = {"CoreLib-d"},
 		LinkStaticRelease = {"CoreLib"},
-		Libs = {},
+		Libs = {"libcurl"},
 		LibsDebug = {},
 		LibsRelease = {},
 		AdditionalDependencies = {}
@@ -68,11 +68,11 @@ Projects = {
 			"../src/Client/**.inl",
 			"../src/Client/**.cpp"
 		},
-		Frameworks = {"Nazara"},
+		Frameworks = {"Curl", "Nazara"},
 		LinkStatic = {},
 		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d"},
 		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua"},
-		Libs = {},
+		Libs = {"libcurl"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}

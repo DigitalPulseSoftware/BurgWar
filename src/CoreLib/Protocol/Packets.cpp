@@ -33,6 +33,26 @@ namespace bw
 			serializer &= data.content;
 		}
 
+		void Serialize(PacketSerializer& serializer, ClientAssetList& data)
+		{
+			serializer.SerializeArraySize(data.assets);
+			serializer.SerializeArraySize(data.fastDownloadUrls);
+
+			for (auto& downloadUrl : data.fastDownloadUrls)
+				serializer &= downloadUrl;
+
+			for (auto& script : data.assets)
+			{
+				serializer &= script.path;
+				serializer &= script.size;
+
+				if (serializer.IsWriting())
+					serializer.Write(script.sha1Checksum.data(), script.sha1Checksum.size());
+				else
+					serializer.Read(script.sha1Checksum.data(), script.sha1Checksum.size());
+			}
+		}
+
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data)
 		{
 			serializer.SerializeArraySize(data.scripts);

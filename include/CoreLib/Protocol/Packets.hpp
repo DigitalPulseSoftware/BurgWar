@@ -31,6 +31,7 @@ namespace bw
 		AuthFailure,
 		AuthSuccess,
 		ChatMessage,
+		ClientAssetList,
 		ClientScriptList,
 		ConsoleAnswer,
 		ControlEntity,
@@ -87,6 +88,19 @@ namespace bw
 			std::string content;
 		};
 		
+		DeclarePacket(ClientAssetList)
+		{
+			struct Asset
+			{
+				std::array<Nz::UInt8, 20> sha1Checksum;
+				std::string path;
+				CompressedUnsigned<Nz::UInt64> size;
+			};
+
+			std::vector<Asset> assets;
+			std::vector<std::string> fastDownloadUrls;
+		};
+
 		DeclarePacket(ClientScriptList)
 		{
 			struct Script
@@ -330,6 +344,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);
 		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
 		void Serialize(PacketSerializer& serializer, ChatMessage& data);
+		void Serialize(PacketSerializer& serializer, ClientAssetList& data);
 		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
 		void Serialize(PacketSerializer& serializer, ConsoleAnswer& data);
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);

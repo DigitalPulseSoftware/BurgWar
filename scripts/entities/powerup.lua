@@ -1,4 +1,5 @@
 RegisterClientScript("powerup.lua")
+RegisterAsset("placeholder/socle.png")
 
 ENTITY.IsNetworked = true
 ENTITY.CollisionType = 2

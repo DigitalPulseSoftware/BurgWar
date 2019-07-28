@@ -9,6 +9,8 @@ WEAPON.Animations = {
 	{"attack", 0.3}
 }
 
+RegisterAsset(WEAPON.Sprite)
+
 if (SERVER) then
 	function WEAPON:OnAttack()
 		local pos = self:GetPosition()
