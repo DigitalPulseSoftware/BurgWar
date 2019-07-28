@@ -130,8 +130,9 @@ if (not configLoaded) then
 end
 
 local frameworkConfigs = {
-	Nazara = "NazaraPath",
-	Qt = "QtPath"
+	Curl = "cUrl",
+	Nazara = "Nazara",
+	Qt = "Qt"
 }
 
 location(_ACTION)
@@ -174,6 +175,8 @@ workspace("Burgwar")
 		"../bin/%{cfg.buildcfg}"
 	})
 
+	pic("On")
+
 	if (os.ishost("windows")) then
 		local commandLine = "premake5.exe " .. table.concat(_ARGV, ' ')
 
@@ -184,24 +187,55 @@ workspace("Burgwar")
 
 	for _, projectData in pairs(Projects) do
 		local skipProject = false
-		local frameworkFolders = {}
+		local frameworkIncludes = {}
+		local frameworkBins = {}
+		local frameworkLibs = {}
+
 		local usedFrameworks = {}
 		if (projectData.Frameworks) then
 			for _, framework in pairs(projectData.Frameworks) do
 				local configKey = assert(frameworkConfigs[framework], "Unknown framework " .. framework)
-				local baseFolder = Config[configKey]
-				if (baseFolder) then
-					table.insert(frameworkFolders, baseFolder)
-				else
-					print("Framework config key " .. configKey .. " is either not set or invalid, skipping project " .. projectData.Name)
-					skipProject = true
-					break
+				local frameworkTable = Config[configKey]
+				if (type(frameworkTable) ~= "table") then
+					error("Unexpected value for " .. configKey .. " config")
 				end
 
-				usedFrameworks[framework] = baseFolder
+				local frameworkPackage = frameworkTable.PackageFolder
+				if (frameworkPackage) then
+					if (frameworkPackage ~= ":system") then
+						table.insert(frameworkBins, frameworkPackage .. "/bin")
+						table.insert(frameworkIncludes, frameworkPackage .. "/include")
+						table.insert(frameworkLibs, frameworkPackage .. "/lib")
+					end
+				else
+					local binPath = frameworkTable.BinPath
+					local includePath = frameworkTable.IncludePath
+					local libPath = frameworkTable.LibPath
+
+					if (includePath) then
+						table.insert(frameworkIncludes, includePath)
+
+						if (binPath) then
+							table.insert(frameworkBins, binPath)
+						end
+
+						if (libPath) then
+							table.insert(frameworkLibs, libPath)
+						end
+					else
+						print("Framework config key " .. configKey .. " is either not set or invalid, skipping project " .. projectData.Name)
+						skipProject = true
+						break
+					end
+				end
+
+				usedFrameworks[framework] = frameworkPackage
 			end
 
-			table.sort(frameworkFolders) -- Stabilize projects settings
+			-- Stabilize projects settings
+			table.sort(frameworkBins)
+			table.sort(frameworkIncludes)
+			table.sort(frameworkLibs)
 		end
 
 		if (not skipProject) then
@@ -231,46 +265,50 @@ workspace("Burgwar")
 
 				filter {}
 
-			for framework, dir in pairs(frameworkFolders) do
-				filter {}
-					includedirs(dir .. "/include")
+			filter {}
+			for _, dir in pairs(frameworkIncludes) do
+				includedirs(dir)
+			end
 
-				filter {"architecture:x86", "system:not Windows", "configurations:Debug"}
-					libdirs(dir .. "/bin/debug")
-					libdirs(dir .. "/bin/x86/debug")
+			for _, dir in pairs(frameworkLibs) do
+				filter {"architecture:x86", "configurations:Debug"}
+					libdirs(dir .. "/debug")
+					libdirs(dir .. "/x86/debug")
 
-				filter {"architecture:x86", "system:not Windows"}
-					libdirs(dir .. "/bin")
-					libdirs(dir .. "/bin/x86")
+				filter {"architecture:x86"}
+					libdirs(dir)
+					libdirs(dir .. "/x86")
 
-				filter {"architecture:x86_64", "system:not Windows", "configurations:Debug"}
-					libdirs(dir .. "/bin/debug")
-					libdirs(dir .. "/bin/x64/debug")
+				filter {"architecture:x64", "configurations:Debug"}
+					libdirs(dir .. "/debug")
+					libdirs(dir .. "/x64/debug")
 
-				filter {"architecture:x86_64", "system:not Windows"}
-					libdirs(dir .. "/bin")
-					libdirs(dir .. "/bin/x64")
+				filter {"architecture:x64"}
+					libdirs(dir)
+					libdirs(dir .. "/x64")
+			end
 
-				filter {"architecture:x86", "system:Windows", "configurations:Debug"}
-					libdirs(dir .. "/lib/debug")
-					libdirs(dir .. "/lib/x86/debug")
+			for _, dir in pairs(frameworkLibs) do
+				filter {"architecture:x86", "configurations:Debug"}
+					libdirs(dir .. "/debug")
+					libdirs(dir .. "/x86/debug")
 
-				filter {"architecture:x86", "system:Windows"}
-					libdirs(dir .. "/lib")
-					libdirs(dir .. "/lib/x86")
+				filter {"architecture:x86"}
+					libdirs(dir)
+					libdirs(dir .. "/x86")
 
-				filter {"architecture:x86_64", "system:Windows", "configurations:Debug"}
-					libdirs(dir .. "/lib/debug")
-					libdirs(dir .. "/lib/x64/debug")
+				filter {"architecture:x64", "configurations:Debug"}
+					libdirs(dir .. "/debug")
+					libdirs(dir .. "/x64/debug")
 
-				filter {"architecture:x86_64", "system:Windows"}
-					libdirs(dir .. "/lib")
-					libdirs(dir .. "/lib/x64")
+				filter {"architecture:x64"}
+					libdirs(dir)
+					libdirs(dir .. "/x64")
 			end
 
 			if (usedFrameworks["Qt"]) then
-				local mocExe = string.format("%s/bin/moc.exe", usedFrameworks["Qt"])
-				if (os.isfile(mocExe)) then
+				local mocPath = usedFrameworks["Qt"].MocPath
+				if (not mocPath or not os.isfile(mocPath)) then
 					local headerFiles = {}
 					for _, filter in pairs(projectData.Files) do
 						if (filter:endswith(".hpp")) then
@@ -319,7 +357,7 @@ workspace("Burgwar")
 						end
 					end
 				else
-					print("Warning: moc.exe not found, is your Qt directory correctly set up?")
+					print("Warning: moc executable not set/found, is your MocPath Qt config correctly set up?")
 				end
 			end
 		end
@@ -363,10 +401,25 @@ workspace("Burgwar")
 
 			local binPaths = {}
 			for k,configKey in pairs(frameworkConfigs) do
-				local folder = Config[configKey]
-				if (folder) then
-					table.insert(binPaths, folder .. "/bin")
-					table.insert(binPaths, folder .. "/bin/" .. archDir)
+				local frameworkTable = Config[configKey]
+				if (type(frameworkTable) ~= "table") then
+					error("Unexpected value for " .. configKey .. " config")
+				end
+
+				local binPath
+
+				local frameworkPackage = frameworkTable.PackageFolder
+				if (frameworkPackage) then
+					if (frameworkPackage ~= ":system") then
+						binPath = frameworkPackage .. "/bin"
+					end
+				else
+					binPath = frameworkTable.BinPath
+				end
+
+				if (binPath) then
+					table.insert(binPaths, binPath)
+					table.insert(binPaths, binPath .. "/" .. archDir)
 				end
 			end
 
