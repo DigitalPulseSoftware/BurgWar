@@ -27,10 +27,7 @@ namespace bw
 	{
 		elementTable["IsFullHealth"] = [](const sol::table& entityTable) -> bool
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
-
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return 0;
 
@@ -40,10 +37,7 @@ namespace bw
 
 		elementTable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
-
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return 0;
 
@@ -53,10 +47,7 @@ namespace bw
 
 		elementTable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
-
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
@@ -66,10 +57,7 @@ namespace bw
 
 		elementTable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
-
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
@@ -77,17 +65,17 @@ namespace bw
 			entityHealth.Heal(value);
 		};
 
-		elementTable["GetPosition"] = [](const sol::table& table)
+		elementTable["GetPosition"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition());
 		};
 
-		elementTable["GetRotation"] = [](const sol::table& table)
+		elementTable["GetRotation"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetRotation().ToEulerAngles().roll;
@@ -95,7 +83,7 @@ namespace bw
 
 		auto InitRigidBody = [](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
 			entityPhys.SetMass(mass);
@@ -111,9 +99,7 @@ namespace bw
 
 		elementTable["IsPlayerOnGround"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");
@@ -123,20 +109,19 @@ namespace bw
 
 		elementTable["IsValid"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			return entity.IsValid();
 		};
 
 		elementTable["Kill"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (entity)
-				entity->Kill();
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+			entity->Kill();
 		};
 
 		elementTable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto ParseCollider = [&L](const sol::table& collider) -> Nz::Collider2DRef
 			{
@@ -188,7 +173,7 @@ namespace bw
 
 		elementTable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<Ndk::CollisionComponent2D>())
 				throw std::runtime_error("Entity has no colliders");
 
@@ -201,9 +186,9 @@ namespace bw
 			collisionComponent.SetGeom(std::move(geom));
 		};
 
-		elementTable["SetVelocity"] = [](const sol::table& table, const Nz::Vector2f& velocity)
+		elementTable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			if (!entity || !entity->HasComponent<Ndk::PhysicsComponent2D>())
 				return;
 

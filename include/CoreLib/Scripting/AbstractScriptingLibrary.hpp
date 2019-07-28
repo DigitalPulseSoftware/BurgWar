@@ -7,6 +7,8 @@
 #ifndef BURGWAR_CORELIB_ABSTRACTSCRIPTINGLIBRARY_HPP
 #define BURGWAR_CORELIB_ABSTRACTSCRIPTINGLIBRARY_HPP
 
+#include <NDK/Entity.hpp>
+#include <sol3/forward.hpp>
 #include <memory>
 
 namespace bw
@@ -20,6 +22,8 @@ namespace bw
 			virtual ~AbstractScriptingLibrary();
 
 			virtual void RegisterLibrary(ScriptingContext& context) = 0;
+
+			static const Ndk::EntityHandle& AssertScriptEntity(const sol::table& entityTable);
 
 		protected:
 			void RegisterGlobalLibrary(ScriptingContext& context);

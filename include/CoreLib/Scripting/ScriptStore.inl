@@ -86,9 +86,7 @@ namespace bw
 
 		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
-			if (!entity)
-				return sol::nil;
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(table);
 
 			if (!entity->HasComponent<OwnerComponent>())
 				return sol::nil;
@@ -100,7 +98,7 @@ namespace bw
 		{
 			sol::state_view lua(s);
 
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(table);
 
 			auto& properties = entity->GetComponent<ScriptComponent>();
 
@@ -328,7 +326,7 @@ namespace bw
 		sol::state& state = scriptingContext->GetLuaState();
 
 		sol::table entityTable = state.create_table();
-		entityTable["Entity"] = entity;
+		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 
 		entity->AddComponent<ScriptComponent>(std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));

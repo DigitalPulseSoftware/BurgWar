@@ -48,10 +48,7 @@ namespace bw
 
 		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
-
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 			if (!entity->HasComponent<SoundEmitterComponent>())
@@ -63,7 +60,7 @@ namespace bw
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{
-			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 

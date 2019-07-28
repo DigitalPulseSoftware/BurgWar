@@ -36,7 +36,7 @@ namespace bw
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{
-			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -63,7 +63,7 @@ namespace bw
 
 		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{
-			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
 				return false;
 
@@ -72,7 +72,7 @@ namespace bw
 
 		elementTable["PlayAnim"] = [&](const sol::table& weaponTable, const std::string& animationName)
 		{
-			const Ndk::EntityHandle& entity = weaponTable["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
 				throw std::runtime_error("Entity has no animations");
 

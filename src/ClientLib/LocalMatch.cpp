@@ -258,8 +258,10 @@ namespace bw
 		}
 
 		sol::state& state = m_scriptingContext->GetLuaState();
-		state["engine_AnimateRotation"] = [&](const Ndk::EntityHandle& entity, float fromAngle, float toAngle, float duration, sol::object callbackObject)
+		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::object callbackObject)
 		{
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
 				if (!entity)
@@ -284,8 +286,10 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_AnimatePositionByOffsetSq"] = [&](const Ndk::EntityHandle& entity, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::object callbackObject)
+		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::object callbackObject)
 		{
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
 				if (!entity)

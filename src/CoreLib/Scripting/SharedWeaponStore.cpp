@@ -25,9 +25,9 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
-		elementTable["GetDirection"] = [](const sol::table& table)
+		elementTable["GetDirection"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
@@ -38,25 +38,25 @@ namespace bw
 			return direction;
 		};
 
-		elementTable["GetPosition"] = [](const sol::table& table)
+		elementTable["GetPosition"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition());
 		};
 
-		elementTable["GetRotation"] = [](const sol::table& table)
+		elementTable["GetRotation"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetRotation().ToEulerAngles().roll;
 		};
 
-		elementTable["IsLookingRight"] = [](const sol::table& table)
+		elementTable["IsLookingRight"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = table["Entity"];
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetScale().x > 0.f;

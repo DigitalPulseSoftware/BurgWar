@@ -83,9 +83,7 @@ namespace bw
 		
 		elementTable["AddSprite"] = [this](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			mat->SetDiffuseMap(m_resourceFolder + "/" + texturePath);
@@ -105,9 +103,7 @@ namespace bw
 
 		elementTable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -167,9 +163,7 @@ namespace bw
 
 		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = entityTable["Entity"];
-			if (!entity)
-				throw std::runtime_error("Invalid or dead entity");
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 

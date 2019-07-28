@@ -3,12 +3,27 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <iostream>
 
 namespace bw
 {
 	AbstractScriptingLibrary::~AbstractScriptingLibrary() = default;
+
+	const Ndk::EntityHandle& AbstractScriptingLibrary::AssertScriptEntity(const sol::table& entityTable)
+	{
+		sol::object entityObject = entityTable["_Entity"];
+		if (!entityObject)
+			throw std::runtime_error("Invalid entity");
+
+		const Ndk::EntityHandle& entity = entityObject.as<Ndk::EntityHandle>();
+
+		if (!entity || !entity->HasComponent<ScriptComponent>())
+			throw std::runtime_error("Invalid entity");
+
+		return entity;
+	}
 
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{

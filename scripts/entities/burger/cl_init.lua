@@ -14,8 +14,8 @@ function ENTITY:OnInputUpdate(input)
 				self.IsHoping = true
 				while (self.IsMoving) do
 					if (self:IsValid() and self:IsPlayerOnGround()) then
-						animation.PositionByOffset(self.Entity, Vec2(0, 0), Vec2(0, -25), 0.15)
-						animation.PositionByOffset(self.Entity, Vec2(0, -25), Vec2(0, 0), 0.15)
+						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -25), 0.15)
+						animation.PositionByOffset(self, Vec2(0, -25), Vec2(0, 0), 0.15)
 					else
 						timer.Sleep(30)
 					end

@@ -30,7 +30,7 @@ if (CLIENT) then
 		local startRotation = self:GetRotation()
 		local endRotation = self:IsLookingRight() and 110 or -110
 
-		animation.Rotate(self.Entity, startRotation, endRotation, 0.1)
-		animation.Rotate(self.Entity, endRotation, startRotation, 0.2)
+		animation.Rotate(self, startRotation, endRotation, 0.1)
+		animation.Rotate(self, endRotation, startRotation, 0.2)
 	end
 end

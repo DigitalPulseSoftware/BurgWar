@@ -21,7 +21,10 @@ function ENTITY:OnCollisionStart(other)
 		if (not owner:HasWeapon("weapon_grenade")) then
 			owner:GiveWeapon("weapon_grenade")
 			self:Kill()
-			self.Parent:OnPowerupConsumed()
+
+			if (self.Parent) then
+				self.Parent:OnPowerupConsumed()
+			end
 		end
 	end
 
