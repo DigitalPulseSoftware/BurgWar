@@ -6,7 +6,7 @@ WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
 WEAPON.Cooldown = 0.1
 
-RegisterAsset(WEAPON.Sprite)
+RegisterClientAssets(WEAPON.Sprite)
 
 WEAPON.ShootSound = {
 --[[    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav",
@@ -16,6 +16,8 @@ WEAPON.ShootSound = {
     "placeholder/piou2.wav",
     "placeholder/piou3.wav",
 }
+RegisterClientAssets(WEAPON.ShootSound)
+
 
 function WEAPON:OnAttack()
 	if (CLIENT) then

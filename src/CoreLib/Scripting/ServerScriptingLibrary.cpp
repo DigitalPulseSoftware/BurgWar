@@ -22,9 +22,23 @@ namespace bw
 		state["CLIENT"] = false;
 		state["SERVER"] = true;
 
-		state.set_function("RegisterAsset", [&](const std::string& path)
+		state.set_function("RegisterClientAssets", [&](const sol::object& paths)
 		{
-			GetMatch().RegisterAsset(path);
+			if (paths.is<sol::table>())
+			{
+				sol::table pathTable = paths.as<sol::table>();
+				for (auto&& [k, v] : pathTable)
+				{
+					if (v.is<std::string>())
+						GetMatch().RegisterAsset(v.as<std::string>());
+				}
+			}
+			else if (paths.is<std::string>())
+			{
+				GetMatch().RegisterAsset(paths.as<std::string>());
+			}
+			else
+				throw std::runtime_error("expected table or string");
 		});
 
 		state.set_function("RegisterClientScript", [&](const std::string& path)

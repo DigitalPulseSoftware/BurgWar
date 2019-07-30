@@ -72,6 +72,23 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
+			enum class ConnectionState
+			{
+				WaitingForMatchData,
+
+				DownloadingAssets,
+				DownloadingScripts,
+				
+				Ready
+			};
+
+			struct PendingPackets
+			{
+				std::unique_ptr<Packets::ClientAssetList> assetList;
+				std::unique_ptr<Packets::ClientScriptList> scriptList;
+				std::unique_ptr<Packets::MatchData> matchData;
+			};
+
 			void HandleIncomingPacket(Packets::AuthFailure&& packet);
 			void HandleIncomingPacket(Packets::AuthSuccess&& packet);
 			void HandleIncomingPacket(Packets::ChatMessage&& packet);
@@ -107,10 +124,12 @@ namespace bw
 			BurgApp& m_application;
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
 			std::optional<HttpDownloadManager> m_httpDownloadManager;
+			ConnectionInfo m_connectionInfo;
+			ConnectionState m_state;
 			LocalCommandStore m_commandStore;
 			MatchFactory m_matchFactory;
 			NetworkStringStore m_stringStore;
-			ConnectionInfo m_connectionInfo;
+			PendingPackets m_pendingPackets;
 			Nz::UInt64 m_deltaTime;
 	};
 }

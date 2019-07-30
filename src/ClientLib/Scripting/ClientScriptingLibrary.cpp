@@ -21,7 +21,7 @@ namespace bw
 		state["CLIENT"] = true;
 		state["SERVER"] = false;
 
-		state["RegisterAsset"] = []() {}; // Dummy function
+		state["RegisterClientAssets"] = []() {}; // Dummy function
 		state["RegisterClientScript"] = []() {}; // Dummy function
 
 		RegisterScriptLibrary(context);

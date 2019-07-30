@@ -1,4 +1,5 @@
 RegisterClientScript("pickable_weapon_rifle.lua")
+RegisterClientAssets("rifle-30349_640.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

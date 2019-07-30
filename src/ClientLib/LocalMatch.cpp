@@ -210,8 +210,21 @@ namespace bw
 		return m_world;
 	}
 
+	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
+	{
+		if (!m_assetStore)
+			m_assetStore.emplace(std::move(assetDir));
+		else
+		{
+			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
+			m_assetStore->Clear();
+		}
+	}
+
 	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
+		assert(m_assetStore);
+
 		if (!m_scriptingContext)
 		{
 			std::shared_ptr<ClientScriptingLibrary> scriptingLibrary = std::make_shared<ClientScriptingLibrary>(*this);
@@ -230,8 +243,8 @@ namespace bw
 
 		const std::string& gameResourceFolder = m_application.GetConfig().GetStringOption("Assets.ResourceFolder");
 
-		m_entityStore.emplace(gameResourceFolder, m_scriptingContext);
-		m_weaponStore.emplace(gameResourceFolder, m_scriptingContext);
+		m_entityStore.emplace(*m_assetStore, gameResourceFolder, m_scriptingContext);
+		m_weaponStore.emplace(*m_assetStore, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 

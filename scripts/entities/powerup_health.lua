@@ -1,5 +1,5 @@
 RegisterClientScript("powerup_health.lua")
-RegisterAsset("placeholder/healthpack.png")
+RegisterClientAssets("placeholder/healthpack.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

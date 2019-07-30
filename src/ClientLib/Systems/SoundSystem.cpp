@@ -20,19 +20,12 @@ namespace bw
 		Requires<SoundEmitterComponent>();
 	}
 
-	Nz::UInt32 SoundSystem::PlaySound(const std::string& soundPath, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
+	Nz::UInt32 SoundSystem::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
 	{
 		Nz::UInt32 soundId = m_nextSoundId++;
 		// Prevent sound id to be invalid sound id
 		if (soundId == InvalidSoundId)
 			soundId = m_nextSoundId++;
-
-		Nz::SoundBufferRef soundBuffer = Nz::SoundBufferManager::Get(soundPath);
-		if (!soundBuffer)
-		{
-			std::cerr << "Failed to load " << soundPath << std::endl;
-			return InvalidSoundId;
-		}
 
 		std::size_t entryIndex;
 		if (m_soundPool.size() >= m_maxSoundInPool)

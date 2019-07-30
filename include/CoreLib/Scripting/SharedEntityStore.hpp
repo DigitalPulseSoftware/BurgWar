@@ -17,7 +17,7 @@ namespace bw
 	class SharedEntityStore : public ScriptStore<ScriptedEntity>
 	{
 		public:
-			SharedEntityStore(std::shared_ptr<ScriptingContext> context, bool isServer);
+			SharedEntityStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
 			~SharedEntityStore() = default;
 
 		protected:

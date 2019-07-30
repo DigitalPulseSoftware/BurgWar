@@ -27,7 +27,7 @@ namespace bw
 			static constexpr Nz::UInt32 InvalidSoundId = 0;
 
 		private:
-			Nz::UInt32 PlaySound(const std::string& soundPath, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
+			Nz::UInt32 PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
 			void StopSound(Nz::UInt32 soundId);
 
 			void OnEntityRemoved(Ndk::Entity* entity) override;

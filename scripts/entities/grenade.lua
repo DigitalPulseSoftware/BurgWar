@@ -1,5 +1,5 @@
 RegisterClientScript("grenade.lua")
-RegisterAsset("grenade.png")
+RegisterClientAssets("grenade.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false
@@ -15,6 +15,7 @@ ENTITY.ExplosionSounds = {
     "placeholder/explosion3.wav",
     "placeholder/explosion4.wav",
 }
+RegisterClientAssets(ENTITY.ExplosionSounds)
 
 function ENTITY:Initialize()
 	self.ExplosionTick = GM:GetLocalTick() + self:GetProperty("lifetime") / GM:GetTickDuration()
@@ -51,7 +52,7 @@ function ENTITY:Explode()
 		local maxs = Vec2(256, 256)
 		local mins = Vec2(-256, -256)
 
-		GM:DealDamage(self:GetPosition(), 200, Rect(pos + mins, pos + maxs), 100000)
+		GM:DealDamage(self:GetPosition(), 0, Rect(pos + mins, pos + maxs), 100000)
 	end
 end
 

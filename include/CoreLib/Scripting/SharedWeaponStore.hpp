@@ -17,7 +17,7 @@ namespace bw
 	class SharedWeaponStore : public ScriptStore<ScriptedWeapon>
 	{
 		public:
-			SharedWeaponStore(std::shared_ptr<ScriptingContext> context, bool isServer);
+			SharedWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
 			~SharedWeaponStore() = default;
 
 		protected:

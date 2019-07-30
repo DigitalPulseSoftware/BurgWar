@@ -1,4 +1,4 @@
-RegisterAsset("burger.png")
+RegisterClientAssets("burger.png")
 
 print(ENTITY.Name)
 ENTITY.IsNetworked = true

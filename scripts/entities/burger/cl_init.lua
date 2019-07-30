@@ -1,5 +1,4 @@
 include("monautrefichier.lua")
-
 print("coucou")
 
 ENTITY.IsMoving = false

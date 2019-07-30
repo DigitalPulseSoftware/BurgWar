@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	inline ClientEntityStore::ClientEntityStore(std::string resourceFolder, std::shared_ptr<ScriptingContext> context) :
-	SharedEntityStore(std::move(context), false),
+	inline ClientEntityStore::ClientEntityStore(AssetStore& assetStore, std::string resourceFolder, std::shared_ptr<ScriptingContext> context) :
+	SharedEntityStore(assetStore, std::move(context), false),
 	m_resourceFolder(std::move(resourceFolder))
 	{
 	}

@@ -14,8 +14,9 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
+	m_assetStore(assetStore),
 	m_isServer(isServer)
 	{
 		assert(m_context);
@@ -332,6 +333,12 @@ namespace bw
 		entity->AddComponent<ScriptComponent>(std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
 
 		return entity;
+	}
+
+	template<typename Element>
+	const AssetStore& ScriptStore<Element>::GetAssetStore() const
+	{
+		return m_assetStore;
 	}
 
 	template<typename Element>

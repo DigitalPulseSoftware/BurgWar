@@ -69,6 +69,8 @@ namespace bw
 		VirtualDirectory::Entry entry;
 
 		bool shouldDownload = true;
+
+		// Try to find file in resource directory
 		if (m_sourceDirectory->GetEntry(filePath, &entry))
 		{
 			bool isFilePresent = std::visit([&](auto&& arg)
@@ -115,6 +117,26 @@ namespace bw
 				shouldDownload = false;
 		}
 
+		// Try to find file in cache
+		std::filesystem::path cachePath = m_targetFolder / filePath;
+		cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
+
+		if (shouldDownload)
+		{
+			if (std::filesystem::is_regular_file(cachePath))
+			{
+				std::size_t fileSize = std::filesystem::file_size(cachePath);
+				if (fileSize == expectedSize)
+				{
+					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType_SHA1, cachePath.generic_u8string()))
+					{
+						shouldDownload = false;
+						OnFileChecked(this, filePath, cachePath);
+					}
+				}
+			}
+		}
+
 		if (shouldDownload)
 		{
 			PendingFile& newFile = m_downloadList.emplace_back();
@@ -122,7 +144,7 @@ namespace bw
 			newFile.resourcePath = filePath;
 			newFile.expectedChecksum = std::move(expectedChecksum);
 			newFile.expectedSize = expectedSize;
-			newFile.outputPath = m_targetFolder / (filePath + "." + hexChecksum);
+			newFile.outputPath = std::move(cachePath);
 		}
 	}
 
@@ -207,6 +229,8 @@ namespace bw
 				request.metadata->fileIndex = m_nextFileIndex;
 				request.metadata->hash->Begin();
 				request.metadata->file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+				
+				std::cout << "[HTTP] Downloading " << pendingDownload.resourcePath << std::endl;
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)

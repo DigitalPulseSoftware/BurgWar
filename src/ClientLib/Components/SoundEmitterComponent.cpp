@@ -8,14 +8,14 @@
 
 namespace bw
 {
-	Nz::UInt32 SoundEmitterComponent::PlaySound(const std::string& soundPath, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
+	Nz::UInt32 SoundEmitterComponent::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
 	{
 		const Ndk::EntityHandle& entity = GetEntity();
 		if (!entity)
 			return SoundSystem::InvalidSoundId;
 
 		auto& soundSystem = entity->GetWorld()->GetSystem<SoundSystem>();
-		if (Nz::UInt32 soundId = soundSystem.PlaySound(soundPath, soundPosition, attachedToEntity, isLooping, isSpatialized); soundId != SoundSystem::InvalidSoundId)
+		if (Nz::UInt32 soundId = soundSystem.PlaySound(soundBuffer, soundPosition, attachedToEntity, isLooping, isSpatialized); soundId != SoundSystem::InvalidSoundId)
 		{
 			m_sounds.insert(soundId);
 			return soundId;

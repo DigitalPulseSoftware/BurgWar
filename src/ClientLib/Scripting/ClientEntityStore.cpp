@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
@@ -44,7 +45,7 @@ namespace bw
 		if (entityClass->name == "burger")
 		{
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(m_resourceFolder + "/" + spritePath);
+			mat->SetDiffuseMap(GetAssetStore().GetTexture(spritePath));
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -86,7 +87,7 @@ namespace bw
 			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(m_resourceFolder + "/" + texturePath);
+			mat->SetDiffuseMap(GetAssetStore().GetTexture(texturePath));
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -123,6 +124,7 @@ namespace bw
 					// Force alpha blending
 					material->Configure("Translucent2D");
 					material->SetDiffuseMap(m_resourceFolder + "/" + materialPath); //< FIXME
+					//material->SetDiffuseMap(GetAssetStore().GetTexture(materialPath));
 				}
 				else
 					material = Nz::Material::GetDefault();
@@ -165,13 +167,17 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
 
+			const Nz::SoundBufferRef& soundBuffer = GetAssetStore().GetSoundBuffer(soundPath);
+			if (!soundBuffer)
+				throw std::runtime_error("failed to load " + soundPath);
+
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 			if (!entity->HasComponent<SoundEmitterComponent>())
 				entity->AddComponent<SoundEmitterComponent>();
 
 			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(m_resourceFolder + "/" + soundPath, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
 		};
 	}
 

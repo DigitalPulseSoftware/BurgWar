@@ -9,7 +9,7 @@ WEAPON.Animations = {
 	{"attack", 0.3}
 }
 
-RegisterAsset(WEAPON.Sprite)
+RegisterClientAssets(WEAPON.Sprite)
 
 if (SERVER) then
 	function WEAPON:OnAttack()

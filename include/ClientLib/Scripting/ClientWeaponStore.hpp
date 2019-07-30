@@ -15,7 +15,7 @@ namespace bw
 	class ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ClientWeaponStore(std::string resourceFolder, std::shared_ptr<ScriptingContext> context);
+			inline ClientWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
@@ -23,8 +23,6 @@ namespace bw
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
-
-			std::string m_resourceFolder;
 	};
 }
 

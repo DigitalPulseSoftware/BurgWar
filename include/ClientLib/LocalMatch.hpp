@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/AnimationManager.hpp>
+#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/SharedWorld.hpp>
@@ -54,11 +55,13 @@ namespace bw
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 
 			inline AnimationManager& GetAnimationManager();
+			inline AssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
 			inline const Ndk::EntityHandle& GetCamera();
 			inline const Nz::SpriteRef& GetTrailSprite() const;
 			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
+			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
 			void Update(float elapsedTime);
@@ -191,6 +194,7 @@ namespace bw
 
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, onUnhandledKeyPressed);
 
+			std::optional<AssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::optional<Console> m_remoteConsole;

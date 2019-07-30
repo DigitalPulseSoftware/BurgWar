@@ -91,59 +91,20 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::ClientAssetList&& packet)
 	{
+		if (m_state != ConnectionState::WaitingForMatchData)
+			return;
+
 		std::cout << "[Client] Got client asset list" << std::endl;
-
-		auto resourceDirectory = std::make_shared<VirtualDirectory>("../resources2");
-
-		m_httpDownloadManager.emplace(".assetCache", std::move(packet.fastDownloadUrls), resourceDirectory);
-
-		m_httpDownloadManager->OnFileChecked.Connect([this, resourceDirectory](HttpDownloadManager* downloadManager, const std::string& resourcePath, const std::filesystem::path& realPath)
-		{
-			resourceDirectory->StoreFile(resourcePath, realPath);
-		});
-
-		m_httpDownloadManager->OnFileCheckedMemory.Connect([&](HttpDownloadManager* downloadManager, const std::string& resourcePath, const std::vector<Nz::UInt8>& content)
-		{
-			resourceDirectory->StoreFile(resourcePath, content);
-		});
-
-		m_httpDownloadManager->OnFinished.Connect([this](HttpDownloadManager* downloadManager)
-		{
-			std::cout << "Asset download finished" << std::endl;
-			m_httpDownloadManager.reset();
-		});
-
-		for (const auto& asset : packet.assets)
-			m_httpDownloadManager->RegisterFile(asset.path, asset.sha1Checksum, asset.size);
-		
-		m_httpDownloadManager->Start();
+		m_pendingPackets.assetList = std::make_unique<Packets::ClientAssetList>(std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::ClientScriptList&& packet)
 	{
+		if (m_state != ConnectionState::WaitingForMatchData)
+			return;
+
 		std::cout << "[Client] Got client script list" << std::endl;
-
-		m_downloadManager.emplace(".scriptCache");
-
-		m_scriptDirectory = std::make_shared<VirtualDirectory>();
-
-		m_downloadManager->OnFileChecked.Connect([this](ClientScriptDownloadManager* downloadManager, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
-		{
-			m_scriptDirectory->StoreFile(filePath, fileContent);
-		});
-
-		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)
-		{
-			SendPacket(request);
-		});
-
-		m_downloadManager->OnFinished.Connect([this](ClientScriptDownloadManager* downloadManager)
-		{
-			m_localMatch->LoadScripts(m_scriptDirectory);
-			m_downloadManager.reset();
-		});
-
-		m_downloadManager->HandlePacket(packet);
+		m_pendingPackets.scriptList = std::make_unique<Packets::ClientScriptList>(std::move(packet));
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::ConsoleAnswer&& packet)
@@ -206,8 +167,82 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::MatchData&& matchData)
 	{
+		if (m_state != ConnectionState::WaitingForMatchData)
+			return;
+
+		// pls lynix-san refactor with state machine
+
 		std::cout << "[Client] Got match data" << std::endl;
-		m_localMatch = m_matchFactory(*this, matchData);
+		m_pendingPackets.matchData = std::make_unique<Packets::MatchData>(std::move(matchData));
+
+		// Switch to downloading assets
+		if (!m_pendingPackets.assetList)
+		{
+			std::cerr << "[Client] Expected asset list packet before match data, failed to load match" << std::endl;
+			return;
+		}
+
+		m_state = ConnectionState::DownloadingAssets;
+		std::cout << "[Client] Downloading assets..." << std::endl;
+
+		auto resourceDirectory = std::make_shared<VirtualDirectory>(m_application.GetConfig().GetStringOption("Assets.ResourceFolder"));
+		auto targetResourceDirectory = std::make_shared<VirtualDirectory>();
+
+		m_httpDownloadManager.emplace(".assetCache", std::move(m_pendingPackets.assetList->fastDownloadUrls), resourceDirectory);
+
+		m_httpDownloadManager->OnFileChecked.Connect([this, targetResourceDirectory](HttpDownloadManager* /*downloadManager*/, const std::string& resourcePath, const std::filesystem::path& realPath)
+		{
+			targetResourceDirectory->StoreFile(resourcePath, realPath);
+		});
+
+		m_httpDownloadManager->OnFileCheckedMemory.Connect([this, targetResourceDirectory](HttpDownloadManager* /*downloadManager*/, const std::string& resourcePath, const std::vector<Nz::UInt8>& content)
+		{
+			targetResourceDirectory->StoreFile(resourcePath, content);
+		});
+
+		m_httpDownloadManager->OnFinished.Connect([this, targetResourceDirectory](HttpDownloadManager* downloadManager) mutable
+		{
+			m_state = ConnectionState::DownloadingScripts;
+			std::cout << "[Client] Downloading scripts..." << std::endl;
+
+			m_downloadManager.emplace(".scriptCache");
+
+			m_scriptDirectory = std::make_shared<VirtualDirectory>();
+
+			m_downloadManager->OnFileChecked.Connect([this](ClientScriptDownloadManager* downloadManager, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
+			{
+				m_scriptDirectory->StoreFile(filePath, fileContent);
+			});
+
+			m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)
+			{
+				SendPacket(request);
+			});
+
+			m_downloadManager->OnFinished.Connect([this, targetResourceDirectory](ClientScriptDownloadManager* downloadManager) mutable
+			{
+				m_state = ConnectionState::Ready;
+				std::cout << "[Client] Creating match..." << std::endl;
+
+				m_localMatch = m_matchFactory(*this, std::move(*m_pendingPackets.matchData));
+				m_localMatch->LoadAssets(std::move(targetResourceDirectory));
+				m_localMatch->LoadScripts(m_scriptDirectory);
+				
+				m_downloadManager.reset();
+			});
+
+			m_downloadManager->HandlePacket(*m_pendingPackets.scriptList);
+			m_pendingPackets.scriptList.reset();
+
+			m_httpDownloadManager.reset();
+		});
+
+		for (const auto& asset : m_pendingPackets.assetList->assets)
+			m_httpDownloadManager->RegisterFile(asset.path, asset.sha1Checksum, asset.size);
+		
+		m_httpDownloadManager->Start();
+
+		m_pendingPackets.assetList.reset();
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::MatchState&& packet)

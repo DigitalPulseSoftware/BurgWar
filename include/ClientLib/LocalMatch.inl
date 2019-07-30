@@ -17,6 +17,12 @@ namespace bw
 		return m_animationManager;
 	}
 
+	inline AssetStore& LocalMatch::GetAssetStore()
+	{
+		assert(m_assetStore.has_value());
+		return *m_assetStore;
+	}
+
 	inline BurgApp& LocalMatch::GetApplication()
 	{
 		return m_application;

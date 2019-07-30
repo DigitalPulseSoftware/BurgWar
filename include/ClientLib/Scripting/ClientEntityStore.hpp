@@ -18,7 +18,7 @@ namespace bw
 	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ClientEntityStore(std::string resourceFolder, std::shared_ptr<ScriptingContext> context);
+			inline ClientEntityStore(AssetStore& assetStore, std::string resourceFolder, std::shared_ptr<ScriptingContext> context);
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 

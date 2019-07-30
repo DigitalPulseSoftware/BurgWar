@@ -19,7 +19,7 @@
 
 namespace bw
 {
-	class SharedGamemode;
+	class AssetStore;
 	class VirtualDirectory;
 
 	template<typename Element>
@@ -28,7 +28,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer);
+			inline ScriptStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			template<typename F> void ForEachElement(const F& func) const;
@@ -48,6 +48,7 @@ namespace bw
 			virtual void InitializeElementTable(sol::table& elementTable) = 0;
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 
+			const AssetStore& GetAssetStore() const;
 			sol::state& GetLuaState();
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
@@ -60,6 +61,7 @@ namespace bw
 			std::string m_tableName;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
+			AssetStore& m_assetStore;
 			bool m_isServer;
 	};
 }

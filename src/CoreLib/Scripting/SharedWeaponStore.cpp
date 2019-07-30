@@ -16,8 +16,8 @@
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
-	ScriptStore(std::move(context), isServer)
+	SharedWeaponStore::SharedWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore(assetStore, std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");

@@ -22,13 +22,21 @@ namespace bw
 		return m_app;
 	}
 
+	inline AssetStore& Match::GetAssetStore()
+	{
+		assert(m_assetStore);
+		return *m_assetStore;
+	}
+
 	inline ServerEntityStore& Match::GetEntityStore()
 	{
+		assert(m_entityStore);
 		return *m_entityStore;
 	}
 
 	inline const ServerEntityStore& Match::GetEntityStore() const
 	{
+		assert(m_entityStore);
 		return *m_entityStore;
 	}
 

@@ -18,7 +18,7 @@ namespace bw
 	class ServerEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ServerEntityStore(std::shared_ptr<ScriptingContext> context);
+			inline ServerEntityStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context);
 			~ServerEntityStore() = default;
 
 			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;

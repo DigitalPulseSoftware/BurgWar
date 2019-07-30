@@ -30,6 +30,7 @@ namespace bw
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
 
+		ReloadAssets();
 		ReloadScripts();
 
 		Map map = Map::LoadFromBinary("mapdetest.bmap");
@@ -55,7 +56,7 @@ namespace bw
 		GetTimerManager().Clear();
 	}
 
-	Packets::ClientAssetList Match::BuildAssetFileListPacket() const
+	Packets::ClientAssetList Match::BuildClientAssetListPacket() const
 	{
 		Packets::ClientAssetList clientAsset;
 		clientAsset.fastDownloadUrls.emplace_back("https://burgwar.digitalpulsesoftware.net/resources");
@@ -76,7 +77,7 @@ namespace bw
 		return clientAsset;
 	}
 
-	Packets::ClientScriptList Match::BuildClientFileListPacket() const
+	Packets::ClientScriptList Match::BuildClientScriptListPacket() const
 	{
 		Packets::ClientScriptList clientScript;
 
@@ -221,6 +222,21 @@ namespace bw
 		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
 	}
 
+	void Match::ReloadAssets()
+	{
+		const std::string& resourceFolder = m_app.GetConfig().GetStringOption("Assets.ResourceFolder");
+
+		std::shared_ptr<VirtualDirectory> assetDir = std::make_shared<VirtualDirectory>(resourceFolder);
+
+		if (!m_assetStore)
+			m_assetStore.emplace(std::move(assetDir));
+		else
+		{
+			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
+			m_assetStore->Clear();
+		}
+	}
+
 	void Match::ReloadScripts()
 	{
 		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
@@ -240,8 +256,8 @@ namespace bw
 			m_scriptingContext->ReloadLibraries();
 		}
 
-		m_entityStore.emplace(m_scriptingContext);
-		m_weaponStore.emplace(m_app, m_scriptingContext);
+		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
+		m_weaponStore.emplace(m_app, *m_assetStore, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 
@@ -310,7 +326,7 @@ namespace bw
 			}
 		});
 
-		Packets::ClientScriptList clientScriptPacket = BuildClientFileListPacket();
+		Packets::ClientScriptList clientScriptPacket = BuildClientScriptListPacket();
 		// FIXME: Should be for each session
 		ForEachPlayer([&](Player* player)
 		{
@@ -404,7 +420,7 @@ namespace bw
 #ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
 		{
-			if (entity->HasComponent<InputComponent>())
+			if (entity->HasComponent<InputComponent>() && entity->HasComponent< Ndk::PhysicsComponent2D>())
 			{
 				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				

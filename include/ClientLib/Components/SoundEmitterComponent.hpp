@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_SOUNDEMITTERCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_SOUNDEMITTERCOMPONENT_HPP
 
+#include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
@@ -22,7 +23,7 @@ namespace bw
 			SoundEmitterComponent() = default;
 			~SoundEmitterComponent() = default;
 
-			Nz::UInt32 PlaySound(const std::string& soundPath, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
+			Nz::UInt32 PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
 			void StopSound(Nz::UInt32 soundId);
 
 			static Ndk::ComponentIndex componentIndex;

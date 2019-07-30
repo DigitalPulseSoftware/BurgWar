@@ -22,7 +22,7 @@ namespace bw
 		const auto& weaponClass = GetElement(entityIndex);
 
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(m_resourceFolder + "/" + weaponClass->spriteName);
+		mat->SetDiffuseMap(GetAssetStore().GetTexture(weaponClass->spriteName));
 		auto& sampler = mat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -49,13 +49,18 @@ namespace bw
 		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
 			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+
+			const Nz::SoundBufferRef& soundBuffer = GetAssetStore().GetSoundBuffer(soundPath);
+			if (!soundBuffer)
+				throw std::runtime_error("failed to load " + soundPath);
+
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 			if (!entity->HasComponent<SoundEmitterComponent>())
 				entity->AddComponent<SoundEmitterComponent>();
 
 			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(m_resourceFolder + "/" + soundPath, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
 		};
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)

@@ -10,6 +10,7 @@
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
+#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
@@ -43,13 +44,14 @@ namespace bw
 			Match(Match&&) = delete;
 			~Match();
 
-			Packets::ClientAssetList BuildAssetFileListPacket() const;
-			Packets::ClientScriptList BuildClientFileListPacket() const;
+			Packets::ClientAssetList BuildClientAssetListPacket() const;
+			Packets::ClientScriptList BuildClientScriptListPacket() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
 
 			inline BurgApp& GetApp();
+			inline AssetStore& GetAssetStore();
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 			inline ServerEntityStore& GetEntityStore();
 			inline const ServerEntityStore& GetEntityStore() const;
@@ -72,6 +74,7 @@ namespace bw
 			void RegisterAsset(const std::filesystem::path& assetPath);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
 
+			void ReloadAssets();
 			void ReloadScripts();
 
 			void Update(float elapsedTime);
@@ -102,6 +105,7 @@ namespace bw
 			};
 
 			std::filesystem::path m_gamemodePath;
+			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;

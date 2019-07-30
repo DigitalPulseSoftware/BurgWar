@@ -94,11 +94,11 @@ namespace bw
 			packetLayer.backgroundColor = mapLayer.backgroundColor;
 		}
 
-		SendPacket(matchData);
-
 		// Send client-file script list
-		SendPacket(m_match.BuildAssetFileListPacket());
-		SendPacket(m_match.BuildClientFileListPacket());
+		SendPacket(m_match.BuildClientAssetListPacket());
+		SendPacket(m_match.BuildClientScriptListPacket());
+
+		SendPacket(matchData);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
