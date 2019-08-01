@@ -21,6 +21,7 @@ namespace bw
 
 		state.open_libraries();
 
+		state["RegisterClientAssets"] = []() {}; // Dummy function
 		state["RegisterClientScript"] = []() {}; // Dummy function
 
 		AbstractScriptingLibrary::RegisterGlobalLibrary(context);

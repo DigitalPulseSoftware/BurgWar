@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	Terrain::Terrain(BurgApp& app, Match& match, Map map) :
-	m_map(std::move(map))
+	Terrain::Terrain(BurgApp& app, Match& match, Map& map) :
+	m_map(map)
 	{
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)

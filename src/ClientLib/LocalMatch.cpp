@@ -241,9 +241,7 @@ namespace bw
 			m_scriptingContext->ReloadLibraries();
 		}
 
-		const std::string& gameResourceFolder = m_application.GetConfig().GetStringOption("Assets.ResourceFolder");
-
-		m_entityStore.emplace(*m_assetStore, gameResourceFolder, m_scriptingContext);
+		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
 		m_weaponStore.emplace(*m_assetStore, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;

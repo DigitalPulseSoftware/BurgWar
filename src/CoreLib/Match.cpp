@@ -4,7 +4,6 @@
 
 #include <CoreLib/Match.hpp>
 #include <Nazara/Network/Algorithm.hpp>
-#include <CoreLib/Map.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
@@ -30,11 +29,12 @@ namespace bw
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
 
+		m_map = Map::LoadFromBinary("mapdetest.bmap");
+
 		ReloadAssets();
 		ReloadScripts();
 
-		Map map = Map::LoadFromBinary("mapdetest.bmap");
-		m_terrain = std::make_unique<Terrain>(app, *this, std::move(map));
+		m_terrain = std::make_unique<Terrain>(app, *this, *m_map);
 
 		m_gamemode->ExecuteCallback("OnInit");
 
@@ -182,12 +182,35 @@ namespace bw
 		if (!std::filesystem::is_regular_file(filePath))
 			throw std::runtime_error(filePath + " is not a file");
 
-		Asset asset;
-		asset.checksum = Nz::File::ComputeHash(Nz::HashType_SHA1, filePath);
-		asset.path = relativePath;
-		asset.size = std::filesystem::file_size(filePath);
+		RegisterAsset(std::move(relativePath), std::filesystem::file_size(filePath), Nz::File::ComputeHash(Nz::HashType_SHA1, filePath));
+	}
 
-		m_assets.emplace(std::move(filePath), std::move(asset));
+	void Match::RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum)
+	{
+		if (auto it = m_assets.find(assetPath); it != m_assets.end())
+		{
+			const Asset& asset = it->second;
+			if (asset.size != assetSize)
+			{
+				std::cerr << "Asset " << assetPath << " registered twice and size doesn't match" << std::endl;
+				return;
+			}
+
+			if (asset.checksum != assetChecksum)
+			{
+				std::cerr << "Asset " << assetPath << " registered twice and checksum doesn't match" << std::endl;
+				return;
+			}
+		}
+		else
+		{
+			Asset asset;
+			asset.checksum = std::move(assetChecksum);
+			asset.path = assetPath;
+			asset.size = assetSize;
+
+			m_assets.emplace(std::move(assetPath), std::move(asset));
+		}
 	}
 
 	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
@@ -234,6 +257,15 @@ namespace bw
 		{
 			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
 			m_assetStore->Clear();
+		}
+
+		assert(m_map);
+		for (const auto& asset : m_map->GetAssets())
+		{
+			Nz::ByteArray checksum(asset.sha1Checksum.size(), 0);
+			std::memcpy(checksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
+
+			RegisterAsset(asset.filepath, asset.size, std::move(checksum));
 		}
 	}
 

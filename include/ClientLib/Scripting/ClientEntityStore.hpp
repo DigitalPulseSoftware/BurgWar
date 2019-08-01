@@ -18,7 +18,7 @@ namespace bw
 	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ClientEntityStore(AssetStore& assetStore, std::string resourceFolder, std::shared_ptr<ScriptingContext> context);
+			inline ClientEntityStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context);
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
@@ -27,9 +27,6 @@ namespace bw
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
-
-		private:
-			std::string m_resourceFolder;
 	};
 }
 

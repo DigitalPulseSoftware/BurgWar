@@ -29,6 +29,7 @@ namespace bw
 	class Map
 	{
 		public:
+			struct Asset;
 			struct Entity;
 			struct Layer;
 
@@ -39,6 +40,9 @@ namespace bw
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
+
+			inline std::vector<Asset>& GetAssets();
+			inline const std::vector<Asset>& GetAssets() const;
 			inline Layer& GetLayer(std::size_t i);
 			inline const Layer& GetLayer(std::size_t i) const;
 			inline std::size_t GetLayerCount() const;
@@ -47,6 +51,13 @@ namespace bw
 			inline bool IsValid() const;
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
+
+			struct Asset
+			{
+				std::array<Nz::UInt8, 20> sha1Checksum;
+				std::string filepath;
+				Nz::UInt64 size;
+			};
 
 			struct Entity
 			{
@@ -72,12 +83,6 @@ namespace bw
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
 			void SetupDefault();
-
-			struct Asset
-			{
-				std::array<Nz::UInt8, 20> sha1Checksum;
-				std::string filepath;
-			};
 
 			MapInfo m_mapInfo;
 			std::vector<Asset> m_assets;

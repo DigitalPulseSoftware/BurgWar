@@ -16,7 +16,7 @@ ENTITY.Properties = {
 
 local function GenerateTiles(textures, textureCells)
 	local textureCount = math.min(#textures, #textureCells)
-	
+
 	local tiles = {}
 	for i = 1, textureCount do
 		local cellCount = textureCells[i]
@@ -35,9 +35,9 @@ end
 
 if (EDITOR) then
 	ENTITY.EditorActions = {
-		{ 
-			Name = "editTilemap",  
-			Label = "Edit Tilemap", 
+		{
+			Name = "editTilemap",
+			Label = "Edit Tilemap",
 			OnTrigger = function (entityEditor)
 				local tileMapEditor = TileMapEditorMode.new(entityEditor:GetTargetEntity(), {
 					mapSize = entityEditor:GetProperty("mapSize"),
@@ -98,7 +98,7 @@ function ENTITY:Initialize()
 		y = y + 1
 	end
 
-	if (#colliders > 0) then 
+	if (#colliders > 0) then
 		self:SetCollider(colliders)
 		self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 

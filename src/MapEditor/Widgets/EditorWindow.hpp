@@ -8,6 +8,7 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
 #include <NDK/Prerequisites.hpp>
+#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
@@ -49,6 +50,7 @@ namespace bw
 		private:
 			virtual bool event(QEvent* e) override;
 
+			void BuildAssetList();
 			void BuildMenu();
 			void OnCompileMap();
 			void OnCreateEntity();
@@ -67,6 +69,7 @@ namespace bw
 			void RegisterEntity(std::size_t entityIndex);
 
 			std::filesystem::path m_workingMapPath;
+			std::optional<AssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<int> m_currentLayer;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;

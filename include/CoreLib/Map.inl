@@ -17,6 +17,16 @@ namespace bw
 		SetupDefault();
 	}
 
+	inline auto Map::GetAssets() -> std::vector<Asset>&
+	{
+		return m_assets;
+	}
+
+	inline auto Map::GetAssets() const -> const std::vector<Asset>&
+	{
+		return m_assets;
+	}
+
 	inline auto Map::GetLayer(std::size_t i) -> Layer&
 	{
 		assert(i < m_layers.size());

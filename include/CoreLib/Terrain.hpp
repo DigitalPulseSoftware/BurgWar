@@ -19,7 +19,7 @@ namespace bw
 	class Terrain
 	{
 		public:
-			Terrain(BurgApp& app, Match& match, Map map);
+			Terrain(BurgApp& app, Match& match, Map& map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
@@ -33,7 +33,7 @@ namespace bw
 			Terrain& operator=(const Terrain&) = delete;
 
 		private:
-			Map m_map;
+			Map& m_map;
 			std::vector<TerrainLayer> m_layers; //< Shouldn't resize because of raw pointer in Player
 	};
 }

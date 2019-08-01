@@ -11,6 +11,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
@@ -72,6 +73,7 @@ namespace bw
 			bool Join(Player* player);
 
 			void RegisterAsset(const std::filesystem::path& assetPath);
+			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
 
 			void ReloadAssets();
@@ -107,6 +109,7 @@ namespace bw
 			std::filesystem::path m_gamemodePath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
+			std::optional<Map> m_map;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;

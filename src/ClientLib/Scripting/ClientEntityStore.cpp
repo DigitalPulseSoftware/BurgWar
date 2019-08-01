@@ -118,13 +118,14 @@ namespace bw
 			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
-				Nz::MaterialRef material = Nz::MaterialManager::Get(m_resourceFolder + "/" + materialPath);
+				Nz::MaterialRef material = Nz::Material::New(); //< FIXME
+				material->SetDiffuseMap(GetAssetStore().GetTexture(materialPath));
+
 				if (material)
 				{
 					// Force alpha blending
 					material->Configure("Translucent2D");
-					material->SetDiffuseMap(m_resourceFolder + "/" + materialPath); //< FIXME
-					//material->SetDiffuseMap(GetAssetStore().GetTexture(materialPath));
+					material->SetDiffuseMap(GetAssetStore().GetTexture(materialPath)); //< FIXME
 				}
 				else
 					material = Nz::Material::GetDefault();

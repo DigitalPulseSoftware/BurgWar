@@ -56,6 +56,7 @@ namespace bw
 			nlohmann::json assetInfo;
 			assetInfo["filePath"] = assetEntry.filepath;
 			assetInfo["checksum"] = assetEntry.sha1Checksum;
+			assetInfo["size"] = assetEntry.size;
 
 			assetArray.emplace_back(std::move(assetInfo));
 		}
@@ -226,7 +227,7 @@ namespace bw
 		}
 
 		Nz::UInt32 empty = 0;
-		stream << empty << empty;
+		stream << empty;
 
 		// Scripts (TODO)
 		/*std::vector<std::string> scripts;
@@ -236,7 +237,16 @@ namespace bw
 
 		Nz::UInt32 scriptCount = Nz::UInt32(scripts.size());*/
 
-		// Assets (TODO)
+		// Assets
+		Nz::UInt32 assetCount = Nz::UInt32(m_assets.size());
+		stream << assetCount;
+
+		for (const Asset& asset : m_assets)
+		{
+			stream << asset.filepath;
+			stream << asset.size;
+			stream.Write(asset.sha1Checksum.data(), asset.sha1Checksum.size());
+		}
 
 		return true;
 	}
@@ -374,6 +384,24 @@ namespace bw
 			layerIndex++;
 		}
 
+		Nz::UInt32 scriptCount;
+		stream >> scriptCount;
+
+		// TODO
+
+		Nz::UInt32 assetCount;
+		stream >> assetCount;
+
+		m_assets.clear();
+		m_assets.resize(assetCount);
+
+		for (Asset& asset : m_assets)
+		{
+			stream >> asset.filepath;
+			stream >> asset.size;
+			stream.Read(asset.sha1Checksum.data(), asset.sha1Checksum.size());
+		}
+
 		m_isValid = true;
 	}
 
@@ -398,6 +426,7 @@ namespace bw
 			Asset& asset = m_assets.emplace_back();
 			asset.filepath = entry.at("filePath");
 			asset.sha1Checksum = entry.at("checksum");
+			asset.size = entry.value("size", Nz::UInt64(0));
 		}
 
 		m_layers.clear();

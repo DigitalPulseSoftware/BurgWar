@@ -6,6 +6,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
+#include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <MapEditor/Widgets/LayerInfoDialog.hpp>
@@ -21,6 +22,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
+#include <tsl/hopscotch_set.h>
 #include <iostream>
 
 namespace bw
@@ -42,7 +44,9 @@ namespace bw
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
 		m_scriptingContext->GetLuaState()["Editor"] = this;
 
-		m_entityStore.emplace(gameResourceFolder, m_scriptingContext);
+		m_assetStore.emplace(std::make_shared<VirtualDirectory>(gameResourceFolder));
+
+		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
 
 		VirtualDirectory::Entry entry;
 		
@@ -257,6 +261,83 @@ namespace bw
 		return QMainWindow::event(e);
 	}
 
+	void EditorWindow::BuildAssetList()
+	{
+		tsl::hopscotch_set<std::string> textures;
+
+		std::size_t layerCount = m_workingMap.GetLayerCount();
+		for (std::size_t i = 0; i < layerCount; ++i)
+		{
+			Map::Layer& layer = m_workingMap.GetLayer(i);
+
+			for (const auto& entity : layer.entities)
+			{
+				if (std::size_t entityIndex = m_entityStore->GetElementIndex(entity.entityType); entityIndex != m_entityStore->InvalidIndex)
+				{
+					auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore->GetElement(entityIndex));
+
+					for (const auto& [key, value] : entity.properties)
+					{
+						if (auto it = entityTypeInfo->properties.find(key); it != entityTypeInfo->properties.end())
+						{
+							const auto& propertyData = it->second;
+							switch (propertyData.type)
+							{
+								case PropertyType::Texture:
+								{
+									if (propertyData.isArray)
+									{
+										for (const std::string& texture : std::get<EntityPropertyArray<std::string>>(value))
+											textures.insert(texture);
+									}
+									else
+									{
+										textures.insert(std::get<std::string>(value));
+									}
+									break;
+								}
+
+								default:
+									break;
+							}
+						}
+					}
+				}
+				else
+					std::cerr << "Unknown entity type " << entity.entityType << std::endl;
+			}
+		}
+
+		std::filesystem::path gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
+
+		std::vector<Map::Asset>& assets = m_workingMap.GetAssets();
+		assets.clear();
+
+		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+
+		for (const std::string& texturePath : textures)
+		{
+			std::filesystem::path fullPath = gameResourceFolder / texturePath;
+
+			auto& asset = assets.emplace_back();
+			asset.filepath = texturePath;
+
+			if (std::filesystem::is_regular_file(fullPath))
+			{
+				asset.size = std::filesystem::file_size(fullPath);
+
+				Nz::ByteArray assetHash = Nz::File::ComputeHash(hash.get(), fullPath.generic_u8string());
+				assert(assetHash.GetSize() == asset.sha1Checksum.size());
+
+				std::memcpy(asset.sha1Checksum.data(), assetHash.GetConstBuffer(), assetHash.GetSize());
+			}
+			else
+				std::cerr << "Texture not found: " << fullPath.generic_u8string() << std::endl;
+		}
+
+		std::cout << "Finished building assets" << std::endl;
+	}
+
 	void EditorWindow::BuildMenu()
 	{
 		QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
@@ -293,6 +374,8 @@ namespace bw
 
 		if (!fileName.endsWith(".bmap"))
 			fileName += ".bmap";
+
+		BuildAssetList();
 
 		if (m_workingMap.Compile(fileName.toStdString()))
 			QMessageBox::information(this, tr("Compilation succeeded"), tr("Map has been successfully compiled"), QMessageBox::Ok);
