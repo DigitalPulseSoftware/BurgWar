@@ -130,7 +130,7 @@ if (not configLoaded) then
 end
 
 local frameworkConfigs = {
-	Curl = "cUrl",
+	Curl = "cURL",
 	Nazara = "Nazara",
 	Qt = "Qt"
 }
@@ -196,8 +196,14 @@ workspace("Burgwar")
 			for _, framework in pairs(projectData.Frameworks) do
 				local configKey = assert(frameworkConfigs[framework], "Unknown framework " .. framework)
 				local frameworkTable = Config[configKey]
+				if (not frameworkTable) then
+					print("Framework config key " .. configKey .. " is not set, skipping project " .. projectData.Name)
+					skipProject = true
+					break
+				end
+
 				if (type(frameworkTable) ~= "table") then
-					error("Unexpected value for " .. configKey .. " config")
+					error("Unexpected value for " .. configKey .. " config (expected table)")
 				end
 
 				local frameworkPackage = frameworkTable.PackageFolder
@@ -223,13 +229,13 @@ workspace("Burgwar")
 							table.insert(frameworkLibs, libPath)
 						end
 					else
-						print("Framework config key " .. configKey .. " is either not set or invalid, skipping project " .. projectData.Name)
+						print("Framework config key " .. configKey .. " is or invalid, skipping project " .. projectData.Name)
 						skipProject = true
 						break
 					end
 				end
 
-				usedFrameworks[framework] = frameworkPackage
+				usedFrameworks[framework] = frameworkTable
 			end
 
 			-- Stabilize projects settings
@@ -308,7 +314,7 @@ workspace("Burgwar")
 
 			if (usedFrameworks["Qt"]) then
 				local mocPath = usedFrameworks["Qt"].MocPath
-				if (not mocPath or not os.isfile(mocPath)) then
+				if (mocPath and os.isfile(mocPath)) then
 					local headerFiles = {}
 					for _, filter in pairs(projectData.Files) do
 						if (filter:endswith(".hpp")) then
