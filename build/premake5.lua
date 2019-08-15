@@ -352,10 +352,13 @@ workspace("Burgwar")
 									error(string.format("Failed to open output file %s: %s", targetName, err))
 								end
 
-								local command = string.format("%s \"%s\" -i", mocExe, path.getabsolute(filePath))
+								local command = string.format("%s \"%s\" -i", mocPath, path.getabsolute(filePath))
 
 								print("> " .. command)
 								local content, errCode = os.outputof(command)
+								if (not content) then
+									error("Failed to write moc output: " .. tostring(errCode))
+								end
 
 								file:write(content)
 								file:close()
