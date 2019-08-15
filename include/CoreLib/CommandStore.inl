@@ -11,7 +11,7 @@ namespace bw
 {
 	template<typename Peer>
 	template<typename T>
-	const typename CommandStore<Peer>::IncomingCommand& CommandStore<Peer>::GetIncomingCommand() const
+	auto CommandStore<Peer>::GetIncomingCommand() const -> const IncomingCommand&
 	{
 		const std::size_t packetId = static_cast<std::size_t>(T::Type);
 		assert(m_incomingCommands.size() > packetId);
@@ -24,7 +24,7 @@ namespace bw
 
 	template<typename Peer>
 	template<typename T>
-	const typename CommandStore<Peer>::OutgoingCommand& CommandStore<Peer>::GetOutgoingCommand() const
+	auto CommandStore<Peer>::GetOutgoingCommand() const -> const OutgoingCommand&
 	{
 		const std::size_t packetId = static_cast<std::size_t>(T::Type);
 		assert(m_outgoingCommands.size() > packetId);
