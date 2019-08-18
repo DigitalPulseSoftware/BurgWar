@@ -58,7 +58,11 @@ namespace bw
 			inline AssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
 			inline const Ndk::EntityHandle& GetCamera();
-			inline const Nz::SpriteRef& GetTrailSprite() const;
+			ClientEntityStore& GetEntityStore() override;
+			const ClientEntityStore& GetEntityStore() const override;
+			ClientWeaponStore& GetWeaponStore() override;
+			const ClientWeaponStore& GetWeaponStore() const override;
+			inline const Nz::SpriteRef& GetTrailSprite() const; //< FIXME: This is pure garbage
 			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);

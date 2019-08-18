@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <iostream>
@@ -23,6 +24,37 @@ namespace bw
 			throw std::runtime_error("Invalid entity");
 
 		return entity;
+	}
+
+	void AbstractScriptingLibrary::RegisterElementLibrary(sol::table& elementTable)
+	{
+		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+
+			if (!entity->HasComponent<OwnerComponent>())
+				return sol::nil;
+
+			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
+		};
+
+		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+
+			auto& properties = entity->GetComponent<ScriptComponent>();
+
+			auto propertyVal = properties.GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				sol::state_view lua(s);
+				const EntityProperty& property = propertyVal.value();
+
+				return TranslateEntityPropertyToLua(lua, property);
+			}
+			else
+				return sol::nil;
+		};
 	}
 
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)

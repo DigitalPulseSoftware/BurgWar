@@ -205,6 +205,28 @@ namespace bw
 			func(entity);
 	}
 
+	ClientEntityStore& LocalMatch::GetEntityStore()
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	const ClientEntityStore& LocalMatch::GetEntityStore() const
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	ClientWeaponStore& LocalMatch::GetWeaponStore()
+	{
+		return *m_weaponStore;
+	}
+
+	const ClientWeaponStore& LocalMatch::GetWeaponStore() const
+	{
+		return *m_weaponStore;
+	}
+
 	SharedWorld& LocalMatch::GetWorld()
 	{
 		return m_world;

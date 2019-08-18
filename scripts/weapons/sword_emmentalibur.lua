@@ -23,7 +23,7 @@ if (SERVER) then
 		end
 
 		self:PlayAnim("attack")
-		GM:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 50000--[[, owner]])
+		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 50000)
 	end
 end
 

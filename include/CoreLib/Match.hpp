@@ -54,8 +54,8 @@ namespace bw
 			inline BurgApp& GetApp();
 			inline AssetStore& GetAssetStore();
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
-			inline ServerEntityStore& GetEntityStore();
-			inline const ServerEntityStore& GetEntityStore() const;
+			ServerEntityStore& GetEntityStore() override;
+			const ServerEntityStore& GetEntityStore() const override;
 			inline sol::state& GetLuaState();
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
@@ -65,8 +65,8 @@ namespace bw
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
-			inline ServerWeaponStore& GetWeaponStore();
-			inline const ServerWeaponStore& GetWeaponStore() const;
+			ServerWeaponStore& GetWeaponStore() override;
+			const ServerWeaponStore& GetWeaponStore() const override;
 			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
 			void Leave(Player* player);

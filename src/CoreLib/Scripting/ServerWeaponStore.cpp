@@ -61,6 +61,29 @@ namespace bw
 
 		elementTable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
 
+		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
+		{
+			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
+			{
+				if (hitEntity->HasComponent<HealthComponent>())
+					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
+				}
+			});
+		};
+
+		elementTable["DealDamage"] = sol::overload(DealDamage,
+			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); },
+			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce) { DealDamage(entityTable, origin, damage, damageZone, pushbackForce); });
+
 		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{
 			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);

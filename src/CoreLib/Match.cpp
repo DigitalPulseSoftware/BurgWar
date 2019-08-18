@@ -143,6 +143,28 @@ namespace bw
 		return true;
 	}
 
+	ServerEntityStore& Match::GetEntityStore()
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	const ServerEntityStore& Match::GetEntityStore() const
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	ServerWeaponStore& Match::GetWeaponStore()
+	{
+		return *m_weaponStore;
+	}
+
+	const ServerWeaponStore& Match::GetWeaponStore() const
+	{
+		return *m_weaponStore;
+	}
+
 	bool Match::Join(Player* player)
 	{
 		assert(!player->IsInMatch());
