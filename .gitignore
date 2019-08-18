@@ -29,6 +29,7 @@ build/**/*.d
 build/**/*.pdb
 build/**/*.filters
 build/**/*.vcxproj
+build/**/*.vcxproj.FileListAbsolute.txt
 build/**/*.tlog
 build/**/*.sln
 build/**/*.vcxprojResolveAssemblyReference.cache
