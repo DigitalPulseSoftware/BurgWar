@@ -4,28 +4,23 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SHAREDELEMENTLIBRARY_HPP
-#define BURGWAR_CORELIB_SHAREDELEMENTLIBRARY_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDELEMENTLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_SHAREDELEMENTLIBRARY_HPP
 
-#include <NDK/Entity.hpp>
-#include <sol3/forward.hpp>
+#include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 
 namespace bw
 {
-	class SharedMatch;
-
-	class SharedElementLibrary
+	class SharedElementLibrary : public AbstractElementLibrary
 	{
 		public:
 			SharedElementLibrary() = default;
-			virtual ~SharedElementLibrary();
+			~SharedElementLibrary();
 
-			virtual void RegisterLibrary(SharedMatch& match) = 0;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
-			static const Ndk::EntityHandle& AssertScriptEntity(const sol::table& entityTable);
-
-		protected:
-			void RegisterCommonLibrary(sol::table& elementTable);
+		private:
+			void RegisterCommonLibrary(sol::table& elementMetatable);
 	};
 }
 

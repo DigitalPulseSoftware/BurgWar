@@ -3,43 +3,21 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
-#include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <NDK/Entity.hpp>
 #include <sol3/sol.hpp>
-#include <iostream>
 
 namespace bw
 {
 	SharedElementLibrary::~SharedElementLibrary() = default;
 
-	const Ndk::EntityHandle& SharedElementLibrary::AssertScriptEntity(const sol::table& entityTable)
+	void SharedElementLibrary::RegisterLibrary(sol::table& elementMetatable)
 	{
-		sol::object entityObject = entityTable["_Entity"];
-		if (!entityObject)
-			throw std::runtime_error("Invalid entity");
-
-		const Ndk::EntityHandle& entity = entityObject.as<Ndk::EntityHandle>();
-
-		if (!entity || !entity->HasComponent<ScriptComponent>())
-			throw std::runtime_error("Invalid entity");
-
-		return entity;
+		RegisterCommonLibrary(elementMetatable);
 	}
 
-	void SharedElementLibrary::RegisterCommonLibrary(sol::table& elementTable)
+	void SharedElementLibrary::RegisterCommonLibrary(sol::table& elementMetatable)
 	{
-		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
-
-			if (!entity->HasComponent<OwnerComponent>())
-				return sol::nil;
-
-			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
-		};
-
-		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		elementMetatable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
 

@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	inline SharedMatch::SharedMatch(BurgApp& app, float tickDuration) :
-	m_timerManager(app),
+	inline SharedMatch::SharedMatch(float tickDuration) :
+	m_timerManager(*this),
 	m_currentTick(0),
 	m_currentTime(0),
 	m_floatingTime(0.f),

@@ -4,6 +4,8 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
@@ -47,6 +49,8 @@ namespace bw
 		m_assetStore.emplace(std::make_shared<VirtualDirectory>(gameResourceFolder));
 
 		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
+		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>());
+		m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
 
 		VirtualDirectory::Entry entry;
 		

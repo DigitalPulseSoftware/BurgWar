@@ -2,116 +2,99 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
+#include <CoreLib/Scripting/ServerWeaponLibrary.hpp>
+#include <CoreLib/AnimationStore.hpp>
 #include <CoreLib/Match.hpp>
-#include <CoreLib/Player.hpp>
-#include <iostream>
+#include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/HealthComponent.hpp>
+#include <NDK/World.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
+#include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <sol3/sol.hpp>
 
 namespace bw
 {
-	ServerScriptingLibrary::ServerScriptingLibrary(Match& match) :
-	SharedScriptingLibrary(match)
+	void ServerWeaponLibrary::RegisterLibrary(sol::table& elementMetatable)
 	{
+		SharedWeaponLibrary::RegisterLibrary(elementMetatable);
+
+		RegisterServerLibrary(elementMetatable);
 	}
 
-	void ServerScriptingLibrary::RegisterLibrary(ScriptingContext& context)
+	void ServerWeaponLibrary::RegisterServerLibrary(sol::table& elementMetatable)
 	{
-		SharedScriptingLibrary::RegisterLibrary(context);
-
-		sol::state& state = context.GetLuaState();
-		state["CLIENT"] = false;
-		state["SERVER"] = true;
-
-		state.set_function("RegisterClientAssets", [&](const sol::object& paths)
+		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
-			if (paths.is<sol::table>())
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
 			{
-				sol::table pathTable = paths.as<sol::table>();
-				for (auto&& [k, v] : pathTable)
+				if (hitEntity->HasComponent<HealthComponent>())
+					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
-					if (v.is<std::string>())
-						GetMatch().RegisterAsset(v.as<std::string>());
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
 				}
-			}
-			else if (paths.is<std::string>())
-			{
-				GetMatch().RegisterAsset(paths.as<std::string>());
-			}
-			else
-				throw std::runtime_error("expected table or string");
-		});
-
-		state.set_function("RegisterClientScript", [&](const std::string& path)
-		{
-			GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);
-		});
-
-		RegisterPlayer(context);
-
-		RegisterScriptLibrary(context);
-
-		context.Load("autorun");
-	}
-
-	void ServerScriptingLibrary::RegisterPlayer(ScriptingContext& context)
-	{
-		sol::state& state = context.GetLuaState();
-		state.new_usertype<PlayerHandle>("Player", 
-			"new", sol::no_constructor,
-			"GetName", [](const PlayerHandle& player) -> std::string
-			{
-				if (!player)
-					return "<Disconnected>";
-
-				return player->GetName();
-			},
-			"GiveWeapon", [](const PlayerHandle& player, std::string weaponName)
-			{
-				if (!player)
-					return false;
-
-				return player->GiveWeapon(std::move(weaponName));
-			},
-			"HasWeapon", [](const PlayerHandle& player, const std::string& weaponName)
-			{
-				if (!player)
-					return false;
-
-				return player->HasWeapon(weaponName);
-			},
-			"RemoveWeapon", [](const PlayerHandle& player, const std::string& weaponName)
-			{
-				if (!player)
-					return;
-
-				return player->RemoveWeapon(weaponName);
-			},
-			"Spawn", [](const PlayerHandle& player)
-			{
-				if (!player)
-					return;
-
-				return player->Spawn();
-			}
-		);
-	}
-
-	void ServerScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context)
-	{
-		sol::state& state = context.GetLuaState();
-		sol::table script = state.create_table();
-
-		script["ReloadAll"] = [this]()
-		{
-			Match& match = GetMatch();
-			match.ReloadScripts();
+			});
 		};
 
-		state["scripts"] = script;
-	}
+		elementMetatable["DealDamage"] = sol::overload(DealDamage,
+			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); },
+			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce) { DealDamage(entityTable, origin, damage, damageZone, pushbackForce); });
 
-	Match& ServerScriptingLibrary::GetMatch()
-	{
-		return static_cast<Match&>(GetSharedMatch());
+		elementMetatable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			if (!entity->HasComponent<AnimationComponent>())
+				return false;
+
+			return entity->GetComponent<AnimationComponent>().IsPlaying();
+		};
+
+		elementMetatable["PlayAnim"] = [&](const sol::table& weaponTable, const std::string& animationName)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			if (!entity->HasComponent<AnimationComponent>())
+				throw std::runtime_error("Entity has no animations");
+
+			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
+			const auto& animationStore = entityAnimation.GetAnimationStore();
+
+			if (std::size_t animId = animationStore->FindAnimationByName(animationName); animId != animationStore->InvalidId)
+				entityAnimation.Play(animId, m_match.GetCurrentTime());
+			else
+				throw std::runtime_error("Entity has no animation \"" + animationName + "\"");
+		};
+
+		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
+
+			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
+
+			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * 1000.f, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
+			{
+				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+
+				if (hitEntity->HasComponent<HealthComponent>())
+					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
+				}
+			}
+		};
+
+		elementMetatable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
 	}
 }

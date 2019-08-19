@@ -16,73 +16,11 @@
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer) :
-	ScriptStore(assetStore, std::move(context), isServer)
+	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore(std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");
-	}
-
-	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
-	{
-		elementTable["GetDirection"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-
-			Nz::Vector2f direction(nodeComponent.GetRotation() * Nz::Vector2f::UnitX());
-			if (nodeComponent.GetScale().x < 0.f)
-				direction = -direction;
-
-			return direction;
-		};
-
-		elementTable["GetPosition"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition());
-		};
-
-		elementTable["GetRotation"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetRotation().ToEulerAngles().roll;
-		};
-
-		elementTable["IsLookingRight"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetScale().x > 0.f;
-		};
-
-		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f, const Ndk::EntityHandle& attacker = Ndk::EntityHandle::InvalidHandle)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			m_sharedMatch.GetWorld().GetWorld().GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
-			{
-				if (hitEntity->HasComponent<HealthComponent>())
-					hitEntity->GetComponent<HealthComponent>().Damage(damage, attacker);
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
-				}
-			});
-		};
-
-		m_gamemodeTable["DealDamage"] = sol::overload(DealDamage,
-			[=](const sol::table& gmTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(gmTable, origin, damage, damageZone); },
-			[=](const sol::table& gmTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce) { DealDamage(gmTable, origin, damage, damageZone, pushbackForce); });
-
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

@@ -4,31 +4,26 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
-#define BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_SERVERENTITYLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_SERVERENTITYLIBRARY_HPP
 
-#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
+#include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 
 namespace bw
 {
-	class Match;
-
-	class ServerScriptingLibrary : public SharedScriptingLibrary
+	class ServerEntityLibrary : public SharedEntityLibrary
 	{
 		public:
-			ServerScriptingLibrary(Match& match);
-			~ServerScriptingLibrary() = default;
+			ServerEntityLibrary() = default;
+			~ServerEntityLibrary() = default;
 
-			void RegisterLibrary(ScriptingContext& context) override;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
-			void RegisterPlayer(ScriptingContext& context);
-			void RegisterScriptLibrary(ScriptingContext& context);
-
-			Match& GetMatch();
+			void RegisterServerLibrary(sol::table& elementMetatable);
 	};
 }
 
-#include <CoreLib/Scripting/ServerScriptingLibrary.inl>
+#include <CoreLib/Scripting/ServerEntityLibrary.inl>
 
 #endif

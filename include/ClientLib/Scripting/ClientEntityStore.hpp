@@ -15,6 +15,8 @@
 
 namespace bw
 {
+	class AssetStore;
+
 	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
@@ -27,6 +29,8 @@ namespace bw
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+
+			AssetStore& m_assetStore;
 	};
 }
 

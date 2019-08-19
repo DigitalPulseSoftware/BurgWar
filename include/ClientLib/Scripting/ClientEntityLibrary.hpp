@@ -4,31 +4,30 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_CLIENTSCRIPTINGLIBRARY_HPP
-#define BURGWAR_CORELIB_CLIENTSCRIPTINGLIBRARY_HPP
+#ifndef BURGWAR_CLIENTLIB_SCRIPTING_CLIENTENTITYLIBRARY_HPP
+#define BURGWAR_CLIENTLIB_SCRIPTING_CLIENTENTITYLIBRARY_HPP
 
-#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 
 namespace bw
 {
-	class LocalMatch;
+	class AssetStore;
 
-	class ClientScriptingLibrary : public SharedScriptingLibrary
+	class ClientEntityLibrary : public SharedEntityLibrary
 	{
 		public:
-			ClientScriptingLibrary(LocalMatch& match);
-			~ClientScriptingLibrary() = default;
+			inline ClientEntityLibrary(AssetStore& assetStore);
+			~ClientEntityLibrary() = default;
 
-			void RegisterLibrary(ScriptingContext& context) override;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
-			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterClientLibrary(sol::table& elementMetatable);
 
-			LocalMatch& GetMatch();
+			AssetStore& m_assetStore;
 	};
 }
 
-#include <ClientLib/Scripting/ClientScriptingLibrary.inl>
+#include <ClientLib/Scripting/ClientEntityLibrary.inl>
 
 #endif

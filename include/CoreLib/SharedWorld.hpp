@@ -11,13 +11,12 @@
 
 namespace bw
 {
-	class BurgApp;
 	class SharedMatch;
 
 	class SharedWorld
 	{
 		public:
-			SharedWorld(BurgApp& app, SharedMatch& match);
+			SharedWorld(SharedMatch& match);
 			SharedWorld(const SharedWorld&) = delete;
 			SharedWorld(SharedWorld&&) noexcept = default;
 			virtual ~SharedWorld();

@@ -17,11 +17,10 @@ namespace bw
 	class SharedEntityStore : public ScriptStore<ScriptedEntity>
 	{
 		public:
-			SharedEntityStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
+			SharedEntityStore(std::shared_ptr<ScriptingContext> context, bool isServer);
 			~SharedEntityStore() = default;
 
 		protected:
-			void InitializeElementTable(sol::table& elementTable) override = 0;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
 			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
 	};

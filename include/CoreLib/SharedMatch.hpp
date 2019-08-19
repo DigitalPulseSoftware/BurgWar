@@ -22,7 +22,7 @@ namespace bw
 	class SharedMatch
 	{
 		public:
-			inline SharedMatch(BurgApp& app, float tickDuration);
+			inline SharedMatch(float tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();

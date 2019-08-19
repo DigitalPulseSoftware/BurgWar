@@ -4,29 +4,26 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYSTORE_HPP
-#define BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYSTORE_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDWEAPONLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_SHAREDWEAPONLIBRARY_HPP
 
-#include <CoreLib/Scripting/ScriptedEntity.hpp>
-#include <CoreLib/Scripting/ScriptStore.hpp>
-#include <NDK/Entity.hpp>
-#include <NDK/World.hpp>
+#include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 
 namespace bw
 {
-	class SharedEntityStore : public ScriptStore<ScriptedEntity>
+	class SharedWeaponLibrary : public AbstractElementLibrary
 	{
 		public:
-			SharedEntityStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
-			~SharedEntityStore() = default;
+			SharedWeaponLibrary() = default;
+			~SharedWeaponLibrary() = default;
 
-		protected:
-			void InitializeElementTable(sol::table& elementTable) override = 0;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
-			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
+			void RegisterLibrary(sol::table& elementMetatable) override;
+
+		private:
+			void RegisterSharedLibrary(sol::table& elementMetatable);
 	};
 }
 
-#include <CoreLib/Scripting/SharedEntityStore.inl>
+#include <CoreLib/Scripting/SharedWeaponLibrary.inl>
 
 #endif

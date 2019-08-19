@@ -14,12 +14,12 @@ namespace bw
 
 	void SharedMatch::Update(float elapsedTime)
 	{
-		m_timerManager.Update();
-
 		m_tickTimer += elapsedTime;
 		while (m_tickTimer >= m_tickDuration)
 		{
 			m_tickTimer -= m_tickDuration;
+
+			m_timerManager.Update(m_currentTime);
 
 			OnTick(m_tickTimer < m_tickDuration);
 

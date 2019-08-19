@@ -2,48 +2,16 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
-#include <ClientLib/LocalMatch.hpp>
-#include <iostream>
+#include <ClientLib/Scripting/ClientElementLibrary.hpp>
 
 namespace bw
 {
-	ClientScriptingLibrary::ClientScriptingLibrary(LocalMatch& match) :
-	SharedScriptingLibrary(match)
+	void ClientElementLibrary::RegisterLibrary(sol::table& elementMetatable)
 	{
+		SharedElementLibrary::RegisterLibrary(elementMetatable);
 	}
 
-	void ClientScriptingLibrary::RegisterLibrary(ScriptingContext& context)
+	void ClientElementLibrary::RegisterClientLibrary(sol::table& elementTable)
 	{
-		SharedScriptingLibrary::RegisterLibrary(context);
-
-		sol::state& state = context.GetLuaState();
-		state["CLIENT"] = true;
-		state["SERVER"] = false;
-
-		state["RegisterClientAssets"] = []() {}; // Dummy function
-		state["RegisterClientScript"] = []() {}; // Dummy function
-
-		RegisterScriptLibrary(context);
-
-		context.Load("autorun");
-	}
-
-	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context)
-	{
-		sol::state& state = context.GetLuaState();
-		sol::table script = state.create_table();
-
-		script["ReloadAll"] = [this]()
-		{
-			throw std::runtime_error("Only the server can reload scripts");
-		};
-
-		state["scripts"] = script;
-	}
-
-	LocalMatch& ClientScriptingLibrary::GetMatch()
-	{
-		return static_cast<LocalMatch&>(GetSharedMatch());
 	}
 }

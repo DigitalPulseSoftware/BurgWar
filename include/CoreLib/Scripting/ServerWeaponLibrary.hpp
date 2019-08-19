@@ -4,31 +4,30 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
-#define BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONLIBRARY_HPP
 
-#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
+#include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
 
 namespace bw
 {
 	class Match;
 
-	class ServerScriptingLibrary : public SharedScriptingLibrary
+	class ServerWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
-			ServerScriptingLibrary(Match& match);
-			~ServerScriptingLibrary() = default;
+			inline ServerWeaponLibrary(Match& match);
+			~ServerWeaponLibrary() = default;
 
-			void RegisterLibrary(ScriptingContext& context) override;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
-			void RegisterPlayer(ScriptingContext& context);
-			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterServerLibrary(sol::table& elementMetatable);
 
-			Match& GetMatch();
+			Match& m_match;
 	};
 }
 
-#include <CoreLib/Scripting/ServerScriptingLibrary.inl>
+#include <CoreLib/Scripting/ServerWeaponLibrary.inl>
 
 #endif

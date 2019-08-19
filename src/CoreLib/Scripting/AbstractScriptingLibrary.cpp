@@ -12,51 +12,6 @@ namespace bw
 {
 	AbstractScriptingLibrary::~AbstractScriptingLibrary() = default;
 
-	const Ndk::EntityHandle& AbstractScriptingLibrary::AssertScriptEntity(const sol::table& entityTable)
-	{
-		sol::object entityObject = entityTable["_Entity"];
-		if (!entityObject)
-			throw std::runtime_error("Invalid entity");
-
-		const Ndk::EntityHandle& entity = entityObject.as<Ndk::EntityHandle>();
-
-		if (!entity || !entity->HasComponent<ScriptComponent>())
-			throw std::runtime_error("Invalid entity");
-
-		return entity;
-	}
-
-	void AbstractScriptingLibrary::RegisterElementLibrary(sol::table& elementTable)
-	{
-		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
-
-			if (!entity->HasComponent<OwnerComponent>())
-				return sol::nil;
-
-			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
-		};
-
-		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
-
-			auto& properties = entity->GetComponent<ScriptComponent>();
-
-			auto propertyVal = properties.GetProperty(propertyName);
-			if (propertyVal.has_value())
-			{
-				sol::state_view lua(s);
-				const EntityProperty& property = propertyVal.value();
-
-				return TranslateEntityPropertyToLua(lua, property);
-			}
-			else
-				return sol::nil;
-		};
-	}
-
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();

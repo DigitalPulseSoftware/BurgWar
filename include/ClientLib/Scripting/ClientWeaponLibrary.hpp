@@ -4,31 +4,30 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_CLIENTSCRIPTINGLIBRARY_HPP
-#define BURGWAR_CORELIB_CLIENTSCRIPTINGLIBRARY_HPP
+#ifndef BURGWAR_CLIENTLIB_SCRIPTING_CLIENTWEAPONLIBRARY_HPP
+#define BURGWAR_CLIENTLIB_SCRIPTING_CLIENTWEAPONLIBRARY_HPP
 
-#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
 
 namespace bw
 {
-	class LocalMatch;
+	class AssetStore;
 
-	class ClientScriptingLibrary : public SharedScriptingLibrary
+	class ClientWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
-			ClientScriptingLibrary(LocalMatch& match);
-			~ClientScriptingLibrary() = default;
+			inline ClientWeaponLibrary(AssetStore& assetStore);
+			~ClientWeaponLibrary() = default;
 
-			void RegisterLibrary(ScriptingContext& context) override;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
-			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterClientLibrary(sol::table& elementMetatable);
 
-			LocalMatch& GetMatch();
+			AssetStore& m_assetStore;
 	};
 }
 
-#include <ClientLib/Scripting/ClientScriptingLibrary.inl>
+#include <ClientLib/Scripting/ClientWeaponLibrary.inl>
 
 #endif

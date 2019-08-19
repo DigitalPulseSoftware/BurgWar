@@ -13,12 +13,20 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
-	m_assetStore(assetStore),
 	m_isServer(isServer)
 	{
 		assert(m_context);
+
+		ReloadLibraries(); // This function creates the metatable
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::ClearElements()
+	{
+		m_elements.clear();
+		m_elementsByName.clear();
 	}
 
 	template<typename Element>
@@ -47,6 +55,12 @@ namespace bw
 	}
 
 	template<typename Element>
+	sol::table& ScriptStore<Element>::GetElementMetatable()
+	{
+		return m_elementMetatable;
+	}
+
+	template<typename Element>
 	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
 	{
 		assert(entity->HasComponent<ScriptComponent>());
@@ -66,7 +80,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	inline bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
+	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
 		sol::state& state = GetLuaState();
 
@@ -76,15 +90,12 @@ namespace bw
 		else
 			elementName = elementPath.filename().u8string();
 
-		sol::table elementTable = state.create_table();
-		elementTable["__index"] = elementTable;
-
 		std::string fullName = m_elementTypeName + "_" + elementName;
 
+		sol::table elementTable = state.create_table();
 		elementTable["FullName"] = fullName;
 		elementTable["Name"] = elementName;
-
-		InitializeElementTable(elementTable);
+		elementTable[sol::metatable_key] = m_elementMetatable;
 
 		state[m_tableName] = elementTable;
 
@@ -261,6 +272,30 @@ namespace bw
 	}
 
 	template<typename Element>
+	void ScriptStore<Element>::LoadLibrary(std::shared_ptr<AbstractElementLibrary> library)
+	{
+		library->RegisterLibrary(m_elementMetatable);
+
+		m_libraries.emplace_back(std::move(library));
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::ReloadLibraries()
+	{
+		sol::state& state = GetLuaState();
+
+		m_elementMetatable = state.create_table();
+		m_elementMetatable["__index"] = m_elementMetatable;
+
+		for (const auto& libPtr : m_libraries)
+			libPtr->RegisterLibrary(m_elementMetatable);
+
+		// Link new metatables
+		for (const auto& elementPtr : m_elements)
+			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
+	}
+
+	template<typename Element>
 	std::shared_ptr<Element> ScriptStore<Element>::CreateElement() const
 	{
 		return std::make_shared<Element>();
@@ -307,9 +342,8 @@ namespace bw
 	}
 
 	template<typename Element>
-	const AssetStore& ScriptStore<Element>::GetAssetStore() const
+	void ScriptStore<Element>::InitializeElementTable(sol::table& /*elementTable*/)
 	{
-		return m_assetStore;
 	}
 
 	template<typename Element>

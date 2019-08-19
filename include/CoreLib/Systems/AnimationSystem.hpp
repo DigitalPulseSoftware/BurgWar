@@ -12,12 +12,12 @@
 
 namespace bw
 {
-	class BurgApp;
+	class SharedMatch;
 
 	class AnimationSystem : public Ndk::System<AnimationSystem>
 	{
 		public:
-			AnimationSystem(BurgApp& app);
+			AnimationSystem(SharedMatch& match);
 			~AnimationSystem() = default;
 
 			static Ndk::SystemIndex systemIndex;
@@ -25,7 +25,7 @@ namespace bw
 		private:
 			void OnUpdate(float elapsedTime) override;
 
-			BurgApp& m_application;
+			SharedMatch& m_match;
 	};
 }
 

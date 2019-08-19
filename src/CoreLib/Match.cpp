@@ -4,9 +4,13 @@
 
 #include <CoreLib/Match.hpp>
 #include <Nazara/Network/Algorithm.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Scripting/ServerElementLibrary.hpp>
+#include <CoreLib/Scripting/ServerEntityLibrary.hpp>
+#include <CoreLib/Scripting/ServerWeaponLibrary.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
@@ -20,7 +24,7 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
-	SharedMatch(app, tickDuration),
+	SharedMatch(tickDuration),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
@@ -34,7 +38,7 @@ namespace bw
 		ReloadAssets();
 		ReloadScripts();
 
-		m_terrain = std::make_unique<Terrain>(app, *this, *m_map);
+		m_terrain = std::make_unique<Terrain>(*this, *m_map);
 
 		m_gamemode->ExecuteCallback("OnInit");
 
@@ -310,8 +314,37 @@ namespace bw
 			m_scriptingContext->ReloadLibraries();
 		}
 
-		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
-		m_weaponStore.emplace(m_app, *m_assetStore, m_scriptingContext);
+		std::shared_ptr<ServerElementLibrary> serverElementLib;
+
+		if (!m_entityStore)
+		{
+			if (!serverElementLib)
+				serverElementLib = std::make_shared<ServerElementLibrary>();
+
+			m_entityStore.emplace(m_scriptingContext);
+			m_entityStore->LoadLibrary(serverElementLib);
+			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>());
+		}
+		else
+		{
+			m_entityStore->ClearElements();
+			m_entityStore->ReloadLibraries();
+		}
+
+		if (!m_weaponStore)
+		{
+			if (!serverElementLib)
+				serverElementLib = std::make_shared<ServerElementLibrary>();
+
+			m_weaponStore.emplace(m_scriptingContext);
+			m_weaponStore->LoadLibrary(serverElementLib);
+			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(*this));
+		}
+		else
+		{
+			m_weaponStore->ClearElements();
+			m_weaponStore->ReloadLibraries();
+		}
 
 		VirtualDirectory::Entry entry;
 

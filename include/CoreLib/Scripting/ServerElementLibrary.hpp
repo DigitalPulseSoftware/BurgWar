@@ -4,22 +4,20 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SERVERELEMENTLIBRARY_HPP
-#define BURGWAR_CORELIB_SERVERELEMENTLIBRARY_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_SERVERELEMENTLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_SERVERELEMENTLIBRARY_HPP
 
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 
 namespace bw
 {
-	class SharedMatch;
-
 	class ServerElementLibrary : public SharedElementLibrary
 	{
 		public:
 			ServerElementLibrary() = default;
 			~ServerElementLibrary() = default;
 
-			void RegisterLibrary(SharedMatch& match) override;
+			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
 			void RegisterServerLibrary(sol::table& elementTable);

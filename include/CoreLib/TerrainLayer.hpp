@@ -18,7 +18,7 @@ namespace bw
 	class TerrainLayer
 	{
 		public:
-			TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData);
+			TerrainLayer(Match& match, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;

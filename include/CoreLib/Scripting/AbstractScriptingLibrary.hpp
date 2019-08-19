@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_ABSTRACTSCRIPTINGLIBRARY_HPP
-#define BURGWAR_CORELIB_ABSTRACTSCRIPTINGLIBRARY_HPP
+#ifndef BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
+#define BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
 
 #include <NDK/Entity.hpp>
 #include <sol3/forward.hpp>
@@ -22,8 +22,6 @@ namespace bw
 			virtual ~AbstractScriptingLibrary();
 
 			virtual void RegisterLibrary(ScriptingContext& context) = 0;
-
-			static const Ndk::EntityHandle& AssertScriptEntity(const sol::table& entityTable);
 
 		protected:
 			void RegisterGlobalLibrary(ScriptingContext& context);

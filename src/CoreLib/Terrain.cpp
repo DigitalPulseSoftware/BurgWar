@@ -6,12 +6,12 @@
 
 namespace bw
 {
-	Terrain::Terrain(BurgApp& app, Match& match, Map& map) :
+	Terrain::Terrain(Match& match, Map& map) :
 	m_map(map)
 	{
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
-			m_layers.emplace_back(app, match, m_map.GetLayer(layerIndex));
+			m_layers.emplace_back(match, m_map.GetLayer(layerIndex));
 	}
 
 	void Terrain::Update(float elapsedTime)

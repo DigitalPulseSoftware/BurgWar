@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline TimerManager::TimerManager(BurgApp& app) :
-	m_app(app)
+	inline TimerManager::TimerManager(SharedMatch& match) :
+	m_match(match)
 	{
 	}
 
@@ -16,27 +16,28 @@ namespace bw
 		m_pendingTimers.clear();
 	}
 
-	inline void TimerManager::PushCallback(Nz::UInt64 expirationTime, Callback callback)
+	void TimerManager::PushCallback(Nz::UInt64 expirationTime, Callback callback)
 	{
 		Timer& timer = m_pendingTimers.emplace_back();
 		timer.callback = std::move(callback);
-		timer.expirationTime = m_app.GetAppTime() + expirationTime;
+		timer.expirationTime = expirationTime;
+
+		//TODO: Insertion sort
 	}
 
-	inline void TimerManager::Update()
+	void TimerManager::Update(Nz::UInt64 now)
 	{
-		Nz::UInt64 now = m_app.GetAppTime();
-
-		for (std::size_t i = 0; i < m_pendingTimers.size();)
+		for (auto it = m_pendingTimers.begin(); it != m_pendingTimers.end();)
 		{
-			Timer& timer = m_pendingTimers[i];
+			Timer& timer = *it;
 			if (now > timer.expirationTime)
 			{
 				timer.callback();
-				m_pendingTimers.erase(m_pendingTimers.begin() + i);
+
+				it = m_pendingTimers.erase(it);
 			}
 			else
-				++i;
+				++it;
 		}
 	}
 }

@@ -32,7 +32,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)
 		{
-			m_match.GetTimerManager().PushCallback(time, [&luaState, callbackObject]()
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [&luaState, callbackObject]()
 			{
 				sol::protected_function callback(luaState, sol::ref_index(callbackObject.registry_index()));
 
