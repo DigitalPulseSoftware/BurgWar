@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/NodeComponent.hpp>

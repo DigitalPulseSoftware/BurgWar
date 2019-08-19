@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>

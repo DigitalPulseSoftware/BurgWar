@@ -93,6 +93,8 @@ namespace bw
 		std::string fullName = m_elementTypeName + "_" + elementName;
 
 		sol::table elementTable = state.create_table();
+		elementTable["__index"] = elementTable;
+
 		elementTable["FullName"] = fullName;
 		elementTable["Name"] = elementName;
 		elementTable[sol::metatable_key] = m_elementMetatable;

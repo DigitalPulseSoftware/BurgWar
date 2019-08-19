@@ -27,17 +27,18 @@ namespace bw
 
 	void TimerManager::Update(Nz::UInt64 now)
 	{
-		for (auto it = m_pendingTimers.begin(); it != m_pendingTimers.end();)
+		// Use index instead of iterator because callback may push new timers
+		for (std::size_t i = 0; i < m_pendingTimers.size();)
 		{
-			Timer& timer = *it;
+			Timer& timer = m_pendingTimers[i];
 			if (now > timer.expirationTime)
 			{
 				timer.callback();
 
-				it = m_pendingTimers.erase(it);
+				m_pendingTimers.erase(m_pendingTimers.begin() + i);
 			}
 			else
-				++it;
+				++i;
 		}
 	}
 }
