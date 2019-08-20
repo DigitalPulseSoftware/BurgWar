@@ -99,6 +99,8 @@ namespace bw
 		elementTable["Name"] = elementName;
 		elementTable[sol::metatable_key] = m_elementMetatable;
 
+		InitializeElementTable(elementTable);
+
 		state[m_tableName] = elementTable;
 
 		std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
