@@ -103,13 +103,13 @@ namespace bw
 						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 					// Check bounds
-					/*if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
+					if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
 					{
 						if (arg.value < arg.minBounds)
 							throw std::runtime_error("option value is under bounds (" + std::to_string(arg.value) + " < " + std::to_string(arg.minBounds) + ')');
 						else if (arg.value > arg.maxBounds)
 							throw std::runtime_error("option value is over bounds (" + std::to_string(arg.value) + " > " + std::to_string(arg.maxBounds) + ')');
-					}*/
+					}
 
 				}, optionValue);
 			}
