@@ -52,6 +52,7 @@ namespace bw
 
 			void BuildAssetList();
 			void BuildMenu();
+
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
@@ -63,7 +64,13 @@ namespace bw
 			void OnLayerDoubleClicked(QListWidgetItem* item);
 
 			void OnOpenMap();
+			void OnOpenRecentMap();
 			void OnSaveMap();
+
+			void OpenMap(const QString& mapFolder);
+
+			void RefreshRecentFileListMenu();
+			void RefreshRecentFileListMenu(const QStringList& recentFileList);
 
 			void RegisterEditorConfig();
 			void RegisterEntity(std::size_t entityIndex);
@@ -74,6 +81,7 @@ namespace bw
 			std::optional<int> m_currentLayer;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
+			std::vector<QAction*> m_recentMapActions;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
