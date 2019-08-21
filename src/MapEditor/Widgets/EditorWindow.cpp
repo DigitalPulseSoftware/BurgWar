@@ -240,6 +240,8 @@ namespace bw
 		m_workingMap = std::move(map);
 		m_workingMapPath = std::move(mapPath);
 
+		setWindowFilePath(QString::fromStdString(mapPath.generic_u8string()));
+
 		bool enableMapActions = m_workingMap.IsValid();
 
 		m_compileMap->setEnabled(enableMapActions);
@@ -358,9 +360,11 @@ namespace bw
 	{
 		QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
 		QAction* createMap = fileMenu->addAction(tr("Create map..."));
+		createMap->setShortcut(QKeySequence::New);
 		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
 
 		QAction* openMap = fileMenu->addAction(tr("Open map..."));
+		createMap->setShortcut(QKeySequence::Open);
 		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
 		QMenu* recentMaps = fileMenu->addMenu(tr("Open recent..."));
@@ -370,6 +374,7 @@ namespace bw
 		RefreshRecentFileListMenu();
 
 		m_saveMap = fileMenu->addAction(tr("Save map..."));
+		m_saveMap->setShortcut(QKeySequence::Save);
 		connect(m_saveMap, &QAction::triggered, this, &EditorWindow::OnSaveMap);
 
 		fileMenu->addSeparator();
@@ -510,7 +515,7 @@ namespace bw
 				if (it->second >= entityIndex)
 				{
 					std::size_t newEntityIndex = --it.value();
-					m_entityList->item(newEntityIndex)->setData(Qt::UserRole, qulonglong(newEntityIndex));
+					m_entityList->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
 				}
 			}
 		}
