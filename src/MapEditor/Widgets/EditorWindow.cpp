@@ -252,6 +252,8 @@ namespace bw
 		if (m_workingMap.IsValid())
 		{
 			m_layerList->clear();
+			m_layerList->clearSelection();
+
 			for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
 			{
 				const auto& layer = m_workingMap.GetLayer(layerIndex);
@@ -261,6 +263,9 @@ namespace bw
 
 				m_layerList->addItem(item);
 			}
+
+			if (m_layerList->count() > 0)
+				m_layerList->setCurrentRow(0);
 		}
 	}
 
