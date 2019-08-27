@@ -13,13 +13,12 @@
 
 namespace bw
 {
-	class BurgApp;
 	class Match;
 
 	class Terrain
 	{
 		public:
-			Terrain(BurgApp& app, Match& match, Map& map);
+			Terrain(Match& match, Map& map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 

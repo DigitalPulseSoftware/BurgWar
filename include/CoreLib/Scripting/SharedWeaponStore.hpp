@@ -17,11 +17,10 @@ namespace bw
 	class SharedWeaponStore : public ScriptStore<ScriptedWeapon>
 	{
 		public:
-			SharedWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer);
+			SharedWeaponStore(std::shared_ptr<ScriptingContext> context, bool isServer);
 			~SharedWeaponStore() = default;
 
 		protected:
-			void InitializeElementTable(sol::table& elementTable) override = 0;
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override = 0;
 			bool InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent);
 	};

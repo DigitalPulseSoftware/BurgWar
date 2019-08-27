@@ -15,9 +15,9 @@
 
 namespace bw
 {
-	SharedWorld::SharedWorld(BurgApp& app, SharedMatch& match)
+	SharedWorld::SharedWorld(SharedMatch& match)
 	{
-		m_world.AddSystem<AnimationSystem>(app);
+		m_world.AddSystem<AnimationSystem>(match);
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>();
 		m_world.AddSystem<WeaponSystem>(match);

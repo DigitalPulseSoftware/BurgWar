@@ -30,62 +30,6 @@ namespace bw
 		return weapon;
 	}
 
-	void ServerWeaponStore::InitializeElementTable(sol::table& elementTable)
-	{
-		SharedWeaponStore::InitializeElementTable(elementTable);
-
-		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
-
-			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
-
-			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
-
-			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * 1000.f, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
-			{
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
-
-				if (hitEntity->HasComponent<HealthComponent>())
-					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
-				}
-			}
-		};
-
-		elementTable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
-
-		elementTable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
-			if (!entity->HasComponent<AnimationComponent>())
-				return false;
-
-			return entity->GetComponent<AnimationComponent>().IsPlaying();
-		};
-
-		elementTable["PlayAnim"] = [&](const sol::table& weaponTable, const std::string& animationName)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
-			if (!entity->HasComponent<AnimationComponent>())
-				throw std::runtime_error("Entity has no animations");
-
-			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
-			const auto& animationStore = entityAnimation.GetAnimationStore();
-
-			if (std::size_t animId = animationStore->FindAnimationByName(animationName); animId != animationStore->InvalidId)
-				entityAnimation.Play(animId, m_application.GetAppTime());
-			else
-				throw std::runtime_error("Entity has no animation \"" + animationName + "\"");
-		};
-	}
-
 	void ServerWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
 		SharedWeaponStore::InitializeElement(elementTable, weapon);

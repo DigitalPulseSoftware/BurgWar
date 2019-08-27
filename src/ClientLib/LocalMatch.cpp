@@ -7,8 +7,11 @@
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
@@ -36,7 +39,7 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
-	SharedMatch(burgApp, matchData.tickDuration),
+	SharedMatch(matchData.tickDuration),
 	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
@@ -45,7 +48,7 @@ namespace bw
 	m_application(burgApp),
 	m_chatBox(window, canvas),
 	m_session(session),
-	m_world(burgApp, *this),
+	m_world(*this),
 	m_isReady(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
@@ -205,6 +208,28 @@ namespace bw
 			func(entity);
 	}
 
+	ClientEntityStore& LocalMatch::GetEntityStore()
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	const ClientEntityStore& LocalMatch::GetEntityStore() const
+	{
+		assert(m_entityStore);
+		return *m_entityStore;
+	}
+
+	ClientWeaponStore& LocalMatch::GetWeaponStore()
+	{
+		return *m_weaponStore;
+	}
+
+	const ClientWeaponStore& LocalMatch::GetWeaponStore() const
+	{
+		return *m_weaponStore;
+	}
+
 	SharedWorld& LocalMatch::GetWorld()
 	{
 		return m_world;
@@ -241,8 +266,37 @@ namespace bw
 			m_scriptingContext->ReloadLibraries();
 		}
 
-		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
-		m_weaponStore.emplace(*m_assetStore, m_scriptingContext);
+		std::shared_ptr<ClientElementLibrary> clientElementLib;
+
+		if (!m_entityStore)
+		{
+			if (!clientElementLib)
+				clientElementLib = std::make_shared<ClientElementLibrary>();
+
+			m_entityStore.emplace(*m_assetStore, m_scriptingContext);
+			m_entityStore->LoadLibrary(clientElementLib);
+			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
+		}
+		else
+		{
+			m_entityStore->ClearElements();
+			m_entityStore->ReloadLibraries();
+		}
+
+		if (!m_weaponStore)
+		{
+			if (!clientElementLib)
+				clientElementLib = std::make_shared<ClientElementLibrary>();
+
+			m_weaponStore.emplace(*m_assetStore, m_scriptingContext);
+			m_weaponStore->LoadLibrary(clientElementLib);
+			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(*m_assetStore));
+		}
+		else
+		{
+			m_weaponStore->ClearElements();
+			m_weaponStore->ReloadLibraries();
+		}
 
 		VirtualDirectory::Entry entry;
 
@@ -271,7 +325,7 @@ namespace bw
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::object callbackObject)
 		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+			const Ndk::EntityHandle& entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -299,7 +353,7 @@ namespace bw
 
 		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::object callbackObject)
 		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
+			const Ndk::EntityHandle& entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{

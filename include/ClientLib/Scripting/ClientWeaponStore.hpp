@@ -12,6 +12,8 @@
 
 namespace bw
 {
+	class AssetStore;
+
 	class ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
@@ -23,6 +25,8 @@ namespace bw
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
+
+			AssetStore& m_assetStore;
 	};
 }
 

@@ -22,7 +22,7 @@ namespace bw
 		const auto& weaponClass = GetElement(entityIndex);
 
 		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(GetAssetStore().GetTexture(weaponClass->spriteName));
+		mat->SetDiffuseMap(m_assetStore.GetTexture(weaponClass->spriteName));
 		auto& sampler = mat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
@@ -45,67 +45,6 @@ namespace bw
 		SharedWeaponStore::InitializeElementTable(elementTable);
 
 		elementTable["Scale"] = 1.f;
-
-		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			const Nz::SoundBufferRef& soundBuffer = GetAssetStore().GetSoundBuffer(soundPath);
-			if (!soundBuffer)
-				throw std::runtime_error("failed to load " + soundPath);
-
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-
-			if (!entity->HasComponent<SoundEmitterComponent>())
-				entity->AddComponent<SoundEmitterComponent>();
-
-			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
-		};
-
-		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(weaponTable);
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
-
-			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
-
-			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
-
-			float hitDistance = 1000.f;
-
-			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * hitDistance, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
-			{
-				hitDistance *= hitInfo.fraction;
-
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
-				}
-			}
-
-			const auto& localMatchComponent = entity->GetComponent<LocalMatchComponent>();
-			LocalMatch& localMatch = localMatchComponent.GetLocalMatch();
-
-			const auto& trailEntity = world->CreateEntity();
-			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
-
-			trailNode.SetPosition(startPos);
-			trailNode.SetRotation(Nz::Quaternionf::RotationBetween(Nz::Vector3f::UnitX(), direction));
-
-			const float trailSpeed = 2500.f;
-
-			const Nz::SpriteRef& trailSprite = localMatch.GetTrailSprite();
-			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
-			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
-			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);
-		};
-
-		elementTable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
 	}
 
 	void ClientWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

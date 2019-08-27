@@ -18,16 +18,13 @@ namespace bw
 	class ServerWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ServerWeaponStore(BurgApp& app, AssetStore& assetStore, std::shared_ptr<ScriptingContext> context);
+			inline ServerWeaponStore(std::shared_ptr<ScriptingContext> context);
 			~ServerWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
-			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
-
-			BurgApp& m_application;
 	};
 }
 

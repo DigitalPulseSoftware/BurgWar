@@ -7,24 +7,27 @@
 #ifndef BURGWAR_CORELIB_TIMERMANAGER_HPP
 #define BURGWAR_CORELIB_TIMERMANAGER_HPP
 
-#include <CoreLib/BurgApp.hpp>
+#include <Nazara/Prerequisites.hpp>
+#include <functional>
 #include <vector>
 
 namespace bw
 {
+	class SharedMatch;
+
 	class TimerManager
 	{
 		public:
 			using Callback = std::function<void()>;
 
-			inline TimerManager(BurgApp& app);
+			inline TimerManager(SharedMatch& match);
 			~TimerManager() = default;
 
 			inline void Clear();
 
 			inline void PushCallback(Nz::UInt64 expirationTime, Callback finish);
 
-			inline void Update();
+			inline void Update(Nz::UInt64 now);
 
 		private:
 			struct Timer
@@ -34,7 +37,7 @@ namespace bw
 			};
 
 			std::vector<Timer> m_pendingTimers;
-			BurgApp& m_app;
+			SharedMatch& m_match;
 	};
 }
 

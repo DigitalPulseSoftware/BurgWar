@@ -16,51 +16,11 @@
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(AssetStore& assetStore, std::shared_ptr<ScriptingContext> context, bool isServer) :
-	ScriptStore(assetStore, std::move(context), isServer)
+	SharedWeaponStore::SharedWeaponStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore(std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
 		SetTableName("WEAPON");
-	}
-
-	void SharedWeaponStore::InitializeElementTable(sol::table& elementTable)
-	{
-		elementTable["GetDirection"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-
-			Nz::Vector2f direction(nodeComponent.GetRotation() * Nz::Vector2f::UnitX());
-			if (nodeComponent.GetScale().x < 0.f)
-				direction = -direction;
-
-			return direction;
-		};
-
-		elementTable["GetPosition"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition());
-		};
-
-		elementTable["GetRotation"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetRotation().ToEulerAngles().roll;
-		};
-
-		elementTable["IsLookingRight"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AbstractScriptingLibrary::AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetScale().x > 0.f;
-		};
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

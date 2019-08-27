@@ -8,6 +8,7 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>

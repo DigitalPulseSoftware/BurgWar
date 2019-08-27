@@ -28,18 +28,6 @@ namespace bw
 		return *m_assetStore;
 	}
 
-	inline ServerEntityStore& Match::GetEntityStore()
-	{
-		assert(m_entityStore);
-		return *m_entityStore;
-	}
-
-	inline const ServerEntityStore& Match::GetEntityStore() const
-	{
-		assert(m_entityStore);
-		return *m_entityStore;
-	}
-
 	inline sol::state& Match::GetLuaState()
 	{
 		return m_scriptingContext->GetLuaState();
@@ -85,15 +73,5 @@ namespace bw
 	{
 		assert(m_terrain);
 		return *m_terrain;
-	}
-
-	inline ServerWeaponStore& Match::GetWeaponStore()
-	{
-		return *m_weaponStore;
-	}
-
-	inline const ServerWeaponStore& Match::GetWeaponStore() const
-	{
-		return *m_weaponStore;
 	}
 }

@@ -11,14 +11,18 @@
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>
 
+#define DEBUG_PREDICTION
+
 namespace bw
 {
 	class ScriptingContext;
+	class SharedEntityStore;
+	class SharedWeaponStore;
 
 	class SharedMatch
 	{
 		public:
-			inline SharedMatch(BurgApp& app, float tickDuration);
+			inline SharedMatch(float tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
@@ -32,6 +36,11 @@ namespace bw
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 			virtual SharedWorld& GetWorld() = 0; //< Temporary (while we don't have layers)
+
+			virtual SharedEntityStore& GetEntityStore() = 0;
+			virtual const SharedEntityStore& GetEntityStore() const = 0;
+			virtual SharedWeaponStore& GetWeaponStore() = 0;
+			virtual const SharedWeaponStore& GetWeaponStore() const = 0;
 
 			void Update(float elapsedTime);
 

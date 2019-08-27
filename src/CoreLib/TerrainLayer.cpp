@@ -18,8 +18,8 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(BurgApp& app, Match& match, const Map::Layer& layerData) :
-	m_world(app, match)
+	TerrainLayer::TerrainLayer(Match& match, const Map::Layer& layerData) :
+	m_world(match)
 	{
 		Ndk::World& world = m_world.GetWorld();
 		world.AddSystem<NetworkSyncSystem>();
