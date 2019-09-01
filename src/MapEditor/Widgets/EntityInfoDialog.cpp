@@ -335,11 +335,6 @@ namespace bw
 		hide();
 	}
 
-	EntityInfoDialog::~EntityInfoDialog()
-	{
-		std::cout << "~EntityInfoDialog" << std::endl;
-	}
-
 	const EntityProperty& EntityInfoDialog::GetProperty(const std::string& propertyName) const
 	{
 		const bw::EntityProperty* property;

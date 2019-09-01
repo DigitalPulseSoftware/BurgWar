@@ -47,7 +47,7 @@ namespace bw
 			using Callback = std::function<void(EntityInfoDialog* dialog)>;
 
 			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
-			~EntityInfoDialog();
+			~EntityInfoDialog() = default;
 
 			inline const EntityInfo& GetInfo() const;
 			inline const Nz::Vector2f& GetPosition() const;
