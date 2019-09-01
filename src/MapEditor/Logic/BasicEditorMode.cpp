@@ -24,17 +24,31 @@ namespace bw
 			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 1.f));
 
 			Nz::Rayf ray(start, end - start);
+			
+			Ndk::Entity* bestEntity = nullptr;
+			float bestEntityArea = std::numeric_limits<float>::infinity();
+
 			for (const Ndk::EntityHandle& entity : canvas->GetMapEntities())
 			{
 				assert(entity->HasComponent<Ndk::GraphicsComponent>());
 
 				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-				if (ray.Intersect(gfxComponent.GetAABB()))
+
+				const Nz::Boxf& box = gfxComponent.GetAABB();
+
+				if (ray.Intersect(box))
 				{
-					editorWindow.SelectEntity(entity->GetId());
-					return;
+					float entityArea = box.width * box.height;
+					if (entityArea < bestEntityArea)
+					{
+						bestEntity = entity;
+						bestEntityArea = entityArea;
+					}
 				}
 			}
+
+			if (bestEntity)
+				editorWindow.SelectEntity(bestEntity->GetId());
 		}
 	}
 }
