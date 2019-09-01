@@ -214,6 +214,8 @@ namespace bw
 
 		// Delete canvas before releasing everything else
 		delete m_canvas;
+
+		m_entityStore.reset();
 	}
 
 	void EditorWindow::ClearWorkingMap()
