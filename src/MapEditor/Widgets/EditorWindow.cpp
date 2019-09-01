@@ -35,7 +35,8 @@ namespace bw
 		constexpr std::size_t MaxRecentFiles = 4;
 	}
 
-	EditorWindow::EditorWindow()
+	EditorWindow::EditorWindow() :
+	m_entityInfoDialog(nullptr)
 	{
 		RegisterEditorConfig();
 
@@ -403,6 +404,14 @@ namespace bw
 		connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	}
 
+	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
+	{
+		if (!m_entityInfoDialog)
+			m_entityInfoDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, this);
+
+		return m_entityInfoDialog;
+	}
+
 	void EditorWindow::RefreshRecentFileListMenu()
 	{
 		QSettings settings;
@@ -450,10 +459,10 @@ namespace bw
 	{
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
-		EntityInfoDialog* createEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, this);
-		connect(createEntityDialog, &QDialog::accepted, [this, createEntityDialog, layerIndex]()
+		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
+		createEntityDialog->Open(std::nullopt, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
 		{
-			const EntityInfo& entityInfo = createEntityDialog->GetEntityInfo();
+			const EntityInfo& entityInfo = createEntityDialog->GetInfo();
 
 			auto& layer = m_workingMap.GetLayer(layerIndex);
 			
@@ -554,10 +563,10 @@ namespace bw
 
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
-		EntityInfoDialog* editEntityDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, entity, std::move(entityInfo), this);
-		connect(editEntityDialog, &QDialog::accepted, [this, editEntityDialog, entityIndex, layerIndex, item, canvasId]()
+		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
+		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
 		{
-			const EntityInfo& entityInfo = editEntityDialog->GetEntityInfo();
+			const EntityInfo& entityInfo = editEntityDialog->GetInfo();
 
 			auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -566,6 +575,8 @@ namespace bw
 			layerEntity.position = entityInfo.position;
 			layerEntity.properties = entityInfo.properties;
 			layerEntity.rotation = entityInfo.rotation;
+
+			// TODO: Recreate entity only if properties/class updated
 
 			//m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
 			m_canvas->DeleteEntity(canvasId);
@@ -597,6 +608,7 @@ namespace bw
 				item->setText(entryName);
 			}
 
+			// Trigger selection signal
 			if (item->isSelected())
 			{
 				item->setSelected(false);

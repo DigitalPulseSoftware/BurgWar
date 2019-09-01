@@ -6,17 +6,17 @@
 
 namespace bw
 {
-	const EntityInfo& EntityInfoDialog::GetEntityInfo() const
+	const EntityInfo& EntityInfoDialog::GetInfo() const
 	{
 		return m_entityInfo;
 	}
 
-	inline const Nz::Vector2f& EntityInfoDialog::GetEntityPosition() const
+	inline const Nz::Vector2f& EntityInfoDialog::GetPosition() const
 	{
 		return m_entityInfo.position;
 	}
 
-	inline const Nz::DegreeAnglef& EntityInfoDialog::GetEntityRotation() const
+	inline const Nz::DegreeAnglef& EntityInfoDialog::GetRotation() const
 	{
 		return m_entityInfo.rotation;
 	}

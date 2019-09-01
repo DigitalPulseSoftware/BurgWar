@@ -8,22 +8,25 @@
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
+#include <Nazara/Core/TypeTag.hpp>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QDoubleSpinBox>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QFormLayout>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
+#include <bitset>
 #include <iostream>
 #include <limits>
 
@@ -217,9 +220,6 @@ namespace bw
 	m_entityStore(clientEntityStore),
 	m_scriptingContext(scriptingContext)
 	{
-		m_entityInfo.position = Nz::Vector2f::Zero();
-		m_entityInfo.rotation = 0.f;
-
 		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 		m_entityTypeWidget = new QComboBox;
@@ -266,14 +266,15 @@ namespace bw
 		m_propertyContentWidget = new QWidget;
 		m_propertyContentWidget->setMinimumSize(320, 320);
 
-		QDialogButtonBox* propertyButtons = new QDialogButtonBox(QDialogButtonBox::Reset);
+		QPushButton* restoreDefault = new QPushButton(tr("Restore defaults"));
+		connect(restoreDefault, &QPushButton::released, [this]() { OnResetProperty(); });
 
 		propertyContentLayout->addWidget(m_propertyTitle);
 		propertyContentLayout->addWidget(m_propertyDescription);
 		propertyContentLayout->addStretch();
 		propertyContentLayout->addWidget(m_propertyContentWidget);
 		propertyContentLayout->addStretch();
-		propertyContentLayout->addWidget(propertyButtons);
+		propertyContentLayout->addWidget(restoreDefault);
 
 		propertyLayout->addWidget(m_propertiesList);
 		propertyLayout->addLayout(propertyContentLayout);
@@ -320,20 +321,23 @@ namespace bw
 
 		setLayout(verticalLayout);
 
-		OnEntityTypeUpdate();
+		connect(this, &QDialog::finished, [this](int result)
+		{
+			if (m_callback)
+			{
+				if (result == QDialog::Accepted)
+					m_callback(this);
+
+				m_callback = Callback();
+			}
+		});
+
+		hide();
 	}
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent) :
-	EntityInfoDialog(clientEntityStore, scriptingContext, parent)
+	EntityInfoDialog::~EntityInfoDialog()
 	{
-		m_entityInfo = std::move(entityInfo);
-		m_targetEntity = targetEntity;
-
-		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
-		m_positionWidget->setValue(m_entityInfo.position);
-		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
-
-		m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+		std::cout << "~EntityInfoDialog" << std::endl;
 	}
 
 	const EntityProperty& EntityInfoDialog::GetProperty(const std::string& propertyName) const
@@ -363,23 +367,54 @@ namespace bw
 			throw std::runtime_error("Property " + propertyName + " does not exist");
 
 		const auto& propertyData = m_properties[propertyIt->second];
-
 		return std::make_pair(propertyData.type, propertyData.isArray);
 	}
 
-	void EntityInfoDialog::SetEntityPosition(const Nz::Vector2f& position)
+	void EntityInfoDialog::Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
+	{
+		m_callback = std::move(callback);
+		m_targetEntity = targetEntity;
+
+		if (info)
+		{
+			// Editing mode
+			m_entityInfo = std::move(*info);
+
+			m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
+			m_positionWidget->setValue(m_entityInfo.position);
+			m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
+
+			m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+		}
+		else
+		{
+			// Creation mode
+			m_entityInfo = EntityInfo();
+
+			m_entityTypeWidget->setCurrentIndex(-1);
+		}
+
+		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
+		m_propertiesList->clearSelection();
+		m_positionWidget->setValue(m_entityInfo.position);
+		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
+
+		QDialog::open();
+	}
+
+	void EntityInfoDialog::UpdatePosition(const Nz::Vector2f& position)
 	{
 		m_entityInfo.position = position;
 		m_positionWidget->setValue(position);
 	}
 
-	void EntityInfoDialog::SetEntityRotation(const Nz::DegreeAnglef& rotation)
+	void EntityInfoDialog::UpdateRotation(const Nz::DegreeAnglef& rotation)
 	{
 		m_entityInfo.rotation = rotation;
 		m_rotationWidget->setValue(rotation.ToDegrees());
 	}
 
-	void EntityInfoDialog::SetProperty(const std::string& propertyName, EntityProperty propertyValue)
+	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, EntityProperty propertyValue)
 	{
 		m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue));
 
@@ -395,21 +430,41 @@ namespace bw
 	{
 		std::string entityType = m_entityTypeWidget->currentText().toStdString();
 
-		std::size_t elementIndex = m_entityStore.GetElementIndex(entityType);
-		if (elementIndex == m_entityStore.InvalidIndex)
-			return;
-
-		m_entityInfo.entityClass = std::move(entityType);
-
-		m_entityTypeIndex = elementIndex;
+		m_entityTypeIndex = m_entityStore.GetElementIndex(entityType);
 
 		RefreshEntityType();
 		RefreshPropertyEditor(InvalidIndex);
+
+		m_entityInfo.entityClass = (m_entityTypeIndex != m_entityStore.InvalidIndex) ? std::move(entityType) : std::string();
+	}
+
+	void EntityInfoDialog::OnResetProperty()
+	{
+		if (m_propertyTypeIndex == InvalidIndex)
+			return;
+
+		assert(m_propertyTypeIndex < m_properties.size());
+		const auto& propertyInfo = m_properties[m_propertyTypeIndex];
+		m_entityInfo.properties.erase(propertyInfo.keyName);
+
+		m_propertiesList->item(int(m_propertyTypeIndex), 0)->setFont(QFont());
+
+		RefreshPropertyEditor(m_propertyTypeIndex);
 	}
 
 	void EntityInfoDialog::RefreshEntityType()
 	{
+		m_editorActionByName.clear();
+		m_properties.clear();
+		m_propertyByName.clear();
 		m_propertiesList->clearContents();
+
+		if (m_entityTypeIndex == m_entityStore.InvalidIndex)
+		{
+			m_entityInfo.properties.clear();
+			m_propertiesList->setRowCount(0);
+			return;
+		}
 
 		auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore.GetElement(m_entityTypeIndex));
 
@@ -417,7 +472,8 @@ namespace bw
 		EntityProperties oldProperties = std::move(m_entityInfo.properties);
 		m_entityInfo.properties.clear(); // Put back in a valid state
 
-		m_properties.clear();
+		std::bitset<MaxPropertyCount> modifiedProperties;
+
 		for (const auto& [propertyName, propertyInfo] : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
@@ -432,7 +488,11 @@ namespace bw
 			{
 				// Only keep old property value if types are compatibles
 				if (it->second.index() == propertyInfo.defaultValue->index())
+				{
+					assert(propertyData.index < modifiedProperties.size());
+					modifiedProperties[propertyData.index] = true;
 					m_entityInfo.properties.emplace(std::move(it.key()), std::move(it.value()));
+				}
 
 				oldProperties.erase(it);
 			}
@@ -440,16 +500,22 @@ namespace bw
 
 		std::sort(m_properties.begin(), m_properties.end(), [](auto&& first, auto&& second) { return first.index < second.index; });
 
-		m_propertyByName.clear();
 		for (std::size_t i = 0; i < m_properties.size(); ++i)
 			m_propertyByName.emplace(m_properties[i].keyName, i);
 
 		m_propertiesList->setRowCount(int(m_properties.size()));
 
+		QFont boldFont;
+		boldFont.setWeight(QFont::Medium);
+
 		int rowIndex = 0;
 		for (const auto& propertyInfo : m_properties)
 		{
-			m_propertiesList->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName)));
+			QTableWidgetItem* labelItem = new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName));
+			if (modifiedProperties.test(propertyInfo.index))
+				labelItem->setFont(boldFont);
+			
+			m_propertiesList->setItem(rowIndex, 0, labelItem);
 			m_propertiesList->setItem(rowIndex, 1, new QTableWidgetItem("Value"));
 
 			++rowIndex;
@@ -458,8 +524,6 @@ namespace bw
 
 		while (QWidget* w = m_editorActionWidget->findChild<QWidget*>())
 			delete w;
-
-		m_editorActionByName.clear();
 
 		std::size_t actionIndex = 0;
 		for (auto&& editorAction : entityTypeInfo->editorActions)
@@ -533,6 +597,14 @@ namespace bw
 
 		}, property);
 
+		auto OnPropertyModified = [this, propertyIndex]()
+		{
+			QFont boldFont;
+			boldFont.setWeight(QFont::Medium);
+
+			m_propertiesList->item(int(propertyIndex), 0)->setFont(boldFont);
+		};
+
 		if (isArray)
 		{
 			QSpinBox* spinbox = new QSpinBox;
@@ -581,6 +653,23 @@ namespace bw
 			arraySizeLayout->addWidget(updateButton);
 
 			layout->addLayout(arraySizeLayout);
+			
+			// Waiting for template lambda in C++20
+			auto AccessProperty = [this, keyName = propertyInfo.keyName, arraySize, OnPropertyModified](auto dummyType, int rowIndex) -> std::decay_t<decltype(dummyType)>&
+			{
+				using T = std::decay_t<decltype(dummyType)>;
+				using ArrayType = EntityPropertyArray<T>;
+
+				auto it = m_entityInfo.properties.find(keyName);
+				if (it == m_entityInfo.properties.end())
+				{
+					it = m_entityInfo.properties.emplace(keyName, ArrayType(arraySize)).first;
+					OnPropertyModified();
+				}
+
+				ArrayType& propertyArray = std::get<ArrayType>(it.value());
+				return propertyArray[rowIndex];
+			};
 
 			switch (propertyInfo.type)
 			{
@@ -605,16 +694,9 @@ namespace bw
 						model->setItem(i, 0, item);
 					}
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-
-						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = (item->checkState() == Qt::Checked);
+						AccessProperty(bool{}, item->index().row()) = (item->checkState() == Qt::Checked);
 					});
 
 					layout->addWidget(tableView);
@@ -639,16 +721,9 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-
-						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+						AccessProperty(float{}, item->index().row()) = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -674,16 +749,9 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-
-						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+						AccessProperty(Nz::Vector2f{}, item->index().row()) = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -708,16 +776,9 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-
-						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+						AccessProperty(Nz::Int64{}, item->index().row()) = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -743,16 +804,9 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
-					connect(model, &QStandardItemModel::itemChanged, [this, keyName = propertyInfo.keyName, arraySize](QStandardItem* item)
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-
-						int rowIndex = item->index().row();
-						propertyArray[rowIndex] = delegate.RetrieveModelData(item->index());
+						AccessProperty(Nz::Vector2i64{}, item->index().row()) = delegate.RetrieveModelData(item->index());
 					});
 
 					layout->addWidget(tableView);
@@ -775,14 +829,9 @@ namespace bw
 					for (int i = 0; i < arraySize; ++i)
 						model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
 
-					connect(table, &QTableWidget::cellChanged, [this, keyName = propertyInfo.keyName, table, arraySize](int row, int column)
+					connect(table, &QTableWidget::cellChanged, [=](int row, int column)
 					{
-						auto it = m_entityInfo.properties.find(keyName);
-						if (it == m_entityInfo.properties.end())
-							it = m_entityInfo.properties.emplace(keyName, T(arraySize)).first;
-
-						auto& propertyArray = std::get<T>(it.value());
-						propertyArray[row] = table->item(row, column)->text().toStdString();
+						AccessProperty(std::string{}, row) = table->item(row, column)->text().toStdString();
 					});
 
 					layout->addWidget(table);
@@ -795,6 +844,18 @@ namespace bw
 		}
 		else
 		{
+			auto AccessProperty = [this, keyName = propertyInfo.keyName, OnPropertyModified]() -> EntityProperty&
+			{
+				auto it = m_entityInfo.properties.find(keyName);
+				if (it == m_entityInfo.properties.end())
+				{
+					it = m_entityInfo.properties.emplace(keyName, EntityProperty{}).first;
+					OnPropertyModified();
+				}
+
+				return it.value();
+			};
+
 			switch (propertyInfo.type)
 			{
 				case PropertyType::Bool:
@@ -803,9 +864,9 @@ namespace bw
 					if (std::holds_alternative<bool>(property))
 						checkBox->setChecked(std::get<bool>(property));
 
-					connect(checkBox, &QCheckBox::toggled, [this, keyName = propertyInfo.keyName](bool checked)
+					connect(checkBox, &QCheckBox::toggled, [=](bool checked)
 					{
-						m_entityInfo.properties[keyName] = checked;
+						AccessProperty() = checked;
 					});
 
 					layout->addWidget(checkBox);
@@ -819,9 +880,9 @@ namespace bw
 					if (std::holds_alternative<float>(property))
 						spinbox->setValue(std::get<float>(property));
 
-					connect(spinbox, &QDoubleSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
+					connect(spinbox, &QDoubleSpinBox::editingFinished, [=]()
 					{
-						m_entityInfo.properties[keyName] = float(spinbox->value());
+						AccessProperty() = float(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -836,9 +897,9 @@ namespace bw
 					if (std::holds_alternative<Nz::Vector2f>(property))
 						spinbox->setValue(std::get<Nz::Vector2f>(property));
 
-					connect(spinbox, &Float2SpinBox::valueChanged, [this, spinbox, keyName = propertyInfo.keyName]()
+					connect(spinbox, &Float2SpinBox::valueChanged, [=]()
 					{
-						m_entityInfo.properties[keyName] = Nz::Vector2f(spinbox->value());
+						AccessProperty() = Nz::Vector2f(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -852,9 +913,9 @@ namespace bw
 					if (std::holds_alternative<Nz::Int64>(property))
 						spinbox->setValue(std::get<Nz::Int64>(property));
 
-					connect(spinbox, &QSpinBox::editingFinished, [this, spinbox, keyName = propertyInfo.keyName]()
+					connect(spinbox, &QSpinBox::editingFinished, [=]()
 					{
-						m_entityInfo.properties[keyName] = Nz::Int64(spinbox->value());
+						AccessProperty() = Nz::Int64(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -870,9 +931,9 @@ namespace bw
 					if (std::holds_alternative<Nz::Vector2i64>(property))
 						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(property)));
 
-					connect(spinbox, &Integer2SpinBox::valueChanged, [this, spinbox, keyName = propertyInfo.keyName]()
+					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
 					{
-						m_entityInfo.properties[keyName] = Nz::Vector2i64(spinbox->value());
+						AccessProperty() = Nz::Vector2i64(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -886,9 +947,9 @@ namespace bw
 					if (std::holds_alternative<std::string>(property))
 						lineEdit->setText(QString::fromStdString(std::get<std::string>(property)));
 
-					connect(lineEdit, &QLineEdit::editingFinished, [this, lineEdit, keyName = propertyInfo.keyName]()
+					connect(lineEdit, &QLineEdit::editingFinished, [=]()
 					{
-						m_entityInfo.properties[keyName] = lineEdit->text().toStdString();
+						AccessProperty() = lineEdit->text().toStdString();
 					});
 
 					layout->addWidget(lineEdit);
@@ -905,12 +966,11 @@ namespace bw
 
 	void EntityInfoDialog::OnAccept()
 	{
-		/*if (m_name->text().isEmpty())
+		if (m_entityTypeWidget->currentIndex() < 0)
 		{
-			QMessageBox::critical(this, "Missing informations", "Map name must be set", QMessageBox::Ok);
+			QMessageBox::critical(this, tr("Invalid entity type"), tr("You must select a valid entity type"), QMessageBox::Ok);
 			return;
 		}
-*/
 
 		accept();
 	}

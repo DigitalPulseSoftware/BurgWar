@@ -191,6 +191,7 @@ namespace bw
 		m_tileEditorWidget->deleteLater();
 
 		m_tileMap.Reset();
+		m_tileSelectionEntity.Reset();
 		m_tilemapEntity.Reset();
 	}
 

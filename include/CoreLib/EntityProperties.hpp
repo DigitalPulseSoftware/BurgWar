@@ -81,6 +81,8 @@ namespace bw
 	
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
 
+	constexpr std::size_t MaxPropertyCount = 256;
+
 	std::pair<PropertyInternalType, bool> ExtractPropertyType(const EntityProperty& property);
 
 	PropertyType ParsePropertyType(const std::string_view& str);

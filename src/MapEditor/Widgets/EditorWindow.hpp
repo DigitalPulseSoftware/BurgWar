@@ -25,9 +25,10 @@ class Gamemode;
 
 namespace bw
 {
-	class ScriptingContext;
+	class EntityInfoDialog;
 	class EditorMode;
 	class MapCanvas;
+	class ScriptingContext;
 
 	class EditorWindow : public BurgApp, public QMainWindow
 	{
@@ -52,6 +53,8 @@ namespace bw
 
 			void BuildAssetList();
 			void BuildMenu();
+
+			EntityInfoDialog* GetEntityInfoDialog();
 
 			void OnCompileMap();
 			void OnCreateEntity();
@@ -90,6 +93,7 @@ namespace bw
 			QAction* m_saveMapToolbar;
 			QListWidget* m_entityList;
 			QListWidget* m_layerList;
+			EntityInfoDialog* m_entityInfoDialog;
 			Map m_workingMap;
 			MapCanvas* m_canvas;
 	};

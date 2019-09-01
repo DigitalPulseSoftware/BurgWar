@@ -42,19 +42,19 @@ if (EDITOR) then
 				local tileMapEditor = TileMapEditorMode.new(entityEditor:GetTargetEntity(), {
 					mapSize = entityEditor:GetProperty("mapSize"),
 					tileSize = entityEditor:GetProperty("cellSize"),
-					origin = entityEditor:GetEntityPosition(),
-					rotation = entityEditor:GetEntityRotation(),
+					origin = entityEditor:GetPosition(),
+					rotation = entityEditor:GetRotation(),
 					content = entityEditor:GetProperty("content")
 				}, GenerateTiles(entityEditor:GetProperty("textures"), entityEditor:GetProperty("textureCells")), Editor)
 
 				tileMapEditor:SetFinishedCallback(function (tileMapData)
 					if (tileMapData) then
-						entityEditor:SetEntityPosition(tileMapData.origin)
-						entityEditor:SetEntityRotation(tileMapData.rotation)
+						entityEditor:UpdatePosition(tileMapData.origin)
+						entityEditor:UpdateRotation(tileMapData.rotation)
 
-						entityEditor:SetProperty("mapSize", tileMapData.mapSize)
-						entityEditor:SetProperty("cellSize", tileMapData.tileSize)
-						entityEditor:SetProperty("content", tileMapData.content)
+						entityEditor:UpdateProperty("mapSize", tileMapData.mapSize)
+						entityEditor:UpdateProperty("cellSize", tileMapData.tileSize)
+						entityEditor:UpdateProperty("content", tileMapData.content)
 					end
 
 					entityEditor:Show()

@@ -56,11 +56,9 @@ namespace bw
 		    "new", sol::no_constructor,
 
 		    "Hide", &EntityInfoDialog::hide,
-		    "Show", &EntityInfoDialog::show,
 			
-			"GetEntityPosition", &EntityInfoDialog::GetEntityPosition,
-			"GetEntityRotation", &EntityInfoDialog::GetEntityRotation,
-			"GetTargetEntity", &EntityInfoDialog::GetTargetEntity,
+			"GetPosition", &EntityInfoDialog::GetPosition,
+			"GetRotation", &EntityInfoDialog::GetRotation,
 
 			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state L)
 			{
@@ -68,13 +66,17 @@ namespace bw
 				return TranslateEntityPropertyToLua(state, entityInfo.GetProperty(propertyName));
 			},
 
-			"SetEntityPosition", &EntityInfoDialog::SetEntityPosition,
-			"SetEntityRotation", &EntityInfoDialog::SetEntityRotation,
+			"GetTargetEntity", &EntityInfoDialog::GetTargetEntity,
 
-			"SetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, const sol::object& propertyValue, sol::this_state state)
+			"Show", &EntityInfoDialog::show,
+
+			"UpdatePosition", &EntityInfoDialog::UpdatePosition,
+			"UpdateRotation", &EntityInfoDialog::UpdateRotation,
+
+			"UpdateProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, const sol::object& propertyValue, sol::this_state state)
 			{
 				auto [propertyType, isArray] = entityInfo.GetPropertyType(propertyName);
-				entityInfo.SetProperty(propertyName, TranslateEntityPropertyFromLua(propertyValue, propertyType, isArray));
+				entityInfo.UpdateProperty(propertyName, TranslateEntityPropertyFromLua(propertyValue, propertyType, isArray));
 			}
 		);
 	}

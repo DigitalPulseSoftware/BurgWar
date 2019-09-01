@@ -13,6 +13,8 @@
 #include <QtWidgets/QDialog>
 #include <tsl/hopscotch_map.h>
 #include <filesystem>
+#include <functional>
+#include <optional>
 
 class QComboBox;
 class QDoubleSpinBox;
@@ -34,34 +36,37 @@ namespace bw
 	{
 		std::string entityClass;
 		std::string entityName;
-		Nz::DegreeAnglef rotation;
-		Nz::Vector2f position;
+		Nz::DegreeAnglef rotation = Nz::DegreeAnglef::Zero();
+		Nz::Vector2f position = Nz::Vector2f::Zero();
 		EntityProperties properties;
 	};
 
 	class EntityInfoDialog : public QDialog
 	{
 		public:
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, const Ndk::EntityHandle& targetEntity, EntityInfo entityInfo, QWidget* parent = nullptr);
-			~EntityInfoDialog() = default;
+			using Callback = std::function<void(EntityInfoDialog* dialog)>;
 
-			inline const EntityInfo& GetEntityInfo() const;
-			inline const Nz::Vector2f& GetEntityPosition() const;
-			inline const Nz::DegreeAnglef& GetEntityRotation() const;
+			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			~EntityInfoDialog();
+
+			inline const EntityInfo& GetInfo() const;
+			inline const Nz::Vector2f& GetPosition() const;
+			inline const Nz::DegreeAnglef& GetRotation() const;
 
 			const EntityProperty& GetProperty(const std::string& propertyName) const;
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
-
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void SetEntityPosition(const Nz::Vector2f& position);
-			void SetEntityRotation(const Nz::DegreeAnglef& rotation);
-			void SetProperty(const std::string& propertyName, EntityProperty propertyValue);
+			void Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+
+			void UpdatePosition(const Nz::Vector2f& position);
+			void UpdateRotation(const Nz::DegreeAnglef& rotation);
+			void UpdateProperty(const std::string& propertyName, EntityProperty propertyValue);
 
 		private:
 			void OnAccept();
 			void OnEntityTypeUpdate();
+			void OnResetProperty();
 
 			void RefreshEntityType();
 			void RefreshPropertyEditor(std::size_t propertyIndex);
@@ -85,6 +90,7 @@ namespace bw
 			std::vector<std::string> m_entityTypes;
 			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
+			Callback m_callback;
 			ClientEntityStore& m_entityStore;
 			ScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
