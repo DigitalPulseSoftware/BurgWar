@@ -93,12 +93,24 @@ namespace bw
 			{
 				tileMapEditor.OnEditionCancelled.Connect([callback](TileMapEditorMode* /*emitter*/)
 				{
-					callback();
+					auto result = callback();
+					if (!result.valid())
+					{
+						sol::error err = result;
+						std::cerr << "OnEditionCancelled: Lua callback failed: " << err.what() << std::endl;
+						return;
+					}
 				});
 
 				tileMapEditor.OnEditionFinished.Connect([callback](TileMapEditorMode* /*emitter*/, const TileMapData& tileMapData)
 				{
-					callback(tileMapData);
+					auto result = callback(tileMapData);
+					if (!result.valid())
+					{
+						sol::error err = result;
+						std::cerr << "OnEditionFinished: Lua callback failed: " << err.what() << std::endl;
+						return;
+					}
 				});
 			},
 
