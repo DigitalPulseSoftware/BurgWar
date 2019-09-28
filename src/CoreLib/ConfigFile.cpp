@@ -4,7 +4,7 @@
 
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Lua/LuaInstance.hpp>
+#include <sol3/sol.hpp>
 #include <iostream>
 
 namespace bw
@@ -12,18 +12,16 @@ namespace bw
 	namespace
 	{
 		template<typename F>
-		bool ForEachSubVar(const std::string& varName, F func)
+		bool ForEachSubVar(const std::string_view& varName, F func)
 		{
 			std::size_t pos = 0;
 			std::size_t previousPos = 0;
 			while ((pos = varName.find('.', previousPos)) != std::string::npos)
 			{
-				//< TODO: Use string_view
-				std::string token = varName.substr(previousPos, pos - previousPos);
-				previousPos = pos + 1;
-
-				if (!func(std::move(token)))
+				if (!func(varName.substr(previousPos, pos - previousPos)))
 					return false;
+
+				previousPos = pos + 1;
 			}
 
 			return func(varName.substr(previousPos));
@@ -32,98 +30,110 @@ namespace bw
 
 	bool ConfigFile::LoadFromFile(const std::string& fileName)
 	{
-		Nz::LuaInstance configFile;
-		configFile.LoadLibraries();
+		sol::state lua;
+		lua.open_libraries();
 
-		if (!configFile.ExecuteFromFile(fileName))
+		try
 		{
-			std::cerr << "Failed to parse " << fileName << ": " << configFile.GetLastError() << std::endl;
-			return false;
-		}
-
-		auto PushLuaVariable = [&configFile](const std::string& optionName)
-		{
-			configFile.GetGlobal("_G");
-
-			return ForEachSubVar(optionName, [&configFile](const std::string& variable)
+			if (auto result = lua.safe_script_file(fileName); !result.valid())
 			{
-				configFile.GetField(variable);
-				configFile.Remove(-2);
-
-				return configFile.IsValid(-1);
-			});
-		};
-
-		for (auto& pair : m_options)
-		{
-			const std::string& optionName = pair.first;
-			ConfigOption& optionValue = pair.second;
-
-			if (!PushLuaVariable(optionName))
-			{
-				std::cerr << "Missing config option \"" << optionName << "\"" << std::endl;
+				sol::error err = result;
+				std::cerr << "Failed to execute " << fileName << ": " << err.what() << std::endl;
 				return false;
 			}
 
-			try
+			lua_State* L = lua.lua_state();
+
+			auto PushLuaVariable = [L](const std::string& optionName)
 			{
-				std::visit([&](auto&& arg) {
-					using T = std::decay_t<decltype(arg)>;
+				lua_getglobal(L, "_G");
 
-					// Get value
-					if constexpr (std::is_same_v<T, BoolOption>)
-					{
-						if (!configFile.IsOfType(-1, Nz::LuaType_Boolean))
-							throw std::runtime_error("Boolean expected");
+				return ForEachSubVar(optionName, [L](std::string_view variable)
+				{
+					lua_getfield(L, -1, std::string(variable).data());
+					lua_remove(L, -2);
 
-						arg.value = configFile.CheckBoolean(-1);
-					}
-					else if constexpr (std::is_same_v<T, FloatOption>)
-					{
-						if (!configFile.IsOfType(-1, Nz::LuaType_Number))
-							throw std::runtime_error("Float expected");
+					return lua_isnoneornil(L, -1) == 0;
+				});
+			};
 
-						arg.value = configFile.CheckNumber(-1);
-					}
-					else if constexpr (std::is_same_v<T, IntegerOption>)
-					{
-						if (!configFile.IsOfType(-1, Nz::LuaType_Number))
-							throw std::runtime_error("Integer expected");
-
-						arg.value = configFile.CheckInteger(-1);
-					}
-					else if constexpr (std::is_same_v<T, StringOption>)
-					{
-						if (!configFile.IsOfType(-1, Nz::LuaType_String))
-							throw std::runtime_error("string expected");
-
-						arg.value = configFile.CheckString(-1);
-					}
-					else
-						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-					// Check bounds
-					if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
-					{
-						if (arg.value < arg.minBounds)
-							throw std::runtime_error("option value is under bounds (" + std::to_string(arg.value) + " < " + std::to_string(arg.minBounds) + ')');
-						else if (arg.value > arg.maxBounds)
-							throw std::runtime_error("option value is over bounds (" + std::to_string(arg.value) + " > " + std::to_string(arg.maxBounds) + ')');
-					}
-
-				}, optionValue);
-			}
-			catch (const std::exception& e)
+			for (auto& pair : m_options)
 			{
-				std::cerr << "Failed to get " << optionName << ": " << e.what() << std::endl;
-			}
-			catch (...)
-			{
-				std::cerr << "Failed to get " << optionName << ": " << configFile.ToString(-1) << std::endl;
-				configFile.Pop(configFile.GetStackTop());
-			}
+				const std::string& optionName = pair.first;
+				ConfigOption& optionValue = pair.second;
 
-			configFile.Pop();
+				if (!PushLuaVariable(optionName))
+				{
+					std::cerr << "Missing config option \"" << optionName << "\"" << std::endl;
+					return false;
+				}
+
+				try
+				{
+					std::visit([&](auto&& arg)
+					{
+						using T = std::decay_t<decltype(arg)>;
+
+						// Get value
+						if constexpr (std::is_same_v<T, BoolOption>)
+						{
+							if (!lua_isboolean(L, -1))
+								throw std::runtime_error("Boolean expected");
+
+							arg.value = lua_toboolean(L, -1);
+						}
+						else if constexpr (std::is_same_v<T, FloatOption>)
+						{
+							if (!lua_isnumber(L, -1))
+								throw std::runtime_error("Float expected");
+
+							arg.value = luaL_checknumber(L, -1);
+						}
+						else if constexpr (std::is_same_v<T, IntegerOption>)
+						{
+							if (!lua_isnumber(L, -1))
+								throw std::runtime_error("Integer expected");
+
+							arg.value = luaL_checkinteger(L, -1);
+						}
+						else if constexpr (std::is_same_v<T, StringOption>)
+						{
+							if (!lua_isstring(L, -1))
+								throw std::runtime_error("string expected");
+
+							arg.value = luaL_checkstring(L, -1);
+						}
+						else
+							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+						// Check bounds
+						if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
+						{
+							if (arg.value < arg.minBounds)
+								throw std::runtime_error("option value is under bounds (" + std::to_string(arg.value) + " < " + std::to_string(arg.minBounds) + ')');
+							else if (arg.value > arg.maxBounds)
+								throw std::runtime_error("option value is over bounds (" + std::to_string(arg.value) + " > " + std::to_string(arg.maxBounds) + ')');
+						}
+
+						}, optionValue);
+				}
+				catch (const std::exception& e)
+				{
+					std::cerr << "Failed to get " << optionName << ": " << e.what() << std::endl;
+				}
+				catch (...)
+				{
+					std::cerr << "Failed to get " << optionName << ": " << lua_tostring(L, -1) << std::endl;
+					lua_pop(L, lua_gettop(L));
+				}
+
+				lua_pop(L, 1);
+			}
+		}
+		catch (const sol::error& e)
+		{
+			std::cerr << "Failed to parse " << fileName << ": " << e.what() << std::endl;
+			return false;
 		}
 
 		return true;
