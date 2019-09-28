@@ -52,7 +52,7 @@ function ENTITY:Explode()
 		local maxs = Vec2(256, 256)
 		local mins = Vec2(-256, -256)
 
-		GM:DealDamage(self:GetPosition(), 0, Rect(pos + mins, pos + maxs), 100000)
+		self:DealDamage(self:GetPosition(), 0, Rect(pos + mins, pos + maxs), 100000)
 	end
 end
 

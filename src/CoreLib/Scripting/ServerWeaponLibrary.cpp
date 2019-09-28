@@ -23,29 +23,6 @@ namespace bw
 
 	void ServerWeaponLibrary::RegisterServerLibrary(sol::table& elementMetatable)
 	{
-		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
-
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
-			{
-				if (hitEntity->HasComponent<HealthComponent>())
-					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
-				}
-			});
-		};
-
-		elementMetatable["DealDamage"] = sol::overload(DealDamage,
-			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); },
-			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce) { DealDamage(entityTable, origin, damage, damageZone, pushbackForce); });
-
 		elementMetatable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
