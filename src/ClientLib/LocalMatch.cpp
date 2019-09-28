@@ -230,11 +230,6 @@ namespace bw
 		return *m_weaponStore;
 	}
 
-	SharedWorld& LocalMatch::GetWorld()
-	{
-		return m_world;
-	}
-
 	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
 	{
 		if (!m_assetStore)

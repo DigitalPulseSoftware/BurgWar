@@ -63,7 +63,6 @@ namespace bw
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
 			inline const Nz::SpriteRef& GetTrailSprite() const; //< FIXME: This is pure garbage
-			SharedWorld& GetWorld() override; //< Temporary (while we don't have layers)
 
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);

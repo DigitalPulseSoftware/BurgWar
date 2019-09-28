@@ -110,11 +110,6 @@ namespace bw
 		}
 	}
 
-	SharedWorld& Match::GetWorld()
-	{
-		return m_terrain->GetLayer(0).GetWorld();
-	}
-
 	void Match::Leave(Player* player)
 	{
 		assert(player->GetMatch() == this);

@@ -35,7 +35,6 @@ namespace bw
 			inline Nz::UInt64 GetCurrentTime() const;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
-			virtual SharedWorld& GetWorld() = 0; //< Temporary (while we don't have layers)
 
 			virtual SharedEntityStore& GetEntityStore() = 0;
 			virtual const SharedEntityStore& GetEntityStore() const = 0;
