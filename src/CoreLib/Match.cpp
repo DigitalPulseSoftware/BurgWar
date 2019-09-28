@@ -33,7 +33,7 @@ namespace bw
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
 
-		m_map = Map::LoadFromBinary("mapdetest.bmap");
+		m_map = Map::LoadFromBinary(app.GetConfig().GetStringOption("GameSettings.MapFile"));
 
 		ReloadAssets();
 		ReloadScripts();

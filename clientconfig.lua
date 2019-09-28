@@ -7,5 +7,6 @@ Debug = {
 	ShowServerGhosts = false
 }
 GameSettings = {
+	MapFile = "mapdetest.bmap",
 	TickRate = 33,
 }
