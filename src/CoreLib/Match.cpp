@@ -57,7 +57,14 @@ namespace bw
 
 	Match::~Match()
 	{
+		// Clear timer manager before scripting context gets deleted
 		GetTimerManager().Clear();
+
+		// Release scripts classes before scripting context
+		m_entityStore.reset();
+		m_weaponStore.reset();
+		m_gamemode.reset();
+		m_scriptingLibrary.reset();
 	}
 
 	Packets::ClientAssetList Match::BuildClientAssetListPacket() const

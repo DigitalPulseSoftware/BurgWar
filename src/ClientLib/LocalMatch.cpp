@@ -199,6 +199,11 @@ namespace bw
 	{
 		// Clear timer manager before scripting context gets deleted
 		GetTimerManager().Clear();
+
+		// Release scripts classes before scripting context
+		m_entityStore.reset();
+		m_weaponStore.reset();
+		m_gamemode.reset();
 	}
 
 	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
