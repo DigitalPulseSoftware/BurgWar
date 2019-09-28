@@ -20,8 +20,8 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This file was generated with a script.
-// Generated 2019-06-10 17:07:43.270577 UTC
-// This header was generated with sol v3.0.2 (revision dafb184)
+// Generated 2019-07-04 15:29:43.969662 UTC
+// This header was generated with sol v3.0.3 (revision d83e1a5)
 // https://github.com/ThePhD/sol2
 
 #ifndef SOL_SINGLE_INCLUDE_HPP
@@ -1187,10 +1187,13 @@ namespace sol {
 		namespace meta_detail {
 			template <typename T>
 			using is_dereferenceable_test = decltype(*std::declval<T>());
+
+			template <typename T>
+			using is_explicitly_dereferenceable_test = decltype(std::declval<T>().operator*());
 		}
 
 		template <typename T>
-		using is_pointer_like = std::integral_constant<bool, !std::is_array_v<T> && (std::is_pointer_v<T> || is_detected_v<meta_detail::is_dereferenceable_test, T>)>;
+		using is_pointer_like = std::integral_constant<bool, !std::is_array_v<T> && (std::is_pointer_v<T> || is_detected_v<meta_detail::is_explicitly_dereferenceable_test, T>)>;
 
 		template <typename T>
 		constexpr inline bool is_pointer_like_v = is_pointer_like<T>::value;
@@ -10886,7 +10889,7 @@ namespace sol { namespace stack {
 				const bool success = false;
 				if (!success) {
 					// expected type, actual type
-					handler(L, index, type::number, type_of(L, index), "not a numeric (integral) type");
+					handler(L, index, type::number, type_of(L, index), "not a numeric type that fits  exactly an integer (has significant decimals)");
 				}
 #else
 				type t = type_of(L, index);
@@ -10918,6 +10921,8 @@ namespace sol { namespace stack {
 					// expected type, actual type
 #if defined(SOL_STRINGS_ARE_NUMBERS) && SOL_STRINGS_ARE_NUMBERS
 					handler(L, index, type::number, type_of(L, index), "not a numeric type or numeric string");
+#elif (defined(SOL_SAFE_NUMERICS) && SOL_SAFE_NUMERICS)
+					handler(L, index, type::number, t, "not a numeric type that fits  exactly an integer (has significant decimals)");
 #else
 					handler(L, index, type::number, t, "not a numeric type");
 #endif
@@ -12715,9 +12720,9 @@ namespace sol { namespace stack {
 #if defined(SOL_STD_VARIANT) && SOL_STD_VARIANT
 	template <typename... Tn>
 	struct unqualified_getter<std::variant<Tn...>> {
-		using V =  std::variant<Tn...>;
-		
-		static V get_one(std::integral_constant<std::size_t, 0>, lua_State* L, int index, record& tracking) {
+		using V = std::variant<Tn...>;
+
+		static V get_one(std::integral_constant<std::size_t, std::variant_size_v<V>>, lua_State* L, int index, record& tracking) {
 			(void)L;
 			(void)index;
 			(void)tracking;
@@ -12733,17 +12738,17 @@ namespace sol { namespace stack {
 
 		template <std::size_t I>
 		static V get_one(std::integral_constant<std::size_t, I>, lua_State* L, int index, record& tracking) {
-			typedef std::variant_alternative_t<I - 1, V> T;
+			typedef std::variant_alternative_t<I, V> T;
 			record temp_tracking = tracking;
 			if (stack::check<T>(L, index, no_panic, temp_tracking)) {
 				tracking = temp_tracking;
-				return V(std::in_place_index<I - 1>, stack::get<T>(L, index));
+				return V(std::in_place_index<I>, stack::get<T>(L, index));
 			}
-			return get_one(std::integral_constant<std::size_t, I - 1>(), L, index, tracking);
+			return get_one(std::integral_constant<std::size_t, I + 1>(), L, index, tracking);
 		}
 
 		static V get(lua_State* L, int index, record& tracking) {
-			return get_one(std::integral_constant<std::size_t, std::variant_size_v<V>>(), L, index, tracking);
+			return get_one(std::integral_constant<std::size_t, 0>(), L, index, tracking);
 		}
 	};
 #endif // SOL_STD_VARIANT
@@ -18262,7 +18267,7 @@ namespace sol {
 			return stack::pop<std::tuple<Ret...>>(lua_state());
 		}
 
-		template <std::size_t I, typename Ret>
+		template <std::size_t I, typename Ret, meta::enable<meta::neg<std::is_void<Ret>>> = meta::enabler>
 		Ret invoke(types<Ret>, std::index_sequence<I>, std::ptrdiff_t n) const {
 			luacall(n, lua_size<Ret>::value);
 			return stack::pop<Ret>(lua_state());
@@ -18380,7 +18385,7 @@ namespace sol {
 				base_t::push();
 			}
 			int pushcount = stack::multi_push_reference(lua_state(), std::forward<Args>(args)...);
-			return invoke(types<Ret...>(), std::make_index_sequence<sizeof...(Ret)>(), pushcount);
+			return invoke(types<Ret...>(), std::make_index_sequence<sizeof...(Ret)>(), static_cast<std::ptrdiff_t>(pushcount));
 		}
 	};
 } // namespace sol
@@ -25694,19 +25699,65 @@ namespace sol {
 
 namespace sol {
 
-	struct variadic_results : public std::vector<object> {
-		using std::vector<object>::vector;
+	template <typename Al = typename std::allocator<object>>
+	struct basic_variadic_results : public std::vector<object, Al> {
+	private:
+		using base_t = std::vector<object, Al>;
+
+	public:
+		basic_variadic_results() : base_t() {}
+
+		basic_variadic_results(unsafe_function_result fr) : base_t() {
+			this->reserve(fr.return_count());
+			this->insert(this->cend(), fr.begin(), fr.end());
+		}
+
+		basic_variadic_results(protected_function_result fr) : base_t() {
+			this->reserve(fr.return_count());
+			this->insert(this->cend(), fr.begin(), fr.end());
+		}
+
+		template <typename Arg0, typename... Args,
+		     meta::disable_any<std::is_same<meta::unqualified_t<Arg0>, basic_variadic_results>, std::is_same<meta::unqualified_t<Arg0>, function_result>,
+		          std::is_same<meta::unqualified_t<Arg0>, protected_function_result>> = meta::enabler>
+		basic_variadic_results(Arg0&& arg0, Args&&... args) : base_t(std::forward<Arg0>(arg0), std::forward<Args>(args)...) {
+		}
+
+		basic_variadic_results(const basic_variadic_results&) = default;
+		basic_variadic_results(basic_variadic_results&&) = default;
 	};
 
+	struct variadic_results : public basic_variadic_results<> {
+	private:
+		using base_t = basic_variadic_results<>;
+
+	public:
+		using base_t::base_t;
+	};
+
+	template <typename Al>
+	struct is_container<basic_variadic_results<Al>> : std::false_type {};
+
+	template <>
+	struct is_container<variadic_results> : std::false_type {};
+
 	namespace stack {
-		template <>
-		struct unqualified_pusher<variadic_results> {
-			int push(lua_State* L, const variadic_results& e) {
+		template <typename Al>
+		struct unqualified_pusher<basic_variadic_results<Al>> {
+			int push(lua_State* L, const basic_variadic_results<Al>& e) {
 				int p = 0;
 				for (const auto& i : e) {
 					p += stack::push(L, i);
 				}
 				return p;
+			}
+		};
+
+		template <>
+		struct unqualified_pusher<variadic_results> {
+			int push(lua_State* L, const variadic_results& r) {
+				using base_t = basic_variadic_results<>;
+				return stack::push(L, static_cast<const base_t&>(r));
 			}
 		};
 	} // namespace stack
