@@ -294,7 +294,7 @@ workspace("Burgwar")
 					libdirs(dir .. "/x64")
 			end
 
-			for _, dir in pairs(frameworkLibs) do
+			for _, dir in pairs(frameworkBins) do
 				filter {"architecture:x86", "configurations:Debug"}
 					libdirs(dir .. "/debug")
 					libdirs(dir .. "/x86/debug")
