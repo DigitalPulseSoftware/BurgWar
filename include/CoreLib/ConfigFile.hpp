@@ -12,10 +12,12 @@
 
 namespace bw
 {
+	class BurgApp;
+
 	class ConfigFile
 	{
 		public:
-			ConfigFile() = default;
+			ConfigFile(BurgApp& app);
 			~ConfigFile() = default;
 
 			inline bool GetBoolOption(const std::string& optionName) const;
@@ -67,6 +69,7 @@ namespace bw
 			inline void RegisterOption(std::string optionName, ConfigOption option);
 
 			std::unordered_map<std::string, ConfigOption> m_options;
+			BurgApp& m_app;
 	};
 }
 

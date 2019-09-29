@@ -9,19 +9,26 @@
 
 #include <Nazara/Prerequisites.hpp>
 #include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
 	class BurgApp
 	{
 		public:
+			using Logger = Logger<NoLogger>;
+
 			BurgApp();
 			~BurgApp() = default;
 
 			inline Nz::UInt64 GetAppTime() const;
 			inline const ConfigFile& GetConfig() const;
+			inline Logger& GetLogger();
 
 			void Update();
+
+		private:
+			Logger m_logger;
 
 		protected:
 			ConfigFile m_config;

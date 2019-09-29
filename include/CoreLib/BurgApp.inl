@@ -18,4 +18,9 @@ namespace bw
 	{
 		return m_config;
 	}
+	
+	inline auto BurgApp::GetLogger() -> Logger&
+	{
+		return m_logger;
+	}
 }

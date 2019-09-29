@@ -2,6 +2,20 @@ WorkspaceName = "Burgwar"
 Projects = {
 	{
 		Group = "Dependencies",
+		Name = "libfmt",
+		Kind = "StaticLib",
+		Defines = {},
+		Files = {
+			"../contrib/fmt/include/fmt/**.h",
+			"../contrib/fmt/src/fmt/**.cc",
+		},
+		Libs = {},
+		LibsDebug = {},
+		LibsRelease = {},
+		AdditionalDependencies = {}
+	},
+	{
+		Group = "Dependencies",
 		Name = "Lua",
 		Kind = "StaticLib",
 		Defines = {},
@@ -30,8 +44,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"Lua-d"},
-		LinkStaticRelease = {"Lua"},
+		LinkStaticDebug = {"Lua-d", "libfmt-d"},
+		LinkStaticRelease = {"Lua", "libfmt"},
 		Libs = {},
 		LibsDebug = {},
 		LibsRelease = {},
@@ -70,8 +84,8 @@ Projects = {
 		},
 		Frameworks = {"Curl", "Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d"},
-		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua"},
+		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d", "libfmt-d"},
+		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua", "libfmt"},
 		Libs = {"libcurl"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -81,7 +95,7 @@ Projects = {
 		Group = "Executable",
 		Name = "Server",
 		Kind = "ConsoleApp",
-		Defines = {"NDK_SERVER", "SOL_SAFE_NUMERICS=1"},
+		Defines = { "NDK_SERVER", "SOL_SAFE_NUMERICS=1" },
 		Files = {
 			"../src/Server/**.hpp",
 			"../src/Server/**.inl",
@@ -89,8 +103,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"CoreLib-d", "Lua-d"},
-		LinkStaticRelease = {"CoreLib", "Lua"},
+		LinkStaticDebug = {"CoreLib-d", "Lua-d", "libfmt-d"},
+		LinkStaticRelease = {"CoreLib", "Lua", "libfmt"},
 		Libs = {},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
@@ -108,8 +122,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara", "Qt"},
 		LinkStatic = {},
-		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d"},
-		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua"},
+		LinkStaticDebug = {"CoreLib-d", "ClientLib-d", "Lua-d", "libfmt-d"},
+		LinkStaticRelease = {"CoreLib", "ClientLib", "Lua", "libfmt"},
 		Libs = os.istarget("windows") and {} or {"pthread"},
 		LibsDebug = {"Qt5Cored", "Qt5Guid", "Qt5Widgetsd", "NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"Qt5Core", "Qt5Gui", "Qt5Widgets", "NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -164,6 +178,7 @@ workspace("Burgwar")
 	targetdir("../bin/%{cfg.buildcfg}")
 
 	includedirs({
+		"../contrib/fmt/include",
 		"../contrib/lua/include",
 		"../include",
 		"../src",
