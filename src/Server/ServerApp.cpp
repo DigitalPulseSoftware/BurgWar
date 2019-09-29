@@ -38,5 +38,6 @@ namespace bw
 
 	void ServerApp::RegisterServerConfig()
 	{
+		m_config.RegisterStringOption("GameSettings.MapFile");
 	}
 }
