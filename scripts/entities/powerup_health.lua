@@ -13,7 +13,10 @@ function ENTITY:Initialize()
 	self:EnableCollisionCallbacks(true)
 
 	if (CLIENT) then
-		self:AddSprite("placeholder/healthpack.png", Vec2(0.25, 0.25))
+		self:AddSprite({
+			Scale = Vec2(0.25, 0.25),
+			TexturePath = "placeholder/healthpack.png"
+		})
 	end
 end
 

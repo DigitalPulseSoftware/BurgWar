@@ -1,6 +1,5 @@
 RegisterClientScript("cl_init.lua")
 RegisterClientScript("shared.lua")
-RegisterClientScript("monautrefichier.lua")
 
 function ENTITY:Init()
 end

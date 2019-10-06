@@ -23,8 +23,22 @@ namespace bw
 		luaState.open_libraries();
 
 		RegisterGlobalLibrary(context);
+		RegisterMatchLibrary(context);
 		RegisterMetatableLibrary(context);
 		RegisterTimerLibrary(context);
+	}
+
+	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		sol::table script = state.create_table();
+
+		script["GetCurrentTime"] = [this]()
+		{
+			return m_match.GetCurrentTime() / 1000.f;
+		};
+
+		state["match"] = script;
 	}
 
 	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context)

@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Scripting/Sprite.hpp>
 #include <iostream>
 
 namespace bw
@@ -27,6 +28,7 @@ namespace bw
 
 		RegisterDummyInputController(context);
 		RegisterScriptLibrary(context);
+		RegisterSpriteClass(context);
 
 		context.Load("autorun");
 	}
@@ -65,6 +67,21 @@ namespace bw
 		};
 
 		state["scripts"] = script;
+	}
+
+	void ClientScriptingLibrary::RegisterSpriteClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Sprite>("Sprite",
+			"new", sol::no_constructor,
+
+			"GetOrigin", &Sprite::GetOrigin,
+			"GetSize", &Sprite::GetSize,
+
+			"Hide", &Sprite::Hide,
+			"Show", sol::overload(&Sprite::Show, [](Sprite* sprite) { return sprite->Show(); })
+		);
 	}
 
 	LocalMatch& ClientScriptingLibrary::GetMatch()

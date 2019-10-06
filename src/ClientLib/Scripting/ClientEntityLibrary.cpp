@@ -6,6 +6,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
@@ -23,9 +24,18 @@ namespace bw
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const std::string& texturePath, const Nz::Vector2f& scale)
+		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			std::string texturePath = parameters["TexturePath"];
+			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector2f offset = parameters.get_or("Offset", Nz::Vector2f(0.f, 0.f));
+			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
+			Nz::Vector2f origin = parameters.get_or("Origin", Nz::Vector2f(0.5f, 0.5f));
+			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
+
+			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
@@ -35,12 +45,12 @@ namespace bw
 			Nz::SpriteRef sprite = Nz::Sprite::New();
 			sprite->SetMaterial(mat);
 			sprite->SetSize(sprite->GetSize() * scale);
-			Nz::Vector2f burgerSize = sprite->GetSize();
-
-			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y / 2.f));
+			sprite->SetOrigin(sprite->GetSize() * origin);
 
 			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(sprite);
+			gfxComponent.Attach(sprite, transformMatrix, renderOrder);
+
+			return Sprite(entity, sprite, transformMatrix, renderOrder);
 		};
 
 		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)

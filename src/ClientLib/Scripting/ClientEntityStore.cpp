@@ -17,16 +17,12 @@ namespace bw
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
-		std::string spritePath;
 		bool hasInputs;
 		bool playerControlled;
-		float scale;
 		try
 		{
 			hasInputs = entityClass->elementTable["HasInputs"];
 			playerControlled = entityClass->elementTable["PlayerControlled"];
-			scale = entityClass->elementTable["Scale"];
-			spritePath = entityClass->elementTable["Sprite"];
 		}
 		catch (const std::exception& e)
 		{
@@ -37,24 +33,6 @@ namespace bw
 		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 
 		entity->AddComponent<Ndk::GraphicsComponent>();
-
-		// Warning what's following is ugly
-		if (entityClass->name == "burger")
-		{
-			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(m_assetStore.GetTexture(spritePath));
-			auto& sampler = mat->GetDiffuseSampler();
-			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
-
-			Nz::SpriteRef sprite = Nz::Sprite::New();
-			sprite->SetMaterial(mat);
-			sprite->SetSize(sprite->GetSize() * scale);
-			Nz::Vector2f burgerSize = sprite->GetSize();
-
-			sprite->SetOrigin(Nz::Vector2f(burgerSize.x / 2.f, burgerSize.y - 3.f));
-
-			entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite);
-		}
 
 		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);

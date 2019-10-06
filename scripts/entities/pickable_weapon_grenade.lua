@@ -12,7 +12,10 @@ function ENTITY:Initialize()
 	self:EnableCollisionCallbacks(true)
 
 	if (CLIENT) then
-		self:AddSprite("grenade.png", Vec2(0.3, 0.3))
+		self:AddSprite({
+			Scale = Vec2(0.3, 0.3),
+			TexturePath = "grenade.png"
+		})
 	end
 end
 

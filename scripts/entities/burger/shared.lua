@@ -1,12 +1,21 @@
-RegisterClientAssets("burger.png")
-
-print(ENTITY.Name)
 ENTITY.IsNetworked = true
-ENTITY.Sprite = "burger.png"
+ENTITY.Sprite = "burger2.png"
 ENTITY.Scale = 0.33
 ENTITY.PlayerControlled = true
 ENTITY.MaxHealth = 1000
 ENTITY.HasInputs = true
+ENTITY.Faces = {
+	Attack = "faces/face_attack.png",
+	Damage = "faces/face_damage.png",
+	Default = "faces/face_default.png",
+	Rampage = "faces/face_rampage.png",
+	Victory = "faces/face_victory.png"
+}
+
+RegisterClientAssets(ENTITY.Sprite)
+for _, texturePath in pairs(ENTITY.Faces) do
+	RegisterClientAssets(texturePath)
+end
 
 function ENTITY:Initialize()
 	local size = {277 / 3, 253 / 3}

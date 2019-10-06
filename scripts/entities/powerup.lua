@@ -15,7 +15,10 @@ ENTITY.CanSpawn = true
 
 function ENTITY:Initialize()
 	if (CLIENT) then
-		self:AddSprite("placeholder/socle.png", Vec2(0.5, 0.5))
+		self:AddSprite({
+			Scale = Vec2(0.5, 0.5),
+			TexturePath = "placeholder/socle.png"
+		})
 	end
 end
 
