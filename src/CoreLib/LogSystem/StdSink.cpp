@@ -6,6 +6,7 @@
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Core/StackArray.hpp>
+#include <cwchar>
 #include <iostream>
 #include <vector>
 
@@ -19,6 +20,8 @@
 #define NOMINMAX
 #endif
 
+#include <io.h>
+#include <fcntl.h>
 #include <windows.h>
 
 #else
@@ -99,16 +102,27 @@ namespace bw
 		const char* levelStr = ToString(context.level);
 
 #ifdef NAZARA_PLATFORM_WINDOWS
+		FILE* output = (context.level >= LogLevel::Warning) ? stderr : stdout;
 		HANDLE console = GetStdHandle((context.level >= LogLevel::Warning) ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
+		bool unicodeMode = false;
+		for (char c : content)
+		{
+			if (c & 0x80)
+			{
+				unicodeMode = true;
+				break;
+			}
+		}
 
-		std::size_t bufferLength = 1 + std::strlen(levelStr) + 2 + content.size() + 1;
-		char* bufferPtr;
-		Nz::StackArray<char> stackBuffer;
-		std::vector<char> heapBuffer;
+		std::size_t levelLength = std::strlen(levelStr);
+		std::size_t bufferLength = 1 + levelLength + 2 + content.size() + 1 + 1;
+		Nz::StackArray<wchar_t> stackBuffer;
+		std::vector<wchar_t> heapBuffer;
+		wchar_t* bufferPtr;
 
 		if (bufferLength >= 16 * 1024)
 		{
-			stackBuffer = NazaraStackArrayNoInit(char, bufferLength);
+			stackBuffer = NazaraStackArrayNoInit(wchar_t, bufferLength);
 			bufferPtr = stackBuffer.data();
 		}
 		else
@@ -117,10 +131,23 @@ namespace bw
 			bufferPtr = heapBuffer.data();
 		}
 
-		int writtenSize = std::snprintf(bufferPtr, bufferLength, "[%s] %.*s", levelStr, int(content.size()), content.data());
-		if (writtenSize < 0 || writtenSize > bufferLength)
-			std::cerr << "Buffer is too small!" << std::endl;
+		int offset = 0;
 
+		bufferPtr[offset++] = L'[';
+		offset += MultiByteToWideChar(CP_UTF8, 0, levelStr, int(levelLength), &bufferPtr[offset], int(bufferLength) - offset);
+		bufferPtr[offset++] = L']';
+		bufferPtr[offset++] = L' ';
+
+		int wideSize = MultiByteToWideChar(CP_UTF8, 0, content.data(), int(content.size()), &bufferPtr[offset], int(bufferLength) - offset);
+		if (wideSize == 0)
+		{
+			std::cerr << "Failed to convert to wide char";
+			return;
+		}
+		offset += wideSize;
+
+		bufferPtr[offset++] = L'\n';
+		bufferPtr[offset++] = L'\0';
 
 		CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 		GetConsoleScreenBufferInfo(console, &consoleInfo);
@@ -128,9 +155,14 @@ namespace bw
 
 		SetConsoleTextAttribute(console, GetColor(context.level));
 
-		DWORD nobodyCares;
-		WriteFile(console, bufferPtr, static_cast<DWORD>(bufferLength), &nobodyCares, nullptr);
+		int originalConsoleMode;
+		if (unicodeMode)
+			originalConsoleMode = _setmode(_fileno(output), _O_U16TEXT);
 
+		fputws(bufferPtr, output); //< Don't output null character
+
+		if (unicodeMode)
+			_setmode(_fileno(output), originalConsoleMode);
 		SetConsoleTextAttribute(console, oldColor);
 #else
 		std::cout << "[" << ToString(context.level) << "] " << content << std::endl;
