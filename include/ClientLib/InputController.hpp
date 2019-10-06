@@ -21,9 +21,9 @@ namespace bw
 			InputController() = default;
 			virtual ~InputController();
 
-			virtual PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) = 0;
+			virtual PlayerInputData Poll(LocalMatch& localMatch, const Ndk::EntityHandle& controlledEntity) = 0;
 
-			NazaraSignal(OnSwitchWeapon, InputController* /*emitter*/, Nz::UInt8 /*localPlayerIndex*/, bool /*direction*/);
+			NazaraSignal(OnSwitchWeapon, InputController* /*emitter*/, bool /*direction*/);
 	};
 }
 

@@ -11,6 +11,15 @@
 #include <type_traits>
 #include <vector>
 
+namespace bw
+{
+	class InputController;
+	class DummyInputController;
+}
+
+SOL_BASE_CLASSES(bw::DummyInputController, bw::InputController);
+SOL_DERIVED_CLASSES(bw::InputController, bw::DummyInputController);
+
 namespace sol
 {
 	template<>

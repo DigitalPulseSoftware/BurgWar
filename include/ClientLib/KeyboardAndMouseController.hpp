@@ -12,18 +12,17 @@
 
 namespace bw
 {
-	class LocalMatch;
-
 	class KeyboardAndMouseController : public InputController
 	{
 		public:
-			KeyboardAndMouseController(Nz::Window& window);
+			KeyboardAndMouseController(Nz::Window& window, Nz::UInt8 localPlayerIndex);
 			~KeyboardAndMouseController() = default;
 
-			PlayerInputData Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity) override;
+			PlayerInputData Poll(LocalMatch& localMatch, const Ndk::EntityHandle& controlledEntity) override;
 
 		private:
 			Nz::Window& m_window;
+			Nz::UInt8 m_localPlayerIndex;
 	};
 }
 

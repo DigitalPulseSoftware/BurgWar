@@ -51,6 +51,8 @@ namespace bw
 		private:
 			virtual bool event(QEvent* e) override;
 
+			void AddToRecentFileList(const QString& mapFolder);
+
 			void BuildAssetList();
 			void BuildMenu();
 

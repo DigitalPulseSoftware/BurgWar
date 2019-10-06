@@ -33,6 +33,8 @@ namespace bw
 
 			void Disconnect();
 
+			template<typename F> void ForEachPlayer(F&& func);
+
 			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;

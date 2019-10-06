@@ -23,6 +23,7 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
+			void RegisterDummyInputController(ScriptingContext& context);
 			void RegisterScriptLibrary(ScriptingContext& context);
 
 			LocalMatch& GetMatch();

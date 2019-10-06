@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <iostream>
 
@@ -24,9 +25,33 @@ namespace bw
 		state["RegisterClientAssets"] = []() {}; // Dummy function
 		state["RegisterClientScript"] = []() {}; // Dummy function
 
+		RegisterDummyInputController(context);
 		RegisterScriptLibrary(context);
 
 		context.Load("autorun");
+	}
+
+	void ClientScriptingLibrary::RegisterDummyInputController(ScriptingContext& context)
+	{
+#define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
+		[](DummyInputController& input) { return input.GetInputs(). name ; }, \
+		[](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; })
+
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<InputController>("InputController");
+
+		state.new_usertype<DummyInputController>("DummyInputController",
+			sol::base_classes, sol::bases<InputController>(),
+			"new", sol::factories(&std::make_shared<DummyInputController>),
+
+			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
+			BW_INPUT_PROPERTY(isAttacking, bool),
+			BW_INPUT_PROPERTY(isJumping, bool),
+			BW_INPUT_PROPERTY(isMovingLeft, bool),
+			BW_INPUT_PROPERTY(isMovingRight, bool)
+		);
+
+#undef BW_INPUT_PROPERTY
 	}
 
 	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context)

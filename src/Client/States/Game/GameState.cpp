@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/GameState.hpp>
-#include <ClientLib/KeyboardAndMouseController.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/Game/ConnectionLostState.hpp>
@@ -18,9 +17,7 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		auto inputController = std::make_shared<KeyboardAndMouseController>(*stateData.window);
-
-		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, &stateData.canvas.value(),  *m_clientSession, matchData, inputController);
+		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, &stateData.canvas.value(),  *m_clientSession, matchData);
 	}
 
 	void GameState::Enter(Ndk::StateMachine& fsm)

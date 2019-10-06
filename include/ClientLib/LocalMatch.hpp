@@ -44,7 +44,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController);
+			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch();
@@ -138,6 +138,7 @@ namespace bw
 				}
 
 				std::size_t selectedWeapon;
+				std::shared_ptr<InputController> inputController;
 				std::vector<Ndk::EntityHandle> weapons;
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
@@ -206,7 +207,6 @@ namespace bw
 			std::optional<LocalMatchPrediction> m_prediction;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
-			std::shared_ptr<InputController> m_inputController;
 			std::string m_gamemodePath;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;

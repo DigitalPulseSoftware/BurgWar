@@ -11,20 +11,21 @@
 
 namespace bw
 {
-	KeyboardAndMouseController::KeyboardAndMouseController(Nz::Window& window) :
-	m_window(window)
+	KeyboardAndMouseController::KeyboardAndMouseController(Nz::Window& window, Nz::UInt8 localPlayerIndex) :
+	m_window(window),
+	m_localPlayerIndex(localPlayerIndex)
 	{
 		m_window.GetEventHandler().OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
 		{
-			OnSwitchWeapon(this, 0, event.delta > 0.f);
+			OnSwitchWeapon(this, event.delta > 0.f);
 		});
 	}
 
-	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex, const Ndk::EntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const Ndk::EntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
 
-		switch (localPlayerIndex)
+		switch (m_localPlayerIndex)
 		{
 			case 0:
 				inputData.isAttacking = Nz::Mouse::IsButtonPressed(Nz::Mouse::Left);
