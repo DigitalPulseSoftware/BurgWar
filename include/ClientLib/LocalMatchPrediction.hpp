@@ -24,7 +24,7 @@ namespace bw
 		friend class ClientSession;
 
 		public:
-			LocalMatchPrediction(LocalMatch& match);
+			LocalMatchPrediction(float tickDuration);
 			~LocalMatchPrediction() = default;
 
 			inline void DeleteEntity(Ndk::EntityId entityId);

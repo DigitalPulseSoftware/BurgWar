@@ -3,16 +3,15 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalMatchPrediction.hpp>
-#include <ClientLib/LocalMatch.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 
 namespace bw
 {
-	LocalMatchPrediction::LocalMatchPrediction(LocalMatch& match) :
+	LocalMatchPrediction::LocalMatchPrediction(float tickDuration) :
 	m_world(false),
-	m_tickDuration(match.GetTickDuration())
+	m_tickDuration(tickDuration)
 	{
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<Ndk::VelocitySystem>();
@@ -46,7 +45,7 @@ namespace bw
 		{
 			const Ndk::EntityHandle& reconciliationEntity = CreateReconciliationEntity(entity);
 			constructor(reconciliationEntity);
-		
+
 			syncFunc(entity, reconciliationEntity);
 		}
 		else
