@@ -6,6 +6,11 @@
 
 namespace bw
 {
+	inline const Ndk::EntityHandle& Player::GetControlledEntity() const
+	{
+		return m_playerEntity;
+	}
+
 	inline std::size_t Player::GetLayerIndex() const
 	{
 		return m_layerIndex;

@@ -35,6 +35,7 @@ namespace bw
 			Player(Player&&) noexcept = default;
 			~Player();
 
+			inline const Ndk::EntityHandle& GetControlledEntity() const;
 			inline std::size_t GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
