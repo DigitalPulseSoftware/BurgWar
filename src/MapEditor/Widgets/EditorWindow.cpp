@@ -291,6 +291,21 @@ namespace bw
 		return QMainWindow::event(e);
 	}
 
+	void EditorWindow::AddToRecentFileList(const QString& mapFolder)
+	{
+		QSettings settings;
+		QStringList recentlyOpenedMaps = settings.value("recentFiles").toStringList();
+
+		recentlyOpenedMaps.removeAll(mapFolder);
+		recentlyOpenedMaps.prepend(mapFolder);
+		while (recentlyOpenedMaps.size() > MaxRecentFiles)
+			recentlyOpenedMaps.removeLast();
+
+		settings.setValue("recentFiles", recentlyOpenedMaps);
+
+		RefreshRecentFileListMenu(recentlyOpenedMaps);
+	}
+
 	void EditorWindow::BuildAssetList()
 	{
 		tsl::hopscotch_set<std::string> textures;
@@ -428,7 +443,7 @@ namespace bw
 			QString strippedName = QFileInfo(recentFileList[int(i)]).fileName();
 
 			QAction* recentMap = m_recentMapActions[int(i)];
-			recentMap->setData(recentFileList[i]);
+			recentMap->setData(recentFileList[int(i)]);
 			recentMap->setText(tr("&%1 %2").arg(int(i + 1)).arg(strippedName));
 			recentMap->setVisible(true);
 		}
@@ -724,7 +739,7 @@ namespace bw
 		if (m_workingMapPath.empty())
 		{
 			QDir mapFolder;
-			std::filesystem::path workingPath;
+			QString workingPath;
 
 			for (;;)
 			{
@@ -739,7 +754,7 @@ namespace bw
 					continue;
 				}
 
-				workingPath = mapFolder.path().toStdString();
+				workingPath = mapFolder.path();
 				break;
 			}
 
@@ -749,7 +764,9 @@ namespace bw
 			if (!mapFolder.mkdir("scripts"))
 				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create scripts subdirectory (is map folder read-only?)"), QMessageBox::Ok);
 
-			m_workingMapPath = std::move(workingPath);
+			m_workingMapPath = workingPath.toStdString();
+
+			AddToRecentFileList(workingPath);
 		}
 
 		if (m_workingMap.Save(m_workingMapPath))
@@ -779,18 +796,7 @@ namespace bw
 		statusBar()->showMessage(tr("Map %1 loaded").arg(map.GetMapInfo().name.data()), 3000);
 		UpdateWorkingMap(std::move(map), std::move(workingMapPath));
 
-		// Add the map to the list of recently opened maps
-		QSettings settings;
-		QStringList recentlyOpenedMaps = settings.value("recentFiles").toStringList();
-
-		recentlyOpenedMaps.removeAll(mapFolder);
-		recentlyOpenedMaps.prepend(mapFolder);
-		while (recentlyOpenedMaps.size() > MaxRecentFiles)
-			recentlyOpenedMaps.removeLast();
-
-		settings.setValue("recentFiles", recentlyOpenedMaps);
-
-		RefreshRecentFileListMenu(recentlyOpenedMaps);
+		AddToRecentFileList(mapFolder);
 	}
 
 	void EditorWindow::RegisterEditorConfig()
