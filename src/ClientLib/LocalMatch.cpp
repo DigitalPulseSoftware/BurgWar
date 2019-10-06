@@ -38,9 +38,8 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData, std::shared_ptr<InputController> inputController) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
 	SharedMatch(matchData.tickDuration),
-	m_inputController(std::move(inputController)),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
@@ -94,7 +93,32 @@ namespace bw
 		m_playerData.reserve(playerCount);
 		assert(playerCount != 0xFF);
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
-			m_playerData.emplace_back(i);
+		{
+			auto& playerData = m_playerData.emplace_back(i);
+			playerData.inputController = std::make_shared<KeyboardAndMouseController>(*window, i);
+			
+			playerData.inputController->OnSwitchWeapon.Connect([this, i](InputController* /*emitter*/, bool direction)
+			{
+				auto& playerData = m_playerData[i];
+
+				if (direction)
+				{
+					if (++playerData.selectedWeapon > playerData.weapons.size())
+						playerData.selectedWeapon = 0;
+				}
+				else
+				{
+					if (playerData.selectedWeapon-- == 0)
+						playerData.selectedWeapon = playerData.weapons.size();
+				}
+
+				Packets::PlayerSelectWeapon selectPacket;
+				selectPacket.playerIndex = i;
+				selectPacket.newWeaponIndex = static_cast<Nz::UInt8>((playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon);
+
+				m_session.SendPacket(selectPacket);
+			});
+		}
 
 		m_prediction.emplace(*this);
 
@@ -105,29 +129,6 @@ namespace bw
 			chatPacket.message = message;
 
 			m_session.SendPacket(chatPacket);
-		});
-
-		m_inputController->OnSwitchWeapon.Connect([this](InputController* /*emitter*/, Nz::UInt8 localPlayerIndex, bool direction)
-		{
-			assert(localPlayerIndex < m_playerData.size());
-			auto& playerData = m_playerData[localPlayerIndex];
-
-			if (direction)
-			{
-				if (++playerData.selectedWeapon > playerData.weapons.size())
-					playerData.selectedWeapon = 0;
-			}
-			else
-			{
-				if (playerData.selectedWeapon-- == 0)
-					playerData.selectedWeapon = playerData.weapons.size();
-			}
-
-			Packets::PlayerSelectWeapon selectPacket;
-			selectPacket.playerIndex = localPlayerIndex;
-			selectPacket.newWeaponIndex = static_cast<Nz::UInt8>((playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon);
-
-			m_session.SendPacket(selectPacket);
 		});
 
 		onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
@@ -402,6 +403,17 @@ namespace bw
 			position.y = std::floor(position.y);
 
 			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
+		};
+
+		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 playerIndex, std::shared_ptr<InputController> inputController)
+		{
+			if (playerIndex >= m_playerData.size())
+				throw std::runtime_error("Invalid player index");
+
+			if (!inputController)
+				throw std::runtime_error("Invalid input controller");
+
+			m_playerData[playerIndex].inputController = std::move(inputController);
 		};
 
 		ForEachEntity([this](const Ndk::EntityHandle& entity)
