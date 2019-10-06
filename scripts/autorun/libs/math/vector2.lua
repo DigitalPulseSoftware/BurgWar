@@ -11,9 +11,11 @@ function vec2meta:__add(other)
 	end
 end
 
-function vec2meta:__mul(factor)
-	if (type(factor) == "number") then
-		return Vec2(self.x * factor, self.y * factor)
+function vec2meta:__mul(other)
+	if (getmetatable(other) == vec2meta) then
+		return Vec2(self.x * other.x, self.y * other.y)
+	elseif (type(other) == "number") then
+		return Vec2(self.x * other, self.y * other)
 	else
 		error("Factor must be a number")
 	end
