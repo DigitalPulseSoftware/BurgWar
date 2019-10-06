@@ -11,6 +11,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
@@ -39,6 +40,7 @@ namespace bw
 		public:
 			struct Asset;
 			struct ClientScript;
+			using Logger = MatchLogger<Logger<NoLogger, LogContext>>;
 
 			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration);
 			Match(const Match&) = delete;
@@ -56,9 +58,11 @@ namespace bw
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 			ServerEntityStore& GetEntityStore() override;
 			const ServerEntityStore& GetEntityStore() const override;
-			inline sol::state& GetLuaState();
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
+			inline Logger& GetLogger();
+			inline sol::state& GetLuaState();
+			inline const std::string& GetName() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
@@ -121,6 +125,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			BurgApp& m_app;
+			Logger m_logger;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
 	};

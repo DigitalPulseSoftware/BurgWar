@@ -29,6 +29,8 @@ namespace bw
 			return;
 
 		std::string content = fmt::format(std::forward<Args>(args)...);
+		OverrideContent(context, content);
+
 		LogRaw(context, content);
 
 		if constexpr (!std::is_same_v<T, NoLogger>)
@@ -46,7 +48,7 @@ namespace bw
 	}
 
 	template<typename T, typename Context>
-	inline void Logger<T, Context>::RegisterSink(std::shared_ptr<LogSink<Context>> sinkPtr)
+	void Logger<T, Context>::RegisterSink(std::shared_ptr<LogSink<Context>> sinkPtr)
 	{
 		m_sinks.emplace_back(std::move(sinkPtr));
 	}
@@ -70,5 +72,10 @@ namespace bw
 		}
 		
 		return true;
+	}
+
+	template<typename T, typename Context>
+	void Logger<T, Context>::OverrideContent(const Context& /*context*/, std::string& /*content*/)
+	{
 	}
 }

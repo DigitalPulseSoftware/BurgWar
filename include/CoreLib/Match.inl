@@ -28,11 +28,6 @@ namespace bw
 		return *m_assetStore;
 	}
 
-	inline sol::state& Match::GetLuaState()
-	{
-		return m_scriptingContext->GetLuaState();
-	}
-
 	inline const std::shared_ptr<ServerGamemode>& Match::GetGamemode()
 	{
 		return m_gamemode;
@@ -41,6 +36,21 @@ namespace bw
 	inline const std::filesystem::path& Match::GetGamemodePath() const
 	{
 		return m_gamemodePath;
+	}
+
+	inline auto Match::GetLogger() -> Logger&
+	{
+		return m_logger;
+	}
+
+	inline sol::state& Match::GetLuaState()
+	{
+		return m_scriptingContext->GetLuaState();
+	}
+
+	inline const std::string& Match::GetName() const
+	{
+		return m_name;
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const

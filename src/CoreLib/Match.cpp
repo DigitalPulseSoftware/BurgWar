@@ -29,7 +29,8 @@ namespace bw
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
 	m_name(std::move(matchName)),
-	m_app(app)
+	m_app(app),
+	m_logger(app.GetLogger())
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
 
@@ -42,6 +43,8 @@ namespace bw
 
 		m_gamemode->ExecuteCallback("OnInit");
 
+		bwMatchLog(m_logger, this, LogLevel::Info, "Match initialized");
+
 		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
 		{
 			m_debug.emplace();
@@ -49,7 +52,7 @@ namespace bw
 				m_debug->socket.EnableBlocking(false);
 			else
 			{
-				std::cerr << "Failed to create debug socket";
+				bwMatchLog(m_logger, this, LogLevel::Error, "Failed to create debug socket");
 				m_debug.reset();
 			}
 		}
@@ -220,13 +223,13 @@ namespace bw
 			const Asset& asset = it->second;
 			if (asset.size != assetSize)
 			{
-				std::cerr << "Asset " << assetPath << " registered twice and size doesn't match" << std::endl;
+				bwMatchLog(m_logger, this, LogLevel::Error, "Asset {1} registered twice and size doesn't match", assetPath);
 				return;
 			}
 
 			if (asset.checksum != assetChecksum)
 			{
-				std::cerr << "Asset " << assetPath << " registered twice and checksum doesn't match" << std::endl;
+				bwMatchLog(m_logger, this, LogLevel::Error, "Asset {1} registered twice and checksum doesn't match", assetPath);
 				return;
 			}
 		}
@@ -488,9 +491,7 @@ namespace bw
 				localAddress.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
 				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
-				{
-					std::cerr << "Failed to send debug packet: " << Nz::ErrorToString(m_debug->socket.GetLastError()) << std::endl;
-				}
+					bwMatchLog(m_logger, this, LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
 	}

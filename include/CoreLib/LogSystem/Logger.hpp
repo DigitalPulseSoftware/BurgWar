@@ -21,7 +21,7 @@
 	if ((logObject).ShouldLog(_bwLogContext)) \
 		(logObject).Log(_bwLogContext, __VA_ARGS__); \
 } \
-while (false) \
+while (false)
 
 namespace bw
 {
@@ -42,7 +42,10 @@ namespace bw
 
 			void SetMinimumLogLevel(LogLevel level);
 
-			bool ShouldLog(const Context& context) const;
+			virtual bool ShouldLog(const Context& context) const;
+
+		protected:
+			virtual void OverrideContent(const Context& context, std::string& content);
 
 		private:
 			LogLevel m_minimumLogLevel;
