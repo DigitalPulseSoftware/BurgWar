@@ -3,9 +3,20 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MatchClientSession.hpp>
+#include <cassert>
 
 namespace bw
 {
+	template<typename F>
+	void MatchClientSession::ForEachPlayer(F&& func)
+	{
+		for (auto& playerPtr : m_players)
+		{
+			assert(playerPtr);
+			func(playerPtr.get());
+		}
+	}
+
 	inline std::size_t MatchClientSession::GetSessionId() const
 	{
 		return m_sessionId;
