@@ -1,16 +1,84 @@
-include("monautrefichier.lua")
-print("coucou")
-
 ENTITY.IsMoving = false
-ENTITY.IsHoping = false
+ENTITY.IsHopping = false
+
+local oldInit = ENTITY.Initialize
+function ENTITY:Initialize()
+	oldInit(self)
+
+	local mainSprite = self:AddSprite({
+		Origin = Vec2(0.5, 1),
+		Scale = Vec2(self.Scale, self.Scale),
+		TexturePath = self.Sprite
+	})
+
+	local faceOrigin = mainSprite:GetSize() * Vec2(0.65, 0.31) - mainSprite:GetOrigin()
+
+	for name, texture in pairs(self.Faces) do
+		local face = self:AddSprite({
+			Offset = faceOrigin,
+			RenderOrder = 1,
+			Scale = Vec2(self.Scale, self.Scale),
+			TexturePath = texture
+		})
+		face:Hide()
+
+		self[name .. "Face"] = face
+	end
+
+	self.CurrentFace = self.DefaultFace
+	self.DefaultFace:Show()
+end
+
+function ENTITY:UpdateFace(face, duration)
+	if (self.CurrentFace ~= face) then
+		self.CurrentFace:Hide()
+		self.CurrentFace = face
+
+		face:Show()
+	end
+
+	if (duration) then
+		self.FaceExpiration = match.GetCurrentTime() + duration
+	else
+		self.FaceExpiration = nil
+	end
+end
+
+function ENTITY:OnTick()
+	if (self.FaceExpiration) then
+		if (match.GetCurrentTime() >= self.FaceExpiration) then
+			self.CurrentFace:Hide()
+			self.CurrentFace = self.DefaultFace
+			self.CurrentFace:Show()
+		end
+	end
+end
+
+function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+	if (newHealth > oldHealth) then
+		-- Heal
+		self:UpdateFace(self.VictoryFace, 2)
+	elseif (newHealth < oldHealth) then
+		-- Damage
+		self:UpdateFace(self.DamageFace, 2)
+	end
+end
 
 function ENTITY:OnInputUpdate(input)
+	if (input.isAttacking) then
+		if (self.CurrentFace == self.DamageFace) then
+			self:UpdateFace(self.RampageFace, 1)
+		elseif (self.CurrentFace ~= self.RampageFace) then
+			self:UpdateFace(self.AttackFace, 0.5)
+		end
+	end
+
 	local isMoving = input.isMovingLeft or input.isMovingRight
 	if (self.IsMoving ~= isMoving) then
 		self.IsMoving = isMoving
 		if (isMoving and not input.isJumping) then
-			if (not self.IsHoping) then
-				self.IsHoping = true
+			if (not self.IsHopping) then
+				self.IsHopping = true
 				while (self.IsMoving) do
 					if (self:IsValid() and self:IsPlayerOnGround()) then
 						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -25), 0.15)
@@ -19,7 +87,7 @@ function ENTITY:OnInputUpdate(input)
 						timer.Sleep(30)
 					end
 				end
-				self.IsHoping = false
+				self.IsHopping = false
 			end
 		end
 	end

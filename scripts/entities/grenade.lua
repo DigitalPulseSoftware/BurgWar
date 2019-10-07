@@ -23,7 +23,10 @@ function ENTITY:Initialize()
 	self:InitRigidBody(20, 10)
 
 	if (CLIENT) then
-		self:AddSprite("grenade.png", Vec2(0.2, 0.2))
+		self:AddSprite({
+			Scale = Vec2(0.2, 0.2),
+			TexturePath = "grenade.png"
+		})
 	end
 end
 

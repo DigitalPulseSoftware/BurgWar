@@ -25,6 +25,7 @@ namespace bw
 		private:
 			void RegisterDummyInputController(ScriptingContext& context);
 			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterSpriteClass(ScriptingContext& context);
 
 			LocalMatch& GetMatch();
 	};

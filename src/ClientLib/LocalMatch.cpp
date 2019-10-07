@@ -4,6 +4,7 @@
 
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/ClientSession.hpp>
+#include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
@@ -1004,14 +1005,28 @@ namespace bw
 			if (!serverEntity.entity)
 				continue;
 
+			Nz::UInt16 oldHealth;
+
 			if (serverEntity.health)
 			{
 				HealthData& healthData = serverEntity.health.value();
+
+				oldHealth = healthData.currentHealth;
+
 				healthData.currentHealth = entityData.currentHealth;
 				healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
 			}
 			else
+			{
+				oldHealth = serverEntity.maxHealth;
 				CreateHealthBar(serverEntity, entityData.currentHealth);
+			}
+
+			if (serverEntity.entity->HasComponent<ScriptComponent>())
+			{
+				auto& scriptComponent = serverEntity.entity->GetComponent<ScriptComponent>();
+				scriptComponent.ExecuteCallback("OnHealthUpdate", oldHealth, entityData.currentHealth);
+			}
 		}
 	}
 
@@ -1513,7 +1528,7 @@ namespace bw
 			PlayerInputData input;
 			
 			if (checkInputs)
-				input = m_inputController->Poll(*this, controllerData.playerIndex, controllerData.controlledEntity);
+				input = controllerData.inputController->Poll(*this, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
 			{

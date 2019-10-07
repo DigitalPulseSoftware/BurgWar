@@ -26,6 +26,7 @@ namespace bw
 			inline SharedMatch& GetSharedMatch();
 
 		private:
+			void RegisterMatchLibrary(ScriptingContext& context);
 			void RegisterTimerLibrary(ScriptingContext& context);
 
 			SharedMatch& m_match;
