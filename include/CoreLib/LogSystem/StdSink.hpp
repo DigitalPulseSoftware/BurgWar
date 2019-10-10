@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	class StdSink : public LogSink<LogContext>
+	class StdSink : public LogSink
 	{
 		public:
 			StdSink() = default;

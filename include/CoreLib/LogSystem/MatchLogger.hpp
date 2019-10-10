@@ -10,42 +10,23 @@
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/LogSystem/MatchLogContext.hpp>
 
-#define bwLog(logObject, lvl, ...) do \
-{ \
-	bw::LogContext _bwLogContext; \
-	_bwLogContext.level = lvl; \
-	if ((logObject).ShouldLog(_bwLogContext)) \
-		(logObject).Log(_bwLogContext, __VA_ARGS__); \
-} \
-while (false)
-
-#define bwMatchLog(logObject, match_, lvl, ...) do \
-{ \
-	bw::MatchLogContext _bwLogContext; \
-	_bwLogContext.level = lvl; \
-	_bwLogContext.match = match_; \
-	if ((logObject).ShouldLog(_bwLogContext)) \
-		(logObject).Log(_bwLogContext, __VA_ARGS__); \
-} \
-while (false)
-
 namespace bw
 {
-	template<typename T, typename Context = MatchLogContext>
-	class MatchLogger : public Logger<T, Context>
+	class MatchLogger : public Logger
 	{
 		public:
-			using Logger::Logger;
+			inline MatchLogger(SharedMatch& sharedMatch);
+			inline MatchLogger(SharedMatch& sharedMatch, AbstractLogger& logger);
 			~MatchLogger() = default;
 
-			bool ShouldLog(const Context& context) const override;
+			bool ShouldLog(const LogContext& context) const override;
 
 		private:
-			void OverrideContent(const Context& context, std::string& content) override;
+			void OverrideContent(const LogContext& context, std::string& content) override;
 
 			LogLevel m_minimumLogLevel;
-			T* m_logParent;
-			std::vector<std::shared_ptr<LogSink<Context>>> m_sinks;
+			MatchLogContext m_localMatchContext;
+			SharedMatch& m_sharedMatch;
 	};
 }
 

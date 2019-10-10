@@ -40,7 +40,7 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
-	SharedMatch(matchData.tickDuration),
+	SharedMatch(burgApp, "<TODO>", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
@@ -240,7 +240,7 @@ namespace bw
 	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
 	{
 		if (!m_assetStore)
-			m_assetStore.emplace(std::move(assetDir));
+			m_assetStore.emplace(GetLogger(), std::move(assetDir));
 		else
 		{
 			m_assetStore->UpdateAssetDirectory(std::move(assetDir));

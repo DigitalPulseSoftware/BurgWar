@@ -53,7 +53,7 @@ namespace bw
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
 		m_scriptingContext->GetLuaState()["Editor"] = this;
 
-		m_assetStore.emplace(std::make_shared<VirtualDirectory>(gameResourceFolder));
+		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
 
 		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
 		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>());

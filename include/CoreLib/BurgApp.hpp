@@ -16,8 +16,6 @@ namespace bw
 	class BurgApp
 	{
 		public:
-			using Logger = Logger<NoLogger>;
-
 			BurgApp();
 			~BurgApp() = default;
 

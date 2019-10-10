@@ -11,11 +11,11 @@
 
 namespace bw
 {
-	class Match;
+	class SharedMatch;
 
 	struct MatchLogContext : LogContext
 	{
-		Match* match;
+		SharedMatch* match;
 	};
 }
 

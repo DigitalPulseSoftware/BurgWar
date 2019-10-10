@@ -11,14 +11,15 @@
 
 namespace bw
 {
-	template<typename Context>
+	struct LogContext;
+
 	class LogSink
 	{
 		public:
 			LogSink() = default;
 			virtual ~LogSink() = default;
 
-			virtual void Write(const Context& context, std::string_view content) = 0;
+			virtual void Write(const LogContext& context, std::string_view content) = 0;
 	};
 }
 

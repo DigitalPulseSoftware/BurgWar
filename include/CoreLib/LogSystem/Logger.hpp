@@ -7,9 +7,9 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_LOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_LOGGER_HPP
 
+#include <CoreLib/LogSystem/AbstractLogger.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
-#include <CoreLib/LogSystem/LogSink.hpp>
 #include <fmt/format.h>
 #include <memory>
 #include <vector>
@@ -19,38 +19,40 @@
 	bw::LogContext _bwLogContext; \
 	_bwLogContext.level = lvl; \
 	if ((logObject).ShouldLog(_bwLogContext)) \
-		(logObject).Log(_bwLogContext, __VA_ARGS__); \
+		(logObject).LogFormat(_bwLogContext, __VA_ARGS__); \
 } \
 while (false)
 
 namespace bw
 {
-	struct NoLogger;
+	class LogSink;
 
-	template<typename T, typename Context = LogContext>
-	class Logger
+	class Logger : public AbstractLogger
 	{
 		public:
-			Logger();
-			Logger(T& logParent);
+			inline Logger();
+			inline Logger(AbstractLogger& logParent);
 			~Logger() = default;
 
-			template<typename... Args> void Log(Context& context, Args&& ... args);
-			void LogRaw(Context& context, std::string_view content);
+			template<typename... Args> void LogFormat(LogContext& context, Args&& ... args);
 
-			inline void RegisterSink(std::shared_ptr<LogSink<Context>> sinkPtr);
+			void Log(LogContext& context, std::string content) override;
+			void LogRaw(LogContext& context, std::string_view content) override;
 
-			void SetMinimumLogLevel(LogLevel level);
+			inline void RegisterSink(std::shared_ptr<LogSink> sinkPtr);
 
-			virtual bool ShouldLog(const Context& context) const;
+			inline void SetMinimumLogLevel(LogLevel level);
+
+			bool ShouldLog(const LogContext& context) const override;
 
 		protected:
-			virtual void OverrideContent(const Context& context, std::string& content);
+			virtual void OverrideContent(const LogContext& context, std::string& content);
 
 		private:
+			LogContext m_localContext;
 			LogLevel m_minimumLogLevel;
-			T* m_logParent;
-			std::vector<std::shared_ptr<LogSink<Context>>> m_sinks;
+			AbstractLogger* m_logParent;
+			std::vector<std::shared_ptr<LogSink>> m_sinks;
 	};
 }
 

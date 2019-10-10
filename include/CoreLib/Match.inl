@@ -38,19 +38,9 @@ namespace bw
 		return m_gamemodePath;
 	}
 
-	inline auto Match::GetLogger() -> Logger&
-	{
-		return m_logger;
-	}
-
 	inline sol::state& Match::GetLuaState()
 	{
 		return m_scriptingContext->GetLuaState();
-	}
-
-	inline const std::string& Match::GetName() const
-	{
-		return m_name;
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const

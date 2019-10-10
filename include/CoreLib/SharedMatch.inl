@@ -7,19 +7,19 @@
 
 namespace bw
 {
-	inline SharedMatch::SharedMatch(float tickDuration) :
-	m_timerManager(*this),
-	m_currentTick(0),
-	m_currentTime(0),
-	m_floatingTime(0.f),
-	m_tickDuration(tickDuration),
-	m_tickTimer(0.f)
-	{
-	}
-
 	inline Nz::UInt64 SharedMatch::GetCurrentTick() const
 	{
 		return m_currentTick;
+	}
+
+	inline auto SharedMatch::GetLogger() -> MatchLogger&
+	{
+		return m_logger;
+	}
+
+	inline const std::string& SharedMatch::GetName() const
+	{
+		return m_name;
 	}
 
 	inline Nz::UInt16 SharedMatch::GetNetworkTick() const

@@ -3,22 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/LogSystem/MatchLogger.hpp>
-#include <CoreLib/Match.hpp>
 
 namespace bw
 {
-	template<typename T, typename Context>
-	bool MatchLogger<T, Context>::ShouldLog(const Context& context) const
+	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch) :
+	Logger(),
+	m_sharedMatch(sharedMatch)
 	{
-		if (!Logger::ShouldLog(context))
-			return false;
-
-		return true;
 	}
 
-	template<typename T, typename Context>
-	void MatchLogger<T, Context>::OverrideContent(const Context& context, std::string& content)
+	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch, AbstractLogger& logger) :
+	Logger(logger),
+	m_sharedMatch(sharedMatch)
 	{
-		content = "[Match " + context.match->GetName() + "] " + content;
 	}
 }

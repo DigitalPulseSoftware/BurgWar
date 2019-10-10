@@ -151,7 +151,7 @@ namespace bw
 			if (!playerEntity)
 				return;
 
-			bwMatchLog(m_match->GetLogger(), m_match, LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
+			bwLog(m_match->GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
 
 			playerEntity->AddComponent<InputComponent>();
 			playerEntity->AddComponent<OwnerComponent>(CreateHandle());
