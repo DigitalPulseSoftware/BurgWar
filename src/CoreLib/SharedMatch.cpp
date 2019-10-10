@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
@@ -10,6 +11,18 @@
 
 namespace bw
 {
+	SharedMatch::SharedMatch(BurgApp& app, std::string matchName, float tickDuration) :
+	m_name(std::move(matchName)),
+	m_logger(*this, app.GetLogger()),
+	m_timerManager(*this),
+	m_currentTick(0),
+	m_currentTime(0),
+	m_floatingTime(0.f),
+	m_tickDuration(tickDuration),
+	m_tickTimer(0.f)
+	{
+	}
+
 	SharedMatch::~SharedMatch() = default;
 
 	void SharedMatch::Update(float elapsedTime)

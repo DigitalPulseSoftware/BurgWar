@@ -9,6 +9,11 @@
 
 namespace bw
 {
+	inline ConfigFile::ConfigFile(BurgApp& app) :
+	m_app(app)
+	{
+	}
+
 	inline bool ConfigFile::GetBoolOption(const std::string& optionName) const
 	{
 		return std::get<BoolOption>(m_options.at(optionName)).value;

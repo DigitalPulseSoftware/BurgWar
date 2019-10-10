@@ -9,6 +9,7 @@
 
 #include <Nazara/Prerequisites.hpp>
 #include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
@@ -20,8 +21,12 @@ namespace bw
 
 			inline Nz::UInt64 GetAppTime() const;
 			inline const ConfigFile& GetConfig() const;
+			inline Logger& GetLogger();
 
 			void Update();
+
+		private:
+			Logger m_logger;
 
 		protected:
 			ConfigFile m_config;

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Utils.hpp>
 #include <sol3/sol.hpp>
 #include <iostream>
@@ -38,7 +39,7 @@ namespace bw
 			if (auto result = lua.safe_script_file(fileName); !result.valid())
 			{
 				sol::error err = result;
-				std::cerr << "Failed to execute " << fileName << ": " << err.what() << std::endl;
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to execute {0}: {1}", fileName, err.what());
 				return false;
 			}
 
@@ -64,7 +65,7 @@ namespace bw
 
 				if (!PushLuaVariable(optionName))
 				{
-					std::cerr << "Missing config option \"" << optionName << "\"" << std::endl;
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Missing config option \"{0}\"", optionName);
 					return false;
 				}
 
@@ -119,11 +120,11 @@ namespace bw
 				}
 				catch (const std::exception& e)
 				{
-					std::cerr << "Failed to get " << optionName << ": " << e.what() << std::endl;
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", optionName, e.what());
 				}
 				catch (...)
 				{
-					std::cerr << "Failed to get " << optionName << ": " << lua_tostring(L, -1) << std::endl;
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", optionName, lua_tostring(L, -1));
 					lua_pop(L, lua_gettop(L));
 				}
 
@@ -132,7 +133,7 @@ namespace bw
 		}
 		catch (const sol::error& e)
 		{
-			std::cerr << "Failed to parse " << fileName << ": " << e.what() << std::endl;
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to parse \"{0}\": {1}", fileName, e.what());
 			return false;
 		}
 

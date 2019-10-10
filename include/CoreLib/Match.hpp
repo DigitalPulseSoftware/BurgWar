@@ -11,6 +11,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
@@ -56,9 +57,9 @@ namespace bw
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 			ServerEntityStore& GetEntityStore() override;
 			const ServerEntityStore& GetEntityStore() const override;
-			inline sol::state& GetLuaState();
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
+			inline sol::state& GetLuaState();
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;

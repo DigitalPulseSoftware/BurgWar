@@ -14,11 +14,12 @@
 namespace bw
 {
 	class AbstractScriptingLibrary;
+	class Logger;
 
 	class LocalConsole : public Console
 	{
 		public:
-			LocalConsole(Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
+			LocalConsole(Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
 			LocalConsole(const LocalConsole&) = delete;
 			LocalConsole(LocalConsole&&) = delete;
 			~LocalConsole() = default;

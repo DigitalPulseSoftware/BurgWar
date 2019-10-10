@@ -14,6 +14,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
+#include <CoreLib/LogSystem/StdSink.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
@@ -23,9 +24,12 @@
 namespace bw
 {
 	BurgApp::BurgApp() :
+	m_config(*this),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
+		m_logger.RegisterSink(std::make_shared<StdSink>());
+
 		Ndk::InitializeComponent<AnimationComponent>("Anim");
 		Ndk::InitializeComponent<CooldownComponent>("Cooldown");
 		Ndk::InitializeComponent<HealthComponent>("Health");

@@ -49,13 +49,13 @@ namespace bw
 
 		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>(scriptFolder);
 
-		m_scriptingContext = std::make_shared<ScriptingContext>(virtualDir);
+		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
 		m_scriptingContext->GetLuaState()["Editor"] = this;
 
-		m_assetStore.emplace(std::make_shared<VirtualDirectory>(gameResourceFolder));
+		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
 
-		m_entityStore.emplace(*m_assetStore, m_scriptingContext);
+		m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>());
 		m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
 

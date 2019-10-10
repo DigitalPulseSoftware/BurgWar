@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
 #include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>
 
@@ -15,6 +16,7 @@
 
 namespace bw
 {
+	class BurgApp;
 	class ScriptingContext;
 	class SharedEntityStore;
 	class SharedWeaponStore;
@@ -22,7 +24,7 @@ namespace bw
 	class SharedMatch
 	{
 		public:
-			inline SharedMatch(float tickDuration);
+			SharedMatch(BurgApp& app, std::string matchName, float tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
@@ -30,6 +32,8 @@ namespace bw
 			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
 
 			inline Nz::UInt64 GetCurrentTick() const;
+			inline MatchLogger& GetLogger();
+			inline const std::string& GetName() const;
 			inline Nz::UInt16 GetNetworkTick() const;
 			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
 			inline Nz::UInt64 GetCurrentTime() const;
@@ -50,6 +54,8 @@ namespace bw
 			virtual void OnTick(bool lastTick) = 0;
 
 		private:
+			std::string m_name;
+			MatchLogger m_logger;
 			TimerManager m_timerManager;
 			Nz::UInt64 m_currentTick;
 			Nz::UInt64 m_currentTime;

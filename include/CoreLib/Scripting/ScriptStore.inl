@@ -13,8 +13,9 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
+	m_logger(logger),
 	m_isServer(isServer)
 	{
 		assert(m_context);
@@ -103,7 +104,7 @@ namespace bw
 
 		state[m_tableName] = elementTable;
 
-		std::cout << "Loading " << m_elementTypeName << ": " << elementName << std::endl;
+		bwLog(m_logger, LogLevel::Info, "Loading {0}: {1}", m_elementTypeName, elementName);
 
 		bool hasError = false;
 		auto LoadFile = [&](const std::filesystem::path& path)
@@ -112,7 +113,7 @@ namespace bw
 				return true;
 			else
 			{
-				std::cerr << path << " failed" << std::endl;
+				bwLog(m_logger, LogLevel::Error, "{0} loading failed", path.generic_u8string());
 				hasError = true;
 				return false;
 			}
@@ -250,7 +251,7 @@ namespace bw
 				}
 				catch (const std::exception& e)
 				{
-					std::cerr << "Failed to load property " << propertyName << " for entity " << element->name << ": " << e.what() << std::endl;
+					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
 				}
 
 				propertyIndex++;
@@ -263,7 +264,7 @@ namespace bw
 		}
 		catch (const std::exception& e)
 		{
-			std::cerr << "Failed to initialize " << m_elementTypeName << " " << elementName << ": " << e.what() << std::endl;
+			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: {2}", m_elementTypeName, elementName, e.what());
 		}
 
 		//if (IsServer && !isNetworked && hasSharedFiles)

@@ -8,9 +8,10 @@
 
 namespace bw
 {
-	ScriptingEnvironment::ScriptingEnvironment(std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir)
+	ScriptingEnvironment::ScriptingEnvironment(Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
+	m_logger(logger)
 	{
-		m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
+		m_scriptingContext = std::make_shared<ScriptingContext>(logger, scriptDir);
 		m_scriptingContext->LoadLibrary(std::move(scriptingLibrary));
 
 		sol::state& luaState = m_scriptingContext->GetLuaState();

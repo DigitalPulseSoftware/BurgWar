@@ -7,9 +7,9 @@
 
 namespace bw
 {
-	LocalConsole::LocalConsole(Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
+	LocalConsole::LocalConsole(Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
 	Console(window, canvas),
-	m_environment(std::move(scriptingLibrary), scriptDir)
+	m_environment(logger, std::move(scriptingLibrary), scriptDir)
 	{
 		m_environment.SetOutputCallback([this](const std::string& text, Nz::Color color)
 		{

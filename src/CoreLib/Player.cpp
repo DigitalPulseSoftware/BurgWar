@@ -86,7 +86,7 @@ namespace bw
 		{
 			const std::string& scriptFolder = m_match->GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
 
-			m_scriptingEnvironment.emplace(m_match->GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
+			m_scriptingEnvironment.emplace(m_match->GetLogger(), m_match->GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
 			{
 				if (!ply)
@@ -151,7 +151,7 @@ namespace bw
 			if (!playerEntity)
 				return;
 
-			std::cout << "[Server] Creating player entity #" << playerEntity->GetId() << std::endl;
+			bwLog(m_match->GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
 
 			playerEntity->AddComponent<InputComponent>();
 			playerEntity->AddComponent<OwnerComponent>(CreateHandle());

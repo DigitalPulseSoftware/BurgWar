@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
@@ -28,7 +29,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(std::shared_ptr<ScriptingContext> context, bool isServer);
+			inline ScriptStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			void ClearElements();
@@ -68,6 +69,7 @@ namespace bw
 			std::vector<std::shared_ptr<AbstractElementLibrary>> m_libraries;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
+			Logger& m_logger;
 			bool m_isServer;
 	};
 }

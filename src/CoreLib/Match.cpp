@@ -24,11 +24,10 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
-	SharedMatch(tickDuration),
+	SharedMatch(app, std::move(matchName), tickDuration),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_name(std::move(matchName)),
 	m_app(app)
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
@@ -42,6 +41,9 @@ namespace bw
 
 		m_gamemode->ExecuteCallback("OnInit");
 
+		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
+		bwLog(GetLogger(), LogLevel::Info, "héhé");
+
 		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
 		{
 			m_debug.emplace();
@@ -49,7 +51,7 @@ namespace bw
 				m_debug->socket.EnableBlocking(false);
 			else
 			{
-				std::cerr << "Failed to create debug socket";
+				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
 				m_debug.reset();
 			}
 		}
@@ -220,13 +222,13 @@ namespace bw
 			const Asset& asset = it->second;
 			if (asset.size != assetSize)
 			{
-				std::cerr << "Asset " << assetPath << " registered twice and size doesn't match" << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and size doesn't match", assetPath);
 				return;
 			}
 
 			if (asset.checksum != assetChecksum)
 			{
-				std::cerr << "Asset " << assetPath << " registered twice and checksum doesn't match" << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and checksum doesn't match", assetPath);
 				return;
 			}
 		}
@@ -280,7 +282,7 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> assetDir = std::make_shared<VirtualDirectory>(resourceFolder);
 
 		if (!m_assetStore)
-			m_assetStore.emplace(std::move(assetDir));
+			m_assetStore.emplace(GetLogger(), std::move(assetDir));
 		else
 		{
 			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
@@ -307,7 +309,7 @@ namespace bw
 
 		if (!m_scriptingContext)
 		{
-			m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
 			m_scriptingContext->LoadLibrary(m_scriptingLibrary);
 		}
 		else
@@ -323,7 +325,7 @@ namespace bw
 			if (!serverElementLib)
 				serverElementLib = std::make_shared<ServerElementLibrary>();
 
-			m_entityStore.emplace(m_scriptingContext);
+			m_entityStore.emplace(GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(serverElementLib);
 			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>());
 		}
@@ -338,7 +340,7 @@ namespace bw
 			if (!serverElementLib)
 				serverElementLib = std::make_shared<ServerElementLibrary>();
 
-			m_weaponStore.emplace(m_scriptingContext);
+			m_weaponStore.emplace(GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(serverElementLib);
 			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(*this));
 		}
@@ -488,9 +490,7 @@ namespace bw
 				localAddress.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
 				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
-				{
-					std::cerr << "Failed to send debug packet: " << Nz::ErrorToString(m_debug->socket.GetLastError()) << std::endl;
-				}
+					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
 	}
