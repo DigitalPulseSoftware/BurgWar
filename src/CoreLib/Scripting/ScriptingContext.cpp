@@ -23,7 +23,7 @@ namespace bw
 		VirtualDirectory::Entry entry;
 		if (!m_scriptDirectory->GetEntry(folderOrFile.generic_u8string(), &entry))
 		{
-			std::cerr << "Unknown path " << folderOrFile.generic_u8string() << std::endl;
+			bwLog(m_logger, LogLevel::Error, "Unknown path {0}", folderOrFile.generic_u8string());
 			return false;
 		}
 
@@ -46,14 +46,14 @@ namespace bw
 					Nz::File file(arg.generic_u8string());
 					if (!file.Open(Nz::OpenMode_ReadOnly))
 					{
-						std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": failed to open file" << std::endl;
+						bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to open file", folderOrFile.generic_u8string());
 						return false;
 					}
 
 					content.resize(file.GetSize());
 					if (file.Read(content.data(), content.size()) != content.size())
 					{
-						std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": failed to read file" << std::endl;
+						bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", folderOrFile.generic_u8string());
 						return false;
 					}
 
@@ -64,13 +64,13 @@ namespace bw
 
 				if (result.valid())
 				{
-					std::cout << "Loaded " << folderOrFile << std::endl;
+					bwLog(m_logger, LogLevel::Info, "Loaded {0}", folderOrFile.generic_u8string());
 					return true;
 				}
 				else
 				{
 					sol::error err = result;
-					std::cerr << "Failed to load " << folderOrFile.generic_u8string() << ": " << err.what() << std::endl;
+					bwLog(m_logger, LogLevel::Error, "Failed to load {0}: {1}", folderOrFile.generic_u8string(), err.what());
 					return false;
 				}
 			}

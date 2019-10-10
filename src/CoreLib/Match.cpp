@@ -309,7 +309,7 @@ namespace bw
 
 		if (!m_scriptingContext)
 		{
-			m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
 			m_scriptingContext->LoadLibrary(m_scriptingLibrary);
 		}
 		else
@@ -325,7 +325,7 @@ namespace bw
 			if (!serverElementLib)
 				serverElementLib = std::make_shared<ServerElementLibrary>();
 
-			m_entityStore.emplace(m_scriptingContext);
+			m_entityStore.emplace(GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(serverElementLib);
 			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>());
 		}
@@ -340,7 +340,7 @@ namespace bw
 			if (!serverElementLib)
 				serverElementLib = std::make_shared<ServerElementLibrary>();
 
-			m_weaponStore.emplace(m_scriptingContext);
+			m_weaponStore.emplace(GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(serverElementLib);
 			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(*this));
 		}

@@ -256,11 +256,11 @@ namespace bw
 		{
 			std::shared_ptr<ClientScriptingLibrary> scriptingLibrary = std::make_shared<ClientScriptingLibrary>(*this);
 
-			m_scriptingContext = std::make_shared<ScriptingContext>(scriptDir);
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
 			m_scriptingContext->LoadLibrary(scriptingLibrary);
 
 			if (!m_localConsole)
-				m_localConsole.emplace(m_window, m_canvas, scriptingLibrary, scriptDir);
+				m_localConsole.emplace(GetLogger(), m_window, m_canvas, scriptingLibrary, scriptDir);
 		}
 		else
 		{
@@ -275,7 +275,7 @@ namespace bw
 			if (!clientElementLib)
 				clientElementLib = std::make_shared<ClientElementLibrary>();
 
-			m_entityStore.emplace(*m_assetStore, m_scriptingContext);
+			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(clientElementLib);
 			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
 		}
@@ -290,7 +290,7 @@ namespace bw
 			if (!clientElementLib)
 				clientElementLib = std::make_shared<ClientElementLibrary>();
 
-			m_weaponStore.emplace(*m_assetStore, m_scriptingContext);
+			m_weaponStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(clientElementLib);
 			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(*m_assetStore));
 		}
@@ -626,7 +626,7 @@ namespace bw
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
 		};
 
-		m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+		m_world.GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 	}
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)

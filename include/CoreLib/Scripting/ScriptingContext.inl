@@ -10,8 +10,9 @@
 
 namespace bw
 {
-	ScriptingContext::ScriptingContext(std::shared_ptr<VirtualDirectory> scriptDir) :
-	m_scriptDirectory(std::move(scriptDir))
+	ScriptingContext::ScriptingContext(Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir) :
+	m_scriptDirectory(std::move(scriptDir)),
+	m_logger(logger)
 	{
 	}
 

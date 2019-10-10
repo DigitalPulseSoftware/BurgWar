@@ -18,7 +18,7 @@ namespace bw
 	class ServerWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ServerWeaponStore(std::shared_ptr<ScriptingContext> context);
+			inline ServerWeaponStore(Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);

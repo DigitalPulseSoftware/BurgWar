@@ -15,13 +15,14 @@
 namespace bw
 {
 	class AbstractScriptingLibrary;
+	class Logger;
 
 	class ScriptingEnvironment
 	{
 		public:
 			using OutputCallback = std::function<void(const std::string& str, Nz::Color color)>;
 
-			ScriptingEnvironment(std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
+			ScriptingEnvironment(Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
 			ScriptingEnvironment(const ScriptingEnvironment&) = delete;
 			ScriptingEnvironment(ScriptingEnvironment&&) = delete;
 			~ScriptingEnvironment() = default;
@@ -35,6 +36,7 @@ namespace bw
 
 		private:
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
+			Logger& m_logger;
 			OutputCallback m_outputCallback;
 	};
 }
