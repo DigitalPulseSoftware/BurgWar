@@ -31,7 +31,6 @@ namespace bw
 			TerrainLayer& operator=(TerrainLayer&&) noexcept = default;
 
 		private:
-			Ndk::EntityHandle m_camera;
 			SharedWorld m_world;
 	};
 }

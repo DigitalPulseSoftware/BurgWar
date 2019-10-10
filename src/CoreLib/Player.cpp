@@ -30,7 +30,7 @@
 namespace bw
 {
 	Player::Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string playerName) :
-	m_layerIndex(std::numeric_limits<std::size_t>::max()),
+	m_layerIndex(NoLayer),
 	m_inputIndex(0),
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
@@ -48,6 +48,9 @@ namespace bw
 	bool Player::GiveWeapon(std::string weaponClass)
 	{
 		if (!m_match)
+			return false;
+
+		if (m_layerIndex == NoLayer)
 			return false;
 
 		if (!m_playerEntity)
@@ -109,6 +112,9 @@ namespace bw
 		if (!m_match)
 			return;
 
+		if (m_layerIndex == NoLayer)
+			return;
+
 		if (!m_playerEntity)
 			return;
 
@@ -138,6 +144,9 @@ namespace bw
 	void Player::Spawn()
 	{
 		if (!m_match)
+			return;
+
+		if (m_layerIndex == NoLayer)
 			return;
 
 		Terrain& terrain = m_match->GetTerrain();
@@ -277,6 +286,28 @@ namespace bw
 		m_inputBuffer[index] = std::move(inputData);
 	}
 
+	void Player::UpdateLayer(std::size_t layerIndex)
+	{
+		if (m_layerIndex != layerIndex)
+		{
+			if (m_layerIndex != NoLayer)
+			{
+				m_weapons.clear();
+				m_weaponByName.clear();
+
+				//TODO: Preserve weapons & player entity
+				m_playerEntity.Reset();
+			}
+
+			m_layerIndex = layerIndex;
+			//if (m_layerIndex != NoLayer)
+			//	Spawn();
+
+			//FIXME: This doesn't work well with multiples players/session
+			GetSession().GetVisibility().UpdateLayer(m_layerIndex);
+		}
+	}
+
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)
 	{
 		Packets::ChatMessage chatPacket;
@@ -295,11 +326,6 @@ namespace bw
 		m_weapons.clear();
 		m_weaponByName.clear();
 		m_activeWeaponIndex = NoWeapon;
-	}
-
-	void Player::UpdateLayer(std::size_t layerIndex)
-	{
-		m_layerIndex = layerIndex;
 	}
 
 	void Player::UpdateMatch(Match* match)

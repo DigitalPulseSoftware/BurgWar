@@ -498,6 +498,6 @@ namespace bw
 	{
 		Layer& layer = m_layers.emplace_back();
 		layer.depth = 0.f;
-		layer.name = "Default layer";
+		layer.name = "Layer #1";
 	}
 }

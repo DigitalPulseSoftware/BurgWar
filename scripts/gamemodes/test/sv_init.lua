@@ -5,6 +5,7 @@ function GM:OnPlayerDeath(player, attacker)
 end
 
 function GM:OnPlayerJoin(player)
+	timer.Sleep(2)
 	print(player:GetName() .. " joined")
 	player:Spawn()
 	player:GiveWeapon("weapon_sword_emmentalibur")

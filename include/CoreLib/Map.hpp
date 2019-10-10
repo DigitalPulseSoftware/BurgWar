@@ -37,6 +37,7 @@ namespace bw
 			inline Map(MapInfo mapInfo);
 			~Map() = default;
 
+			inline Layer& AddLayer();
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
@@ -71,7 +72,7 @@ namespace bw
 			struct Layer
 			{
 				Nz::Color backgroundColor = Nz::Color::Black;
-				std::string name;
+				std::string name = "unnamed layer";
 				float depth = 0.f;
 				std::vector<Entity> entities;
 			};

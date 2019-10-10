@@ -17,6 +17,11 @@ namespace bw
 		SetupDefault();
 	}
 
+	inline auto Map::AddLayer() -> Layer&
+	{
+		return m_layers.emplace_back();
+	}
+
 	inline auto Map::GetAssets() -> std::vector<Asset>&
 	{
 		return m_assets;

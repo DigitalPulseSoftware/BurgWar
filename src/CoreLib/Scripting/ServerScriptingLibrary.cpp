@@ -92,6 +92,16 @@ namespace bw
 					return;
 
 				return player->Spawn();
+			},
+			"UpdateLayer", [](const PlayerHandle& player, sol::object layerIndex)
+			{
+				if (!player)
+					return;
+			
+				if (layerIndex != sol::nil)
+					player->UpdateLayer(layerIndex.as<std::size_t>());
+				else
+					player->UpdateLayer(Player::NoLayer);
 			}
 		);
 	}

@@ -183,8 +183,6 @@ namespace bw
 		m_players.emplace_back(player);
 		player->UpdateMatch(this);
 
-		player->UpdateLayer(0);
-
 		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
 
 		Packets::ChatMessage chatPacket;

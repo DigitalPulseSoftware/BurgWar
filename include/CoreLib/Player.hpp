@@ -67,16 +67,17 @@ namespace bw
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
+			void UpdateLayer(std::size_t layerIndex);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) = delete;
 
+			static constexpr std::size_t NoLayer = std::numeric_limits<std::size_t>::max();
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
 		private:
 			void OnDeath(const Ndk::EntityHandle& attacker);
 
-			void UpdateLayer(std::size_t layerIndex);
 			void UpdateMatch(Match* match);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;

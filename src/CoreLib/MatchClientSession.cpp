@@ -212,6 +212,9 @@ namespace bw
 	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& packet)
 	{
 		// HAAAAAX
-		GetVisibility().UpdateLayer(0);
+		ForEachPlayer([](Player* player)
+		{
+			player->UpdateLayer(0);
+		});
 	}
 }

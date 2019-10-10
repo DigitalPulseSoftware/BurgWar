@@ -253,27 +253,14 @@ namespace bw
 
 		m_compileMap->setEnabled(enableMapActions);
 		m_createEntityActionToolbar->setEnabled(enableMapActions);
+		m_mapMenu->setEnabled(enableMapActions);
 		m_saveMap->setEnabled(enableMapActions);
 		m_saveMapToolbar->setEnabled(enableMapActions);
 
-		if (m_workingMap.IsValid())
-		{
-			m_layerList->clear();
-			m_layerList->clearSelection();
+		RefreshLayerList();
 
-			for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
-			{
-				const auto& layer = m_workingMap.GetLayer(layerIndex);
-
-				QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(layer.name));
-				item->setData(Qt::UserRole, qulonglong(layerIndex));
-
-				m_layerList->addItem(item);
-			}
-
-			if (m_layerList->count() > 0)
-				m_layerList->setCurrentRow(0);
-		}
+		if (m_layerList->count() > 0)
+			m_layerList->setCurrentRow(0);
 	}
 
 	bool EditorWindow::event(QEvent* e)
@@ -409,7 +396,10 @@ namespace bw
 		m_compileMap = fileMenu->addAction(tr("Compile map..."));
 		connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
 
-		QMenu* mapMenu = menuBar()->addMenu(tr("&Map"));
+		m_mapMenu = menuBar()->addMenu(tr("&Map"));
+		QMenu* layerMenu = m_mapMenu->addMenu("Layers");
+		QAction* addLayer = layerMenu->addAction(tr("Add layer"));
+		connect(addLayer, &QAction::triggered, this, &EditorWindow::OnCreateLayer);
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
 
@@ -505,6 +495,17 @@ namespace bw
 			UpdateWorkingMap(Map(mapInfo));
 		});
 		createMapDialog->exec();
+	}
+
+	void EditorWindow::OnCreateLayer()
+	{
+		if (!m_workingMap.IsValid())
+			return;
+
+		auto& layer = m_workingMap.AddLayer();
+		layer.name = "Layer #" + std::to_string(m_workingMap.GetLayerCount());
+
+		RefreshLayerList();
 	}
 
 	void EditorWindow::OnDeleteEntity()
@@ -826,5 +827,21 @@ namespace bw
 		m_entityList->addItem(item);
 
 		m_entityIndexes.emplace(canvasId, entityIndex);
+	}
+
+	void EditorWindow::RefreshLayerList()
+	{
+		m_layerList->clear();
+		m_layerList->clearSelection();
+
+		for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
+		{
+			const auto& layer = m_workingMap.GetLayer(layerIndex);
+
+			QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(layer.name));
+			item->setData(Qt::UserRole, qulonglong(layerIndex));
+
+			m_layerList->addItem(item);
+		}
 	}
 }

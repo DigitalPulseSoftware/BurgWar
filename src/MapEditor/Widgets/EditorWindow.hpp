@@ -61,6 +61,7 @@ namespace bw
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
+			void OnCreateLayer();
 			void OnDeleteEntity();
 			void OnDeleteEntity(std::size_t entityIndex);
 			void OnEntityDoubleClicked(QListWidgetItem* item);
@@ -79,6 +80,7 @@ namespace bw
 
 			void RegisterEditorConfig();
 			void RegisterEntity(std::size_t entityIndex);
+			void RefreshLayerList();
 
 			std::filesystem::path m_workingMapPath;
 			std::optional<AssetStore> m_assetStore;
@@ -93,6 +95,7 @@ namespace bw
 			QAction* m_createEntityActionToolbar;
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;
+			QMenu* m_mapMenu;
 			QListWidget* m_entityList;
 			QListWidget* m_layerList;
 			EntityInfoDialog* m_entityInfoDialog;
