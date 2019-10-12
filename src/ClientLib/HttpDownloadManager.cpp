@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/HttpDownloadManager.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <algorithm>
-#include <iostream>
 #include <stdexcept>
 
 #define NOMINMAX
@@ -18,13 +18,14 @@
 
 namespace bw
 {
-	HttpDownloadManager::HttpDownloadManager(std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultaneousDownload) :
+	HttpDownloadManager::HttpDownloadManager(const Logger& logger, std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultaneousDownload) :
 	m_nextFileIndex(0),
 	m_targetFolder(std::move(targetFolder)),
 	m_sourceDirectory(std::move(resourceFolder)),
 	m_baseDownloadUrls(std::move(baseDownloadUrls)),
 	m_curlRequests(maxSimultaneousDownload),
-	m_curlMulti(nullptr)
+	m_curlMulti(nullptr),
+	m_logger(logger)
 	{
 		assert(m_baseDownloadUrls.size() > 0);
 		for (std::string& downloadUrl : m_baseDownloadUrls)
@@ -230,12 +231,12 @@ namespace bw
 				request.metadata->hash->Begin();
 				request.metadata->file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 				
-				std::cout << "[HTTP] Downloading " << pendingDownload.resourcePath << std::endl;
+				bwLog(m_logger, LogLevel::Info, "[HTTP] Downloading {0} (size: {1})", pendingDownload.resourcePath, pendingDownload.expectedSize);
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)
 				{
-					std::cerr << "curl_multi_perform: " << err << ": " << curl_multi_strerror(err) << std::endl;
+					bwLog(m_logger, LogLevel::Error, "[HTTP] curl_multi_perform failed with {0}: {1}", err, curl_multi_strerror(err));
 					continue;
 				}
 
@@ -255,7 +256,7 @@ namespace bw
 		CURLMcode err = curl_multi_perform(m_curlMulti, &reportedActiveRequest);
 		if (err != CURLM_OK)
 		{
-			std::cerr << "curl_multi_perform: " << err << ": " << curl_multi_strerror(err) << std::endl;
+			bwLog(m_logger, LogLevel::Error, "[HTTP] curl_multi_perform failed with {0}: {1}", err, curl_multi_strerror(err));
 			return;
 		}
 
@@ -297,16 +298,16 @@ namespace bw
 								OnFileChecked(this, pendingDownload.resourcePath, pendingDownload.outputPath);
 							}
 							else
-								std::cout << "Failed to download " << pendingDownload.resourcePath << ": checksums don't match" << std::endl;
+								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", pendingDownload.resourcePath);
 						}
 						else
-							std::cout << "Failed to download " << pendingDownload.resourcePath << ": sizes don't match" << std::endl;
+							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", pendingDownload.resourcePath, downloadedSize, pendingDownload.expectedSize);
 					}
 					else
-						std::cout << "Failed to download " << pendingDownload.resourcePath << ": " << responseCode << std::endl;
+						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", pendingDownload.resourcePath, responseCode);
 				}
 				else
-					std::cerr << "Failed to download " << pendingDownload.resourcePath << ": " << curl_easy_strerror(m->data.result) << std::endl;
+					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", pendingDownload.resourcePath, m->data.result, curl_easy_strerror(m->data.result));
 
 				// Cleanup
 				requestIt->isActive = false;

@@ -20,7 +20,7 @@ namespace bw
 	}
 
 	template<typename... Args>
-	void Logger::LogFormat(LogContext& context, Args&&... args)
+	void Logger::LogFormat(LogContext& context, Args&&... args) const
 	{
 		Log(context, fmt::format(std::forward<Args>(args)...));
 	}

@@ -19,7 +19,7 @@ namespace bw
 	class AssetStore
 	{
 		public:
-			inline AssetStore(Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory);
+			inline AssetStore(const Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory);
 			~AssetStore() = default;
 
 			inline void Clear();
@@ -33,7 +33,7 @@ namespace bw
 			mutable std::shared_ptr<VirtualDirectory> m_assetDirectory;
 			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
 			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;
-			Logger& m_logger;
+			const Logger& m_logger;
 	};
 }
 

@@ -5,7 +5,6 @@
 #include <Server/ServerApp.hpp>
 #include <CoreLib/NetworkSessionManager.hpp>
 #include <Nazara/Core/Thread.hpp>
-#include <iostream>
 
 namespace bw
 {

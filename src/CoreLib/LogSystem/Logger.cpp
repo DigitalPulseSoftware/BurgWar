@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	void Logger::Log(LogContext& context, std::string content)
+	void Logger::Log(LogContext& context, std::string content) const
 	{
 		OverrideContent(context, content);
 
@@ -16,7 +16,7 @@ namespace bw
 			m_logParent->LogRaw(context, content);
 	}
 
-	void Logger::LogRaw(LogContext& context, std::string_view content)
+	void Logger::LogRaw(LogContext& context, std::string_view content) const
 	{
 		for (auto& sinkPtr : m_sinks)
 			sinkPtr->Write(context, content);
@@ -33,7 +33,7 @@ namespace bw
 		return true;
 	}
 
-	void Logger::OverrideContent(const LogContext& /*context*/, std::string& /*content*/)
+	void Logger::OverrideContent(const LogContext& /*context*/, std::string& /*content*/) const
 	{
 	}
 }

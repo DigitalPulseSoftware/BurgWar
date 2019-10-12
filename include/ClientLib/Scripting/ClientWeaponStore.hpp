@@ -17,7 +17,7 @@ namespace bw
 	class ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ClientWeaponStore(AssetStore& assetStore, Logger& logger, std::shared_ptr<ScriptingContext> context);
+			inline ClientWeaponStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
 			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);

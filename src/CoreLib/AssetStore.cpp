@@ -13,7 +13,7 @@ namespace bw
 	namespace
 	{
 		template<typename ResourceType>
-		const Nz::ObjectRef<ResourceType>& GetResource(Logger& logger, const std::string& resourcePath, std::shared_ptr<VirtualDirectory>& assetDirectory, tsl::hopscotch_map<std::string, Nz::ObjectRef<ResourceType>>& cache)
+		const Nz::ObjectRef<ResourceType>& GetResource(const Logger& logger, const std::string& resourcePath, std::shared_ptr<VirtualDirectory>& assetDirectory, tsl::hopscotch_map<std::string, Nz::ObjectRef<ResourceType>>& cache)
 		{
 			static Nz::ObjectRef<ResourceType> InvalidResource;
 

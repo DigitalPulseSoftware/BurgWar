@@ -4,6 +4,7 @@
 
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -88,7 +89,7 @@ namespace bw
 			std::size_t expectedCellCount = mapSize.x * mapSize.y;
 			if (cellCount != expectedCellCount)
 			{
-				std::cerr << "Expected " << expectedCellCount << " cells, got " << cellCount << std::endl;
+				bwLog(GetLogger(), LogLevel::Warning, "Expected {0} cells, got {1}", expectedCellCount, cellCount);
 				cellCount = std::min(cellCount, expectedCellCount);
 			}
 

@@ -7,7 +7,6 @@
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Core/StackArray.hpp>
 #include <cwchar>
-#include <iostream>
 #include <vector>
 
 #ifdef NAZARA_PLATFORM_WINDOWS
@@ -149,7 +148,7 @@ namespace bw
 			int wideSize = MultiByteToWideChar(CP_UTF8, 0, content.data(), int(content.size()), &bufferPtr[offset], int(bufferLength) - offset);
 			if (wideSize == 0)
 			{
-				std::cerr << "Failed to convert to wide char";
+				std::fputs("Failed to convert to wide char\n", stderr);
 				return;
 			}
 			offset += wideSize;

@@ -21,7 +21,7 @@ namespace bw
 	class ScriptingContext
 	{
 		public:
-			inline ScriptingContext(Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
+			inline ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
 			~ScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
@@ -45,7 +45,7 @@ namespace bw
 			std::vector<sol::thread> m_availableThreads;
 			std::vector<sol::thread> m_runningThreads;
 			sol::state m_luaState;
-			Logger& m_logger;
+			const Logger& m_logger;
 	};
 }
 

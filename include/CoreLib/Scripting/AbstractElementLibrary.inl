@@ -7,4 +7,13 @@
 
 namespace bw
 {
+	inline AbstractElementLibrary::AbstractElementLibrary(const Logger& logger) :
+	m_logger(logger)
+	{
+	}
+
+	inline const Logger& AbstractElementLibrary::GetLogger() const
+	{
+		return m_logger;
+	}
 }

@@ -323,11 +323,11 @@ namespace bw
 		if (!m_entityStore)
 		{
 			if (!serverElementLib)
-				serverElementLib = std::make_shared<ServerElementLibrary>();
+				serverElementLib = std::make_shared<ServerElementLibrary>(GetLogger());
 
 			m_entityStore.emplace(GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(serverElementLib);
-			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>());
+			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>(GetLogger()));
 		}
 		else
 		{
@@ -338,11 +338,11 @@ namespace bw
 		if (!m_weaponStore)
 		{
 			if (!serverElementLib)
-				serverElementLib = std::make_shared<ServerElementLibrary>();
+				serverElementLib = std::make_shared<ServerElementLibrary>(GetLogger());
 
 			m_weaponStore.emplace(GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(serverElementLib);
-			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(*this));
+			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(GetLogger(), *this));
 		}
 		else
 		{

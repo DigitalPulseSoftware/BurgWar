@@ -4,6 +4,7 @@
 
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
@@ -16,7 +17,7 @@ namespace bw
 			std::size_t newPeerId = reactor->ConnectTo(serverAddress, data);
 			if (newPeerId == NetworkReactor::InvalidPeerId)
 			{
-				std::cerr << "Failed to allocate new peer" << std::endl;
+				bwLog(m_logger, LogLevel::Error, "Failed to allocate new peer");
 				return nullptr;
 			}
 

@@ -4,7 +4,6 @@
 
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
-#include <iostream>
 
 namespace bw
 {

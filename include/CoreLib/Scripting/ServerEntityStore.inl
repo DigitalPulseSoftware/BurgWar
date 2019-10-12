@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ServerEntityStore::ServerEntityStore(Logger& logger, std::shared_ptr<ScriptingContext> context) :
+	inline ServerEntityStore::ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context) :
 	SharedEntityStore(logger, std::move(context), true)
 	{
 	}

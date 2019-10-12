@@ -9,7 +9,6 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTextEdit>
-#include <iostream>
 
 namespace bw
 {

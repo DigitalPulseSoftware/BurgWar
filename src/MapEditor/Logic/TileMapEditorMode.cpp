@@ -13,7 +13,6 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMessageBox>
-#include <iostream>
 
 namespace bw
 {

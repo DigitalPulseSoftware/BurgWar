@@ -15,7 +15,7 @@ namespace bw
 		return true;
 	}
 
-	void MatchLogger::OverrideContent(const LogContext& context, std::string& content)
+	void MatchLogger::OverrideContent(const LogContext& context, std::string& content) const
 	{
 		content = "[Match " + m_sharedMatch.GetName() + "] " + content;
 	}

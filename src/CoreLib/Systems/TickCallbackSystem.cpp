@@ -3,12 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
+#include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <iostream>
 
 namespace bw
 {
-	TickCallbackSystem::TickCallbackSystem()
+	TickCallbackSystem::TickCallbackSystem(SharedMatch& match) :
+	m_match(match)
 	{
 		Requires<ScriptComponent>();
 		SetMaximumUpdateRate(0);
@@ -43,7 +45,7 @@ namespace bw
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::cerr << "OnTick failed: " << err.what() << std::endl;
+				bwLog(m_match.GetLogger(), LogLevel::Error, "OnAnimationStart failed: {0}", err.what());
 			}
 		}
 	}

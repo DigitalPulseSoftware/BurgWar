@@ -13,7 +13,7 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
 	m_logger(logger),
 	m_isServer(isServer)
@@ -59,6 +59,12 @@ namespace bw
 	sol::table& ScriptStore<Element>::GetElementMetatable()
 	{
 		return m_elementMetatable;
+	}
+
+	template<typename Element>
+	const Logger& ScriptStore<Element>::GetLogger() const
+	{
+		return m_logger;
 	}
 
 	template<typename Element>

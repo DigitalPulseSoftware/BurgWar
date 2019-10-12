@@ -14,7 +14,6 @@
 #include <Nazara/Physics2D/Arbiter2D.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
-#include <iostream>
 
 namespace bw
 {
@@ -30,7 +29,7 @@ namespace bw
 			std::size_t entityTypeIndex = entityStore.GetElementIndex(entityData.entityType);
 			if (entityTypeIndex == entityStore.InvalidIndex)
 			{
-				std::cerr << "Unknown entity type " + entityData.entityType << std::endl;
+				bwLog(match.GetLogger(), LogLevel::Error, "Unknown entity type {0}", entityData.entityType);
 				continue;
 			}
 

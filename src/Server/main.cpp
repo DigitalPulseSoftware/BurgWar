@@ -6,7 +6,6 @@
 #include <Nazara/Network/Network.hpp>
 #include <Server/ServerApp.hpp>
 #include <filesystem>
-#include <iostream>
 
 int main(int argc, char* argv[])
 {

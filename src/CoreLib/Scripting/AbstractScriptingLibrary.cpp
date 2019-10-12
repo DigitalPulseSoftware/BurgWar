@@ -5,8 +5,8 @@
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <iostream>
 
 namespace bw
 {
@@ -21,6 +21,25 @@ namespace bw
 
 			if (!context.Load(scriptPath.generic_u8string()))
 				throw std::runtime_error("TODO");
+		};
+
+		luaState["print"] = [this](sol::this_state L, sol::variadic_args args)
+		{
+			bool first = true;
+
+			std::ostringstream oss;
+			for (auto v : args)
+			{
+				std::size_t length;
+				const char* str = luaL_tolstring(L, v.stack_index(), &length);
+				oss << std::string(str, length);
+				if (!first)
+					oss << "\t";
+
+				first = false;
+			}
+
+			bwLog(GetLogger(), LogLevel::Info, oss.str());
 		};
 	}
 

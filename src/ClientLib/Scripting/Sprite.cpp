@@ -4,7 +4,6 @@
 
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <iostream>
 
 namespace bw
 {

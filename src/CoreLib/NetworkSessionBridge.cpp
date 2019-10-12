@@ -4,7 +4,6 @@
 
 #include <CoreLib/NetworkSessionBridge.hpp>
 #include <CoreLib/NetworkReactor.hpp>
-#include <iostream>
 
 namespace bw
 {

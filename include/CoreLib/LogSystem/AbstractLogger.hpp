@@ -17,8 +17,8 @@ namespace bw
 		public:
 			virtual ~AbstractLogger();
 
-			virtual void Log(LogContext& context, std::string content) = 0;
-			virtual void LogRaw(LogContext& context, std::string_view content) = 0;
+			virtual void Log(LogContext& context, std::string content) const = 0;
+			virtual void LogRaw(LogContext& context, std::string_view content) const = 0;
 
 			virtual bool ShouldLog(const LogContext& context) const = 0;
 	};

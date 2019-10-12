@@ -22,7 +22,7 @@ namespace bw
 			bool ShouldLog(const LogContext& context) const override;
 
 		private:
-			void OverrideContent(const LogContext& context, std::string& content) override;
+			void OverrideContent(const LogContext& context, std::string& content) const override;
 
 			LogLevel m_minimumLogLevel;
 			MatchLogContext m_localMatchContext;

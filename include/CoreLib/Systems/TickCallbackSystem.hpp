@@ -13,10 +13,12 @@
 
 namespace bw
 {
+	class SharedMatch;
+
 	class TickCallbackSystem : public Ndk::System<TickCallbackSystem>
 	{
 		public:
-			TickCallbackSystem();
+			TickCallbackSystem(SharedMatch& match);
 			~TickCallbackSystem() = default;
 
 			static Ndk::SystemIndex systemIndex;
@@ -27,6 +29,7 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			Ndk::EntityList m_tickableEntities;
+			SharedMatch& m_match;
 	};
 }
 

@@ -16,7 +16,6 @@
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
-#include <iostream>
 #include <tsl/hopscotch_map.h>
 
 namespace bw

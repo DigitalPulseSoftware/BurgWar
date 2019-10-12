@@ -4,7 +4,6 @@
 
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {

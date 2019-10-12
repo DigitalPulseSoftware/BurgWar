@@ -13,7 +13,6 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <iostream>
 
 namespace bw
 {
@@ -28,7 +27,7 @@ namespace bw
 		}
 		catch (const std::exception& e)
 		{
-			std::cerr << "Failed to get entity class \"" << entityClass->name << "\" informations: " << e.what() << std::endl;
+			bwLog(GetLogger(), LogLevel::Error, "Failed to get entity class \"{0}\" informations: {1}", entityClass->name, e.what());
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 

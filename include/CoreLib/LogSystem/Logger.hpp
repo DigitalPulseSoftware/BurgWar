@@ -34,10 +34,10 @@ namespace bw
 			inline Logger(AbstractLogger& logParent);
 			~Logger() = default;
 
-			template<typename... Args> void LogFormat(LogContext& context, Args&& ... args);
+			template<typename... Args> void LogFormat(LogContext& context, Args&& ... args) const;
 
-			void Log(LogContext& context, std::string content) override;
-			void LogRaw(LogContext& context, std::string_view content) override;
+			void Log(LogContext& context, std::string content) const override;
+			void LogRaw(LogContext& context, std::string_view content) const override;
 
 			inline void RegisterSink(std::shared_ptr<LogSink> sinkPtr);
 
@@ -46,7 +46,7 @@ namespace bw
 			bool ShouldLog(const LogContext& context) const override;
 
 		protected:
-			virtual void OverrideContent(const LogContext& context, std::string& content);
+			virtual void OverrideContent(const LogContext& context, std::string& content) const;
 
 		private:
 			LogContext m_localContext;

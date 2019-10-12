@@ -12,11 +12,12 @@
 namespace bw
 {
 	class AssetStore;
+	class Logger;
 
 	class ClientEntityLibrary : public SharedEntityLibrary
 	{
 		public:
-			inline ClientEntityLibrary(AssetStore& assetStore);
+			inline ClientEntityLibrary(const Logger& logger, AssetStore& assetStore);
 			~ClientEntityLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

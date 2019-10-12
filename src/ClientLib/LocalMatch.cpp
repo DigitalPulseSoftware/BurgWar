@@ -28,13 +28,13 @@
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
+#include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
-#include <iostream>
 #include <fstream>
 
 namespace bw
@@ -46,7 +46,7 @@ namespace bw
 	m_canvas(canvas),
 	m_window(window),
 	m_application(burgApp),
-	m_chatBox(window, canvas),
+	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
 	m_world(*this),
 	m_isReady(false),
@@ -181,17 +181,17 @@ namespace bw
 
 				if (m_debug->socket.GetState() == Nz::SocketState_Bound)
 				{
-					std::cout << "Debug socket bound to port " << m_debug->socket.GetBoundPort() << std::endl;
+					bwLog(GetLogger(), LogLevel::Info, "Debug socket bound to port {0}", m_debug->socket.GetBoundPort());
 				}
 				else
 				{
-					std::cerr << "Failed to bind debug socket";
+					bwLog(GetLogger(), LogLevel::Error, "Failed to bind debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 					m_debug.reset();
 				}
 			}
 			else
 			{
-				std::cerr << "Failed to create debug socket";
+				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 				m_debug.reset();
 			}
 		}
@@ -273,11 +273,11 @@ namespace bw
 		if (!m_entityStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>();
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
 
 			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(clientElementLib);
-			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
+			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(GetLogger(), *m_assetStore));
 		}
 		else
 		{
@@ -288,11 +288,11 @@ namespace bw
 		if (!m_weaponStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>();
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
 
 			m_weaponStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(clientElementLib);
-			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(*m_assetStore));
+			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(GetLogger(), *m_assetStore));
 		}
 		else
 		{
@@ -347,7 +347,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "engine_AnimateRotation callback failed: " << err.what() << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "engine_AnimateRotation callback failed: {0}", err.what());
 				}
 			});
 			return 0;
@@ -375,7 +375,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "engine_AnimatePositionByOffset callback failed: " << err.what() << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "engine_AnimatePositionByOffset callback failed: {0}", err.what());
 				}
 			});
 			return 0;
@@ -869,7 +869,7 @@ namespace bw
 			else
 			{
 				// Unknown
-				std::cerr << "Failed to decode entity type: " << entityClass << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Failed to decode entity type: {0}", entityClass);
 				continue;
 			}
 
@@ -1256,7 +1256,7 @@ namespace bw
 						realPhys.SetPosition(Nz::Lerp(realPhys.GetPosition(), reconciliationPhys.GetPosition(), 0.1f));
 					else
 					{
-						std::cout << "Teleport!" << std::endl;
+						bwLog(GetLogger(), LogLevel::Warning, "Teleport!");
 						realPhys.SetPosition(reconciliationPhys.GetPosition());
 					}
 
@@ -1293,7 +1293,7 @@ namespace bw
 			playerData.weapons.emplace_back(serverEntity.entity);
 
 			auto& scriptComponent = serverEntity.entity->GetComponent<ScriptComponent>();
-			std::cout << "Local player #" << +packet.playerIndex << " has weapon " << scriptComponent.GetElement()->fullName << std::endl;
+			bwLog(GetLogger(), LogLevel::Info, "Local player #{0} has weapon {1}", +packet.playerIndex, scriptComponent.GetElement()->fullName);
 		}
 
 		playerData.selectedWeapon = playerData.weapons.size();
@@ -1311,7 +1311,7 @@ namespace bw
 			}
 		}
 
-		std::cout << "input not found: " << stateTick << std::endl;
+		bwLog(GetLogger(), LogLevel::Warning, "Input not found for state tick {0}", stateTick);
 
 		//m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
 

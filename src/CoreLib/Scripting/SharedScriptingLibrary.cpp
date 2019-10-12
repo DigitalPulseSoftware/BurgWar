@@ -6,11 +6,11 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/SharedMatch.hpp>
-#include <iostream>
 
 namespace bw
 {
 	SharedScriptingLibrary::SharedScriptingLibrary(SharedMatch& sharedMatch) :
+	AbstractScriptingLibrary(sharedMatch.GetLogger()),
 	m_match(sharedMatch)
 	{
 	}
@@ -46,7 +46,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)
 		{
-			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [&luaState, callbackObject]()
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, &luaState, callbackObject]()
 			{
 				sol::protected_function callback(luaState, sol::ref_index(callbackObject.registry_index()));
 
@@ -54,7 +54,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "engine_SetTimer callback failed: " << err.what() << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "engine_SetTimer failed: {0}", err.what());
 				}
 			});
 		};

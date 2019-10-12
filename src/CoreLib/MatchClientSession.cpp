@@ -11,7 +11,6 @@
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {
@@ -49,7 +48,7 @@ namespace bw
 	{
 		std::size_t playerCount = packet.players.size();
 
-		std::cout << "[Server] Auth request for " << playerCount << " players" << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Auth request for {0} players", playerCount);
 
 		if (playerCount == 0 || playerCount >= 8) //< For now, we don't have any spectator
 		{
@@ -103,7 +102,7 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
 	{
-		std::cout << "[Server] Client asked for client script " << packet.path << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Client asked for client scripts");
 
 		const Match::ClientScript* clientScript;
 		if (m_match.GetClientScript(packet.path, &clientScript))
@@ -119,7 +118,7 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
 	{
-		std::cout << "[Server] Hello world: " << packet.str << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Hello world: {0}", packet.str);
 
 		Packets::HelloWorld hw;
 		hw.str = "La belgique aurait dû gagner la coupe du monde 2018";
@@ -154,7 +153,7 @@ namespace bw
 	{
 		if (packet.inputs.size() != m_players.size())
 		{
-			std::cerr << "Player input count doesn't match player count" << std::endl;
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Player input count ({0}) doesn't match player count {1}", packet.inputs.size(), m_players.size());
 			return;
 		}
 

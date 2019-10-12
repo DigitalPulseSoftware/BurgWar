@@ -14,7 +14,7 @@ namespace bw
 	class SharedElementLibrary : public AbstractElementLibrary
 	{
 		public:
-			SharedElementLibrary() = default;
+			using AbstractElementLibrary::AbstractElementLibrary;
 			~SharedElementLibrary();
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

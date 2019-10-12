@@ -20,10 +20,12 @@ using CURLM = void;
 
 namespace bw
 {
+	class Logger;
+
 	class HttpDownloadManager
 	{
 		public:
-			HttpDownloadManager(std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultanousDownload = 2);
+			HttpDownloadManager(const Logger& logger, std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultanousDownload = 2);
 			~HttpDownloadManager();
 
 			void RegisterFile(const std::string& filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize);
@@ -71,6 +73,7 @@ namespace bw
 			std::vector<PendingFile> m_downloadList;
 			std::vector<Request> m_curlRequests;
 			CURLM* m_curlMulti;
+			const Logger& m_logger;
 	};
 }
 

@@ -7,7 +7,6 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {

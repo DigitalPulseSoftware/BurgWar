@@ -16,7 +16,7 @@ namespace bw
 	class ClientWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
-			inline ClientWeaponLibrary(AssetStore& assetStore);
+			inline ClientWeaponLibrary(const Logger& logger, AssetStore& assetStore);
 			~ClientWeaponLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

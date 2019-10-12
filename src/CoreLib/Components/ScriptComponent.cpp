@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <iostream>
 
 namespace bw
 {

@@ -9,7 +9,6 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <iostream>
 
 namespace bw
 {

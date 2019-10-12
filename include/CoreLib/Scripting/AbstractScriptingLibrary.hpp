@@ -13,19 +13,24 @@
 
 namespace bw
 {
+	class Logger;
 	class ScriptingContext;
 
 	class AbstractScriptingLibrary
 	{
 		public:
-			AbstractScriptingLibrary() = default;
+			inline AbstractScriptingLibrary(const Logger& logger);
 			virtual ~AbstractScriptingLibrary();
+
+			inline const Logger& GetLogger() const;
 
 			virtual void RegisterLibrary(ScriptingContext& context) = 0;
 
 		protected:
 			void RegisterGlobalLibrary(ScriptingContext& context);
 			void RegisterMetatableLibrary(ScriptingContext& context);
+
+			const Logger& m_logger;
 	};
 }
 

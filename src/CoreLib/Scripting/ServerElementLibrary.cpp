@@ -10,7 +10,6 @@
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol3/sol.hpp>
-#include <iostream>
 
 namespace bw
 {

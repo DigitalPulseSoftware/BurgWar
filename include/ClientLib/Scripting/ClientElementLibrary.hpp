@@ -14,7 +14,7 @@ namespace bw
 	class ClientElementLibrary : public SharedElementLibrary
 	{
 		public:
-			ClientElementLibrary() = default;
+			using SharedElementLibrary::SharedElementLibrary;
 			~ClientElementLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

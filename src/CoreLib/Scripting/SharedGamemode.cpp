@@ -10,7 +10,6 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {

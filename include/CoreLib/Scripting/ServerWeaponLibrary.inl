@@ -7,7 +7,8 @@
 
 namespace bw
 {
-	inline ServerWeaponLibrary::ServerWeaponLibrary(Match& match) :
+	inline ServerWeaponLibrary::ServerWeaponLibrary(const Logger& logger, Match& match) :
+	SharedWeaponLibrary(logger),
 	m_match(match)
 	{
 	}

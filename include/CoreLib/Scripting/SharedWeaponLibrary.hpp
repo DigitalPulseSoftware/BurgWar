@@ -14,7 +14,7 @@ namespace bw
 	class SharedWeaponLibrary : public AbstractElementLibrary
 	{
 		public:
-			SharedWeaponLibrary() = default;
+			using AbstractElementLibrary::AbstractElementLibrary;
 			~SharedWeaponLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

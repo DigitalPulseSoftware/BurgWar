@@ -73,12 +73,12 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::AuthFailure&& packet)
 	{
-		std::cout << "[Client] Auth failed" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Error, "Auth failed");
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::AuthSuccess&& packet)
 	{
-		std::cout << "[Client] Auth succeeded" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Debug, "Auth succeeded");
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::ChatMessage&& packet)
@@ -94,7 +94,7 @@ namespace bw
 		if (m_state != ConnectionState::WaitingForMatchData)
 			return;
 
-		std::cout << "[Client] Got client asset list" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Received asset list");
 		m_pendingPackets.assetList = std::make_unique<Packets::ClientAssetList>(std::move(packet));
 	}
 
@@ -103,7 +103,7 @@ namespace bw
 		if (m_state != ConnectionState::WaitingForMatchData)
 			return;
 
-		std::cout << "[Client] Got client script list" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Received client script list");
 		m_pendingPackets.scriptList = std::make_unique<Packets::ClientScriptList>(std::move(packet));
 	}
 
@@ -156,7 +156,7 @@ namespace bw
 
 	void ClientSession::HandleIncomingPacket(Packets::HelloWorld&& packet)
 	{
-		std::cout << "[Client] Hello world: " << packet.str << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Hello world: {0}", packet.str);
 	}
 
 	void ClientSession::HandleIncomingPacket(Packets::InputTimingCorrection&& packet)
@@ -172,23 +172,24 @@ namespace bw
 
 		// pls lynix-san refactor with state machine
 
-		std::cout << "[Client] Got match data" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Received math data");
 		m_pendingPackets.matchData = std::make_unique<Packets::MatchData>(std::move(matchData));
 
 		// Switch to downloading assets
 		if (!m_pendingPackets.assetList)
 		{
-			std::cerr << "[Client] Expected asset list packet before match data, failed to load match" << std::endl;
+			bwLog(m_application.GetLogger(), LogLevel::Error, "Expected asset list packet before match data, failed to load match");
+			Disconnect();
 			return;
 		}
 
 		m_state = ConnectionState::DownloadingAssets;
-		std::cout << "[Client] Downloading assets..." << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Downloading assets...");
 
 		auto resourceDirectory = std::make_shared<VirtualDirectory>(m_application.GetConfig().GetStringOption("Assets.ResourceFolder"));
 		auto targetResourceDirectory = std::make_shared<VirtualDirectory>();
 
-		m_httpDownloadManager.emplace(".assetCache", std::move(m_pendingPackets.assetList->fastDownloadUrls), resourceDirectory);
+		m_httpDownloadManager.emplace(m_localMatch->GetLogger(), ".assetCache", std::move(m_pendingPackets.assetList->fastDownloadUrls), resourceDirectory);
 
 		m_httpDownloadManager->OnFileChecked.Connect([this, targetResourceDirectory](HttpDownloadManager* /*downloadManager*/, const std::string& resourcePath, const std::filesystem::path& realPath)
 		{
@@ -203,7 +204,7 @@ namespace bw
 		m_httpDownloadManager->OnFinished.Connect([this, targetResourceDirectory](HttpDownloadManager* downloadManager) mutable
 		{
 			m_state = ConnectionState::DownloadingScripts;
-			std::cout << "[Client] Downloading scripts..." << std::endl;
+			bwLog(m_application.GetLogger(), LogLevel::Info, "Downloading scripts...");
 
 			m_downloadManager.emplace(".scriptCache");
 
@@ -222,7 +223,7 @@ namespace bw
 			m_downloadManager->OnFinished.Connect([this, targetResourceDirectory](ClientScriptDownloadManager* downloadManager) mutable
 			{
 				m_state = ConnectionState::Ready;
-				std::cout << "[Client] Creating match..." << std::endl;
+				bwLog(m_application.GetLogger(), LogLevel::Info, "Creating match...");
 
 				m_localMatch = m_matchFactory(*this, std::move(*m_pendingPackets.matchData));
 				m_localMatch->LoadAssets(std::move(targetResourceDirectory));
@@ -273,7 +274,7 @@ namespace bw
 
 	void ClientSession::OnSessionConnected()
 	{
-		std::cout << "Connected" << std::endl;
+		bwLog(m_application.GetLogger(), LogLevel::Info, "Connected");
 
 		OnConnected(this);
 

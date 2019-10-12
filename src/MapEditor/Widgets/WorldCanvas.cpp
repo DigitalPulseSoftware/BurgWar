@@ -7,7 +7,6 @@
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
-#include <iostream>
 
 namespace bw
 {

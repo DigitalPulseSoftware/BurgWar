@@ -25,7 +25,6 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
-#include <iostream>
 
 namespace bw
 {

@@ -4,7 +4,6 @@
 
 #include <ClientLib/ClientScriptDownloadManager.hpp>
 #include <Nazara/Core/File.hpp>
-#include <iostream>
 #include <stdexcept>
 
 namespace bw

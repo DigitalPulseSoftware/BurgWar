@@ -8,7 +8,7 @@
 
 namespace bw
 {
-	ScriptingEnvironment::ScriptingEnvironment(Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
+	ScriptingEnvironment::ScriptingEnvironment(const Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
 	m_logger(logger)
 	{
 		m_scriptingContext = std::make_shared<ScriptingContext>(logger, scriptDir);
