@@ -9,6 +9,7 @@
 
 #include <Nazara/Prerequisites.hpp>
 #include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
@@ -16,7 +17,7 @@ namespace bw
 	class BurgApp
 	{
 		public:
-			BurgApp();
+			BurgApp(LogSide side);
 			~BurgApp() = default;
 
 			inline Nz::UInt64 GetAppTime() const;

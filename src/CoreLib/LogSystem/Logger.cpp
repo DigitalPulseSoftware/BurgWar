@@ -2,12 +2,12 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/LogSystem/MatchLogger.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/LogSystem/LogSink.hpp>
 
 namespace bw
 {
-	void Logger::Log(LogContext& context, std::string content) const
+	void Logger::Log(const LogContext& context, std::string content) const
 	{
 		OverrideContent(context, content);
 
@@ -16,7 +16,7 @@ namespace bw
 			m_logParent->LogRaw(context, content);
 	}
 
-	void Logger::LogRaw(LogContext& context, std::string_view content) const
+	void Logger::LogRaw(const LogContext& context, std::string_view content) const
 	{
 		for (auto& sinkPtr : m_sinks)
 			sinkPtr->Write(context, content);
@@ -33,7 +33,45 @@ namespace bw
 		return true;
 	}
 
-	void Logger::OverrideContent(const LogContext& /*context*/, std::string& /*content*/) const
+	LogContext* Logger::AllocateContext(Nz::MemoryPool& pool) const
 	{
+		LogContext* logContext = pool.New<LogContext>();
+		InitializeContext(*logContext);
+
+		return logContext;
+	}
+
+	void Logger::InitializeContext(LogContext& context) const
+	{
+		context.side = GetSide();
+	}
+
+	void Logger::OverrideContent(const LogContext& context, std::string& content) const
+	{
+		switch (context.side)
+		{
+			case LogSide::Irrelevant:
+				break;
+
+			case LogSide::Client:
+				content = "[C] " + content;
+				break;
+
+			case LogSide::Editor:
+				content = "[E] " + content;
+				break;
+
+			case LogSide::Server:
+				content = "[S] " + content;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	void Logger::FreeContext(LogContext* context) const
+	{
+		m_contextPool.Delete(context);
 	}
 }

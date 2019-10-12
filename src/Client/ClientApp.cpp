@@ -21,6 +21,7 @@ namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
 	Application(argc, argv),
+	BurgApp(LogSide::Client),
 	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(1280, 720), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8))),
 	m_stateMachine(nullptr),
 	m_networkReactors(GetLogger())

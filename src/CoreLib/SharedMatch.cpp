@@ -10,9 +10,9 @@
 
 namespace bw
 {
-	SharedMatch::SharedMatch(BurgApp& app, std::string matchName, float tickDuration) :
+	SharedMatch::SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration) :
 	m_name(std::move(matchName)),
-	m_logger(*this, app.GetLogger()),
+	m_logger(*this, side, app.GetLogger()),
 	m_timerManager(*this),
 	m_currentTick(0),
 	m_currentTime(0),

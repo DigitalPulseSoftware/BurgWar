@@ -35,6 +35,7 @@ namespace bw
 	}
 
 	EditorWindow::EditorWindow() :
+	BurgApp(LogSide::Editor),
 	m_entityInfoDialog(nullptr)
 	{
 		RegisterEditorConfig();

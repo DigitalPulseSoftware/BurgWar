@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2019 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -40,7 +40,7 @@
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
-	SharedMatch(burgApp, "<TODO>", matchData.tickDuration),
+	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
@@ -83,7 +83,6 @@ namespace bw
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
 		m_trailSpriteTest->SetSize(64.f, 2.f);
 		InitializeRemoteConsole();
-
 
 		constexpr Nz::UInt8 playerCount = 1;
 

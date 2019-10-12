@@ -24,7 +24,7 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
-	SharedMatch(app, std::move(matchName), tickDuration),
+	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
@@ -42,7 +42,6 @@ namespace bw
 		m_gamemode->ExecuteCallback("OnInit");
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
-		bwLog(GetLogger(), LogLevel::Info, "héhé");
 
 		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
 		{

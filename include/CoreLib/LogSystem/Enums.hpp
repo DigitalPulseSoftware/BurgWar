@@ -16,6 +16,15 @@ namespace bw
 		Warning = 2,
 		Error   = 3
 	};
+
+	enum class LogSide
+	{
+		Irrelevant,
+
+		Client,
+		Editor,
+		Server
+	};
 }
 
 #endif

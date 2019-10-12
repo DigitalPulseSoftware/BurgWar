@@ -23,12 +23,14 @@
 
 namespace bw
 {
-	BurgApp::BurgApp() :
+	BurgApp::BurgApp(LogSide side) :
+	m_logger(side),
 	m_config(*this),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
 		m_logger.RegisterSink(std::make_shared<StdSink>());
+		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 
 		Ndk::InitializeComponent<AnimationComponent>("Anim");
 		Ndk::InitializeComponent<CooldownComponent>("Cooldown");

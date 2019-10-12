@@ -9,7 +9,8 @@
 namespace bw
 {
 	ServerApp::ServerApp(int argc, char* argv[]) :
-	Application(argc, argv)
+	Application(argc, argv),
+	BurgApp(LogSide::Server)
 	{
 		RegisterServerConfig();
 

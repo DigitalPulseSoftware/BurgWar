@@ -17,6 +17,23 @@ namespace bw
 
 	void MatchLogger::OverrideContent(const LogContext& context, std::string& content) const
 	{
-		content = "[Match " + m_sharedMatch.GetName() + "] " + content;
+		const MatchLogContext& matchContext = static_cast<const MatchLogContext&>(context);
+
+		content = "[Match " + matchContext.match->GetName() + "] " + content;
+	
+		Logger::OverrideContent(context, content);
+	}
+
+	LogContext* MatchLogger::AllocateContext(Nz::MemoryPool& pool) const
+	{
+		return pool.New<MatchLogContext>();
+	}
+
+	void MatchLogger::InitializeContext(LogContext& context) const
+	{
+		Logger::InitializeContext(context);
+
+		MatchLogContext& matchContext = static_cast<MatchLogContext&>(context);
+		matchContext.match = &m_sharedMatch;
 	}
 }

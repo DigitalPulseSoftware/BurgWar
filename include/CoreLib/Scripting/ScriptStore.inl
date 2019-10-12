@@ -110,7 +110,7 @@ namespace bw
 
 		state[m_tableName] = elementTable;
 
-		bwLog(m_logger, LogLevel::Info, "Loading {0}: {1}", m_elementTypeName, elementName);
+		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
 
 		bool hasError = false;
 		auto LoadFile = [&](const std::filesystem::path& path)
