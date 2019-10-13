@@ -5,7 +5,6 @@
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {

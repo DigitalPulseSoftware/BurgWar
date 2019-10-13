@@ -4,16 +4,12 @@
 
 #include <ClientLib/LocalSessionManager.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/MatchSessions.hpp>
-#include <iostream>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
-	LocalSessionManager::LocalSessionManager(MatchSessions* owner) :
-	SessionManager(owner)
-	{
-	}
-
 	LocalSessionManager::~LocalSessionManager() = default;
 
 	std::shared_ptr<LocalSessionBridge> LocalSessionManager::CreateSession()
@@ -29,7 +25,7 @@ namespace bw
 		if (peerId == m_peers.size())
 			m_peers.emplace_back();
 
-		std::cout << "Local session #" << peerId << " created" << std::endl;
+		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Error, "Local session #{0} created", peerId);
 		auto& peer = m_peers[peerId];
 		peer.emplace();
 		peer->clientBridge = std::make_shared<LocalSessionBridge>(*this, peerId, false);

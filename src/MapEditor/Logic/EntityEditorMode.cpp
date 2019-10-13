@@ -6,7 +6,6 @@
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <iostream>
 
 namespace bw
 {

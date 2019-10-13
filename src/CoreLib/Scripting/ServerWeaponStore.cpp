@@ -14,7 +14,6 @@
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <NDK/World.hpp>
-#include <iostream>
 
 namespace bw
 {

@@ -23,7 +23,7 @@ namespace bw
 		friend LocalSessionBridge;
 
 		public:
-			LocalSessionManager(MatchSessions* owner);
+			using SessionManager::SessionManager;
 			~LocalSessionManager();
 
 			std::shared_ptr<LocalSessionBridge> CreateSession();

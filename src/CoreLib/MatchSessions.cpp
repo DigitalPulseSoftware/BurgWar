@@ -3,8 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MatchSessions.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
-#include <iostream>
 
 namespace bw
 {
@@ -34,7 +35,7 @@ namespace bw
 
 		m_sessionIdToSession.insert_or_assign(sessionId, session);
 
-		std::cout << "Created session #" << sessionId << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Created session #{0}", sessionId);
 
 		return session;
 	}
@@ -46,6 +47,6 @@ namespace bw
 
 		m_sessionPool.Delete(session);
 
-		std::cout << "Deleted session #" << sessionId << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Deleted session #{0}", sessionId);
 	}
 }

@@ -8,7 +8,6 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <array>
-#include <iostream>
 
 namespace bw
 {

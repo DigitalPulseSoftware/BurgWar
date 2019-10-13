@@ -4,7 +4,6 @@
 
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
-#include <iostream>
 
 namespace bw
 {

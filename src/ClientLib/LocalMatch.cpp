@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2019 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -28,28 +28,27 @@
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
+#include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <cassert>
-#include <iostream>
 #include <fstream>
 
 namespace bw
 {
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
-	SharedMatch(burgApp, "<TODO>", matchData.tickDuration),
+	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_window(window),
 	m_application(burgApp),
-	m_chatBox(window, canvas),
+	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
 	m_world(*this),
-	m_isReady(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -73,6 +72,7 @@ namespace bw
 		viewer.SetTarget(window);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
+		// TODO: Remove this shit
 		Nz::Color trailColor(242, 255, 168);
 
 		m_trailSpriteTest = Nz::Sprite::New();
@@ -83,7 +83,6 @@ namespace bw
 		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
 		m_trailSpriteTest->SetSize(64.f, 2.f);
 		InitializeRemoteConsole();
-
 
 		constexpr Nz::UInt8 playerCount = 1;
 
@@ -162,6 +161,7 @@ namespace bw
 					break;
 			}
 		});
+		BindPackets();
 
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
@@ -181,17 +181,17 @@ namespace bw
 
 				if (m_debug->socket.GetState() == Nz::SocketState_Bound)
 				{
-					std::cout << "Debug socket bound to port " << m_debug->socket.GetBoundPort() << std::endl;
+					bwLog(GetLogger(), LogLevel::Info, "Debug socket bound to port {0}", m_debug->socket.GetBoundPort());
 				}
 				else
 				{
-					std::cerr << "Failed to bind debug socket";
+					bwLog(GetLogger(), LogLevel::Error, "Failed to bind debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 					m_debug.reset();
 				}
 			}
 			else
 			{
-				std::cerr << "Failed to create debug socket";
+				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 				m_debug.reset();
 			}
 		}
@@ -273,11 +273,11 @@ namespace bw
 		if (!m_entityStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>();
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
 
 			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(clientElementLib);
-			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
+			m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(GetLogger(), *m_assetStore));
 		}
 		else
 		{
@@ -288,11 +288,11 @@ namespace bw
 		if (!m_weaponStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>();
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
 
 			m_weaponStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(clientElementLib);
-			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(*m_assetStore));
+			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(GetLogger(), *m_assetStore));
 		}
 		else
 		{
@@ -347,7 +347,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "engine_AnimateRotation callback failed: " << err.what() << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "engine_AnimateRotation callback failed: {0}", err.what());
 				}
 			});
 			return 0;
@@ -375,7 +375,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "engine_AnimatePositionByOffset callback failed: " << err.what() << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "engine_AnimatePositionByOffset callback failed: {0}", err.what());
 				}
 			});
 			return 0;
@@ -434,13 +434,6 @@ namespace bw
 		}
 		else
 			m_gamemode->Reload();
-
-		if (!m_isReady)
-		{
-			m_session.SendPacket(Packets::Ready{});
-
-			m_isReady = true;
-		}
 	}
 
 	void LocalMatch::Update(float elapsedTime)
@@ -628,6 +621,69 @@ namespace bw
 
 		m_world.GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 	}
+	
+	void LocalMatch::BindPackets()
+	{
+		m_session.OnChatMessage.Connect([this](ClientSession* /*session*/, const Packets::ChatMessage& message)
+		{
+			HandleChatMessage(message);
+		});
+
+		m_session.OnConsoleAnswer.Connect([this](ClientSession* /*session*/, const Packets::ConsoleAnswer& consoleAnswer)
+		{
+			HandleConsoleAnswer(consoleAnswer);
+		});
+
+		m_session.OnControlEntity.Connect([this](ClientSession* /*session*/, const Packets::ControlEntity& controlEntity)
+		{
+			PushTickPacket(controlEntity.stateTick, controlEntity);
+		});
+
+		m_session.OnCreateEntities.Connect([this](ClientSession* /*session*/, const Packets::CreateEntities& createEntities)
+		{
+			PushTickPacket(createEntities.stateTick, createEntities);
+		});
+
+		m_session.OnDeleteEntities.Connect([this](ClientSession* /*session*/, const Packets::DeleteEntities& deleteEntities)
+		{
+			PushTickPacket(deleteEntities.stateTick, deleteEntities);
+		});
+
+		m_session.OnEntitiesAnimation.Connect([this](ClientSession* /*session*/, const Packets::EntitiesAnimation& animations)
+		{
+			PushTickPacket(animations.stateTick, animations);
+		});
+
+		m_session.OnEntitiesInputs.Connect([this](ClientSession* /*session*/, const Packets::EntitiesInputs& inputs)
+		{
+			PushTickPacket(inputs.stateTick, inputs);
+		});
+
+		m_session.OnEntityWeapon.Connect([this](ClientSession* /*session*/, const Packets::EntityWeapon& weapon)
+		{
+			PushTickPacket(weapon.stateTick, weapon);
+		});
+
+		m_session.OnHealthUpdate.Connect([this](ClientSession* /*session*/, const Packets::HealthUpdate& healthUpdate)
+		{
+			PushTickPacket(healthUpdate.stateTick, healthUpdate);
+		});
+
+		m_session.OnInputTimingCorrection.Connect([this](ClientSession* /*session*/, const Packets::InputTimingCorrection& timingCorrection)
+		{
+			HandleTickError(timingCorrection.serverTick, timingCorrection.tickError);
+		});
+
+		m_session.OnMatchState.Connect([this](ClientSession* /*session*/, const Packets::MatchState& matchState)
+		{
+			PushTickPacket(matchState.stateTick, matchState);
+		});
+
+		m_session.OnPlayerWeapons.Connect([this](ClientSession* /*session*/, const Packets::PlayerWeapons& weapons)
+		{
+			PushTickPacket(weapons.stateTick, weapons);
+		});
+	}
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
 	{
@@ -746,12 +802,12 @@ namespace bw
 		return GetCurrentTick() - m_averageTickError.GetAverageValue();
 	}
 
-	void LocalMatch::HandleChatMessage(Packets::ChatMessage&& packet)
+	void LocalMatch::HandleChatMessage(const Packets::ChatMessage& packet)
 	{
 		m_chatBox.PrintMessage(packet.content);
 	}
 
-	void LocalMatch::HandleConsoleAnswer(Packets::ConsoleAnswer&& packet)
+	void LocalMatch::HandleConsoleAnswer(const Packets::ConsoleAnswer& packet)
 	{
 		if (m_remoteConsole)
 			m_remoteConsole->Print(packet.response, packet.color);
@@ -869,7 +925,7 @@ namespace bw
 			else
 			{
 				// Unknown
-				std::cerr << "Failed to decode entity type: " << entityClass << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Failed to decode entity type: {0}", entityClass);
 				continue;
 			}
 
@@ -1256,7 +1312,7 @@ namespace bw
 						realPhys.SetPosition(Nz::Lerp(realPhys.GetPosition(), reconciliationPhys.GetPosition(), 0.1f));
 					else
 					{
-						std::cout << "Teleport!" << std::endl;
+						bwLog(GetLogger(), LogLevel::Warning, "Teleport!");
 						realPhys.SetPosition(reconciliationPhys.GetPosition());
 					}
 
@@ -1293,7 +1349,7 @@ namespace bw
 			playerData.weapons.emplace_back(serverEntity.entity);
 
 			auto& scriptComponent = serverEntity.entity->GetComponent<ScriptComponent>();
-			std::cout << "Local player #" << +packet.playerIndex << " has weapon " << scriptComponent.GetElement()->fullName << std::endl;
+			bwLog(GetLogger(), LogLevel::Info, "Local player #{0} has weapon {1}", +packet.playerIndex, scriptComponent.GetElement()->fullName);
 		}
 
 		playerData.selectedWeapon = playerData.weapons.size();
@@ -1311,7 +1367,7 @@ namespace bw
 			}
 		}
 
-		std::cout << "input not found: " << stateTick << std::endl;
+		bwLog(GetLogger(), LogLevel::Warning, "Input not found for state tick {0}", stateTick);
 
 		//m_averageTickError.InsertValue(m_averageTickError.GetAverageValue() + tickError);
 
@@ -1496,11 +1552,11 @@ namespace bw
 		}*/
 	}
 
-	void LocalMatch::PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet)
+	void LocalMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)
 	{
 		TickPacket newPacket;
 		newPacket.tick = tick;
-		newPacket.content = std::move(packet);
+		newPacket.content = packet;
 
 		auto it = std::upper_bound(m_tickedPackets.begin(), m_tickedPackets.end(), newPacket, [](const TickPacket& a, const TickPacket& b)
 		{

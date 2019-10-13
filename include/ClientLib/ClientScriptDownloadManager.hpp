@@ -7,8 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_DOWNLOADMANAGER_HPP
 #define BURGWAR_CLIENTLIB_DOWNLOADMANAGER_HPP
 
-#include <CoreLib/Protocol/Packets.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <ClientLib/ClientSession.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -17,17 +16,19 @@ namespace bw
 	class ClientScriptDownloadManager
 	{
 		public:
-			inline ClientScriptDownloadManager(std::filesystem::path clientFileCache);
+			ClientScriptDownloadManager(std::filesystem::path clientFileCache, std::shared_ptr<ClientSession> clientSession);
 			~ClientScriptDownloadManager() = default;
 
-			void HandlePacket(const Packets::ClientScriptList& packet);
-			void HandlePacket(const Packets::DownloadClientScriptResponse& packet);
+			void RegisterFile(const std::string& filePath, const std::array<Nz::UInt8, 20> & checksum);
+
+			void Start();
 
 			NazaraSignal(OnDownloadRequest, ClientScriptDownloadManager* /*downloadManager*/, const Packets::DownloadClientScriptRequest& /*request*/);
 			NazaraSignal(OnFileChecked, ClientScriptDownloadManager* /*downloadManager*/, const std::string& /*downloadPath*/, const std::vector<Nz::UInt8>& /*content*/);
 			NazaraSignal(OnFinished, ClientScriptDownloadManager* /*downloadManager*/);
 
 		private:
+			void HandlePacket(const Packets::DownloadClientScriptResponse& packet);
 			void RequestNextFile();
 
 			struct PendingFile
@@ -37,8 +38,11 @@ namespace bw
 			};
 
 			std::filesystem::path m_clientFileCache;
+			std::shared_ptr<ClientSession> m_clientSession;
 			std::size_t m_currentFileIndex;
 			std::vector<PendingFile> m_downloadList;
+
+			NazaraSlot(ClientSession, OnDownloadClientScriptResponse, m_onDownloadResponseSlot);
 	};
 }
 

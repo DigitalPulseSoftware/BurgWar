@@ -31,6 +31,7 @@ namespace bw
 	class ClientEntityStore;
 	class ScriptingContext;
 	class Float2SpinBox;
+	class Logger;
 
 	struct EntityInfo
 	{
@@ -46,7 +47,7 @@ namespace bw
 		public:
 			using Callback = std::function<void(EntityInfoDialog* dialog)>;
 
-			EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			EntityInfoDialog(const Logger& logger, ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
 			inline const EntityInfo& GetInfo() const;
@@ -92,6 +93,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			Callback m_callback;
 			ClientEntityStore& m_entityStore;
+			const Logger& m_logger;
 			ScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;

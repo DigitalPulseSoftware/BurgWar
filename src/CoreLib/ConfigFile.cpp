@@ -6,7 +6,6 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Utils.hpp>
 #include <sol3/sol.hpp>
-#include <iostream>
 
 namespace bw
 {

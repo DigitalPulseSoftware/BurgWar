@@ -5,7 +5,6 @@
 #include <CoreLib/CommandStore.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {
@@ -57,7 +56,7 @@ namespace bw
 			}
 			catch (const std::exception&)
 			{
-				std::cerr << "Failed to unserialize packet" << std::endl;
+				//std::cerr << "Failed to unserialize packet" << std::endl;
 				return false;
 			}
 

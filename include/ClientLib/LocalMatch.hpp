@@ -47,6 +47,7 @@ namespace bw
 			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
+
 			~LocalMatch();
 
 			template<typename T> T AdjustServerTick(T tick);
@@ -92,12 +93,13 @@ namespace bw
 				Packets::PlayerWeapons
 			>;
 
+			void BindPackets();
 			void CreateGhostEntity(ServerEntity& serverEntity);
 			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
 			void CreateName(ServerEntity& serverEntity, const std::string& name);
 			void DebugEntityId(ServerEntity& serverEntity);
-			void HandleChatMessage(Packets::ChatMessage&& packet);
-			void HandleConsoleAnswer(Packets::ConsoleAnswer&& packet);
+			void HandleChatMessage(const Packets::ChatMessage& packet);
+			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);
@@ -114,7 +116,7 @@ namespace bw
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
 			void ProcessInputs(float elapsedTime);
-			void PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet);
+			void PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet);
 			bool SendInputs(Nz::UInt16 serverTick, bool force);
 
 			struct HealthData
@@ -224,7 +226,6 @@ namespace bw
 			ClientSession& m_session;
 			SharedWorld m_world;
 			Packets::PlayersInput m_inputPacket;
-			bool m_isReady;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;

@@ -13,7 +13,10 @@ namespace bw
 {
 	struct LogContext
 	{
+		virtual ~LogContext();
+
 		LogLevel level;
+		LogSide side;
 	};
 }
 

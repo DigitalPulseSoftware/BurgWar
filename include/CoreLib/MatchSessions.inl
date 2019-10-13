@@ -19,4 +19,9 @@ namespace bw
 		for (const auto& pair : m_sessionIdToSession)
 			cb(pair.second);
 	}
+
+	inline Match& MatchSessions::GetMatch()
+	{
+		return m_match;
+	}
 }

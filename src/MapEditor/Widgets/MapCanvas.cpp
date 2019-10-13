@@ -12,7 +12,6 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
-#include <iostream>
 
 namespace bw
 {

@@ -13,7 +13,7 @@
 namespace bw
 {
 	template<typename Element>
-	ScriptStore<Element>::ScriptStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	ScriptStore<Element>::ScriptStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	m_context(std::move(context)),
 	m_logger(logger),
 	m_isServer(isServer)
@@ -62,6 +62,12 @@ namespace bw
 	}
 
 	template<typename Element>
+	const Logger& ScriptStore<Element>::GetLogger() const
+	{
+		return m_logger;
+	}
+
+	template<typename Element>
 	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
 	{
 		assert(entity->HasComponent<ScriptComponent>());
@@ -104,7 +110,7 @@ namespace bw
 
 		state[m_tableName] = elementTable;
 
-		bwLog(m_logger, LogLevel::Info, "Loading {0}: {1}", m_elementTypeName, elementName);
+		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
 
 		bool hasError = false;
 		auto LoadFile = [&](const std::filesystem::path& path)

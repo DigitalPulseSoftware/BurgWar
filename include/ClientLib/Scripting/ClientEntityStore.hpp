@@ -20,7 +20,7 @@ namespace bw
 	class ClientEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ClientEntityStore(AssetStore& assetStore, Logger& logger, std::shared_ptr<ScriptingContext> context);
+			inline ClientEntityStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 

@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline AssetStore::AssetStore(Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory) :
+	inline AssetStore::AssetStore(const Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory) :
 	m_assetDirectory(std::move(assetDirectory)),
 	m_logger(logger)
 	{

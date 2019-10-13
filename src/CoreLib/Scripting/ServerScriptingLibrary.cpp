@@ -5,7 +5,6 @@
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
-#include <iostream>
 
 namespace bw
 {

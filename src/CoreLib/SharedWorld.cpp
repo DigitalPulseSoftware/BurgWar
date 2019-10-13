@@ -11,7 +11,6 @@
 #include <CoreLib/Systems/WeaponSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {
@@ -19,7 +18,7 @@ namespace bw
 	{
 		m_world.AddSystem<AnimationSystem>(match);
 		m_world.AddSystem<PlayerMovementSystem>();
-		m_world.AddSystem<TickCallbackSystem>();
+		m_world.AddSystem<TickCallbackSystem>(match);
 		m_world.AddSystem<WeaponSystem>(match);
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();

@@ -11,12 +11,11 @@
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <NDK/Components/NodeComponent.hpp>
-#include <iostream>
 #include <stdexcept>
 
 namespace bw
 {
-	SharedWeaponStore::SharedWeaponStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	SharedWeaponStore::SharedWeaponStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
@@ -67,7 +66,7 @@ namespace bw
 
 			if (sol::protected_function callback = weaponClass.animationStartFunction)
 			{
-				anim.OnAnimationStart.Connect([callback](AnimationComponent* anim)
+				anim.OnAnimationStart.Connect([this, callback](AnimationComponent* anim)
 				{
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
@@ -78,7 +77,7 @@ namespace bw
 					if (!result.valid())
 					{
 						sol::error err = result;
-						std::cerr << "OnAnimationStart() failed: " << err.what() << std::endl;
+						bwLog(GetLogger(), LogLevel::Error, "OnAnimationStart failed: {0}", err.what());
 					}
 				});
 			}

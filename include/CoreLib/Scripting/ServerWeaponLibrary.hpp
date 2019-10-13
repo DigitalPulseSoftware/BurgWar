@@ -16,7 +16,7 @@ namespace bw
 	class ServerWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
-			inline ServerWeaponLibrary(Match& match);
+			inline ServerWeaponLibrary(const Logger& logger, Match& match);
 			~ServerWeaponLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;

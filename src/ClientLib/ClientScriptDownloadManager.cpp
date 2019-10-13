@@ -4,59 +4,53 @@
 
 #include <ClientLib/ClientScriptDownloadManager.hpp>
 #include <Nazara/Core/File.hpp>
-#include <iostream>
-#include <stdexcept>
 
 namespace bw
 {
-	void ClientScriptDownloadManager::HandlePacket(const Packets::ClientScriptList& packet)
+	void ClientScriptDownloadManager::RegisterFile(const std::string& filePath, const std::array<Nz::UInt8, 20>& checksum)
 	{
-		Nz::ByteArray checksum;
-		for (auto& fileData : packet.scripts)
+		Nz::ByteArray nzchecksum;
+		nzchecksum.Assign(checksum.begin(), checksum.end());
+
+		std::string hexChecksum = nzchecksum.ToHex().ToStdString();
+
+		std::filesystem::path clientFilePath = m_clientFileCache / filePath;
+		clientFilePath.concat("." + hexChecksum);
+
+		bool shouldDownload = false;
+		if (std::filesystem::is_regular_file(clientFilePath))
 		{
-			checksum.Assign(fileData.sha1Checksum.begin(), fileData.sha1Checksum.end());
-			std::string hexChecksum = checksum.ToHex().ToStdString();
+			// Check file against checksum (in case the user changed it)
+			Nz::ByteArray fileChecksum;
+			std::vector<Nz::UInt8> content;
 
-			std::filesystem::path clientFilePath = m_clientFileCache / fileData.path;
-			clientFilePath.concat("." + hexChecksum);
-
-			bool shouldDownload = false;
-			if (std::filesystem::is_regular_file(clientFilePath))
+			Nz::File file(clientFilePath.generic_u8string());
+			if (file.Open(Nz::OpenMode_ReadOnly))
 			{
-				// Check file against checksum (in case the user changed it)
-				Nz::ByteArray checksum;
-				std::vector<Nz::UInt8> content;
-
-				Nz::File file(clientFilePath.generic_u8string());
-				if (file.Open(Nz::OpenMode_ReadOnly))
+				content.resize(file.GetSize());
+				if (file.Read(content.data(), content.size()) == content.size())
 				{
-					content.resize(file.GetSize());
-					if (file.Read(content.data(), content.size()) == content.size())
-					{
-						auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
-						hash->Begin();
-						hash->Append(content.data(), content.size());
-						checksum = hash->End();
-					}
+					auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+					hash->Begin();
+					hash->Append(content.data(), content.size());
+					fileChecksum = hash->End();
 				}
-
-				if (checksum.size() != fileData.sha1Checksum.size() || std::memcmp(checksum.GetConstBuffer(), fileData.sha1Checksum.data(), checksum.GetSize() != 0))
-					shouldDownload = true;
-				else
-					OnFileChecked(this, fileData.path, content);
 			}
-			else
+
+			if (fileChecksum.size() != checksum.size() || std::memcmp(fileChecksum.GetConstBuffer(), checksum.data(), fileChecksum.GetSize() != 0))
 				shouldDownload = true;
-
-			if (shouldDownload)
-			{
-				PendingFile& pendingFile = m_downloadList.emplace_back();
-				pendingFile.downloadPath = fileData.path;
-				pendingFile.outputPath = std::move(clientFilePath);
-			}
+			else
+				OnFileChecked(this, filePath, content);
 		}
+		else
+			shouldDownload = true;
 
-		RequestNextFile();
+		if (shouldDownload)
+		{
+			PendingFile& pendingFile = m_downloadList.emplace_back();
+			pendingFile.downloadPath = filePath;
+			pendingFile.outputPath = std::move(clientFilePath);
+		}
 	}
 
 	void ClientScriptDownloadManager::HandlePacket(const Packets::DownloadClientScriptResponse& packet)
@@ -82,6 +76,16 @@ namespace bw
 		OnFileChecked(this, pendingFileData.downloadPath, packet.fileContent);
 
 		m_currentFileIndex++;
+		RequestNextFile();
+	}
+
+	void ClientScriptDownloadManager::Start()
+	{
+		m_onDownloadResponseSlot.Connect(m_clientSession->OnDownloadClientScriptResponse, [this](ClientSession*, const Packets::DownloadClientScriptResponse& packet)
+		{
+			HandlePacket(packet);
+		});
+
 		RequestNextFile();
 	}
 

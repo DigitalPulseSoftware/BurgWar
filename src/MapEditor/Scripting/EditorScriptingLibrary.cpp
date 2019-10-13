@@ -8,7 +8,6 @@
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
-#include <iostream>
 
 namespace bw
 {
@@ -91,26 +90,26 @@ namespace bw
 				return std::make_shared<TileMapEditorMode>(targetEntity, std::move(tileMapData), tileData, editor);
 			}),
 
-			"SetFinishedCallback", [](TileMapEditorMode& tileMapEditor, sol::protected_function callback, sol::this_state state)
+			"SetFinishedCallback", [this](TileMapEditorMode& tileMapEditor, sol::protected_function callback, sol::this_state state)
 			{
-				tileMapEditor.OnEditionCancelled.Connect([callback](TileMapEditorMode* /*emitter*/)
+				tileMapEditor.OnEditionCancelled.Connect([this, callback](TileMapEditorMode* /*emitter*/)
 				{
 					auto result = callback();
 					if (!result.valid())
 					{
 						sol::error err = result;
-						std::cerr << "OnEditionCancelled: Lua callback failed: " << err.what() << std::endl;
+						bwLog(GetLogger(), LogLevel::Error, "OnEditionCancelled failed: {0}", err.what());
 						return;
 					}
 				});
 
-				tileMapEditor.OnEditionFinished.Connect([callback](TileMapEditorMode* /*emitter*/, const TileMapData& tileMapData)
+				tileMapEditor.OnEditionFinished.Connect([this, callback](TileMapEditorMode* /*emitter*/, const TileMapData& tileMapData)
 				{
 					auto result = callback(tileMapData);
 					if (!result.valid())
 					{
 						sol::error err = result;
-						std::cerr << "OnEditionFinished: Lua callback failed: " << err.what() << std::endl;
+						bwLog(GetLogger(), LogLevel::Error, "OnEditionFinished failed: {0}", err.what());
 						return;
 					}
 				});

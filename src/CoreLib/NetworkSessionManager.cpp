@@ -5,8 +5,9 @@
 #include <CoreLib/NetworkSessionManager.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/MatchSessions.hpp>
-#include <iostream>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
@@ -28,7 +29,7 @@ namespace bw
 
 	void NetworkSessionManager::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
 	{
-		std::cout << "Peer #" << peerId << " connected" << std::endl;
+		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} connected", peerId);
 
 		std::shared_ptr<NetworkSessionBridge> clientBridge = std::make_shared<NetworkSessionBridge>(m_reactor, peerId);
 
@@ -42,7 +43,7 @@ namespace bw
 
 	void NetworkSessionManager::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
 	{
-		std::cout << "Peer #" << peerId << " disconnected" << std::endl;
+		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} disconnected", peerId);
 
 		MatchClientSession*& session = m_peerIdToSession[peerId];
 		assert(session);
@@ -56,7 +57,7 @@ namespace bw
 		MatchClientSession* session = m_peerIdToSession[peerId];
 		assert(session);
 
-		std::cout << "Peer #" << peerId << " refreshed info" << std::endl;
+		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} refresh info", peerId);
 	}
 
 	void NetworkSessionManager::HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet)
@@ -64,7 +65,7 @@ namespace bw
 		MatchClientSession* session = m_peerIdToSession[peerId];
 		assert(session);
 
-		//std::cout << "Peer #" << peerId << " sent packet" << std::endl;
+		//bwLog(m_logger, LogLevel::Info, "Peer #{0} sent packet", peerId);
 		session->HandleIncomingPacket(packet);
 	}
 }

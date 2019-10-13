@@ -6,8 +6,9 @@
 
 namespace bw
 {
-	inline ClientScriptDownloadManager::ClientScriptDownloadManager(std::filesystem::path clientFileCache) :
+	inline ClientScriptDownloadManager::ClientScriptDownloadManager(std::filesystem::path clientFileCache, std::shared_ptr<ClientSession> clientSession) :
 	m_clientFileCache(std::move(clientFileCache)),
+	m_clientSession(std::move(clientSession)),
 	m_currentFileIndex(0)
 	{
 	}

@@ -8,7 +8,6 @@
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
-#include <iostream>
 
 namespace bw
 {

@@ -341,11 +341,6 @@ namespace bw
 			}
 		}
 
-		void Serialize(PacketSerializer& serializer, HelloWorld& data)
-		{
-			serializer &= data.str;
-		}
-
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data)
 		{
 			serializer &= data.serverTick;
@@ -356,12 +351,40 @@ namespace bw
 		{
 			serializer &= data.currentTick;
 			serializer &= data.tickDuration;
-
 			serializer &= data.gamemodePath;
+
+			serializer.SerializeArraySize(data.assets);
+			serializer.SerializeArraySize(data.fastDownloadUrls);
+
+			for (auto& downloadUrl : data.fastDownloadUrls)
+				serializer &= downloadUrl;
+
+			for (auto& script : data.assets)
+			{
+				serializer &= script.path;
+				serializer &= script.size;
+
+				if (serializer.IsWriting())
+					serializer.Write(script.sha1Checksum.data(), script.sha1Checksum.size());
+				else
+					serializer.Read(script.sha1Checksum.data(), script.sha1Checksum.size());
+			}
 
 			serializer.SerializeArraySize(data.layers);
 			for (auto& layer : data.layers)
 				serializer &= layer.backgroundColor;
+
+			serializer.SerializeArraySize(data.scripts);
+
+			for (auto& script : data.scripts)
+			{
+				serializer &= script.path;
+
+				if (serializer.IsWriting())
+					serializer.Write(script.sha1Checksum.data(), script.sha1Checksum.size());
+				else
+					serializer.Read(script.sha1Checksum.data(), script.sha1Checksum.size());
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)

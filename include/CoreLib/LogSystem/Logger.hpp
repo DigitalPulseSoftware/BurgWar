@@ -10,16 +10,18 @@
 #include <CoreLib/LogSystem/AbstractLogger.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
+#include <CoreLib/LogSystem/LogContextPtr.hpp>
+#include <Nazara/Core/MemoryPool.hpp>
 #include <fmt/format.h>
 #include <memory>
 #include <vector>
 
 #define bwLog(logObject, lvl, ...) do \
 { \
-	bw::LogContext _bwLogContext; \
-	_bwLogContext.level = lvl; \
-	if ((logObject).ShouldLog(_bwLogContext)) \
-		(logObject).LogFormat(_bwLogContext, __VA_ARGS__); \
+	auto _bwLogContext = (logObject).PushContext(); \
+	_bwLogContext->level = lvl; \
+	if ((logObject).ShouldLog(*_bwLogContext)) \
+		(logObject).LogFormat(*_bwLogContext, __VA_ARGS__); \
 } \
 while (false)
 
@@ -29,15 +31,19 @@ namespace bw
 
 	class Logger : public AbstractLogger
 	{
+		friend class LogContextPtr;
+
 		public:
-			inline Logger();
-			inline Logger(AbstractLogger& logParent);
+			inline Logger(LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
+			inline Logger(LogSide logSide, AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
 			~Logger() = default;
 
-			template<typename... Args> void LogFormat(LogContext& context, Args&& ... args);
+			template<typename... Args> void LogFormat(const LogContext& context, Args&& ... args) const;
 
-			void Log(LogContext& context, std::string content) override;
-			void LogRaw(LogContext& context, std::string_view content) override;
+			void Log(const LogContext& context, std::string content) const override;
+			void LogRaw(const LogContext& context, std::string_view content) const override;
+
+			inline LogContextPtr PushContext() const;
 
 			inline void RegisterSink(std::shared_ptr<LogSink> sinkPtr);
 
@@ -46,10 +52,14 @@ namespace bw
 			bool ShouldLog(const LogContext& context) const override;
 
 		protected:
-			virtual void OverrideContent(const LogContext& context, std::string& content);
+			virtual LogContext* AllocateContext(Nz::MemoryPool& pool) const;
+			virtual void InitializeContext(LogContext& context) const;
+			virtual void OverrideContent(const LogContext& context, std::string& content) const;
 
 		private:
-			LogContext m_localContext;
+			void FreeContext(LogContext* context) const;
+
+			mutable Nz::MemoryPool m_contextPool;
 			LogLevel m_minimumLogLevel;
 			AbstractLogger* m_logParent;
 			std::vector<std::shared_ptr<LogSink>> m_sinks;

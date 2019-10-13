@@ -4,7 +4,6 @@
 
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <QtGui/QKeyEvent>
-#include <iostream>
 #include <optional>
 
 namespace bw

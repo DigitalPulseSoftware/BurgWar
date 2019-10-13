@@ -7,6 +7,11 @@
 
 namespace bw
 {
+	inline NetworkReactorManager::NetworkReactorManager(const Logger& logger) :
+	m_logger(logger)
+	{
+	}
+
 	inline std::size_t NetworkReactorManager::AddReactor(std::unique_ptr<NetworkReactor> reactor)
 	{
 		m_reactors.emplace_back(std::move(reactor));

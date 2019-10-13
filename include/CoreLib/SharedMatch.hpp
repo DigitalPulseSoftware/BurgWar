@@ -24,7 +24,7 @@ namespace bw
 	class SharedMatch
 	{
 		public:
-			SharedMatch(BurgApp& app, std::string matchName, float tickDuration);
+			SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();

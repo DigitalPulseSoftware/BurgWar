@@ -11,7 +11,6 @@
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace bw
 {
@@ -49,7 +48,7 @@ namespace bw
 	{
 		std::size_t playerCount = packet.players.size();
 
-		std::cout << "[Server] Auth request for " << playerCount << " players" << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Auth request for {0} players", playerCount);
 
 		if (playerCount == 0 || playerCount >= 8) //< For now, we don't have any spectator
 		{
@@ -77,33 +76,12 @@ namespace bw
 		SendPacket(Packets::AuthSuccess());
 		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
-		// Send match data
-		const Map& mapData = m_match.GetTerrain().GetMap();
-
-		Packets::MatchData matchData;
-		matchData.currentTick = m_match.GetNetworkTick();
-		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
-		matchData.tickDuration = m_match.GetTickDuration();
-
-		matchData.layers.reserve(mapData.GetLayerCount());
-		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
-		{
-			const auto& mapLayer = mapData.GetLayer(i);
-
-			auto& packetLayer = matchData.layers.emplace_back();
-			packetLayer.backgroundColor = mapLayer.backgroundColor;
-		}
-
-		// Send client-file script list
-		SendPacket(m_match.BuildClientAssetListPacket());
-		SendPacket(m_match.BuildClientScriptListPacket());
-
-		SendPacket(matchData);
+		SendPacket(m_match.GetMatchData());
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
 	{
-		std::cout << "[Server] Client asked for client script " << packet.path << std::endl;
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Client asked for client scripts");
 
 		const Match::ClientScript* clientScript;
 		if (m_match.GetClientScript(packet.path, &clientScript))
@@ -115,16 +93,6 @@ namespace bw
 		}
 		else
 			Disconnect();
-	}
-
-	void MatchClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
-	{
-		std::cout << "[Server] Hello world: " << packet.str << std::endl;
-
-		Packets::HelloWorld hw;
-		hw.str = "La belgique aurait dû gagner la coupe du monde 2018";
-
-		SendPacket(hw);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(Packets::PlayerChat&& packet)
@@ -154,7 +122,7 @@ namespace bw
 	{
 		if (packet.inputs.size() != m_players.size())
 		{
-			std::cerr << "Player input count doesn't match player count" << std::endl;
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Player input count ({0}) doesn't match player count {1}", packet.inputs.size(), m_players.size());
 			return;
 		}
 

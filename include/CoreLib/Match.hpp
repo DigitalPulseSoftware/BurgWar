@@ -46,8 +46,8 @@ namespace bw
 			Match(Match&&) = delete;
 			~Match();
 
-			Packets::ClientAssetList BuildClientAssetListPacket() const;
-			Packets::ClientScriptList BuildClientScriptListPacket() const;
+			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;
+			template<typename T> void BuildClientScriptListPacket(T& clientScript) const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
@@ -60,6 +60,7 @@ namespace bw
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
 			inline sol::state& GetLuaState();
+			inline const Packets::MatchData& GetMatchData() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
@@ -98,6 +99,7 @@ namespace bw
 			};
 
 		private:
+			void BuildMatchData();
 			void OnTick(bool lastTick) override;
 
 			struct Debug
@@ -119,6 +121,7 @@ namespace bw
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<PlayerHandle> m_players;
+			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			BurgApp& m_app;

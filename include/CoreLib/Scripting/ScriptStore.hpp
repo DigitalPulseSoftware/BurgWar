@@ -29,7 +29,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);
+			inline ScriptStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			void ClearElements();
@@ -39,6 +39,7 @@ namespace bw
 			const std::shared_ptr<Element>& GetElement(std::size_t index) const;
 			std::size_t GetElementIndex(const std::string& name) const;
 			sol::table& GetElementMetatable();
+			const Logger& GetLogger() const;
 
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 			void LoadLibrary(std::shared_ptr<AbstractElementLibrary> library);
@@ -69,7 +70,7 @@ namespace bw
 			std::vector<std::shared_ptr<AbstractElementLibrary>> m_libraries;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
-			Logger& m_logger;
+			const Logger& m_logger;
 			bool m_isServer;
 	};
 }

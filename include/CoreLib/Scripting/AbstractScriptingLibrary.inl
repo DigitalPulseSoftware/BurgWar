@@ -16,6 +16,16 @@ namespace bw
 	class Player;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
+
+	inline AbstractScriptingLibrary::AbstractScriptingLibrary(const Logger& logger) :
+	m_logger(logger)
+	{
+	}
+
+	inline const Logger& AbstractScriptingLibrary::GetLogger() const
+	{
+		return m_logger;
+	}
 }
 
 namespace sol

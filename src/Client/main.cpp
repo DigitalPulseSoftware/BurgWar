@@ -2,12 +2,12 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Nazara/Network/Network.hpp>
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
+#include <Nazara/Core/AbstractLogger.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Network/Network.hpp>
 #include <Client/ClientApp.hpp>
-#include <iostream>
 
 int main(int argc, char* argv[])
 {

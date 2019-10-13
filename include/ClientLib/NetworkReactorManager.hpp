@@ -13,12 +13,13 @@
 
 namespace bw
 {
+	class Logger;
 	class NetworkSessionBridge;
 
 	class NetworkReactorManager
 	{
 		public:
-			NetworkReactorManager() = default;
+			inline NetworkReactorManager(const Logger& logger);
 			~NetworkReactorManager() = default;
 
 			inline std::size_t AddReactor(std::unique_ptr<NetworkReactor> reactor);
@@ -39,6 +40,7 @@ namespace bw
 
 			std::vector<std::unique_ptr<NetworkReactor>> m_reactors;
 			std::vector<std::shared_ptr<NetworkSessionBridge>> m_connections;
+			const Logger& m_logger;
 	};
 }
 

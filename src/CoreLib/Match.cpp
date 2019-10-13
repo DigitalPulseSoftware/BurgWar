@@ -24,7 +24,7 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
-	SharedMatch(app, std::move(matchName), tickDuration),
+	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
 	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
@@ -39,10 +39,11 @@ namespace bw
 
 		m_terrain = std::make_unique<Terrain>(*this, *m_map);
 
+		BuildMatchData();
+
 		m_gamemode->ExecuteCallback("OnInit");
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
-		bwLog(GetLogger(), LogLevel::Info, "héhé");
 
 		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
 		{
@@ -67,46 +68,6 @@ namespace bw
 		m_weaponStore.reset();
 		m_gamemode.reset();
 		m_scriptingLibrary.reset();
-	}
-
-	Packets::ClientAssetList Match::BuildClientAssetListPacket() const
-	{
-		Packets::ClientAssetList clientAsset;
-		clientAsset.fastDownloadUrls.emplace_back("https://burgwar.digitalpulsesoftware.net/resources");
-
-		for (const auto& pair : m_assets)
-		{
-			auto& assetData = clientAsset.assets.emplace_back();
-			assetData.path = pair.second.path;
-			assetData.size = pair.second.size;
-
-			const Nz::ByteArray& checksum = pair.second.checksum;
-			assert(assetData.sha1Checksum.size() == checksum.size());
-			std::memcpy(assetData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
-		}
-
-		std::sort(clientAsset.assets.begin(), clientAsset.assets.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
-
-		return clientAsset;
-	}
-
-	Packets::ClientScriptList Match::BuildClientScriptListPacket() const
-	{
-		Packets::ClientScriptList clientScript;
-
-		for (const auto& pair : m_clientScripts)
-		{
-			auto& scriptData = clientScript.scripts.emplace_back();
-			scriptData.path = pair.first;
-
-			const Nz::ByteArray& checksum = pair.second.checksum;
-			assert(scriptData.sha1Checksum.size() == checksum.size());
-			std::memcpy(scriptData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
-		}
-
-		std::sort(clientScript.scripts.begin(), clientScript.scripts.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
-
-		return clientScript;
 	}
 
 	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
@@ -321,11 +282,11 @@ namespace bw
 		if (!m_entityStore)
 		{
 			if (!serverElementLib)
-				serverElementLib = std::make_shared<ServerElementLibrary>();
+				serverElementLib = std::make_shared<ServerElementLibrary>(GetLogger());
 
 			m_entityStore.emplace(GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(serverElementLib);
-			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>());
+			m_entityStore->LoadLibrary(std::make_shared<ServerEntityLibrary>(GetLogger()));
 		}
 		else
 		{
@@ -336,11 +297,11 @@ namespace bw
 		if (!m_weaponStore)
 		{
 			if (!serverElementLib)
-				serverElementLib = std::make_shared<ServerElementLibrary>();
+				serverElementLib = std::make_shared<ServerElementLibrary>(GetLogger());
 
 			m_weaponStore.emplace(GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(serverElementLib);
-			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(*this));
+			m_weaponStore->LoadLibrary(std::make_shared<ServerWeaponLibrary>(GetLogger(), *this));
 		}
 		else
 		{
@@ -415,12 +376,6 @@ namespace bw
 			}
 		});
 
-		Packets::ClientScriptList clientScriptPacket = BuildClientScriptListPacket();
-		// FIXME: Should be for each session
-		ForEachPlayer([&](Player* player)
-		{
-			player->SendPacket(clientScriptPacket);
-		});
 	}
 
 	void Match::Update(float elapsedTime)
@@ -491,6 +446,32 @@ namespace bw
 					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
+	}
+
+	void Match::BuildMatchData()
+	{
+		// Send match data
+		const Map& mapData = m_terrain->GetMap();
+
+		m_matchData.gamemodePath = m_gamemodePath.generic_string();
+		m_matchData.tickDuration = GetTickDuration();
+
+		m_matchData.layers.clear();
+		m_matchData.layers.reserve(mapData.GetLayerCount());
+		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
+		{
+			const auto& mapLayer = mapData.GetLayer(i);
+
+			auto& packetLayer = m_matchData.layers.emplace_back();
+			packetLayer.backgroundColor = mapLayer.backgroundColor;
+		}
+
+		m_matchData.assets.clear();
+		m_matchData.fastDownloadUrls.clear();
+		BuildClientAssetListPacket(m_matchData);
+
+		m_matchData.scripts.clear();
+		BuildClientScriptListPacket(m_matchData);
 	}
 
 	void Match::OnTick(bool lastTick)

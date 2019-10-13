@@ -8,7 +8,6 @@
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <iostream>
 
 namespace bw
 {

@@ -44,7 +44,6 @@ namespace bw
 		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
-		HelloWorld,
 		MatchData,
 		MatchState,
 		NetworkStrings,
@@ -244,11 +243,6 @@ namespace bw
 			std::vector<Entity> entities;
 		};
 
-		DeclarePacket(HelloWorld)
-		{
-			std::string str;
-		};
-
 		DeclarePacket(InputTimingCorrection)
 		{
 			Nz::UInt16 serverTick;
@@ -257,12 +251,28 @@ namespace bw
 
 		DeclarePacket(MatchData)
 		{
+			struct Asset
+			{
+				std::array<Nz::UInt8, 20> sha1Checksum;
+				std::string path;
+				CompressedUnsigned<Nz::UInt64> size;
+			};
+
 			struct Layer
 			{
 				Nz::Color backgroundColor;
 			};
 
+			struct Script
+			{
+				std::array<Nz::UInt8, 20> sha1Checksum;
+				std::string path;
+			};
+
+			std::vector<std::string> fastDownloadUrls;
+			std::vector<Asset> assets;
 			std::vector<Layer> layers;
+			std::vector<Script> scripts;
 			std::string gamemodePath;
 			Nz::UInt16 currentTick;
 			float tickDuration;
@@ -356,7 +366,6 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
-		void Serialize(PacketSerializer& serializer, HelloWorld& data);
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
 		void Serialize(PacketSerializer& serializer, MatchData& data);
 		void Serialize(PacketSerializer& serializer, MatchState& data);

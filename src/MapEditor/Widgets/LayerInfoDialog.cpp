@@ -9,7 +9,6 @@
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
-#include <iostream>
 #include <limits>
 
 namespace bw

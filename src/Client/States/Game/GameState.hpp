@@ -14,11 +14,12 @@
 namespace bw
 {
 	class LocalMatch;
+	class VirtualDirectory;
 
 	class GameState final : public AbstractState
 	{
 		public:
-			GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::MatchData& matchData);
+			GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::MatchData& matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<VirtualDirectory> scriptDirectory);
 			~GameState() = default;
 
 			inline const std::shared_ptr<LocalMatch>& GetMatch();

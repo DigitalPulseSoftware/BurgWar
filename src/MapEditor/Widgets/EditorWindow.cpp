@@ -26,7 +26,6 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <tsl/hopscotch_set.h>
-#include <iostream>
 
 namespace bw
 {
@@ -36,6 +35,7 @@ namespace bw
 	}
 
 	EditorWindow::EditorWindow() :
+	BurgApp(LogSide::Editor),
 	m_entityInfoDialog(nullptr)
 	{
 		RegisterEditorConfig();
@@ -50,14 +50,14 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>(scriptFolder);
 
 		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), virtualDir);
-		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>());
+		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(GetLogger()));
 		m_scriptingContext->GetLuaState()["Editor"] = this;
 
 		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
 
 		m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
-		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>());
-		m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(*m_assetStore));
+		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
+		m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(GetLogger(), *m_assetStore));
 
 		VirtualDirectory::Entry entry;
 		
@@ -336,7 +336,7 @@ namespace bw
 					}
 				}
 				else
-					std::cerr << "Unknown entity type " << entity.entityType << std::endl;
+					bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
 			}
 		}
 
@@ -364,10 +364,10 @@ namespace bw
 				std::memcpy(asset.sha1Checksum.data(), assetHash.GetConstBuffer(), assetHash.GetSize());
 			}
 			else
-				std::cerr << "Texture not found: " << fullPath.generic_u8string() << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Texture not found: {0}", fullPath.generic_u8string());
 		}
 
-		std::cout << "Finished building assets" << std::endl;
+		bwLog(GetLogger(), LogLevel::Info, "Finished building assets");
 	}
 
 	void EditorWindow::BuildMenu()
@@ -412,7 +412,7 @@ namespace bw
 	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
 	{
 		if (!m_entityInfoDialog)
-			m_entityInfoDialog = new EntityInfoDialog(*m_entityStore, *m_scriptingContext, this);
+			m_entityInfoDialog = new EntityInfoDialog(GetLogger(), *m_entityStore, *m_scriptingContext, this);
 
 		return m_entityInfoDialog;
 	}

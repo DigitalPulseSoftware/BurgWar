@@ -27,7 +27,6 @@
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <bitset>
-#include <iostream>
 #include <limits>
 
 namespace bw
@@ -213,11 +212,12 @@ namespace bw
 			}
 	};
 
-	EntityInfoDialog::EntityInfoDialog(ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(const Logger& logger, ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
 	m_propertyTypeIndex(InvalidIndex),
 	m_entityStore(clientEntityStore),
+	m_logger(logger),
 	m_scriptingContext(scriptingContext)
 	{
 		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -539,7 +539,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					std::cerr << "Editor action " << name << "::OnTrigger failed: " << err.what() << std::endl;
+					bwLog(m_logger, LogLevel::Error, "Editor action {0}::OnTrigger failed: {1}", name, err.what());
 				}
 			});
 

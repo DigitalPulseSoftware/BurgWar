@@ -13,15 +13,22 @@
 
 namespace bw
 {
+	class Logger;
+
 	class AbstractElementLibrary
 	{
 		public:
-			AbstractElementLibrary() = default;
+			inline AbstractElementLibrary(const Logger& logger);
 			virtual ~AbstractElementLibrary();
+
+			inline const Logger& GetLogger() const;
 
 			virtual void RegisterLibrary(sol::table& elementMetatable) = 0;
 
 			static const Ndk::EntityHandle& AssertScriptEntity(const sol::table& entityTable);
+
+		private:
+			const Logger& m_logger;
 	};
 }
 

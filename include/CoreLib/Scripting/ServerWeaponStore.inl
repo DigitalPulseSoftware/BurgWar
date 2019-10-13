@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ServerWeaponStore::ServerWeaponStore(Logger& logger, std::shared_ptr<ScriptingContext> context) :
+	inline ServerWeaponStore::ServerWeaponStore(const Logger& logger, std::shared_ptr<ScriptingContext> context) :
 	SharedWeaponStore(logger, std::move(context), true)
 	{
 	}

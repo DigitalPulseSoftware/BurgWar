@@ -8,7 +8,6 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QScrollBar>
-#include <iostream>
 
 namespace bw
 {

@@ -17,10 +17,12 @@
 
 namespace bw
 {
+	class Logger;
+
 	class Chatbox
 	{
 		public:
-			Chatbox(Nz::RenderWindow* window, Ndk::Canvas* canvas);
+			Chatbox(const Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			Chatbox(const Chatbox&) = delete;
 			Chatbox(Chatbox&&) = delete;
 			~Chatbox();
@@ -49,6 +51,7 @@ namespace bw
 			Ndk::ScrollAreaWidget* m_chatboxScrollArea;
 			Ndk::TextAreaWidget* m_chatBox;
 			Ndk::TextAreaWidget* m_chatEnteringBox;
+			const Logger& m_logger;
 	};
 }
 

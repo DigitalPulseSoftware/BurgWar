@@ -5,12 +5,12 @@
 #include <Server/ServerApp.hpp>
 #include <CoreLib/NetworkSessionManager.hpp>
 #include <Nazara/Core/Thread.hpp>
-#include <iostream>
 
 namespace bw
 {
 	ServerApp::ServerApp(int argc, char* argv[]) :
-	Application(argc, argv)
+	Application(argc, argv),
+	BurgApp(LogSide::Server)
 	{
 		RegisterServerConfig();
 

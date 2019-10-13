@@ -17,6 +17,7 @@
 
 namespace bw
 {
+	class Logger;
 	class Match;
 	class MatchClientSession;
 
@@ -31,6 +32,8 @@ namespace bw
 			void DeleteSession(MatchClientSession* session);
 
 			template<typename F> void ForEachSession(F&& cb);
+
+			inline Match& GetMatch();
 
 			void Poll();
 

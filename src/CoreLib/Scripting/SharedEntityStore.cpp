@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	SharedEntityStore::SharedEntityStore(Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
+	SharedEntityStore::SharedEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer) :
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("entity");
@@ -31,7 +31,7 @@ namespace bw
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::cerr << "Failed to create entity \"" << entityClass.name << "\", Initialize() failed: " << err.what() << std::endl;
+				bwLog(GetLogger(), LogLevel::Error, "Failed to create entity \"{0}\", Initialize() failed: {1}", entityClass.name, err.what());
 				return false;
 			}
 		}

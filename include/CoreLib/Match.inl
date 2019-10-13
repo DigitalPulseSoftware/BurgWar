@@ -7,6 +7,41 @@
 
 namespace bw
 {
+	template<typename T>
+	void Match::BuildClientAssetListPacket(T& clientAsset) const
+	{
+		clientAsset.fastDownloadUrls.emplace_back("https://burgwar.digitalpulsesoftware.net/resources");
+
+		for (const auto& pair : m_assets)
+		{
+			auto& assetData = clientAsset.assets.emplace_back();
+			assetData.path = pair.second.path;
+			assetData.size = pair.second.size;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(assetData.sha1Checksum.size() == checksum.size());
+			std::memcpy(assetData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientAsset.assets.begin(), clientAsset.assets.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
+	}
+
+	template<typename T>
+	void Match::BuildClientScriptListPacket(T& clientScript) const
+	{
+		for (const auto& pair : m_clientScripts)
+		{
+			auto& scriptData = clientScript.scripts.emplace_back();
+			scriptData.path = pair.first;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(scriptData.sha1Checksum.size() == checksum.size());
+			std::memcpy(scriptData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientScript.scripts.begin(), clientScript.scripts.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
+	}
+
 	template<typename F>
 	void Match::ForEachPlayer(F&& func)
 	{
@@ -41,6 +76,12 @@ namespace bw
 	inline sol::state& Match::GetLuaState()
 	{
 		return m_scriptingContext->GetLuaState();
+	}
+
+	inline const Packets::MatchData& Match::GetMatchData() const
+	{
+		m_matchData.currentTick = GetNetworkTick();
+		return m_matchData;
 	}
 
 	inline const NetworkStringStore& Match::GetNetworkStringStore() const

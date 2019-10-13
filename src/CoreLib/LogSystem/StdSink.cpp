@@ -7,7 +7,6 @@
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Core/StackArray.hpp>
 #include <cwchar>
-#include <iostream>
 #include <vector>
 
 #ifdef NAZARA_PLATFORM_WINDOWS
@@ -58,21 +57,21 @@ namespace bw
 			};
 		}
 
-		WORD GetColor(LogLevel level)
+		WORD GetColor(const LogContext& context)
 		{
-			switch (level)
+			switch (context.level)
 			{
 				case LogLevel::Debug:
-					return ConsoleForeground::GREEN;
+					return (context.side != LogSide::Server) ? ConsoleForeground::GREEN : ConsoleForeground::DARKGREEN;
 
 				case LogLevel::Info:
-					return ConsoleForeground::WHITE;
+					return (context.side != LogSide::Server) ? ConsoleForeground::WHITE : ConsoleForeground::GRAY;
 
 				case LogLevel::Warning:
-					return ConsoleForeground::YELLOW;
+					return (context.side != LogSide::Server) ? ConsoleForeground::YELLOW : ConsoleForeground::DARKYELLOW;
 
 				case LogLevel::Error:
-					return ConsoleForeground::RED;
+					return (context.side != LogSide::Server) ? ConsoleForeground::RED : ConsoleForeground::DARKRED;
 			}
 
 			return 0;
@@ -84,13 +83,13 @@ namespace bw
 			switch (level)
 			{
 				case LogLevel::Debug:
-					return "DEBUG";
+					return "DEBG";
 				case LogLevel::Info:
 					return "INFO";
 				case LogLevel::Warning:
 					return "WARN";
 				case LogLevel::Error:
-					return "ERR";
+					return "ERR.";
 			}
 
 			return "<Unhandled>";
@@ -118,7 +117,7 @@ namespace bw
 		GetConsoleScreenBufferInfo(console, &consoleInfo);
 		WORD oldColor = consoleInfo.wAttributes;
 
-		SetConsoleTextAttribute(console, GetColor(context.level));
+		SetConsoleTextAttribute(console, GetColor(context));
 
 		if (unicodeMode)
 		{
@@ -149,7 +148,7 @@ namespace bw
 			int wideSize = MultiByteToWideChar(CP_UTF8, 0, content.data(), int(content.size()), &bufferPtr[offset], int(bufferLength) - offset);
 			if (wideSize == 0)
 			{
-				std::cerr << "Failed to convert to wide char";
+				std::fputs("Failed to convert to wide char\n", stderr);
 				return;
 			}
 			offset += wideSize;

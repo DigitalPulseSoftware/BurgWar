@@ -3,16 +3,17 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Chatbox.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Utility/Font.hpp>
 #include <NDK/Widgets.hpp>
-#include <iostream>
 
 namespace bw
 {
 	static constexpr std::size_t maxChatLines = 100;
 
-	Chatbox::Chatbox(Nz::RenderWindow* window, Ndk::Canvas* canvas) :
-	m_chatEnteringBox(nullptr)
+	Chatbox::Chatbox(const Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas) :
+	m_chatEnteringBox(nullptr),
+	m_logger(logger)
 	{
 		m_chatBox = canvas->Add<Ndk::TextAreaWidget>();
 		m_chatBox->EnableBackground(false);
@@ -80,7 +81,7 @@ namespace bw
 
 	void Chatbox::PrintMessage(const std::string& message)
 	{
-		std::cout << message << std::endl;
+		bwLog(m_logger, LogLevel::Info, "{0}", message);
 
 		m_chatLines.emplace_back(message);
 		if (m_chatLines.size() > maxChatLines)

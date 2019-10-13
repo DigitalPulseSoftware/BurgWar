@@ -7,7 +7,6 @@
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
-#include <iostream>
 
 constexpr float zoomLevel = 10.f;
 constexpr float maxZoomLevel = zoomLevel - 1.f;

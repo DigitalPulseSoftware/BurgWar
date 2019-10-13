@@ -13,7 +13,6 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
-#include <iostream>
 
 namespace bw
 {
