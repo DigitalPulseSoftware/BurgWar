@@ -43,6 +43,7 @@ namespace bw
 			std::shared_ptr<StateData> m_stateData;
 			std::vector<std::function<void()>> m_cleanupFunctions;
 			std::vector<Ndk::BaseWidget*> m_widgets;
+			bool m_isVisible;
 	};
 }
 

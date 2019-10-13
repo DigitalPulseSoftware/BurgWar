@@ -11,13 +11,17 @@
 
 namespace bw
 {
-	GameState::GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::MatchData& matchData) :
+	GameState::GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::MatchData& matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<VirtualDirectory> scriptDirectory) :
 	AbstractState(std::move(stateDataPtr)),
 	m_clientSession(std::move(clientSession))
 	{
 		StateData& stateData = GetStateData();
 
-		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, &stateData.canvas.value(),  *m_clientSession, matchData);
+		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, &stateData.canvas.value(), *m_clientSession, matchData);
+		m_match->LoadAssets(std::move(assetDirectory));
+		m_match->LoadScripts(std::move(scriptDirectory));
+
+		m_clientSession->SendPacket(Packets::Ready{});
 	}
 
 	void GameState::Enter(Ndk::StateMachine& fsm)
@@ -33,8 +37,6 @@ namespace bw
 			fsm.PushState(std::make_shared<ConnectionLostState>(GetStateDataPtr()));
 			return true;
 		}
-
-		m_clientSession->Update();
 
 		m_match->Update(elapsedTime);
 

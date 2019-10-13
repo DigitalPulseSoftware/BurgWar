@@ -17,6 +17,7 @@ namespace bw
 	T* AbstractState::CreateWidget(Args&&... args)
 	{
 		T* widget = m_stateData->canvas->Add<T>(std::forward<Args>(args)...);
+		widget->Show(m_isVisible);
 		m_widgets.push_back(widget);
 
 		return widget;

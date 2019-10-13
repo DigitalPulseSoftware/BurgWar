@@ -8,38 +8,25 @@
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/LoginState.hpp>
-#include <Client/States/Game/GameState.hpp>
-#include <Nazara/Graphics/ColorBackground.hpp>
-#include <NDK/Systems/RenderSystem.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Client/States/Game/AuthenticationState.hpp>
 #include <random>
 
 namespace bw
 {
 	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName) :
-	AbstractState(std::move(stateData))
+	StatusState(std::move(stateData))
 	{
 		ClientApp* app = GetStateData().app;
 		auto& networkManager = app->GetReactorManager();
 
-		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
+		m_clientSession = std::make_shared<ClientSession>(*app);
 
-		auto CreateMatch = [this](ClientSession& session, const Packets::MatchData& matchData) -> std::shared_ptr<LocalMatch>
+		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this, playerName] (ClientSession*)
 		{
-			auto gameState = std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, matchData);
-			UpdateStatus("Entering game...", Nz::Color::Green * Nz::Color(128, 128, 128));
+			UpdateStatus("Connected, authenticating...", Nz::Color::White);
 
-			m_nextState = gameState;
-			m_nextStateDelay = 1.f;
-
-			return gameState->GetMatch();
-		};
-
-		m_clientSession = std::make_shared<ClientSession>(*app, CreateMatch, std::move(playerName));
-
-		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this] (ClientSession*)
-		{
-			UpdateStatus("Connected, waiting for match data...", Nz::Color::Green * Nz::Color(128, 128, 128));
+			m_nextState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, playerName);
+			m_nextStateDelay = 0.5f;
 		});
 
 		m_clientSessionDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
@@ -68,22 +55,6 @@ namespace bw
 		}, remote);
 	}
 
-	void ConnectionState::Enter(Ndk::StateMachine& fsm)
-	{
-		AbstractState::Enter(fsm);
-
-		StateData& stateData = GetStateData();
-
-		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(100, 185, 191)));
-	}
-
-	void ConnectionState::Leave(Ndk::StateMachine & fsm)
-	{
-		StateData& stateData = GetStateData();
-
-		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
-	}
-
 	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
 		if (m_nextState)
@@ -95,15 +66,6 @@ namespace bw
 			}
 		}
 
-		m_clientSession->Update();
-
 		return true;
-	}
-
-	void ConnectionState::UpdateStatus(const std::string& status, const Nz::Color& color)
-	{
-		m_statusLabel->UpdateText(Nz::SimpleTextDrawer::Draw(status, 24, 0L, color));
-		m_statusLabel->Center();
-		m_statusLabel->Show(true);
 	}
 }

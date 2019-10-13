@@ -76,28 +76,7 @@ namespace bw
 		SendPacket(Packets::AuthSuccess());
 		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
-		// Send match data
-		const Map& mapData = m_match.GetTerrain().GetMap();
-
-		Packets::MatchData matchData;
-		matchData.currentTick = m_match.GetNetworkTick();
-		matchData.gamemodePath = m_match.GetGamemodePath().generic_string();
-		matchData.tickDuration = m_match.GetTickDuration();
-
-		matchData.layers.reserve(mapData.GetLayerCount());
-		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
-		{
-			const auto& mapLayer = mapData.GetLayer(i);
-
-			auto& packetLayer = matchData.layers.emplace_back();
-			packetLayer.backgroundColor = mapLayer.backgroundColor;
-		}
-
-		// Send client-file script list
-		SendPacket(m_match.BuildClientAssetListPacket());
-		SendPacket(m_match.BuildClientScriptListPacket());
-
-		SendPacket(matchData);
+		SendPacket(m_match.GetMatchData());
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
@@ -114,16 +93,6 @@ namespace bw
 		}
 		else
 			Disconnect();
-	}
-
-	void MatchClientSession::HandleIncomingPacket(const Packets::HelloWorld& packet)
-	{
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Hello world: {0}", packet.str);
-
-		Packets::HelloWorld hw;
-		hw.str = "La belgique aurait dû gagner la coupe du monde 2018";
-
-		SendPacket(hw);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(Packets::PlayerChat&& packet)

@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/States/Game/ConnectionState.hpp>
+#include <Client/States/Game/AuthenticationState.hpp>
 
 namespace bw
 {

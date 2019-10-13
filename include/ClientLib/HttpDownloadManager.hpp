@@ -34,6 +34,7 @@ namespace bw
 
 			void Update();
 
+			NazaraSignal(OnDownloadStarted, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/);
 			NazaraSignal(OnFileChecked, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/, const std::filesystem::path& /*realPath*/);
 			NazaraSignal(OnFileCheckedMemory, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/, const std::vector<Nz::UInt8>& /*content*/);
 			NazaraSignal(OnFinished, HttpDownloadManager* /*downloadManager*/);

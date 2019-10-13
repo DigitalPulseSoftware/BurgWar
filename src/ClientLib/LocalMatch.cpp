@@ -49,7 +49,6 @@ namespace bw
 	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
 	m_world(*this),
-	m_isReady(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -73,6 +72,7 @@ namespace bw
 		viewer.SetTarget(window);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
+		// TODO: Remove this shit
 		Nz::Color trailColor(242, 255, 168);
 
 		m_trailSpriteTest = Nz::Sprite::New();
@@ -161,6 +161,7 @@ namespace bw
 					break;
 			}
 		});
+		BindPackets();
 
 		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 		{
@@ -433,13 +434,6 @@ namespace bw
 		}
 		else
 			m_gamemode->Reload();
-
-		if (!m_isReady)
-		{
-			m_session.SendPacket(Packets::Ready{});
-
-			m_isReady = true;
-		}
 	}
 
 	void LocalMatch::Update(float elapsedTime)
@@ -627,6 +621,69 @@ namespace bw
 
 		m_world.GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 	}
+	
+	void LocalMatch::BindPackets()
+	{
+		m_session.OnChatMessage.Connect([this](ClientSession* /*session*/, const Packets::ChatMessage& message)
+		{
+			HandleChatMessage(message);
+		});
+
+		m_session.OnConsoleAnswer.Connect([this](ClientSession* /*session*/, const Packets::ConsoleAnswer& consoleAnswer)
+		{
+			HandleConsoleAnswer(consoleAnswer);
+		});
+
+		m_session.OnControlEntity.Connect([this](ClientSession* /*session*/, const Packets::ControlEntity& controlEntity)
+		{
+			PushTickPacket(controlEntity.stateTick, controlEntity);
+		});
+
+		m_session.OnCreateEntities.Connect([this](ClientSession* /*session*/, const Packets::CreateEntities& createEntities)
+		{
+			PushTickPacket(createEntities.stateTick, createEntities);
+		});
+
+		m_session.OnDeleteEntities.Connect([this](ClientSession* /*session*/, const Packets::DeleteEntities& deleteEntities)
+		{
+			PushTickPacket(deleteEntities.stateTick, deleteEntities);
+		});
+
+		m_session.OnEntitiesAnimation.Connect([this](ClientSession* /*session*/, const Packets::EntitiesAnimation& animations)
+		{
+			PushTickPacket(animations.stateTick, animations);
+		});
+
+		m_session.OnEntitiesInputs.Connect([this](ClientSession* /*session*/, const Packets::EntitiesInputs& inputs)
+		{
+			PushTickPacket(inputs.stateTick, inputs);
+		});
+
+		m_session.OnEntityWeapon.Connect([this](ClientSession* /*session*/, const Packets::EntityWeapon& weapon)
+		{
+			PushTickPacket(weapon.stateTick, weapon);
+		});
+
+		m_session.OnHealthUpdate.Connect([this](ClientSession* /*session*/, const Packets::HealthUpdate& healthUpdate)
+		{
+			PushTickPacket(healthUpdate.stateTick, healthUpdate);
+		});
+
+		m_session.OnInputTimingCorrection.Connect([this](ClientSession* /*session*/, const Packets::InputTimingCorrection& timingCorrection)
+		{
+			HandleTickError(timingCorrection.serverTick, timingCorrection.tickError);
+		});
+
+		m_session.OnMatchState.Connect([this](ClientSession* /*session*/, const Packets::MatchState& matchState)
+		{
+			PushTickPacket(matchState.stateTick, matchState);
+		});
+
+		m_session.OnPlayerWeapons.Connect([this](ClientSession* /*session*/, const Packets::PlayerWeapons& weapons)
+		{
+			PushTickPacket(weapons.stateTick, weapons);
+		});
+	}
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
 	{
@@ -745,12 +802,12 @@ namespace bw
 		return GetCurrentTick() - m_averageTickError.GetAverageValue();
 	}
 
-	void LocalMatch::HandleChatMessage(Packets::ChatMessage&& packet)
+	void LocalMatch::HandleChatMessage(const Packets::ChatMessage& packet)
 	{
 		m_chatBox.PrintMessage(packet.content);
 	}
 
-	void LocalMatch::HandleConsoleAnswer(Packets::ConsoleAnswer&& packet)
+	void LocalMatch::HandleConsoleAnswer(const Packets::ConsoleAnswer& packet)
 	{
 		if (m_remoteConsole)
 			m_remoteConsole->Print(packet.response, packet.color);
@@ -1495,11 +1552,11 @@ namespace bw
 		}*/
 	}
 
-	void LocalMatch::PushTickPacket(Nz::UInt16 tick, TickPacketContent&& packet)
+	void LocalMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)
 	{
 		TickPacket newPacket;
 		newPacket.tick = tick;
-		newPacket.content = std::move(packet);
+		newPacket.content = packet;
 
 		auto it = std::upper_bound(m_tickedPackets.begin(), m_tickedPackets.end(), newPacket, [](const TickPacket& a, const TickPacket& b)
 		{

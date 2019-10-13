@@ -9,8 +9,6 @@
 
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
-#include <ClientLib/ClientScriptDownloadManager.hpp>
-#include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
@@ -20,9 +18,6 @@
 namespace bw
 {
 	class BurgApp;
-	class LocalMatch;
-	class NetworkReactorManager;
-	class VirtualDirectory;
 
 	class ClientSession
 	{
@@ -30,17 +25,14 @@ namespace bw
 
 		public:
 			struct ConnectionInfo;
-			using MatchFactory = std::function<std::shared_ptr<LocalMatch>(ClientSession& session, const Packets::MatchData& matchData)>;
 
-			inline ClientSession(BurgApp& app, MatchFactory matchFactory, std::string playerName);
+			inline ClientSession(BurgApp& app);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
 
 			bool Connect(std::shared_ptr<SessionBridge> sessionBridge);
 			void Disconnect();
-
-			Nz::UInt64 EstimateMatchTime() const;
 
 			inline BurgApp& GetApp();
 			inline const BurgApp& GetApp() const;
@@ -53,14 +45,33 @@ namespace bw
 
 			template<typename T> void SendPacket(const T& packet);
 
-			void Update();
-
 			ClientSession& operator=(const ClientSession&) = delete;
 			ClientSession& operator=(ClientSession&&) = delete;
 
-			NazaraSignal(OnConnected, ClientSession* /*server*/);
-			NazaraSignal(OnConnectionInfoUpdate, ClientSession* /*server*/, const ConnectionInfo& /*info*/);
-			NazaraSignal(OnDisconnected, ClientSession* /*server*/);
+			NazaraSignal(OnConnected, ClientSession* /*session*/);
+			NazaraSignal(OnConnectionInfoUpdate, ClientSession* /*session*/, const ConnectionInfo& /*info*/);
+			NazaraSignal(OnDisconnected, ClientSession* /*session*/);
+
+			// Packet signals
+			NazaraSignal(OnAuthFailure,                  ClientSession* /*session*/, const Packets::AuthFailure&                  /*data*/);
+			NazaraSignal(OnAuthSuccess,                  ClientSession* /*session*/, const Packets::AuthSuccess&                  /*data*/);
+			NazaraSignal(OnChatMessage,                  ClientSession* /*session*/, const Packets::ChatMessage&                  /*data*/);
+			NazaraSignal(OnClientAssetList,              ClientSession* /*session*/, const Packets::ClientAssetList&              /*data*/);
+			NazaraSignal(OnClientScriptList,             ClientSession* /*session*/, const Packets::ClientScriptList&             /*data*/);
+			NazaraSignal(OnConsoleAnswer,                ClientSession* /*session*/, const Packets::ConsoleAnswer&                /*data*/);
+			NazaraSignal(OnControlEntity,                ClientSession* /*session*/, const Packets::ControlEntity&                /*data*/);
+			NazaraSignal(OnCreateEntities,               ClientSession* /*session*/, const Packets::CreateEntities&               /*data*/);
+			NazaraSignal(OnDeleteEntities,               ClientSession* /*session*/, const Packets::DeleteEntities&               /*data*/);
+			NazaraSignal(OnDownloadClientScriptResponse, ClientSession* /*session*/, const Packets::DownloadClientScriptResponse& /*data*/);
+			NazaraSignal(OnEntitiesAnimation,            ClientSession* /*session*/, const Packets::EntitiesAnimation&            /*data*/);
+			NazaraSignal(OnEntitiesInputs,               ClientSession* /*session*/, const Packets::EntitiesInputs&               /*data*/);
+			NazaraSignal(OnEntityWeapon,                 ClientSession* /*session*/, const Packets::EntityWeapon&                 /*data*/);
+			NazaraSignal(OnHealthUpdate,                 ClientSession* /*session*/, const Packets::HealthUpdate&                 /*data*/);
+			NazaraSignal(OnInputTimingCorrection,        ClientSession* /*session*/, const Packets::InputTimingCorrection&        /*data*/);
+			NazaraSignal(OnMatchData,                    ClientSession* /*session*/, const Packets::MatchData&                    /*data*/);
+			NazaraSignal(OnMatchState,                   ClientSession* /*session*/, const Packets::MatchState&                   /*data*/);
+			NazaraSignal(OnNetworkStrings,               ClientSession* /*session*/, const Packets::NetworkStrings&               /*data*/);
+			NazaraSignal(OnPlayerWeapons,                ClientSession* /*session*/, const Packets::PlayerWeapons&                /*data*/);
 
 			struct ConnectionInfo
 			{
@@ -72,44 +83,6 @@ namespace bw
 			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
 
 		private:
-			enum class ConnectionState
-			{
-				WaitingForMatchData,
-
-				DownloadingAssets,
-				DownloadingScripts,
-				
-				Ready
-			};
-
-			struct PendingPackets
-			{
-				std::unique_ptr<Packets::ClientAssetList> assetList;
-				std::unique_ptr<Packets::ClientScriptList> scriptList;
-				std::unique_ptr<Packets::MatchData> matchData;
-			};
-
-			void HandleIncomingPacket(Packets::AuthFailure&& packet);
-			void HandleIncomingPacket(Packets::AuthSuccess&& packet);
-			void HandleIncomingPacket(Packets::ChatMessage&& packet);
-			void HandleIncomingPacket(Packets::ClientAssetList&& packet);
-			void HandleIncomingPacket(Packets::ClientScriptList&& packet);
-			void HandleIncomingPacket(Packets::ConsoleAnswer&& packet);
-			void HandleIncomingPacket(Packets::ControlEntity&& packet);
-			void HandleIncomingPacket(Packets::CreateEntities&& packet);
-			void HandleIncomingPacket(Packets::DeleteEntities&& packet);
-			void HandleIncomingPacket(Packets::DownloadClientScriptResponse&& packet);
-			void HandleIncomingPacket(Packets::EntitiesAnimation&& packet);
-			void HandleIncomingPacket(Packets::EntitiesInputs&& packet);
-			void HandleIncomingPacket(Packets::EntityWeapon&& packet);
-			void HandleIncomingPacket(Packets::HealthUpdate&& packet);
-			void HandleIncomingPacket(Packets::HelloWorld&& packet);
-			void HandleIncomingPacket(Packets::InputTimingCorrection&& packet);
-			void HandleIncomingPacket(Packets::MatchData&& packet);
-			void HandleIncomingPacket(Packets::MatchState&& packet);
-			void HandleIncomingPacket(Packets::NetworkStrings&& packet);
-			void HandleIncomingPacket(Packets::PlayerWeapons&& packet);
-
 			void OnSessionConnected();
 			void OnSessionDisconnected();
 			
@@ -117,20 +90,11 @@ namespace bw
 			NazaraSlot(SessionBridge, OnDisconnected, m_onDisconnectedSlot);
 			NazaraSlot(SessionBridge, OnIncomingPacket, m_onIncomingPacketSlot);
 
-			std::shared_ptr<LocalMatch> m_localMatch;
 			std::shared_ptr<SessionBridge> m_bridge;
-			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
-			std::string m_playerName;
 			BurgApp& m_application;
-			std::optional<ClientScriptDownloadManager> m_downloadManager;
-			std::optional<HttpDownloadManager> m_httpDownloadManager;
 			ConnectionInfo m_connectionInfo;
-			ConnectionState m_state;
 			LocalCommandStore m_commandStore;
-			MatchFactory m_matchFactory;
 			NetworkStringStore m_stringStore;
-			PendingPackets m_pendingPackets;
-			Nz::UInt64 m_deltaTime;
 	};
 }
 

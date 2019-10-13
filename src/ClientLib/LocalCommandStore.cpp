@@ -12,7 +12,7 @@ namespace bw
 	{
 #define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, Packets::Type&& packet) \
 { \
-	session->HandleIncomingPacket(std::move(packet)); \
+	session->On##Type(session, packet); \
 })
 #define OutgoingCommand(Type, Flags, Channel) RegisterOutgoingCommand<Packets::Type>(#Type, Flags, Channel)
 
@@ -31,7 +31,6 @@ namespace bw
 		IncomingCommand(EntitiesInputs);
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
-		IncomingCommand(HelloWorld);
 		IncomingCommand(InputTimingCorrection);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
@@ -41,7 +40,6 @@ namespace bw
 		// Outgoing commands
 		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(DownloadClientScriptRequest, Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(HelloWorld,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerConsoleCommand,        Nz::ENetPacketFlag_Reliable, 1);

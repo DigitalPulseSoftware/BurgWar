@@ -12,7 +12,7 @@ namespace bw
 {
 	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, std::string name) :
 	AbstractState(std::move(stateDataPtr)),
-	m_match(*GetStateData().app, "unnamed match", "test", 64, 1.f / GetStateData().app->GetConfig().GetFloatOption<float>("GameSettings.TickRate")),
+	m_match(*GetStateData().app, "local", "test", 64, 1.f / GetStateData().app->GetConfig().GetFloatOption<float>("GameSettings.TickRate")),
 	m_name(std::move(name))
 	{
 		MatchSessions& sessions = m_match.GetSessions();

@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_CONNECTIONSTATE_HPP
 
 #include <ClientLib/ClientSession.hpp>
-#include <Client/States/AbstractState.hpp>
+#include <Client/States/Game/StatusState.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <variant>
@@ -17,21 +17,17 @@ namespace bw
 {
 	class LocalSessionManager;
 
-	class ConnectionState final : public AbstractState
+	class ConnectionState final : public StatusState
 	{
 		public:
 			ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName);
 			~ConnectionState() = default;
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
-			void Leave(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
-			void UpdateStatus(const std::string& status, const Nz::Color& color);
 
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			Ndk::LabelWidget* m_statusLabel;
 			float m_nextStateDelay;
 
 			NazaraSlot(ClientSession, OnConnected, m_clientSessionConnectedSlot);

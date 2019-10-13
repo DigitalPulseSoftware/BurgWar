@@ -232,6 +232,7 @@ namespace bw
 				request.metadata->file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 				
 				bwLog(m_logger, LogLevel::Info, "[HTTP] Downloading {0} (size: {1})", pendingDownload.resourcePath, pendingDownload.expectedSize);
+				OnDownloadStarted(this, pendingDownload.resourcePath);
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)
