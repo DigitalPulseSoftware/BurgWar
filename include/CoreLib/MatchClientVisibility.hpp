@@ -42,7 +42,7 @@ namespace bw
 
 		private:
 			void HandleEntityCreation(const NetworkSyncSystem::EntityCreation& eventData);
-			void HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData);
+			void HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath);
 			void SendMatchState();
 
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
@@ -51,6 +51,7 @@ namespace bw
 			NazaraSlot(NetworkSyncSystem, OnEntityDeleted, m_onEntityDeletedSlot);
 			NazaraSlot(NetworkSyncSystem, OnEntityInvalidated, m_onEntityInvalidated);
 			NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation, m_onEntityPlayAnimation);
+			NazaraSlot(NetworkSyncSystem, OnEntitiesDeath, m_onEntitiesDeath);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, m_onEntitiesHealthUpdate);
 			NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate, m_onEntitiesInputUpdate);
 
@@ -69,6 +70,7 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityHealth> m_healthUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityMovement> m_staticMovementUpdateEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> m_playAnimationEvents;
+			tsl::hopscotch_set<Nz::UInt32 /*entityId*/> m_deathEvents;
 			tsl::hopscotch_set<Nz::UInt32 /*entityId*/> m_destructionEvents;
 			tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;
 			std::vector<PendingMultipleEntities> m_multiplePendingEntitiesEvent;
@@ -81,6 +83,7 @@ namespace bw
 			Packets::DeleteEntities    m_deleteEntitiesPacket;
 			Packets::HealthUpdate      m_healthUpdatePacket;
 			Packets::EntitiesAnimation m_entitiesAnimationPacket;
+			Packets::EntitiesDeath     m_entitiesDeathPacket;
 			Packets::EntitiesInputs    m_inputUpdatePacket;
 			Packets::MatchState        m_matchStatePacket;
 	};

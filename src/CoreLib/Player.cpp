@@ -34,7 +34,8 @@ namespace bw
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
 	m_session(session),
-	m_shouldSendWeapons(false)
+	m_shouldSendWeapons(false),
+	m_isReady(false)
 	{
 	}
 
@@ -289,18 +290,34 @@ namespace bw
 	{
 		if (m_layerIndex != layerIndex)
 		{
+			m_layerIndex = layerIndex;
 			if (m_layerIndex != NoLayer)
 			{
+				if (m_playerEntity)
+				{
+					Terrain& terrain = m_match->GetTerrain();
+					Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
+
+					UpdateControlledEntity(world.CloneEntity(m_playerEntity));
+
+					//HAX
+					auto& scriptComponent = m_playerEntity->GetComponent<ScriptComponent>();
+					scriptComponent.GetTable()["_Entity"] = static_cast<const Ndk::EntityHandle&>(m_playerEntity);
+
+					//TODO: Preserve weapons
+					m_activeWeaponIndex = NoWeapon;
+					m_weapons.clear();
+					m_weaponByName.clear();
+				}
+			}
+			else
+			{
+				m_playerEntity.Reset();
+
+				m_activeWeaponIndex = NoWeapon;
 				m_weapons.clear();
 				m_weaponByName.clear();
-
-				//TODO: Preserve weapons & player entity
-				m_playerEntity.Reset();
 			}
-
-			m_layerIndex = layerIndex;
-			//if (m_layerIndex != NoLayer)
-			//	Spawn();
 
 			//FIXME: This doesn't work well with multiples players/session
 			GetSession().GetVisibility().UpdateLayer(m_layerIndex);
@@ -325,6 +342,12 @@ namespace bw
 		m_weapons.clear();
 		m_weaponByName.clear();
 		m_activeWeaponIndex = NoWeapon;
+	}
+
+	void Player::OnReady()
+	{
+		assert(!m_isReady);
+		m_isReady = true;
 	}
 
 	void Player::UpdateMatch(Match* match)

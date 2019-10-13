@@ -144,16 +144,7 @@ namespace bw
 		m_players.emplace_back(player);
 		player->UpdateMatch(this);
 
-		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
-
-		Packets::ChatMessage chatPacket;
-		chatPacket.content = player->GetName() + " has joined.";
-
-		//FIXME: Should be for each session
-		ForEachPlayer([&](Player* player)
-		{
-			player->SendPacket(chatPacket);
-		});
+		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
 
 		return true;
 	}
@@ -472,6 +463,23 @@ namespace bw
 
 		m_matchData.scripts.clear();
 		BuildClientScriptListPacket(m_matchData);
+	}
+
+	void Match::OnPlayerReady(Player* player)
+	{
+		if (player->IsReady())
+			return;
+
+		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
+
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = player->GetName() + " has joined.";
+
+		//FIXME: Should be for each session
+		ForEachPlayer([&](Player* player)
+		{
+			player->SendPacket(chatPacket);
+		});
 	}
 
 	void Match::OnTick(bool lastTick)

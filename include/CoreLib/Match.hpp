@@ -37,6 +37,8 @@ namespace bw
 
 	class Match : public SharedMatch
 	{
+		friend class MatchClientSession;
+
 		public:
 			struct Asset;
 			struct ClientScript;
@@ -100,6 +102,7 @@ namespace bw
 
 		private:
 			void BuildMatchData();
+			void OnPlayerReady(Player* player);
 			void OnTick(bool lastTick) override;
 
 			struct Debug

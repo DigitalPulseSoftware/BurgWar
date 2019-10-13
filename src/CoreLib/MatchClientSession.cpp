@@ -81,7 +81,7 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
 	{
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Client asked for client scripts");
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Client asked for client script {0}", packet.path);
 
 		const Match::ClientScript* clientScript;
 		if (m_match.GetClientScript(packet.path, &clientScript))
@@ -179,10 +179,9 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& packet)
 	{
-		// HAAAAAX
-		ForEachPlayer([](Player* player)
+		ForEachPlayer([this](Player* player)
 		{
-			player->UpdateLayer(0);
+			m_match.OnPlayerReady(player);
 		});
 	}
 }

@@ -53,6 +53,7 @@ namespace bw
 			void RemoveWeapon(const std::string& weaponClass);
 
 			inline bool IsInMatch() const;
+			inline bool IsReady() const;
 
 			void Spawn();
 
@@ -77,6 +78,7 @@ namespace bw
 
 		private:
 			void OnDeath(const Ndk::EntityHandle& attacker);
+			void OnReady();
 
 			void UpdateMatch(Match* match);
 
@@ -92,6 +94,7 @@ namespace bw
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;
+			bool m_isReady;
 			bool m_shouldSendWeapons;
 	};
 }

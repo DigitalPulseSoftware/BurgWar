@@ -5,8 +5,8 @@ function GM:OnPlayerDeath(player, attacker)
 end
 
 function GM:OnPlayerJoin(player)
-	timer.Sleep(2)
 	print(player:GetName() .. " joined")
+	player:UpdateLayer(0)
 	player:Spawn()
 	player:GiveWeapon("weapon_sword_emmentalibur")
 	player:GiveWeapon("weapon_grenade")
@@ -16,7 +16,7 @@ function GM:OnTick()
 	for _, burger in pairs(GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 2000) then
-			burger:Damage(burger:GetHealth())
+			burger:Kill()
 		end
 	end
 end

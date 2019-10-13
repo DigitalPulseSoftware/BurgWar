@@ -61,6 +61,8 @@ end
 
 if (CLIENT) then
 	function ENTITY:OnKilled()
-		self:Explode()
+		if (self:GetHealth() == 0)
+			self:Explode()
+		end
 	end
 end

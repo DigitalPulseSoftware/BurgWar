@@ -624,6 +624,7 @@ namespace bw
 	
 	void LocalMatch::BindPackets()
 	{
+		//TODO: Use slots
 		m_session.OnChatMessage.Connect([this](ClientSession* /*session*/, const Packets::ChatMessage& message)
 		{
 			HandleChatMessage(message);
@@ -652,6 +653,11 @@ namespace bw
 		m_session.OnEntitiesAnimation.Connect([this](ClientSession* /*session*/, const Packets::EntitiesAnimation& animations)
 		{
 			PushTickPacket(animations.stateTick, animations);
+		});
+
+		m_session.OnEntitiesDeath.Connect([this](ClientSession* /*session*/, const Packets::EntitiesDeath& deaths)
+		{
+			PushTickPacket(deaths.stateTick, deaths);
 		});
 
 		m_session.OnEntitiesInputs.Connect([this](ClientSession* /*session*/, const Packets::EntitiesInputs& inputs)
@@ -984,6 +990,43 @@ namespace bw
 
 			auto& animComponent = serverEntity.entity->GetComponent<AnimationComponent>();
 			animComponent.Play(entityData.animId, m_application.GetAppTime());
+		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::EntitiesDeath&& packet)
+	{
+		for (auto&& entityData : packet.entities)
+		{
+			auto it = m_serverEntityIdToClient.find(entityData.id);
+			if (it == m_serverEntityIdToClient.end())
+				continue;
+
+			ServerEntity& serverEntity = it.value();
+			if (!serverEntity.entity)
+				continue;
+
+			Nz::UInt16 oldHealth;
+
+			if (serverEntity.health)
+			{
+				HealthData& healthData = serverEntity.health.value();
+
+				oldHealth = healthData.currentHealth;
+
+				healthData.currentHealth = 0;
+				healthData.healthSprite->SetSize(healthData.spriteWidth * healthData.currentHealth / serverEntity.maxHealth, 10);
+			}
+			else
+			{
+				oldHealth = serverEntity.maxHealth;
+				CreateHealthBar(serverEntity, 0);
+			}
+
+			if (serverEntity.entity->HasComponent<ScriptComponent>())
+			{
+				auto& scriptComponent = serverEntity.entity->GetComponent<ScriptComponent>();
+				scriptComponent.ExecuteCallback("OnHealthUpdate", oldHealth, 0);
+			}
 		}
 	}
 

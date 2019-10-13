@@ -40,6 +40,7 @@ namespace bw
 		DownloadClientScriptRequest,
 		DownloadClientScriptResponse,
 		EntitiesAnimation,
+		EntitiesDeath,
 		EntitiesInputs,
 		EntityWeapon,
 		InputTimingCorrection,
@@ -212,6 +213,17 @@ namespace bw
 			std::vector<Entity> entities;
 		};
 
+		DeclarePacket(EntitiesDeath)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
+		};
+
 		DeclarePacket(EntitiesInputs)
 		{
 			struct Entity
@@ -363,6 +375,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
+		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);

@@ -127,6 +127,18 @@ namespace bw
 		elementMetatable["Kill"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (entity->HasComponent<HealthComponent>())
+			{
+				auto& entityHealth = entity->GetComponent<HealthComponent>();
+				entityHealth.Damage(entityHealth.GetHealth(), entity);
+			}
+			else
+				entity->Kill();
+		};
+
+		elementMetatable["Remove"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			entity->Kill();
 		};
 

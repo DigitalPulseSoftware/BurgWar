@@ -56,6 +56,11 @@ namespace bw
 		return m_match != nullptr;
 	}
 
+	inline bool Player::IsReady() const
+	{
+		return m_isReady;
+	}
+
 	template<typename T>
 	void Player::SendPacket(const T& packet)
 	{

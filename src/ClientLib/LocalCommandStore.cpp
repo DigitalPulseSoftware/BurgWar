@@ -28,6 +28,7 @@ namespace bw
 		IncomingCommand(DeleteEntities);
 		IncomingCommand(DownloadClientScriptResponse);
 		IncomingCommand(EntitiesAnimation);
+		IncomingCommand(EntitiesDeath);
 		IncomingCommand(EntitiesInputs);
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);

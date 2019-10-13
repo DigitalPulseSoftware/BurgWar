@@ -207,7 +207,14 @@ namespace bw
 
 		if (entity->HasComponent<HealthComponent>())
 		{
-			slots.onHealthChange.Connect(entity->GetComponent<HealthComponent>().OnHealthChange, [&](HealthComponent* health)
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+
+			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle&)
+			{
+				m_deadEvents.emplace_back(health->GetEntity()->GetId());
+			});
+
+			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health)
 			{
 				m_healthUpdateEntities.Insert(health->GetEntity());
 			});
@@ -251,8 +258,15 @@ namespace bw
 				healthEvent.entityId = entity->GetId();
 				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
 			}
-
 			m_healthUpdateEntities.Clear();
+
+			for (Ndk::EntityId entityId : m_deadEvents)
+			{
+				EntityHealth& healthEvent = m_healthEvents.emplace_back();
+				healthEvent.entityId = entityId;
+				healthEvent.currentHealth = 0;
+			}
+			m_deadEvents.clear();
 
 			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
 		}

@@ -310,6 +310,15 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, EntitiesDeath& data)
+		{
+			serializer &= data.stateTick;
+
+			serializer.SerializeArraySize(data.entities);
+			for (auto& entity : data.entities)
+				serializer &= entity.id;
+		}
+
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data)
 		{
 			serializer &= data.stateTick;

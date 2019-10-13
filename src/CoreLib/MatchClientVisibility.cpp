@@ -16,6 +16,21 @@ namespace bw
 	void MatchClientVisibility::Update()
 	{
 		// Send packet in fixed order
+		if (!m_deathEvents.empty())
+		{
+			m_entitiesDeathPacket.stateTick = m_match.GetNetworkTick();
+
+			m_entitiesDeathPacket.entities.clear();
+			for (Nz::UInt32 entityId : m_deathEvents)
+			{
+				auto& entityData = m_entitiesDeathPacket.entities.emplace_back();
+				entityData.id = entityId;
+			}
+			m_deathEvents.clear();
+
+			m_session.SendPacket(m_entitiesDeathPacket);
+		}
+
 		if (!m_destructionEvents.empty())
 		{
 			m_deleteEntitiesPacket.stateTick = m_match.GetNetworkTick();
@@ -241,12 +256,13 @@ namespace bw
 			syncSystem.DeleteEntities([&](const NetworkSyncSystem::EntityDestruction* entitiesDestruction, std::size_t entityCount)
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
-					HandleEntityDestruction(entitiesDestruction[i]);
+					HandleEntityDestruction(entitiesDestruction[i], true);
 			});
 
 			m_onEntityCreatedSlot.Disconnect();
 			m_onEntityDeletedSlot.Disconnect();
 			m_onEntityPlayAnimation.Disconnect();
+			m_onEntitiesDeath.Disconnect();
 			m_onEntitiesHealthUpdate.Disconnect();
 			m_onEntitiesInputUpdate.Disconnect();
 		}
@@ -265,7 +281,7 @@ namespace bw
 
 			m_onEntityDeletedSlot.Connect(syncSystem.OnEntityDeleted, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityDestruction& entityDestruction)
 			{
-				HandleEntityDestruction(entityDestruction);
+				HandleEntityDestruction(entityDestruction, false);
 			});
 
 			m_onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
@@ -282,6 +298,17 @@ namespace bw
 					return;
 
 				m_playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
+			});
+
+			m_onEntitiesDeath.Connect(syncSystem.OnEntitiesDeath, [this](NetworkSyncSystem*, const Ndk::EntityId* entityIds, std::size_t entityCount)
+			{
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!m_visibleEntities.UnboundedTest(entityIds[i]))
+						return;
+
+					m_deathEvents.emplace(entityIds[i]);
+				}
 			});
 
 			m_onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
@@ -321,7 +348,7 @@ namespace bw
 		m_visibleEntities.UnboundedSet(eventData.entityId);
 	}
 
-	void MatchClientVisibility::HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData)
+	void MatchClientVisibility::HandleEntityDestruction(const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath)
 	{
 		// Only send entity destruction packet if this entity was already created client-side
 		auto it = m_creationEvents.find(eventData.entityId);
@@ -334,6 +361,9 @@ namespace bw
 		m_healthUpdateEvents.erase(eventData.entityId);
 		m_playAnimationEvents.erase(eventData.entityId);
 		m_staticMovementUpdateEvents.erase(eventData.entityId);
+
+		if (clearDeath)
+			m_deathEvents.erase(eventData.entityId);
 
 		m_visibleEntities.UnboundedReset(eventData.entityId);
 	}
