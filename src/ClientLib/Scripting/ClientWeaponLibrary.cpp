@@ -80,7 +80,7 @@ namespace bw
 
 			const float trailSpeed = 2500.f;
 
-			const Nz::SpriteRef& trailSprite = localMatch.GetTrailSprite();
+			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
 			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
 			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
 			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);

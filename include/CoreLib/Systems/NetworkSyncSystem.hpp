@@ -31,11 +31,14 @@ namespace bw
 			struct EntityDestruction;
 			struct EntityMovement;
 
-			NetworkSyncSystem();
+			NetworkSyncSystem(Nz::UInt16 layerIndex);
 			~NetworkSyncSystem() = default;
 
 			void CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const;
 			void DeleteEntities(const std::function<void(const EntityDestruction* entityDestruction, std::size_t entityCount)>& callback) const;
+			
+			inline Nz::UInt16 GetLayerIndex() const;
+			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
 			static Ndk::SystemIndex systemIndex;
@@ -138,6 +141,7 @@ namespace bw
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
 			Ndk::EntityList m_invalidatedEntities;
+			Nz::UInt16 m_layerIndex;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<Ndk::EntityId> m_deadEvents;

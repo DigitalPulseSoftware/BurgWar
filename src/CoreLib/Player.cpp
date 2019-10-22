@@ -204,11 +204,12 @@ namespace bw
 		}
 
 		Packets::EntityWeapon weaponPacket;
-		weaponPacket.entityId = m_playerEntity->GetId();
+		weaponPacket.entityId.layerId = m_layerIndex;
+		weaponPacket.entityId.entityId = m_playerEntity->GetId();
 		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : 0xFFFFFFFF;
 
 		Nz::Bitset<Nz::UInt64> entityIds;
-		entityIds.UnboundedSet(weaponPacket.entityId);
+		entityIds.UnboundedSet(weaponPacket.entityId.entityId);
 
 		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
 			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
@@ -216,7 +217,7 @@ namespace bw
 		m_match->ForEachPlayer([&](Player* ply)
 		{
 			MatchClientSession& session = ply->GetSession();
-			session.GetVisibility().PushEntitiesPacket(entityIds, weaponPacket);
+			session.GetVisibility().PushEntitiesPacket(m_layerIndex, entityIds, weaponPacket);
 		});
 	}
 
@@ -237,11 +238,15 @@ namespace bw
 			{
 				assert(weapon);
 
-				weaponPacket.weaponEntities.emplace_back(weapon->GetId());
+				Packets::Helper::EntityId entityId;
+				entityId.entityId = weapon->GetId();
+				entityId.layerId = m_layerIndex;
+
+				weaponPacket.weaponEntities.push_back(entityId);
 				weaponIds.UnboundedSet(weapon->GetId());
 			}
 
-			m_session.GetVisibility().PushEntitiesPacket(std::move(weaponIds), std::move(weaponPacket));
+			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));
 
 			m_shouldSendWeapons = false;
 		}
@@ -261,10 +266,11 @@ namespace bw
 		m_playerEntity = entity;
 
 		Packets::ControlEntity controlEntity;
-		controlEntity.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
+		controlEntity.entityId.layerId = m_layerIndex;
+		controlEntity.entityId.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
 		controlEntity.playerIndex = m_playerIndex;
 
-		m_session.GetVisibility().PushEntityPacket(controlEntity.entityId, controlEntity);
+		m_session.GetVisibility().PushEntityPacket(m_layerIndex, controlEntity.entityId.entityId, controlEntity);
 	}
 
 	void Player::UpdateInputs(const PlayerInputData& inputData)
@@ -309,6 +315,8 @@ namespace bw
 					m_weapons.clear();
 					m_weaponByName.clear();
 				}
+
+				GetSession().GetVisibility().HideLayer(m_layerIndex);
 			}
 			else
 			{
@@ -320,7 +328,8 @@ namespace bw
 			}
 
 			//FIXME: This doesn't work well with multiples players/session
-			GetSession().GetVisibility().UpdateLayer(m_layerIndex);
+			if (m_layerIndex != NoLayer)
+				GetSession().GetVisibility().ShowLayer(m_layerIndex);
 		}
 	}
 

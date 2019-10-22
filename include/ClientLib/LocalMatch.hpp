@@ -17,6 +17,7 @@
 #include <CoreLib/Utility/AverageValues.hpp>
 #include <ClientLib/Chatbox.hpp>
 #include <ClientLib/LocalConsole.hpp>
+#include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/LocalMatchPrediction.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -47,7 +48,6 @@ namespace bw
 			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
-
 			~LocalMatch();
 
 			template<typename T> T AdjustServerTick(T tick);
@@ -63,7 +63,6 @@ namespace bw
 			const ClientEntityStore& GetEntityStore() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
-			inline const Nz::SpriteRef& GetTrailSprite() const; //< FIXME: This is pure garbage
 
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
@@ -146,7 +145,7 @@ namespace bw
 				std::vector<Ndk::EntityHandle> weapons;
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
-				Nz::UInt32 controlledEntityServerId;
+				Nz::UInt64 controlledEntityServerId;
 				PlayerInputData lastInputData;
 			};
 
@@ -185,6 +184,7 @@ namespace bw
 				Ndk::EntityOwner entity;
 				Nz::RadianAnglef rotationError = 0.f;
 				Nz::Vector2f positionError = Nz::Vector2f::Zero();
+				Nz::UInt16 layerIndex;
 				Nz::UInt16 maxHealth;
 				Nz::UInt32 serverEntityId;
 				Nz::UInt32 weaponEntityId = NoWeapon;
@@ -212,11 +212,12 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;
+			std::vector<LocalLayer> m_layers;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
-			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			tsl::hopscotch_map<Nz::UInt64 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
 			Nz::RenderWindow* m_window;
@@ -226,7 +227,7 @@ namespace bw
 			BurgApp& m_application;
 			Chatbox m_chatBox;
 			ClientSession& m_session;
-			SharedWorld m_world;
+			Ndk::World m_overlayWorld;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;

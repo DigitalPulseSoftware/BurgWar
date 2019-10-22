@@ -63,6 +63,14 @@ namespace bw
 
 	namespace Packets
 	{
+		namespace Helper
+		{
+			struct EntityId
+			{
+				CompressedUnsigned<Nz::UInt16> layerId;
+				CompressedUnsigned<Nz::UInt32> entityId;
+			};
+		}
 #define DeclarePacket(Type) struct Type : PacketTag<PacketType:: Type >
 
 		DeclarePacket(Auth)
@@ -123,7 +131,7 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
-			CompressedUnsigned<Nz::UInt32> entityId;
+			Helper::EntityId entityId;
 		};
 
 		DeclarePacket(CreateEntities)
@@ -163,7 +171,7 @@ namespace bw
 
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 				CompressedUnsigned<Nz::UInt32> entityClass;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
@@ -184,7 +192,7 @@ namespace bw
 		{
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 			};
 
 			Nz::UInt16 stateTick;
@@ -205,7 +213,7 @@ namespace bw
 		{
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> entityId;
+				Helper::EntityId entityId;
 				Nz::UInt8 animId;
 			};
 
@@ -217,7 +225,7 @@ namespace bw
 		{
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 			};
 
 			Nz::UInt16 stateTick;
@@ -228,7 +236,7 @@ namespace bw
 		{
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 				PlayerInputData inputs;
 			};
 
@@ -239,7 +247,7 @@ namespace bw
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
-			CompressedUnsigned<Nz::UInt32> entityId;
+			Helper::EntityId entityId;
 			CompressedUnsigned<Nz::UInt32> weaponEntityId;
 		};
 
@@ -247,7 +255,7 @@ namespace bw
 		{
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 				Nz::UInt16 currentHealth;
 			};
 
@@ -305,7 +313,7 @@ namespace bw
 
 			struct Entity
 			{
-				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityId id;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
@@ -352,7 +360,7 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
-			std::vector<CompressedUnsigned<Nz::UInt32>> weaponEntities;
+			std::vector<Helper::EntityId> weaponEntities;
 		};
 
 		DeclarePacket(Ready)
@@ -392,6 +400,7 @@ namespace bw
 
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
+		void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
 	}
 }
 

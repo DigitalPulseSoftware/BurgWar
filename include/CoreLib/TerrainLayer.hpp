@@ -18,7 +18,7 @@ namespace bw
 	class TerrainLayer
 	{
 		public:
-			TerrainLayer(Match& match, const Map::Layer& layerData);
+			TerrainLayer(Match& match, std::size_t layerIndex, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;

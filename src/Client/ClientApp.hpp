@@ -34,6 +34,7 @@ namespace bw
 			int Run();
 
 		private:
+			void FillStores();
 			void RegisterClientConfig();
 
 			std::shared_ptr<StateData> m_stateData;

@@ -12,7 +12,8 @@
 
 namespace bw
 {
-	NetworkSyncSystem::NetworkSyncSystem()
+	NetworkSyncSystem::NetworkSyncSystem(Nz::UInt16 layerIndex) :
+	m_layerIndex(layerIndex)
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
 		SetMaximumUpdateRate(30.f);

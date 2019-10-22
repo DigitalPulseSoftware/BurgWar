@@ -17,11 +17,11 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(Match& match, const Map::Layer& layerData) :
+	TerrainLayer::TerrainLayer(Match& match, std::size_t layerIndex, const Map::Layer& layerData) :
 	m_world(match)
 	{
 		Ndk::World& world = m_world.GetWorld();
-		world.AddSystem<NetworkSyncSystem>();
+		world.AddSystem<NetworkSyncSystem>(static_cast<Nz::UInt16>(layerIndex));
 
 		auto& entityStore = match.GetEntityStore();
 		for (const Map::Entity& entityData : layerData.entities)

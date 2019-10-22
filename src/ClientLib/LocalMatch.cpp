@@ -39,6 +39,14 @@
 
 namespace bw
 {
+	namespace
+	{
+		Nz::UInt64 BuildEntityId(Nz::UInt16 layerIndex, Nz::UInt32 entityId)
+		{
+			return Nz::UInt64(layerIndex) << 32 | entityId;
+		}
+	}
+
 	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
@@ -48,7 +56,6 @@ namespace bw
 	m_application(burgApp),
 	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
-	m_world(*this),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -57,31 +64,21 @@ namespace bw
 
 		m_averageTickError.InsertValue(-static_cast<Nz::Int32>(matchData.currentTick));
 
-		Ndk::World& world = m_world.GetWorld();
-		world.AddSystem<SoundSystem>();
+		m_layers.reserve(matchData.layers.size());
+		for (std::size_t i = 0; i < matchData.layers.size(); ++i)
+			m_layers.emplace_back(*this, window);
 
-		Ndk::RenderSystem& renderSystem = world.GetSystem<Ndk::RenderSystem>();
+		Ndk::RenderSystem& renderSystem = m_overlayWorld.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
-		renderSystem.SetDefaultBackground(Nz::ColorBackground::New(matchData.layers.front().backgroundColor));
+		renderSystem.SetDefaultBackground(nullptr);
 
-		m_camera = world.CreateEntity();
-		auto& cameraNode = m_camera->AddComponent<Ndk::NodeComponent>();
-		cameraNode.SetPosition(-Nz::Vector2f(640.f, 360.f));
+		m_camera = m_overlayWorld.CreateEntity();
+		m_camera->AddComponent<Ndk::NodeComponent>();
 
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(window);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 
-		// TODO: Remove this shit
-		Nz::Color trailColor(242, 255, 168);
-
-		m_trailSpriteTest = Nz::Sprite::New();
-		m_trailSpriteTest->SetMaterial(Nz::Material::New("Translucent2D"));
-		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_LeftBottom, trailColor * Nz::Color(128, 128, 128, 0));
-		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_LeftTop, trailColor * Nz::Color(128, 128, 128, 0));
-		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightTop, trailColor);
-		m_trailSpriteTest->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
-		m_trailSpriteTest->SetSize(64.f, 2.f);
 		InitializeRemoteConsole();
 
 		constexpr Nz::UInt8 playerCount = 1;
@@ -210,9 +207,11 @@ namespace bw
 
 	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
-		Ndk::World& world = m_world.GetWorld();
-		for (const Ndk::EntityHandle& entity : world.GetEntities())
-			func(entity);
+		for (LocalLayer& layer : m_layers)
+		{
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetWorld().GetEntities())
+				func(entity);
+		}
 	}
 
 	ClientEntityStore& LocalMatch::GetEntityStore()
@@ -607,8 +606,13 @@ namespace bw
 
 		PrepareClientUpdate();
 
-		Ndk::World& world = m_world.GetWorld();
-		world.Update(elapsedTime);
+		for (LocalLayer& layer : m_layers)
+		{
+			Ndk::World& world = layer.GetWorld().GetWorld();
+			world.Update(elapsedTime);
+		}
+
+		m_overlayWorld.Update(elapsedTime);
 
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
@@ -693,7 +697,8 @@ namespace bw
 
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
 	{
-		Ndk::World& world = m_world.GetWorld();
+		auto& layer = m_layers[serverEntity.layerIndex];
+		Ndk::World& world = layer.GetWorld().GetWorld();
 		serverEntity.serverGhost = world.CreateEntity();
 		serverEntity.serverGhost->AddComponent(serverEntity.entity->GetComponent<Ndk::NodeComponent>().Clone());
 
@@ -733,7 +738,8 @@ namespace bw
 
 	void LocalMatch::CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth)
 	{
-		Ndk::World& world = m_world.GetWorld();
+		auto& layer = m_layers[serverEntity.layerIndex];
+		Ndk::World& world = layer.GetWorld().GetWorld();
 		
 		auto& healthData = serverEntity.health.emplace();
 		healthData.currentHealth = currentHealth;
@@ -773,8 +779,9 @@ namespace bw
 
 	void LocalMatch::CreateName(ServerEntity& serverEntity, const std::string& name)
 	{
-		Ndk::World& world = m_world.GetWorld();
-		
+		auto& layer = m_layers[serverEntity.layerIndex];
+		Ndk::World& world = layer.GetWorld().GetWorld();
+
 		auto& nameData = serverEntity.name.emplace();
 		
 		Nz::TextSpriteRef nameSprite = Nz::TextSprite::New();
@@ -829,7 +836,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::ControlEntity&& packet)
 	{
-		auto it = m_serverEntityIdToClient.find(packet.entityId);
+		auto it = m_serverEntityIdToClient.find(BuildEntityId(packet.entityId.layerId, packet.entityId.entityId));
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
@@ -841,7 +848,7 @@ namespace bw
 
 		m_playerData[packet.playerIndex].controlledEntity = serverEntity.entity;
 		m_playerData[packet.playerIndex].controlledEntity->AddComponent<Ndk::ListenerComponent>();
-		m_playerData[packet.playerIndex].controlledEntityServerId = packet.entityId;
+		m_playerData[packet.playerIndex].controlledEntityServerId = BuildEntityId(packet.entityId.layerId, packet.entityId.entityId);
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::CreateEntities&& packet)
@@ -849,12 +856,13 @@ namespace bw
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
 
-		Ndk::World& world = m_world.GetWorld();
-
 		const NetworkStringStore& networkStringStore = m_session.GetNetworkStringStore();
 
 		for (auto&& entityData : packet.entities)
 		{
+			auto& layer = m_layers[entityData.id.layerId];
+			Ndk::World& world = layer.GetWorld().GetWorld();
+
 			const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
 
 			EntityProperties properties;
@@ -941,7 +949,8 @@ namespace bw
 				serverEntity.entity = entity;
 				serverEntity.isPhysical = entityData.physicsProperties.has_value();
 				serverEntity.maxHealth = (entityData.health.has_value()) ? entityData.health->maxHealth : 0;
-				serverEntity.serverEntityId = entityData.id;
+				serverEntity.layerIndex = entityData.id.layerId;
+				serverEntity.serverEntityId = entityData.id.entityId;
 
 				entity->AddComponent<LocalMatchComponent>(*this);
 				//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
@@ -956,7 +965,7 @@ namespace bw
 				if (entityData.name)
 					CreateName(serverEntity, entityData.name.value());
 
-				m_serverEntityIdToClient.emplace(entityData.id, std::move(serverEntity));
+				m_serverEntityIdToClient.emplace(BuildEntityId(entityData.id.layerId, entityData.id.entityId), std::move(serverEntity));
 			}
 		}
 	}
@@ -965,9 +974,10 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			m_prediction->DeleteEntity(entityData.id);
+			Nz::UInt64 entityKey = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
+			m_prediction->DeleteEntity(entityData.id.entityId);
 
-			auto it = m_serverEntityIdToClient.find(entityData.id);
+			auto it = m_serverEntityIdToClient.find(entityKey);
 			//assert(it != m_serverEntityIdToClient.end());
 			if (it == m_serverEntityIdToClient.end())
 				continue;
@@ -980,7 +990,7 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.entityId);
+			auto it = m_serverEntityIdToClient.find(BuildEntityId(entityData.entityId.layerId, entityData.entityId.entityId));
 			if (it == m_serverEntityIdToClient.end())
 				continue;
 
@@ -997,7 +1007,7 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.id);
+			auto it = m_serverEntityIdToClient.find(BuildEntityId(entityData.id.layerId, entityData.id.entityId));
 			if (it == m_serverEntityIdToClient.end())
 				continue;
 
@@ -1034,7 +1044,7 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.id);
+			auto it = m_serverEntityIdToClient.find(BuildEntityId(entityData.id.layerId, entityData.id.entityId));
 			if (it == m_serverEntityIdToClient.end())
 				continue;
 
@@ -1049,7 +1059,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
 	{
-		auto it = m_serverEntityIdToClient.find(packet.entityId);
+		auto it = m_serverEntityIdToClient.find(BuildEntityId(packet.entityId.layerId, packet.entityId.entityId));
 		if (it == m_serverEntityIdToClient.end())
 			return;
 
@@ -1059,7 +1069,7 @@ namespace bw
 
 		if (serverEntity.weaponEntityId != ServerEntity::NoWeapon)
 		{
-			auto weaponIt = m_serverEntityIdToClient.find(serverEntity.weaponEntityId);
+			auto weaponIt = m_serverEntityIdToClient.find(BuildEntityId(serverEntity.layerIndex, serverEntity.weaponEntityId));
 			if (weaponIt != m_serverEntityIdToClient.end())
 			{
 				ServerEntity& serverEntity = weaponIt.value();
@@ -1096,7 +1106,7 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.id);
+			auto it = m_serverEntityIdToClient.find(BuildEntityId(entityData.id.layerId, entityData.id.entityId));
 			if (it == m_serverEntityIdToClient.end())
 				continue;
 
@@ -1134,8 +1144,6 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
 			return;
 
-		Ndk::World& world = m_world.GetWorld();
-
 #ifdef DEBUG_PREDICTION
 		static std::ofstream debugFile("prediction.txt", std::ios::trunc);
 		debugFile << "---------------------------------------------------\n";
@@ -1149,11 +1157,14 @@ namespace bw
 		});
 		m_predictedInputs.erase(m_predictedInputs.begin(), firstClientInput);
 
-		auto& physicsSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
-
 		for (auto&& entityData : packet.entities)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.id);
+			auto& layer = m_layers[entityData.id.layerId];
+			Ndk::World& world = layer.GetWorld().GetWorld();
+			auto& physicsSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
+
+			Nz::UInt64 entityKey = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
+			auto it = m_serverEntityIdToClient.find(entityKey);
 			//assert(it != m_serverEntityIdToClient.end());
 			if (it == m_serverEntityIdToClient.end())
 				return;
@@ -1167,7 +1178,7 @@ namespace bw
 			for (std::size_t playerIndex = 0; playerIndex < m_playerData.size(); ++playerIndex)
 			{
 				auto& controllerData = m_playerData[playerIndex];
-				if (controllerData.controlledEntityServerId == entityData.id && controllerData.controlledEntity)
+				if (controllerData.controlledEntityServerId == entityKey && controllerData.controlledEntity)
 				{
 					isPredicted = true;
 
@@ -1245,6 +1256,8 @@ namespace bw
 						position = controllerData.controlledEntity->GetComponent<Ndk::PhysicsComponent2D>().GetPosition();
 					else
 						position = Nz::Vector2f(controllerData.controlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
+
+					auto& physicsSystem = controllerData.controlledEntity->GetWorld()->GetSystem<Ndk::PhysicsSystem2D>();
 
 					physicsSystem.RegionQuery(Nz::Rectf(position.x - 500, position.y - 500, 1000.f, 1000.f), 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& entity)
 					{
@@ -1379,9 +1392,9 @@ namespace bw
 	{
 		auto& playerData = m_playerData[packet.playerIndex];
 		playerData.weapons.clear();
-		for (Nz::UInt32 weaponEntityIndex : packet.weaponEntities)
+		for (auto weaponEntityIndex : packet.weaponEntities)
 		{
-			auto it = m_serverEntityIdToClient.find(weaponEntityIndex);
+			auto it = m_serverEntityIdToClient.find(BuildEntityId(weaponEntityIndex.layerId, weaponEntityIndex.entityId));
 			assert(it != m_serverEntityIdToClient.end());
 
 			ServerEntity& serverEntity = it.value();
@@ -1499,8 +1512,11 @@ namespace bw
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback("OnTick");
 
-		Ndk::World& world = m_world.GetWorld();
-		world.Update(GetTickDuration());
+		for (LocalLayer& layer : m_layers)
+		{
+			Ndk::World& world = layer.GetWorld().GetWorld();
+			world.Update(GetTickDuration());
+		}
 
 #ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
@@ -1518,37 +1534,44 @@ namespace bw
 
 	void LocalMatch::PrepareClientUpdate()
 	{
-		Ndk::World& world = m_world.GetWorld();
-
-		world.ForEachSystem([](Ndk::BaseSystem& system)
+		for (LocalLayer& layer : m_layers)
 		{
-			system.Enable(false);
-		});
+			Ndk::World& world = layer.GetWorld().GetWorld();
 
-		world.GetSystem<Ndk::DebugSystem>().Enable(true);
-		world.GetSystem<Ndk::ListenerSystem>().Enable(true);
-		world.GetSystem<Ndk::ParticleSystem>().Enable(true);
-		world.GetSystem<Ndk::RenderSystem>().Enable(true);
-		world.GetSystem<AnimationSystem>().Enable(true);
-		world.GetSystem<SoundSystem>().Enable(true);
+			world.ForEachSystem([](Ndk::BaseSystem& system)
+				{
+					system.Enable(false);
+				});
+
+			world.GetSystem<Ndk::DebugSystem>().Enable(true);
+			world.GetSystem<Ndk::ListenerSystem>().Enable(true);
+			world.GetSystem<Ndk::ParticleSystem>().Enable(true);
+			world.GetSystem<Ndk::RenderSystem>().Enable(true);
+			world.GetSystem<AnimationSystem>().Enable(true);
+			world.GetSystem<SoundSystem>().Enable(true);
+		}
 	}
 
 	void LocalMatch::PrepareTickUpdate()
 	{
-		Ndk::World& world = m_world.GetWorld();
-
-		world.ForEachSystem([](Ndk::BaseSystem& system)
+		for (LocalLayer& layer : m_layers)
 		{
-			system.Enable(false);
-		});
+			Ndk::World& world = layer.GetWorld().GetWorld();
 
-		world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
-		world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
-		world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
-		world.GetSystem<Ndk::VelocitySystem>().Enable(true);
-		world.GetSystem<PlayerMovementSystem>().Enable(true);
-		world.GetSystem<TickCallbackSystem>().Enable(true);
-		world.GetSystem<WeaponSystem>().Enable(true);
+			world.ForEachSystem([](Ndk::BaseSystem& system)
+			{
+				system.Enable(false);
+			});
+
+			world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
+			world.GetSystem<Ndk::PhysicsSystem2D>().Enable(true);
+			world.GetSystem<Ndk::PhysicsSystem3D>().Enable(true);
+			world.GetSystem<Ndk::VelocitySystem>().Enable(true);
+			world.GetSystem<PlayerMovementSystem>().Enable(true);
+			world.GetSystem<TickCallbackSystem>().Enable(true);
+			world.GetSystem<WeaponSystem>().Enable(true);
+		}
+
 	}
 
 	void LocalMatch::ProcessInputs(float elapsedTime)

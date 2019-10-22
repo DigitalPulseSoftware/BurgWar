@@ -130,7 +130,7 @@ namespace bw
 
 			for (auto& entity : data.entities)
 			{
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
 				serializer &= entity.entityClass;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
@@ -272,7 +272,7 @@ namespace bw
 		{
 			serializer &= data.stateTick;
 			serializer &= data.playerIndex;
-			serializer &= data.entityId;
+			Serialize(serializer, data.entityId);
 		}
 
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data)
@@ -281,7 +281,7 @@ namespace bw
 
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
 		}
 
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data)
@@ -305,7 +305,7 @@ namespace bw
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 			{
-				serializer &= entity.entityId;
+				Serialize(serializer, entity.entityId);
 				serializer &= entity.animId;
 			}
 		}
@@ -316,7 +316,7 @@ namespace bw
 
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
 		}
 
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data)
@@ -326,15 +326,16 @@ namespace bw
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 			{
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
 				Serialize(serializer, entity.inputs);
 			}
 		}
 
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)
 		{
+			Serialize(serializer, data.entityId);
+
 			serializer &= data.stateTick;
-			serializer &= data.entityId;
 			serializer &= data.weaponEntityId;
 		}
 
@@ -345,7 +346,8 @@ namespace bw
 			serializer.SerializeArraySize(data.entities);
 			for (auto& entity : data.entities)
 			{
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
+
 				serializer &= entity.currentHealth;
 			}
 		}
@@ -427,7 +429,7 @@ namespace bw
 
 			for (auto& entity : data.entities)
 			{
-				serializer &= entity.id;
+				Serialize(serializer, entity.id);
 				serializer &= entity.position;
 				serializer &= entity.rotation;
 
@@ -504,7 +506,9 @@ namespace bw
 		{
 			serializer &= data.stateTick;
 			serializer &= data.playerIndex;
-			serializer &= data.weaponEntities;
+			serializer.SerializeArraySize(data.weaponEntities);
+			for (auto& entityId : data.weaponEntities)
+				Serialize(serializer, entityId);
 		}
 
 		void Serialize(PacketSerializer& /*serializer*/, Ready& /*data*/)
@@ -519,6 +523,12 @@ namespace bw
 			serializer &= input.isMovingRight;
 
 			serializer &= input.aimDirection;
+		}
+
+		void Serialize(PacketSerializer& serializer, Helper::EntityId& data)
+		{
+			serializer &= data.layerId;
+			serializer &= data.entityId;
 		}
 	}
 }

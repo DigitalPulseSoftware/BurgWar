@@ -26,22 +26,22 @@ namespace bw
 
 	inline MatchClientVisibility::MatchClientVisibility(Match& match, MatchClientSession& session) :
 	m_match(match),
-	m_session(session),
-	m_activeLayer(NoLayer)
+	m_session(session)
 	{
 	}
 	
-	inline std::size_t MatchClientVisibility::GetActiveLayer() const
+	inline bool MatchClientVisibility::IsLayerVisible(std::size_t layerIndex) const
 	{
-		return m_activeLayer;
+		return m_visibleLayers.UnboundedTest(layerIndex);
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntityPacket(Nz::UInt32 entityId, T&& packet)
+	void MatchClientVisibility::PushEntityPacket(Nz::UInt16 layerIndex, Nz::UInt32 entityId, T&& packet)
 	{
-		auto it = m_pendingEntitiesEvent.find(entityId);
+		Nz::UInt64 entityKey = BuildEntityId(layerIndex, entityId);
+		auto it = m_pendingEntitiesEvent.find(entityKey);
 		if (it == m_pendingEntitiesEvent.end())
-			it = m_pendingEntitiesEvent.emplace(entityId, std::vector<EntityPacketSendFunction>()).first;
+			it = m_pendingEntitiesEvent.emplace(entityKey, std::vector<EntityPacketSendFunction>()).first;
 
 		if constexpr (Detail::HasStateTick<T>::value)
 		{
@@ -62,11 +62,12 @@ namespace bw
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntitiesPacket(Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
+	void MatchClientVisibility::PushEntitiesPacket(Nz::UInt16 layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
 	{
 		if constexpr (Detail::HasStateTick<T>::value)
 		{
 			m_multiplePendingEntitiesEvent.emplace_back(PendingMultipleEntities{
+				layerIndex,
 				std::move(entitiesId),
 				[this, packet = std::forward<T>(packet)]() mutable
 				{
@@ -79,6 +80,7 @@ namespace bw
 		else
 		{
 			m_multiplePendingEntitiesEvent.emplace_back(PendingMultipleEntities{
+				layerIndex,
 				std::move(entitiesId),
 				[this, packet = std::forward<T>(packet)]() mutable
 				{
@@ -86,5 +88,15 @@ namespace bw
 				}
 			});
 		}
+	}
+
+	Nz::UInt64 MatchClientVisibility::BuildEntityId(Nz::UInt16 layerIndex, Nz::UInt32 entityId)
+	{
+		return Nz::UInt64(layerIndex) << 32 | entityId;
+	}
+
+	inline Packets::Helper::EntityId bw::MatchClientVisibility::DecodeEntityId(Nz::UInt64 entityId)
+	{
+		return { CompressedUnsigned<Nz::UInt16>(entityId >> 32), CompressedUnsigned<Nz::UInt32>(entityId & 0xFFFFFFFF) };
 	}
 }

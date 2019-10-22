@@ -6,4 +6,8 @@
 
 namespace bw
 {
+	inline Nz::UInt16 NetworkSyncSystem::GetLayerIndex() const
+	{
+		return m_layerIndex;
+	}
 }
