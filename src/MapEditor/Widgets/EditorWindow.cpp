@@ -4,6 +4,7 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
@@ -14,6 +15,8 @@
 #include <MapEditor/Widgets/LayerInfoDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
+#include <NDK/Components/CameraComponent.hpp>
+#include <NDK/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
 #include <QtCore/QStringBuilder>
 #include <QtGui/QKeyEvent>
@@ -47,13 +50,14 @@ namespace bw
 		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
 		const std::string& scriptFolder = m_config.GetStringOption("Assets.ScriptFolder");
 
+		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
+
 		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>(scriptFolder);
 
 		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), virtualDir);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(GetLogger()));
+		m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 		m_scriptingContext->GetLuaState()["Editor"] = this;
-
-		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
 
 		m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
@@ -465,7 +469,17 @@ namespace bw
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
-		createEntityDialog->Open(std::nullopt, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
+
+		const Ndk::EntityHandle& cameraEntity = m_canvas->GetCameraEntity();
+
+		// Create entity at camera center
+		Ndk::CameraComponent& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
+		const Nz::Recti& viewport = cameraComponent.GetViewport();
+
+		EntityInfo entityInfo;
+		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
+
+		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
 		{
 			const EntityInfo& entityInfo = createEntityDialog->GetInfo();
 
@@ -480,6 +494,9 @@ namespace bw
 			layerEntity.rotation = entityInfo.rotation;
 
 			RegisterEntity(entityIndex);
+
+			m_entityList->clearSelection();
+			m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
 		});
 
 		createEntityDialog->exec();

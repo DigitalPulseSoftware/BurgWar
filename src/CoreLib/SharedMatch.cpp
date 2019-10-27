@@ -20,6 +20,7 @@ namespace bw
 	m_tickDuration(tickDuration),
 	m_tickTimer(0.f)
 	{
+		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 	}
 
 	SharedMatch::~SharedMatch() = default;

@@ -6,6 +6,7 @@
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
+#include <ClientLib/Scripting/Texture.hpp>
 
 namespace bw
 {

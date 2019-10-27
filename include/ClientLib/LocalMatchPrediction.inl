@@ -6,46 +6,52 @@
 
 namespace bw
 {
-	inline void LocalMatchPrediction::DeleteEntity(Ndk::EntityId entityId)
+	inline void LocalMatchPrediction::DeleteEntity(Nz::UInt64 layerEntityId)
 	{
-		m_entities.erase(entityId);
+		m_entities.erase(layerEntityId);
 	}
 
 	inline void LocalMatchPrediction::DeleteUnregisteredEntities()
 	{
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			if (m_registeredEntities.UnboundedTest(it->first))
+			auto& entityData = it.value();
+			if (entityData.isRegistered)
+			{
+				entityData.isRegistered = false;
 				++it;
+			}
 			else
 				it = m_entities.erase(it);
 		}
-
-		m_registeredEntities.Clear();
 	}
 
-	inline const Ndk::EntityHandle& LocalMatchPrediction::GetEntity(Ndk::EntityId entityId)
+	inline const Ndk::EntityHandle& LocalMatchPrediction::GetEntity(Nz::UInt64 layerEntityId)
 	{
-		auto it = m_entities.find(entityId);
+		auto it = m_entities.find(layerEntityId);
 		if (it != m_entities.end())
-			return it->second;
+			return it->second.entity;
 
 		return Ndk::EntityHandle::InvalidHandle;
 	}
 
-	inline bool LocalMatchPrediction::IsRegistered(Ndk::EntityId entityId) const
+	inline bool LocalMatchPrediction::IsRegistered(Nz::UInt64 layerEntityId) const
 	{
-		return m_registeredEntities.UnboundedTest(entityId);
+		auto it = m_entities.find(layerEntityId);
+		if (it == m_entities.end())
+			return false;
+
+		return it->second.isRegistered;
 	}
 
-	inline void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity)
+	inline void LocalMatchPrediction::RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity)
 	{
-		return RegisterForPrediction(entity, SynchronizeEntity);
+		return RegisterForPrediction(layerEntityId, entity, SynchronizeEntity);
 	}
 
-	inline void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor)
+	inline void LocalMatchPrediction::RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor)
 	{
-		return RegisterForPrediction(entity, constructor, SynchronizeEntity);
+		return RegisterForPrediction(layerEntityId, entity, constructor, SynchronizeEntity);
 	}
 
 	inline void LocalMatchPrediction::Tick()

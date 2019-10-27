@@ -33,6 +33,8 @@ namespace bw
 			Sprite& operator=(const Sprite&) = default;
 			Sprite& operator=(Sprite&&) = default;
 
+
+
 		private:
 			Ndk::EntityHandle m_entity;
 			Nz::Matrix4f m_transformMatrix;

@@ -7,7 +7,9 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALLAYER_HPP
 #define BURGWAR_CLIENTLIB_LOCALLAYER_HPP
 
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
+#include <Nazara/Utility/Node.hpp>
+#include <memory>
 
 namespace Nz
 {
@@ -18,25 +20,24 @@ namespace bw
 {
 	class LocalMatch;
 
-	class LocalLayer
+	class LocalLayer : public SharedLayer
 	{
 		public:
-			LocalLayer(LocalMatch& match, Nz::RenderTarget* renderTarget);
+			LocalLayer(LocalMatch& match, LayerIndex layerIndex, Nz::RenderTarget* renderTarget);
 			LocalLayer(const LocalLayer&) = delete;
 			LocalLayer(LocalLayer&&) noexcept = default;
 			~LocalLayer() = default;
 
 			inline const Ndk::EntityHandle& GetCameraEntity();
-			inline SharedWorld& GetWorld();
-
-			void Update(float elapsedTime);
+			LocalMatch& GetLocalMatch();
+			Nz::Node& GetNode();
 
 			LocalLayer& operator=(const LocalLayer&) = delete;
 			LocalLayer& operator=(LocalLayer&&) noexcept = default;
 
 		private:
 			Ndk::EntityHandle m_camera;
-			SharedWorld m_world;
+			std::unique_ptr<Nz::Node> m_node;
 	};
 }
 

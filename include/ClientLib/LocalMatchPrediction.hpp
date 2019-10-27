@@ -27,27 +27,32 @@ namespace bw
 			LocalMatchPrediction(float tickDuration);
 			~LocalMatchPrediction() = default;
 
-			inline void DeleteEntity(Ndk::EntityId entityId);
+			inline void DeleteEntity(Nz::UInt64 layerEntityId);
 			inline void DeleteUnregisteredEntities();
 
-			inline const Ndk::EntityHandle& GetEntity(Ndk::EntityId entityId);
+			inline const Ndk::EntityHandle& GetEntity(Nz::UInt64 layerEntityId);
 
-			inline bool IsRegistered(Ndk::EntityId entityId) const;
+			inline bool IsRegistered(Nz::UInt64 layerEntityId) const;
 
-			inline void RegisterForPrediction(const Ndk::EntityHandle& entity);
-			void RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc);
-			inline void RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor);
-			void RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc);
+			inline void RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity);
+			void RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc);
+			inline void RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor);
+			void RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc);
 
 			inline void Tick();
 
 			static void SynchronizeEntity(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target);
 
 		private:
-			const Ndk::EntityHandle& CreateReconciliationEntity(const Ndk::EntityHandle& serverEntity);
+			const Ndk::EntityHandle& CreateReconciliationEntity(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& serverEntity);
 
-			tsl::hopscotch_map<Ndk::EntityId, Ndk::EntityOwner> m_entities;
-			Nz::Bitset<Nz::UInt64> m_registeredEntities;
+			struct EntityData
+			{
+				Ndk::EntityOwner entity;
+				bool isRegistered = true;
+			};
+
+			tsl::hopscotch_map<Nz::UInt64, EntityData> m_entities;
 			Ndk::World m_world;
 			float m_tickDuration;
 	};

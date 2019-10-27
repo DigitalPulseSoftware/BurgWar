@@ -6,9 +6,15 @@
 
 namespace bw
 {
-	inline LocalMatchComponent::LocalMatchComponent(LocalMatch& localMatch) :
-	m_localMatch(localMatch)
+	inline LocalMatchComponent::LocalMatchComponent(LocalMatch& localMatch, Nz::UInt16 layerIndex) :
+	m_localMatch(localMatch),
+	m_layerIndex(layerIndex)
 	{
+	}
+
+	inline Nz::UInt16 LocalMatchComponent::GetLayerIndex() const
+	{
+		return m_layerIndex;
 	}
 
 	inline LocalMatch& LocalMatchComponent::GetLocalMatch() const

@@ -72,6 +72,7 @@ namespace bw
 			NazaraSignal(OnMatchData,                    ClientSession* /*session*/, const Packets::MatchData&                    /*data*/);
 			NazaraSignal(OnMatchState,                   ClientSession* /*session*/, const Packets::MatchState&                   /*data*/);
 			NazaraSignal(OnNetworkStrings,               ClientSession* /*session*/, const Packets::NetworkStrings&               /*data*/);
+			NazaraSignal(OnPlayerLayer,                  ClientSession* /*session*/, const Packets::PlayerLayer&                  /*data*/);
 			NazaraSignal(OnPlayerWeapons,                ClientSession* /*session*/, const Packets::PlayerWeapons&                /*data*/);
 
 			struct ConnectionInfo

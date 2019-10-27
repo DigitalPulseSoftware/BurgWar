@@ -7,12 +7,13 @@
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
@@ -53,6 +54,7 @@ namespace bw
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_window(window),
+	m_activeLayerIndex(0xFFFF),
 	m_application(burgApp),
 	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
@@ -66,7 +68,7 @@ namespace bw
 
 		m_layers.reserve(matchData.layers.size());
 		for (std::size_t i = 0; i < matchData.layers.size(); ++i)
-			m_layers.emplace_back(*this, window);
+			m_layers.emplace_back(*this, LayerIndex(i), window);
 
 		Ndk::RenderSystem& renderSystem = m_overlayWorld.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -209,7 +211,7 @@ namespace bw
 	{
 		for (LocalLayer& layer : m_layers)
 		{
-			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetWorld().GetEntities())
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
 		}
 	}
@@ -257,6 +259,7 @@ namespace bw
 
 			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
 			m_scriptingContext->LoadLibrary(scriptingLibrary);
+			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 
 			if (!m_localConsole)
 				m_localConsole.emplace(GetLogger(), m_window, m_canvas, scriptingLibrary, scriptDir);
@@ -402,7 +405,11 @@ namespace bw
 			position.x = std::floor(position.x);
 			position.y = std::floor(position.y);
 
-			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
+			for (LocalLayer& layer : m_layers)
+			{
+				auto& layerCamera = layer.GetCameraEntity();
+				layerCamera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
+			}
 		};
 
 		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 playerIndex, std::shared_ptr<InputController> inputController)
@@ -607,10 +614,7 @@ namespace bw
 		PrepareClientUpdate();
 
 		for (LocalLayer& layer : m_layers)
-		{
-			Ndk::World& world = layer.GetWorld().GetWorld();
-			world.Update(elapsedTime);
-		}
+			layer.Update(elapsedTime);
 
 		m_overlayWorld.Update(elapsedTime);
 
@@ -689,6 +693,11 @@ namespace bw
 			PushTickPacket(matchState.stateTick, matchState);
 		});
 
+		m_session.OnPlayerLayer.Connect([this](ClientSession* /*session*/, const Packets::PlayerLayer& layerUpdate)
+		{
+			OnPlayerLayerUpdate(layerUpdate.playerIndex, layerUpdate.layerIndex);
+		});
+
 		m_session.OnPlayerWeapons.Connect([this](ClientSession* /*session*/, const Packets::PlayerWeapons& weapons)
 		{
 			PushTickPacket(weapons.stateTick, weapons);
@@ -698,7 +707,7 @@ namespace bw
 	void LocalMatch::CreateGhostEntity(ServerEntity& serverEntity)
 	{
 		auto& layer = m_layers[serverEntity.layerIndex];
-		Ndk::World& world = layer.GetWorld().GetWorld();
+		Ndk::World& world = layer.GetWorld();
 		serverEntity.serverGhost = world.CreateEntity();
 		serverEntity.serverGhost->AddComponent(serverEntity.entity->GetComponent<Ndk::NodeComponent>().Clone());
 
@@ -739,7 +748,7 @@ namespace bw
 	void LocalMatch::CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth)
 	{
 		auto& layer = m_layers[serverEntity.layerIndex];
-		Ndk::World& world = layer.GetWorld().GetWorld();
+		Ndk::World& world = layer.GetWorld();
 		
 		auto& healthData = serverEntity.health.emplace();
 		healthData.currentHealth = currentHealth;
@@ -774,13 +783,13 @@ namespace bw
 		healthBarGfx.Attach(healthBar, 2);
 		healthBarGfx.Attach(lostHealthBar, 1);
 
-		healthData.healthBarEntity->AddComponent<Ndk::NodeComponent>();
+		healthData.healthBarEntity->AddComponent<Ndk::NodeComponent>().SetParent(layer.GetNode());
 	}
 
 	void LocalMatch::CreateName(ServerEntity& serverEntity, const std::string& name)
 	{
 		auto& layer = m_layers[serverEntity.layerIndex];
-		Ndk::World& world = layer.GetWorld().GetWorld();
+		Ndk::World& world = layer.GetWorld();
 
 		auto& nameData = serverEntity.name.emplace();
 		
@@ -790,7 +799,7 @@ namespace bw
 		Nz::Boxf textBox = nameSprite->GetBoundingVolume().obb.localBox;
 
 		nameData.nameEntity = world.CreateEntity();
-		nameData.nameEntity->AddComponent<Ndk::NodeComponent>();
+		nameData.nameEntity->AddComponent<Ndk::NodeComponent>().SetParent(layer.GetNode());
 	
 		auto& gfxComponent = nameData.nameEntity->AddComponent<Ndk::GraphicsComponent>();
 		gfxComponent.Attach(nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-textBox.width / 2.f, -textBox.height)), 3);
@@ -861,9 +870,10 @@ namespace bw
 		for (auto&& entityData : packet.entities)
 		{
 			auto& layer = m_layers[entityData.id.layerId];
-			Ndk::World& world = layer.GetWorld().GetWorld();
+			Ndk::World& world = layer.GetWorld();
 
 			const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
+			bwLog(GetLogger(), LogLevel::Debug, "Creating entity {} on layer {} of type {}", entityData.id.entityId, entityData.id.layerId, entityClass);
 
 			EntityProperties properties;
 			for (const auto& property : entityData.properties)
@@ -916,7 +926,7 @@ namespace bw
 				// Entity
 				if (std::size_t entityIndex = m_entityStore->GetElementIndex(entityClass); entityIndex != ClientEntityStore::InvalidIndex)
 				{
-					entity = m_entityStore->InstantiateEntity(world, entityIndex, entityData.position, entityData.rotation, properties);
+					entity = m_entityStore->InstantiateEntity(layer, entityIndex, entityData.position, entityData.rotation, properties);
 					if (!entity)
 						continue;
 				}
@@ -928,7 +938,7 @@ namespace bw
 				{
 					assert(parent);
 
-					entity = m_weaponStore->InstantiateWeapon(world, weaponIndex, properties, parent->entity);
+					entity = m_weaponStore->InstantiateWeapon(layer, weaponIndex, properties, parent->entity);
 					if (!entity)
 						continue;
 
@@ -952,7 +962,6 @@ namespace bw
 				serverEntity.layerIndex = entityData.id.layerId;
 				serverEntity.serverEntityId = entityData.id.entityId;
 
-				entity->AddComponent<LocalMatchComponent>(*this);
 				//entity->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::Collider2D | Ndk::DebugDraw::GraphicsAABB | Ndk::DebugDraw::GraphicsOBB);
 				//DebugEntityId(serverEntity);
 
@@ -965,7 +974,9 @@ namespace bw
 				if (entityData.name)
 					CreateName(serverEntity, entityData.name.value());
 
-				m_serverEntityIdToClient.emplace(BuildEntityId(entityData.id.layerId, entityData.id.entityId), std::move(serverEntity));
+				Nz::UInt64 fullEntityId = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
+				assert(m_serverEntityIdToClient.find(fullEntityId) == m_serverEntityIdToClient.end());
+				m_serverEntityIdToClient.emplace(fullEntityId, std::move(serverEntity));
 			}
 		}
 	}
@@ -974,14 +985,22 @@ namespace bw
 	{
 		for (auto&& entityData : packet.entities)
 		{
+			bwLog(GetLogger(), LogLevel::Debug, "Deleting entity {} on layer {}", entityData.id.entityId, entityData.id.layerId);
+
 			Nz::UInt64 entityKey = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
-			m_prediction->DeleteEntity(entityData.id.entityId);
 
 			auto it = m_serverEntityIdToClient.find(entityKey);
 			//assert(it != m_serverEntityIdToClient.end());
 			if (it == m_serverEntityIdToClient.end())
 				continue;
 
+			for (auto& playerData : m_playerData)
+			{
+				if (playerData.controlledEntity == it->second.entity)
+					playerData.controlledEntity = Ndk::EntityHandle::InvalidHandle;
+			}
+
+			m_prediction->DeleteEntity(BuildEntityId(entityData.id.layerId, it->second.entity->GetId()));
 			m_serverEntityIdToClient.erase(it);
 		}
 	}
@@ -1160,7 +1179,7 @@ namespace bw
 		for (auto&& entityData : packet.entities)
 		{
 			auto& layer = m_layers[entityData.id.layerId];
-			Ndk::World& world = layer.GetWorld().GetWorld();
+			Ndk::World& world = layer.GetWorld();
 			auto& physicsSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Nz::UInt64 entityKey = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
@@ -1190,7 +1209,7 @@ namespace bw
 					}
 #endif
 
-					m_prediction->RegisterForPrediction(controllerData.controlledEntity, [](const Ndk::EntityHandle& entity)
+					m_prediction->RegisterForPrediction(BuildEntityId(entityData.id.layerId, serverEntity.entity->GetId()), controllerData.controlledEntity, [](const Ndk::EntityHandle& entity)
 					{
 						entity->AddComponent<InputComponent>();
 						entity->AddComponent<PlayerMovementComponent>();
@@ -1258,13 +1277,15 @@ namespace bw
 						position = Nz::Vector2f(controllerData.controlledEntity->GetComponent<Ndk::NodeComponent>().GetPosition());
 
 					auto& physicsSystem = controllerData.controlledEntity->GetWorld()->GetSystem<Ndk::PhysicsSystem2D>();
+					LayerIndex layerIndex = controllerData.controlledEntity->GetComponent<LocalMatchComponent>().GetLayerIndex();
 
 					physicsSystem.RegionQuery(Nz::Rectf(position.x - 500, position.y - 500, 1000.f, 1000.f), 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& entity)
 					{
 						// Prevent registering player entities a second time (as it would resync their physics which we don't want)
-						if (!m_prediction->IsRegistered(entity->GetId()))
+						Nz::UInt64 layerEntityId = BuildEntityId(layerIndex, entity->GetId());
+						if (!m_prediction->IsRegistered(layerEntityId))
 						{
-							m_prediction->RegisterForPrediction(entity, [](const Ndk::EntityHandle& entity)
+							m_prediction->RegisterForPrediction(layerEntityId, entity, [](const Ndk::EntityHandle& entity)
 							{
 								if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 									entity->GetComponent<Ndk::PhysicsComponent2D>().SetMass(0.f, false); //< Treat every dynamic object as kinematic
@@ -1284,8 +1305,13 @@ namespace bw
 				auto& controllerData = m_playerData[i];
 				if (controllerData.controlledEntity)
 				{
-					const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(controllerData.controlledEntity->GetId());
-					assert(reconciliationEntity);
+					auto& controlledEntityMatch = controllerData.controlledEntity->GetComponent<LocalMatchComponent>();
+
+					const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(BuildEntityId(controlledEntityMatch.GetLayerIndex(), controllerData.controlledEntity->GetId()));
+					if (!reconciliationEntity)
+						continue;
+
+					//assert(reconciliationEntity);
 
 					InputComponent& entityInputs = reconciliationEntity->GetComponent<InputComponent>();
 					const auto& playerInputData = input.inputs[i];
@@ -1317,7 +1343,9 @@ namespace bw
 				auto& controllerData = m_playerData[i];
 				if (controllerData.controlledEntity)
 				{
-					const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(controllerData.controlledEntity->GetId());
+					auto& controlledEntityMatch = controllerData.controlledEntity->GetComponent<LocalMatchComponent>();
+
+					const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(BuildEntityId(controlledEntityMatch.GetLayerIndex(), controllerData.controlledEntity->GetId()));
 					assert(reconciliationEntity);
 
 					auto& reconciliationPhys = reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -1335,7 +1363,9 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			if (controllerData.controlledEntity)
 			{
-				const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(controllerData.controlledEntity->GetId());
+				auto& controlledEntityMatch = controllerData.controlledEntity->GetComponent<LocalMatchComponent>();
+
+				const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(BuildEntityId(controlledEntityMatch.GetLayerIndex(), controllerData.controlledEntity->GetId()));
 				assert(reconciliationEntity);
 
 				auto& reconciliationPhys = reconciliationEntity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -1353,7 +1383,9 @@ namespace bw
 			auto& controllerData = m_playerData[i];
 			if (controllerData.controlledEntity)
 			{
-				const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(controllerData.controlledEntity->GetId());
+				auto& controlledEntityMatch = controllerData.controlledEntity->GetComponent<LocalMatchComponent>();
+
+				const Ndk::EntityHandle& reconciliationEntity = m_prediction->GetEntity(BuildEntityId(controlledEntityMatch.GetLayerIndex(), controllerData.controlledEntity->GetId()));
 				if (!reconciliationEntity)
 					continue;
 
@@ -1449,6 +1481,24 @@ namespace bw
 		});
 	}
 
+	void LocalMatch::OnPlayerLayerUpdate(Nz::UInt8 localPlayerIndex, Nz::UInt16 layerIndex)
+	{
+		m_playerData[localPlayerIndex].layerIndex = layerIndex;
+
+		m_activeLayerIndex = layerIndex;
+		for (auto& layer : m_layers)
+		{
+			if (layer.GetLayerIndex() == m_activeLayerIndex)
+			{
+				layer.GetNode().SetScale(Nz::Vector3f::Unit());
+			}
+			else
+			{
+				layer.GetNode().SetScale(0.5f, 0.5f);
+			}
+		}
+	}
+
 	void LocalMatch::OnTick(bool lastTick)
 	{
 		Nz::UInt16 estimatedServerTick = GetNetworkTick(EstimateServerTick());
@@ -1513,10 +1563,7 @@ namespace bw
 			m_gamemode->ExecuteCallback("OnTick");
 
 		for (LocalLayer& layer : m_layers)
-		{
-			Ndk::World& world = layer.GetWorld().GetWorld();
-			world.Update(GetTickDuration());
-		}
+			layer.Update(GetTickDuration());
 
 #ifdef DEBUG_PREDICTION
 		ForEachEntity([&](const Ndk::EntityHandle& entity)
@@ -1536,7 +1583,7 @@ namespace bw
 	{
 		for (LocalLayer& layer : m_layers)
 		{
-			Ndk::World& world = layer.GetWorld().GetWorld();
+			Ndk::World& world = layer.GetWorld();
 
 			world.ForEachSystem([](Ndk::BaseSystem& system)
 				{
@@ -1556,7 +1603,7 @@ namespace bw
 	{
 		for (LocalLayer& layer : m_layers)
 		{
-			Ndk::World& world = layer.GetWorld().GetWorld();
+			Ndk::World& world = layer.GetWorld();
 
 			world.ForEachSystem([](Ndk::BaseSystem& system)
 			{

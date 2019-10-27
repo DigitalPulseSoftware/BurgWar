@@ -28,7 +28,7 @@ class QWidget;
 
 namespace bw
 {
-	class ClientEntityStore;
+	class EditorEntityStore;
 	class ScriptingContext;
 	class Float2SpinBox;
 	class Logger;
@@ -47,7 +47,7 @@ namespace bw
 		public:
 			using Callback = std::function<void(EntityInfoDialog* dialog)>;
 
-			EntityInfoDialog(const Logger& logger, ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			EntityInfoDialog(const Logger& logger, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
 			~EntityInfoDialog() = default;
 
 			inline const EntityInfo& GetInfo() const;
@@ -92,7 +92,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			Callback m_callback;
-			ClientEntityStore& m_entityStore;
+			EditorEntityStore& m_entityStore;
 			const Logger& m_logger;
 			ScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;

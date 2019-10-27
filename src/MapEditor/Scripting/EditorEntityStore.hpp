@@ -7,14 +7,14 @@
 #ifndef BURGWAR_MAPEDITOR_SCRIPTING_EDITORENTITYSTORE_HPP
 #define BURGWAR_MAPEDITOR_SCRIPTING_EDITORENTITYSTORE_HPP
 
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <ClientLib/Scripting/ClientEditorEntityStore.hpp>
 
 namespace bw
 {
-	class EditorEntityStore : public ClientEntityStore
+	class EditorEntityStore : public ClientEditorEntityStore
 	{
 		public:
-			using ClientEntityStore::ClientEntityStore;
+			using ClientEditorEntityStore::ClientEditorEntityStore;
 			~EditorEntityStore() = default;
 
 		private:

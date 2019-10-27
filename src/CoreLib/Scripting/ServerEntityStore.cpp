@@ -5,8 +5,9 @@
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <NDK/Components.hpp>
 #include <Nazara/Utility/Image.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
-#include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -32,7 +33,8 @@ namespace bw
 		}
 
 
-		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+		const Ndk::EntityHandle& entity = CreateEntity(layer.GetWorld(), entityClass, properties);
+		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex());
 
 		auto& node = entity->AddComponent<Ndk::NodeComponent>();
 		node.SetPosition(position);

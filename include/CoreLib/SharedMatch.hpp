@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_SHAREDMATCH_HPP
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>

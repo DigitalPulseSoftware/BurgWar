@@ -51,7 +51,7 @@ namespace bw
 		{
 			Nz::Vector2i mousePosition = Nz::Mouse::GetPosition(m_window);
 
-			const Ndk::EntityHandle& cameraEntity = localMatch.GetCamera();
+			const Ndk::EntityHandle& cameraEntity = localMatch.GetLayerCamera();
 			if (cameraEntity)
 			{
 				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();

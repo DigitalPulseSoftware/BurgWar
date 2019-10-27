@@ -10,9 +10,4 @@ namespace bw
 	{
 		return m_camera;
 	}
-
-	inline SharedWorld& bw::LocalLayer::GetWorld()
-	{
-		return m_world;
-	}
 }

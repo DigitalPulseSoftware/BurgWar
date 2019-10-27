@@ -18,13 +18,15 @@ namespace bw
 		if (!IsLayerVisible(layerIndex))
 			return;
 
+		m_visibleLayers.UnboundedReset(layerIndex);
+
 		Terrain& terrain = m_match.GetTerrain();
 		assert(layerIndex < terrain.GetLayerCount());
 
 		/* Delete all visible entities */
 
 		TerrainLayer& layer = terrain.GetLayer(layerIndex);
-		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
+		const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 		syncSystem.DeleteEntities([&](const NetworkSyncSystem::EntityDestruction* entitiesDestruction, std::size_t entityCount)
 		{
@@ -245,7 +247,7 @@ namespace bw
 			assert(m_layers.find(entityId.layerId) != m_layers.end());
 			Layer& layer = m_layers[entityId.layerId];
 
-			if (layer.visibleEntities.UnboundedTest(it.key()))
+			if (layer.visibleEntities.UnboundedTest(entityId.entityId))
 			{
 				auto& callbackVec = it.value();
 				for (auto&& func : callbackVec)
@@ -259,7 +261,13 @@ namespace bw
 
 		for (auto it = m_multiplePendingEntitiesEvent.begin(); it != m_multiplePendingEntitiesEvent.end();)
 		{
-			assert(m_layers.find(it->layerIndex) != m_layers.end());
+			if (m_layers.find(it->layerIndex) == m_layers.end())
+			{
+				// If a pending event is related to a layer which is no longer visible, drop it
+				it = m_multiplePendingEntitiesEvent.erase(it);
+				continue;
+			}
+
 			Layer& layer = m_layers[it->layerIndex];
 
 			m_tempBitset.PerformsAND(layer.visibleEntities, it->entitiesId);
@@ -279,12 +287,14 @@ namespace bw
 		if (IsLayerVisible(layerIndex))
 			return;
 
+		m_visibleLayers.UnboundedSet(layerIndex);
+
 		Terrain& terrain = m_match.GetTerrain();
 		assert(layerIndex < terrain.GetLayerCount());
 
 		/* Create all newly visible entities */
 		TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-		NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
+		NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 		assert(m_layers.find(layerIndex) == m_layers.end());
 		Layer& layer = m_layers[layerIndex];
@@ -359,7 +369,7 @@ namespace bw
 				if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
 					return;
 
-				m_inputUpdateEvents[events[i].entityId] = events[i];
+				m_inputUpdateEvents[BuildEntityId(layerIndex, events[i].entityId)] = events[i];
 			}
 		});
 
@@ -372,7 +382,7 @@ namespace bw
 
 	void MatchClientVisibility::HandleEntityCreation(Nz::UInt16 layerIndex, const NetworkSyncSystem::EntityCreation& eventData)
 	{
-		m_creationEvents[eventData.entityId] = eventData;
+		m_creationEvents[BuildEntityId(layerIndex, eventData.entityId)] = eventData;
 
 		assert(m_layers.find(layerIndex) != m_layers.end());
 		Layer& layer = m_layers[layerIndex];
@@ -419,7 +429,7 @@ namespace bw
 		for (auto&& [layerIndex, layerData] : m_layers)
 		{
 			TerrainLayer& layer = terrain.GetLayer(layerIndex);
-			const NetworkSyncSystem& syncSystem = layer.GetWorld().GetWorld().GetSystem<NetworkSyncSystem>();
+			const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 			syncSystem.MoveEntities([&](const NetworkSyncSystem::EntityMovement* entitiesMovement, std::size_t entityCount)
 			{

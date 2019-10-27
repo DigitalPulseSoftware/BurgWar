@@ -469,6 +469,12 @@ namespace bw
 			serializer &= data.command;
 		}
 
+		void Serialize(PacketSerializer& serializer, PlayerLayer& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.layerIndex;
+		}
+
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
 			serializer &= data.estimatedServerTick;

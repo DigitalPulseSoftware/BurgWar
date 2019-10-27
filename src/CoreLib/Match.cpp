@@ -75,7 +75,7 @@ namespace bw
 		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
-			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetWorld().GetEntities())
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
 		}
 	}

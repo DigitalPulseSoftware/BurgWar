@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline SharedWorld& TerrainLayer::GetWorld()
+	inline Match& TerrainLayer::GetMatch()
 	{
-		return m_world;
+		return static_cast<Match&>(SharedLayer::GetMatch());
 	}
 }

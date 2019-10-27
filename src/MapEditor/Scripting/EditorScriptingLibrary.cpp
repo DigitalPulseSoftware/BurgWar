@@ -52,9 +52,9 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 
 		state.new_usertype<EntityInfoDialog>("EntityInfoDialog",
-		    "new", sol::no_constructor,
+			"new", sol::no_constructor,
 
-		    "Hide", &EntityInfoDialog::hide,
+			"Hide", &EntityInfoDialog::hide,
 			
 			"GetPosition", &EntityInfoDialog::GetPosition,
 			"GetRotation", &EntityInfoDialog::GetRotation,

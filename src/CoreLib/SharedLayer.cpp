@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
@@ -14,7 +14,9 @@
 
 namespace bw
 {
-	SharedWorld::SharedWorld(SharedMatch& match)
+	SharedLayer::SharedLayer(SharedMatch& match, LayerIndex layerIndex) :
+	m_match(match),
+	m_layerIndex(layerIndex)
 	{
 		m_world.AddSystem<AnimationSystem>(match);
 		m_world.AddSystem<PlayerMovementSystem>();
@@ -57,5 +59,10 @@ namespace bw
 		});
 	}
 
-	SharedWorld::~SharedWorld() = default;
+	SharedLayer::~SharedLayer() = default;
+
+	void SharedLayer::Update(float elapsedTime)
+	{
+		m_world.Update(elapsedTime);
+	}
 }

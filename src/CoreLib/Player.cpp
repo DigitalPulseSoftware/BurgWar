@@ -18,6 +18,7 @@
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
@@ -60,14 +61,13 @@ namespace bw
 			return false;
 
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 
 		// Create weapon
 		if (std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); weaponEntityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(world, weaponEntityIndex, {}, m_playerEntity);
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, {}, m_playerEntity);
 			if (!weapon)
 				return false;
 
@@ -150,13 +150,12 @@ namespace bw
 			return;
 
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
 			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
-			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(world, entityIndex, spawnPosition, 0.f, {});
+			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, spawnPosition, 0.f, {});
 			if (!playerEntity)
 				return;
 
@@ -266,11 +265,23 @@ namespace bw
 		m_playerEntity = entity;
 
 		Packets::ControlEntity controlEntity;
-		controlEntity.entityId.layerId = m_layerIndex;
-		controlEntity.entityId.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
 		controlEntity.playerIndex = m_playerIndex;
+		if (entity)
+		{
+			auto& matchComponent = entity->GetComponent<MatchComponent>();
 
-		m_session.GetVisibility().PushEntityPacket(m_layerIndex, controlEntity.entityId.entityId, controlEntity);
+			controlEntity.entityId.layerId = matchComponent.GetLayer();
+			controlEntity.entityId.entityId = static_cast<Nz::UInt32>(entity->GetId());
+
+			m_session.GetVisibility().PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId.entityId, controlEntity);
+		}
+		else
+		{
+			controlEntity.entityId.layerId = 0;
+			controlEntity.entityId.entityId = 0;
+
+			SendPacket(controlEntity);
+		}
 	}
 
 	void Player::UpdateInputs(const PlayerInputData& inputData)
@@ -296,27 +307,30 @@ namespace bw
 	{
 		if (m_layerIndex != layerIndex)
 		{
-			m_layerIndex = layerIndex;
 			if (m_layerIndex != NoLayer)
+				GetSession().GetVisibility().HideLayer(m_layerIndex);
+
+			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
 			{
 				if (m_playerEntity)
 				{
 					Terrain& terrain = m_match->GetTerrain();
-					Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
+					Ndk::World& world = terrain.GetLayer(layerIndex).GetWorld();
 
-					UpdateControlledEntity(world.CloneEntity(m_playerEntity));
+					const Ndk::EntityHandle& newPlayerEntity = world.CloneEntity(m_playerEntity);
+					newPlayerEntity->AddComponent<MatchComponent>(*m_match, layerIndex);
+
+					UpdateControlledEntity(newPlayerEntity);
 
 					//HAX
 					auto& scriptComponent = m_playerEntity->GetComponent<ScriptComponent>();
-					scriptComponent.GetTable()["_Entity"] = static_cast<const Ndk::EntityHandle&>(m_playerEntity);
+					scriptComponent.GetTable()["_Entity"] = newPlayerEntity;
 
 					//TODO: Preserve weapons
 					m_activeWeaponIndex = NoWeapon;
 					m_weapons.clear();
 					m_weaponByName.clear();
 				}
-
-				GetSession().GetVisibility().HideLayer(m_layerIndex);
 			}
 			else
 			{
@@ -327,9 +341,17 @@ namespace bw
 				m_weaponByName.clear();
 			}
 
+			m_layerIndex = layerIndex;
+
 			//FIXME: This doesn't work well with multiples players/session
 			if (m_layerIndex != NoLayer)
 				GetSession().GetVisibility().ShowLayer(m_layerIndex);
+
+			Packets::PlayerLayer layerPacket;
+			layerPacket.layerIndex = m_layerIndex;
+			layerPacket.playerIndex = m_playerIndex;
+
+			SendPacket(layerPacket);
 		}
 	}
 

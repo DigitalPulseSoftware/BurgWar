@@ -10,7 +10,7 @@ namespace bw
 	inline Logger::Logger(LogSide logSide, std::size_t contextSize) :
 	AbstractLogger(logSide),
 	m_contextPool(static_cast<unsigned int>(contextSize), 4),
-	m_minimumLogLevel(LogLevel::Info),
+	m_minimumLogLevel(LogLevel::Debug),
 	m_logParent(nullptr)
 	{
 	}

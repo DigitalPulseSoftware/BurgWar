@@ -45,6 +45,7 @@ namespace bw
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(MatchState,                   0,                              1);
 		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(PlayerLayer,                  Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(PlayerWeapons,                Nz::ENetPacketFlag_Reliable,    0);
 
 #undef IncomingCommand

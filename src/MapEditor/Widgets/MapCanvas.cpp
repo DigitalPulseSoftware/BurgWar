@@ -46,7 +46,7 @@ namespace bw
 
 	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
-		const ClientEntityStore& entityStore = m_editor.GetEntityStore();
+		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
 
 		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
 		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash

@@ -29,23 +29,41 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			std::string texturePath = parameters["TexturePath"];
+			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
 			Nz::Vector2f offset = parameters.get_or("Offset", Nz::Vector2f(0.f, 0.f));
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f origin = parameters.get_or("Origin", Nz::Vector2f(0.5f, 0.5f));
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
+			Nz::Vector2f textureCoords = parameters.get_or("TextureCoords", Nz::Vector2f::Unit());
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
+			Nz::Color color = Nz::Color::White;
+			if (std::optional<sol::table> colorParameter = parameters.get_or<std::optional<sol::table>>("Color", std::nullopt); colorParameter)
+			{
+				color.r = colorParameter->get_or("r", color.r);
+				color.g = colorParameter->get_or("g", color.g);
+				color.b = colorParameter->get_or("b", color.b);
+				color.a = colorParameter->get_or("a", color.a);
+			}
+
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
+			if (!texturePath.empty())
+				mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
+
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+			sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
 			Nz::SpriteRef sprite = Nz::Sprite::New();
+			sprite->SetColor(color);
 			sprite->SetMaterial(mat);
-			sprite->SetSize(sprite->GetSize() * scale);
+			sprite->SetTextureCoords(textureCoords);
+
+			Nz::Vector2f size = parameters.get_or("Size", sprite->GetSize());
+
+			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
 			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
@@ -100,15 +118,15 @@ namespace bw
 				Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % mapSize.x), static_cast<unsigned int>(i / mapSize.x) };
 				if (value > 0)
 				{
-					if (value - 1 >= content.size())
-						throw std::runtime_error("");
+					if (value <= tiles.size())
+					{
+						const auto& tileData = tiles[value - 1];
 
-					const auto& tileData = tiles[value - 1];
+						auto matIt = materials.find(tileData.materialPath);
+						assert(matIt != materials.end());
 
-					auto matIt = materials.find(tileData.materialPath);
-					assert(matIt != materials.end());
-
-					tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+						tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+					}
 				}
 			}
 

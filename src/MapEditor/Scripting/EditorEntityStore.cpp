@@ -14,7 +14,7 @@ namespace bw
 
 	void EditorEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		ClientEntityStore::InitializeElement(elementTable, element);
+		ClientEditorEntityStore::InitializeElement(elementTable, element);
 
 		EditorScriptedEntity& entity = static_cast<EditorScriptedEntity&>(element);
 

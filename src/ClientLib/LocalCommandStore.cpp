@@ -36,6 +36,7 @@ namespace bw
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
+		IncomingCommand(PlayerLayer);
 		IncomingCommand(PlayerWeapons);
 
 		// Outgoing commands

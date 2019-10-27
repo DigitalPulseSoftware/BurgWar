@@ -4,7 +4,7 @@
 
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
@@ -212,7 +212,7 @@ namespace bw
 			}
 	};
 
-	EntityInfoDialog::EntityInfoDialog(const Logger& logger, ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
+	EntityInfoDialog::EntityInfoDialog(const Logger& logger, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
 	m_propertyTypeIndex(InvalidIndex),
@@ -379,7 +379,10 @@ namespace bw
 			m_positionWidget->setValue(m_entityInfo.position);
 			m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
-			m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+			if (!m_entityInfo.entityClass.empty())
+				m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+			else
+				m_entityTypeWidget->setCurrentIndex(-1);
 		}
 		else
 		{
@@ -905,6 +908,8 @@ namespace bw
 				{
 					// TODO: Handle properly int64
 					QSpinBox* spinbox = new QSpinBox;
+					spinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
+
 					if (std::holds_alternative<Nz::Int64>(property))
 						spinbox->setValue(std::get<Nz::Int64>(property));
 

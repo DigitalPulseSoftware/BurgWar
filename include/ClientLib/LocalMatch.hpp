@@ -11,7 +11,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
@@ -55,10 +55,12 @@ namespace bw
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 
+			inline Nz::UInt16 GetActiveLayer();
 			inline AnimationManager& GetAnimationManager();
 			inline AssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
-			inline const Ndk::EntityHandle& GetCamera();
+			inline const Ndk::EntityHandle& GetLayerCamera();
+			inline const Ndk::EntityHandle& GetLayerCamera(Nz::UInt16 layerIndex);
 			ClientEntityStore& GetEntityStore() override;
 			const ClientEntityStore& GetEntityStore() const override;
 			ClientWeaponStore& GetWeaponStore() override;
@@ -113,6 +115,7 @@ namespace bw
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void InitializeRemoteConsole();
+			void OnPlayerLayerUpdate(Nz::UInt8 localPlayerIndex, Nz::UInt16 layerIndex);
 			void OnTick(bool lastTick) override;
 			void PrepareClientUpdate();
 			void PrepareTickUpdate();
@@ -145,6 +148,7 @@ namespace bw
 				std::vector<Ndk::EntityHandle> weapons;
 				Ndk::EntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
+				Nz::UInt16 layerIndex = 0xFFFF;
 				Nz::UInt64 controlledEntityServerId;
 				PlayerInputData lastInputData;
 			};
@@ -221,7 +225,7 @@ namespace bw
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
 			Nz::RenderWindow* m_window;
-			Nz::SpriteRef m_trailSpriteTest;
+			Nz::UInt16 m_activeLayerIndex;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;

@@ -50,10 +50,11 @@ namespace bw
 		NetworkStrings,
 		PlayerChat,
 		PlayerConsoleCommand,
+		PlayerLayer,
 		PlayersInput,
 		PlayerSelectWeapon,
 		PlayerWeapons,
-		Ready
+		Ready,
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -342,6 +343,12 @@ namespace bw
 			std::string command;
 		};
 
+		DeclarePacket(PlayerLayer)
+		{
+			Nz::UInt8 playerIndex;
+			CompressedUnsigned<Nz::UInt16> layerIndex;
+		};
+
 		DeclarePacket(PlayersInput)
 		{
 			Nz::UInt16 estimatedServerTick;
@@ -393,6 +400,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
+		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);

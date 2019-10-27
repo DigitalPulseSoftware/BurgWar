@@ -17,10 +17,10 @@
 
 namespace bw
 {
-	TerrainLayer::TerrainLayer(Match& match, std::size_t layerIndex, const Map::Layer& layerData) :
-	m_world(match)
+	TerrainLayer::TerrainLayer(Match& match, LayerIndex layerIndex, const Map::Layer& layerData) :
+	SharedLayer(match, layerIndex)
 	{
-		Ndk::World& world = m_world.GetWorld();
+		Ndk::World& world = GetWorld();
 		world.AddSystem<NetworkSyncSystem>(static_cast<Nz::UInt16>(layerIndex));
 
 		auto& entityStore = match.GetEntityStore();
@@ -33,13 +33,7 @@ namespace bw
 				continue;
 			}
 
-			entityStore.InstantiateEntity(world, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+			entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
 		}
-	}
-
-	void TerrainLayer::Update(float elapsedTime)
-	{
-		Ndk::World& world = m_world.GetWorld();
-		world.Update(elapsedTime);
 	}
 }

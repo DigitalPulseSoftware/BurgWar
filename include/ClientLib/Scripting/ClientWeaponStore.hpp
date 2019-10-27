@@ -8,11 +8,11 @@
 #define BURGWAR_CORELIB_SCRIPTING_CLIENTWEAPONSTORE_HPP
 
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
 	class AssetStore;
+	class LocalLayer;
 
 	class ClientWeaponStore : public SharedWeaponStore
 	{
@@ -20,7 +20,7 @@ namespace bw
 			inline ClientWeaponStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
-			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
+			const Ndk::EntityHandle& InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

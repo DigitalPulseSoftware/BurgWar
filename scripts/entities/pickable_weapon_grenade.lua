@@ -23,14 +23,12 @@ function ENTITY:OnCollisionStart(other)
 	if (SERVER and other.Name == "burger") then
 		local owner = other:GetOwner()
 		if (not owner:HasWeapon("weapon_grenade")) then
-			owner:UpdateLayer(1)
-			--[[
 			owner:GiveWeapon("weapon_grenade")
 			self:Kill()
 
 			if (self.Parent) then
 				self.Parent:OnPowerupConsumed()
-			end]]
+			end
 		end
 	end
 

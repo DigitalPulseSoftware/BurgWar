@@ -62,7 +62,7 @@ namespace bw
 					}
 				}
 
-				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0).GetWorld().GetWorld(), elementIndex, spawnPos, 0.f, entityProperties);
+				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(m_match.GetTerrain().GetLayer(0), elementIndex, spawnPos, 0.f, entityProperties);
 				if (!entity)
 					throw std::runtime_error("Failed to create \"" + entityType + "\"");
 

@@ -11,10 +11,10 @@
 
 namespace bw
 {
-	LocalLayer::LocalLayer(LocalMatch& match, Nz::RenderTarget* renderTarget) :
-	m_world(match)
+	LocalLayer::LocalLayer(LocalMatch& match, LayerIndex layerIndex, Nz::RenderTarget* renderTarget) :
+	SharedLayer(match, layerIndex)
 	{
-		Ndk::World& world = m_world.GetWorld();
+		Ndk::World& world = GetWorld();
 		world.AddSystem<SoundSystem>();
 
 		Ndk::RenderSystem& renderSystem = world.GetSystem<Ndk::RenderSystem>();
@@ -29,18 +29,23 @@ namespace bw
 		else
 			renderSystem.SetDefaultBackground(nullptr);
 
+		m_node = std::make_unique<Nz::Node>();
 
 		m_camera = world.CreateEntity();
-		m_camera->AddComponent<Ndk::NodeComponent>();
+		m_camera->AddComponent<Ndk::NodeComponent>().SetParent(*m_node);
 
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(renderTarget);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 	}
 
-	void LocalLayer::Update(float elapsedTime)
+	LocalMatch& LocalLayer::GetLocalMatch()
 	{
-		Ndk::World& world = m_world.GetWorld();
-		world.Update(elapsedTime);
+		return static_cast<LocalMatch&>(SharedLayer::GetMatch());
+	}
+	
+	Nz::Node& LocalLayer::GetNode()
+	{
+		return *m_node;
 	}
 }

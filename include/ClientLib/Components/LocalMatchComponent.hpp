@@ -16,15 +16,17 @@ namespace bw
 	class LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
 	{
 		public:
-			inline LocalMatchComponent(LocalMatch& animStore);
+			inline LocalMatchComponent(LocalMatch& localMatch, Nz::UInt16 layerIndex);
 			~LocalMatchComponent() = default;
 
+			inline Nz::UInt16 GetLayerIndex() const;
 			inline LocalMatch& GetLocalMatch() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			LocalMatch& m_localMatch;
+			Nz::UInt16 m_layerIndex;
 	};
 }
 
