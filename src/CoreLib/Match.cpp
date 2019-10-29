@@ -89,7 +89,7 @@ namespace bw
 
 		m_players.erase(it);
 
-		player->UpdateLayer(std::numeric_limits<std::size_t>::max());
+		player->UpdateLayer(Player::NoLayer);
 		player->UpdateMatch(nullptr);
 
 		Packets::ChatMessage chatPacket;

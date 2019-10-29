@@ -29,6 +29,7 @@
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
+#include <Nazara/Math/Angle.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
@@ -695,7 +696,7 @@ namespace bw
 
 		m_session.OnPlayerLayer.Connect([this](ClientSession* /*session*/, const Packets::PlayerLayer& layerUpdate)
 		{
-			OnPlayerLayerUpdate(layerUpdate.playerIndex, layerUpdate.layerIndex);
+			OnPlayerLayerUpdate(layerUpdate);
 		});
 
 		m_session.OnPlayerWeapons.Connect([this](ClientSession* /*session*/, const Packets::PlayerWeapons& weapons)
@@ -1481,22 +1482,37 @@ namespace bw
 		});
 	}
 
-	void LocalMatch::OnPlayerLayerUpdate(Nz::UInt8 localPlayerIndex, Nz::UInt16 layerIndex)
+	void LocalMatch::OnPlayerLayerUpdate(const Packets::PlayerLayer& packet)
 	{
-		m_playerData[localPlayerIndex].layerIndex = layerIndex;
+		m_playerData[packet.playerIndex].layerIndex = packet.layerIndex;
 
-		m_activeLayerIndex = layerIndex;
-		for (auto& layer : m_layers)
+		m_activeLayerIndex = packet.layerIndex;
+		for (auto& visibilityInfo : packet.visibleLayers)
 		{
-			if (layer.GetLayerIndex() == m_activeLayerIndex)
-			{
-				layer.GetNode().SetScale(Nz::Vector3f::Unit());
-			}
-			else
-			{
-				layer.GetNode().SetScale(0.5f, 0.5f);
-			}
+			auto& layer = m_layers[visibilityInfo.layerIndex];
+
+			Nz::Node& cameraNode = layer.GetCameraNode();
+			cameraNode.SetPosition(Nz::Vector2f::Zero());
+			cameraNode.SetRotation(Nz::RadianAnglef::Zero());
+			cameraNode.SetScale(visibilityInfo.parallaxFactor);
+
+			Nz::Node& node = layer.GetNode();
+			node.SetPosition(visibilityInfo.offset);
+			node.SetRotation(visibilityInfo.rotation);
+			node.SetScale(visibilityInfo.scale);
 		}
+
+		auto& currentLayer = m_layers[m_activeLayerIndex];
+
+		Nz::Node& cameraNode = currentLayer.GetCameraNode();
+		cameraNode.SetPosition(Nz::Vector2f::Zero());
+		cameraNode.SetRotation(Nz::RadianAnglef::Zero());
+		cameraNode.SetScale(Nz::Vector2f::Unit());
+
+		Nz::Node& node = currentLayer.GetNode();
+		node.SetPosition(Nz::Vector2f::Zero());
+		node.SetRotation(Nz::RadianAnglef::Zero());
+		node.SetScale(Nz::Vector2f::Unit());
 	}
 
 	void LocalMatch::OnTick(bool lastTick)

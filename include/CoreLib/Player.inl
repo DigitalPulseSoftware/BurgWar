@@ -11,7 +11,7 @@ namespace bw
 		return m_playerEntity;
 	}
 
-	inline std::size_t Player::GetLayerIndex() const
+	inline LayerIndex Player::GetLayerIndex() const
 	{
 		return m_layerIndex;
 	}

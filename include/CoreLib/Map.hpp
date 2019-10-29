@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_MAP_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -32,6 +33,7 @@ namespace bw
 			struct Asset;
 			struct Entity;
 			struct Layer;
+			struct LayerVisibility;
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
@@ -73,8 +75,18 @@ namespace bw
 			{
 				Nz::Color backgroundColor = Nz::Color::Black;
 				std::string name = "unnamed layer";
-				float depth = 0.f;
 				std::vector<Entity> entities;
+				std::vector<LayerVisibility> visibilities;
+			};
+
+			struct LayerVisibility
+			{
+				LayerIndex layerIndex;
+				Nz::DegreeAnglef rotation = Nz::DegreeAnglef::Zero();
+				Nz::Int32 renderOrder = -1;
+				Nz::Vector2f offset = Nz::Vector2f::Zero();
+				Nz::Vector2f parallaxFactor = Nz::Vector2f::Unit();
+				Nz::Vector2f scale = Nz::Vector2f::Unit();
 			};
 
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);

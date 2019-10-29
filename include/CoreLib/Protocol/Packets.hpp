@@ -345,8 +345,19 @@ namespace bw
 
 		DeclarePacket(PlayerLayer)
 		{
+			struct VisibleLayers
+			{
+				CompressedUnsigned<Nz::UInt16> layerIndex;
+				Nz::DegreeAnglef rotation;
+				CompressedSigned<Nz::Int32> renderOrder;
+				Nz::Vector2f offset;
+				Nz::Vector2f parallaxFactor;
+				Nz::Vector2f scale;
+			};
+
 			Nz::UInt8 playerIndex;
 			CompressedUnsigned<Nz::UInt16> layerIndex;
+			std::vector<VisibleLayers> visibleLayers;
 		};
 
 		DeclarePacket(PlayersInput)

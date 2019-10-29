@@ -9,6 +9,7 @@
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
 #include <CoreLib/BurgApp.hpp>
+#include <CoreLib/Map.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
@@ -303,12 +304,12 @@ namespace bw
 		m_inputBuffer[index] = std::move(inputData);
 	}
 
-	void Player::UpdateLayer(std::size_t layerIndex)
+	void Player::UpdateLayer(LayerIndex layerIndex)
 	{
 		if (m_layerIndex != layerIndex)
 		{
-			if (m_layerIndex != NoLayer)
-				GetSession().GetVisibility().HideLayer(m_layerIndex);
+			MatchClientVisibility& visibility = GetSession().GetVisibility();
+			visibility.HideAllLayers();
 
 			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
 			{
@@ -343,13 +344,29 @@ namespace bw
 
 			m_layerIndex = layerIndex;
 
-			//FIXME: This doesn't work well with multiples players/session
-			if (m_layerIndex != NoLayer)
-				GetSession().GetVisibility().ShowLayer(m_layerIndex);
-
 			Packets::PlayerLayer layerPacket;
 			layerPacket.layerIndex = m_layerIndex;
 			layerPacket.playerIndex = m_playerIndex;
+
+			//FIXME: This doesn't work well with multiples players/session
+			if (m_layerIndex != NoLayer)
+			{
+				visibility.ShowLayer(m_layerIndex);
+
+				const auto& layer = m_match->GetTerrain().GetMap().GetLayer(m_layerIndex);
+				for (const auto& visibilityInfo : layer.visibilities)
+				{
+					visibility.ShowLayer(visibilityInfo.layerIndex);
+
+					auto& packetVisibility = layerPacket.visibleLayers.emplace_back();
+					packetVisibility.layerIndex = visibilityInfo.layerIndex;
+					packetVisibility.offset = visibilityInfo.offset;
+					packetVisibility.parallaxFactor = visibilityInfo.parallaxFactor;
+					packetVisibility.renderOrder = visibilityInfo.renderOrder;
+					packetVisibility.rotation = visibilityInfo.rotation;
+					packetVisibility.scale = visibilityInfo.scale;
+				}
+			}
 
 			SendPacket(layerPacket);
 		}

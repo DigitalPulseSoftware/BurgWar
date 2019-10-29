@@ -473,6 +473,18 @@ namespace bw
 		{
 			serializer &= data.playerIndex;
 			serializer &= data.layerIndex;
+
+			serializer.SerializeArraySize(data.visibleLayers);
+
+			for (auto& visibleLayer : data.visibleLayers)
+			{
+				serializer &= visibleLayer.layerIndex;
+				serializer &= visibleLayer.offset;
+				serializer &= visibleLayer.parallaxFactor;
+				serializer &= visibleLayer.renderOrder;
+				serializer &= visibleLayer.rotation;
+				serializer &= visibleLayer.scale;
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)

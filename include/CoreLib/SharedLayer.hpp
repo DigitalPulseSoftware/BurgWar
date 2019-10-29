@@ -7,12 +7,11 @@
 #ifndef BURGWAR_CORELIB_SHAREDLAYER_HPP
 #define BURGWAR_CORELIB_SHAREDLAYER_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	using LayerIndex = Nz::UInt16;
-
 	class SharedMatch;
 
 	class SharedLayer

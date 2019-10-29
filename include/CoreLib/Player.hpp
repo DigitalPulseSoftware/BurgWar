@@ -10,6 +10,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
 #include <tsl/hopscotch_map.h>
@@ -36,7 +37,7 @@ namespace bw
 			~Player();
 
 			inline const Ndk::EntityHandle& GetControlledEntity() const;
-			inline std::size_t GetLayerIndex() const;
+			inline LayerIndex GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
 			inline Nz::UInt8 GetPlayerIndex() const;
@@ -68,12 +69,12 @@ namespace bw
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
-			void UpdateLayer(std::size_t layerIndex);
+			void UpdateLayer(LayerIndex layerIndex);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) = delete;
 
-			static constexpr std::size_t NoLayer = std::numeric_limits<std::size_t>::max();
+			static constexpr LayerIndex NoLayer = std::numeric_limits<LayerIndex>::max();
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
 		private:
@@ -84,7 +85,7 @@ namespace bw
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
-			std::size_t m_layerIndex;
+			LayerIndex m_layerIndex;
 			std::size_t m_inputIndex;
 			std::size_t m_activeWeaponIndex = NoWeapon;
 			std::string m_name;

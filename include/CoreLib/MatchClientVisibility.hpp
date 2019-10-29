@@ -30,14 +30,15 @@ namespace bw
 			inline MatchClientVisibility(Match& match, MatchClientSession& session);
 			~MatchClientVisibility() = default;
 
-			void HideLayer(std::size_t layerIndex);
+			inline void HideLayer(std::size_t layerIndex);
+			inline void HideAllLayers();
 
 			inline bool IsLayerVisible(std::size_t layerIndex) const;
 
 			template<typename T> void PushEntityPacket(Nz::UInt16 layerIndex, Nz::UInt32 entityId, T&& packet);
 			template<typename T> void PushEntitiesPacket(Nz::UInt16 layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 
-			void ShowLayer(std::size_t layerIndex);
+			inline void ShowLayer(std::size_t layerIndex);
 
 			void Update();
 
@@ -75,6 +76,8 @@ namespace bw
 			};
 
 			Nz::Bitset<Nz::UInt64> m_tempBitset; //< For optimization purpose
+			Nz::Bitset<Nz::UInt64> m_newlyHiddenLayers;
+			Nz::Bitset<Nz::UInt64> m_newlyVisibleLayers;
 			Nz::Bitset<Nz::UInt64> m_visibleLayers;
 			tsl::hopscotch_map<Nz::UInt16 /*layerId*/, Layer> m_layers;
 			tsl::hopscotch_map<Nz::UInt64 /*entityId*/, NetworkSyncSystem::EntityInputs> m_inputUpdateEvents;

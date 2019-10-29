@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/LayerIndex.hpp>
 
 namespace bw
 {
@@ -11,7 +12,7 @@ namespace bw
 	{
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
-			m_layers.emplace_back(match, layerIndex, m_map.GetLayer(layerIndex));
+			m_layers.emplace_back(match, LayerIndex(layerIndex), m_map.GetLayer(layerIndex));
 	}
 
 	void Terrain::Update(float elapsedTime)

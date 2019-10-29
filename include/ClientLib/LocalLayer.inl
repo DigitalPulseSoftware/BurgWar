@@ -10,4 +10,14 @@ namespace bw
 	{
 		return m_camera;
 	}
+
+	inline Nz::Node& LocalLayer::GetCameraNode()
+	{
+		return *m_cameraNode;
+	}
+
+	inline Nz::Node& LocalLayer::GetNode()
+	{
+		return *m_node;
+	}
 }

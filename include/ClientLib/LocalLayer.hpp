@@ -29,14 +29,16 @@ namespace bw
 			~LocalLayer() = default;
 
 			inline const Ndk::EntityHandle& GetCameraEntity();
+			inline Nz::Node& GetCameraNode();
 			LocalMatch& GetLocalMatch();
-			Nz::Node& GetNode();
+			inline Nz::Node& GetNode();
 
 			LocalLayer& operator=(const LocalLayer&) = delete;
 			LocalLayer& operator=(LocalLayer&&) noexcept = default;
 
 		private:
 			Ndk::EntityHandle m_camera;
+			std::unique_ptr<Nz::Node> m_cameraNode;
 			std::unique_ptr<Nz::Node> m_node;
 	};
 }

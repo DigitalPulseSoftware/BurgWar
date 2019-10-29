@@ -29,10 +29,11 @@ namespace bw
 		else
 			renderSystem.SetDefaultBackground(nullptr);
 
+		m_cameraNode = std::make_unique<Nz::Node>();
 		m_node = std::make_unique<Nz::Node>();
 
 		m_camera = world.CreateEntity();
-		m_camera->AddComponent<Ndk::NodeComponent>().SetParent(*m_node);
+		m_camera->AddComponent<Ndk::NodeComponent>().SetParent(*m_cameraNode);
 
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(renderTarget);
@@ -42,10 +43,5 @@ namespace bw
 	LocalMatch& LocalLayer::GetLocalMatch()
 	{
 		return static_cast<LocalMatch&>(SharedLayer::GetMatch());
-	}
-	
-	Nz::Node& LocalLayer::GetNode()
-	{
-		return *m_node;
 	}
 }

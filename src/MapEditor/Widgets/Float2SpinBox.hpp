@@ -24,6 +24,7 @@ namespace bw
 			{
 				NoLabel,
 				PositionLabel,
+				ScaleLabel,
 				SizeLabel
 			};
 

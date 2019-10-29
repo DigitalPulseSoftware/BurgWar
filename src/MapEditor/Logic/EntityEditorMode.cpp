@@ -52,6 +52,9 @@ namespace bw
 
 		for (const auto& entityData : m_entities)
 		{
+			if (!entityData.entity)
+				continue;
+
 			auto& gfxComponent = entityData.entity->GetComponent<Ndk::GraphicsComponent>();
 			std::size_t i = 0;
 			gfxComponent.ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)

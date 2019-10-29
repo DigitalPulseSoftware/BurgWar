@@ -12,7 +12,7 @@
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
-#include <MapEditor/Widgets/LayerInfoDialog.hpp>
+#include <MapEditor/Widgets/LayerEditDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
 #include <NDK/Components/CameraComponent.hpp>
@@ -701,16 +701,27 @@ namespace bw
 
 	void EditorWindow::OnLayerDoubleClicked(QListWidgetItem* item)
 	{
-		std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+		LayerIndex layerIndex = static_cast<LayerIndex>(item->data(Qt::UserRole).value<qulonglong>());
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
 		LayerInfo layerInfo;
 		layerInfo.backgroundColor = layer.backgroundColor;
-		layerInfo.depth = layer.depth;
 		layerInfo.name = layer.name;
 
-		LayerInfoDialog* layerInfoDialog = new LayerInfoDialog(layerInfo, this);
+		layerInfo.visibilities.reserve(layer.visibilities.size());
+		for (auto&& layerVisibility : layer.visibilities)
+		{
+			auto& visibilityInfo = layerInfo.visibilities.emplace_back();
+			visibilityInfo.layerIndex = layerVisibility.layerIndex;
+			visibilityInfo.offset = layerVisibility.offset;
+			visibilityInfo.parallaxFactor = layerVisibility.parallaxFactor;
+			visibilityInfo.renderOrder = layerVisibility.renderOrder;
+			visibilityInfo.rotation = layerVisibility.rotation;
+			visibilityInfo.scale = layerVisibility.scale;
+		}
+
+		LayerEditDialog* layerInfoDialog = new LayerEditDialog(layerIndex, layerInfo, m_workingMap, this);
 		connect(layerInfoDialog, &QDialog::accepted, [this, layerInfoDialog, layerIndex, item]()
 		{
 			LayerInfo layerInfo = layerInfoDialog->GetLayerInfo();
@@ -720,7 +731,17 @@ namespace bw
 			layer.backgroundColor = layerInfo.backgroundColor;
 			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
-			layer.depth = layerInfo.depth;
+			layer.visibilities.clear();
+			for (auto&& visibilityInfo : layerInfo.visibilities)
+			{
+				auto& layerVisibility = layer.visibilities.emplace_back();
+				layerVisibility.layerIndex = visibilityInfo.layerIndex;
+				layerVisibility.offset = visibilityInfo.offset;
+				layerVisibility.parallaxFactor = visibilityInfo.parallaxFactor;
+				layerVisibility.renderOrder = visibilityInfo.renderOrder;
+				layerVisibility.rotation = visibilityInfo.rotation;
+				layerVisibility.scale = visibilityInfo.scale;
+			}
 
 			bool resetItemName = false;
 			if (layer.name != layerInfo.name)

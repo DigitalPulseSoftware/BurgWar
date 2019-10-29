@@ -12,17 +12,6 @@
 
 namespace Nz
 {
-	void to_json(nlohmann::json& j, const Nz::Color& color)
-	{
-		j = nlohmann::json{ {"r", color.r}, {"g", color.g}, {"b", color.b} };
-	}
-
-	template<typename T>
-	void to_json(nlohmann::json& j, const Nz::Vector2<T>& vec)
-	{
-		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y} };
-	}
-
 	void from_json(const nlohmann::json& j, Nz::Color& color)
 	{
 		j.at("r").get_to(color.r);
@@ -30,11 +19,34 @@ namespace Nz
 		j.at("b").get_to(color.b);
 	}
 
+	void to_json(nlohmann::json& j, const Nz::Color& color)
+	{
+		j = nlohmann::json{ {"r", color.r}, {"g", color.g}, {"b", color.b} };
+	}
+
+	template<typename T>
+	void from_json(const nlohmann::json& j, Nz::DegreeAngle<T>& angle)
+	{
+		angle = Nz::DegreeAngle<T>(T(j));
+	}
+
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::DegreeAngle<T>& angle)
+	{
+		j = angle.ToDegrees();
+	}
+
 	template<typename T>
 	void from_json(const nlohmann::json& j, Nz::Vector2<T>& vec)
 	{
 		j.at("x").get_to(vec.x);
 		j.at("y").get_to(vec.y);
+	}
+
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::Vector2<T>& vec)
+	{
+		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y} };
 	}
 }
 
@@ -67,7 +79,6 @@ namespace bw
 			nlohmann::json layerInfo;
 			layerInfo["backgroundColor"] = layerEntry.backgroundColor;
 			layerInfo["name"] = layerEntry.name;
-			layerInfo["depth"] = layerEntry.depth;
 
 			auto entityArray = nlohmann::json::array();
 			for (auto&& entityEntry : layerEntry.entities)
@@ -126,6 +137,21 @@ namespace bw
 			}
 			layerInfo["entities"] = std::move(entityArray);
 
+			auto visibilities = nlohmann::json::array();
+			for (auto&& visibilityEntry : layerEntry.visibilities)
+			{
+				nlohmann::json visibilityInfo;
+				visibilityInfo["layerIndex"] = visibilityEntry.layerIndex;
+				visibilityInfo["offset"] = visibilityEntry.offset;
+				visibilityInfo["parallaxFactor"] = visibilityEntry.parallaxFactor;
+				visibilityInfo["renderOrder"] = visibilityEntry.renderOrder;
+				visibilityInfo["rotation"] = visibilityEntry.rotation;
+				visibilityInfo["scale"] = visibilityEntry.scale;
+
+				visibilities.push_back(std::move(visibilityInfo));
+			}
+			layerInfo["visibilities"] = std::move(visibilities);
+
 			layerArray.emplace_back(std::move(layerInfo));
 		}
 		mapInfo["layers"] = std::move(layerArray);
@@ -157,7 +183,6 @@ namespace bw
 		for (const Layer& layer : m_layers)
 		{
 			stream << layer.name;
-			stream << layer.depth;
 			stream << layer.backgroundColor;
 
 			Nz::UInt16 entityCount = Nz::UInt16(layer.entities.size());
@@ -222,6 +247,19 @@ namespace bw
 
 					}, value);
 				}
+			}
+
+			Nz::UInt16 visibilityCount = Nz::UInt16(layer.visibilities.size());
+			stream << visibilityCount;
+
+			for (const LayerVisibility& visibility : layer.visibilities)
+			{
+				stream << visibility.layerIndex;
+				stream << visibility.offset;
+				stream << visibility.parallaxFactor;
+				stream << visibility.renderOrder;
+				stream << visibility.rotation.ToDegrees();
+				stream << visibility.scale;
 			}
 		}
 
@@ -299,17 +337,13 @@ namespace bw
 		m_layers.clear();
 		m_layers.resize(layerCount);
 
-		std::size_t layerIndex = 0;
 		for (Layer& layer : m_layers)
 		{
 			stream >> layer.name;
-			stream >> layer.depth;
 			stream >> layer.backgroundColor;
 
 			Nz::UInt16 entityCount;
 			stream >> entityCount;
-
-			std::size_t entityIndex = 0;
 
 			layer.entities.resize(entityCount);
 			for (Entity& entity : layer.entities)
@@ -376,11 +410,25 @@ namespace bw
 						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}
-
-				entityIndex++;
 			}
 
-			layerIndex++;
+			Nz::UInt16 visibilityCount;
+			stream >> visibilityCount;
+
+			layer.visibilities.resize(visibilityCount);
+			for (LayerVisibility& visibility : layer.visibilities)
+			{
+				stream >> visibility.layerIndex;
+				stream >> visibility.offset;
+				stream >> visibility.parallaxFactor;
+				stream >> visibility.renderOrder;
+
+				float angle;
+				stream >> angle;
+				visibility.rotation = Nz::DegreeAnglef(angle);
+
+				stream >> visibility.scale;
+			}
 		}
 
 		Nz::UInt32 scriptCount;
@@ -433,7 +481,6 @@ namespace bw
 		{
 			Layer& layer = m_layers.emplace_back();
 			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black);
-			layer.depth = entry.value("depth", 0.f);
 			layer.name = entry.value("name", "");
 
 			for (auto&& entityInfo : entry["entities"])
@@ -488,6 +535,17 @@ namespace bw
 					}
 				}
 			}
+
+			for (auto&& visibilityInfo : entry["visibilities"])
+			{
+				LayerVisibility& visibility = layer.visibilities.emplace_back();
+				visibility.layerIndex = visibilityInfo.at("layerIndex");
+				visibility.offset = visibilityInfo.value("offset", visibility.offset);
+				visibility.parallaxFactor = visibilityInfo.value("parallaxFactor", visibility.parallaxFactor);
+				visibility.renderOrder = visibilityInfo.value("renderOrder", visibility.renderOrder);
+				visibility.rotation = visibilityInfo.value("rotation", visibility.rotation);
+				visibility.scale = visibilityInfo.value("scale", visibility.scale);
+			}
 		}
 
 		m_isValid = true;
@@ -496,7 +554,6 @@ namespace bw
 	void Map::SetupDefault()
 	{
 		Layer& layer = m_layers.emplace_back();
-		layer.depth = 0.f;
 		layer.name = "Layer #1";
 	}
 }
