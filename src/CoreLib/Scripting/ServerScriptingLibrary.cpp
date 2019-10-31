@@ -21,28 +21,49 @@ namespace bw
 		state["CLIENT"] = false;
 		state["SERVER"] = true;
 
-		state.set_function("RegisterClientAssets", [&](const sol::object& paths)
+		state.set_function("RegisterClientAssets", [&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
 		{
-			if (paths.is<sol::table>())
-			{
-				sol::table pathTable = paths.as<sol::table>();
-				for (auto&& [k, v] : pathTable)
-				{
-					if (v.is<std::string>())
-						GetMatch().RegisterAsset(v.as<std::string>());
-				}
-			}
-			else if (paths.is<std::string>())
-			{
-				GetMatch().RegisterAsset(paths.as<std::string>());
-			}
-			else
+			if (!paths.is<sol::table>() && !paths.is<std::string>())
 				throw std::runtime_error("expected table or string");
+
+			try
+			{
+				if (paths.is<sol::table>())
+				{
+					sol::table pathTable = paths.as<sol::table>();
+					for (auto&& [k, v] : pathTable)
+					{
+						if (v.is<std::string>())
+							GetMatch().RegisterAsset(v.as<std::string>());
+					}
+				}
+				else if (paths.is<std::string>())
+				{
+					GetMatch().RegisterAsset(paths.as<std::string>());
+				}
+
+				return { true, sol::nil };
+			}
+			catch (const std::exception& err)
+			{
+				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "RegisterClientAssets failed: {}", err.what());
+				return { false, sol::make_object<std::string>(L, err.what()) };
+			}
 		});
 
-		state.set_function("RegisterClientScript", [&](const std::string& path)
+		state.set_function("RegisterClientScript", [&](sol::this_state L, const std::string& path) -> std::pair<bool, sol::object>
 		{
-			GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);
+			try
+			{
+				GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);
+				return { true, sol::nil };
+			}
+			catch (const std::exception& err)
+			{
+				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "RegisterClientScript failed: {}", err.what());
+				return { false, sol::make_object<std::string>(L, err.what()) };
+
+			}
 		});
 
 		RegisterPlayer(context);

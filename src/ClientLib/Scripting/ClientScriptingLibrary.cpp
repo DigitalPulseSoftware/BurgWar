@@ -23,8 +23,8 @@ namespace bw
 		state["CLIENT"] = true;
 		state["SERVER"] = false;
 
-		state["RegisterClientAssets"] = []() {}; // Dummy function
-		state["RegisterClientScript"] = []() {}; // Dummy function
+		state["RegisterClientAssets"] = []() { return true; }; // Dummy function
+		state["RegisterClientScript"] = []() { return true; }; // Dummy function
 
 		RegisterDummyInputController(context);
 		RegisterScriptLibrary(context);
