@@ -216,6 +216,7 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;
+			std::vector<std::pair<LayerIndex, int>> m_orderedLayers;
 			std::vector<LocalLayer> m_layers;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;

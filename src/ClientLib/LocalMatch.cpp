@@ -69,7 +69,10 @@ namespace bw
 
 		m_layers.reserve(matchData.layers.size());
 		for (std::size_t i = 0; i < matchData.layers.size(); ++i)
-			m_layers.emplace_back(*this, LayerIndex(i), window);
+		{
+			LayerIndex layerIndex = static_cast<LayerIndex>(i);
+			m_layers.emplace_back(*this, layerIndex, window);
+		}
 
 		Ndk::RenderSystem& renderSystem = m_overlayWorld.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -613,9 +616,12 @@ namespace bw
 			m_gamemode->ExecuteCallback("OnFrame");
 
 		PrepareClientUpdate();
-
-		for (LocalLayer& layer : m_layers)
+		
+		for (auto&& [layerIndex, renderOrder] : m_orderedLayers)
+		{
+			LocalLayer& layer = m_layers[layerIndex];
 			layer.Update(elapsedTime);
+		}
 
 		m_overlayWorld.Update(elapsedTime);
 
@@ -1487,6 +1493,9 @@ namespace bw
 		m_playerData[packet.playerIndex].layerIndex = packet.layerIndex;
 
 		m_activeLayerIndex = packet.layerIndex;
+
+		m_orderedLayers.clear();
+		m_orderedLayers.emplace_back(packet.layerIndex, 0);
 		for (auto& visibilityInfo : packet.visibleLayers)
 		{
 			auto& layer = m_layers[visibilityInfo.layerIndex];
@@ -1500,7 +1509,10 @@ namespace bw
 			node.SetPosition(visibilityInfo.offset);
 			node.SetRotation(visibilityInfo.rotation);
 			node.SetScale(visibilityInfo.scale);
+
+			m_orderedLayers.emplace_back(visibilityInfo.layerIndex, visibilityInfo.renderOrder);
 		}
+		std::sort(m_orderedLayers.begin(), m_orderedLayers.end(), [](auto&& lhs, auto&& rhs) { return lhs.second < rhs.second; });
 
 		auto& currentLayer = m_layers[m_activeLayerIndex];
 
@@ -1602,9 +1614,9 @@ namespace bw
 			Ndk::World& world = layer.GetWorld();
 
 			world.ForEachSystem([](Ndk::BaseSystem& system)
-				{
-					system.Enable(false);
-				});
+			{
+				system.Enable(false);
+			});
 
 			world.GetSystem<Ndk::DebugSystem>().Enable(true);
 			world.GetSystem<Ndk::ListenerSystem>().Enable(true);
