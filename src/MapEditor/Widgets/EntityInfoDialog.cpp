@@ -442,7 +442,9 @@ namespace bw
 		const auto& propertyInfo = m_properties[m_propertyTypeIndex];
 		m_entityInfo.properties.erase(propertyInfo.keyName);
 
-		m_propertiesList->item(int(m_propertyTypeIndex), 0)->setFont(QFont());
+		QTableWidgetItem* item = m_propertiesList->item(int(m_propertyTypeIndex), 1);
+		item->setFont(QFont());
+		item->setText(ToString(GetProperty(propertyInfo)));
 
 		RefreshPropertyEditor(m_propertyTypeIndex);
 	}
@@ -506,12 +508,13 @@ namespace bw
 		int rowIndex = 0;
 		for (const auto& propertyInfo : m_properties)
 		{
-			QTableWidgetItem* labelItem = new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName));
+			m_propertiesList->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName)));
+
+			QTableWidgetItem* valueItem = new QTableWidgetItem(ToString(GetProperty(propertyInfo)));
 			if (modifiedProperties.test(propertyInfo.index))
-				labelItem->setFont(boldFont);
+				valueItem->setFont(boldFont);
 			
-			m_propertiesList->setItem(rowIndex, 0, labelItem);
-			m_propertiesList->setItem(rowIndex, 1, new QTableWidgetItem("Value"));
+			m_propertiesList->setItem(rowIndex, 1, valueItem);
 
 			++rowIndex;
 		}
@@ -564,18 +567,9 @@ namespace bw
 
 		assert(propertyIndex < m_properties.size());
 		const auto& propertyInfo = m_properties[propertyIndex];
+		const EntityProperty& propertyValue = GetProperty(propertyInfo);
 
 		m_propertyTitle->setText(QString::fromStdString(propertyInfo.visualName));
-
-		auto GetProperty = [&]() -> const EntityProperty&
-		{
-			if (auto it = m_entityInfo.properties.find(propertyInfo.keyName); it != m_entityInfo.properties.end())
-				return it->second;
-			else
-				return propertyInfo.defaultValue;
-		};
-
-		const EntityProperty& property = GetProperty();
 
 		QVBoxLayout* layout = new QVBoxLayout;
 
@@ -590,14 +584,19 @@ namespace bw
 			if constexpr (IsArray)
 				arraySize = int(propertyValue.size());
 
-		}, property);
+		}, propertyValue);
 
-		auto OnPropertyModified = [this, propertyIndex]()
+		auto OnPropertyOverride = [this, propertyIndex]()
 		{
 			QFont boldFont;
 			boldFont.setWeight(QFont::Medium);
 
-			m_propertiesList->item(int(propertyIndex), 0)->setFont(boldFont);
+			m_propertiesList->item(int(propertyIndex), 1)->setFont(boldFont);
+		};
+
+		auto UpdatePropertyPreview = [this, propertyIndex](const QString& preview)
+		{
+			m_propertiesList->item(int(propertyIndex), 1)->setText(preview);
 		};
 
 		if (isArray)
@@ -607,7 +606,7 @@ namespace bw
 			spinbox->setValue(arraySize);
 
 			QPushButton* updateButton = new QPushButton(tr("Update"));
-			connect(updateButton, &QPushButton::released, [this, &propertyInfo, spinbox, propertyIndex]()
+			connect(updateButton, &QPushButton::released, [this, &propertyInfo, spinbox, propertyIndex, UpdatePropertyPreview]()
 			{
 				std::size_t newSize = spinbox->value();
 
@@ -641,6 +640,7 @@ namespace bw
 				}, *property);
 
 				RefreshPropertyEditor(propertyIndex);
+				UpdatePropertyPreview(ToString(*property));
 			});
 
 			QHBoxLayout* arraySizeLayout = new QHBoxLayout;
@@ -650,20 +650,20 @@ namespace bw
 			layout->addLayout(arraySizeLayout);
 			
 			// Waiting for template lambda in C++20
-			auto AccessProperty = [this, keyName = propertyInfo.keyName, arraySize, OnPropertyModified](auto dummyType, int rowIndex) -> std::decay_t<decltype(dummyType)>&
+			auto SetProperty = [this, keyName = propertyInfo.keyName, arraySize, OnPropertyOverride](int rowIndex, auto&& value)
 			{
-				using T = std::decay_t<decltype(dummyType)>;
+				using T = std::decay_t<decltype(value)>;
 				using ArrayType = EntityPropertyArray<T>;
 
 				auto it = m_entityInfo.properties.find(keyName);
 				if (it == m_entityInfo.properties.end())
 				{
 					it = m_entityInfo.properties.emplace(keyName, ArrayType(arraySize)).first;
-					OnPropertyModified();
+					OnPropertyOverride();
 				}
 
 				ArrayType& propertyArray = std::get<ArrayType>(it.value());
-				return propertyArray[rowIndex];
+				propertyArray[rowIndex] = std::forward<decltype(value)>(value);
 			};
 
 			switch (propertyInfo.type)
@@ -672,7 +672,7 @@ namespace bw
 				{
 					using T = EntityPropertyArray<bool>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -691,7 +691,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						AccessProperty(bool{}, item->index().row()) = (item->checkState() == Qt::Checked);
+						SetProperty(item->index().row(), item->checkState() == Qt::Checked);
 					});
 
 					layout->addWidget(tableView);
@@ -704,7 +704,7 @@ namespace bw
 
 					using T = EntityPropertyArray<float>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -718,7 +718,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						AccessProperty(float{}, item->index().row()) = delegate.RetrieveModelData(item->index());
+						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -732,7 +732,7 @@ namespace bw
 
 					using T = EntityPropertyArray<Nz::Vector2f>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 					
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -746,7 +746,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						AccessProperty(Nz::Vector2f{}, item->index().row()) = delegate.RetrieveModelData(item->index());
+						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -754,12 +754,13 @@ namespace bw
 				}
 
 				case PropertyType::Integer:
+				case PropertyType::Layer:
 				{
 					static IntegerPropertyDelegate delegate; //FIXME?
 					
 					using T = EntityPropertyArray<Nz::Int64>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -773,7 +774,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						AccessProperty(Nz::Int64{}, item->index().row()) = delegate.RetrieveModelData(item->index());
+						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -787,7 +788,7 @@ namespace bw
 
 					using T = EntityPropertyArray<Nz::Vector2i64>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -801,7 +802,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						AccessProperty(Nz::Vector2i64{}, item->index().row()) = delegate.RetrieveModelData(item->index());
+						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -813,7 +814,7 @@ namespace bw
 				{
 					using T = EntityPropertyArray<std::string>;
 
-					auto& propertyArray = std::get<T>(property);
+					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableWidget* table = new QTableWidget(arraySize, 1);
 					table->setHorizontalHeaderLabels({ QString("Value") });
@@ -826,7 +827,7 @@ namespace bw
 
 					connect(table, &QTableWidget::cellChanged, [=](int row, int column)
 					{
-						AccessProperty(std::string{}, row) = table->item(row, column)->text().toStdString();
+						SetProperty(row, table->item(row, column)->text().toStdString());
 					});
 
 					layout->addWidget(table);
@@ -839,16 +840,17 @@ namespace bw
 		}
 		else
 		{
-			auto AccessProperty = [this, keyName = propertyInfo.keyName, OnPropertyModified]() -> EntityProperty&
+			auto SetProperty = [this, keyName = propertyInfo.keyName, OnPropertyOverride, UpdatePropertyPreview](auto&& value)
 			{
 				auto it = m_entityInfo.properties.find(keyName);
 				if (it == m_entityInfo.properties.end())
 				{
 					it = m_entityInfo.properties.emplace(keyName, EntityProperty{}).first;
-					OnPropertyModified();
+					OnPropertyOverride();
 				}
 
-				return it.value();
+				it.value() = std::forward<decltype(value)>(value);
+				UpdatePropertyPreview(ToString(it.value()));
 			};
 
 			switch (propertyInfo.type)
@@ -856,12 +858,12 @@ namespace bw
 				case PropertyType::Bool:
 				{
 					QCheckBox* checkBox = new QCheckBox;
-					if (std::holds_alternative<bool>(property))
-						checkBox->setChecked(std::get<bool>(property));
+					if (std::holds_alternative<bool>(propertyValue))
+						checkBox->setChecked(std::get<bool>(propertyValue));
 
 					connect(checkBox, &QCheckBox::toggled, [=](bool checked)
 					{
-						AccessProperty() = checked;
+						SetProperty(checked);
 					});
 
 					layout->addWidget(checkBox);
@@ -872,12 +874,12 @@ namespace bw
 				{
 					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
 					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-					if (std::holds_alternative<float>(property))
-						spinbox->setValue(std::get<float>(property));
+					if (std::holds_alternative<float>(propertyValue))
+						spinbox->setValue(std::get<float>(propertyValue));
 
 					connect(spinbox, &QDoubleSpinBox::editingFinished, [=]()
 					{
-						AccessProperty() = float(spinbox->value());
+						SetProperty(float(spinbox->value()));
 					});
 
 					layout->addWidget(spinbox);
@@ -889,12 +891,12 @@ namespace bw
 				{
 					Float2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Float2SpinBox::LabelMode::PositionLabel : Float2SpinBox::LabelMode::SizeLabel;
 					Float2SpinBox* spinbox = new Float2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (std::holds_alternative<Nz::Vector2f>(property))
-						spinbox->setValue(std::get<Nz::Vector2f>(property));
+					if (std::holds_alternative<Nz::Vector2f>(propertyValue))
+						spinbox->setValue(std::get<Nz::Vector2f>(propertyValue));
 
 					connect(spinbox, &Float2SpinBox::valueChanged, [=]()
 					{
-						AccessProperty() = Nz::Vector2f(spinbox->value());
+						SetProperty(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -902,15 +904,18 @@ namespace bw
 				}
 
 				case PropertyType::Integer:
+				case PropertyType::Layer:
 				{
 					// TODO: Handle properly int64
 					QSpinBox* spinbox = new QSpinBox;
-					if (std::holds_alternative<Nz::Int64>(property))
-						spinbox->setValue(std::get<Nz::Int64>(property));
+					spinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
+
+					if (std::holds_alternative<Nz::Int64>(propertyValue))
+						spinbox->setValue(std::get<Nz::Int64>(propertyValue));
 
 					connect(spinbox, &QSpinBox::editingFinished, [=]()
 					{
-						AccessProperty() = Nz::Int64(spinbox->value());
+						SetProperty(Nz::Int64(spinbox->value()));
 					});
 
 					layout->addWidget(spinbox);
@@ -923,12 +928,12 @@ namespace bw
 					// TODO: Handle properly int64
 					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
 					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (std::holds_alternative<Nz::Vector2i64>(property))
-						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(property)));
+					if (std::holds_alternative<Nz::Vector2i64>(propertyValue))
+						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(propertyValue)));
 
 					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
 					{
-						AccessProperty() = Nz::Vector2i64(spinbox->value());
+						SetProperty(Nz::Vector2i64(spinbox->value()));
 					});
 
 					layout->addWidget(spinbox);
@@ -939,12 +944,12 @@ namespace bw
 				case PropertyType::Texture:
 				{
 					QLineEdit* lineEdit = new QLineEdit;
-					if (std::holds_alternative<std::string>(property))
-						lineEdit->setText(QString::fromStdString(std::get<std::string>(property)));
+					if (std::holds_alternative<std::string>(propertyValue))
+						lineEdit->setText(QString::fromStdString(std::get<std::string>(propertyValue)));
 
 					connect(lineEdit, &QLineEdit::editingFinished, [=]()
 					{
-						AccessProperty() = lineEdit->text().toStdString();
+						SetProperty(lineEdit->text().toStdString());
 					});
 
 					layout->addWidget(lineEdit);
@@ -957,6 +962,63 @@ namespace bw
 		}
 
 		m_propertyContentWidget->setLayout(layout);
+	}
+
+	QString EntityInfoDialog::ToString(bool value)
+	{
+		return (value) ? "true" : "false";
+	}
+
+	QString EntityInfoDialog::ToString(float value)
+	{
+		return QString::number(value);
+	}
+
+	QString EntityInfoDialog::ToString(Nz::Int64 value)
+	{
+		return QString::number(value);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector2f& value)
+	{
+		return QString("(%1; %2)").arg(value.x).arg(value.y);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value)
+	{
+		return QString("(%1; %2)").arg(value.x).arg(value.y);
+	}
+
+	QString EntityInfoDialog::ToString(const std::string& value)
+	{
+		return QString::fromStdString(value);
+	}
+
+	QString EntityInfoDialog::ToString(const EntityProperty& property)
+	{
+		return std::visit([=](const auto& value) -> QString
+		{
+			using T = std::decay_t<decltype(value)>;
+			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+
+			// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
+			if constexpr (IsArray)
+			{
+				return "Array of " + QString::number(value.size());
+			}
+			else
+			{
+				return ToString(value);
+			}
+		}, property);
+	}
+
+	const EntityProperty& EntityInfoDialog::GetProperty(const PropertyData& property) const
+	{
+		if (auto it = m_entityInfo.properties.find(property.keyName); it != m_entityInfo.properties.end())
+			return it->second;
+		else
+			return property.defaultValue;
 	}
 
 	void EntityInfoDialog::OnAccept()
