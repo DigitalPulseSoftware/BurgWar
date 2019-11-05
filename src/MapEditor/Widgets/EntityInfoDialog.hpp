@@ -65,12 +65,24 @@ namespace bw
 			void UpdateProperty(const std::string& propertyName, EntityProperty propertyValue);
 
 		private:
+			struct PropertyData;
+
+			const EntityProperty& GetProperty(const PropertyData& property) const;
+
 			void OnAccept();
 			void OnEntityTypeUpdate();
 			void OnResetProperty();
 
 			void RefreshEntityType();
 			void RefreshPropertyEditor(std::size_t propertyIndex);
+
+			static QString ToString(bool value);
+			static QString ToString(float value);
+			static QString ToString(Nz::Int64 value);
+			static QString ToString(const Nz::Vector2f& value);
+			static QString ToString(const Nz::Vector2i64& value);
+			static QString ToString(const std::string& value);
+			static QString ToString(const EntityProperty& property);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
