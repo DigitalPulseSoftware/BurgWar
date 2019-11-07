@@ -36,9 +36,7 @@ namespace bw
 		if (!m_config.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
-		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
-
-		Nz::TextureLibrary::Register("MenuBackground", Nz::Texture::LoadFromFile(gameResourceFolder + "/background.png"));
+		FillStores();
 
 		m_mainWindow.EnableVerticalSync(false);
 		m_mainWindow.SetFramerateLimit(100);
@@ -91,6 +89,11 @@ namespace bw
 
 	void ClientApp::FillStores()
 	{
+		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
+
+		Nz::TextureLibrary::Register("MenuBackground", Nz::Texture::LoadFromFile(gameResourceFolder + "/background.png"));
+
+		//FIXME: Should be part of ClientLib too
 		Nz::Color trailColor(242, 255, 168);
 
 		Nz::SpriteRef trailSprite = Nz::Sprite::New();
