@@ -101,7 +101,7 @@ namespace bw
 
 		EditorWindow& editorWindow = GetEditorWindow();
 
-		m_tileEditorWidget = new QDockWidget(QObject::tr("Tile selector"), &editorWindow);
+		m_tileEditorWidget = new QDockWidget(editorWindow.tr("Tile selector"), &editorWindow);
 		m_tileEditorWidget->setAttribute(Qt::WA_DeleteOnClose);
 		m_tileEditorWidget->setFloating(true);
 		QObject::connect(m_tileEditorWidget, &QObject::destroyed, [this](QObject* w)

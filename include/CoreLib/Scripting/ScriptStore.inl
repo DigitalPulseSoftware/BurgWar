@@ -232,6 +232,7 @@ namespace bw
 							break;
 
 						case PropertyType::Integer:
+						case PropertyType::Layer:
 							property.defaultValue = PropertyChecker(Nz::Int64());
 							break;
 

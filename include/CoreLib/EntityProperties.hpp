@@ -26,8 +26,9 @@ namespace bw
 		Integer         = 4,
 		IntegerPosition = 5,
 		IntegerSize     = 6,
-		String          = 7,
-		Texture         = 8
+		Layer           = 7,
+		String          = 8,
+		Texture         = 9
 	};
 
 	enum class PropertyInternalType

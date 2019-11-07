@@ -47,8 +47,8 @@ namespace bw
 		public:
 			using Callback = std::function<void(EntityInfoDialog* dialog)>;
 
-			EntityInfoDialog(const Logger& logger, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
-			~EntityInfoDialog() = default;
+			EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
+			~EntityInfoDialog();
 
 			inline const EntityInfo& GetInfo() const;
 			inline const Nz::Vector2f& GetPosition() const;
@@ -58,13 +58,14 @@ namespace bw
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(std::size_t layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
 			void UpdateProperty(const std::string& propertyName, EntityProperty propertyValue);
 
 		private:
+			struct Delegates;
 			struct PropertyData;
 
 			const EntityProperty& GetProperty(const PropertyData& property) const;
@@ -76,13 +77,13 @@ namespace bw
 			void RefreshEntityType();
 			void RefreshPropertyEditor(std::size_t propertyIndex);
 
-			static QString ToString(bool value);
-			static QString ToString(float value);
-			static QString ToString(Nz::Int64 value);
-			static QString ToString(const Nz::Vector2f& value);
-			static QString ToString(const Nz::Vector2i64& value);
-			static QString ToString(const std::string& value);
-			static QString ToString(const EntityProperty& property);
+			QString ToString(bool value, PropertyType type);
+			QString ToString(float value, PropertyType type);
+			QString ToString(Nz::Int64 value, PropertyType type);
+			QString ToString(const Nz::Vector2f& value, PropertyType type);
+			QString ToString(const Nz::Vector2i64& value, PropertyType type);
+			QString ToString(const std::string& value, PropertyType type);
+			QString ToString(const EntityProperty& property, PropertyType type);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
@@ -97,15 +98,18 @@ namespace bw
 			};
 
 			Ndk::EntityHandle m_targetEntity;
+			std::size_t m_currentLayerIndex;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;
 			std::vector<std::string> m_entityTypes;
+			std::unique_ptr<Delegates> m_delegates;
 			tsl::hopscotch_map<std::string, std::size_t> m_editorActionByName;
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			Callback m_callback;
 			EditorEntityStore& m_entityStore;
 			const Logger& m_logger;
+			const Map& m_map;
 			ScriptingContext& m_scriptingContext;
 			EntityInfo m_entityInfo;
 			QComboBox* m_entityTypeWidget;

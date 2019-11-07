@@ -251,6 +251,10 @@ namespace bw
 		m_workingMap = std::move(map);
 		m_workingMapPath = std::move(mapPath);
 
+		// Reset entity info dialog (as it depends on the map)
+		m_entityInfoDialog->deleteLater();
+		m_entityInfoDialog = nullptr;
+
 		setWindowFilePath(QString::fromStdString(mapPath.generic_u8string()));
 
 		bool enableMapActions = m_workingMap.IsValid();
@@ -416,7 +420,7 @@ namespace bw
 	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
 	{
 		if (!m_entityInfoDialog)
-			m_entityInfoDialog = new EntityInfoDialog(GetLogger(), *m_entityStore, *m_scriptingContext, this);
+			m_entityInfoDialog = new EntityInfoDialog(GetLogger(), m_workingMap, *m_entityStore, *m_scriptingContext, this);
 
 		return m_entityInfoDialog;
 	}
@@ -479,7 +483,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
 
-		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
+		createEntityDialog->Open(layerIndex, entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
 		{
 			const EntityInfo& entityInfo = createEntityDialog->GetInfo();
 
@@ -597,7 +601,7 @@ namespace bw
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
+		editEntityDialog->Open(layerIndex, std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
 		{
 			const EntityInfo& entityInfo = editEntityDialog->GetInfo();
 

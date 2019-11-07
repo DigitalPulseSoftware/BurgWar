@@ -19,6 +19,8 @@ ENTITY.Properties = {
 	{ Name = "int_position_array", Type = PropertyType.IntegerPosition, Array = true, Default = { Vec2(0, 0) }, Shared = true },
 	{ Name = "int_size", Type = PropertyType.IntegerSize, Default = Vec2(0, 0), Shared = true },
 	{ Name = "int_size_array", Type = PropertyType.IntegerSize, Array = true, Default = { Vec2(0, 0) }, Shared = true },
+	{ Name = "layer", Type = PropertyType.Layer, Default = NoLayer, Shared = true },
+	{ Name = "layer_array", Type = PropertyType.Layer, Array = true, Default = { NoLayer }, Shared = true },
 	{ Name = "str", Type = PropertyType.String, Default = "", Shared = true },
 	{ Name = "str_array", Type = PropertyType.String, Array = true, Default = { "" }, Shared = true },
 	{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
