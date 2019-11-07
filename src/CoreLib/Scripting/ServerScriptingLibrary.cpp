@@ -8,6 +8,14 @@
 
 namespace bw
 {
+	namespace
+	{
+		struct ParameterError
+		{
+			const char* msg;
+		};
+	}
+
 	ServerScriptingLibrary::ServerScriptingLibrary(Match& match) :
 	SharedScriptingLibrary(match)
 	{
@@ -23,9 +31,6 @@ namespace bw
 
 		state.set_function("RegisterClientAssets", [&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
 		{
-			if (!paths.is<sol::table>() && !paths.is<std::string>())
-				throw std::runtime_error("expected table or string");
-
 			try
 			{
 				if (paths.is<sol::table>())
@@ -41,6 +46,8 @@ namespace bw
 				{
 					GetMatch().RegisterAsset(paths.as<std::string>());
 				}
+				else
+					throw ParameterError{ "expected table or string" };
 
 				return { true, sol::nil };
 			}
@@ -49,20 +56,37 @@ namespace bw
 				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "RegisterClientAssets failed: {}", err.what());
 				return { false, sol::make_object<std::string>(L, err.what()) };
 			}
+			catch (const ParameterError& err)
+			{
+				throw std::runtime_error(err.msg);
+			}
 		});
 
-		state.set_function("RegisterClientScript", [&](sol::this_state L, const std::string& path) -> std::pair<bool, sol::object>
+		state.set_function("RegisterClientScript", [&](sol::this_state L, const std::optional<std::string_view>& path) -> std::pair<bool, sol::object>
 		{
 			try
 			{
-				GetMatch().RegisterClientScript(context.GetCurrentFolder() / path);
+				if (path)
+					GetMatch().RegisterClientScript(context.GetCurrentFolder() / *path);
+				else
+				{
+					const auto& currentFilepath = context.GetCurrentFile();
+					if (currentFilepath.empty())
+						throw ParameterError{ "RegisterClientScript cannot be called without argument outside of a file" };
+
+					GetMatch().RegisterClientScript(currentFilepath);
+				}
+
 				return { true, sol::nil };
 			}
 			catch (const std::exception& err)
 			{
 				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "RegisterClientScript failed: {}", err.what());
 				return { false, sol::make_object<std::string>(L, err.what()) };
-
+			}
+			catch (const ParameterError& err)
+			{
+				throw std::runtime_error(err.msg);
 			}
 		});
 

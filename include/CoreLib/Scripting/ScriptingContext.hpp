@@ -26,6 +26,7 @@ namespace bw
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
 
+			inline const std::filesystem::path& GetCurrentFile() const;
 			inline const std::filesystem::path& GetCurrentFolder() const;
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
@@ -39,6 +40,7 @@ namespace bw
 			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
 
 		private:
+			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			std::vector<std::shared_ptr<AbstractScriptingLibrary>> m_libraries;

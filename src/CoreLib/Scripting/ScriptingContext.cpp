@@ -6,6 +6,7 @@
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Utils.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
 
@@ -32,7 +33,13 @@ namespace bw
 
 			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 			{
+				m_currentFile = folderOrFile;
 				m_currentFolder = folderOrFile.parent_path();
+				Nz::CallOnExit resetOnExit([&]
+				{
+					m_currentFile.clear();
+					m_currentFolder.clear();
+				});
 
 				sol::state& state = GetLuaState();
 				sol::protected_function_result result;

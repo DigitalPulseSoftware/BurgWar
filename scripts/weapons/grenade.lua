@@ -1,4 +1,4 @@
-RegisterClientScript("grenade.lua")
+RegisterClientScript()
 
 WEAPON.Cooldown = 1
 WEAPON.Scale = 0.2

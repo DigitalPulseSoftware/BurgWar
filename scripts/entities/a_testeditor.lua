@@ -1,4 +1,4 @@
-RegisterClientScript("a_testeditor.lua")
+RegisterClientScript()
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

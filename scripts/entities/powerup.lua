@@ -1,4 +1,4 @@
-RegisterClientScript("powerup.lua")
+RegisterClientScript()
 RegisterClientAssets("placeholder/socle.png")
 
 ENTITY.IsNetworked = true

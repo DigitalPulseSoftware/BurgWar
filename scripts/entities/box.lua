@@ -1,4 +1,4 @@
-RegisterClientScript("box.lua")
+RegisterClientScript()
 RegisterClientAssets("box.png")
 
 ENTITY.IsNetworked = true

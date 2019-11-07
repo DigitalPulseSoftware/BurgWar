@@ -1,4 +1,4 @@
-RegisterClientScript("powerup_health.lua")
+RegisterClientScript()
 RegisterClientAssets("placeholder/healthpack.png")
 
 ENTITY.IsNetworked = true

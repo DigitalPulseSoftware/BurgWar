@@ -1,4 +1,4 @@
-RegisterClientScript("pickable_weapon_grenade.lua")
+RegisterClientScript()
 RegisterClientAssets("grenade.png")
 
 ENTITY.IsNetworked = true

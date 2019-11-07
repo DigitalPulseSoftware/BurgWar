@@ -1,4 +1,4 @@
-RegisterClientScript("enums.lua")
+RegisterClientScript()
 
 enums = {}
 

@@ -37,6 +37,11 @@ namespace bw
 		return sol::coroutine(thread.state(), std::forward<Args>(args)...);
 	}
 
+	inline const std::filesystem::path& ScriptingContext::GetCurrentFile() const
+	{
+		return m_currentFile;
+	}
+
 	inline const std::filesystem::path& ScriptingContext::GetCurrentFolder() const
 	{
 		return m_currentFolder;
