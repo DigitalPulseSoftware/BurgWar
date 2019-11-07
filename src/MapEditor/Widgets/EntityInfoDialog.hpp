@@ -58,7 +58,7 @@ namespace bw
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void Open(std::size_t layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
@@ -98,7 +98,6 @@ namespace bw
 			};
 
 			Ndk::EntityHandle m_targetEntity;
-			std::size_t m_currentLayerIndex;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;

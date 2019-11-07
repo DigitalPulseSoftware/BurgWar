@@ -436,10 +436,9 @@ namespace bw
 		return std::make_pair(propertyData.type, propertyData.isArray);
 	}
 
-	void EntityInfoDialog::Open(std::size_t layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
+	void EntityInfoDialog::Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
 	{
 		m_callback = std::move(callback);
-		m_currentLayerIndex = layerIndex;
 		m_targetEntity = targetEntity;
 
 		if (info)
@@ -856,9 +855,6 @@ namespace bw
 
 					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 					{
-						if (i == m_currentLayerIndex)
-							continue;
-
 						auto& layer = m_map.GetLayer(i);
 
 						options.push_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
@@ -884,12 +880,7 @@ namespace bw
 						if (layerIndex == NoLayer)
 							layerIndex = 0;
 						else
-						{
 							layerIndex++;
-
-							if (layerIndex > m_currentLayerIndex)
-								layerIndex--;
-						}
 
 						m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), layerIndex);
 					}
@@ -900,12 +891,7 @@ namespace bw
 						if (layerIndex == 0)
 							layerIndex = NoLayer;
 						else
-						{
 							layerIndex--;
-
-							if (layerIndex >= m_currentLayerIndex)
-								layerIndex++;
-						}
 
 						SetProperty(item->index().row(), layerIndex);
 					});
@@ -1059,9 +1045,6 @@ namespace bw
 
 					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 					{
-						if (i == m_currentLayerIndex)
-							continue;
-
 						auto& layer = m_map.GetLayer(i);
 
 						comboBox->addItem(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
@@ -1073,12 +1056,7 @@ namespace bw
 						if (index == NoLayer)
 							index = 0;
 						else
-						{
 							index++;
-
-							if (index > m_currentLayerIndex)
-								index--;
-						}
 
 						comboBox->setCurrentIndex(index);
 					}
@@ -1088,12 +1066,7 @@ namespace bw
 						if (index <= 0)
 							index = NoLayer;
 						else
-						{
 							index--;
-
-							if (index >= m_currentLayerIndex)
-								index++;
-						}
 
 						SetProperty(Nz::Int64(index));
 					});

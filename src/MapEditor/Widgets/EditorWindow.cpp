@@ -483,7 +483,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
 
-		createEntityDialog->Open(layerIndex, entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
+		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
 		{
 			const EntityInfo& entityInfo = createEntityDialog->GetInfo();
 
@@ -601,7 +601,7 @@ namespace bw
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(layerIndex, std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
+		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
 		{
 			const EntityInfo& entityInfo = editEntityDialog->GetInfo();
 
