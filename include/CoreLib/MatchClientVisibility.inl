@@ -30,19 +30,19 @@ namespace bw
 	{
 	}
 
-	inline void MatchClientVisibility::HideLayer(std::size_t layerIndex)
+	inline void MatchClientVisibility::ClearLayers()
+	{
+		m_newlyHiddenLayers = m_visibleLayers;
+		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+			m_newlyVisibleLayers.UnboundedReset(layerIndex);
+	}
+
+	inline void MatchClientVisibility::HideLayer(LayerIndex layerIndex)
 	{
 		m_newlyVisibleLayers.UnboundedReset(layerIndex);
 
 		if (m_visibleLayers.UnboundedTest(layerIndex))
 			m_newlyHiddenLayers.UnboundedSet(layerIndex);
-	}
-
-	inline void MatchClientVisibility::HideAllLayers()
-	{
-		m_newlyHiddenLayers = m_visibleLayers;
-		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
-			m_newlyVisibleLayers.UnboundedReset(layerIndex);
 	}
 
 	inline bool MatchClientVisibility::IsLayerVisible(std::size_t layerIndex) const
@@ -53,7 +53,7 @@ namespace bw
 			return m_newlyVisibleLayers.UnboundedTest(layerIndex);
 	}
 
-	inline void MatchClientVisibility::ShowLayer(std::size_t layerIndex)
+	inline void MatchClientVisibility::ShowLayer(LayerIndex layerIndex)
 	{
 		m_newlyHiddenLayers.UnboundedReset(layerIndex);
 

@@ -22,20 +22,21 @@ namespace bw
 			{
 				Terrain& terrain = m_match.GetTerrain();
 				assert(layerIndex < terrain.GetLayerCount());
-				TerrainLayer& layer = terrain.GetLayer(layerIndex);
-
-				/* Delete all visible entities on that layer */
-
-				const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
-
-				syncSystem.DeleteEntities([&](const NetworkSyncSystem::EntityDestruction* entitiesDestruction, std::size_t entityCount)
-					{
-						for (std::size_t i = 0; i < entityCount; ++i)
-							HandleEntityDestruction(layerIndex, entitiesDestruction[i], true);
-					});
+				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 
 				auto it = m_layers.find(layerIndex);
 				assert(it != m_layers.end());
+				auto& layer = it.value();
+				if (--layer.visibilityCounter > 0)
+					continue;
+
+				// The client will destroy automatically all entities that belong to this layer
+				Packets::DisableLayer disableLayer;
+				disableLayer.layerIndex = layerIndex;
+				disableLayer.stateTick = m_match.GetNetworkTick();
+				
+				m_session.SendPacket(disableLayer);
+
 				m_layers.erase(it);
 
 				m_visibleLayers.Reset(layerIndex);
@@ -45,6 +46,8 @@ namespace bw
 
 		if (m_newlyVisibleLayers.GetSize() != 0)
 		{
+			PendingCreationEventMap pendingCreationMap; //< Used to resolve parenting
+
 			for (std::size_t layerIndex = m_newlyVisibleLayers.FindFirst(); layerIndex != m_newlyVisibleLayers.npos; layerIndex = m_newlyVisibleLayers.FindNext(layerIndex))
 			{
 				Terrain& terrain = m_match.GetTerrain();
@@ -54,7 +57,13 @@ namespace bw
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 				NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
 
-				assert(m_layers.find(layerIndex) == m_layers.end());
+				if (auto it = m_layers.find(layerIndex); it != m_layers.end())
+				{
+					Layer& layer = it.value();
+					layer.visibilityCounter++;
+					continue;
+				}
+
 				Layer& layer = m_layers[layerIndex];
 
 				m_visibleLayers.UnboundedSet(layerIndex);
@@ -133,11 +142,45 @@ namespace bw
 					}
 				});
 
+				Packets::EnableLayer enableLayerPacket;
+				enableLayerPacket.layerIndex = layerIndex;
+				enableLayerPacket.stateTick = m_match.GetNetworkTick();
+
 				syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 				{
 					for (std::size_t i = 0; i < entityCount; ++i)
-						HandleEntityCreation(layerIndex, entitiesCreation[i]);
+						pendingCreationMap[entitiesCreation[i].entityId] = entitiesCreation[i];
 				});
+
+				std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
+				PushEntity = [&](PendingCreationEventMap::iterator it)
+				{
+					auto& entityId = it.key();
+					auto& eventData = it.value();
+					if (!eventData.has_value())
+						return;
+
+					if (eventData->parent)
+					{
+						Nz::UInt32 parentId = static_cast<Nz::UInt32>(eventData->parent.value());
+						auto it = pendingCreationMap.find(parentId);
+						if (it != pendingCreationMap.end())
+							PushEntity(it);
+					}
+
+					auto& entityData = enableLayerPacket.layerEntities.emplace_back();
+					entityData.id = eventData->entityId;
+					FillEntityData(eventData.value(), entityData.data);
+
+					eventData.reset();
+				};
+
+				for (auto it = pendingCreationMap.begin(); it != pendingCreationMap.end(); ++it)
+					PushEntity(it);
+
+				m_session.SendPacket(enableLayerPacket);
+
+				pendingCreationMap.clear();
 			}
 			m_newlyVisibleLayers.Clear();
 		}
@@ -175,6 +218,8 @@ namespace bw
 
 		if (!m_creationEvents.empty())
 		{
+			m_createEntitiesPacket.stateTick = m_match.GetNetworkTick();
+
 			// Handle parents
 			m_createEntitiesPacket.entities.clear();
 			std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
@@ -195,84 +240,10 @@ namespace bw
 						PushEntity(it);
 				}
 
-				const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
-
-				m_createEntitiesPacket.stateTick = m_match.GetNetworkTick();
 				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
 				entityData.id.layerId = layerIndex;
 				entityData.id.entityId = eventData->entityId;
-				entityData.entityClass = networkStringStore.CheckStringIndex(eventData->entityClass);
-				entityData.position = eventData->position;
-				entityData.rotation = eventData->rotation;
-
-				if (eventData->inputs.has_value())
-					entityData.inputs = eventData->inputs.value();
-
-				if (eventData->parent.has_value())
-					entityData.parentId = eventData->parent.value();
-
-				if (eventData->healthProperties.has_value())
-				{
-					entityData.health.emplace();
-					entityData.health->currentHealth = eventData->healthProperties->currentHealth;
-					entityData.health->maxHealth = eventData->healthProperties->maxHealth;
-				}
-
-				if (eventData->name.has_value())
-					entityData.name.emplace(eventData->name.value());
-
-				if (eventData->playerMovement.has_value())
-				{
-					entityData.playerMovement.emplace();
-					entityData.playerMovement->isFacingRight = eventData->playerMovement->isFacingRight;
-				}
-
-				if (eventData->physicsProperties.has_value())
-				{
-					entityData.physicsProperties.emplace();
-					entityData.physicsProperties->angularVelocity = eventData->physicsProperties->angularVelocity;
-					entityData.physicsProperties->linearVelocity = eventData->physicsProperties->linearVelocity;
-				}
-
-				for (auto&& [propertyName, propertyValue] : eventData->properties)
-				{
-					auto& propertyData = entityData.properties.emplace_back();
-					propertyData.name = networkStringStore.CheckStringIndex(propertyName);
-
-					std::visit([&](auto&& propertyValue)
-					{
-						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-						if constexpr (std::is_same_v<PropertyType, bool> ||
-						              std::is_same_v<PropertyType, float> ||
-						              std::is_same_v<PropertyType, Nz::Int64> ||
-						              std::is_same_v<PropertyType, std::string> ||
-						              std::is_same_v<PropertyType, Nz::Vector2f> ||
-						              std::is_same_v<PropertyType, Nz::Vector2i64>)
-
-						{
-							propertyData.isArray = IsArray;
-
-							auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
-
-							if constexpr (IsArray)
-							{
-								std::size_t elementCount = propertyValue.GetSize();
-								vec.reserve(elementCount);
-
-								for (std::size_t i = 0; i < elementCount; ++i)
-									vec.emplace_back(std::move(propertyValue[i]));
-							}
-							else
-								vec.push_back(propertyValue);
-						}
-						else
-							static_assert(AlwaysFalse<PropertyType>::value, "non-exhaustive visitor");
-
-					}, std::move(propertyValue));
-				}
+				FillEntityData(eventData.value(), entityData.data);
 				
 				eventData.reset();
 			};
@@ -462,6 +433,83 @@ namespace bw
 			packetData.physicsProperties.emplace();
 			packetData.physicsProperties->angularVelocity = eventData.physicsProperties->angularVelocity;
 			packetData.physicsProperties->linearVelocity = eventData.physicsProperties->linearVelocity;
+		}
+	}
+
+	void MatchClientVisibility::FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData)
+	{
+		const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
+
+		entityData.entityClass = networkStringStore.CheckStringIndex(creationEvent.entityClass);
+		entityData.position = creationEvent.position;
+		entityData.rotation = creationEvent.rotation;
+
+		if (creationEvent.inputs.has_value())
+			entityData.inputs = creationEvent.inputs.value();
+
+		if (creationEvent.parent.has_value())
+			entityData.parentId = creationEvent.parent.value();
+
+		if (creationEvent.healthProperties.has_value())
+		{
+			entityData.health.emplace();
+			entityData.health->currentHealth = creationEvent.healthProperties->currentHealth;
+			entityData.health->maxHealth = creationEvent.healthProperties->maxHealth;
+		}
+
+		if (creationEvent.name.has_value())
+			entityData.name.emplace(creationEvent.name.value());
+
+		if (creationEvent.playerMovement.has_value())
+		{
+			entityData.playerMovement.emplace();
+			entityData.playerMovement->isFacingRight = creationEvent.playerMovement->isFacingRight;
+		}
+
+		if (creationEvent.physicsProperties.has_value())
+		{
+			entityData.physicsProperties.emplace();
+			entityData.physicsProperties->angularVelocity = creationEvent.physicsProperties->angularVelocity;
+			entityData.physicsProperties->linearVelocity = creationEvent.physicsProperties->linearVelocity;
+		}
+
+		for (auto&& [propertyName, propertyValue] : creationEvent.properties)
+		{
+			auto& propertyData = entityData.properties.emplace_back();
+			propertyData.name = networkStringStore.CheckStringIndex(propertyName);
+
+			std::visit([&](auto&& propertyValue)
+			{
+				using T = std::decay_t<decltype(propertyValue)>;
+				constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+
+				if constexpr (std::is_same_v<PropertyType, bool> ||
+				              std::is_same_v<PropertyType, float> ||
+				              std::is_same_v<PropertyType, Nz::Int64> ||
+				              std::is_same_v<PropertyType, std::string> ||
+				              std::is_same_v<PropertyType, Nz::Vector2f> ||
+				              std::is_same_v<PropertyType, Nz::Vector2i64>)
+				{
+					propertyData.isArray = IsArray;
+
+					auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
+
+					if constexpr (IsArray)
+					{
+						std::size_t elementCount = propertyValue.GetSize();
+						vec.reserve(elementCount);
+
+						for (std::size_t i = 0; i < elementCount; ++i)
+							vec.emplace_back(std::move(propertyValue[i]));
+					}
+					else
+						vec.push_back(propertyValue);
+				}
+				else
+					static_assert(AlwaysFalse<PropertyType>::value, "non-exhaustive visitor");
+
+			}, std::move(propertyValue));
 		}
 	}
 }

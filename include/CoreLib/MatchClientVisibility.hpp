@@ -10,6 +10,7 @@
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/EntityList.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
@@ -30,15 +31,16 @@ namespace bw
 			inline MatchClientVisibility(Match& match, MatchClientSession& session);
 			~MatchClientVisibility() = default;
 
-			inline void HideLayer(std::size_t layerIndex);
-			inline void HideAllLayers();
+			inline void ClearLayers();
+
+			inline void HideLayer(LayerIndex layerIndex);
 
 			inline bool IsLayerVisible(std::size_t layerIndex) const;
 
 			template<typename T> void PushEntityPacket(Nz::UInt16 layerIndex, Nz::UInt32 entityId, T&& packet);
 			template<typename T> void PushEntitiesPacket(Nz::UInt16 layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 
-			inline void ShowLayer(std::size_t layerIndex);
+			inline void ShowLayer(LayerIndex layerIndex);
 
 			void Update();
 
@@ -46,11 +48,11 @@ namespace bw
 			static inline Packets::Helper::EntityId DecodeEntityId(Nz::UInt64 entityId);
 
 		private:
+			void BuildMovementPacket(Nz::UInt16 layerIndex, Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
+			void FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData);
 			void HandleEntityCreation(Nz::UInt16 layerIndex, const NetworkSyncSystem::EntityCreation& eventData);
 			void HandleEntityDestruction(Nz::UInt16 layerIndex, const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath);
 			void SendMatchState();
-
-			void BuildMovementPacket(Nz::UInt16 layerIndex, Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 
 			using EntityPacketSendFunction = std::function<void()>;
 			using PendingCreationEventMap = tsl::hopscotch_map<Nz::UInt64 /*entityId*/, std::optional<NetworkSyncSystem::EntityCreation>>;
@@ -65,6 +67,7 @@ namespace bw
 			struct Layer
 			{
 				Nz::Bitset<Nz::UInt64> visibleEntities;
+				std::size_t visibilityCounter = 1;
 
 				NazaraSlot(NetworkSyncSystem, OnEntityCreated,        onEntityCreatedSlot);
 				NazaraSlot(NetworkSyncSystem, OnEntityDeleted,        onEntityDeletedSlot);

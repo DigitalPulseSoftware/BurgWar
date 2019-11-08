@@ -92,6 +92,7 @@ namespace bw
 			std::vector<Ndk::EntityOwner> m_weapons;
 			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
 			Ndk::EntityOwner m_playerEntity;
+			Nz::Bitset<Nz::UInt64> m_visibleLayers;
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;

@@ -43,6 +43,11 @@ namespace bw
 
 	Player::~Player()
 	{
+		MatchClientVisibility& visibility = GetSession().GetVisibility();
+
+		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
+
 		if (m_match)
 			m_match->Leave(this);
 	}
@@ -309,7 +314,10 @@ namespace bw
 		if (m_layerIndex != layerIndex)
 		{
 			MatchClientVisibility& visibility = GetSession().GetVisibility();
-			visibility.HideAllLayers();
+
+			for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+				visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
+			m_visibleLayers.Clear();
 
 			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
 			{
@@ -348,24 +356,10 @@ namespace bw
 			layerPacket.layerIndex = m_layerIndex;
 			layerPacket.playerIndex = m_playerIndex;
 
-			//FIXME: This doesn't work well with multiples players/session
 			if (m_layerIndex != NoLayer)
 			{
+				m_visibleLayers.UnboundedSet(m_layerIndex);
 				visibility.ShowLayer(m_layerIndex);
-
-				const auto& layer = m_match->GetTerrain().GetMap().GetLayer(m_layerIndex);
-				for (const auto& visibilityInfo : layer.visibilities)
-				{
-					visibility.ShowLayer(visibilityInfo.layerIndex);
-
-					auto& packetVisibility = layerPacket.visibleLayers.emplace_back();
-					packetVisibility.layerIndex = visibilityInfo.layerIndex;
-					packetVisibility.offset = visibilityInfo.offset;
-					packetVisibility.parallaxFactor = visibilityInfo.parallaxFactor;
-					packetVisibility.renderOrder = visibilityInfo.renderOrder;
-					packetVisibility.rotation = visibilityInfo.rotation;
-					packetVisibility.scale = visibilityInfo.scale;
-				}
 			}
 
 			SendPacket(layerPacket);

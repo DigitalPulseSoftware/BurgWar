@@ -82,189 +82,8 @@ namespace bw
 
 			for (auto& entity : data.entities)
 			{
-				bool hasHealth;
-				bool hasInputs;
-				bool hasParent;
-				bool hasMovementData;
-				bool hasPhysicsProps;
-				bool hasName;
-
-				if (serializer.IsWriting())
-				{
-					hasHealth = entity.health.has_value();
-					hasInputs = entity.inputs.has_value();
-					hasParent = entity.parentId.has_value();
-					hasMovementData = entity.playerMovement.has_value();
-					hasPhysicsProps = entity.physicsProperties.has_value();
-					hasName = entity.name.has_value();
-				}
-
-				serializer &= hasHealth;
-				serializer &= hasInputs;
-				serializer &= hasParent;
-				serializer &= hasMovementData;
-				serializer &= hasPhysicsProps;
-				serializer &= hasName;
-
-				if (!serializer.IsWriting())
-				{
-					if (hasHealth)
-						entity.health.emplace();
-
-					if (hasInputs)
-						entity.inputs.emplace();
-
-					if (hasParent)
-						entity.parentId.emplace();
-
-					if (hasMovementData)
-						entity.playerMovement.emplace();
-
-					if (hasPhysicsProps)
-						entity.physicsProperties.emplace();
-
-					if (hasName)
-						entity.name.emplace();
-				}
-			}
-
-			for (auto& entity : data.entities)
-			{
-				Serialize(serializer, entity.id);
-				serializer &= entity.entityClass;
-				serializer &= entity.position;
-				serializer &= entity.rotation;
-
-				if (entity.health)
-				{
-					auto& healthProperties = entity.health.value();
-					serializer &= healthProperties.currentHealth;
-					serializer &= healthProperties.maxHealth;
-				}
-
-				if (entity.inputs)
-					Serialize(serializer, entity.inputs.value());
-
-				if (entity.name)
-					serializer &= entity.name.value();
-
-				if (entity.parentId)
-					serializer &= entity.parentId.value();
-
-				if (entity.playerMovement)
-				{
-					auto& playerMovementData = entity.playerMovement.value();
-					serializer &= playerMovementData.isFacingRight;
-				}
-
-				if (entity.physicsProperties)
-				{
-					auto& physicsProperties = entity.physicsProperties.value();
-					serializer &= physicsProperties.angularVelocity;
-					serializer &= physicsProperties.linearVelocity;
-				}
-
-				serializer.SerializeArraySize(entity.properties);
-				for (auto& property : entity.properties)
-				{
-					serializer &= property.name;
-
-					// Serialize type
-					Nz::UInt8 dataType;
-					if (serializer.IsWriting())
-						dataType = static_cast<Nz::UInt8>(property.value.index());
-					
-					serializer &= dataType;
-					serializer &= property.isArray;
-
-					// Read/write value
-
-					// Waiting for template lambda in C++20
-					auto SerializeValue = [&](auto dummyType)
-					{
-						using T = std::decay_t<decltype(dummyType)>;
-
-						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(property.value) : property.value.emplace<std::vector<T>>();
-						
-						if (property.isArray)
-						{
-							serializer.SerializeArraySize(elements);
-							for (auto& element : elements)
-								serializer &= element;
-						}
-						else
-						{
-							assert(!serializer.IsWriting() || elements.size() == 1);
-							if (!serializer.IsWriting())
-								elements.resize(1);
-
-							serializer &= elements.front();
-						}
-					};
-
-
-					static_assert(std::variant_size_v<CreateEntities::Properties::PropertyValue> == 6);
-					switch (dataType)
-					{
-						case 0:
-						{
-							// Handle std::vector<bool> specialization
-							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(property.value) : property.value.emplace<std::vector<bool>>();
-
-							serializer.SerializeArraySize(elements);
-							if (serializer.IsWriting())
-							{
-								for (bool val : elements)
-									serializer &= val;
-							}
-							else
-							{
-								for (std::size_t i = 0; i < elements.size(); ++i)
-								{
-									bool val;
-									serializer &= val;
-
-									elements[i] = val;
-								}
-							}
-
-							break;
-						}
-
-						case 1: SerializeValue(float()); break;
-						case 2: SerializeValue(Nz::Int64()); break;
-						case 3: SerializeValue(Nz::Vector2f()); break;
-						case 4: SerializeValue(Nz::Vector2i64()); break;
-
-						case 5: // std::string
-						{
-							auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
-
-							serializer.SerializeArraySize(elements);
-							if (serializer.IsWriting())
-							{
-								for (const auto& element : elements)
-								{
-									serializer.SerializeArraySize(element);
-									serializer.Write(element.data(), element.size());
-								}
-							}
-							else
-							{
-								for (auto& element : elements)
-								{
-									serializer.SerializeArraySize(element);
-									serializer.Read(element.data(), element.size());
-								}
-							}
-							break;
-						}
-
-						default:
-							assert(!"Unexpected datatype");
-							break;
-					}
-				}
+				serializer.Serialize(entity.id);
+				serializer.Serialize(entity.data);
 			}
 		}
 
@@ -284,6 +103,12 @@ namespace bw
 				Serialize(serializer, entity.id);
 		}
 
+		void Serialize(PacketSerializer& serializer, DisableLayer& data)
+		{
+			serializer &= data.stateTick;
+			serializer &= data.layerIndex;
+		}
+
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data)
 		{
 			serializer &= data.path;
@@ -296,6 +121,18 @@ namespace bw
 				serializer.Write(data.fileContent.data(), data.fileContent.size());
 			else
 				serializer.Read(data.fileContent.data(), data.fileContent.size());
+		}
+
+		void Serialize(PacketSerializer& serializer, EnableLayer& data)
+		{
+			serializer &= data.stateTick;
+			serializer &= data.layerIndex;
+
+			for (auto& entity : data.layerEntities)
+			{
+				serializer &= entity.id;
+				Serialize(serializer, entity.data);
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data)
@@ -473,18 +310,6 @@ namespace bw
 		{
 			serializer &= data.playerIndex;
 			serializer &= data.layerIndex;
-
-			serializer.SerializeArraySize(data.visibleLayers);
-
-			for (auto& visibleLayer : data.visibleLayers)
-			{
-				serializer &= visibleLayer.layerIndex;
-				serializer &= visibleLayer.offset;
-				serializer &= visibleLayer.parallaxFactor;
-				serializer &= visibleLayer.renderOrder;
-				serializer &= visibleLayer.rotation;
-				serializer &= visibleLayer.scale;
-			}
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
@@ -547,6 +372,189 @@ namespace bw
 		{
 			serializer &= data.layerId;
 			serializer &= data.entityId;
+		}
+
+		void Serialize(PacketSerializer& serializer, Helper::EntityData& data)
+		{
+			bool hasHealth;
+			bool hasInputs;
+			bool hasParent;
+			bool hasMovementData;
+			bool hasPhysicsProps;
+			bool hasName;
+
+			if (serializer.IsWriting())
+			{
+				hasHealth = data.health.has_value();
+				hasInputs = data.inputs.has_value();
+				hasParent = data.parentId.has_value();
+				hasMovementData = data.playerMovement.has_value();
+				hasPhysicsProps = data.physicsProperties.has_value();
+				hasName = data.name.has_value();
+			}
+
+			serializer &= hasHealth;
+			serializer &= hasInputs;
+			serializer &= hasParent;
+			serializer &= hasMovementData;
+			serializer &= hasPhysicsProps;
+			serializer &= hasName;
+
+			if (!serializer.IsWriting())
+			{
+				if (hasHealth)
+					data.health.emplace();
+
+				if (hasInputs)
+					data.inputs.emplace();
+
+				if (hasParent)
+					data.parentId.emplace();
+
+				if (hasMovementData)
+					data.playerMovement.emplace();
+
+				if (hasPhysicsProps)
+					data.physicsProperties.emplace();
+
+				if (hasName)
+					data.name.emplace();
+			}
+
+			serializer &= data.entityClass;
+			serializer &= data.position;
+			serializer &= data.rotation;
+
+			if (data.health)
+			{
+				auto& healthProperties = data.health.value();
+				serializer &= healthProperties.currentHealth;
+				serializer &= healthProperties.maxHealth;
+			}
+
+			if (data.inputs)
+				Serialize(serializer, data.inputs.value());
+
+			if (data.name)
+				serializer &= data.name.value();
+
+			if (data.parentId)
+				serializer &= data.parentId.value();
+
+			if (data.playerMovement)
+			{
+				auto& playerMovementData = data.playerMovement.value();
+				serializer &= playerMovementData.isFacingRight;
+			}
+
+			if (data.physicsProperties)
+			{
+				auto& physicsProperties = data.physicsProperties.value();
+				serializer &= physicsProperties.angularVelocity;
+				serializer &= physicsProperties.linearVelocity;
+			}
+
+			serializer.SerializeArraySize(data.properties);
+			for (auto& property : data.properties)
+			{
+				serializer &= property.name;
+
+				// Serialize type
+				Nz::UInt8 dataType;
+				if (serializer.IsWriting())
+					dataType = static_cast<Nz::UInt8>(property.value.index());
+
+				serializer &= dataType;
+				serializer &= property.isArray;
+
+				// Read/write value
+
+				// Waiting for template lambda in C++20
+				auto SerializeValue = [&](auto dummyType)
+				{
+					using T = std::decay_t<decltype(dummyType)>;
+
+					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(property.value) : property.value.emplace<std::vector<T>>();
+
+					if (property.isArray)
+					{
+						serializer.SerializeArraySize(elements);
+						for (auto& element : elements)
+							serializer &= element;
+					}
+					else
+					{
+						assert(!serializer.IsWriting() || elements.size() == 1);
+						if (!serializer.IsWriting())
+							elements.resize(1);
+
+						serializer &= elements.front();
+					}
+				};
+
+
+				static_assert(std::variant_size_v<Helper::Properties::PropertyValue> == 6);
+				switch (dataType)
+				{
+					case 0:
+					{
+						// Handle std::vector<bool> specialization
+						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(property.value) : property.value.emplace<std::vector<bool>>();
+
+						serializer.SerializeArraySize(elements);
+						if (serializer.IsWriting())
+						{
+							for (bool val : elements)
+								serializer &= val;
+						}
+						else
+						{
+							for (std::size_t i = 0; i < elements.size(); ++i)
+							{
+								bool val;
+								serializer &= val;
+
+								elements[i] = val;
+							}
+						}
+
+						break;
+					}
+
+					case 1: SerializeValue(float()); break;
+					case 2: SerializeValue(Nz::Int64()); break;
+					case 3: SerializeValue(Nz::Vector2f()); break;
+					case 4: SerializeValue(Nz::Vector2i64()); break;
+
+					case 5: // std::string
+					{
+						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
+
+						serializer.SerializeArraySize(elements);
+						if (serializer.IsWriting())
+						{
+							for (const auto& element : elements)
+							{
+								serializer.SerializeArraySize(element);
+								serializer.Write(element.data(), element.size());
+							}
+						}
+						else
+						{
+							for (auto& element : elements)
+							{
+								serializer.SerializeArraySize(element);
+								serializer.Read(element.data(), element.size());
+							}
+						}
+						break;
+					}
+
+					default:
+						assert(!"Unexpected datatype");
+						break;
+					}
+				}
 		}
 	}
 }

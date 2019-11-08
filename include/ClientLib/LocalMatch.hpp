@@ -225,6 +225,8 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt64 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
+			Ndk::World m_overlayWorld;
+			Ndk::World m_renderWorld;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			AnimationManager m_animationManager;
@@ -232,7 +234,6 @@ namespace bw
 			BurgApp& m_application;
 			Chatbox m_chatBox;
 			ClientSession& m_session;
-			Ndk::World m_overlayWorld;
 			Packets::PlayersInput m_inputPacket;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
