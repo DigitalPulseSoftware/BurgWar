@@ -4,9 +4,13 @@
 
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
@@ -26,6 +30,23 @@ namespace bw
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["AddLayer"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
+
+			LayerIndex layerIndex = parameters["LayerIndex"];
+			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
+
+			if (!entity->HasComponent<VisibleLayerComponent>())
+				entity->AddComponent<VisibleLayerComponent>(localMatch.GetRenderWorld());
+
+			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
+			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale);
+		};
+
 		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
@@ -40,14 +61,17 @@ namespace bw
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
-			Nz::Color color = Nz::Color::White;
+			Nz::Color color;
 			if (std::optional<sol::table> colorParameter = parameters.get_or<std::optional<sol::table>>("Color", std::nullopt); colorParameter)
 			{
+				color = Nz::Color::Black;
 				color.r = colorParameter->get_or("r", color.r);
 				color.g = colorParameter->get_or("g", color.g);
 				color.b = colorParameter->get_or("b", color.b);
 				color.a = colorParameter->get_or("a", color.a);
 			}
+			else
+				color = Nz::Color::White;
 
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			if (!texturePath.empty())

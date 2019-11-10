@@ -42,4 +42,9 @@ namespace bw
 	{
 		return m_session;
 	}
+	
+	inline Ndk::World& LocalMatch::GetRenderWorld()
+	{
+		return m_renderWorld;
+	}
 }

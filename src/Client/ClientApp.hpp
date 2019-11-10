@@ -8,7 +8,6 @@
 #define BURGWAR_CLIENTAPP_HPP
 
 #include <ClientLib/ClientEditorApp.hpp>
-#include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <NDK/Application.hpp>

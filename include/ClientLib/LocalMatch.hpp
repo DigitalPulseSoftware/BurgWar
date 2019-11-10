@@ -68,6 +68,7 @@ namespace bw
 			LocalLayer& GetLayer(LayerIndex layerIndex) override;
 			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
+			inline Ndk::World& GetRenderWorld();
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
 

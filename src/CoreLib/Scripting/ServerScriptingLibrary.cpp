@@ -153,6 +153,13 @@ namespace bw
 					player->UpdateLayer(layerIndex.as<LayerIndex>());
 				else
 					player->UpdateLayer(Player::NoLayer);
+			},
+			"UpdateLayerVisibility", [](const PlayerHandle& player, LayerIndex layerIndex, bool visible)
+			{
+				if (!player)
+					return;
+
+				player->UpdateLayerVisibility(layerIndex, visible);
 			}
 		);
 	}

@@ -6,6 +6,7 @@
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 
 namespace bw
@@ -14,10 +15,10 @@ namespace bw
 	Application(argc, argv),
 	BurgApp(side)
 	{
-		//FIXME: This should be a part of ClientLib
 		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
+		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
 		Ndk::InitializeSystem<SoundSystem>();
 	}
 
