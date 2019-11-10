@@ -17,6 +17,8 @@ namespace bw
 			using ClientEditorEntityStore::ClientEditorEntityStore;
 			~EditorEntityStore() = default;
 
+			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const override;
+
 		private:
 			std::shared_ptr<ScriptedEntity> CreateElement() const override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;

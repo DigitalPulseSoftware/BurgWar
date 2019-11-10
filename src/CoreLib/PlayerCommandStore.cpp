@@ -31,22 +31,24 @@ namespace bw
 		OutgoingCommand(ChatMessage,                  Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ClientAssetList,              Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ClientScriptList,             Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(ConsoleAnswer,                Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(ConsoleAnswer,                Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(ControlEntity,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(CreateEntities,               Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(DeleteEntities,               Nz::ENetPacketFlag_Reliable,    1);
-		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable,    1);
-		OutgoingCommand(EntitiesAnimation,            Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(EntitiesDeath,                Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(EntitiesInputs,               Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(EntityWeapon,                 Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(DisableLayer,                 Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(EnableLayer,                  Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(EntitiesAnimation,            Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(EntitiesDeath,                Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(EntitiesInputs,               Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(EntityWeapon,                 Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(InputTimingCorrection,        Nz::ENetPacketFlag_Unsequenced, 0);
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(MatchState,                   0,                              1);
 		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(PlayerLayer,                  Nz::ENetPacketFlag_Reliable,    0);
-		OutgoingCommand(PlayerWeapons,                Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(PlayerLayer,                  Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(PlayerWeapons,                Nz::ENetPacketFlag_Reliable,    1);
 
 #undef IncomingCommand
 #undef OutgoingCommand

@@ -22,6 +22,8 @@ namespace bw
 			SharedLayer(SharedLayer&&) noexcept = default;
 			virtual ~SharedLayer();
 
+			template<typename F> void ForEachEntity(F&& func);
+
 			inline LayerIndex GetLayerIndex();
 			inline SharedMatch& GetMatch();
 			Ndk::World& GetWorld();

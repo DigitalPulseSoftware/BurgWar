@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/Sprite.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
 
 namespace bw
 {
@@ -19,10 +18,9 @@ namespace bw
 	{
 		assert(m_entity);
 
-		auto& gfxComponent = m_entity->GetComponent<Ndk::GraphicsComponent>();
 		if (show)
-			gfxComponent.Attach(m_sprite, m_transformMatrix, m_renderOrder);
+			m_entity->AttachRenderable(m_sprite, m_transformMatrix, m_renderOrder);
 		else
-			gfxComponent.Detach(m_sprite);
+			m_entity->DetachRenderable(m_sprite);
 	}
 }

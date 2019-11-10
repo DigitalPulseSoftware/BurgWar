@@ -9,15 +9,22 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
+#include <NDK/Systems/LifetimeSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <NDK/Systems/VelocitySystem.hpp>
 #include <cassert>
 
 namespace bw
 {
 	SharedLayer::SharedLayer(SharedMatch& match, LayerIndex layerIndex) :
 	m_match(match),
+	m_world(false),
 	m_layerIndex(layerIndex)
 	{
+		m_world.AddSystem<Ndk::LifetimeSystem>();
+		m_world.AddSystem<Ndk::PhysicsSystem2D>();
+		m_world.AddSystem<Ndk::VelocitySystem>();
+
 		m_world.AddSystem<AnimationSystem>(match);
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>(match);

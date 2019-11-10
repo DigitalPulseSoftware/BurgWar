@@ -33,14 +33,13 @@ namespace bw
 		return m_application;
 	}
 
-	inline const Ndk::EntityHandle& LocalMatch::GetLayerCamera()
+	inline const Ndk::EntityHandle& LocalMatch::GetCameraEntity() const
 	{
-		return GetLayerCamera(GetActiveLayer());
+		return m_camera;
 	}
 
-	inline const Ndk::EntityHandle& LocalMatch::GetLayerCamera(Nz::UInt16 layerIndex)
+	inline ClientSession& LocalMatch::GetClientSession()
 	{
-		assert(layerIndex < m_layers.size());
-		return m_layers[layerIndex].GetCameraEntity();
+		return m_session;
 	}
 }

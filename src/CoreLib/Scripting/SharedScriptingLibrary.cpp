@@ -31,14 +31,44 @@ namespace bw
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
-		sol::table script = state.create_table();
+		sol::table matchTable = state.create_table();
 
-		script["GetCurrentTime"] = [this]()
+		matchTable["GetCurrentTime"] = [this]()
 		{
 			return m_match.GetCurrentTime() / 1000.f;
 		};
 
-		state["match"] = script;
+		matchTable["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
+		{
+			sol::state_view state(s);
+			sol::table result = state.create_table();
+
+			std::size_t index = 1;
+			auto entityFunc = [&](const Ndk::EntityHandle& entity)
+			{
+				if (!entity->HasComponent<ScriptComponent>())
+					return;
+
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				if (entityScript.GetElement()->fullName == entityClass)
+					result[index++] = entityScript.GetTable();
+			};
+
+			if (layerIndexOpt)
+			{
+				LayerIndex layerIndex = layerIndexOpt.value();
+				if (layerIndex >= m_match.GetLayerCount())
+					throw std::runtime_error("Invalid layer index");
+
+				m_match.GetLayer(layerIndex).ForEachEntity(entityFunc);
+			}
+			else
+				m_match.ForEachEntity(entityFunc);
+
+			return result;
+		};
+
+		state["match"] = matchTable;
 	}
 
 	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context)
@@ -57,25 +87,6 @@ namespace bw
 					bwLog(GetLogger(), LogLevel::Error, "engine_SetTimer failed: {0}", err.what());
 				}
 			});
-		};
-
-		luaState["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass)
-		{
-			sol::state_view state(s);
-			sol::table result = state.create_table();
-
-			std::size_t index = 1;
-			m_match.ForEachEntity([&](const Ndk::EntityHandle& entity)
-			{
-				if (!entity->HasComponent<ScriptComponent>())
-					return;
-
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				if (entityScript.GetElement()->fullName == entityClass)
-					result[index++] = entityScript.GetTable();
-			});
-
-			return result;
 		};
 	}
 }

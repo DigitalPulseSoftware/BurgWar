@@ -15,25 +15,29 @@ namespace bw
 {
 	void MatchClientVisibility::Update()
 	{
+		Nz::UInt16 networkTick = m_match.GetNetworkTick();
+
 		// Handle hidden and shown layers
 		if (m_newlyHiddenLayers.GetSize() != 0)
 		{
-			for (std::size_t layerIndex = m_newlyHiddenLayers.FindFirst(); layerIndex != m_newlyHiddenLayers.npos; layerIndex = m_newlyHiddenLayers.FindNext(layerIndex))
+			for (std::size_t i = m_newlyHiddenLayers.FindFirst(); i != m_newlyHiddenLayers.npos; i = m_newlyHiddenLayers.FindNext(i))
 			{
+				LayerIndex layerIndex = LayerIndex(i);
+
 				Terrain& terrain = m_match.GetTerrain();
 				assert(layerIndex < terrain.GetLayerCount());
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 
 				auto it = m_layers.find(layerIndex);
 				assert(it != m_layers.end());
-				auto& layer = it.value();
+				auto& layer = *it.value();
 				if (--layer.visibilityCounter > 0)
 					continue;
 
 				// The client will destroy automatically all entities that belong to this layer
 				Packets::DisableLayer disableLayer;
 				disableLayer.layerIndex = layerIndex;
-				disableLayer.stateTick = m_match.GetNetworkTick();
+				disableLayer.stateTick = networkTick;
 				
 				m_session.SendPacket(disableLayer);
 
@@ -48,8 +52,10 @@ namespace bw
 		{
 			PendingCreationEventMap pendingCreationMap; //< Used to resolve parenting
 
-			for (std::size_t layerIndex = m_newlyVisibleLayers.FindFirst(); layerIndex != m_newlyVisibleLayers.npos; layerIndex = m_newlyVisibleLayers.FindNext(layerIndex))
+			for (std::size_t i = m_newlyVisibleLayers.FindFirst(); i != m_newlyVisibleLayers.npos; i = m_newlyVisibleLayers.FindNext(i))
 			{
+				LayerIndex layerIndex = LayerIndex(i);
+
 				Terrain& terrain = m_match.GetTerrain();
 				assert(layerIndex < terrain.GetLayerCount());
 
@@ -59,12 +65,12 @@ namespace bw
 
 				if (auto it = m_layers.find(layerIndex); it != m_layers.end())
 				{
-					Layer& layer = it.value();
+					Layer& layer = *(it.value());
 					layer.visibilityCounter++;
 					continue;
 				}
 
-				Layer& layer = m_layers[layerIndex];
+				Layer& layer = *m_layers.emplace(layerIndex, std::make_unique<Layer>()).first.value();
 
 				m_visibleLayers.UnboundedSet(layerIndex);
 
@@ -81,70 +87,74 @@ namespace bw
 				layer.onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
 				{
 					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = m_layers[layerIndex];
+					Layer& layer = *m_layers[layerIndex];
 
 					if (!layer.visibleEntities.UnboundedTest(entityMovement.entityId))
 						return;
 
-					m_staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
+					layer.staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
 				});
 
 				layer.onEntityPlayAnimation.Connect(syncSystem.OnEntityPlayAnimation, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityPlayAnimation& entityPlayAnimation)
 				{
 					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = m_layers[layerIndex];
+					Layer& layer = *m_layers[layerIndex];
 
 					if (!layer.visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
 						return;
 
-					m_playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
+					layer.playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
+					m_pendingEvents.Set(VisibilityEventType::PlayAnimation);
 				});
 
 				layer.onEntitiesDeath.Connect(syncSystem.OnEntitiesDeath, [this, layerIndex](NetworkSyncSystem*, const Ndk::EntityId* entityIds, std::size_t entityCount)
 				{
 					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = m_layers[layerIndex];
+					Layer& layer = *m_layers[layerIndex];
 				
 					for (std::size_t i = 0; i < entityCount; ++i)
 					{
 						if (!layer.visibleEntities.UnboundedTest(entityIds[i]))
 							return;
 
-						m_deathEvents.emplace(entityIds[i]);
+						layer.deathEvents.emplace(entityIds[i]);
+						m_pendingEvents.Set(VisibilityEventType::Death);
 					}
 				});
 
 				layer.onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
 				{
 					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = m_layers[layerIndex];
+					Layer& layer = *m_layers[layerIndex];
 				
 					for (std::size_t i = 0; i < entityCount; ++i)
 					{
 						if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
 							return;
 
-						m_healthUpdateEvents[events[i].entityId] = events[i];
+						layer.healthUpdateEvents[events[i].entityId] = events[i];
+						m_pendingEvents.Set(VisibilityEventType::HealthUpdate);
 					}
 				});
 
 				layer.onEntitiesInputUpdate.Connect(syncSystem.OnEntitiesInputUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityInputs* events, std::size_t entityCount)
 				{
 					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = m_layers[layerIndex];
+					Layer& layer = *m_layers[layerIndex];
 
 					for (std::size_t i = 0; i < entityCount; ++i)
 					{
 						if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
 							return;
 
-						m_inputUpdateEvents[BuildEntityId(layerIndex, events[i].entityId)] = events[i];
+						layer.inputUpdateEvents[events[i].entityId] = events[i];
+						m_pendingEvents.Set(VisibilityEventType::InputUpdate);
 					}
 				});
 
 				Packets::EnableLayer enableLayerPacket;
 				enableLayerPacket.layerIndex = layerIndex;
-				enableLayerPacket.stateTick = m_match.GetNetworkTick();
+				enableLayerPacket.stateTick = networkTick;
 
 				syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 				{
@@ -172,6 +182,8 @@ namespace bw
 					entityData.id = eventData->entityId;
 					FillEntityData(eventData.value(), entityData.data);
 
+					layer.visibleEntities.UnboundedSet(entityId);
+
 					eventData.reset();
 				};
 
@@ -185,128 +197,237 @@ namespace bw
 			m_newlyVisibleLayers.Clear();
 		}
 
-		// Send packet in fixed order
-		if (!m_deathEvents.empty())
+		if (!m_pendingLayerUpdates.empty())
 		{
-			m_entitiesDeathPacket.stateTick = m_match.GetNetworkTick();
+			for (auto&& layerUpdate : m_pendingLayerUpdates)
+			{
+				Packets::PlayerLayer layerPacket;
+				layerPacket.stateTick = networkTick;
+				layerPacket.layerIndex = layerUpdate.layerIndex;
+				layerPacket.playerIndex = layerUpdate.playerIndex;
+
+				m_session.SendPacket(layerPacket);
+			}
+
+			m_pendingLayerUpdates.clear();
+		}
+
+		// Send packet in fixed order
+		if (m_pendingEvents.Test(VisibilityEventType::Death))
+		{
+			m_entitiesDeathPacket.stateTick = networkTick;
 
 			m_entitiesDeathPacket.entities.clear();
-			for (Nz::UInt64 entityId : m_deathEvents)
+			m_entitiesDeathPacket.layers.clear();
+
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& entityData = m_entitiesDeathPacket.entities.emplace_back();
-				entityData.id = DecodeEntityId(entityId);
+				auto& layer = *it.value();
+				if (layer.deathEvents.empty())
+					continue;
+
+				LayerIndex layerIndex = it.key();
+
+				auto& layerData = m_entitiesDeathPacket.layers.emplace_back();
+				layerData.layerIndex = it.key();
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.deathEvents.size());
+
+				for (Nz::UInt32 entityId : layer.deathEvents)
+				{
+					auto& entityData = m_entitiesDeathPacket.entities.emplace_back();
+					entityData.id = entityId;
+				}
+				layer.deathEvents.clear();
 			}
-			m_deathEvents.clear();
 
 			m_session.SendPacket(m_entitiesDeathPacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::Death);
 		}
 
-		if (!m_destructionEvents.empty())
+		if (m_pendingEvents.Test(VisibilityEventType::Destruction))
 		{
-			m_deleteEntitiesPacket.stateTick = m_match.GetNetworkTick();
+			m_deleteEntitiesPacket.stateTick = networkTick;
 
 			m_deleteEntitiesPacket.entities.clear();
-			for (Nz::UInt64 entityId : m_destructionEvents)
+			m_deleteEntitiesPacket.layers.clear();
+
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& entityData = m_deleteEntitiesPacket.entities.emplace_back();
-				entityData.id = DecodeEntityId(entityId);
+				auto& layer = *it.value();
+				if (layer.destructionEvents.empty())
+					continue;
+
+				LayerIndex layerIndex = it.key();
+
+				auto& layerData = m_deleteEntitiesPacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.destructionEvents.size());
+
+				for (Nz::UInt32 entityId : layer.destructionEvents)
+				{
+					auto& entityData = m_deleteEntitiesPacket.entities.emplace_back();
+					entityData.id = entityId;
+				}
 			}
-			m_destructionEvents.clear();
 
 			m_session.SendPacket(m_deleteEntitiesPacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::Destruction);
 		}
 
-		if (!m_creationEvents.empty())
+		if (m_pendingEvents.Test(VisibilityEventType::Creation))
 		{
-			m_createEntitiesPacket.stateTick = m_match.GetNetworkTick();
+			m_createEntitiesPacket.stateTick = networkTick;
 
-			// Handle parents
 			m_createEntitiesPacket.entities.clear();
-			std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
-			PushEntity = [&](PendingCreationEventMap::iterator it)
+			m_createEntitiesPacket.layers.clear();
+
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& entityId = it.key();
-				auto& eventData = it.value();
-				if (!eventData.has_value())
-					return;
+				auto& layer = *it.value();
+				if (layer.creationEvents.empty())
+					continue;
 
-				Nz::UInt16 layerIndex = Nz::UInt16(entityId >> 32);
+				LayerIndex layerIndex = it.key();
 
-				if (eventData->parent)
+				std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
+				PushEntity = [&](PendingCreationEventMap::iterator it)
 				{
-					Nz::UInt32 parentId = static_cast<Nz::UInt32>(eventData->parent.value());
-					auto it = m_creationEvents.find(BuildEntityId(layerIndex, parentId));
-					if (it != m_creationEvents.end())
-						PushEntity(it);
-				}
+					auto& entityId = it.key();
+					auto& eventData = it.value();
+					if (!eventData.has_value())
+						return;
 
-				auto& entityData = m_createEntitiesPacket.entities.emplace_back();
-				entityData.id.layerId = layerIndex;
-				entityData.id.entityId = eventData->entityId;
-				FillEntityData(eventData.value(), entityData.data);
-				
-				eventData.reset();
-			};
+					if (eventData->parent)
+					{
+						Nz::UInt32 parentId = static_cast<Nz::UInt32>(eventData->parent.value());
+						auto it = layer.creationEvents.find(parentId);
+						if (it != layer.creationEvents.end())
+							PushEntity(it);
+					}
 
-			for (auto it = m_creationEvents.begin(); it != m_creationEvents.end(); ++it)
-				PushEntity(it);
-			m_creationEvents.clear();
+					auto& entityData = m_createEntitiesPacket.entities.emplace_back();
+					entityData.id = eventData->entityId;
+					FillEntityData(eventData.value(), entityData.data);
+
+					eventData.reset();
+				};
+
+				auto& layerData = m_createEntitiesPacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.creationEvents.size());
+
+				for (auto it = layer.creationEvents.begin(); it != layer.creationEvents.end(); ++it)
+					PushEntity(it);
+				layer.creationEvents.clear();
+			}
 
 			m_session.SendPacket(m_createEntitiesPacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::Creation);
 		}
 
-		if (!m_healthUpdateEvents.empty())
+		if (m_pendingEvents.Test(VisibilityEventType::HealthUpdate))
 		{
-			m_healthUpdatePacket.stateTick = m_match.GetNetworkTick();
+			m_healthUpdatePacket.stateTick = networkTick;
+
 			m_healthUpdatePacket.entities.clear();
+			m_healthUpdatePacket.layers.clear();
 
-			for (auto&& pair : m_healthUpdateEvents)
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& eventData = pair.second;
+				auto& layer = *it.value();
+				if (layer.healthUpdateEvents.empty())
+					continue;
 
-				auto& entityData = m_healthUpdatePacket.entities.emplace_back();
-				entityData.currentHealth = eventData.currentHealth;
-				entityData.id = DecodeEntityId(pair.first);
+				LayerIndex layerIndex = it.key();
+
+				auto& layerData = m_healthUpdatePacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.healthUpdateEvents.size());
+
+				for (auto&& pair : layer.healthUpdateEvents)
+				{
+					auto& eventData = pair.second;
+					
+					auto& entityData = m_healthUpdatePacket.entities.emplace_back();
+					entityData.id = pair.first;
+					entityData.currentHealth = eventData.currentHealth;
+				}
 			}
-			m_healthUpdateEvents.clear();
 
 			m_session.SendPacket(m_healthUpdatePacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::HealthUpdate);
 		}
 
-		if (!m_inputUpdateEvents.empty())
+		if (m_pendingEvents.Test(VisibilityEventType::InputUpdate))
 		{
-			m_inputUpdatePacket.stateTick = m_match.GetNetworkTick();
+			m_inputUpdatePacket.stateTick = networkTick;
+
 			m_inputUpdatePacket.entities.clear();
+			m_inputUpdatePacket.layers.clear();
 
-			for (auto&& pair : m_inputUpdateEvents)
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& eventData = pair.second;
+				auto& layer = *it.value();
+				if (layer.inputUpdateEvents.empty())
+					continue;
 
-				auto& entityData = m_inputUpdatePacket.entities.emplace_back();
-				entityData.id = DecodeEntityId(pair.first);
-				entityData.inputs = eventData.inputs;
+				LayerIndex layerIndex = it.key();
+
+				auto& layerData = m_inputUpdatePacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.inputUpdateEvents.size());
+
+				for (auto&& pair : layer.inputUpdateEvents)
+				{
+					auto& eventData = pair.second;
+
+					auto& entityData = m_inputUpdatePacket.entities.emplace_back();
+					entityData.id = pair.first;
+					entityData.inputs = eventData.inputs;
+				}
 			}
-			m_inputUpdateEvents.clear();
 
 			m_session.SendPacket(m_inputUpdatePacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::InputUpdate);
 		}
 
-		if (!m_playAnimationEvents.empty())
+		if (m_pendingEvents.Test(VisibilityEventType::PlayAnimation))
 		{
-			m_entitiesAnimationPacket.stateTick = m_match.GetNetworkTick();
+			m_entitiesAnimationPacket.stateTick = networkTick;
+
 			m_entitiesAnimationPacket.entities.clear();
+			m_entitiesAnimationPacket.layers.clear();
 
-			for (auto&& pair : m_playAnimationEvents)
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
-				auto& eventData = pair.second;
+				auto& layer = *it.value();
+				if (layer.playAnimationEvents.empty())
+					continue;
 
-				auto& animData = m_entitiesAnimationPacket.entities.emplace_back();
-				animData.animId = static_cast<Nz::UInt8>(eventData.animId);
-				animData.entityId = DecodeEntityId(pair.first);
+				LayerIndex layerIndex = it.key();
+
+				auto& layerData = m_entitiesAnimationPacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.playAnimationEvents.size());
+
+				for (auto&& pair : layer.playAnimationEvents)
+				{
+					auto& eventData = pair.second;
+
+					auto& entityData = m_entitiesAnimationPacket.entities.emplace_back();
+					entityData.entityId = pair.first;
+					entityData.animId = static_cast<Nz::UInt8>(eventData.animId);
+				}
 			}
-			m_playAnimationEvents.clear();
 
 			m_session.SendPacket(m_entitiesAnimationPacket);
+
+			m_pendingEvents.Clear(VisibilityEventType::PlayAnimation);
 		}
 
 		if (!m_layers.empty())
@@ -314,12 +435,18 @@ namespace bw
 
 		for (auto it = m_pendingEntitiesEvent.begin(); it != m_pendingEntitiesEvent.end();)
 		{
-			auto entityId = DecodeEntityId(it.key());
+			LayerIndex layerId = LayerIndex(it.key() >> 32);
+			Nz::UInt32 entityId = Nz::UInt32(it.key() & 0xFFFFFFFF);
 
-			assert(m_layers.find(entityId.layerId) != m_layers.end());
-			Layer& layer = m_layers[entityId.layerId];
+			if (m_layers.find(layerId) == m_layers.end())
+			{
+				// If a pending event is related to a layer which is no longer visible, drop it
+				it = m_pendingEntitiesEvent.erase(it);
+				continue;
+			}
+			Layer& layer = *m_layers[layerId];
 
-			if (layer.visibleEntities.UnboundedTest(entityId.entityId))
+			if (layer.visibleEntities.UnboundedTest(entityId))
 			{
 				auto& callbackVec = it.value();
 				for (auto&& func : callbackVec)
@@ -340,7 +467,7 @@ namespace bw
 				continue;
 			}
 
-			Layer& layer = m_layers[it->layerIndex];
+			Layer& layer = *m_layers[it->layerIndex];
 
 			m_tempBitset.PerformsAND(layer.visibleEntities, it->entitiesId);
 			if (m_tempBitset == it->entitiesId)
@@ -354,39 +481,39 @@ namespace bw
 		}
 	}
 
-	void MatchClientVisibility::HandleEntityCreation(Nz::UInt16 layerIndex, const NetworkSyncSystem::EntityCreation& eventData)
+	void MatchClientVisibility::HandleEntityCreation(LayerIndex layerIndex, const NetworkSyncSystem::EntityCreation& eventData)
 	{
-		m_creationEvents[BuildEntityId(layerIndex, eventData.entityId)] = eventData;
-
 		assert(m_layers.find(layerIndex) != m_layers.end());
-		Layer& layer = m_layers[layerIndex];
-
+		Layer& layer = *m_layers[layerIndex];
+		layer.creationEvents[eventData.entityId] = eventData;
 		layer.visibleEntities.UnboundedSet(eventData.entityId);
+
+		m_pendingEvents.Set(VisibilityEventType::Creation);
 	}
 
-	void MatchClientVisibility::HandleEntityDestruction(Nz::UInt16 layerIndex, const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath)
+	void MatchClientVisibility::HandleEntityDestruction(LayerIndex layerIndex, const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath)
 	{
-		Nz::UInt64 entityId = BuildEntityId(layerIndex, eventData.entityId);
+		assert(m_layers.find(layerIndex) != m_layers.end());
+		Layer& layer = *m_layers[layerIndex];
 
 		// Only send entity destruction packet if this entity was already created client-side
-		auto it = m_creationEvents.find(entityId);
-		if (it != m_creationEvents.end())
-			m_creationEvents.erase(it);
+		auto it = layer.creationEvents.find(eventData.entityId);
+		if (it != layer.creationEvents.end())
+			layer.creationEvents.erase(it);
 		else
-			m_destructionEvents.insert(entityId);
+			layer.destructionEvents.insert(eventData.entityId);
 
-		m_inputUpdateEvents.erase(entityId);
-		m_healthUpdateEvents.erase(entityId);
-		m_playAnimationEvents.erase(entityId);
-		m_staticMovementUpdateEvents.erase(entityId);
+		layer.inputUpdateEvents.erase(eventData.entityId);
+		layer.healthUpdateEvents.erase(eventData.entityId);
+		layer.playAnimationEvents.erase(eventData.entityId);
+		layer.staticMovementUpdateEvents.erase(eventData.entityId);
 
 		if (clearDeath)
-			m_deathEvents.erase(entityId);
-
-		assert(m_layers.find(layerIndex) != m_layers.end());
-		Layer& layer = m_layers[layerIndex];
+			layer.deathEvents.erase(eventData.entityId);
 
 		layer.visibleEntities.UnboundedReset(eventData.entityId);
+
+		m_pendingEvents.Set(VisibilityEventType::Destruction);
 	}
 
 	void MatchClientVisibility::SendMatchState()
@@ -394,31 +521,41 @@ namespace bw
 		Terrain& terrain = m_match.GetTerrain();
 
 		m_matchStatePacket.entities.clear();
+		m_matchStatePacket.layers.clear();
 		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
 
-		for (auto&& pair : m_staticMovementUpdateEvents)
-			BuildMovementPacket(pair.first >> 16, m_matchStatePacket.entities.emplace_back(), pair.second);
-
-		m_staticMovementUpdateEvents.clear();
-		for (auto&& [layerIndex, layerData] : m_layers)
+		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 		{
-			TerrainLayer& layer = terrain.GetLayer(layerIndex);
-			const NetworkSyncSystem& syncSystem = layer.GetWorld().GetSystem<NetworkSyncSystem>();
+			LayerIndex layerIndex = it.key();
+			auto& layer = *it.value();
+
+			std::size_t oldEntityCount = m_matchStatePacket.entities.size();
+
+			for (auto&& pair : layer.staticMovementUpdateEvents)
+				BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);
+
+			layer.staticMovementUpdateEvents.clear();
+
+			TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
+			const NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
 
 			syncSystem.MoveEntities([&](const NetworkSyncSystem::EntityMovement* entitiesMovement, std::size_t entityCount)
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
-					BuildMovementPacket(layerIndex, m_matchStatePacket.entities.emplace_back(), entitiesMovement[i]);
+					BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), entitiesMovement[i]);
 			});
+
+			auto& layerData = m_matchStatePacket.layers.emplace_back();
+			layerData.layerIndex = layerIndex;
+			layerData.entityCount = static_cast<Nz::UInt32>(m_matchStatePacket.entities.size() - oldEntityCount);
 		}
 
 		m_session.SendPacket(m_matchStatePacket);
 	}
 
-	void MatchClientVisibility::BuildMovementPacket(Nz::UInt16 layerIndex, Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData)
+	void MatchClientVisibility::BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData)
 	{
-		packetData.id.layerId = layerIndex;
-		packetData.id.entityId = eventData.entityId;
+		packetData.id = eventData.entityId;
 		packetData.position = eventData.position;
 		packetData.rotation = eventData.rotation;
 

@@ -26,7 +26,9 @@ namespace bw
 		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
+		IncomingCommand(DisableLayer);
 		IncomingCommand(DownloadClientScriptResponse);
+		IncomingCommand(EnableLayer);
 		IncomingCommand(EntitiesAnimation);
 		IncomingCommand(EntitiesDeath);
 		IncomingCommand(EntitiesInputs);

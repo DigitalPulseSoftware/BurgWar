@@ -70,6 +70,7 @@ namespace bw
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 			void UpdateLayer(LayerIndex layerIndex);
+			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) = delete;

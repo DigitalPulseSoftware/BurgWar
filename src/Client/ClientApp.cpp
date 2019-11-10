@@ -11,6 +11,7 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
@@ -27,6 +28,7 @@ namespace bw
 	m_networkReactors(GetLogger())
 	{
 		//FIXME: This should be a part of ClientLib
+		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeSystem<SoundSystem>();
@@ -90,6 +92,12 @@ namespace bw
 	void ClientApp::FillStores()
 	{
 		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
+
+		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
+		spriteNoDepthMat->EnableDepthBuffer(false);
+		spriteNoDepthMat->EnableFaceCulling(false);
+
+		Nz::MaterialLibrary::Register("SpriteNoDepth", spriteNoDepthMat);
 
 		Nz::TextureLibrary::Register("MenuBackground", Nz::Texture::LoadFromFile(gameResourceFolder + "/background.png"));
 

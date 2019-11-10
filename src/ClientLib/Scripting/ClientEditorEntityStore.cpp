@@ -6,6 +6,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
@@ -14,6 +15,18 @@
 
 namespace bw
 {
+	bool ClientEditorEntityStore::InitializeEntity(const Ndk::EntityHandle& entity) const
+	{
+		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+		if (!InitializeEntity(static_cast<const ScriptedEntity&>(*scriptComponent.GetElement()), entity))
+		{
+			entity->Kill();
+			return false;
+		}
+
+		return true;
+	}
+
 	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
@@ -33,8 +46,6 @@ namespace bw
 
 		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 
-		entity->AddComponent<Ndk::GraphicsComponent>();
-
 		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
@@ -44,9 +55,6 @@ namespace bw
 
 		if (hasInputs)
 			entity->AddComponent<InputComponent>();
-
-		if (!InitializeEntity(*entityClass, entity))
-			entity->Kill();
 
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);

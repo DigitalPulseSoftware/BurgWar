@@ -25,11 +25,13 @@ namespace bw
 			ClientEditorEntityStore(ClientEditorEntityStore&&) = delete;
 			~ClientEditorEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
+			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
+			virtual const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
 
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+			using SharedEntityStore::InitializeEntity;
 
 			AssetStore& m_assetStore;
 	};

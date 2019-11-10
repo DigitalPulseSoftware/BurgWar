@@ -102,6 +102,13 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<PlayerHandle>("Player", 
 			"new", sol::no_constructor,
+			"GetLayerIndex", [](const PlayerHandle& player) -> LayerIndex
+			{
+				if (!player)
+					return 0;
+
+				return player->GetLayerIndex();
+			},
 			"GetName", [](const PlayerHandle& player) -> std::string
 			{
 				if (!player)
@@ -143,7 +150,7 @@ namespace bw
 					return;
 			
 				if (layerIndex != sol::nil)
-					player->UpdateLayer(layerIndex.as<std::size_t>());
+					player->UpdateLayer(layerIndex.as<LayerIndex>());
 				else
 					player->UpdateLayer(Player::NoLayer);
 			}

@@ -60,6 +60,9 @@ namespace bw
 
 	Match::~Match()
 	{
+		// Destroy players before scripting context
+		m_sessions.Clear();
+
 		// Clear timer manager before scripting context gets deleted
 		GetTimerManager().Clear();
 
@@ -72,7 +75,7 @@ namespace bw
 
 	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
-		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
+		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
 			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
@@ -122,6 +125,21 @@ namespace bw
 	{
 		assert(m_entityStore);
 		return *m_entityStore;
+	}
+
+	TerrainLayer& Match::GetLayer(LayerIndex layerIndex)
+	{
+		return m_terrain->GetLayer(layerIndex);
+	}
+
+	const TerrainLayer& Match::GetLayer(LayerIndex layerIndex) const
+	{
+		return m_terrain->GetLayer(layerIndex);
+	}
+
+	LayerIndex Match::GetLayerCount() const
+	{
+		return m_terrain->GetLayerCount();
 	}
 
 	ServerWeaponStore& Match::GetWeaponStore()

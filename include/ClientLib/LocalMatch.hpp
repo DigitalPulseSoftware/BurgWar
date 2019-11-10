@@ -19,8 +19,10 @@
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/LocalMatchPrediction.hpp>
+#include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
+#include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
@@ -59,10 +61,13 @@ namespace bw
 			inline AnimationManager& GetAnimationManager();
 			inline AssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
-			inline const Ndk::EntityHandle& GetLayerCamera();
-			inline const Ndk::EntityHandle& GetLayerCamera(Nz::UInt16 layerIndex);
+			inline const Ndk::EntityHandle& GetCameraEntity() const;
+			inline ClientSession& GetClientSession();
 			ClientEntityStore& GetEntityStore() override;
 			const ClientEntityStore& GetEntityStore() const override;
+			LocalLayer& GetLayer(LayerIndex layerIndex) override;
+			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
+			LayerIndex GetLayerCount() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
 
@@ -86,55 +91,42 @@ namespace bw
 				Packets::ControlEntity,
 				Packets::CreateEntities,
 				Packets::DeleteEntities,
+				Packets::DisableLayer,
+				Packets::EnableLayer,
 				Packets::EntitiesAnimation,
 				Packets::EntitiesDeath,
 				Packets::EntitiesInputs,
 				Packets::EntityWeapon,
 				Packets::HealthUpdate,
 				Packets::MatchState,
+				Packets::PlayerLayer,
 				Packets::PlayerWeapons
 			>;
 
 			void BindPackets();
-			void CreateGhostEntity(ServerEntity& serverEntity);
-			void CreateHealthBar(ServerEntity& serverEntity, Nz::UInt16 currentHealth);
-			void CreateName(ServerEntity& serverEntity, const std::string& name);
-			void DebugEntityId(ServerEntity& serverEntity);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);
 			void HandleTickPacket(Packets::DeleteEntities&& packet);
+			void HandleTickPacket(Packets::DisableLayer&& packet);
+			void HandleTickPacket(Packets::EnableLayer&& packet);
 			void HandleTickPacket(Packets::EntitiesAnimation&& packet);
 			void HandleTickPacket(Packets::EntitiesDeath&& packet);
 			void HandleTickPacket(Packets::EntitiesInputs&& packet);
 			void HandleTickPacket(Packets::EntityWeapon&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
+			void HandleTickPacket(Packets::PlayerLayer&& packet);
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void InitializeRemoteConsole();
 			void OnPlayerLayerUpdate(const Packets::PlayerLayer& packet);
 			void OnTick(bool lastTick) override;
-			void PrepareClientUpdate();
-			void PrepareTickUpdate();
 			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet);
 			bool SendInputs(Nz::UInt16 serverTick, bool force);
-
-			struct HealthData
-			{
-				float spriteWidth;
-				Nz::UInt16 currentHealth;
-				Nz::SpriteRef healthSprite;
-				Ndk::EntityOwner healthBarEntity;
-			};
-
-			struct NameData
-			{
-				Ndk::EntityOwner nameEntity;
-			};
 
 			struct PlayerData
 			{
@@ -146,10 +138,9 @@ namespace bw
 				std::size_t selectedWeapon;
 				std::shared_ptr<InputController> inputController;
 				std::vector<Ndk::EntityHandle> weapons;
-				Ndk::EntityHandle controlledEntity;
+				LocalLayerEntityHandle controlledEntity;
 				Nz::UInt8 playerIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;
-				Nz::UInt64 controlledEntityServerId;
 				PlayerInputData lastInputData;
 			};
 
@@ -180,31 +171,15 @@ namespace bw
 				Nz::Int32 tickError;
 			};
 
-			struct ServerEntity
-			{
-				std::optional<HealthData> health;
-				std::optional<NameData> name;
-				Ndk::EntityHandle serverGhost;
-				Ndk::EntityOwner entity;
-				Nz::RadianAnglef rotationError = 0.f;
-				Nz::Vector2f positionError = Nz::Vector2f::Zero();
-				Nz::UInt16 layerIndex;
-				Nz::UInt16 maxHealth;
-				Nz::UInt32 serverEntityId;
-				Nz::UInt32 weaponEntityId = NoWeapon;
-				bool isPhysical;
-				bool isLocalPlayerControlled = false;
-
-				static constexpr Nz::UInt32 NoWeapon = 0xFFFFFFFF;
-			};
-
 			struct TickPacket
 			{
 				Nz::UInt16 tick;
 				TickPacketContent content;
 			};
 
-			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, onUnhandledKeyPressed);
+			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
+			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
+			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
 
 			std::optional<AssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;
@@ -216,17 +191,16 @@ namespace bw
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;
-			std::vector<std::pair<LayerIndex, int>> m_orderedLayers;
-			std::vector<LocalLayer> m_layers;
+			std::vector<std::unique_ptr<LocalLayer>> m_layers;
 			std::vector<PlayerData> m_playerData;
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
-			tsl::hopscotch_map<Nz::UInt64 /*serverEntityId*/, ServerEntity /*clientEntity*/> m_serverEntityIdToClient;
+			tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> m_visualEntities;
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
-			Ndk::World m_overlayWorld;
 			Ndk::World m_renderWorld;
+			Nz::ColorBackgroundRef m_colorBackground;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			AnimationManager m_animationManager;

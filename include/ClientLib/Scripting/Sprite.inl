@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Sprite::Sprite(Ndk::EntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Sprite::Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
 	m_entity(std::move(entity)),
 	m_transformMatrix(transformMatrix),
 	m_sprite(std::move(sprite)),

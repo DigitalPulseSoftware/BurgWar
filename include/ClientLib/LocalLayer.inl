@@ -6,18 +6,38 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& LocalLayer::GetCameraEntity()
+	inline void LocalLayer::Disable()
 	{
-		return m_camera;
+		return Enable(false);
 	}
 
-	inline Nz::Node& LocalLayer::GetCameraNode()
+	template<typename F>
+	void LocalLayer::ForEachLayerEntity(F&& func)
 	{
-		return *m_cameraNode;
+		assert(m_isEnabled);
+
+		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+			func(it.value());
 	}
 
-	inline Nz::Node& LocalLayer::GetNode()
+	inline const Nz::Color& LocalLayer::GetBackgroundColor() const
 	{
-		return *m_node;
+		return m_backgroundColor;
+	}
+
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(Nz::UInt32 serverId)
+	{
+		assert(m_isEnabled);
+
+		auto it = m_serverEntityIdToClient.find(serverId);
+		if (it == m_serverEntityIdToClient.end())
+			return std::nullopt;
+
+		return it.value();
+	}
+
+	inline bool LocalLayer::IsEnabled() const
+	{
+		return m_isEnabled;
 	}
 }

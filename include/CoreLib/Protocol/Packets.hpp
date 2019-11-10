@@ -183,30 +183,45 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
-			Helper::EntityId entityId;
+			CompressedUnsigned<LayerIndex> layerIndex;
+			CompressedUnsigned<Nz::UInt32> entityId;
 		};
 
 		DeclarePacket(CreateEntities)
 		{
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
 				Helper::EntityData data;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(DeleteEntities)
 		{
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(DisableLayer)
@@ -242,54 +257,85 @@ namespace bw
 		{
 			struct Entity
 			{
-				Helper::EntityId entityId;
+				CompressedUnsigned<Nz::UInt32> entityId;
 				Nz::UInt8 animId;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(EntitiesDeath)
 		{
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(EntitiesInputs)
 		{
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
 				PlayerInputData inputs;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
-			Helper::EntityId entityId;
+			CompressedUnsigned<LayerIndex> layerIndex;
+			CompressedUnsigned<Nz::UInt32> entityId;
 			CompressedUnsigned<Nz::UInt32> weaponEntityId;
+
+			static constexpr Nz::UInt32 NoWeapon = 0xFFFFFFFF;
 		};
 
 		DeclarePacket(HealthUpdate)
 		{
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
 				Nz::UInt16 currentHealth;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(InputTimingCorrection)
@@ -342,15 +388,22 @@ namespace bw
 
 			struct Entity
 			{
-				Helper::EntityId id;
+				CompressedUnsigned<Nz::UInt32> id;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(NetworkStrings)
@@ -373,6 +426,7 @@ namespace bw
 
 		DeclarePacket(PlayerLayer)
 		{
+			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
 			CompressedUnsigned<LayerIndex> layerIndex;
 		};
@@ -395,7 +449,8 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
-			std::vector<Helper::EntityId> weaponEntities;
+			CompressedUnsigned<LayerIndex> layerIndex;
+			std::vector<CompressedUnsigned<Nz::UInt32>> weaponEntities;
 		};
 
 		DeclarePacket(Ready)
@@ -438,7 +493,6 @@ namespace bw
 
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
-		void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
 		void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
 	}
 }

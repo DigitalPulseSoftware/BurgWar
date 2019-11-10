@@ -11,11 +11,13 @@
 #include <ClientLib/Scripting/ClientEditorEntityStore.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <optional>
 
 namespace bw
 {
 	class AssetStore;
 	class LocalLayer;
+	class LocalLayerEntity;
 
 	class ClientEntityStore : public ClientEditorEntityStore
 	{
@@ -24,7 +26,7 @@ namespace bw
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(LocalLayer& layer, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
+			std::optional<LocalLayerEntity> InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, bool isPhysical) const;
 	};
 }
 

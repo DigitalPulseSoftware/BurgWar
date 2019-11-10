@@ -7,6 +7,13 @@
 
 namespace bw
 {
+	template<typename F>
+	void SharedLayer::ForEachEntity(F&& func)
+	{
+		for (const Ndk::EntityHandle& entity : m_world.GetEntities())
+			func(entity);
+	}
+
 	inline LayerIndex SharedLayer::GetLayerIndex()
 	{
 		return m_layerIndex;

@@ -4,6 +4,9 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
@@ -41,6 +44,11 @@ namespace bw
 	BurgApp(LogSide::Editor),
 	m_entityInfoDialog(nullptr)
 	{
+		//FIXME: This should be a part of ClientLib
+		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
+		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
+		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
+
 		RegisterEditorConfig();
 
 		if (!m_config.LoadFromFile("editorconfig.lua"))

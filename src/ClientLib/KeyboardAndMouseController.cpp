@@ -21,7 +21,7 @@ namespace bw
 		});
 	}
 
-	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const Ndk::EntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
 
@@ -51,16 +51,13 @@ namespace bw
 		{
 			Nz::Vector2i mousePosition = Nz::Mouse::GetPosition(m_window);
 
-			const Ndk::EntityHandle& cameraEntity = localMatch.GetLayerCamera();
+			const Ndk::EntityHandle& cameraEntity = localMatch.GetCameraEntity();
 			if (cameraEntity)
 			{
 				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
 
 				Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mousePosition.x), float(mousePosition.y), 0.f));
-
-				auto& controlledEntityNode = controlledEntity->GetComponent<Ndk::NodeComponent>();
-
-				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition - controlledEntityNode.GetPosition()));
+				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition - controlledEntity->GetPosition()));
 			}
 		}
 		

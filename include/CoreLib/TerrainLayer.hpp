@@ -8,7 +8,6 @@
 #define BURGWAR_CORELIB_TERRAINLAYER_HPP
 
 #include <CoreLib/Map.hpp>
-#include <CoreLib/Match.hpp>
 #include <CoreLib/SharedLayer.hpp>
 
 namespace bw
@@ -24,7 +23,7 @@ namespace bw
 			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;
 
-			inline Match& GetMatch();
+			Match& GetMatch();
 
 			TerrainLayer& operator=(const TerrainLayer&) = delete;
 			TerrainLayer& operator=(TerrainLayer&&) noexcept = default;

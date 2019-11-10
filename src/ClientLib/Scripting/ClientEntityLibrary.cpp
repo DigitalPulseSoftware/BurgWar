@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -66,10 +67,22 @@ namespace bw
 			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
-			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(sprite, transformMatrix, renderOrder);
+			//FIXME
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
 
-			return Sprite(entity, sprite, transformMatrix, renderOrder);
+				Sprite scriptSprite(layerEntityComponent.GetLayerEntity(), sprite, transformMatrix, renderOrder);
+				scriptSprite.Show();
+
+				return scriptSprite;
+			}
+			else
+			{
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite, transformMatrix, renderOrder);
+
+				return Sprite({}, sprite, transformMatrix, renderOrder);
+			}
 		};
 
 		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
@@ -130,13 +143,20 @@ namespace bw
 				}
 			}
 
-			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(tileMap);
+			//FIXME
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+				layerEntityComponent.GetLayerEntity()->AttachRenderable(tileMap, Nz::Matrix4f::Identity(), 0);
+			}
+			else
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
 		};
 
 		elementMetatable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			/*const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
@@ -148,7 +168,7 @@ namespace bw
 				entity->AddComponent<SoundEmitterComponent>();
 
 			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);*/
 		};
 	}
 }

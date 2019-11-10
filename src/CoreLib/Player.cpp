@@ -209,12 +209,12 @@ namespace bw
 		}
 
 		Packets::EntityWeapon weaponPacket;
-		weaponPacket.entityId.layerId = m_layerIndex;
-		weaponPacket.entityId.entityId = m_playerEntity->GetId();
-		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : 0xFFFFFFFF;
+		weaponPacket.layerIndex = m_layerIndex;
+		weaponPacket.entityId = m_playerEntity->GetId();
+		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : Packets::EntityWeapon::NoWeapon;
 
 		Nz::Bitset<Nz::UInt64> entityIds;
-		entityIds.UnboundedSet(weaponPacket.entityId.entityId);
+		entityIds.UnboundedSet(weaponPacket.entityId);
 
 		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
 			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
@@ -237,17 +237,14 @@ namespace bw
 		{
 			Packets::PlayerWeapons weaponPacket;
 			weaponPacket.playerIndex = m_playerIndex;
+			weaponPacket.layerIndex = m_layerIndex;
 
 			Nz::Bitset<Nz::UInt64> weaponIds;
 			for (const Ndk::EntityHandle& weapon : m_weapons)
 			{
 				assert(weapon);
 
-				Packets::Helper::EntityId entityId;
-				entityId.entityId = weapon->GetId();
-				entityId.layerId = m_layerIndex;
-
-				weaponPacket.weaponEntities.push_back(entityId);
+				weaponPacket.weaponEntities.emplace_back(Nz::UInt32(weapon->GetId()));
 				weaponIds.UnboundedSet(weapon->GetId());
 			}
 
@@ -276,15 +273,15 @@ namespace bw
 		{
 			auto& matchComponent = entity->GetComponent<MatchComponent>();
 
-			controlEntity.entityId.layerId = matchComponent.GetLayer();
-			controlEntity.entityId.entityId = static_cast<Nz::UInt32>(entity->GetId());
+			controlEntity.layerIndex = matchComponent.GetLayer();
+			controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
 
-			m_session.GetVisibility().PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId.entityId, controlEntity);
+			m_session.GetVisibility().PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId, controlEntity);
 		}
 		else
 		{
-			controlEntity.entityId.layerId = 0;
-			controlEntity.entityId.entityId = 0;
+			controlEntity.layerIndex = NoLayer;
+			controlEntity.entityId = 0;
 
 			SendPacket(controlEntity);
 		}
@@ -313,11 +310,10 @@ namespace bw
 	{
 		if (m_layerIndex != layerIndex)
 		{
-			MatchClientVisibility& visibility = GetSession().GetVisibility();
+			m_match->GetGamemode()->ExecuteCallback("OnPlayerChangeLayer", CreateHandle(), layerIndex);
 
-			for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
-				visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
-			m_visibleLayers.Clear();
+			if (m_layerIndex != NoLayer)
+				UpdateLayerVisibility(m_layerIndex, false);
 
 			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
 			{
@@ -352,18 +348,27 @@ namespace bw
 
 			m_layerIndex = layerIndex;
 
-			Packets::PlayerLayer layerPacket;
-			layerPacket.layerIndex = m_layerIndex;
-			layerPacket.playerIndex = m_playerIndex;
+			MatchClientVisibility& visibility = GetSession().GetVisibility();
+			visibility.PushLayerUpdate(m_playerIndex, m_layerIndex);
 
 			if (m_layerIndex != NoLayer)
-			{
-				m_visibleLayers.UnboundedSet(m_layerIndex);
-				visibility.ShowLayer(m_layerIndex);
-			}
-
-			SendPacket(layerPacket);
+				UpdateLayerVisibility(m_layerIndex, true);
 		}
+	}
+
+	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
+	{
+		if (isVisible == m_visibleLayers.UnboundedTest(layerIndex))
+			return;
+
+		MatchClientVisibility& visibility = GetSession().GetVisibility();
+
+		if (isVisible)
+			visibility.ShowLayer(layerIndex);
+		else
+			visibility.HideLayer(layerIndex);
+
+		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
 	}
 
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)

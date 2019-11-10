@@ -15,6 +15,7 @@
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
@@ -61,6 +62,9 @@ namespace bw
 			const ServerEntityStore& GetEntityStore() const override;
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
+			TerrainLayer& GetLayer(LayerIndex layerIndex) override;
+			const TerrainLayer& GetLayer(LayerIndex layerIndex) const override;
+			LayerIndex GetLayerCount() const override;
 			inline sol::state& GetLuaState();
 			inline const Packets::MatchData& GetMatchData() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;

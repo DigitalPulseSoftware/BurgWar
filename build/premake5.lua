@@ -169,6 +169,7 @@ workspace("Burgwar")
 
 	filter "action:vs*"
 		defines "_CRT_SECURE_NO_WARNINGS"
+		buildoptions "/bigobj"
 
 	filter({})
 
@@ -283,6 +284,9 @@ workspace("Burgwar")
 				filter "action:gmake or gmake2"
 					links "stdc++fs"
 					links "pthread"
+
+				filter "action:vs*"
+					files("../thirdparty/include/**.natvis")
 
 				filter {}
 

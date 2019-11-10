@@ -53,6 +53,11 @@ namespace bw
 			return m_newlyVisibleLayers.UnboundedTest(layerIndex);
 	}
 
+	inline void MatchClientVisibility::PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex)
+	{
+		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ playerIndex, layerIndex });
+	}
+
 	inline void MatchClientVisibility::ShowLayer(LayerIndex layerIndex)
 	{
 		m_newlyHiddenLayers.UnboundedReset(layerIndex);
@@ -62,9 +67,10 @@ namespace bw
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntityPacket(Nz::UInt16 layerIndex, Nz::UInt32 entityId, T&& packet)
+	void MatchClientVisibility::PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet)
 	{
-		Nz::UInt64 entityKey = BuildEntityId(layerIndex, entityId);
+		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | entityId;
+
 		auto it = m_pendingEntitiesEvent.find(entityKey);
 		if (it == m_pendingEntitiesEvent.end())
 			it = m_pendingEntitiesEvent.emplace(entityKey, std::vector<EntityPacketSendFunction>()).first;
@@ -88,7 +94,7 @@ namespace bw
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntitiesPacket(Nz::UInt16 layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
+	void MatchClientVisibility::PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
 	{
 		if constexpr (Detail::HasStateTick<T>::value)
 		{
@@ -114,15 +120,5 @@ namespace bw
 				}
 			});
 		}
-	}
-
-	Nz::UInt64 MatchClientVisibility::BuildEntityId(Nz::UInt16 layerIndex, Nz::UInt32 entityId)
-	{
-		return Nz::UInt64(layerIndex) << 32 | entityId;
-	}
-
-	inline Packets::Helper::EntityId bw::MatchClientVisibility::DecodeEntityId(Nz::UInt64 entityId)
-	{
-		return { CompressedUnsigned<Nz::UInt16>(entityId >> 32), CompressedUnsigned<Nz::UInt32>(entityId & 0xFFFFFFFF) };
 	}
 }

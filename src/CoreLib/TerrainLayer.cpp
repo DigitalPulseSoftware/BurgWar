@@ -36,4 +36,9 @@ namespace bw
 			entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
 		}
 	}
+
+	Match& TerrainLayer::GetMatch()
+	{
+		return static_cast<Match&>(SharedLayer::GetMatch());
+	}
 }
