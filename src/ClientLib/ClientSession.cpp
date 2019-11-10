@@ -38,6 +38,8 @@ namespace bw
 			if (packet.startId == 0)
 				m_stringStore.Clear(); //< Reset string store
 
+			bwLog(GetApp().GetLogger(), LogLevel::Debug, "Received {} network strings", packet.strings.size());
+
 			m_stringStore.FillStore(packet.startId, packet.strings);
 		});
 

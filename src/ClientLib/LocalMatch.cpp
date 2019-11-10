@@ -808,12 +808,16 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::DisableLayer&& packet)
 	{
+		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now disabled", packet.layerIndex);
+
 		//TODO
 		m_layers[packet.layerIndex]->Disable();
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::EnableLayer&& packet)
 	{
+		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now enabled", packet.layerIndex);
+
 		//TODO
 		auto& layer = m_layers[packet.layerIndex];
 		layer->Enable();
