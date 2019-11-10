@@ -11,6 +11,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
+#include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
 #include <tsl/hopscotch_map.h>
@@ -30,10 +31,10 @@ namespace bw
 	class MapCanvas;
 	class ScriptingContext;
 
-	class EditorWindow : public BurgApp, public QMainWindow
+	class EditorWindow : public ClientEditorApp, public QMainWindow
 	{
 		public:
-			EditorWindow();
+			EditorWindow(int argc, char* argv[]);
 			~EditorWindow();
 
 			void ClearWorkingMap();

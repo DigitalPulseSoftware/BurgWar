@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTAPP_HPP
 #define BURGWAR_CLIENTAPP_HPP
 
-#include <CoreLib/BurgApp.hpp>
+#include <ClientLib/ClientEditorApp.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
@@ -17,13 +17,9 @@
 
 namespace bw
 {
-	class LocalMatch;
-	class Match;
-	class NetworkReactor;
-	class NetworkSessionBridge;
 	struct StateData;
 
-	class ClientApp : public Ndk::Application, public BurgApp
+	class ClientApp : public ClientEditorApp
 	{
 		public:
 			ClientApp(int argc, char* argv[]);
@@ -34,7 +30,6 @@ namespace bw
 			int Run();
 
 		private:
-			void FillStores();
 			void RegisterClientConfig();
 
 			std::shared_ptr<StateData> m_stateData;

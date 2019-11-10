@@ -21,18 +21,11 @@
 namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
-	Application(argc, argv),
-	BurgApp(LogSide::Client),
+	ClientEditorApp(argc, argv, LogSide::Client),
 	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(1280, 720), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8))),
 	m_stateMachine(nullptr),
 	m_networkReactors(GetLogger())
 	{
-		//FIXME: This should be a part of ClientLib
-		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
-		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
-		Ndk::InitializeSystem<SoundSystem>();
-
 		RegisterClientConfig();
 
 		if (!m_config.LoadFromFile("clientconfig.lua"))
@@ -87,32 +80,6 @@ namespace bw
 		}
 
 		return 0;
-	}
-
-	void ClientApp::FillStores()
-	{
-		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
-
-		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
-		spriteNoDepthMat->EnableDepthBuffer(false);
-		spriteNoDepthMat->EnableFaceCulling(false);
-
-		Nz::MaterialLibrary::Register("SpriteNoDepth", spriteNoDepthMat);
-
-		Nz::TextureLibrary::Register("MenuBackground", Nz::Texture::LoadFromFile(gameResourceFolder + "/background.png"));
-
-		//FIXME: Should be part of ClientLib too
-		Nz::Color trailColor(242, 255, 168);
-
-		Nz::SpriteRef trailSprite = Nz::Sprite::New();
-		trailSprite->SetMaterial(Nz::Material::New("Translucent2D"));
-		trailSprite->SetCornerColor(Nz::RectCorner_LeftBottom, trailColor * Nz::Color(128, 128, 128, 0));
-		trailSprite->SetCornerColor(Nz::RectCorner_LeftTop, trailColor * Nz::Color(128, 128, 128, 0));
-		trailSprite->SetCornerColor(Nz::RectCorner_RightTop, trailColor);
-		trailSprite->SetCornerColor(Nz::RectCorner_RightBottom, trailColor);
-		trailSprite->SetSize(64.f, 2.f);
-
-		Nz::SpriteLibrary::Register("Trail", std::move(trailSprite));
 	}
 
 	void ClientApp::RegisterClientConfig()

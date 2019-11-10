@@ -40,19 +40,16 @@ namespace bw
 		constexpr std::size_t MaxRecentFiles = 4;
 	}
 
-	EditorWindow::EditorWindow() :
-	BurgApp(LogSide::Editor),
+	EditorWindow::EditorWindow(int argc, char* argv[]) :
+	ClientEditorApp(argc, argv, LogSide::Editor),
 	m_entityInfoDialog(nullptr)
 	{
-		//FIXME: This should be a part of ClientLib
-		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
-		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
-
 		RegisterEditorConfig();
 
 		if (!m_config.LoadFromFile("editorconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
+
+		FillStores();
 
 		const std::string& editorAssetsFolder = m_config.GetStringOption("Assets.EditorFolder");
 		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");

@@ -4,13 +4,12 @@
 
 int main(int argc, char *argv[])
 {
-	Ndk::Application ndkApp;
 	QApplication app(argc, argv);
 	app.setOrganizationName("DigitalPulseSoftware");
-	app.setApplicationName("Burg'war map editor");
+	app.setApplicationName("Burgwar_mapeditor");
 	app.setApplicationDisplayName("Burg'War Map Editor");
 
-	bw::EditorWindow mainWindow;
+	bw::EditorWindow mainWindow(argc, argv);
 	mainWindow.show();
 
 	return app.exec();
