@@ -33,6 +33,8 @@ namespace bw
 		elementMetatable["AddLayer"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (!entity->HasComponent<LocalMatchComponent>())
+				return; //< To handle map editor
 
 			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
 
