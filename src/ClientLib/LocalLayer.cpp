@@ -26,8 +26,15 @@ namespace bw
 
 		m_isEnabled = enable;
 
-		if (!enable)
+		if (enable)
+		{
+			OnEnabled(this);
+		}
+		else
+		{
+			OnDisabled(this);
 			m_serverEntityIdToClient.clear();
+		}
 	}
 
 	LocalMatch& LocalLayer::GetLocalMatch()

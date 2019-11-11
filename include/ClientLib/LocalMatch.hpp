@@ -123,7 +123,6 @@ namespace bw
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void InitializeRemoteConsole();
-			void OnPlayerLayerUpdate(const Packets::PlayerLayer& packet);
 			void OnTick(bool lastTick) override;
 			void ProcessInputs(float elapsedTime);
 			void PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet);

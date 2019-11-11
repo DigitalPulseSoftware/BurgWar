@@ -20,6 +20,12 @@ namespace bw
 		m_layerEntity->RegisterVisualEntity(this);
 	}
 	
+	VisualEntity::VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, const Nz::Node& parentNode) :
+	VisualEntity(renderWorld, std::move(layerEntityHandle))
+	{
+		m_entity->GetComponent<Ndk::NodeComponent>().SetParent(parentNode);
+	}
+
 	VisualEntity::VisualEntity(VisualEntity&& entity) noexcept :
 	m_entity(std::move(entity.m_entity)),
 	m_layerEntity(std::move(entity.m_layerEntity))

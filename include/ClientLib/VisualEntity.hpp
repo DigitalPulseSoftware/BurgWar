@@ -9,6 +9,7 @@
 
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/InstancedRenderable.hpp>
+#include <Nazara/Utility/Node.hpp>
 #include <NDK/EntityOwner.hpp>
 
 namespace bw
@@ -22,6 +23,7 @@ namespace bw
 
 		public:
 			VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle);
+			VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, const Nz::Node& parentNode);
 			VisualEntity(const VisualEntity&) = delete;
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();

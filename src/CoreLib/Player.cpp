@@ -43,13 +43,12 @@ namespace bw
 
 	Player::~Player()
 	{
-		MatchClientVisibility& visibility = GetSession().GetVisibility();
-
-		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
-			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
-
 		if (m_match)
 			m_match->Leave(this);
+
+		MatchClientVisibility& visibility = GetSession().GetVisibility();
+		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
 	}
 
 	bool Player::GiveWeapon(std::string weaponClass)

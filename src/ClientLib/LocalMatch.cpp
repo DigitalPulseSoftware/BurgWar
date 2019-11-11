@@ -808,6 +808,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::DisableLayer&& packet)
 	{
+		assert(m_layers[packet.layerIndex]->IsEnabled());
 		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now disabled", packet.layerIndex);
 
 		//TODO
@@ -816,6 +817,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::EnableLayer&& packet)
 	{
+		assert(!m_layers[packet.layerIndex]->IsEnabled());
 		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now enabled", packet.layerIndex);
 
 		//TODO
@@ -1444,9 +1446,9 @@ namespace bw
 		m_inputPacket.estimatedServerTick = serverTick;
 		
 		bool checkInputs = !m_chatBox.IsTyping() &&
-			                (!m_localConsole || !m_localConsole->IsVisible()) &&
-			                (!m_remoteConsole || !m_remoteConsole->IsVisible()) &&
-			                (m_window->HasFocus());
+		                  (!m_localConsole || !m_localConsole->IsVisible()) &&
+		                  (!m_remoteConsole || !m_remoteConsole->IsVisible()) &&
+		                  (m_window->HasFocus());
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)

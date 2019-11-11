@@ -32,6 +32,8 @@ namespace bw
 
 				tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> visualEntities;
 
+				NazaraSlot(LocalLayer, OnDisabled, onDisabled);
+				NazaraSlot(LocalLayer, OnEnabled, onEnabled);
 				NazaraSlot(LocalLayer, OnEntityCreated, onEntityCreated);
 				NazaraSlot(LocalLayer, OnEntityDelete, onEntityDelete);
 			};

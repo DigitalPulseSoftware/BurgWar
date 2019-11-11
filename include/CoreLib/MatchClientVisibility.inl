@@ -32,38 +32,41 @@ namespace bw
 
 	inline void MatchClientVisibility::ClearLayers()
 	{
-		m_newlyHiddenLayers = m_visibleLayers;
-		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+		for (auto&& [layerIndex, layer] : m_layers)
+		{
 			m_newlyVisibleLayers.UnboundedReset(layerIndex);
+
+			if (m_clientVisibleLayers.UnboundedTest(layerIndex))
+				m_newlyHiddenLayers.UnboundedSet(layerIndex);
+		}
+
+		m_layers.clear();
 	}
 
 	inline void MatchClientVisibility::HideLayer(LayerIndex layerIndex)
 	{
+		auto it = m_layers.find(layerIndex);
+		assert(it != m_layers.end());
+		auto& layer = *it.value();
+		if (--layer.visibilityCounter > 0)
+			return;
+
 		m_newlyVisibleLayers.UnboundedReset(layerIndex);
 
-		if (m_visibleLayers.UnboundedTest(layerIndex))
+		if (m_clientVisibleLayers.UnboundedTest(layerIndex))
 			m_newlyHiddenLayers.UnboundedSet(layerIndex);
+
+		m_layers.erase(it);
 	}
 
-	inline bool MatchClientVisibility::IsLayerVisible(std::size_t layerIndex) const
+	inline bool MatchClientVisibility::IsLayerVisible(LayerIndex layerIndex) const
 	{
-		if (m_visibleLayers.UnboundedTest(layerIndex))
-			return !m_newlyHiddenLayers.UnboundedTest(layerIndex);
-		else
-			return m_newlyVisibleLayers.UnboundedTest(layerIndex);
+		return m_layers.find(layerIndex) != m_layers.end();
 	}
 
 	inline void MatchClientVisibility::PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex)
 	{
 		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ playerIndex, layerIndex });
-	}
-
-	inline void MatchClientVisibility::ShowLayer(LayerIndex layerIndex)
-	{
-		m_newlyHiddenLayers.UnboundedReset(layerIndex);
-
-		if (!m_visibleLayers.UnboundedTest(layerIndex))
-			m_newlyVisibleLayers.UnboundedSet(layerIndex);
 	}
 
 	template<typename T>

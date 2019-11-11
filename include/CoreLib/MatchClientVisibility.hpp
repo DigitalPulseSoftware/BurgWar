@@ -60,13 +60,13 @@ namespace bw
 
 			inline void HideLayer(LayerIndex layerIndex);
 
-			inline bool IsLayerVisible(std::size_t layerIndex) const;
+			inline bool IsLayerVisible(LayerIndex layerIndex) const;
 
 			template<typename T> void PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet);
 			template<typename T> void PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 			inline void PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex);
 
-			inline void ShowLayer(LayerIndex layerIndex);
+			void ShowLayer(LayerIndex layerIndex);
 
 			void Update();
 
@@ -118,7 +118,7 @@ namespace bw
 			Nz::Bitset<Nz::UInt64> m_tempBitset; //< For optimization purpose
 			Nz::Bitset<Nz::UInt64> m_newlyHiddenLayers;
 			Nz::Bitset<Nz::UInt64> m_newlyVisibleLayers;
-			Nz::Bitset<Nz::UInt64> m_visibleLayers;
+			Nz::Bitset<Nz::UInt64> m_clientVisibleLayers;
 			Nz::Flags<VisibilityEventType> m_pendingEvents;
 			tsl::hopscotch_map<LayerIndex /*layerId*/, std::unique_ptr<Layer>> m_layers;
 			tsl::hopscotch_map<Nz::UInt64 /*layerId|entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;

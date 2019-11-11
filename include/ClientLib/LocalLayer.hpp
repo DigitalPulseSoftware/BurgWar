@@ -46,6 +46,8 @@ namespace bw
 			LocalLayer& operator=(const LocalLayer&) = delete;
 			LocalLayer& operator=(LocalLayer&&) noexcept = default;
 
+			NazaraSignal(OnDisabled, LocalLayer* /*emitter*/);
+			NazaraSignal(OnEnabled, LocalLayer* /*emitter*/);
 			NazaraSignal(OnEntityCreated, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
 			NazaraSignal(OnEntityDelete, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
 

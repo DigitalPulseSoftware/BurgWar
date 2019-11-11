@@ -13,6 +13,109 @@
 
 namespace bw
 {
+	void MatchClientVisibility::ShowLayer(LayerIndex layerIndex)
+	{
+		if (auto it = m_layers.find(layerIndex); it != m_layers.end())
+		{
+			Layer& layer = *(it.value());
+			layer.visibilityCounter++;
+		}
+		else
+		{
+			auto& layer = *m_layers.emplace(layerIndex, std::make_unique<Layer>()).first.value();
+
+			Terrain& terrain = m_match.GetTerrain();
+			assert(layerIndex < terrain.GetLayerCount());
+
+			/* Create all newly visible entities */
+			TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
+			NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
+			
+			layer.onEntityCreatedSlot.Connect(syncSystem.OnEntityCreated, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityCreation& entityCreation)
+			{
+				HandleEntityCreation(syncSystem->GetLayerIndex(), entityCreation);
+			});
+
+			layer.onEntityDeletedSlot.Connect(syncSystem.OnEntityDeleted, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityDestruction& entityDestruction)
+			{
+				HandleEntityDestruction(syncSystem->GetLayerIndex(), entityDestruction, false);
+			});
+
+			layer.onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				if (!layer.visibleEntities.UnboundedTest(entityMovement.entityId))
+					return;
+
+				layer.staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
+			});
+
+			layer.onEntityPlayAnimation.Connect(syncSystem.OnEntityPlayAnimation, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityPlayAnimation& entityPlayAnimation)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				if (!layer.visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
+					return;
+
+				layer.playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
+				m_pendingEvents.Set(VisibilityEventType::PlayAnimation);
+			});
+
+			layer.onEntitiesDeath.Connect(syncSystem.OnEntitiesDeath, [this, layerIndex](NetworkSyncSystem*, const Ndk::EntityId* entityIds, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+				
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!layer.visibleEntities.UnboundedTest(entityIds[i]))
+						return;
+
+					layer.deathEvents.emplace(entityIds[i]);
+					m_pendingEvents.Set(VisibilityEventType::Death);
+				}
+			});
+
+			layer.onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+				
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+						return;
+
+					layer.healthUpdateEvents[events[i].entityId] = events[i];
+					m_pendingEvents.Set(VisibilityEventType::HealthUpdate);
+				}
+			});
+
+			layer.onEntitiesInputUpdate.Connect(syncSystem.OnEntitiesInputUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityInputs* events, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+						return;
+
+					layer.inputUpdateEvents[events[i].entityId] = events[i];
+					m_pendingEvents.Set(VisibilityEventType::InputUpdate);
+				}
+			});
+
+			m_newlyHiddenLayers.UnboundedReset(layerIndex);
+
+			if (!m_clientVisibleLayers.UnboundedTest(layerIndex))
+				m_newlyVisibleLayers.UnboundedSet(layerIndex);
+		}
+	}
+
 	void MatchClientVisibility::Update()
 	{
 		Nz::UInt16 networkTick = m_match.GetNetworkTick();
@@ -28,12 +131,6 @@ namespace bw
 				assert(layerIndex < terrain.GetLayerCount());
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 
-				auto it = m_layers.find(layerIndex);
-				assert(it != m_layers.end());
-				auto& layer = *it.value();
-				if (--layer.visibilityCounter > 0)
-					continue;
-
 				// The client will destroy automatically all entities that belong to this layer
 				Packets::DisableLayer disableLayer;
 				disableLayer.layerIndex = layerIndex;
@@ -41,9 +138,7 @@ namespace bw
 				
 				m_session.SendPacket(disableLayer);
 
-				m_layers.erase(it);
-
-				m_visibleLayers.Reset(layerIndex);
+				m_clientVisibleLayers.UnboundedReset(layerIndex);
 			}
 			m_newlyHiddenLayers.Clear();
 		}
@@ -63,94 +158,9 @@ namespace bw
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 				NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
 
-				if (auto it = m_layers.find(layerIndex); it != m_layers.end())
-				{
-					Layer& layer = *(it.value());
-					layer.visibilityCounter++;
-					continue;
-				}
-
-				Layer& layer = *m_layers.emplace(layerIndex, std::make_unique<Layer>()).first.value();
-
-				m_visibleLayers.UnboundedSet(layerIndex);
-
-				layer.onEntityCreatedSlot.Connect(syncSystem.OnEntityCreated, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityCreation& entityCreation)
-				{
-					HandleEntityCreation(syncSystem->GetLayerIndex(), entityCreation);
-				});
-
-				layer.onEntityDeletedSlot.Connect(syncSystem.OnEntityDeleted, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityDestruction& entityDestruction)
-				{
-					HandleEntityDestruction(syncSystem->GetLayerIndex(), entityDestruction, false);
-				});
-
-				layer.onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
-				{
-					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = *m_layers[layerIndex];
-
-					if (!layer.visibleEntities.UnboundedTest(entityMovement.entityId))
-						return;
-
-					layer.staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
-				});
-
-				layer.onEntityPlayAnimation.Connect(syncSystem.OnEntityPlayAnimation, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityPlayAnimation& entityPlayAnimation)
-				{
-					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = *m_layers[layerIndex];
-
-					if (!layer.visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
-						return;
-
-					layer.playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
-					m_pendingEvents.Set(VisibilityEventType::PlayAnimation);
-				});
-
-				layer.onEntitiesDeath.Connect(syncSystem.OnEntitiesDeath, [this, layerIndex](NetworkSyncSystem*, const Ndk::EntityId* entityIds, std::size_t entityCount)
-				{
-					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = *m_layers[layerIndex];
-				
-					for (std::size_t i = 0; i < entityCount; ++i)
-					{
-						if (!layer.visibleEntities.UnboundedTest(entityIds[i]))
-							return;
-
-						layer.deathEvents.emplace(entityIds[i]);
-						m_pendingEvents.Set(VisibilityEventType::Death);
-					}
-				});
-
-				layer.onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
-				{
-					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = *m_layers[layerIndex];
-				
-					for (std::size_t i = 0; i < entityCount; ++i)
-					{
-						if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
-							return;
-
-						layer.healthUpdateEvents[events[i].entityId] = events[i];
-						m_pendingEvents.Set(VisibilityEventType::HealthUpdate);
-					}
-				});
-
-				layer.onEntitiesInputUpdate.Connect(syncSystem.OnEntitiesInputUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityInputs* events, std::size_t entityCount)
-				{
-					assert(m_layers.find(layerIndex) != m_layers.end());
-					Layer& layer = *m_layers[layerIndex];
-
-					for (std::size_t i = 0; i < entityCount; ++i)
-					{
-						if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
-							return;
-
-						layer.inputUpdateEvents[events[i].entityId] = events[i];
-						m_pendingEvents.Set(VisibilityEventType::InputUpdate);
-					}
-				});
+				auto it = m_layers.find(layerIndex);
+				assert(it != m_layers.end());
+				Layer& layer = *it.value();
 
 				Packets::EnableLayer enableLayerPacket;
 				enableLayerPacket.layerIndex = layerIndex;
@@ -159,7 +169,10 @@ namespace bw
 				syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 				{
 					for (std::size_t i = 0; i < entityCount; ++i)
-						pendingCreationMap[entitiesCreation[i].entityId] = entitiesCreation[i];
+					{
+						if (!layer.visibleEntities.UnboundedTest(entitiesCreation[i].entityId))
+							pendingCreationMap[entitiesCreation[i].entityId] = entitiesCreation[i];
+					}
 				});
 
 				std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
@@ -191,6 +204,8 @@ namespace bw
 					PushEntity(it);
 
 				m_session.SendPacket(enableLayerPacket);
+
+				m_clientVisibleLayers.UnboundedSet(layerIndex);
 
 				pendingCreationMap.clear();
 			}
