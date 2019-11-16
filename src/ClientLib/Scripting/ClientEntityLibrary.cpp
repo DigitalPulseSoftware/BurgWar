@@ -40,13 +40,14 @@ namespace bw
 
 			LayerIndex layerIndex = parameters["LayerIndex"];
 			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
 
 			if (!entity->HasComponent<VisibleLayerComponent>())
 				entity->AddComponent<VisibleLayerComponent>(localMatch.GetRenderWorld());
 
 			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
-			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale);
+			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		};
 
 		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)

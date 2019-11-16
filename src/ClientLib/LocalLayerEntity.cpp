@@ -72,12 +72,14 @@ namespace bw
 		healthData.currentHealth = currentHealth;
 		healthData.maxHealth = maxHealth;
 
-		/*auto& gfxComponent = m_entity->GetComponent<Ndk::GraphicsComponent>();
+		float spriteWidth = 0.f;
+		for (const auto& renderableData : m_attachedRenderables)
+		{
+			const auto& localBox = renderableData.renderable->GetBoundingVolume().obb.localBox;
+			spriteWidth = std::max({ spriteWidth, localBox.width, localBox.height });
+		}
 
-		const Nz::Boxf& aabb = gfxComponent.GetAABB();
-
-		healthData.spriteWidth = std::max(aabb.width, aabb.height) * 0.85f;*/
-		healthData.spriteWidth = 200;
+		healthData.spriteWidth = spriteWidth * 0.85f;
 
 		Nz::SpriteRef lostHealthBar = Nz::Sprite::New();
 		lostHealthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
@@ -93,26 +95,39 @@ namespace bw
 
 		healthData.lostHealthSprite = lostHealthBar;
 		healthData.healthSprite = healthBar;
+
+		if (currentHealth != maxHealth)
+		{
+			for (VisualEntity* visualEntity : m_visualEntities)
+				ShowHealthBar(visualEntity);
+		}
 	}
 
 	void LocalLayerEntity::InitializeName(const std::string& name)
 	{
 		auto& nameData = m_name.emplace();
 
-		Nz::TextSpriteRef nameSprite = Nz::TextSprite::New();
-		nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
+		nameData.nameSprite = Nz::TextSprite::New();
+		nameData.nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
+
+		Nz::Boxf textBox = nameData.nameSprite->GetBoundingVolume().obb.localBox;
+
+		for (VisualEntity* visualEntity : m_visualEntities)
+			ShowName(visualEntity, textBox);
 	}
 
 	void LocalLayerEntity::SyncVisuals()
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
 
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition());
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale());
+		Nz::Quaternionf rotation = entityNode.GetRotation();
+
 		for (VisualEntity* visualEntity : m_visualEntities)
 		{
 			auto& visualNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
-			visualNode.SetPosition(entityNode.GetPosition());
-			visualNode.SetRotation(entityNode.GetRotation());
-			visualNode.SetScale(entityNode.GetScale());
+			visualEntity->Update(position, rotation, scale);
 		}
 	}
 
@@ -138,9 +153,22 @@ namespace bw
 		assert(m_health);
 
 		Nz::UInt16 oldHealth = m_health->currentHealth;
+		if (newHealth == oldHealth)
+			return;
 
 		m_health->currentHealth = newHealth;
 		m_health->healthSprite->SetSize(m_health->spriteWidth * m_health->currentHealth / m_health->maxHealth, 10);
+
+		if (m_health->currentHealth == m_health->maxHealth)
+		{
+			for (VisualEntity* visualEntity : m_visualEntities)
+				HideHealthBar(visualEntity);
+		}
+		else
+		{
+			for (VisualEntity* visualEntity : m_visualEntities)
+				ShowHealthBar(visualEntity);
+		}
 
 		if (m_entity->HasComponent<ScriptComponent>())
 		{
@@ -195,6 +223,11 @@ namespace bw
 		}
 	}
 
+	void LocalLayerEntity::HideHealthBar(VisualEntity* visualEntity)
+	{
+		visualEntity->DetachHoveringRenderables({ m_health->healthSprite, m_health->lostHealthSprite });
+	}
+
 	void LocalLayerEntity::NotifyVisualEntityMoved(VisualEntity* oldPointer, VisualEntity* newPointer)
 	{
 		auto it = std::find(m_visualEntities.begin(), m_visualEntities.end(), oldPointer);
@@ -219,8 +252,29 @@ namespace bw
 
 		for (auto& renderableData : m_attachedRenderables)
 			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.renderOrder);
+
+		if (m_health && m_health->currentHealth != m_health->maxHealth)
+			ShowHealthBar(visualEntity);
+
+		if (m_name)
+		{
+			auto& nameData = m_name.value();
+			const Nz::Boxf& textBox = nameData.nameSprite->GetBoundingVolume().obb.localBox;
+
+			ShowName(visualEntity, textBox);
+		}
 	}
-	
+
+	void LocalLayerEntity::ShowHealthBar(VisualEntity* visualEntity)
+	{
+		visualEntity->AttachHoveringRenderables({ m_health->healthSprite, m_health->lostHealthSprite }, { Nz::Matrix4f::Identity(), Nz::Matrix4f::Identity() }, 10.f, { 2, 1 });
+	}
+
+	void LocalLayerEntity::ShowName(VisualEntity* visualEntity, const Nz::Boxf& textBox)
+	{
+		visualEntity->AttachHoveringRenderable(m_name->nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-textBox.width / 2.f, -textBox.height)), 20.f);
+	}
+
 	void LocalLayerEntity::UnregisterVisualEntity(VisualEntity* visualEntity)
 	{
 		auto it = std::find(m_visualEntities.begin(), m_visualEntities.end(), visualEntity);

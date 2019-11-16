@@ -14,6 +14,7 @@ if (CLIENT) then
 		print("Should draw layer ", self:GetProperty("layer"))
 		self:AddLayer({
 			LayerIndex = self:GetProperty("layer"),
+			ParallaxFactor = self:GetProperty("parallaxFactor"),
 			RenderOrder = self:GetProperty("renderOrder"),
 			Scale = self:GetProperty("scale")
 		})

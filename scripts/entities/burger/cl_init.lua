@@ -50,6 +50,8 @@ function ENTITY:OnTick()
 			self.CurrentFace:Hide()
 			self.CurrentFace = self.DefaultFace
 			self.CurrentFace:Show()
+
+			self.FaceExpiration = nil
 		end
 	end
 end

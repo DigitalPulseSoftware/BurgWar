@@ -437,6 +437,8 @@ namespace bw
 			position.y = std::floor(position.y);
 
 			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
+
+			OnCameraMoved(this, position);
 		};
 
 		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 playerIndex, std::shared_ptr<InputController> inputController)

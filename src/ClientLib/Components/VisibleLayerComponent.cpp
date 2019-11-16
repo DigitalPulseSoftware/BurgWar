@@ -7,13 +7,15 @@
 
 namespace bw
 {
-	void VisibleLayerComponent::RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale)
+	void VisibleLayerComponent::RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor)
 	{
 		auto& nodeComponent = m_entity->GetComponent<Ndk::NodeComponent>();
 
 		std::shared_ptr<VisibleLayer> visibleLayer = std::make_shared<VisibleLayer>();
 		visibleLayer->baseNode.SetParent(nodeComponent);
+		visibleLayer->baseNode.SetInheritPosition(false);
 		visibleLayer->baseNode.SetScale(scale);
+		visibleLayer->baseRenderOrder = renderOrder;
 
 		VisibleLayer* visibleLayerPtr = visibleLayer.get();
 		
@@ -27,13 +29,13 @@ namespace bw
 			assert(visibleLayerPtr->visualEntities.empty());
 			layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 			{
-				visibleLayerPtr->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), visibleLayerPtr->baseNode));
+				visibleLayerPtr->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), visibleLayerPtr->baseNode, visibleLayerPtr->baseRenderOrder));
 			});
 		});
 
 		visibleLayer->onEntityCreated.Connect(localLayer.OnEntityCreated, [=](LocalLayer*, LocalLayerEntity& newEntity)
 		{
-			visibleLayerPtr->visualEntities.emplace(newEntity.GetServerId(), VisualEntity(m_renderWorld, newEntity.CreateHandle(), visibleLayerPtr->baseNode));
+			visibleLayerPtr->visualEntities.emplace(newEntity.GetServerId(), VisualEntity(m_renderWorld, newEntity.CreateHandle(), visibleLayerPtr->baseNode, visibleLayerPtr->baseRenderOrder));
 		});
 
 		visibleLayer->onEntityDelete.Connect(localLayer.OnEntityDelete, [=](LocalLayer*, LocalLayerEntity& newEntity)
@@ -45,9 +47,15 @@ namespace bw
 		{
 			localLayer.ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 			{
-				visibleLayerPtr->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), visibleLayerPtr->baseNode));
+				visibleLayerPtr->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), visibleLayerPtr->baseNode, visibleLayerPtr->baseRenderOrder));
 			});
 		}
+
+		visibleLayer->onCameraMoved.Connect(localLayer.GetLocalMatch().OnCameraMoved, [=](LocalMatch*, const Nz::Vector2f& newPosition)
+		{
+			// Parallax factor
+			visibleLayerPtr->baseNode.SetPosition(newPosition * (Nz::Vector2f(1.f) - parallaxFactor));
+		});
 
 		m_visibleLayers.emplace_back(std::move(visibleLayer));
 	}

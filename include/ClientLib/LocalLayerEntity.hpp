@@ -25,7 +25,7 @@ namespace bw
 
 	using LocalLayerEntityHandle = Nz::ObjectHandle<LocalLayerEntity>;
 
-	class LocalLayerEntity : public Nz::HandledObject<LocalLayerEntity>
+	class LocalLayerEntity final : public Nz::HandledObject<LocalLayerEntity>
 	{
 		friend VisualEntity;
 
@@ -66,8 +66,11 @@ namespace bw
 			LocalLayerEntity& operator=(LocalLayerEntity&&) noexcept = default;
 
 		private:
+			void HideHealthBar(VisualEntity* visualEntity);
 			void NotifyVisualEntityMoved(VisualEntity* oldPointer, VisualEntity* newPointer);
 			void RegisterVisualEntity(VisualEntity* visualEntity);
+			void ShowHealthBar(VisualEntity* visualEntity);
+			void ShowName(VisualEntity* visualEntity, const Nz::Boxf& textBox);
 			void UnregisterVisualEntity(VisualEntity* visualEntity);
 
 			struct DebugEntityIdData

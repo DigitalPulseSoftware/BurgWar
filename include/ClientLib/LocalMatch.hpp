@@ -80,6 +80,8 @@ namespace bw
 			LocalMatch& operator=(const LocalMatch&) = delete;
 			LocalMatch& operator=(LocalMatch&&) = delete;
 
+			NazaraSignal(OnCameraMoved, LocalMatch* /*match*/, const Nz::Vector2f& /*newPosition*/);
+
 		private:
 			struct ServerEntity;
 

@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 
 #include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/Node.hpp>
 #include <NDK/Component.hpp>
@@ -21,7 +22,7 @@ namespace bw
 			inline VisibleLayerComponent(Ndk::World& renderWorld);
 			~VisibleLayerComponent() = default;
 
-			void RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale);
+			void RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 
 			static Ndk::ComponentIndex componentIndex;
 
@@ -29,6 +30,7 @@ namespace bw
 			struct VisibleLayer
 			{
 				Nz::Node baseNode;
+				int baseRenderOrder;
 
 				tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> visualEntities;
 
@@ -36,6 +38,7 @@ namespace bw
 				NazaraSlot(LocalLayer, OnEnabled, onEnabled);
 				NazaraSlot(LocalLayer, OnEntityCreated, onEntityCreated);
 				NazaraSlot(LocalLayer, OnEntityDelete, onEntityDelete);
+				NazaraSlot(LocalMatch, OnCameraMoved, onCameraMoved);
 			};
 
 			//FIXME (shared_ptr => unique_ptr)
