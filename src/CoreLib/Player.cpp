@@ -264,6 +264,14 @@ namespace bw
 
 	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
 	{
+		MatchClientVisibility& visibility = m_session.GetVisibility();
+
+		if (m_playerEntity)
+		{
+			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
+			visibility.SetEntityControlledStatus(matchComponent.GetLayer(), m_playerEntity->GetId(), false);
+		}
+
 		m_playerEntity = entity;
 
 		Packets::ControlEntity controlEntity;
@@ -275,7 +283,8 @@ namespace bw
 			controlEntity.layerIndex = matchComponent.GetLayer();
 			controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
 
-			m_session.GetVisibility().PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId, controlEntity);
+			visibility.PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId, controlEntity);
+			visibility.SetEntityControlledStatus(matchComponent.GetLayer(), m_playerEntity->GetId(), true);
 		}
 		else
 		{

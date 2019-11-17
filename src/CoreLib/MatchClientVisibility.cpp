@@ -101,6 +101,10 @@ namespace bw
 
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
+					Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | events[i].entityId;
+					if (m_controlledEntities.find(entityKey) != m_controlledEntities.end())
+						return;
+
 					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
 						return;
 

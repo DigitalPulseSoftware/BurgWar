@@ -69,6 +69,15 @@ namespace bw
 		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ playerIndex, layerIndex });
 	}
 
+	inline void MatchClientVisibility::SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled)
+	{
+		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | entityId;
+		if (isControlled)
+			m_controlledEntities.insert(entityKey);
+		else
+			m_controlledEntities.erase(entityKey);
+	}
+
 	template<typename T>
 	void MatchClientVisibility::PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet)
 	{

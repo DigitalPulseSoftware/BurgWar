@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
 #define BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
@@ -33,7 +34,7 @@ namespace bw
 			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, bool isPhysical);
 			LocalLayerEntity(const LocalLayerEntity&) = delete;
 			LocalLayerEntity(LocalLayerEntity&&) noexcept = default;
-			~LocalLayerEntity() = default;
+			~LocalLayerEntity();
 
 			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
 			void DetachRenderable(const Nz::InstancedRenderableRef& renderable);
@@ -42,6 +43,8 @@ namespace bw
 			void Enable(bool enable = true);
 
 			inline const Ndk::EntityHandle& GetEntity() const;
+			LocalLayerEntity* GetGhost();
+			LayerIndex GetLayerIndex() const;
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
@@ -64,6 +67,8 @@ namespace bw
 
 			LocalLayerEntity& operator=(const LocalLayerEntity&) = delete;
 			LocalLayerEntity& operator=(LocalLayerEntity&&) noexcept = default;
+
+			static constexpr Nz::UInt32 ClientsideId = 0xFFFFFFFF;
 
 		private:
 			void HideHealthBar(VisualEntity* visualEntity);
@@ -99,6 +104,7 @@ namespace bw
 				int renderOrder;
 			};
 
+			std::unique_ptr<LocalLayerEntity> m_ghostEntity;
 			std::optional<DebugEntityIdData> m_entityId;
 			std::optional<HealthData> m_health;
 			std::optional<NameData> m_name;
@@ -107,7 +113,6 @@ namespace bw
 			Ndk::EntityOwner m_entity;
 			Nz::RadianAnglef m_rotationError;
 			Nz::Vector2f m_positionError;
-			Nz::UInt16 m_layerIndex;
 			Nz::UInt32 m_serverEntityId;
 			LocalLayerEntityHandle m_weaponEntity;
 			LocalLayer& m_layer;

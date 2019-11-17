@@ -75,7 +75,7 @@ function ENTITY:OnInputUpdate(input)
 		end
 	end
 
-	local isMoving = input.isMovingLeft or input.isMovingRight
+	--[[local isMoving = input.isMovingLeft or input.isMovingRight
 	if (self.IsMoving ~= isMoving) then
 		self.IsMoving = isMoving
 		if (isMoving and not input.isJumping) then
@@ -92,5 +92,5 @@ function ENTITY:OnInputUpdate(input)
 				self.IsHopping = false
 			end
 		end
-	end
+	end]]
 end
