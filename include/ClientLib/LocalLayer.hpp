@@ -32,6 +32,7 @@ namespace bw
 
 			inline void Disable();
 			void Enable(bool enable = true);
+			inline void EnablePrediction(bool enable = true);
 
 			template<typename F> void ForEachLayerEntity(F&& func);
 
@@ -40,6 +41,7 @@ namespace bw
 			LocalMatch& GetLocalMatch();
 
 			inline bool IsEnabled() const;
+			inline bool IsPredictionEnabled() const;
 
 			void SyncVisuals();
 
@@ -65,6 +67,7 @@ namespace bw
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, LocalLayerEntity /*localEntity*/> m_serverEntityIdToClient;
 			Nz::Color m_backgroundColor;
 			bool m_isEnabled;
+			bool m_isPredictionEnabled;
 	};
 }
 

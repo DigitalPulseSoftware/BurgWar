@@ -8,6 +8,7 @@
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
@@ -95,6 +96,10 @@ namespace bw
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(window);
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
+
+		m_currentLayer = m_renderWorld.CreateEntity();
+		m_currentLayer->AddComponent<Ndk::NodeComponent>();
+		m_currentLayer->AddComponent<VisibleLayerComponent>(m_renderWorld);
 
 		InitializeRemoteConsole();
 
@@ -597,7 +602,9 @@ namespace bw
 
 						for (Nz::UInt32 i = 0; i < entityCount; ++i)
 						{
+							CompressedUnsigned<Nz::UInt16> layerId;
 							CompressedUnsigned<Nz::UInt32> entityId;
+							debugPacket >> layerId;
 							debugPacket >> entityId;
 
 							bool isPhysical;
@@ -612,6 +619,22 @@ namespace bw
 								debugPacket >> linearVelocity >> angularVelocity;
 
 							debugPacket >> position >> rotation;
+
+							auto& layer = m_layers[layerId];
+							if (layer->IsEnabled())
+							{
+								if (auto entityOpt = layer->GetEntity(entityId))
+								{
+									LocalLayerEntity& entity = entityOpt.value();
+									LocalLayerEntity* ghostEntity = entity.GetGhost();
+									/*if (isPhysical)
+										ghostEntity->UpdateState(position, rotation, linearVelocity, angularVelocity);
+									else*/
+										ghostEntity->UpdateState(position, rotation);
+
+									ghostEntity->SyncVisuals();
+								}
+							}
 
 							/*if (auto it = m_serverEntityIdToClient.find(entityId); it != m_serverEntityIdToClient.end())
 							{
@@ -666,7 +689,7 @@ namespace bw
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
 		};
 
-		m_world.GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+		m_layers[0]->GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
 	}
 	
 	void LocalMatch::BindPackets()
@@ -789,10 +812,22 @@ namespace bw
 		LocalLayerEntity& layerEntity = layerEntityOpt.value();
 
 		if (m_playerData[packet.playerIndex].controlledEntity)
-			m_playerData[packet.playerIndex].controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
+		{
+			auto& controlledEntity = m_playerData[packet.playerIndex].controlledEntity;
+			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
+
+			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
+		}
 
 		m_playerData[packet.playerIndex].controlledEntity = layerEntity.CreateHandle();
 		m_playerData[packet.playerIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+
+		// Ensure prediction is enabled on all player-controlled layers
+		for (auto& playerData : m_playerData)
+		{
+			LayerIndex layerIndex = playerData.controlledEntity->GetLayerIndex();
+			m_layers[layerIndex]->EnablePrediction();
+		}
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::CreateEntities&& packet)
@@ -914,6 +949,10 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
 	{
+		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
+			return;
+
+		// Apply physics state to all layers
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
 		{
@@ -923,15 +962,12 @@ namespace bw
 			offset += layerData.entityCount;
 		}
 
-		/*if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
-			return;
-
 #ifdef DEBUG_PREDICTION
 		static std::ofstream debugFile("prediction.txt", std::ios::trunc);
 		debugFile << "---------------------------------------------------\n";
 		debugFile << "Received match state for tick #" << packet.stateTick << " (current estimation: " << EstimateServerTick() << ")\n";
 #endif
-
+		
 		// Remove treated inputs
 		auto firstClientInput = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
 		{
@@ -939,12 +975,45 @@ namespace bw
 		});
 		m_predictedInputs.erase(m_predictedInputs.begin(), firstClientInput);
 
-		for (auto&& entityData : packet.entities)
+		// Reconciliate server and clients
+		for (const PredictedInput& input : m_predictedInputs)
 		{
-			auto& layer = m_layers[entityData.id.layerId];
-			Ndk::World& world = layer->GetWorld();
-			auto& physicsSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
+			for (std::size_t i = 0; i < m_playerData.size(); ++i)
+			{
+				auto& controllerData = m_playerData[i];
+				if (controllerData.controlledEntity)
+				{
+					auto& controlledEntity = controllerData.controlledEntity->GetEntity();
 
+					InputComponent& entityInputs = controlledEntity->GetComponent<InputComponent>();
+					const auto& playerInputData = input.inputs[i];
+					entityInputs.UpdateInputs(playerInputData.input);
+
+					if (playerInputData.movement)
+					{
+						auto& playerMovement = controlledEntity->GetComponent<PlayerMovementComponent>();
+						auto& playerPhysics = controlledEntity->GetComponent<Ndk::PhysicsComponent2D>();
+						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
+						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
+						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
+
+						playerPhysics.SetFriction(playerInputData.movement->friction);
+						playerPhysics.SetSurfaceVelocity(playerInputData.movement->surfaceVelocity);
+					}
+				}
+			}
+
+			for (auto& layer : m_layers)
+			{
+				if (layer->IsEnabled() && layer->IsPredictionEnabled())
+				{
+					layer->Update(GetTickDuration());
+				}
+			}
+		}
+
+		/*for (auto&& entityData : packet.entities)
+		{
 			Nz::UInt64 entityKey = BuildEntityId(entityData.id.layerId, entityData.id.entityId);
 			auto it = m_serverEntityIdToClient.find(entityKey);
 			//assert(it != m_serverEntityIdToClient.end());
@@ -1023,10 +1092,11 @@ namespace bw
 					nodeComponent.SetRotation(entityData.rotation);
 				}
 			}
-		}
+		}*/
+		
 
 		// Player entities and surrounding entities should be predicted
-		for (std::size_t playerIndex = 0; playerIndex < m_playerData.size(); ++playerIndex)
+		/*for (std::size_t playerIndex = 0; playerIndex < m_playerData.size(); ++playerIndex)
 		{
 			auto& controllerData = m_playerData[playerIndex];
 			if (controllerData.controlledEntity)
@@ -1193,22 +1263,9 @@ namespace bw
 		assert(layer->IsEnabled());
 
 		m_colorBackground->SetColor(layer->GetBackgroundColor());
-		
-		m_onEntityCreated.Connect(layer->OnEntityCreated, [&](LocalLayer*, LocalLayerEntity& newEntity)
-		{
-			m_visualEntities.emplace(newEntity.GetServerId(), VisualEntity(m_renderWorld, newEntity.CreateHandle()));
-		});
-
-		m_onEntityDelete.Connect(layer->OnEntityDelete, [&](LocalLayer*, LocalLayerEntity& newEntity)
-		{
-			m_visualEntities.erase(newEntity.GetServerId());
-		});
-
-		m_visualEntities.clear();
-		layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
-		{
-			m_visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle()));
-		});
+		auto& visibleLayer = m_currentLayer->GetComponent<VisibleLayerComponent>();
+		visibleLayer.Clear();
+		visibleLayer.RegisterVisibleLayer(*layer, 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
 
 		//m_orderedLayers.clear();
 		//m_orderedLayers.emplace_back(packet.layerIndex, 0);
@@ -1365,7 +1422,7 @@ namespace bw
 					if (entity->HasComponent<InputComponent>())
 					{
 						auto& entityInputs = entity->GetComponent<InputComponent>();
-						//entityInputs.UpdateInputs(controllerData.lastInputData);
+						entityInputs.UpdateInputs(controllerData.lastInputData);
 					}
 				}
 			}

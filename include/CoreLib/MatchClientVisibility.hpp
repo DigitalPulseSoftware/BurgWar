@@ -66,6 +66,8 @@ namespace bw
 			template<typename T> void PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 			inline void PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex);
 
+			inline void SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled);
+
 			void ShowLayer(LayerIndex layerIndex);
 
 			void Update();
@@ -122,6 +124,7 @@ namespace bw
 			Nz::Flags<VisibilityEventType> m_pendingEvents;
 			tsl::hopscotch_map<LayerIndex /*layerId*/, std::unique_ptr<Layer>> m_layers;
 			tsl::hopscotch_map<Nz::UInt64 /*layerId|entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;
+			tsl::hopscotch_set<Nz::UInt64 /*layerId|entityId*/> m_controlledEntities;
 			std::vector<PendingLayerUpdate> m_pendingLayerUpdates;
 			std::vector<PendingMultipleEntities> m_multiplePendingEntitiesEvent;
 			Match& m_match;

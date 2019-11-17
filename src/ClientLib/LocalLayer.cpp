@@ -15,7 +15,8 @@ namespace bw
 	LocalLayer::LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor) :
 	SharedLayer(match, layerIndex),
 	m_backgroundColor(backgroundColor),
-	m_isEnabled(false)
+	m_isEnabled(false),
+	m_isPredictionEnabled(false)
 	{
 	}
 

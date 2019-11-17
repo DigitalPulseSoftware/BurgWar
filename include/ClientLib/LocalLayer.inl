@@ -11,6 +11,11 @@ namespace bw
 		return Enable(false);
 	}
 
+	inline void LocalLayer::EnablePrediction(bool enable)
+	{
+		m_isPredictionEnabled = enable;
+	}
+
 	template<typename F>
 	void LocalLayer::ForEachLayerEntity(F&& func)
 	{
@@ -39,5 +44,10 @@ namespace bw
 	inline bool LocalLayer::IsEnabled() const
 	{
 		return m_isEnabled;
+	}
+
+	inline bool LocalLayer::IsPredictionEnabled() const
+	{
+		return m_isPredictionEnabled;
 	}
 }

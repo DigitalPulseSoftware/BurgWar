@@ -24,6 +24,12 @@ namespace bw
 	{
 	}
 
+	LocalLayerEntity::~LocalLayerEntity()
+	{
+		if (m_ghostEntity)
+			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
+	}
+
 	void LocalLayerEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		auto& renderableData = m_attachedRenderables.emplace_back();
@@ -52,6 +58,47 @@ namespace bw
 		m_entity->Enable(enable);
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Enable(enable);
+	}
+
+	LocalLayerEntity* LocalLayerEntity::GetGhost()
+	{
+		if (!m_ghostEntity)
+		{
+			const Ndk::EntityHandle& ghostEntity = m_entity->GetWorld()->CreateEntity();
+			ghostEntity->AddComponent<Ndk::NodeComponent>();
+			//if (m_isPhysical)
+			//	ghostEntity->AddComponent<Ndk::PhysicsComponent2D>();
+
+			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId, false);
+
+			for (auto& renderable : m_attachedRenderables)
+			{
+				if (std::unique_ptr<Nz::InstancedRenderable> clonedRenderable = renderable.renderable->Clone())
+				{
+					std::size_t materialCount = clonedRenderable->GetMaterialCount();
+					for (std::size_t i = 0; i < materialCount; ++i)
+					{
+						Nz::MaterialRef ghostMaterial = Nz::Material::New(*clonedRenderable->GetMaterial(i));
+						ghostMaterial->Configure("Translucent2D");
+						ghostMaterial->SetDiffuseColor(Nz::Color(255, 255, 255, 160));
+						ghostMaterial->SetDiffuseMap(ghostMaterial->GetDiffuseMap());
+
+						clonedRenderable->SetMaterial(i, ghostMaterial);
+					}
+
+					m_ghostEntity->AttachRenderable(clonedRenderable.release(), renderable.offset, -1);
+				}
+			}
+
+			m_layer.OnEntityCreated(&m_layer, *m_ghostEntity);
+		}
+
+		return m_ghostEntity.get();
+	}
+
+	LayerIndex LocalLayerEntity::GetLayerIndex() const
+	{
+		return m_layer.GetLayerIndex();
 	}
 
 	Nz::Vector2f LocalLayerEntity::GetPosition() const

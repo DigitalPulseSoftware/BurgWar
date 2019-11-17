@@ -405,42 +405,48 @@ namespace bw
 			Nz::UInt32 entityCount = 0;
 			debugPacket << entityCount;
 
-			ForEachEntity([&](const Ndk::EntityHandle& entity)
+			for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 			{
-				if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
-					return;
-
-				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-
-				entityCount++;
-
-				CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
-				debugPacket << entityId;
-
-				bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
-
-				debugPacket << isPhysical;
-
-				Nz::Vector2f entityPosition;
-				Nz::RadianAnglef entityRotation;
-
-				if (isPhysical)
+				auto& layer = m_terrain->GetLayer(i);
+				layer.ForEachEntity([&](const Ndk::EntityHandle& entity)
 				{
-					auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+					if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
+						return;
 
-					entityPosition = entityPhys.GetPosition();
-					entityRotation = entityPhys.GetRotation();
+					auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
-					debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
-				}
-				else
-				{
-					entityPosition = Nz::Vector2f(entityNode.GetPosition());
-					entityRotation = Nz::RadianAnglef::FromDegrees(entityNode.GetRotation().ToEulerAngles().roll);
-				}
+					entityCount++;
 
-				debugPacket << entityPosition << entityRotation;
-			});
+					CompressedUnsigned<Nz::UInt16> layerId(i);
+					CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
+					debugPacket << layerId;
+					debugPacket << entityId;
+
+					bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
+
+					debugPacket << isPhysical;
+
+					Nz::Vector2f entityPosition;
+					Nz::RadianAnglef entityRotation;
+
+					if (isPhysical)
+					{
+						auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+						entityPosition = entityPhys.GetPosition();
+						entityRotation = entityPhys.GetRotation();
+
+						debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
+					}
+					else
+					{
+						entityPosition = Nz::Vector2f(entityNode.GetPosition());
+						entityRotation = Nz::RadianAnglef::FromDegrees(entityNode.GetRotation().ToEulerAngles().roll);
+					}
+
+					debugPacket << entityPosition << entityRotation;
+				});
+			}
 
 			debugPacket.GetStream()->SetCursorPos(offset);
 			debugPacket << entityCount;

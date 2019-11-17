@@ -202,9 +202,9 @@ namespace bw
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
-			tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> m_visualEntities;
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_camera;
+			Ndk::EntityHandle m_currentLayer;
 			Ndk::World m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;
 			Nz::RenderWindow* m_window;
