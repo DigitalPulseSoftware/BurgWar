@@ -23,13 +23,16 @@ class QAction;
 class QListWidget;
 class QListWidgetItem;
 class Gamemode;
+class QTabWidget;
 
 namespace bw
 {
 	class EntityInfoDialog;
 	class EditorMode;
 	class MapCanvas;
+	class PlayWindow;
 	class ScriptingContext;
+	class VirtualDirectory;
 
 	class EditorWindow : public ClientEditorApp, public QMainWindow
 	{
@@ -56,6 +59,7 @@ namespace bw
 
 			void BuildAssetList();
 			void BuildMenu();
+			void BuildToolbar(const std::string& editorAssetsFolder);
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
@@ -69,6 +73,7 @@ namespace bw
 			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);
 			void OnLayerDoubleClicked(QListWidgetItem* item);
+			void OnPlayMap();
 
 			void OnOpenMap();
 			void OnOpenRecentMap();
@@ -87,18 +92,23 @@ namespace bw
 			std::optional<AssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<int> m_currentLayer;
+			PlayWindow* m_playWindow;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
+			std::shared_ptr<VirtualDirectory> m_assetFolder;
+			std::shared_ptr<VirtualDirectory> m_scriptFolder;
 			std::vector<QAction*> m_recentMapActions;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
 			QAction* m_createEntityActionToolbar;
+			QAction* m_playMap;
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;
 			QMenu* m_mapMenu;
 			QListWidget* m_entityList;
 			QListWidget* m_layerList;
+			QTabWidget* m_centralTab;
 			EntityInfoDialog* m_entityInfoDialog;
 			Map m_workingMap;
 			MapCanvas* m_canvas;

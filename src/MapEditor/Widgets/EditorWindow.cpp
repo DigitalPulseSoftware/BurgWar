@@ -4,6 +4,9 @@
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/ClientSession.hpp>
+#include <ClientLib/LocalSessionBridge.hpp>
+#include <ClientLib/LocalSessionManager.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
@@ -18,6 +21,7 @@
 #include <MapEditor/Widgets/LayerEditDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
+#include <MapEditor/Widgets/PlayWindow.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
@@ -30,6 +34,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <tsl/hopscotch_set.h>
 
@@ -42,7 +47,8 @@ namespace bw
 
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
 	ClientEditorApp(argc, argv, LogSide::Editor),
-	m_entityInfoDialog(nullptr)
+	m_entityInfoDialog(nullptr),
+	m_playWindow(nullptr)
 	{
 		RegisterEditorConfig();
 
@@ -55,11 +61,12 @@ namespace bw
 		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
 		const std::string& scriptFolder = m_config.GetStringOption("Assets.ScriptFolder");
 
-		m_assetStore.emplace(GetLogger(), std::make_shared<VirtualDirectory>(gameResourceFolder));
+		m_assetFolder = std::make_shared<VirtualDirectory>(gameResourceFolder);
+		m_scriptFolder = std::make_shared<VirtualDirectory>(scriptFolder);
 
-		std::shared_ptr<VirtualDirectory> virtualDir = std::make_shared<VirtualDirectory>(scriptFolder);
+		m_assetStore.emplace(GetLogger(), m_assetFolder);
 
-		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), virtualDir);
+		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), m_scriptFolder);
 		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(GetLogger()));
 		m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 		m_scriptingContext->GetLuaState()["Editor"] = this;
@@ -70,7 +77,7 @@ namespace bw
 
 		VirtualDirectory::Entry entry;
 		
-		if (virtualDir->GetEntry("entities", &entry))
+		if (m_scriptFolder->GetEntry("entities", &entry))
 		{
 			std::filesystem::path path = "entities";
 
@@ -108,6 +115,7 @@ namespace bw
 		}
 
 		BuildMenu();
+		BuildToolbar(editorAssetsFolder);
 
 		m_canvas = new MapCanvas(*this);
 
@@ -164,7 +172,10 @@ namespace bw
 			m_currentMode->OnMouseMoved(mouseMove);
 		});
 
-		setCentralWidget(m_canvas);
+		m_centralTab = new QTabWidget;
+		m_centralTab->addTab(m_canvas, tr("Map editor"));
+
+		setCentralWidget(m_centralTab);
 
 		QDockWidget* layerListDock = new QDockWidget("Layer list", this);
 
@@ -185,26 +196,6 @@ namespace bw
 		entityListDock->setWidget(m_entityList);
 
 		addDockWidget(Qt::RightDockWidgetArea, entityListDock);
-
-		QToolBar* toolBar = new QToolBar;
-		QAction* createMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/file-48.png").c_str())), tr("Create map..."));
-		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
-
-		QAction* openMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/opened_folder-48.png").c_str())), tr("Open map..."));
-		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
-
-		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/icons8-save-48.png").c_str())), tr("Save map..."));
-		connect(m_saveMapToolbar, &QAction::triggered, this, &EditorWindow::OnSaveMap);
-
-		toolBar->addSeparator();
-
-		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/idea-48.png").c_str())), tr("Create entity"));
-		connect(m_createEntityActionToolbar, &QAction::triggered, this, &EditorWindow::OnCreateEntity);
-
-		QDockWidget* toolbarDock = new QDockWidget("Toolbar", this);
-		toolbarDock->setWidget(toolBar);
-
-		addDockWidget(Qt::TopDockWidgetArea, toolbarDock);
 
 		resize(1280, 720);
 		setWindowTitle(tr("Burg'war map editor"));
@@ -267,6 +258,7 @@ namespace bw
 		m_compileMap->setEnabled(enableMapActions);
 		m_createEntityActionToolbar->setEnabled(enableMapActions);
 		m_mapMenu->setEnabled(enableMapActions);
+		m_playMap->setEnabled(enableMapActions);
 		m_saveMap->setEnabled(enableMapActions);
 		m_saveMapToolbar->setEnabled(enableMapActions);
 
@@ -414,12 +406,43 @@ namespace bw
 		QAction* addLayer = layerMenu->addAction(tr("Add layer"));
 		connect(addLayer, &QAction::triggered, this, &EditorWindow::OnCreateLayer);
 
+		QAction* playMap = m_mapMenu->addAction(tr("Play map"));
+		connect(playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
+
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
 
 		QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
 		QAction* aboutQt = helpMenu->addAction(tr("About Qt..."));
 		aboutQt->setMenuRole(QAction::AboutQtRole);
 		connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
+	}
+
+	void EditorWindow::BuildToolbar(const std::string& editorAssetsFolder)
+	{
+		QToolBar* toolBar = new QToolBar;
+		QAction* createMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/file-48.png").c_str())), tr("Create map..."));
+		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
+
+		QAction* openMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/opened_folder-48.png").c_str())), tr("Open map..."));
+		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
+
+		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/icons8-save-48.png").c_str())), tr("Save map..."));
+		connect(m_saveMapToolbar, &QAction::triggered, this, &EditorWindow::OnSaveMap);
+
+		toolBar->addSeparator();
+
+		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/idea-48.png").c_str())), tr("Create entity"));
+		connect(m_createEntityActionToolbar, &QAction::triggered, this, &EditorWindow::OnCreateEntity);
+
+		toolBar->addSeparator();
+
+		m_playMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/start-48.png").c_str())), tr("Play map"));
+		connect(m_playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
+
+		QDockWidget* toolbarDock = new QDockWidget("Toolbar", this);
+		toolbarDock->setWidget(toolBar);
+
+		addDockWidget(Qt::TopDockWidgetArea, toolbarDock);
 	}
 
 	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
@@ -764,6 +787,27 @@ namespace bw
 		});
 
 		layerInfoDialog->exec();
+	}
+
+	void EditorWindow::OnPlayMap()
+	{
+		const ConfigFile& config = GetConfig();
+
+		float tickRate = config.GetFloatOption<float>("GameSettings.TickRate");
+
+		if (m_playWindow)
+			m_playWindow->deleteLater();
+
+		m_playWindow = new PlayWindow(*this, m_workingMap, m_assetFolder, m_scriptFolder, tickRate);
+		m_playWindow->resize(1280, 720);
+		m_playWindow->show();
+
+		//m_centralTab->addTab(m_playWindow, tr("In-game test"));
+
+		connect(m_playWindow, &QObject::destroyed, [this]()
+		{
+			m_playWindow = nullptr;
+		});
 	}
 
 	void EditorWindow::OnOpenMap()
