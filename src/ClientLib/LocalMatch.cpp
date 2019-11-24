@@ -61,6 +61,7 @@ namespace bw
 	m_application(burgApp),
 	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
+	m_hasFocus(window->HasFocus()),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -142,6 +143,16 @@ namespace bw
 			chatPacket.message = message;
 
 			m_session.SendPacket(chatPacket);
+		});
+
+		m_onGainedFocus.Connect(window->GetEventHandler().OnGainedFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = true;
+		});
+
+		m_onLostFocus.Connect(window->GetEventHandler().OnLostFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = false;
 		});
 
 		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
@@ -1447,10 +1458,10 @@ namespace bw
 
 		m_inputPacket.estimatedServerTick = serverTick;
 		
-		bool checkInputs = !m_chatBox.IsTyping() &&
+		bool checkInputs = m_hasFocus &&
+		                   !m_chatBox.IsTyping() &&
 		                  (!m_localConsole || !m_localConsole->IsVisible()) &&
-		                  (!m_remoteConsole || !m_remoteConsole->IsVisible()) &&
-		                  (m_window->HasFocus());
+		                  (!m_remoteConsole || !m_remoteConsole->IsVisible());
 
 		bool hasInputData = false;
 		for (std::size_t i = 0; i < m_playerData.size(); ++i)

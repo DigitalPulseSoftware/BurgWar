@@ -179,6 +179,8 @@ namespace bw
 				TickPacketContent content;
 			};
 
+			NazaraSlot(Nz::EventHandler, OnGainedFocus, m_onGainedFocus);
+			NazaraSlot(Nz::EventHandler, OnLostFocus, m_onLostFocus);
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
 			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
 			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
@@ -211,6 +213,7 @@ namespace bw
 			Chatbox m_chatBox;
 			ClientSession& m_session;
 			Packets::PlayersInput m_inputPacket;
+			bool m_hasFocus;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;
