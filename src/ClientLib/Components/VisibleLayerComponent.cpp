@@ -13,7 +13,6 @@ namespace bw
 
 		std::shared_ptr<VisibleLayer> visibleLayer = std::make_shared<VisibleLayer>();
 		visibleLayer->baseNode.SetParent(nodeComponent);
-		visibleLayer->baseNode.SetInheritPosition(false);
 		visibleLayer->baseNode.SetScale(scale);
 		visibleLayer->baseRenderOrder = renderOrder;
 
