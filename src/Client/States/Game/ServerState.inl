@@ -8,11 +8,11 @@ namespace bw
 {
 	inline Match& ServerState::GetMatch()
 	{
-		return m_match;
+		return *m_match;
 	}
 
 	inline const Match& ServerState::GetMatch() const
 	{
-		return m_match;
+		return *m_match;
 	}
 }

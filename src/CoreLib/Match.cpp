@@ -23,39 +23,26 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
+	Match::Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration) :
 	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
-	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
+	m_gamemodePath(std::move(gamemodeFolder)),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_app(app)
+	m_app(app),
+	m_map(std::move(map))
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
-
-		m_map = Map::LoadFromBinary(app.GetConfig().GetStringOption("GameSettings.MapFile"));
 
 		ReloadAssets();
 		ReloadScripts();
 
-		m_terrain = std::make_unique<Terrain>(*this, *m_map);
+		m_terrain = std::make_unique<Terrain>(*this, m_map);
 
 		BuildMatchData();
 
 		m_gamemode->ExecuteCallback("OnInit");
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
-
-		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
-		{
-			m_debug.emplace();
-			if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
-				m_debug->socket.EnableBlocking(false);
-			else
-			{
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
-				m_debug.reset();
-			}
-		}
 	}
 
 	Match::~Match()
@@ -150,6 +137,18 @@ namespace bw
 	const ServerWeaponStore& Match::GetWeaponStore() const
 	{
 		return *m_weaponStore;
+	}
+
+	void Match::InitDebugGhosts()
+	{
+		m_debug.emplace();
+		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+			m_debug->socket.EnableBlocking(false);
+		else
+		{
+			bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
+			m_debug.reset();
+		}
 	}
 
 	bool Match::Join(Player* player)
@@ -257,8 +256,8 @@ namespace bw
 			m_assetStore->Clear();
 		}
 
-		assert(m_map);
-		for (const auto& asset : m_map->GetAssets())
+		assert(m_map.IsValid());
+		for (const auto& asset : m_map.GetAssets())
 		{
 			Nz::ByteArray checksum(asset.sha1Checksum.size(), 0);
 			std::memcpy(checksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());

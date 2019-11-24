@@ -72,6 +72,8 @@ namespace bw
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
 
+			void InitDebugGhosts();
+
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 

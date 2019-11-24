@@ -12,15 +12,25 @@ namespace bw
 {
 	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, std::string name) :
 	AbstractState(std::move(stateDataPtr)),
-	m_match(*GetStateData().app, "local", "test", 64, 1.f / GetStateData().app->GetConfig().GetFloatOption<float>("GameSettings.TickRate")),
 	m_name(std::move(name))
 	{
-		MatchSessions& sessions = m_match.GetSessions();
+		ClientApp& app = *GetStateData().app;
+		const ConfigFile& config = app.GetConfig();
+
+		Map map = Map::LoadFromBinary(config.GetStringOption("GameSettings.MapFile"));
+		float tickRate = config.GetFloatOption<float>("GameSettings.TickRate");
+
+		m_match.emplace(app, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate);
+
+		MatchSessions& sessions = m_match->GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();
 		if (listenPort != 0)
 			m_networkSessionManager = sessions.CreateSessionManager<NetworkSessionManager>(listenPort, 64);
 		else
 			m_networkSessionManager = nullptr;
+
+		if (config.GetBoolOption("Debug.SendServerState"))
+			m_match->InitDebugGhosts();
 	}
 
 	void ServerState::Enter(Ndk::StateMachine& fsm)
@@ -34,7 +44,7 @@ namespace bw
 
 	bool ServerState::Update(Ndk::StateMachine& /*fsm*/, float elapsedTime)
 	{
-		m_match.Update(elapsedTime);
+		m_match->Update(elapsedTime);
 		return true;
 	}
 }

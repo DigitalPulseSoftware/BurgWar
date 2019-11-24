@@ -9,6 +9,7 @@
 
 #include <Client/States/AbstractState.hpp>
 #include <CoreLib/Match.hpp>
+#include <optional>
 
 namespace bw
 {
@@ -29,7 +30,7 @@ namespace bw
 			void Enter(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
-			Match m_match;
+			std::optional<Match> m_match;
 			LocalSessionManager* m_localSessionManager;
 			NetworkSessionManager* m_networkSessionManager;
 			std::string m_name;

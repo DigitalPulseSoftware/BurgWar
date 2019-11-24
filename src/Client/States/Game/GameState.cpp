@@ -21,6 +21,9 @@ namespace bw
 		m_match->LoadAssets(std::move(assetDirectory));
 		m_match->LoadScripts(std::move(scriptDirectory));
 
+		if (stateData.app->GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
+			m_match->InitDebugGhosts();
+
 		m_clientSession->SendPacket(Packets::Ready{});
 	}
 

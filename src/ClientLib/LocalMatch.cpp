@@ -186,39 +186,6 @@ namespace bw
 			}
 		});
 		BindPackets();
-
-		if (m_application.GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
-		{
-			m_debug.emplace();
-			if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
-			{
-				m_debug->socket.EnableBlocking(false);
-
-				Nz::IpAddress localhost = Nz::IpAddress::LoopbackIpV4;
-				for (std::size_t i = 0; i < 4; ++i)
-				{
-					localhost.SetPort(static_cast<Nz::UInt16>(42000 + i));
-
-					if (m_debug->socket.Bind(localhost) == Nz::SocketState_Bound)
-						break;
-				}
-
-				if (m_debug->socket.GetState() == Nz::SocketState_Bound)
-				{
-					bwLog(GetLogger(), LogLevel::Info, "Debug socket bound to port {0}", m_debug->socket.GetBoundPort());
-				}
-				else
-				{
-					bwLog(GetLogger(), LogLevel::Error, "Failed to bind debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
-					m_debug.reset();
-				}
-			}
-			else
-			{
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
-				m_debug.reset();
-			}
-		}
 	}
 
 	LocalMatch::~LocalMatch()
@@ -278,6 +245,39 @@ namespace bw
 	const ClientWeaponStore& LocalMatch::GetWeaponStore() const
 	{
 		return *m_weaponStore;
+	}
+
+	void LocalMatch::InitDebugGhosts()
+	{
+		m_debug.emplace();
+		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+		{
+			m_debug->socket.EnableBlocking(false);
+
+			Nz::IpAddress localhost = Nz::IpAddress::LoopbackIpV4;
+			for (std::size_t i = 0; i < 4; ++i)
+			{
+				localhost.SetPort(static_cast<Nz::UInt16>(42000 + i));
+
+				if (m_debug->socket.Bind(localhost) == Nz::SocketState_Bound)
+					break;
+			}
+
+			if (m_debug->socket.GetState() == Nz::SocketState_Bound)
+			{
+				bwLog(GetLogger(), LogLevel::Info, "Debug socket bound to port {0}", m_debug->socket.GetBoundPort());
+			}
+			else
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Failed to bind debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
+				m_debug.reset();
+			}
+		}
+		else
+		{
+			bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
+			m_debug.reset();
+		}
 	}
 
 	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)

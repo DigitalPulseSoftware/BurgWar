@@ -44,7 +44,7 @@ namespace bw
 			struct Asset;
 			struct ClientScript;
 
-			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration);
+			Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -75,6 +75,8 @@ namespace bw
 			inline const Terrain& GetTerrain() const;
 			ServerWeaponStore& GetWeaponStore() override;
 			const ServerWeaponStore& GetWeaponStore() const override;
+
+			void InitDebugGhosts();
 
 			void Leave(Player* player);
 			bool Join(Player* player);
@@ -118,7 +120,6 @@ namespace bw
 			std::filesystem::path m_gamemodePath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
-			std::optional<Map> m_map;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
@@ -132,6 +133,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			BurgApp& m_app;
+			Map m_map;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
 	};
