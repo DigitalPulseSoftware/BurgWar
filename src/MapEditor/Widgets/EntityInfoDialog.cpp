@@ -450,10 +450,17 @@ namespace bw
 			m_positionWidget->setValue(m_entityInfo.position);
 			m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
-			if (!m_entityInfo.entityClass.empty())
-				m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+			QString oldClass = m_entityTypeWidget->currentText();
+			QString newClass = QString::fromStdString(m_entityInfo.entityClass);
+			if (oldClass != newClass)
+			{
+				if (!newClass.isEmpty())
+					m_entityTypeWidget->setCurrentText(newClass);
+				else
+					m_entityTypeWidget->setCurrentIndex(-1);
+			}
 			else
-				m_entityTypeWidget->setCurrentIndex(-1);
+				OnEntityTypeUpdate();
 		}
 		else
 		{
@@ -461,10 +468,10 @@ namespace bw
 			m_entityInfo = EntityInfo();
 
 			m_entityTypeWidget->setCurrentIndex(-1);
+			m_propertiesList->clearSelection();
 		}
 
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
-		m_propertiesList->clearSelection();
 		m_positionWidget->setValue(m_entityInfo.position);
 		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
