@@ -180,8 +180,42 @@ namespace bw
 		QDockWidget* layerListDock = new QDockWidget("Layer list", this);
 
 		m_layerList = new QListWidget;
+		m_layerList->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_layerList, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
+		{
+			QListWidgetItem* item = m_layerList->itemAt(pos);
+			if (!item)
+				return;
+
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			QMenu contextMenu(m_layerList);
+
+			QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
+			connect(editLayer, &QAction::triggered, [this, item](bool)
+			{
+				OnEditLayer(item);
+			});
+
+			QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
+			connect(cloneLayer, &QAction::triggered, [this, entityIndex](bool)
+			{
+				//TODO
+				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
+			});
+
+			QAction* deleteLayer = contextMenu.addAction(tr("Delete layer"));
+			connect(deleteLayer, &QAction::triggered, [this, entityIndex](bool)
+			{
+				//TODO
+				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
+			});
+
+			contextMenu.exec(m_layerList->mapToGlobal(pos));
+		});
+
 		connect(m_layerList, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
-		connect(m_layerList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnLayerDoubleClicked);
+		connect(m_layerList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditLayer);
 
 		layerListDock->setWidget(m_layerList);
 
@@ -190,7 +224,40 @@ namespace bw
 		QDockWidget* entityListDock = new QDockWidget("Layer entities", this);
 
 		m_entityList = new QListWidget;
-		connect(m_entityList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEntityDoubleClicked);
+		m_entityList->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_entityList, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
+		{
+			QListWidgetItem* item = m_entityList->itemAt(pos);
+			if (!item)
+				return;
+
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			QMenu contextMenu(m_entityList);
+
+			QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
+			connect(editEntity, &QAction::triggered, [this, item](bool)
+			{
+				OnEditEntity(item);
+			});
+			
+			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
+			connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				//TODO
+				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
+			});
+
+			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
+			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnDeleteEntity(entityIndex);
+			});
+
+			contextMenu.exec(m_entityList->mapToGlobal(pos));
+		});
+
+		connect(m_entityList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditEntity);
 		connect(m_entityList, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		entityListDock->setWidget(m_entityList);
@@ -606,7 +673,7 @@ namespace bw
 		}
 	}
 
-	void EditorWindow::OnEntityDoubleClicked(QListWidgetItem* item)
+	void EditorWindow::OnEditEntity(QListWidgetItem* item)
 	{
 		if (!item)
 			return;
@@ -683,55 +750,8 @@ namespace bw
 
 		editEntityDialog->exec();
 	}
-
-	void EditorWindow::OnEntitySelectionUpdate()
-	{
-		QList<QListWidgetItem*> items = m_entityList->selectedItems();
-		if (!items.empty())
-		{
-			assert(items.size() == 1);
-
-			QListWidgetItem* item = items.front();
-
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-			std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
-
-			m_canvas->EditEntityPosition(canvasId);
-		}
-		else
-			m_canvas->ClearEntitySelection();
-	}
-
-	void EditorWindow::OnLayerChanged(int layerIndex)
-	{
-		if (layerIndex == -1)
-		{
-			m_currentLayer.reset();
-			m_entityIndexes.clear();
-			return;
-		}
-
-		assert(layerIndex >= 0);
-		std::size_t layerIdx = static_cast<std::size_t>(layerIndex);
-
-		m_currentLayer = layerIndex;
-
-		assert(layerIdx < m_workingMap.GetLayerCount());
-		auto& layer = m_workingMap.GetLayer(layerIdx);
-
-		m_entityList->clear();
-
-		m_canvas->UpdateBackgroundColor(layer.backgroundColor);
-
-		m_canvas->ClearEntities();
-		m_entityIndexes.clear();
-
-		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
-			RegisterEntity(entityIndex);
-	}
-
-	void EditorWindow::OnLayerDoubleClicked(QListWidgetItem* item)
+	
+	void EditorWindow::OnEditLayer(QListWidgetItem* item)
 	{
 		LayerIndex layerIndex = static_cast<LayerIndex>(item->data(Qt::UserRole).value<qulonglong>());
 
@@ -787,6 +807,53 @@ namespace bw
 		});
 
 		layerInfoDialog->exec();
+	}
+
+	void EditorWindow::OnEntitySelectionUpdate()
+	{
+		QList<QListWidgetItem*> items = m_entityList->selectedItems();
+		if (!items.empty())
+		{
+			assert(items.size() == 1);
+
+			QListWidgetItem* item = items.front();
+
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+			std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+
+			m_canvas->EditEntityPosition(canvasId);
+		}
+		else
+			m_canvas->ClearEntitySelection();
+	}
+
+	void EditorWindow::OnLayerChanged(int layerIndex)
+	{
+		if (layerIndex == -1)
+		{
+			m_currentLayer.reset();
+			m_entityIndexes.clear();
+			return;
+		}
+
+		assert(layerIndex >= 0);
+		std::size_t layerIdx = static_cast<std::size_t>(layerIndex);
+
+		m_currentLayer = layerIndex;
+
+		assert(layerIdx < m_workingMap.GetLayerCount());
+		auto& layer = m_workingMap.GetLayer(layerIdx);
+
+		m_entityList->clear();
+
+		m_canvas->UpdateBackgroundColor(layer.backgroundColor);
+
+		m_canvas->ClearEntities();
+		m_entityIndexes.clear();
+
+		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
+			RegisterEntity(entityIndex);
 	}
 
 	void EditorWindow::OnPlayMap()

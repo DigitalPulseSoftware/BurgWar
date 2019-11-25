@@ -69,10 +69,10 @@ namespace bw
 			void OnCreateLayer();
 			void OnDeleteEntity();
 			void OnDeleteEntity(std::size_t entityIndex);
-			void OnEntityDoubleClicked(QListWidgetItem* item);
+			void OnEditEntity(QListWidgetItem* item);
+			void OnEditLayer(QListWidgetItem* item);
 			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);
-			void OnLayerDoubleClicked(QListWidgetItem* item);
 			void OnPlayMap();
 
 			void OnOpenMap();
