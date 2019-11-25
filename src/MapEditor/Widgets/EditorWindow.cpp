@@ -624,7 +624,7 @@ namespace bw
 		RefreshLayerList();
 	}
 
-	void EditorWindow::OnDeleteEntity()
+	bool EditorWindow::OnDeleteEntity()
 	{
 		QList<QListWidgetItem*> items = m_entityList->selectedItems();
 		if (!items.empty())
@@ -634,13 +634,17 @@ namespace bw
 			QListWidgetItem* item = items.front();
 			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
-			OnDeleteEntity(entityIndex);
-
-			m_entityList->clearSelection();
+			if (OnDeleteEntity(entityIndex))
+			{
+				m_entityList->clearSelection();
+				return true;
+			}
 		}
+
+		return false;
 	}
 
-	void EditorWindow::OnDeleteEntity(std::size_t entityIndex)
+	bool EditorWindow::OnDeleteEntity(std::size_t entityIndex)
 	{
 		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
 
@@ -670,7 +674,11 @@ namespace bw
 					m_entityList->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
 				}
 			}
+
+			return true;
 		}
+		else
+			return false;
 	}
 
 	void EditorWindow::OnEditEntity(QListWidgetItem* item)

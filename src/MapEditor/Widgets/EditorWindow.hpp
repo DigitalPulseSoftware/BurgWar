@@ -67,8 +67,8 @@ namespace bw
 			void OnCreateEntity();
 			void OnCreateMap();
 			void OnCreateLayer();
-			void OnDeleteEntity();
-			void OnDeleteEntity(std::size_t entityIndex);
+			bool OnDeleteEntity();
+			bool OnDeleteEntity(std::size_t entityIndex);
 			void OnEditEntity(QListWidgetItem* item);
 			void OnEditLayer(QListWidgetItem* item);
 			void OnEntitySelectionUpdate();
