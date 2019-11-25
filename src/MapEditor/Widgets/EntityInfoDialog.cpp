@@ -508,8 +508,22 @@ namespace bw
 
 		m_entityTypeIndex = m_entityStore.GetElementIndex(entityType);
 
+		std::string propertyName;
+		if (m_propertyTypeIndex != InvalidIndex)
+			propertyName = m_properties[m_propertyTypeIndex].keyName;
+
 		RefreshEntityType();
-		RefreshPropertyEditor(InvalidIndex);
+
+		if (!propertyName.empty())
+		{
+			auto propertyIt = m_propertyByName.find(propertyName);
+			if (propertyIt != m_propertyByName.end())
+				m_propertiesList->selectRow(int(propertyIt->second));
+			else
+				RefreshPropertyEditor(InvalidIndex);
+		}
+		else
+			RefreshPropertyEditor(InvalidIndex);
 
 		m_entityInfo.entityClass = (m_entityTypeIndex != m_entityStore.InvalidIndex) ? std::move(entityType) : std::string();
 	}
