@@ -31,42 +31,6 @@ namespace bw
 
 		formLayout->addRow(tr("Layer color"), m_layerColorEdit);
 
-		m_visibilityList = new QListWidget;
-		connect(m_visibilityList, &QListWidget::itemDoubleClicked, [this] (QListWidgetItem* item)
-		{
-			if (!item)
-				return;
-
-			qulonglong index = item->data(Qt::UserRole).toULongLong();
-
-			OnEditVisibilityLayer(static_cast<std::size_t>(index));
-		});
-		
-		QVBoxLayout* visibleLayerLayout = new QVBoxLayout;
-		visibleLayerLayout->addWidget(m_visibilityList);
-
-		QPushButton* addLayerButton = new QPushButton(tr("Add visible layer"));
-		connect(addLayerButton, &QPushButton::released, this, &LayerEditDialog::OnCreateVisibilityLayer);
-
-		visibleLayerLayout->addWidget(addLayerButton);
-
-		QPushButton* deleteLayerButton = new QPushButton(tr("Delete visible layer"));
-		connect(deleteLayerButton, &QPushButton::released, this, [this] 
-		{
-			QList<QListWidgetItem*> items = m_visibilityList->selectedItems();
-			if (!items.empty())
-			{
-				assert(items.size() == 1);
-
-				qulonglong index = items[0]->data(Qt::UserRole).toULongLong();
-				OnDeleteVisibilityLayer(static_cast<std::size_t>(index));
-			}
-		});
-
-		visibleLayerLayout->addWidget(deleteLayerButton);
-
-		formLayout->addRow(tr("Visible layers"), visibleLayerLayout);
-
 		QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		connect(buttonBox, &QDialogButtonBox::accepted, this, &LayerEditDialog::OnAccept);
 		connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -84,11 +48,8 @@ namespace bw
 		m_layerColor = QColor::fromRgb(layerInfo.backgroundColor.r, layerInfo.backgroundColor.g, layerInfo.backgroundColor.b);
 		m_layerColorEdit->setStyleSheet("background-color: " + m_layerColor.name());
 		m_layerIndex = layerIndex;
-		m_visibilities = std::move(layerInfo.visibilities);
 
 		m_layerName->setText(QString::fromStdString(layerInfo.name));
-
-		RefreshVisibilityList();
 	}
 
 	LayerInfo LayerEditDialog::GetLayerInfo() const
@@ -96,7 +57,6 @@ namespace bw
 		LayerInfo layerInfo;
 		layerInfo.backgroundColor = Nz::Color(Nz::UInt8(m_layerColor.red()), Nz::UInt8(m_layerColor.green()), Nz::UInt8(m_layerColor.blue()));
 		layerInfo.name = m_layerName->text().toStdString();
-		layerInfo.visibilities = m_visibilities;
 
 		return layerInfo;
 	}
@@ -104,47 +64,6 @@ namespace bw
 	void LayerEditDialog::OnAccept()
 	{
 		accept();
-	}
-
-	void LayerEditDialog::OnCreateVisibilityLayer()
-	{
-		LayerVisibilityDialog* visibilityDialog = new LayerVisibilityDialog(m_layerIndex, m_map, this);
-		connect(visibilityDialog, &QDialog::accepted, [this, visibilityDialog]()
-		{
-			m_visibilities.push_back(visibilityDialog->GetLayerVisibilityInfo());
-
-			RefreshVisibilityList();
-		});
-
-		visibilityDialog->exec();
-	}
-
-	void LayerEditDialog::OnDeleteVisibilityLayer(std::size_t visibilityIndex)
-	{
-		assert(visibilityIndex < m_visibilities.size());
-
-		int selected = QMessageBox::warning(this, tr("Delete visibility layer?"), tr("Are you sure you want to delete this visibility layer?"), QMessageBox::Yes | QMessageBox::Cancel);
-		if (selected != QMessageBox::Yes)
-			return;
-
-		m_visibilities.erase(m_visibilities.begin() + visibilityIndex);
-
-		RefreshVisibilityList();
-	}
-
-	void LayerEditDialog::OnEditVisibilityLayer(std::size_t visibilityIndex)
-	{
-		assert(visibilityIndex < m_visibilities.size());
-
-		LayerVisibilityDialog* visibilityDialog = new LayerVisibilityDialog(m_layerIndex, m_visibilities[visibilityIndex], m_map, this);
-		connect(visibilityDialog, &QDialog::accepted, [this, visibilityDialog, visibilityIndex]()
-		{
-			m_visibilities[visibilityIndex] = visibilityDialog->GetLayerVisibilityInfo();
-
-			RefreshVisibilityList();
-		});
-
-		visibilityDialog->exec();
 	}
 
 	void LayerEditDialog::OnEditLayerColor()
@@ -159,26 +78,5 @@ namespace bw
 		});
 
 		colorDialog->exec();
-	}
-
-	void LayerEditDialog::RefreshVisibilityList()
-	{
-		m_visibilityList->clear();
-		m_visibilityList->clearSelection();
-
-		std::size_t visibilityIndex = 0;
-		for (const auto& visibilityInfo : m_visibilities)
-		{
-			auto& layer = m_map.GetLayer(visibilityInfo.layerIndex);
-
-			QString visibilityName = tr("%1: %2 (%3)").arg(visibilityIndex).arg(QString::fromStdString(layer.name)).arg(visibilityInfo.layerIndex + 1);
-
-			QListWidgetItem* item = new QListWidgetItem(visibilityName);
-			item->setData(Qt::UserRole, qulonglong(visibilityIndex));
-
-			m_visibilityList->addItem(item);
-
-			visibilityIndex++;
-		}
 	}
 }

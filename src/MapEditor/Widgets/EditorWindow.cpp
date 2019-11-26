@@ -769,18 +769,6 @@ namespace bw
 		layerInfo.backgroundColor = layer.backgroundColor;
 		layerInfo.name = layer.name;
 
-		layerInfo.visibilities.reserve(layer.visibilities.size());
-		for (auto&& layerVisibility : layer.visibilities)
-		{
-			auto& visibilityInfo = layerInfo.visibilities.emplace_back();
-			visibilityInfo.layerIndex = layerVisibility.layerIndex;
-			visibilityInfo.offset = layerVisibility.offset;
-			visibilityInfo.parallaxFactor = layerVisibility.parallaxFactor;
-			visibilityInfo.renderOrder = layerVisibility.renderOrder;
-			visibilityInfo.rotation = layerVisibility.rotation;
-			visibilityInfo.scale = layerVisibility.scale;
-		}
-
 		LayerEditDialog* layerInfoDialog = new LayerEditDialog(layerIndex, layerInfo, m_workingMap, this);
 		connect(layerInfoDialog, &QDialog::accepted, [this, layerInfoDialog, layerIndex, item]()
 		{
@@ -790,18 +778,6 @@ namespace bw
 
 			layer.backgroundColor = layerInfo.backgroundColor;
 			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
-
-			layer.visibilities.clear();
-			for (auto&& visibilityInfo : layerInfo.visibilities)
-			{
-				auto& layerVisibility = layer.visibilities.emplace_back();
-				layerVisibility.layerIndex = visibilityInfo.layerIndex;
-				layerVisibility.offset = visibilityInfo.offset;
-				layerVisibility.parallaxFactor = visibilityInfo.parallaxFactor;
-				layerVisibility.renderOrder = visibilityInfo.renderOrder;
-				layerVisibility.rotation = visibilityInfo.rotation;
-				layerVisibility.scale = visibilityInfo.scale;
-			}
 
 			bool resetItemName = false;
 			if (layer.name != layerInfo.name)

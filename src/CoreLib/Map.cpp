@@ -137,21 +137,6 @@ namespace bw
 			}
 			layerInfo["entities"] = std::move(entityArray);
 
-			auto visibilities = nlohmann::json::array();
-			for (auto&& visibilityEntry : layerEntry.visibilities)
-			{
-				nlohmann::json visibilityInfo;
-				visibilityInfo["layerIndex"] = visibilityEntry.layerIndex;
-				visibilityInfo["offset"] = visibilityEntry.offset;
-				visibilityInfo["parallaxFactor"] = visibilityEntry.parallaxFactor;
-				visibilityInfo["renderOrder"] = visibilityEntry.renderOrder;
-				visibilityInfo["rotation"] = visibilityEntry.rotation;
-				visibilityInfo["scale"] = visibilityEntry.scale;
-
-				visibilities.push_back(std::move(visibilityInfo));
-			}
-			layerInfo["visibilities"] = std::move(visibilities);
-
 			layerArray.emplace_back(std::move(layerInfo));
 		}
 		mapInfo["layers"] = std::move(layerArray);
@@ -247,19 +232,6 @@ namespace bw
 
 					}, value);
 				}
-			}
-
-			Nz::UInt16 visibilityCount = Nz::UInt16(layer.visibilities.size());
-			stream << visibilityCount;
-
-			for (const LayerVisibility& visibility : layer.visibilities)
-			{
-				stream << visibility.layerIndex;
-				stream << visibility.offset;
-				stream << visibility.parallaxFactor;
-				stream << visibility.renderOrder;
-				stream << visibility.rotation.ToDegrees();
-				stream << visibility.scale;
 			}
 		}
 
@@ -411,24 +383,6 @@ namespace bw
 					}
 				}
 			}
-
-			Nz::UInt16 visibilityCount;
-			stream >> visibilityCount;
-
-			layer.visibilities.resize(visibilityCount);
-			for (LayerVisibility& visibility : layer.visibilities)
-			{
-				stream >> visibility.layerIndex;
-				stream >> visibility.offset;
-				stream >> visibility.parallaxFactor;
-				stream >> visibility.renderOrder;
-
-				float angle;
-				stream >> angle;
-				visibility.rotation = Nz::DegreeAnglef(angle);
-
-				stream >> visibility.scale;
-			}
 		}
 
 		Nz::UInt32 scriptCount;
@@ -534,17 +488,6 @@ namespace bw
 						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}
-			}
-
-			for (auto&& visibilityInfo : entry["visibilities"])
-			{
-				LayerVisibility& visibility = layer.visibilities.emplace_back();
-				visibility.layerIndex = visibilityInfo.at("layerIndex");
-				visibility.offset = visibilityInfo.value("offset", visibility.offset);
-				visibility.parallaxFactor = visibilityInfo.value("parallaxFactor", visibility.parallaxFactor);
-				visibility.renderOrder = visibilityInfo.value("renderOrder", visibility.renderOrder);
-				visibility.rotation = visibilityInfo.value("rotation", visibility.rotation);
-				visibility.scale = visibilityInfo.value("scale", visibility.scale);
 			}
 		}
 

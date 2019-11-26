@@ -33,7 +33,6 @@ namespace bw
 			struct Asset;
 			struct Entity;
 			struct Layer;
-			struct LayerVisibility;
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
@@ -76,17 +75,6 @@ namespace bw
 				Nz::Color backgroundColor = Nz::Color::Black;
 				std::string name = "unnamed layer";
 				std::vector<Entity> entities;
-				std::vector<LayerVisibility> visibilities;
-			};
-
-			struct LayerVisibility
-			{
-				LayerIndex layerIndex;
-				Nz::DegreeAnglef rotation = Nz::DegreeAnglef::Zero();
-				Nz::Int32 renderOrder = -1;
-				Nz::Vector2f offset = Nz::Vector2f::Zero();
-				Nz::Vector2f parallaxFactor = Nz::Vector2f::Unit();
-				Nz::Vector2f scale = Nz::Vector2f::Unit();
 			};
 
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);

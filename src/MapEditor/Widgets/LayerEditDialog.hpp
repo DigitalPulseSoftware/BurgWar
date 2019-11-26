@@ -8,7 +8,6 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_LAYERINFODIALOG_HPP
 
 #include <CoreLib/LayerIndex.hpp>
-#include <MapEditor/Widgets/LayerVisibilityDialog.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <QtGui/QColor>
 #include <QtWidgets/QDialog>
@@ -25,7 +24,6 @@ namespace bw
 	{
 		Nz::Color backgroundColor;
 		std::string name;
-		std::vector<LayerVisibilityInfo> visibilities;
 	};
 
 	class Map;
@@ -41,14 +39,8 @@ namespace bw
 
 		private:
 			void OnAccept();
-			void OnCreateVisibilityLayer();
-			void OnDeleteVisibilityLayer(std::size_t visibilityIndex);
-			void OnEditVisibilityLayer(std::size_t visibilityIndex);
 			void OnEditLayerColor();
 
-			void RefreshVisibilityList();
-
-			std::vector<LayerVisibilityInfo> m_visibilities;
 			const Map& m_map;
 			LayerIndex m_layerIndex;
 			QColor m_layerColor;
