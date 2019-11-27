@@ -242,10 +242,9 @@ namespace bw
 			});
 			
 			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
-			connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
+			connect(cloneEntity, &QAction::triggered, [this, item](bool)
 			{
-				//TODO
-				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
+				OnCloneEntity(item);
 			});
 
 			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
@@ -543,6 +542,27 @@ namespace bw
 
 		for (std::size_t i = fileCount; i < m_recentMapActions.size(); ++i)
 			m_recentMapActions[int(i)]->setVisible(false);
+	}
+
+	void EditorWindow::OnCloneEntity(QListWidgetItem* item)
+	{
+		if (!item)
+			return;
+
+		std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+
+		auto& layer = m_workingMap.GetLayer(layerIndex);
+
+		std::size_t cloneEntityIndex = layer.entities.size();
+		auto& cloneEntity = layer.entities.emplace_back(layer.entities[entityIndex]);
+		cloneEntity.name += " (Clone)";
+
+		RegisterEntity(cloneEntityIndex);
+
+		m_entityList->clearSelection();
+		m_entityList->setItemSelected(m_entityList->item(int(cloneEntityIndex)), true);
 	}
 
 	void EditorWindow::OnCompileMap()

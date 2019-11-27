@@ -63,6 +63,7 @@ namespace bw
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
+			void OnCloneEntity(QListWidgetItem* item);
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
