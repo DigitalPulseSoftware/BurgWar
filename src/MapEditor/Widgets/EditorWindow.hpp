@@ -84,10 +84,9 @@ namespace bw
 			void OnLayerChanged(int layerIndex);
 			void OnLayerMovedUp();
 			void OnLayerMovedDown();
-			void OnPlayMap();
-
 			void OnOpenMap();
 			void OnOpenRecentMap();
+			void OnPlayMap();
 			void OnSaveMap();
 
 			void OpenMap(const QString& mapFolder);

@@ -1024,6 +1024,22 @@ namespace bw
 		m_layerList.upArrowButton->setDisabled(false);
 	}
 
+	void EditorWindow::OnOpenMap()
+	{
+		QString mapFolder = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
+		if (mapFolder.isEmpty())
+			return;
+
+		OpenMap(mapFolder);
+	}
+
+	void EditorWindow::OnOpenRecentMap()
+	{
+		QAction* action = qobject_cast<QAction*>(sender());
+		if (action)
+			OpenMap(action->data().toString());
+	}
+
 	void EditorWindow::OnPlayMap()
 	{
 		const ConfigFile& config = GetConfig();
@@ -1040,25 +1056,9 @@ namespace bw
 		//m_centralTab->addTab(m_playWindow, tr("In-game test"));
 
 		connect(m_playWindow, &QObject::destroyed, [this]()
-		{
-			m_playWindow = nullptr;
-		});
-	}
-
-	void EditorWindow::OnOpenMap()
-	{
-		QString mapFolder = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
-		if (mapFolder.isEmpty())
-			return;
-
-		OpenMap(mapFolder);
-	}
-
-	void EditorWindow::OnOpenRecentMap()
-	{
-		QAction* action = qobject_cast<QAction*>(sender());
-		if (action)
-			OpenMap(action->data().toString());
+			{
+				m_playWindow = nullptr;
+			});
 	}
 
 	void EditorWindow::OnSaveMap()
