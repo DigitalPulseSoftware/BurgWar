@@ -28,14 +28,18 @@
 #include <QtCore/QStringBuilder>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCommonStyle>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QListWidget>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushbutton>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
+#include <QtWidgets/QVBoxLayout>
 #include <tsl/hopscotch_set.h>
 
 namespace bw
@@ -177,91 +181,8 @@ namespace bw
 
 		setCentralWidget(m_centralTab);
 
-		QDockWidget* layerListDock = new QDockWidget("Layer list", this);
-
-		m_layerList = new QListWidget;
-		m_layerList->setContextMenuPolicy(Qt::CustomContextMenu);
-		connect(m_layerList, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
-		{
-			QListWidgetItem* item = m_layerList->itemAt(pos);
-			if (!item)
-				return;
-
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-
-			QMenu contextMenu(m_layerList);
-
-			QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
-			connect(editLayer, &QAction::triggered, [this, item](bool)
-			{
-				OnEditLayer(item);
-			});
-
-			QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
-			connect(cloneLayer, &QAction::triggered, [this, entityIndex](bool)
-			{
-				//TODO
-				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
-			});
-
-			QAction* deleteLayer = contextMenu.addAction(tr("Delete layer"));
-			connect(deleteLayer, &QAction::triggered, [this, entityIndex](bool)
-			{
-				//TODO
-				bwLog(GetLogger(), LogLevel::Error, "Not yet implemented");
-			});
-
-			contextMenu.exec(m_layerList->mapToGlobal(pos));
-		});
-
-		connect(m_layerList, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
-		connect(m_layerList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditLayer);
-
-		layerListDock->setWidget(m_layerList);
-
-		addDockWidget(Qt::RightDockWidgetArea, layerListDock);
-
-		QDockWidget* entityListDock = new QDockWidget("Layer entities", this);
-
-		m_entityList = new QListWidget;
-		m_entityList->setContextMenuPolicy(Qt::CustomContextMenu);
-		connect(m_entityList, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
-		{
-			QListWidgetItem* item = m_entityList->itemAt(pos);
-			if (!item)
-				return;
-
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-
-			QMenu contextMenu(m_entityList);
-
-			QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
-			connect(editEntity, &QAction::triggered, [this, item](bool)
-			{
-				OnEditEntity(item);
-			});
-			
-			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
-			connect(cloneEntity, &QAction::triggered, [this, item](bool)
-			{
-				OnCloneEntity(item);
-			});
-
-			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
-			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
-			{
-				OnDeleteEntity(entityIndex);
-			});
-
-			contextMenu.exec(m_entityList->mapToGlobal(pos));
-		});
-
-		connect(m_entityList, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditEntity);
-		connect(m_entityList, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
-
-		entityListDock->setWidget(m_entityList);
-
-		addDockWidget(Qt::RightDockWidgetArea, entityListDock);
+		BuildLayerList(editorAssetsFolder);
+		BuildEntityList(editorAssetsFolder);
 
 		resize(1280, 720);
 		setWindowTitle(tr("Burg'war map editor"));
@@ -297,8 +218,8 @@ namespace bw
 
 		std::size_t entityIndex = it.value();
 
-		m_entityList->clearSelection();
-		m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
+		m_entityList.listWidget->clearSelection();
+		m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(entityIndex)), true);
 	}
 
 	void EditorWindow::SwitchToMode(std::shared_ptr<EditorMode> editorMode)
@@ -330,8 +251,8 @@ namespace bw
 
 		RefreshLayerList();
 
-		if (m_layerList->count() > 0)
-			m_layerList->setCurrentRow(0);
+		if (m_layerList.listWidget->count() > 0)
+			m_layerList.listWidget->setCurrentRow(0);
 	}
 
 	bool EditorWindow::event(QEvent* e)
@@ -368,48 +289,18 @@ namespace bw
 	{
 		tsl::hopscotch_set<std::string> textures;
 
-		std::size_t layerCount = m_workingMap.GetLayerCount();
-		for (std::size_t i = 0; i < layerCount; ++i)
+		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 		{
-			Map::Layer& layer = m_workingMap.GetLayer(i);
-
-			for (const auto& entity : layer.entities)
+			if (propertyData.isArray)
 			{
-				if (std::size_t entityIndex = m_entityStore->GetElementIndex(entity.entityType); entityIndex != m_entityStore->InvalidIndex)
-				{
-					auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore->GetElement(entityIndex));
-
-					for (const auto& [key, value] : entity.properties)
-					{
-						if (auto it = entityTypeInfo->properties.find(key); it != entityTypeInfo->properties.end())
-						{
-							const auto& propertyData = it->second;
-							switch (propertyData.type)
-							{
-								case PropertyType::Texture:
-								{
-									if (propertyData.isArray)
-									{
-										for (const std::string& texture : std::get<EntityPropertyArray<std::string>>(value))
-											textures.insert(texture);
-									}
-									else
-									{
-										textures.insert(std::get<std::string>(value));
-									}
-									break;
-								}
-
-								default:
-									break;
-							}
-						}
-					}
-				}
-				else
-					bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
+				for (const std::string& texture : std::get<EntityPropertyArray<std::string>>(value))
+					textures.insert(texture);
 			}
-		}
+			else
+			{
+				textures.insert(std::get<std::string>(value));
+			}
+		});
 
 		std::filesystem::path gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
 
@@ -439,6 +330,138 @@ namespace bw
 		}
 
 		bwLog(GetLogger(), LogLevel::Info, "Finished building assets");
+	}
+
+	void EditorWindow::BuildEntityList(const std::string& editorAssetsFolder)
+	{
+		QDockWidget* entityListDock = new QDockWidget("Layer entities", this);
+
+		m_entityList.listWidget = new QListWidget;
+		m_entityList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_entityList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
+		{
+			QListWidgetItem* item = m_entityList.listWidget->itemAt(pos);
+			if (!item)
+				return;
+
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			QMenu contextMenu(m_entityList.listWidget);
+
+			QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
+			connect(editEntity, &QAction::triggered, [this, item](bool)
+			{
+				OnEditEntity(item);
+			});
+			
+			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
+			connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnCloneEntity(entityIndex);
+			});
+
+			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
+			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnDeleteEntity(entityIndex);
+			});
+
+			contextMenu.exec(m_entityList.listWidget->mapToGlobal(pos));
+		});
+
+		connect(m_entityList.listWidget, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditEntity);
+		connect(m_entityList.listWidget, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
+
+		m_entityList.upArrowButton = new QPushButton;
+		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
+		m_entityList.upArrowButton->setDisabled(true);
+		connect(m_entityList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedUp);
+
+		m_entityList.downArrowButton = new QPushButton;
+		m_entityList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
+		m_entityList.downArrowButton->setDisabled(true);
+		connect(m_entityList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedDown);
+
+		QVBoxLayout* arrowLayout = new QVBoxLayout;
+		arrowLayout->addWidget(m_entityList.upArrowButton);
+		arrowLayout->addWidget(m_entityList.downArrowButton);
+
+		QHBoxLayout* entityListLayout = new QHBoxLayout;
+		entityListLayout->addWidget(m_entityList.listWidget);
+		entityListLayout->addLayout(arrowLayout);
+
+		QWidget* content = new QWidget;
+		content->setLayout(entityListLayout);
+
+		entityListDock->setWidget(content);
+
+		addDockWidget(Qt::RightDockWidgetArea, entityListDock);
+	}
+
+	void EditorWindow::BuildLayerList(const std::string& editorAssetsFolder)
+	{
+		QDockWidget* layerListDock = new QDockWidget("Layer list", this);
+
+		m_layerList.listWidget = new QListWidget;
+		m_layerList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_layerList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
+		{
+			QListWidgetItem* item = m_layerList.listWidget->itemAt(pos);
+			if (!item)
+				return;
+
+			std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			QMenu contextMenu(m_layerList.listWidget);
+
+			QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
+			connect(editLayer, &QAction::triggered, [this, item](bool)
+			{
+				OnEditLayer(item);
+			});
+
+			QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
+			connect(cloneLayer, &QAction::triggered, [this, layerIndex](bool)
+			{
+				OnCloneLayer(layerIndex);
+			});
+
+			QAction* deleteLayer = contextMenu.addAction(tr("Delete layer"));
+			connect(deleteLayer, &QAction::triggered, [this, layerIndex](bool)
+			{
+				OnDeleteLayer(layerIndex);
+			});
+
+			contextMenu.exec(m_layerList.listWidget->mapToGlobal(pos));
+		});
+
+		connect(m_layerList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
+		connect(m_layerList.listWidget, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditLayer);
+
+		m_layerList.upArrowButton = new QPushButton;
+		m_layerList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
+		m_layerList.upArrowButton->setDisabled(true);
+		connect(m_layerList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedUp);
+
+		m_layerList.downArrowButton = new QPushButton;
+		m_layerList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
+		m_layerList.downArrowButton->setDisabled(true);
+		connect(m_layerList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedDown);
+
+		QVBoxLayout* arrowLayout = new QVBoxLayout;
+		arrowLayout->addWidget(m_layerList.upArrowButton);
+		arrowLayout->addWidget(m_layerList.downArrowButton);
+
+		QHBoxLayout* entityListLayout = new QHBoxLayout;
+		entityListLayout->addWidget(m_layerList.listWidget);
+		entityListLayout->addLayout(arrowLayout);
+		
+		QWidget* content = new QWidget;
+		content->setLayout(entityListLayout);
+
+		layerListDock->setWidget(content);
+
+		addDockWidget(Qt::RightDockWidgetArea, layerListDock);
 	}
 
 	void EditorWindow::BuildMenu()
@@ -544,25 +567,48 @@ namespace bw
 			m_recentMapActions[int(i)]->setVisible(false);
 	}
 
-	void EditorWindow::OnCloneEntity(QListWidgetItem* item)
+	void EditorWindow::OnCloneEntity(std::size_t entityIndex)
 	{
-		if (!item)
-			return;
-
-		std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
-		std::size_t cloneEntityIndex = layer.entities.size();
-		auto& cloneEntity = layer.entities.emplace_back(layer.entities[entityIndex]);
-		cloneEntity.name += " (Clone)";
+		std::size_t cloneEntityIndex = entityIndex + 1;
+		auto cloneIt = layer.entities.emplace(layer.entities.begin() + entityIndex, layer.entities[entityIndex]);
+		cloneIt->name += " (Clone)";
 
 		RegisterEntity(cloneEntityIndex);
 
-		m_entityList->clearSelection();
-		m_entityList->setItemSelected(m_entityList->item(int(cloneEntityIndex)), true);
+		m_entityList.listWidget->clearSelection();
+		m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(cloneEntityIndex)), true);
+	}
+
+	void EditorWindow::OnCloneLayer(std::size_t layerIndex)
+	{
+		auto& layer = m_workingMap.GetLayer(layerIndex);
+		std::size_t cloneLayerIndex = layerIndex + 1;
+		auto& newLayer = m_workingMap.EmplaceLayer(cloneLayerIndex, layer);
+		newLayer.name += " (Clone)";
+
+		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
+		{
+			if (layerIndex >= cloneLayerIndex)
+				layerIndex++;
+		};
+
+		// Update entities pointing to this layer
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		{
+			if (propertyData.isArray)
+			{
+				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+					UpdateLayerIndex(layerIndex);
+			}
+			else
+				UpdateLayerIndex(std::get<Nz::Int64>(value));
+		});
+
+		RefreshLayerList();
 	}
 
 	void EditorWindow::OnCompileMap()
@@ -585,7 +631,7 @@ namespace bw
 
 	void EditorWindow::OnCreateEntity()
 	{
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
 
@@ -614,8 +660,8 @@ namespace bw
 
 			RegisterEntity(entityIndex);
 
-			m_entityList->clearSelection();
-			m_entityList->setItemSelected(m_entityList->item(int(entityIndex)), true);
+			m_entityList.listWidget->clearSelection();
+			m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(entityIndex)), true);
 		});
 
 		createEntityDialog->exec();
@@ -646,19 +692,14 @@ namespace bw
 
 	bool EditorWindow::OnDeleteEntity()
 	{
-		QList<QListWidgetItem*> items = m_entityList->selectedItems();
-		if (!items.empty())
+		int selectedEntity = m_entityList.listWidget->currentRow();
+		if (selectedEntity < 0)
+			return false;
+
+		if (OnDeleteEntity(static_cast<std::size_t>(selectedEntity)))
 		{
-			assert(items.size() == 1);
-
-			QListWidgetItem* item = items.front();
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-
-			if (OnDeleteEntity(entityIndex))
-			{
-				m_entityList->clearSelection();
-				return true;
-			}
+			m_entityList.listWidget->clearSelection();
+			return true;
 		}
 
 		return false;
@@ -674,7 +715,7 @@ namespace bw
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			QListWidgetItem* item = m_entityList->takeItem(int(entityIndex));
+			QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
 			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 
 			delete item;
@@ -691,7 +732,7 @@ namespace bw
 				if (it->second >= entityIndex)
 				{
 					std::size_t newEntityIndex = --it.value();
-					m_entityList->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+					m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
 				}
 			}
 
@@ -701,6 +742,46 @@ namespace bw
 			return false;
 	}
 
+	void EditorWindow::OnDeleteLayer(std::size_t layerIndex)
+	{
+		auto& layer = m_workingMap.GetLayer(layerIndex);
+
+		QString warningText = tr("You are about to delete layer %1, are you sure you want to do that?").arg(QString::fromStdString(layer.name));
+		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
+		if (response == QMessageBox::Yes)
+		{
+			m_workingMap.DropLayer(layerIndex);
+
+			auto UpdateLayerIndex = [deletedIndex = layerIndex](Nz::Int64& layerIndex)
+			{
+				if (layerIndex == deletedIndex)
+					layerIndex = NoLayer;
+				else if (layerIndex > deletedIndex)
+					layerIndex--;
+			};
+
+			// Update entities pointing to this layer
+			ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+			{
+				if (propertyData.isArray)
+				{
+					for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+						UpdateLayerIndex(layerIndex);
+				}
+				else
+					UpdateLayerIndex(std::get<Nz::Int64>(value));
+			});
+
+			if (m_currentLayer == layerIndex)
+			{
+				m_layerList.listWidget->clearSelection();
+				OnLayerChanged(-1);
+			}
+
+			RefreshLayerList();
+		}
+	}
+
 	void EditorWindow::OnEditEntity(QListWidgetItem* item)
 	{
 		if (!item)
@@ -708,7 +789,7 @@ namespace bw
 
 		std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
+		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -813,51 +894,134 @@ namespace bw
 		layerInfoDialog->exec();
 	}
 
+	void EditorWindow::OnEntityMovedUp()
+	{
+		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
+		if (!selectedItem)
+			return;
+
+		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
+		if (entityIndex == 0)
+			return;
+
+		std::size_t newEntityIndex = entityIndex - 1;
+		SwapEntities(entityIndex, newEntityIndex);
+
+		m_layerList.downArrowButton->setDisabled(false);
+		m_layerList.upArrowButton->setDisabled(newEntityIndex == 0);
+	}
+
+	void EditorWindow::OnEntityMovedDown()
+	{
+		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
+		if (!selectedItem)
+			return;
+
+		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
+		if (entityIndex + 1 >= m_entityList.listWidget->count())
+			return;
+
+		std::size_t newEntityIndex = entityIndex + 1;
+		SwapEntities(entityIndex, newEntityIndex);
+
+		m_entityList.downArrowButton->setDisabled(newEntityIndex + 1 >= m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setDisabled(false);
+	}
+
 	void EditorWindow::OnEntitySelectionUpdate()
 	{
-		QList<QListWidgetItem*> items = m_entityList->selectedItems();
-		if (!items.empty())
+		int entityIndex = m_entityList.listWidget->currentRow();
+		if (entityIndex < 0)
 		{
-			assert(items.size() == 1);
-
-			QListWidgetItem* item = items.front();
-
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
-			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-			std::size_t layerIndex = static_cast<std::size_t>(m_layerList->currentRow());
-
-			m_canvas->EditEntityPosition(canvasId);
-		}
-		else
 			m_canvas->ClearEntitySelection();
+
+			m_entityList.downArrowButton->setDisabled(true);
+			m_entityList.upArrowButton->setDisabled(true);
+			return;
+		}
+
+		QListWidgetItem* item = m_entityList.listWidget->item(entityIndex);
+
+		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		m_canvas->EditEntityPosition(canvasId);
+
+		m_entityList.downArrowButton->setDisabled(entityIndex + 1 >= m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setDisabled(entityIndex <= 0);
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)
 	{
-		if (layerIndex == -1)
+		if (layerIndex < 0)
 		{
 			m_currentLayer.reset();
 			m_entityIndexes.clear();
+			m_canvas->ClearEntities();
+
+			m_layerList.downArrowButton->setDisabled(true);
+			m_layerList.upArrowButton->setDisabled(true);
 			return;
 		}
+
+		if (m_currentLayer && m_currentLayer.value() == layerIndex)
+			return;
 
 		assert(layerIndex >= 0);
 		std::size_t layerIdx = static_cast<std::size_t>(layerIndex);
 
-		m_currentLayer = layerIndex;
+		m_currentLayer = layerIdx;
+
+		m_layerList.upArrowButton->setDisabled(layerIdx == 0);
+		m_layerList.downArrowButton->setDisabled(layerIdx + 1 >= m_layerList.listWidget->count());
 
 		assert(layerIdx < m_workingMap.GetLayerCount());
 		auto& layer = m_workingMap.GetLayer(layerIdx);
-
-		m_entityList->clear();
 
 		m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
 		m_canvas->ClearEntities();
 		m_entityIndexes.clear();
+		m_entityList.listWidget->clear();
 
 		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
 			RegisterEntity(entityIndex);
+	}
+
+	void EditorWindow::OnLayerMovedUp()
+	{
+		if (!m_currentLayer)
+			return;
+
+		std::size_t oldPosition = m_currentLayer.value();
+		if (oldPosition == 0)
+			return;
+
+		std::size_t newPosition = oldPosition - 1;
+
+		m_currentLayer = newPosition;
+
+		SwapLayers(oldPosition, newPosition);
+
+		m_layerList.downArrowButton->setDisabled(false);
+		m_layerList.upArrowButton->setDisabled(newPosition == 0);
+	}
+
+	void EditorWindow::OnLayerMovedDown()
+	{
+		if (!m_currentLayer)
+			return;
+
+		std::size_t oldPosition = m_currentLayer.value();
+		if (oldPosition + 1 >= m_layerList.listWidget->count())
+			return;
+
+		std::size_t newPosition = oldPosition + 1;
+
+		m_currentLayer = newPosition;
+
+		SwapLayers(oldPosition, newPosition);
+
+		m_layerList.downArrowButton->setDisabled(newPosition + 1 >= m_layerList.listWidget->count());
+		m_layerList.upArrowButton->setDisabled(false);
 	}
 
 	void EditorWindow::OnPlayMap()
@@ -986,15 +1150,32 @@ namespace bw
 		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties)->GetId();
 		item->setData(Qt::UserRole + 1, canvasId);
 
-		m_entityList->addItem(item);
+		if (entityIndex != m_entityList.listWidget->count())
+		{
+			assert(entityIndex < m_entityList.listWidget->count());
+			m_entityList.listWidget->insertItem(int(entityIndex), item);
+
+			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+			{
+				if (it->second >= entityIndex)
+				{
+					std::size_t newEntityIndex = ++it.value();
+					m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+				}
+			}
+		}
+		else
+			m_entityList.listWidget->addItem(item);
 
 		m_entityIndexes.emplace(canvasId, entityIndex);
 	}
 
 	void EditorWindow::RefreshLayerList()
 	{
-		m_layerList->clear();
-		m_layerList->clearSelection();
+		int currentRow = m_layerList.listWidget->currentRow();
+
+		m_layerList.listWidget->clear();
+		m_layerList.listWidget->clearSelection();
 
 		for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
 		{
@@ -1003,7 +1184,76 @@ namespace bw
 			QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(layer.name));
 			item->setData(Qt::UserRole, qulonglong(layerIndex));
 
-			m_layerList->addItem(item);
+			m_layerList.listWidget->addItem(item);
 		}
+
+		if (currentRow >= 0 && currentRow < m_layerList.listWidget->count())
+			m_layerList.listWidget->setCurrentRow(currentRow);
+		else
+			OnLayerChanged(-1);
+	}
+	
+	void EditorWindow::SwapEntities(std::size_t oldPosition, std::size_t newPosition)
+	{
+		if (!m_currentLayer)
+			return;
+
+		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+
+		assert(oldPosition < layer.entities.size());
+		assert(newPosition < layer.entities.size());
+
+		std::swap(layer.entities[oldPosition], layer.entities[newPosition]);
+
+		QListWidgetItem* oldItem = m_entityList.listWidget->item(int(oldPosition));
+		QListWidgetItem* newItem = m_entityList.listWidget->item(int(newPosition));
+
+		Ndk::EntityId oldCanvasId = oldItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		QString oldItemText = oldItem->text();
+
+		oldItem->setData(Qt::UserRole + 1, newItem->data(Qt::UserRole + 1).value<Ndk::EntityId>());
+		oldItem->setText(newItem->text());
+		newItem->setData(Qt::UserRole + 1, oldCanvasId);
+		newItem->setText(oldItemText);
+
+		if (m_entityList.listWidget->currentRow() == oldPosition)
+			m_entityList.listWidget->setCurrentRow(int(newPosition));
+	}
+
+	void EditorWindow::SwapLayers(std::size_t oldPosition, std::size_t newPosition)
+	{
+		std::swap(m_workingMap.GetLayer(oldPosition), m_workingMap.GetLayer(newPosition));
+
+		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
+		{
+			if (layerIndex == oldPosition)
+				layerIndex = newPosition;
+			else if (layerIndex == newPosition)
+				layerIndex = oldPosition;
+		};
+
+		// Update entities pointing to this layer
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		{
+			if (propertyData.isArray)
+			{
+				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+					UpdateLayerIndex(layerIndex);
+			}
+			else
+				UpdateLayerIndex(std::get<Nz::Int64>(value));
+		});
+
+		// Swap items text
+		QListWidgetItem* oldItem = m_layerList.listWidget->item(int(oldPosition));
+		QListWidgetItem* newItem = m_layerList.listWidget->item(int(newPosition));
+
+		QString oldItemText = oldItem->text();
+
+		oldItem->setText(newItem->text());
+		newItem->setText(oldItemText);
+
+		if (m_layerList.listWidget->currentRow() == oldPosition)
+			m_layerList.listWidget->setCurrentRow(int(newPosition));
 	}
 }

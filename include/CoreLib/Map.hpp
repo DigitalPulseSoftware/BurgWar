@@ -38,10 +38,16 @@ namespace bw
 			inline Map(MapInfo mapInfo);
 			~Map() = default;
 
-			inline Layer& AddLayer();
+			template<typename... Args> Layer& AddLayer(Args&&... args);
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
+
+			inline Layer DropLayer(std::size_t i);
+
+			template<typename... Args> Layer& EmplaceLayer(std::size_t index, Args&&... args);
+
+			template<typename F> void ForeachEntity(F&& func);
 
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;

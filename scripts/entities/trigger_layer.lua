@@ -2,7 +2,7 @@ ENTITY.IsNetworked = false
 
 ENTITY.Properties = {
 	{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0) },
-	{ Name = "target_layer", Type = PropertyType.Integer, Default = 0 },
+	{ Name = "target_layer", Type = PropertyType.Layer, Default = NoLayer },
 }
 
 function ENTITY:Initialize()
@@ -23,6 +23,11 @@ function ENTITY:Initialize()
 end
 
 function ENTITY:OnCollisionStart(other)
+	local targetLayer = self:GetProperty("target_layer")
+	if (targetLayer == NoLayer) then
+		return false
+	end
+
 	if (other.Name == "burger") then
 		local owner = other:GetOwner()
 		owner:UpdateLayer(self:GetProperty("target_layer"))

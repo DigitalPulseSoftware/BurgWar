@@ -22,7 +22,7 @@
 class QAction;
 class QListWidget;
 class QListWidgetItem;
-class Gamemode;
+class QPushButton;
 class QTabWidget;
 
 namespace bw
@@ -58,22 +58,32 @@ namespace bw
 			void AddToRecentFileList(const QString& mapFolder);
 
 			void BuildAssetList();
+			void BuildEntityList(const std::string& editorAssetsFolder);
+			void BuildLayerList(const std::string& editorAssetsFolder);
 			void BuildMenu();
 			void BuildToolbar(const std::string& editorAssetsFolder);
 
+			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
+
 			EntityInfoDialog* GetEntityInfoDialog();
 
-			void OnCloneEntity(QListWidgetItem* item);
+			void OnCloneEntity(std::size_t entityIndex);
+			void OnCloneLayer(std::size_t layerIndex);
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
 			void OnCreateLayer();
 			bool OnDeleteEntity();
 			bool OnDeleteEntity(std::size_t entityIndex);
+			void OnDeleteLayer(std::size_t layerIndex);
 			void OnEditEntity(QListWidgetItem* item);
 			void OnEditLayer(QListWidgetItem* item);
+			void OnEntityMovedUp();
+			void OnEntityMovedDown();
 			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);
+			void OnLayerMovedUp();
+			void OnLayerMovedDown();
 			void OnPlayMap();
 
 			void OnOpenMap();
@@ -89,10 +99,20 @@ namespace bw
 			void RegisterEntity(std::size_t entityIndex);
 			void RefreshLayerList();
 
+			void SwapEntities(std::size_t oldPosition, std::size_t newPosition);
+			void SwapLayers(std::size_t oldPosition, std::size_t newPosition);
+
+			struct List
+			{
+				QListWidget* listWidget;
+				QPushButton* upArrowButton;
+				QPushButton* downArrowButton;
+			};
+
 			std::filesystem::path m_workingMapPath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
-			std::optional<int> m_currentLayer;
+			std::optional<std::size_t> m_currentLayer;
 			PlayWindow* m_playWindow;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
@@ -100,6 +120,8 @@ namespace bw
 			std::shared_ptr<VirtualDirectory> m_scriptFolder;
 			std::vector<QAction*> m_recentMapActions;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
+			List m_entityList;
+			List m_layerList;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
 			QAction* m_createEntityActionToolbar;
@@ -107,8 +129,6 @@ namespace bw
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;
 			QMenu* m_mapMenu;
-			QListWidget* m_entityList;
-			QListWidget* m_layerList;
 			QTabWidget* m_centralTab;
 			EntityInfoDialog* m_entityInfoDialog;
 			Map m_workingMap;
