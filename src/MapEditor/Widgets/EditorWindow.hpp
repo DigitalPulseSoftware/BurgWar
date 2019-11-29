@@ -63,11 +63,14 @@ namespace bw
 			void BuildMenu();
 			void BuildToolbar(const std::string& editorAssetsFolder);
 
+			void DeleteEntity(std::size_t entityIndex);
+
 			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
 			void OnCloneEntity(std::size_t entityIndex);
+			void OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex);
 			void OnCloneLayer(std::size_t layerIndex);
 			void OnCompileMap();
 			void OnCreateEntity();
@@ -80,10 +83,11 @@ namespace bw
 			void OnEditLayer(QListWidgetItem* item);
 			void OnEntityMovedUp();
 			void OnEntityMovedDown();
-			void OnEntitySelectionUpdate();
+			void OnEntitySelectionUpdate(int entityIndex);
 			void OnLayerChanged(int layerIndex);
 			void OnLayerMovedUp();
 			void OnLayerMovedDown();
+			void OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer);
 			void OnOpenMap();
 			void OnOpenRecentMap();
 			void OnPlayMap();

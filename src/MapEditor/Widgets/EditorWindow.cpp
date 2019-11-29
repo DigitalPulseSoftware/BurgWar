@@ -366,11 +366,45 @@ namespace bw
 				OnDeleteEntity(entityIndex);
 			});
 
+			std::size_t layerCount = m_workingMap.GetLayerCount();
+			if (layerCount > 1)
+			{
+				contextMenu.addSeparator();
+
+				QMenu* cloneEntityMenu = contextMenu.addMenu(tr("Clone entity to layer"));
+				QMenu* moveEntityMenu = contextMenu.addMenu(tr("Move entity to layer"));
+
+				assert(m_currentLayer);
+				std::size_t currentLayer = m_currentLayer.value();
+
+				for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
+				{
+					if (i == currentLayer)
+						continue;
+
+					auto& layer = m_workingMap.GetLayer(i);
+
+					QString layerName = QString::fromStdString(layer.name);
+
+					QAction* cloneAction = cloneEntityMenu->addAction(layerName);
+					connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					{
+						OnCloneEntity(entityIndex, layerIndex);
+					});
+
+					QAction* moveAction = moveEntityMenu->addAction(layerName);
+					connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					{
+						OnMoveEntity(entityIndex, layerIndex);
+					});
+				}
+			}
+
 			contextMenu.exec(m_entityList.listWidget->mapToGlobal(pos));
 		});
 
 		connect(m_entityList.listWidget, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditEntity);
-		connect(m_entityList.listWidget, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
+		connect(m_entityList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		m_entityList.upArrowButton = new QPushButton;
 		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
@@ -534,6 +568,33 @@ namespace bw
 		addDockWidget(Qt::TopDockWidgetArea, toolbarDock);
 	}
 
+	void EditorWindow::DeleteEntity(std::size_t entityIndex)
+	{
+		assert(m_currentLayer);
+		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+
+		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
+		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+		delete item;
+
+		m_canvas->DeleteEntity(canvasId);
+
+		m_entityIndexes.erase(canvasId);
+
+		layer.entities.erase(layer.entities.begin() + entityIndex);
+
+		// FIXME...
+		for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+		{
+			if (it->second >= entityIndex)
+			{
+				std::size_t newEntityIndex = --it.value();
+				m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+			}
+		}
+	}
+
 	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
 	{
 		if (!m_entityInfoDialog)
@@ -581,6 +642,19 @@ namespace bw
 
 		m_entityList.listWidget->clearSelection();
 		m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(cloneEntityIndex)), true);
+	}
+
+	void EditorWindow::OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex)
+	{
+		if (layerIndex == m_layerList.listWidget->currentRow())
+			return OnCloneEntity(entityIndex);
+
+		assert(m_currentLayer);
+		auto& sourceLayer = m_workingMap.GetLayer(m_currentLayer.value());
+		auto& targetLayer = m_workingMap.GetLayer(layerIndex);
+
+		auto& cloneEntity = targetLayer.entities.emplace_back(sourceLayer.entities[entityIndex]);
+		cloneEntity.name += " (Clone)";
 	}
 
 	void EditorWindow::OnCloneLayer(std::size_t layerIndex)
@@ -707,6 +781,7 @@ namespace bw
 
 	bool EditorWindow::OnDeleteEntity(std::size_t entityIndex)
 	{
+		assert(m_currentLayer);
 		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
 
 		auto& layerEntity = layer.entities[entityIndex];
@@ -715,26 +790,7 @@ namespace bw
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-
-			delete item;
-
-			m_canvas->DeleteEntity(canvasId);
-
-			m_entityIndexes.erase(canvasId);
-
-			layer.entities.erase(layer.entities.begin() + entityIndex);
-
-			// FIXME...
-			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
-			{
-				if (it->second >= entityIndex)
-				{
-					std::size_t newEntityIndex = --it.value();
-					m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
-				}
-			}
+			DeleteEntity(entityIndex);
 
 			return true;
 		}
@@ -928,9 +984,8 @@ namespace bw
 		m_entityList.upArrowButton->setDisabled(false);
 	}
 
-	void EditorWindow::OnEntitySelectionUpdate()
+	void EditorWindow::OnEntitySelectionUpdate(int entityIndex)
 	{
-		int entityIndex = m_entityList.listWidget->currentRow();
 		if (entityIndex < 0)
 		{
 			m_canvas->ClearEntitySelection();
@@ -1022,6 +1077,18 @@ namespace bw
 
 		m_layerList.downArrowButton->setDisabled(newPosition + 1 >= m_layerList.listWidget->count());
 		m_layerList.upArrowButton->setDisabled(false);
+	}
+
+	void EditorWindow::OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer)
+	{
+		assert(m_currentLayer);
+		assert(targetLayer != *m_currentLayer);
+
+		auto& currentLayer = m_workingMap.GetLayer(*m_currentLayer);
+		auto& newLayer = m_workingMap.GetLayer(targetLayer);
+		newLayer.entities.emplace_back(std::move(currentLayer.entities[entityIndex]));
+
+		DeleteEntity(entityIndex);
 	}
 
 	void EditorWindow::OnOpenMap()
