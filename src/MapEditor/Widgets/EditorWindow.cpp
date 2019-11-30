@@ -218,8 +218,7 @@ namespace bw
 
 		std::size_t entityIndex = it.value();
 
-		m_entityList.listWidget->clearSelection();
-		m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(entityIndex)), true);
+		m_entityList.listWidget->setCurrentRow(int(entityIndex));
 	}
 
 	void EditorWindow::SwitchToMode(std::shared_ptr<EditorMode> editorMode)
@@ -640,8 +639,7 @@ namespace bw
 
 		RegisterEntity(cloneEntityIndex);
 
-		m_entityList.listWidget->clearSelection();
-		m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(cloneEntityIndex)), true);
+		m_entityList.listWidget->setCurrentRow(int(cloneEntityIndex));
 	}
 
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex)
@@ -734,8 +732,7 @@ namespace bw
 
 			RegisterEntity(entityIndex);
 
-			m_entityList.listWidget->clearSelection();
-			m_entityList.listWidget->setItemSelected(m_entityList.listWidget->item(int(entityIndex)), true);
+			m_entityList.listWidget->setCurrentRow(int(entityIndex));
 		});
 
 		createEntityDialog->exec();
