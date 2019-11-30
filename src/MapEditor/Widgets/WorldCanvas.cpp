@@ -4,14 +4,17 @@
 
 #include <MapEditor/Widgets/WorldCanvas.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
+#include <Nazara/Renderer/DebugDrawer.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 
 namespace bw
 {
 	WorldCanvas::WorldCanvas(QWidget* parent) :
-	NazaraCanvas(parent)
+	NazaraCanvas(parent),
+	m_isPhysicsDebugDrawEnabled(false)
 	{
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
@@ -84,6 +87,11 @@ namespace bw
 			m_cameraMovement.reset();
 	}
 
+	void WorldCanvas::EnablePhysicsDebugDraw(bool enable)
+	{
+		m_isPhysicsDebugDrawEnabled = enable;
+	}
+
 	void WorldCanvas::UpdateBackgroundColor(Nz::Color color)
 	{
 		m_world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(color));
@@ -93,6 +101,20 @@ namespace bw
 	{
 		SetActive(true);
 		m_world.Update(elapsedTime);
+
+		if (m_isPhysicsDebugDrawEnabled)
+		{
+			Ndk::PhysicsSystem2D::DebugDrawOptions options;
+			options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
+			{
+				for (std::size_t i = 0; i < vertexCount - 1; ++i)
+					Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
+
+				Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
+			};
+
+			m_world.GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
+		}
 
 		NazaraCanvas::OnUpdate(elapsedTime);
 		SetActive(false);

@@ -500,43 +500,57 @@ namespace bw
 	void EditorWindow::BuildMenu()
 	{
 		QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
-		QAction* createMap = fileMenu->addAction(tr("Create map..."));
-		createMap->setShortcut(QKeySequence::New);
-		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
+		{
+			QAction* createMap = fileMenu->addAction(tr("Create map..."));
+			createMap->setShortcut(QKeySequence::New);
+			connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
 
-		QAction* openMap = fileMenu->addAction(tr("Open map..."));
-		createMap->setShortcut(QKeySequence::Open);
-		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
+			QAction* openMap = fileMenu->addAction(tr("Open map..."));
+			createMap->setShortcut(QKeySequence::Open);
+			connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
-		QMenu* recentMaps = fileMenu->addMenu(tr("Open recent..."));
-		for (QAction* action : m_recentMapActions)
-			recentMaps->addAction(action);
+			QMenu* recentMaps = fileMenu->addMenu(tr("Open recent..."));
+			for (QAction* action : m_recentMapActions)
+				recentMaps->addAction(action);
 
-		RefreshRecentFileListMenu();
+			RefreshRecentFileListMenu();
 
-		m_saveMap = fileMenu->addAction(tr("Save map..."));
-		m_saveMap->setShortcut(QKeySequence::Save);
-		connect(m_saveMap, &QAction::triggered, this, &EditorWindow::OnSaveMap);
+			m_saveMap = fileMenu->addAction(tr("Save map..."));
+			m_saveMap->setShortcut(QKeySequence::Save);
+			connect(m_saveMap, &QAction::triggered, this, &EditorWindow::OnSaveMap);
 
-		fileMenu->addSeparator();
+			fileMenu->addSeparator();
 
-		m_compileMap = fileMenu->addAction(tr("Compile map..."));
-		connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
+			m_compileMap = fileMenu->addAction(tr("Compile map..."));
+			connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
+		}
 
 		m_mapMenu = menuBar()->addMenu(tr("&Map"));
-		QMenu* layerMenu = m_mapMenu->addMenu("Layers");
-		QAction* addLayer = layerMenu->addAction(tr("Add layer"));
-		connect(addLayer, &QAction::triggered, this, &EditorWindow::OnCreateLayer);
+		{
+			QMenu* layerMenu = m_mapMenu->addMenu("Layers");
+			QAction* addLayer = layerMenu->addAction(tr("Add layer"));
+			connect(addLayer, &QAction::triggered, this, &EditorWindow::OnCreateLayer);
 
-		QAction* playMap = m_mapMenu->addAction(tr("Play map"));
-		connect(playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
+			QAction* playMap = m_mapMenu->addAction(tr("Play map"));
+			connect(playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
+		}
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
+		{
+			QAction* showCollider = showMenu->addAction("Show colliders");
+			showCollider->setCheckable(true);
+			connect(showCollider, &QAction::toggled, [this](bool checked)
+			{
+				m_canvas->EnablePhysicsDebugDraw(checked);
+			});
+		}
 
 		QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
-		QAction* aboutQt = helpMenu->addAction(tr("About Qt..."));
-		aboutQt->setMenuRole(QAction::AboutQtRole);
-		connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
+		{
+			QAction* aboutQt = helpMenu->addAction(tr("About Qt..."));
+			aboutQt->setMenuRole(QAction::AboutQtRole);
+			connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
+		}
 	}
 
 	void EditorWindow::BuildToolbar(const std::string& editorAssetsFolder)
@@ -664,7 +678,8 @@ namespace bw
 
 		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
 		{
-			if (layerIndex >= cloneLayerIndex)
+			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
+			if (static_cast<LayerIndex>(layerIndex) >= cloneLayerIndex)
 				layerIndex++;
 		};
 
@@ -807,9 +822,11 @@ namespace bw
 
 			auto UpdateLayerIndex = [deletedIndex = layerIndex](Nz::Int64& layerIndex)
 			{
+				assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
+
 				if (layerIndex == deletedIndex)
 					layerIndex = NoLayer;
-				else if (layerIndex > deletedIndex)
+				else if (static_cast<LayerIndex>(layerIndex) > deletedIndex)
 					layerIndex--;
 			};
 
