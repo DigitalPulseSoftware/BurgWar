@@ -339,64 +339,75 @@ namespace bw
 		m_entityList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 		connect(m_entityList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
 		{
-			QListWidgetItem* item = m_entityList.listWidget->itemAt(pos);
-			if (!item)
+			if (!m_workingMap.IsValid())
 				return;
-
-			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
 			QMenu contextMenu(m_entityList.listWidget);
 
-			QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
-			connect(editEntity, &QAction::triggered, [this, item](bool)
+			QListWidgetItem* item = m_entityList.listWidget->itemAt(pos);
+			if (item)
 			{
-				OnEditEntity(item);
-			});
-			
-			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
-			connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
-			{
-				OnCloneEntity(entityIndex);
-			});
+				std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
-			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
-			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
-			{
-				OnDeleteEntity(entityIndex);
-			});
-
-			std::size_t layerCount = m_workingMap.GetLayerCount();
-			if (layerCount > 1)
-			{
-				contextMenu.addSeparator();
-
-				QMenu* cloneEntityMenu = contextMenu.addMenu(tr("Clone entity to layer"));
-				QMenu* moveEntityMenu = contextMenu.addMenu(tr("Move entity to layer"));
-
-				assert(m_currentLayer);
-				std::size_t currentLayer = m_currentLayer.value();
-
-				for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
+				QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
+				connect(editEntity, &QAction::triggered, [this, item](bool)
 				{
-					if (i == currentLayer)
-						continue;
+					OnEditEntity(item);
+				});
+			
+				QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
+				connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
+				{
+					OnCloneEntity(entityIndex);
+				});
 
-					auto& layer = m_workingMap.GetLayer(i);
+				QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
+				connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
+				{
+					OnDeleteEntity(entityIndex);
+				});
 
-					QString layerName = QString::fromStdString(layer.name);
+				std::size_t layerCount = m_workingMap.GetLayerCount();
+				if (layerCount > 1)
+				{
+					contextMenu.addSeparator();
 
-					QAction* cloneAction = cloneEntityMenu->addAction(layerName);
-					connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					QMenu* cloneEntityMenu = contextMenu.addMenu(tr("Clone entity to layer"));
+					QMenu* moveEntityMenu = contextMenu.addMenu(tr("Move entity to layer"));
+
+					assert(m_currentLayer);
+					std::size_t currentLayer = m_currentLayer.value();
+
+					for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
 					{
-						OnCloneEntity(entityIndex, layerIndex);
-					});
+						if (i == currentLayer)
+							continue;
 
-					QAction* moveAction = moveEntityMenu->addAction(layerName);
-					connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
-					{
-						OnMoveEntity(entityIndex, layerIndex);
-					});
+						auto& layer = m_workingMap.GetLayer(i);
+
+						QString layerName = QString::fromStdString(layer.name);
+
+						QAction* cloneAction = cloneEntityMenu->addAction(layerName);
+						connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+						{
+							OnCloneEntity(entityIndex, layerIndex);
+						});
+
+						QAction* moveAction = moveEntityMenu->addAction(layerName);
+						connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+						{
+							OnMoveEntity(entityIndex, layerIndex);
+						});
+					}
 				}
+			}
+			else
+			{
+				QAction* editEntity = contextMenu.addAction(tr("Create entity..."));
+				connect(editEntity, &QAction::triggered, [this](bool)
+				{
+					OnCreateEntity();
+				});
 			}
 
 			contextMenu.exec(m_entityList.listWidget->mapToGlobal(pos));
@@ -439,31 +450,42 @@ namespace bw
 		m_layerList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 		connect(m_layerList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
 		{
-			QListWidgetItem* item = m_layerList.listWidget->itemAt(pos);
-			if (!item)
+			if (!m_workingMap.IsValid())
 				return;
-
-			std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
 			QMenu contextMenu(m_layerList.listWidget);
 
-			QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
-			connect(editLayer, &QAction::triggered, [this, item](bool)
+			QListWidgetItem* item = m_layerList.listWidget->itemAt(pos);
+			if (item)
 			{
-				OnEditLayer(item);
-			});
+				std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
-			QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
-			connect(cloneLayer, &QAction::triggered, [this, layerIndex](bool)
-			{
-				OnCloneLayer(layerIndex);
-			});
+				QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
+				connect(editLayer, &QAction::triggered, [this, item](bool)
+				{
+					OnEditLayer(item);
+				});
 
-			QAction* deleteLayer = contextMenu.addAction(tr("Delete layer"));
-			connect(deleteLayer, &QAction::triggered, [this, layerIndex](bool)
+				QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
+				connect(cloneLayer, &QAction::triggered, [this, layerIndex](bool)
+				{
+					OnCloneLayer(layerIndex);
+				});
+
+				QAction* deleteLayer = contextMenu.addAction(tr("Delete layer"));
+				connect(deleteLayer, &QAction::triggered, [this, layerIndex](bool)
+				{
+					OnDeleteLayer(layerIndex);
+				});
+			}
+			else
 			{
-				OnDeleteLayer(layerIndex);
-			});
+				QAction* deleteLayer = contextMenu.addAction(tr("Create layer"));
+				connect(deleteLayer, &QAction::triggered, [this](bool)
+				{
+					OnCreateLayer();
+				});
+			}
 
 			contextMenu.exec(m_layerList.listWidget->mapToGlobal(pos));
 		});
