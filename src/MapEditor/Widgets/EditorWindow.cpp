@@ -12,9 +12,9 @@
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
-#include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
+#include <MapEditor/Scripting/EditorEntityLibrary.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
@@ -77,7 +77,7 @@ namespace bw
 
 		m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
-		m_entityStore->LoadLibrary(std::make_shared<ClientEntityLibrary>(GetLogger(), *m_assetStore));
+		m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(GetLogger(), *m_assetStore));
 
 		VirtualDirectory::Entry entry;
 		
