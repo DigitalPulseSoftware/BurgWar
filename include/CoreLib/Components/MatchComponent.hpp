@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_MATCHCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_MATCHCOMPONENT_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
@@ -16,17 +17,17 @@ namespace bw
 	class MatchComponent : public Ndk::Component<MatchComponent>
 	{
 		public:
-			inline MatchComponent(Match& match, Nz::UInt16 layerIndex);
+			inline MatchComponent(Match& match, LayerIndex layerIndex);
 			~MatchComponent() = default;
 
-			inline Nz::UInt16 GetLayer() const;
+			inline LayerIndex GetLayer() const;
 			inline Match& GetMatch() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			Match& m_match;
-			Nz::UInt16 m_layerIndex;
+			LayerIndex m_layerIndex;
 	};
 }
 

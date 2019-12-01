@@ -6,13 +6,13 @@
 
 namespace bw
 {
-	inline MatchComponent::MatchComponent(Match& match, Nz::UInt16 layerIndex) :
+	inline MatchComponent::MatchComponent(Match& match, LayerIndex layerIndex) :
 	m_layerIndex(layerIndex),
 	m_match(match)
 	{
 	}
 
-	inline Nz::UInt16 MatchComponent::GetLayer() const
+	inline LayerIndex MatchComponent::GetLayer() const
 	{
 		return m_layerIndex;
 	}

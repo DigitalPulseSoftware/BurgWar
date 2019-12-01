@@ -24,6 +24,8 @@ namespace bw
 
 			inline void Invalidate();
 
+			inline void UpdateParent(const Ndk::EntityHandle& parent);
+
 			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnInvalidated, NetworkSyncComponent* /*emitter*/);

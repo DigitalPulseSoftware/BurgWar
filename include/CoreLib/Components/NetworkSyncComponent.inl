@@ -26,4 +26,9 @@ namespace bw
 	{
 		OnInvalidated(this);
 	}
+	
+	inline void NetworkSyncComponent::UpdateParent(const Ndk::EntityHandle& parent)
+	{
+		m_parent = parent;
+	}
 }

@@ -51,25 +51,26 @@ namespace bw
 
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
-			void RemoveWeapon(const std::string& weaponClass);
-
 			inline bool IsInMatch() const;
 			inline bool IsReady() const;
 
-			void Spawn();
+			void MoveToLayer(LayerIndex layerIndex);
+
+			void OnTick(bool lastTick);
+
+			void RemoveWeapon(const std::string& weaponClass);
 
 			template<typename T> void SendPacket(const T& packet);
 
 			void SelectWeapon(std::size_t weaponIndex);
 
-			std::string ToString() const;
+			void Spawn();
 
-			void OnTick(bool lastTick);
+			std::string ToString() const;
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
-			void UpdateLayer(LayerIndex layerIndex);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
 
 			Player& operator=(const Player&) = delete;

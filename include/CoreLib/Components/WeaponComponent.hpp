@@ -23,6 +23,8 @@ namespace bw
 
 			inline void SetActive(bool isActive);
 
+			inline void UpdateOwner(Ndk::EntityHandle owner);
+
 			static Ndk::ComponentIndex componentIndex;
 
 		private:

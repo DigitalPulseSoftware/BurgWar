@@ -6,7 +6,7 @@ end
 
 function GM:OnPlayerJoin(player)
 	print(player:GetName() .. " joined")
-	player:UpdateLayer(0)
+	player:MoveToLayer(0)
 	player:Spawn()
 end
 

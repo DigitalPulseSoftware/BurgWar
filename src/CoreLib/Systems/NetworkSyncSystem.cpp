@@ -63,7 +63,10 @@ namespace bw
 		creationEvent.entityClass = syncComponent.GetEntityClass();
 
 		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
+		{
+			assert(parent->GetWorld() == entity->GetWorld());
 			creationEvent.parent = parent->GetId();
+		}
 
 		if (entity->HasComponent<HealthComponent>())
 		{

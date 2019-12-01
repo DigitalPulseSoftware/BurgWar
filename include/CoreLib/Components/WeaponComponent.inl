@@ -26,4 +26,9 @@ namespace bw
 	{
 		m_isActive = isActive;
 	}
+
+	inline void WeaponComponent::UpdateOwner(Ndk::EntityHandle owner)
+	{
+		m_owner = std::move(owner);
+	}
 }

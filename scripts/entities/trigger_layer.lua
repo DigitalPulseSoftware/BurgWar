@@ -30,7 +30,7 @@ function ENTITY:OnCollisionStart(other)
 
 	if (other.Name == "burger") then
 		local owner = other:GetOwner()
-		owner:UpdateLayer(self:GetProperty("target_layer"))
+		owner:MoveToLayer(self:GetProperty("target_layer"))
 	end
 
 	return false

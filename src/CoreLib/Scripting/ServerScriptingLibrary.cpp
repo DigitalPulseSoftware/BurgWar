@@ -130,6 +130,16 @@ namespace bw
 
 				return player->HasWeapon(weaponName);
 			},
+			"MoveToLayer", [](const PlayerHandle& player, sol::object layerIndex)
+			{
+				if (!player)
+					return;
+			
+				if (layerIndex != sol::nil)
+					player->MoveToLayer(layerIndex.as<LayerIndex>());
+				else
+					player->MoveToLayer(Player::NoLayer);
+			},
 			"RemoveWeapon", [](const PlayerHandle& player, const std::string& weaponName)
 			{
 				if (!player)
@@ -143,16 +153,6 @@ namespace bw
 					return;
 
 				return player->Spawn();
-			},
-			"UpdateLayer", [](const PlayerHandle& player, sol::object layerIndex)
-			{
-				if (!player)
-					return;
-			
-				if (layerIndex != sol::nil)
-					player->UpdateLayer(layerIndex.as<LayerIndex>());
-				else
-					player->UpdateLayer(Player::NoLayer);
 			},
 			"UpdateLayerVisibility", [](const PlayerHandle& player, LayerIndex layerIndex, bool visible)
 			{

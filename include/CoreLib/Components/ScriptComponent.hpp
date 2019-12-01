@@ -34,10 +34,13 @@ namespace bw
 			inline sol::table& GetTable();
 
 			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
+			void UpdateEntity(const Ndk::EntityHandle& entity);
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			void OnAttached() override;
+
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_entityTable;

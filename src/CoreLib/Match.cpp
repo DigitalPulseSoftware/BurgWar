@@ -79,7 +79,7 @@ namespace bw
 
 		m_players.erase(it);
 
-		player->UpdateLayer(Player::NoLayer);
+		player->MoveToLayer(Player::NoLayer);
 		player->UpdateMatch(nullptr);
 
 		Packets::ChatMessage chatPacket;
