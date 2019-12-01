@@ -206,6 +206,11 @@ namespace bw
 		m_entityStore.reset();
 	}
 
+	void EditorWindow::ClearSelectedEntity()
+	{
+		m_entityList.listWidget->setCurrentRow(-1);
+	}
+
 	void EditorWindow::ClearWorkingMap()
 	{
 		UpdateWorkingMap(Map());
@@ -806,7 +811,7 @@ namespace bw
 
 		if (OnDeleteEntity(static_cast<std::size_t>(selectedEntity)))
 		{
-			m_entityList.listWidget->clearSelection();
+			m_entityList.listWidget->setCurrentRow(-1);
 			return true;
 		}
 
@@ -865,10 +870,7 @@ namespace bw
 			});
 
 			if (m_currentLayer == layerIndex)
-			{
-				m_layerList.listWidget->clearSelection();
-				OnLayerChanged(-1);
-			}
+				m_layerList.listWidget->setCurrentRow(-1);
 
 			RefreshLayerList();
 		}
@@ -1047,6 +1049,7 @@ namespace bw
 			m_currentLayer.reset();
 			m_entityIndexes.clear();
 			m_canvas->ClearEntities();
+			m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
 			m_layerList.downArrowButton->setDisabled(true);
 			m_layerList.upArrowButton->setDisabled(true);
@@ -1278,7 +1281,6 @@ namespace bw
 		int currentRow = m_layerList.listWidget->currentRow();
 
 		m_layerList.listWidget->clear();
-		m_layerList.listWidget->clearSelection();
 
 		for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
 		{

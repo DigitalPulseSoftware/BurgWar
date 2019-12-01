@@ -40,6 +40,7 @@ namespace bw
 			EditorWindow(int argc, char* argv[]);
 			~EditorWindow();
 
+			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
 			inline const EditorEntityStore& GetEntityStore() const;
