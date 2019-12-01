@@ -184,6 +184,8 @@ namespace bw
 			}
 
 			UpdateControlledEntity(playerEntity);
+
+			m_match->GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
 		}
 	}
 
