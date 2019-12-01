@@ -56,9 +56,6 @@ namespace bw
 		if (hasInputs)
 			entity->AddComponent<InputComponent>();
 
-		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
-
 		return entity;
 	}
 

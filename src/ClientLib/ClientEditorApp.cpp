@@ -7,6 +7,7 @@
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 
 namespace bw
@@ -19,6 +20,7 @@ namespace bw
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
+		Ndk::InitializeComponent<VisualInterpolationComponent>("Interp");
 		Ndk::InitializeSystem<SoundSystem>();
 	}
 

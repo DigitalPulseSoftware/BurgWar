@@ -6,6 +6,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -18,6 +19,7 @@ namespace bw
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
 	{
+		GetWorld().AddSystem<VisualInterpolationSystem>();
 	}
 
 	void LocalLayer::Enable(bool enable)

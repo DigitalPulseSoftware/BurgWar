@@ -75,7 +75,7 @@ function ENTITY:OnInputUpdate(input)
 		end
 	end
 
-	--[[local isMoving = input.isMovingLeft or input.isMovingRight
+	local isMoving = input.isMovingLeft or input.isMovingRight
 	if (self.IsMoving ~= isMoving) then
 		self.IsMoving = isMoving
 		if (isMoving and not input.isJumping) then
@@ -83,8 +83,8 @@ function ENTITY:OnInputUpdate(input)
 				self.IsHopping = true
 				while (self.IsMoving) do
 					if (self:IsValid() and self:IsPlayerOnGround()) then
-						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -25), 0.15)
-						animation.PositionByOffset(self, Vec2(0, -25), Vec2(0, 0), 0.15)
+						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -15), 0.15)
+						animation.PositionByOffset(self, Vec2(0, -15), Vec2(0, 0), 0.15)
 					else
 						timer.Sleep(30)
 					end
@@ -92,5 +92,5 @@ function ENTITY:OnInputUpdate(input)
 				self.IsHopping = false
 			end
 		end
-	end]]
+	end
 end

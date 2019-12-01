@@ -19,6 +19,16 @@ namespace bw
 		RegisterSharedLibrary(elementMetatable);
 	}
 
+	void SharedEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	{
+		auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
+		entityPhys.SetMass(mass);
+		entityPhys.SetFriction(friction);
+
+		if (!canRotate)
+			entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+	}
+
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
 		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
@@ -86,22 +96,17 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
-				return 0;
+				return false;
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 			return entityHealth.GetHealth() >= entityHealth.GetMaxHealth();
 		};
 
-		auto InitRigidBody = [](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
+		auto InitRigidBody = [this](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-			entityPhys.SetMass(mass);
-			entityPhys.SetFriction(friction);
-
-			if (!canRotate)
-				entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+			this->InitRigidBody(entity, mass, friction, canRotate);
 		};
 
 		elementMetatable["InitRigidBody"] = sol::overload(InitRigidBody,

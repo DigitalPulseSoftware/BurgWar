@@ -11,6 +11,7 @@
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
@@ -18,6 +19,7 @@
 #include <Nazara/Graphics/TileMap.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
 {
@@ -26,6 +28,14 @@ namespace bw
 		SharedEntityLibrary::RegisterLibrary(elementMetatable);
 
 		RegisterClientLibrary(elementMetatable);
+	}
+
+	void ClientEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	{
+		SharedEntityLibrary::InitRigidBody(entity, mass, friction, canRotate);
+
+		entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
+		entity->AddComponent<VisualInterpolationComponent>();
 	}
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)

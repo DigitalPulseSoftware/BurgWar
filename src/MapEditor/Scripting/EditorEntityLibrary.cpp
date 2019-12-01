@@ -15,14 +15,16 @@ namespace bw
 		RegisterEditorLibrary(elementMetatable);
 	}
 
+	void EditorEntityLibrary::InitRigidBody(const Ndk::EntityHandle& /*entity*/, float /*mass*/, float /*friction*/, bool /*canRotate*/)
+	{
+		// Do nothing
+	}
+
 	void EditorEntityLibrary::RegisterEditorLibrary(sol::table& elementMetatable)
 	{
 		auto Dummy = []() {};
 
 		// FIXME
 		elementMetatable["AddLayer"] = Dummy;
-
-		// Disable physics component (to prevent physics override of position)
-		elementMetatable["InitRigidBody"] = Dummy;
 	}
 }
