@@ -354,7 +354,7 @@ namespace bw
 				{
 					OnEditEntity(item);
 				});
-			
+
 				QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
 				connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
 				{

@@ -5,6 +5,7 @@
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/CameraComponent.hpp>
+#include <NDK/Components/DebugComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
@@ -54,6 +55,13 @@ namespace bw
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
 		node.SetParent(GetTargetEntity());
+
+		GetTargetEntity()->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::GraphicsAABB);
+	}
+
+	PositionGizmo::~PositionGizmo()
+	{
+		GetTargetEntity()->RemoveComponent<Ndk::DebugComponent>();
 	}
 
 	bool PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
