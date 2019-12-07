@@ -3,10 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/KeyboardAndMouseController.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Platform/Mouse.hpp>
 #include <NDK/Components/CameraComponent.hpp>
+#include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 
 namespace bw
@@ -49,6 +51,8 @@ namespace bw
 
 		if (controlledEntity)
 		{
+			const auto& entity = controlledEntity->GetEntity();
+			
 			Nz::Vector2i mousePosition = Nz::Mouse::GetPosition(m_window);
 
 			const Ndk::EntityHandle& cameraEntity = localMatch.GetCameraEntity();
@@ -56,8 +60,18 @@ namespace bw
 			{
 				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
 
+				Nz::Vector2f originPosition = controlledEntity->GetPosition();
+				if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
+				{
+					auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
+					const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
+					originPosition += weaponElement.weaponOffset;
+				}
+				else if (entity->HasComponent<Ndk::GraphicsComponent>())
+					originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
+
 				Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mousePosition.x), float(mousePosition.y), 0.f));
-				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition - controlledEntity->GetPosition()));
+				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition) - originPosition);
 			}
 		}
 		
