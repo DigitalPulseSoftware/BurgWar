@@ -44,7 +44,7 @@ namespace bw
 				sol::state& state = GetLuaState();
 				sol::protected_function_result result;
 				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
-					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()), folderOrFile.generic_string());
 				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 				{
 					std::vector<Nz::UInt8> content;
@@ -63,7 +63,7 @@ namespace bw
 						return false;
 					}
 
-					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()));
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()), folderOrFile.generic_string());
 				}
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive if");
