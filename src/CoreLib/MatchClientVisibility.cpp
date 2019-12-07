@@ -288,6 +288,7 @@ namespace bw
 					auto& entityData = m_deleteEntitiesPacket.entities.emplace_back();
 					entityData.id = entityId;
 				}
+				layer.destructionEvents.clear();
 			}
 
 			m_session.SendPacket(m_deleteEntitiesPacket);
@@ -374,6 +375,7 @@ namespace bw
 					entityData.id = pair.first;
 					entityData.currentHealth = eventData.currentHealth;
 				}
+				layer.healthUpdateEvents.clear();
 			}
 
 			m_session.SendPacket(m_healthUpdatePacket);
@@ -408,6 +410,7 @@ namespace bw
 					entityData.id = pair.first;
 					entityData.inputs = eventData.inputs;
 				}
+				layer.inputUpdateEvents.clear();
 			}
 
 			m_session.SendPacket(m_inputUpdatePacket);
@@ -442,6 +445,7 @@ namespace bw
 					entityData.entityId = pair.first;
 					entityData.animId = static_cast<Nz::UInt8>(eventData.animId);
 				}
+				layer.playAnimationEvents.clear();
 			}
 
 			m_session.SendPacket(m_entitiesAnimationPacket);
