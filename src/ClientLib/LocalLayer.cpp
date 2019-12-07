@@ -105,13 +105,12 @@ namespace bw
 			}, property.value);
 		}
 
-		/*const*/ LocalLayerEntity* parent = nullptr;
+		const LocalLayerEntity* parent = nullptr;
 		if (entityData.parentId)
 		{
 			auto it = m_serverEntityIdToClient.find(entityData.parentId.value());
 			assert(it != m_serverEntityIdToClient.end());
 
-			//parent = &it->second;
 			parent = &it.value();
 		}
 
@@ -123,7 +122,7 @@ namespace bw
 			// Entity
 			if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
 			{
-				auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, entityData.position, entityData.rotation, properties, entityData.physicsProperties.has_value());
+				auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle );
 				if (!entity)
 					return;
 

@@ -34,7 +34,13 @@ if (SERVER) then
 		local now = os.time()
 		if (now >= self.NextRespawn) then
 			if (self.CanSpawn) then
-				local powerup = GM:CreateEntity(self:GetProperty("powerup_type"), self:GetPosition() + Vec2(0, -10))
+				local powerup = match.CreateEntity({
+					Type = self:GetProperty("powerup_type"),
+					LayerIndex = self:GetLayerIndex(),
+					Parent = self,
+					Position = Vec2(0, -10)
+				})
+
 				powerup.Parent = self
 
 				self.CanSpawn = false

@@ -10,9 +10,13 @@ RegisterClientAssets(WEAPON.Sprite)
 
 if (SERVER) then
 	function WEAPON:OnAttack()
-		print("On attack!")
-		local projectile = GM:CreateEntity("entity_grenade", self:GetPosition() + self:GetDirection() * 32, {
-			lifetime = math.random(1, 2)
+		local projectile = match.CreateEntity({
+			Type = "entity_grenade",
+			LayerIndex = self:GetLayerIndex(),
+			Position = self:GetPosition() + self:GetDirection() * 32,
+			Properties = {
+				lifetime = math.random(1, 2)
+			}
 		})
 
 		projectile:SetVelocity(self:GetDirection() * 1000)

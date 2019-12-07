@@ -31,7 +31,7 @@ namespace bw
 		friend VisualEntity;
 
 		public:
-			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, bool isPhysical);
+			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId);
 			LocalLayerEntity(const LocalLayerEntity&) = delete;
 			LocalLayerEntity(LocalLayerEntity&&) noexcept = default;
 			~LocalLayerEntity();
@@ -53,13 +53,14 @@ namespace bw
 			void InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth);
 			void InitializeName(const std::string& name);
 
-			inline bool IsPhysical() const;
+			bool IsPhysical() const;
 
 			void SyncVisuals();
 
 			void UpdateAnimation(Nz::UInt8 animationId);
 			void UpdatePlayerMovement(bool isFacingRight);
 			void UpdateHealth(Nz::UInt16 newHealth);
+			void UpdateParent(const LocalLayerEntity* newParent);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel);

@@ -34,7 +34,7 @@ namespace bw
 
 		const Ndk::EntityHandle& weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
-		LocalLayerEntity layerEntity(layer, weapon, serverId, false);
+		LocalLayerEntity layerEntity(layer, weapon, serverId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
 
 		weapon->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());

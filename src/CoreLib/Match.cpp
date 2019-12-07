@@ -8,14 +8,15 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Protocol/CompressedInteger.hpp>
+#include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ServerElementLibrary.hpp>
 #include <CoreLib/Scripting/ServerEntityLibrary.hpp>
 #include <CoreLib/Scripting/ServerWeaponLibrary.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
-#include <CoreLib/Protocol/CompressedInteger.hpp>
-#include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
+#include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
@@ -36,7 +37,8 @@ namespace bw
 		ReloadAssets();
 		ReloadScripts();
 
-		m_terrain = std::make_unique<Terrain>(*this, m_map);
+		m_terrain = std::make_unique<Terrain>(m_map);
+		m_terrain->Initialize(*this);
 
 		BuildMatchData();
 
@@ -441,7 +443,7 @@ namespace bw
 					else
 					{
 						entityPosition = Nz::Vector2f(entityNode.GetPosition());
-						entityRotation = Nz::RadianAnglef::FromDegrees(entityNode.GetRotation().ToEulerAngles().roll);
+						entityRotation = AngleFromQuaternion(entityNode.GetRotation());
 					}
 
 					debugPacket << entityPosition << entityRotation;

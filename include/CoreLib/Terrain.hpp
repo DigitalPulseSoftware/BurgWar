@@ -18,7 +18,7 @@ namespace bw
 	class Terrain
 	{
 		public:
-			Terrain(Match& match, Map& map);
+			Terrain(Map& map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
@@ -26,6 +26,8 @@ namespace bw
 			inline const TerrainLayer& GetLayer(LayerIndex layerIndex) const;
 			inline LayerIndex GetLayerCount() const;
 			inline const Map& GetMap() const;
+
+			void Initialize(Match& match);
 
 			void Update(float elapsedTime);
 

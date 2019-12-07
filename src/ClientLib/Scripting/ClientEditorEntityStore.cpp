@@ -27,28 +27,20 @@ namespace bw
 		return true;
 	}
 
-	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
+	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
-		bool hasInputs;
-		bool playerControlled;
-		try
-		{
-			hasInputs = entityClass->elementTable["HasInputs"];
-			playerControlled = entityClass->elementTable["PlayerControlled"];
-		}
-		catch (const std::exception& e)
-		{
-			bwLog(GetLogger(), LogLevel::Error, "Failed to get entity class \"{0}\" informations: {1}", entityClass->name, e.what());
-			return Ndk::EntityHandle::InvalidHandle;
-		}
+		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
+		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
 		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
 
 		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
+		if (parentEntity)
+			nodeComponent.SetParent(parentEntity);
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();

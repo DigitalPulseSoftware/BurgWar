@@ -332,7 +332,7 @@ namespace bw
 		if (m_playerEntity)
 		{
 			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
-			visibility.SetEntityControlledStatus(matchComponent.GetLayer(), m_playerEntity->GetId(), false);
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), false);
 		}
 
 		m_playerEntity = entity;
@@ -343,11 +343,11 @@ namespace bw
 		{
 			auto& matchComponent = entity->GetComponent<MatchComponent>();
 
-			controlEntity.layerIndex = matchComponent.GetLayer();
+			controlEntity.layerIndex = matchComponent.GetLayerIndex();
 			controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
 
-			visibility.PushEntityPacket(matchComponent.GetLayer(), controlEntity.entityId, controlEntity);
-			visibility.SetEntityControlledStatus(matchComponent.GetLayer(), m_playerEntity->GetId(), true);
+			visibility.PushEntityPacket(matchComponent.GetLayerIndex(), controlEntity.entityId, controlEntity);
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
 		}
 		else
 		{

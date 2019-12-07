@@ -9,6 +9,7 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Utils.hpp>
 
 namespace bw
 {
@@ -100,7 +101,7 @@ namespace bw
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			creationEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())
@@ -160,7 +161,7 @@ namespace bw
 		{
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			movementEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+			movementEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())

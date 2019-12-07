@@ -28,4 +28,9 @@ namespace bw
 	{
 		return Show(false);
 	}
+
+	inline void Sprite::SetSize(const Nz::Vector2f& newSize)
+	{
+		m_sprite->SetSize(newSize);
+	}
 }

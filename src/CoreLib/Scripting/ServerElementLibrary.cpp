@@ -4,9 +4,12 @@
 
 #include <CoreLib/Scripting/ServerElementLibrary.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
+#include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Player.hpp>
 #include <NDK/World.hpp>
+#include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol3/sol.hpp>
@@ -44,6 +47,13 @@ namespace bw
 		elementTable["DealDamage"] = sol::overload(DealDamage,
 			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); });
 
+		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			return entity->GetComponent<MatchComponent>().GetLayerIndex();
+		};
+
 		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
@@ -52,6 +62,16 @@ namespace bw
 				return sol::nil;
 
 			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
+		};
+
+		elementTable["SetParent"] = [](const sol::table& entityTable, const sol::table& parentTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			const Ndk::EntityHandle& parent = AssertScriptEntity(parentTable);
+
+			entity->GetComponent<Ndk::NodeComponent>().SetParent(parent, true);
+			if (entity->HasComponent<NetworkSyncComponent>())
+				entity->GetComponent<NetworkSyncComponent>().UpdateParent(parent);
 		};
 	}
 }

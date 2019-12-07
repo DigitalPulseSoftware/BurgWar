@@ -32,9 +32,5 @@ namespace bw
 
 	void SharedGamemode::InitializeGamemode()
 	{
-		m_gamemodeTable["GetTickDuration"] = [&](const sol::table& gmTable)
-		{
-			return m_sharedMatch.GetTickDuration();
-		};
 	}
 }

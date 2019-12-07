@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <CoreLib/SharedMatch.hpp>
 
 namespace bw
@@ -23,22 +24,21 @@ namespace bw
 		luaState.open_libraries();
 
 		RegisterGlobalLibrary(context);
-		RegisterMatchLibrary(context);
+		RegisterMatchLibrary(context, luaState.create_named_table("match"));
 		RegisterMetatableLibrary(context);
-		RegisterTimerLibrary(context);
+		RegisterPhysicsLibrary(context, luaState.create_named_table("physics"));
+		RegisterScriptLibrary(context, luaState.create_named_table("scripts"));
+		RegisterTimerLibrary(context, luaState.create_named_table("timer"));
 	}
 
-	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context)
+	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
 	{
-		sol::state& state = context.GetLuaState();
-		sol::table matchTable = state.create_table();
-
-		matchTable["GetCurrentTime"] = [this]()
+		library["GetCurrentTime"] = [this]()
 		{
 			return m_match.GetCurrentTime() / 1000.f;
 		};
 
-		matchTable["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
+		library["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
 			sol::state_view state(s);
 			sol::table result = state.create_table();
@@ -68,17 +68,55 @@ namespace bw
 			return result;
 		};
 
-		state["match"] = matchTable;
+		library["GetTickDuration"] = [&]()
+		{
+			return m_match.GetTickDuration();
+		};
 	}
 
-	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context)
+	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& context, sol::table& library)
 	{
-		sol::state& luaState = context.GetLuaState();
-		luaState["engine_SetTimer"] = [&](Nz::UInt64 time, sol::object callbackObject)
+		library["Trace"] = [this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
 		{
-			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, &luaState, callbackObject]()
+			if (layer >= m_match.GetLayerCount())
+				throw std::runtime_error("Invalid layer index");
+
+			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
+
+			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
+			if (physSystem.RaycastQueryFirst(startPos, endPos, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
 			{
-				sol::protected_function callback(luaState, sol::ref_index(callbackObject.registry_index()));
+				sol::state_view state(L);
+				sol::table result = state.create_table();
+				result["fraction"] = hitInfo.fraction;
+				result["hitPos"] = hitInfo.hitPos;
+				result["hitNormal"] = hitInfo.hitNormal;
+
+				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				if (hitEntity->HasComponent<ScriptComponent>())
+					result["hitEntity"] = hitEntity->GetComponent<ScriptComponent>().GetTable();
+
+				return result;
+			}
+			else
+				return sol::nil;
+		};
+	}
+
+	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context, sol::table& library)
+	{
+		// empty for now
+	}
+
+	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context, sol::table& library)
+	{
+		sol::state& state = context.GetLuaState();
+		library["Create"] = [&](Nz::UInt64 time, sol::object callbackObject)
+		{
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, &state, callbackObject]()
+			{
+				sol::protected_function callback(state, sol::ref_index(callbackObject.registry_index()));
 
 				auto result = callback();
 				if (!result.valid())

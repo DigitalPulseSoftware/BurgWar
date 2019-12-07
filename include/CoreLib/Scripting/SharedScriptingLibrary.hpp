@@ -25,10 +25,12 @@ namespace bw
 		protected:
 			inline SharedMatch& GetSharedMatch();
 
-		private:
-			void RegisterMatchLibrary(ScriptingContext& context);
-			void RegisterTimerLibrary(ScriptingContext& context);
+			virtual void RegisterMatchLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterPhysicsLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterScriptLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterTimerLibrary(ScriptingContext& context, sol::table& library);
 
+		private:
 			SharedMatch& m_match;
 	};
 }

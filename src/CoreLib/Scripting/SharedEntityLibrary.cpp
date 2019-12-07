@@ -66,22 +66,6 @@ namespace bw
 			return entityHealth.GetHealth();
 		};
 
-		elementMetatable["GetPosition"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition());
-		};
-
-		elementMetatable["GetRotation"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetRotation().ToEulerAngles().roll;
-		};
-
 		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);

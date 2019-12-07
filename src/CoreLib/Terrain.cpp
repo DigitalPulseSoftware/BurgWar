@@ -7,8 +7,12 @@
 
 namespace bw
 {
-	Terrain::Terrain(Match& match, Map& map) :
+	Terrain::Terrain(Map& map) :
 	m_map(map)
+	{
+	}
+
+	void Terrain::Initialize(Match& match)
 	{
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)

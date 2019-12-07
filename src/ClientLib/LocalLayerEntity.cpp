@@ -9,6 +9,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
+#include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
@@ -16,11 +17,10 @@
 
 namespace bw
 {
-	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, bool isPhysical) :
+	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId) :
 	m_entity(entity),
 	m_serverEntityId(serverEntityId),
-	m_layer(layer),
-	m_isPhysical(isPhysical)
+	m_layer(layer)
 	{
 	}
 
@@ -44,10 +44,13 @@ namespace bw
 	void LocalLayerEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
-		m_attachedRenderables.erase(it);
+		if (it != m_attachedRenderables.end())
+		{
+			m_attachedRenderables.erase(it);
 
-		for (VisualEntity* visualEntity : m_visualEntities)
-			visualEntity->DetachRenderable(renderable);
+			for (VisualEntity* visualEntity : m_visualEntities)
+				visualEntity->DetachRenderable(renderable);
+		}
 	}
 
 	void LocalLayerEntity::Enable(bool enable)
@@ -66,10 +69,8 @@ namespace bw
 		{
 			const Ndk::EntityHandle& ghostEntity = m_entity->GetWorld()->CreateEntity();
 			ghostEntity->AddComponent<Ndk::NodeComponent>();
-			//if (m_isPhysical)
-			//	ghostEntity->AddComponent<Ndk::PhysicsComponent2D>();
 
-			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId, false);
+			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId);
 
 			for (auto& renderable : m_attachedRenderables)
 			{
@@ -110,7 +111,7 @@ namespace bw
 	Nz::RadianAnglef LocalLayerEntity::GetRotation() const
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		return entityNode.GetRotation().ToEulerAngles().roll; //< FIXME
+		return AngleFromQuaternion(entityNode.GetRotation()); //< FIXME
 	}
 
 	void LocalLayerEntity::InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth)
@@ -161,6 +162,11 @@ namespace bw
 
 		for (VisualEntity* visualEntity : m_visualEntities)
 			ShowName(visualEntity, textBox);
+	}
+
+	bool LocalLayerEntity::IsPhysical() const
+	{
+		return m_entity->HasComponent<Ndk::PhysicsComponent2D>(); //< TODO: Cache this?
 	}
 
 	void LocalLayerEntity::SyncVisuals()
@@ -223,16 +229,25 @@ namespace bw
 			scriptComponent.ExecuteCallback("OnHealthUpdate", oldHealth, newHealth);
 		}
 	}
+
+	void LocalLayerEntity::UpdateParent(const LocalLayerEntity* newParent)
+	{
+		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		if (newParent)
+			entityNode.SetParent(newParent->GetEntity(), true);
+		else
+			entityNode.SetParent(static_cast<Nz::Node*>(nullptr));
+	}
 	
 	void LocalLayerEntity::UpdateInputs(const PlayerInputData& inputData)
 	{
-		//if (!serverEntity.isLocalPlayerControlled)
 		m_entity->GetComponent<InputComponent>().UpdateInputs(inputData);
 	}
 
 	void LocalLayerEntity::UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation)
 	{
-		assert(!m_isPhysical);
+		//FIXME: Handle this in a better way? (what if server entity is physical but client entity is not?)
+		assert(!IsPhysical());
 
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
 		entityNode.SetPosition(position);
@@ -241,7 +256,8 @@ namespace bw
 
 	void LocalLayerEntity::UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel)
 	{
-		assert(m_isPhysical);
+		//FIXME: Handle this in a better way? (what if server entity is physical but client entity is not?)
+		assert(IsPhysical());
 
 		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
 		entityPhys.SetAngularVelocity(angularVel);

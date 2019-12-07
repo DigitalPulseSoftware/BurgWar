@@ -20,7 +20,7 @@ namespace bw
 			inline MatchComponent(Match& match, LayerIndex layerIndex);
 			~MatchComponent() = default;
 
-			inline LayerIndex GetLayer() const;
+			inline LayerIndex GetLayerIndex() const;
 			inline Match& GetMatch() const;
 
 			static Ndk::ComponentIndex componentIndex;

@@ -30,6 +30,7 @@ namespace bw
 
 			//bool IsVisible() const;
 
+			inline void SetSize(const Nz::Vector2f& newSize);
 			void Show(bool show = true);
 
 			Sprite& operator=(const Sprite&) = default;

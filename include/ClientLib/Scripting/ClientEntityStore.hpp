@@ -26,7 +26,7 @@ namespace bw
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
-			std::optional<LocalLayerEntity> InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, bool isPhysical) const;
+			std::optional<LocalLayerEntity> InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
 	};
 }
 

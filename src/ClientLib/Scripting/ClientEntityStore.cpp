@@ -10,11 +10,11 @@
 
 namespace bw
 {
-	std::optional<LocalLayerEntity> ClientEntityStore::InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, bool isPhysical) const
+	std::optional<LocalLayerEntity> ClientEntityStore::InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
 	{
-		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, properties);
+		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, properties, parentEntity);
 
-		LocalLayerEntity layerEntity(layer, entity, serverId, isPhysical);
+		LocalLayerEntity layerEntity(layer, entity, serverId);
 		entity->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());
 		entity->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex());
 

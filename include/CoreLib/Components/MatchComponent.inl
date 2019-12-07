@@ -12,7 +12,7 @@ namespace bw
 	{
 	}
 
-	inline LayerIndex MatchComponent::GetLayer() const
+	inline LayerIndex MatchComponent::GetLayerIndex() const
 	{
 		return m_layerIndex;
 	}

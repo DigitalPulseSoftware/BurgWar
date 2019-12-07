@@ -18,7 +18,7 @@ ENTITY.ExplosionSounds = {
 RegisterClientAssets(ENTITY.ExplosionSounds)
 
 function ENTITY:Initialize()
-	self.ExplosionTick = GM:GetLocalTick() + self:GetProperty("lifetime") / GM:GetTickDuration()
+	self.ExplosionTick = match.GetLocalTick() + self:GetProperty("lifetime") / match.GetTickDuration()
 	self:SetCollider(Circle(Vec2(0, 0) * 0.2, 128 * 0.2))
 	self:InitRigidBody(20, 10)
 
@@ -31,7 +31,7 @@ function ENTITY:Initialize()
 end
 
 function ENTITY:OnTick()
-	local currentTick = GM:GetLocalTick()
+	local currentTick = match.GetLocalTick()
 	if (currentTick >= self.ExplosionTick) then
 		self:Explode()
 

@@ -25,9 +25,4 @@ namespace bw
 	{
 		return m_weaponEntity;
 	}
-
-	inline bool LocalLayerEntity::IsPhysical() const
-	{
-		return m_isPhysical;
-	}
 }

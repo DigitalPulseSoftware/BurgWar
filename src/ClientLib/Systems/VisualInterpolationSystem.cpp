@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
+#include <CoreLib/Utils.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <Nazara/Math/Algorithm.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -21,7 +22,7 @@ namespace bw
 		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 		auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
 
-		entityLerp.UpdateLastStates(Nz::Vector2f(entityNode.GetPosition()), entityNode.GetRotation().ToEulerAngles().roll);
+		entityLerp.UpdateLastStates(Nz::Vector2f(entityNode.GetPosition()), AngleFromQuaternion(entityNode.GetRotation()));
 	}
 
 	void VisualInterpolationSystem::OnUpdate(float elapsedTime)
