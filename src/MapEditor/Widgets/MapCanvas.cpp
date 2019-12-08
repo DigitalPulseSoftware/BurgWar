@@ -55,9 +55,22 @@ namespace bw
 		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash
 
 		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
-		m_mapEntities.Insert(entity);
+		if (entity)
+		{
+			m_mapEntities.Insert(entity);
 
-		return entity;
+			return entity;
+		}
+		else
+		{
+			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
+			dummyEntity->AddComponent<Ndk::GraphicsComponent>();
+			dummyEntity->AddComponent<Ndk::NodeComponent>();
+
+			m_mapEntities.Insert(dummyEntity);
+			
+			return dummyEntity;
+		}
 	}
 
 	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)
