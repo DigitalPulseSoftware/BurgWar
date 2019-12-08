@@ -177,12 +177,6 @@ namespace bw
 		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale());
 		Nz::Quaternionf rotation = entityNode.GetRotation();
 
-		scale.x = std::abs(scale.x);
-		scale.y = std::abs(scale.y);
-
-		if (m_entity->HasComponent<PlayerMovementComponent>() && !m_entity->GetComponent<PlayerMovementComponent>().IsFacingRight())
-			scale.x *= -1.f;
-
 		for (VisualEntity* visualEntity : m_visualEntities)
 		{
 			auto& visualNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
@@ -198,15 +192,13 @@ namespace bw
 
 	void LocalLayerEntity::UpdatePlayerMovement(bool isFacingRight)
 	{
-		/*auto& playerMovementComponent = m_entity->GetComponent<PlayerMovementComponent>();
+		auto& playerMovementComponent = m_entity->GetComponent<PlayerMovementComponent>();
 
 		if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
 		{
-			SetLookingRight(isFacingRight);
-
 			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
 			entityNode.Scale(-1.f, 1.f);
-		}*/
+		}
 	}
 
 	void LocalLayerEntity::UpdateHealth(Nz::UInt16 newHealth)
