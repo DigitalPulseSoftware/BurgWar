@@ -9,6 +9,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
@@ -36,8 +37,6 @@ namespace bw
 				const auto& inputs = ownerInputs.GetInputs();
 
 				Nz::RadianAnglef angle(std::atan2(inputs.aimDirection.y, inputs.aimDirection.x));
-				if (std::signbit(ownerNode.GetScale().x) != std::signbit(weaponNode.GetScale().x))
-					weaponNode.Scale(-1.f, 1.f);
 
 				if (weaponNode.GetScale().x < 0.f)
 					angle += Nz::RadianAnglef(float(M_PI));
