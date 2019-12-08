@@ -29,6 +29,20 @@ namespace bw
 		return Show(false);
 	}
 
+	inline void Sprite::SetOffset(const Nz::Vector2f& newOffset)
+	{
+		m_transformMatrix.SetTranslation(newOffset);
+
+		UpdateTransformMatrix();
+	}
+
+	inline void Sprite::SetRotation(const Nz::DegreeAnglef& newRotation)
+	{
+		m_transformMatrix.SetRotation(newRotation);
+
+		UpdateTransformMatrix();
+	}
+
 	inline void Sprite::SetSize(const Nz::Vector2f& newSize)
 	{
 		m_sprite->SetSize(newSize);

@@ -47,6 +47,9 @@ namespace bw
 
 			inline void Enable(bool enable);
 
+			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder);
+
 			struct HoveringRenderable
 			{
 				float offset;

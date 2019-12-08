@@ -230,6 +230,11 @@ namespace bw
 		}
 	}
 
+	void LocalLayerEntity::UpdateInputs(const PlayerInputData& inputData)
+	{
+		m_entity->GetComponent<InputComponent>().UpdateInputs(inputData);
+	}
+
 	void LocalLayerEntity::UpdateParent(const LocalLayerEntity* newParent)
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
@@ -238,10 +243,18 @@ namespace bw
 		else
 			entityNode.SetParent(static_cast<Nz::Node*>(nullptr));
 	}
-	
-	void LocalLayerEntity::UpdateInputs(const PlayerInputData& inputData)
+
+	void LocalLayerEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
-		m_entity->GetComponent<InputComponent>().UpdateInputs(inputData);
+		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
+		if (it != m_attachedRenderables.end())
+		{
+			RenderableData& renderableData = *it;
+			renderableData.offset = offsetMatrix;
+
+			for (VisualEntity* visualEntity : m_visualEntities)
+				visualEntity->UpdateRenderableMatrix(renderable, offsetMatrix);
+		}
 	}
 
 	void LocalLayerEntity::UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation)

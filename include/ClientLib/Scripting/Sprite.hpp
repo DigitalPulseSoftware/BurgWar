@@ -30,6 +30,8 @@ namespace bw
 
 			//bool IsVisible() const;
 
+			inline void SetOffset(const Nz::Vector2f& newOffset);
+			inline void SetRotation(const Nz::DegreeAnglef& newRotation);
 			inline void SetSize(const Nz::Vector2f& newSize);
 			void Show(bool show = true);
 
@@ -37,6 +39,8 @@ namespace bw
 			Sprite& operator=(Sprite&&) = default;
 
 		private:
+			void UpdateTransformMatrix();
+
 			LocalLayerEntityHandle m_entity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SpriteRef m_sprite;

@@ -154,6 +154,8 @@ namespace bw
 
 			"Hide", &Sprite::Hide,
 
+			"SetOffset", &Sprite::SetOffset,
+			"SetRotation", &Sprite::SetRotation,
 			"SetSize", &Sprite::SetSize,
 
 			"Show", sol::overload(&Sprite::Show, [](Sprite* sprite) { return sprite->Show(); })

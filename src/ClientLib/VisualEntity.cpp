@@ -101,6 +101,16 @@ namespace bw
 		m_entity->GetComponent<Ndk::GraphicsComponent>().Detach(renderable);
 	}
 
+	void VisualEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	{
+		m_entity->GetComponent<Ndk::GraphicsComponent>().UpdateLocalMatrix(renderable, offsetMatrix);
+	}
+
+	void VisualEntity::UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder)
+	{
+		m_entity->GetComponent<Ndk::GraphicsComponent>().UpdateRenderOrder(renderable, m_baseRenderOrder + renderOrder);
+	}
+
 	void VisualEntity::DetachHoveringRenderables(std::initializer_list<Nz::InstancedRenderableRef> renderables)
 	{
 		for (auto it = m_hoveringRenderables.begin(); it != m_hoveringRenderables.end(); ++it)

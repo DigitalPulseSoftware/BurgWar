@@ -23,4 +23,9 @@ namespace bw
 		else
 			m_entity->DetachRenderable(m_sprite);
 	}
+	
+	void Sprite::UpdateTransformMatrix()
+	{
+		m_entity->UpdateRenderableMatrix(m_sprite, m_transformMatrix);
+	}
 }
