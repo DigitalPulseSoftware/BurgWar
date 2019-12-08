@@ -11,10 +11,6 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
-#include <ClientLib/Components/SoundEmitterComponent.hpp>
-#include <ClientLib/Systems/SoundSystem.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/LoginState.hpp>
 

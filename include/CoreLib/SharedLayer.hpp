@@ -29,10 +29,10 @@ namespace bw
 			Ndk::World& GetWorld();
 			const Ndk::World& GetWorld() const;
 
-			void Update(float elapsedTime);
+			virtual void TickUpdate(float elapsedTime);
 
 			SharedLayer& operator=(const SharedLayer&) = delete;
-			SharedLayer& operator=(SharedLayer&&) noexcept = default;
+			SharedLayer& operator=(SharedLayer&&) = delete;
 
 		private:
 			SharedMatch& m_match;

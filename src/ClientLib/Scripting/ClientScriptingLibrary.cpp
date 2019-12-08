@@ -110,11 +110,12 @@ namespace bw
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
-			const auto entityOpt = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, LocalLayerEntity::ClientsideId, position, rotation, entityProperties, parentEntity);
+			LocalLayer& layer = match.GetLayer(layerIndex);
+			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, position, rotation, entityProperties, parentEntity);
 			if (!entityOpt)
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
-			const Ndk::EntityHandle& entity = entityOpt->GetEntity();
+			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();

@@ -21,8 +21,11 @@ namespace bw
 	{
 		assert(m_isEnabled);
 
-		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
+		for (auto it = m_serverEntities.begin(); it != m_serverEntities.end(); ++it)
 			func(it.value());
+
+		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
+			func(it.value().layerEntity);
 	}
 
 	inline const Nz::Color& LocalLayer::GetBackgroundColor() const
@@ -34,8 +37,8 @@ namespace bw
 	{
 		assert(m_isEnabled);
 
-		auto it = m_serverEntityIdToClient.find(serverId);
-		if (it == m_serverEntityIdToClient.end())
+		auto it = m_serverEntities.find(serverId);
+		if (it == m_serverEntities.end())
 			return std::nullopt;
 
 		return it.value();

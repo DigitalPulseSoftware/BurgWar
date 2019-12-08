@@ -22,6 +22,6 @@ namespace bw
 	void Terrain::Update(float elapsedTime)
 	{
 		for (TerrainLayer& layer : m_layers)
-			layer.Update(elapsedTime);
+			layer.TickUpdate(elapsedTime);
 	}
 }

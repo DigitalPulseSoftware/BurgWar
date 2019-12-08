@@ -27,7 +27,7 @@ namespace bw
 		public:
 			LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor);
 			LocalLayer(const LocalLayer&) = delete;
-			LocalLayer(LocalLayer&&) noexcept = default;
+			LocalLayer(LocalLayer&&) noexcept;
 			~LocalLayer() = default;
 
 			inline void Disable();
@@ -43,10 +43,18 @@ namespace bw
 			inline bool IsEnabled() const;
 			inline bool IsPredictionEnabled() const;
 
+			void FrameUpdate(float elapsedTime);
+			void PreFrameUpdate(float elapsedTime);
+			void PostFrameUpdate(float elapsedTime);
+
+			LocalLayerEntity& RegisterEntity(LocalLayerEntity layerEntity);
+
 			void SyncVisuals();
 
+			void TickUpdate(float elapsedTime) override;
+
 			LocalLayer& operator=(const LocalLayer&) = delete;
-			LocalLayer& operator=(LocalLayer&&) noexcept = default;
+			LocalLayer& operator=(LocalLayer&&) = delete;
 
 			NazaraSignal(OnDisabled, LocalLayer* /*emitter*/);
 			NazaraSignal(OnEnabled, LocalLayer* /*emitter*/);
@@ -55,6 +63,7 @@ namespace bw
 
 		private:
 			void CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData);
+			void HandleLocalEntityDestruction(Ndk::Entity* entity);
 			void HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::DeleteEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EnableLayer::Entity* entities, std::size_t entityCount);
@@ -64,7 +73,22 @@ namespace bw
 			void HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::MatchState::Entity* entities, std::size_t entityCount);
 
-			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, LocalLayerEntity /*localEntity*/> m_serverEntityIdToClient;
+			struct ClientEntity
+			{
+				ClientEntity(LocalLayerEntity&& entity) :
+				layerEntity(std::move(entity))
+				{
+				}
+
+				ClientEntity(ClientEntity&& rhs) noexcept = default;
+
+				LocalLayerEntity layerEntity;
+
+				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
+			};
+
+			tsl::hopscotch_map<Ndk::EntityId /*clientEntityId*/, ClientEntity /*localEntity*/> m_clientEntities;
+			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, LocalLayerEntity /*localEntity*/> m_serverEntities;
 			Nz::Color m_backgroundColor;
 			bool m_isEnabled;
 			bool m_isPredictionEnabled;

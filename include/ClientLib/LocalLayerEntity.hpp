@@ -60,8 +60,8 @@ namespace bw
 			void UpdateAnimation(Nz::UInt8 animationId);
 			void UpdatePlayerMovement(bool isFacingRight);
 			void UpdateHealth(Nz::UInt16 newHealth);
-			void UpdateParent(const LocalLayerEntity* newParent);
 			void UpdateInputs(const PlayerInputData& inputData);
+			void UpdateParent(const LocalLayerEntity* newParent);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel);
 			void UpdateWeaponEntity(const LocalLayerEntityHandle& entity);
@@ -112,13 +112,9 @@ namespace bw
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
-			Nz::RadianAnglef m_rotationError;
-			Nz::Vector2f m_positionError;
 			Nz::UInt32 m_serverEntityId;
 			LocalLayerEntityHandle m_weaponEntity;
 			LocalLayer& m_layer;
-			bool m_isPhysical;
-			bool m_isLocalPlayerControlled;
 	};
 }
 

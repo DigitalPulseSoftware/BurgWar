@@ -8,9 +8,9 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
+	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
 	{
-		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, properties);
+		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, properties, parent);
 		if (!entity)
 			return Ndk::EntityHandle::InvalidHandle;
 

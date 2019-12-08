@@ -6,6 +6,8 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Systems/FrameCallbackSystem.hpp>
+#include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -19,7 +21,25 @@ namespace bw
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
 	{
-		GetWorld().AddSystem<VisualInterpolationSystem>();
+		Ndk::World& world = GetWorld();
+		world.AddSystem<FrameCallbackSystem>(match);
+		world.AddSystem<PostFrameCallbackSystem>(match);
+		world.AddSystem<VisualInterpolationSystem>();
+	}
+
+	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
+	SharedLayer(std::move(layer)),
+	m_clientEntities(std::move(layer.m_clientEntities)),
+	m_serverEntities(std::move(layer.m_serverEntities)),
+	m_backgroundColor(layer.m_backgroundColor),
+	m_isEnabled(layer.m_isEnabled),
+	m_isPredictionEnabled(layer.m_isPredictionEnabled)
+	{
+		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
+		{
+			ClientEntity& clientEntity = it.value();
+			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleLocalEntityDestruction);
+		}
 	}
 
 	void LocalLayer::Enable(bool enable)
@@ -36,7 +56,7 @@ namespace bw
 		else
 		{
 			OnDisabled(this);
-			m_serverEntityIdToClient.clear();
+			m_serverEntities.clear();
 		}
 	}
 
@@ -45,12 +65,98 @@ namespace bw
 		return static_cast<LocalMatch&>(SharedLayer::GetMatch());
 	}
 
+	void LocalLayer::FrameUpdate(float elapsedTime)
+	{
+		Ndk::World& world = GetWorld();
+		world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		world.GetSystem<FrameCallbackSystem>().Enable(true);
+
+		world.Update(elapsedTime);
+	}
+
+	void LocalLayer::PreFrameUpdate(float elapsedTime)
+	{
+		Ndk::World& world = GetWorld();
+		world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		world.GetSystem<VisualInterpolationSystem>().Enable(true);
+
+		world.Update(elapsedTime);
+	}
+
+	void LocalLayer::PostFrameUpdate(float elapsedTime)
+	{
+		Ndk::World& world = GetWorld();
+		world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(false);
+		});
+
+		world.GetSystem<PostFrameCallbackSystem>().Enable(true);
+
+		world.Update(elapsedTime);
+	}
+
+	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
+	{
+		const Ndk::EntityHandle& entity = layerEntity.GetEntity();
+		assert(entity);
+		assert(entity->GetWorld() == &GetWorld());
+
+		if (layerEntity.GetServerId() == LocalLayerEntity::ClientsideId)
+		{
+			assert(m_clientEntities.find(entity->GetId()) == m_clientEntities.end());
+			auto it = m_clientEntities.emplace(entity->GetId(), std::move(layerEntity)).first;
+			// Warning: entity reference is invalidated from here
+
+			ClientEntity& clientEntity = it.value();
+
+			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleLocalEntityDestruction);
+
+			OnEntityCreated(this, clientEntity.layerEntity);
+
+			return clientEntity.layerEntity;
+		}
+		else
+		{
+			assert(m_serverEntities.find(layerEntity.GetServerId()) == m_serverEntities.end());
+			auto it = m_serverEntities.emplace(layerEntity.GetServerId(), std::move(layerEntity)).first;
+
+			// TODO: Register entity on destruction signal for server entities too, to handle the possibility of client scripts deleting server entities locally
+
+			OnEntityCreated(this, it.value());
+
+			return it.value();
+		}
+	}
+
 	void LocalLayer::SyncVisuals()
 	{
 		ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 		{
 			layerEntity.SyncVisuals();
 		});
+	}
+
+	void LocalLayer::TickUpdate(float elapsedTime)
+	{
+		Ndk::World& world = GetWorld();
+		world.ForEachSystem([](Ndk::BaseSystem& system)
+		{
+			system.Enable(true);
+		});
+
+		world.GetSystem<FrameCallbackSystem>().Enable(false);
+		world.GetSystem<VisualInterpolationSystem>().Enable(false);
+
+		SharedLayer::TickUpdate(elapsedTime);
 	}
 	
 	void LocalLayer::CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData)
@@ -108,8 +214,8 @@ namespace bw
 		const LocalLayerEntity* parent = nullptr;
 		if (entityData.parentId)
 		{
-			auto it = m_serverEntityIdToClient.find(entityData.parentId.value());
-			assert(it != m_serverEntityIdToClient.end());
+			auto it = m_serverEntities.find(entityData.parentId.value());
+			assert(it != m_serverEntities.end());
 
 			parent = &it.value();
 		}
@@ -161,10 +267,16 @@ namespace bw
 		if (entityData.name)
 			layerEntity->InitializeName(entityData.name.value());
 
-		assert(m_serverEntityIdToClient.find(entityId) == m_serverEntityIdToClient.end());
-		auto it = m_serverEntityIdToClient.emplace(entityId, std::move(layerEntity.value())).first;
+		RegisterEntity(std::move(layerEntity.value()));
+	}
 
-		OnEntityCreated(this, it.value());
+	void LocalLayer::HandleLocalEntityDestruction(Ndk::Entity* entity)
+	{
+		auto it = m_clientEntities.find(entity->GetId());
+		assert(it != m_clientEntities.end());
+
+		OnEntityDelete(this, it.value().layerEntity);
+		m_clientEntities.erase(it);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
@@ -190,15 +302,15 @@ namespace bw
 
 			bwLog(GetMatch().GetLogger(), LogLevel::Debug, "Deleting entity {} on layer {}", entityId, GetLayerIndex());
 
-			auto it = m_serverEntityIdToClient.find(entityId);
+			auto it = m_serverEntities.find(entityId);
 			//assert(it != m_serverEntityIdToClient.end());
-			if (it == m_serverEntityIdToClient.end())
+			if (it == m_serverEntities.end())
 				continue;
 
 			OnEntityDelete(this, it.value());
 
 			//m_prediction->DeleteEntity(BuildEntityId(entityData.id.layerId, it->second.entity->GetId()));
-			m_serverEntityIdToClient.erase(it);
+			m_serverEntities.erase(it);
 		}
 	}
 
@@ -224,8 +336,8 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].entityId;
 			Nz::UInt8 animationId = entities[i].animId;
 
-			auto it = m_serverEntityIdToClient.find(entityId);
-			if (it == m_serverEntityIdToClient.end())
+			auto it = m_serverEntities.find(entityId);
+			if (it == m_serverEntities.end())
 				continue;
 
 			LocalLayerEntity& localEntity = it.value();
@@ -241,8 +353,8 @@ namespace bw
 		{
 			Nz::UInt32 entityId = entities[i].id;
 
-			auto it = m_serverEntityIdToClient.find(entityId);
-			if (it == m_serverEntityIdToClient.end())
+			auto it = m_serverEntities.find(entityId);
+			if (it == m_serverEntities.end())
 				continue;
 
 			LocalLayerEntity& localEntity = it.value();
@@ -259,8 +371,8 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].id;
 			const auto& inputs = entities[i].inputs;
 
-			auto it = m_serverEntityIdToClient.find(entityId);
-			if (it == m_serverEntityIdToClient.end())
+			auto it = m_serverEntities.find(entityId);
+			if (it == m_serverEntities.end())
 				continue;
 
 			LocalLayerEntity& localEntity = it.value();
@@ -277,8 +389,8 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].id;
 			Nz::UInt16 currentHealth = entities[i].currentHealth;
 
-			auto it = m_serverEntityIdToClient.find(entityId);
-			if (it == m_serverEntityIdToClient.end())
+			auto it = m_serverEntities.find(entityId);
+			if (it == m_serverEntities.end())
 				continue;
 
 			LocalLayerEntity& localEntity = it.value();
@@ -294,8 +406,8 @@ namespace bw
 		{
 			auto& entityData = entities[i];
 
-			auto it = m_serverEntityIdToClient.find(entityData.id);
-			if (it == m_serverEntityIdToClient.end())
+			auto it = m_serverEntities.find(entityData.id);
+			if (it == m_serverEntities.end())
 				continue;
 
 			LocalLayerEntity& localEntity = it.value();

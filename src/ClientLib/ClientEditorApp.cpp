@@ -8,7 +8,10 @@
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
+#include <ClientLib/Systems/FrameCallbackSystem.hpp>
+#include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
+#include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 
 namespace bw
 {
@@ -21,7 +24,10 @@ namespace bw
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
 		Ndk::InitializeComponent<VisualInterpolationComponent>("Interp");
+		Ndk::InitializeSystem<FrameCallbackSystem>();
+		Ndk::InitializeSystem<PostFrameCallbackSystem>();
 		Ndk::InitializeSystem<SoundSystem>();
+		Ndk::InitializeSystem<VisualInterpolationSystem>();
 	}
 
 	ClientEditorApp::~ClientEditorApp() = default;

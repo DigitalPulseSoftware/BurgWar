@@ -488,98 +488,6 @@ namespace bw
 
 		SharedMatch::Update(elapsedTime);
 
-		/*constexpr float ErrorCorrectionPerSecond = 60;
-
-		m_errorCorrectionTimer += elapsedTime;
-		if (m_errorCorrectionTimer >= 1.f / ErrorCorrectionPerSecond)
-		{
-			// Compute how many loop we have to do (usually one)
-			float loopCount = std::floor(ErrorCorrectionPerSecond * m_errorCorrectionTimer);
-			m_errorCorrectionTimer -= loopCount / ErrorCorrectionPerSecond;
-
-			// Compute correction factor for this loop count
-			constexpr float positionCorrectionFactor = 0.3f;
-			constexpr float rotationCorrectionFactor = 0.5f;
-
-			float realPositionCorrectionFactor = Nz::IntegralPow(1.f - positionCorrectionFactor, static_cast<unsigned int>(loopCount));
-			float realRotationCorrectionFactor = Nz::IntegralPow(1.f - rotationCorrectionFactor, static_cast<unsigned int>(loopCount));
-
-			for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
-			{
-				ServerEntity& serverEntity = it.value();
-				if (!serverEntity.entity)
-					continue;
-
-				if (serverEntity.isPhysical)
-				{
-					auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-					auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
-
-					serverEntity.positionError *= realPositionCorrectionFactor;
-					serverEntity.rotationError *= realRotationCorrectionFactor;
-
-					// Avoid denormals
-					for (std::size_t i = 0; i < 2; ++i)
-					{
-						if (Nz::NumberEquals(serverEntity.positionError[i], 0.f, 1.f))
-							serverEntity.positionError[i] = 0.f;
-					}
-
-					if (serverEntity.rotationError == 0.f)
-						serverEntity.rotationError = Nz::RadianAnglef::Zero();
-				}
-			}
-		}
-
-		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
-		{
-			ServerEntity& serverEntity = it.value();
-			if (!serverEntity.entity)
-				continue;
-
-			if (serverEntity.isPhysical)
-			{
-				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				auto& entityPhys = serverEntity.entity->GetComponent<Ndk::PhysicsComponent2D>();
-
-				// Apply new visual position/rotation
-				entityNode.SetPosition(entityPhys.GetPosition() + serverEntity.positionError);
-				entityNode.SetRotation(entityPhys.GetRotation() + serverEntity.rotationError);
-			}
-		}
-
-		for (auto it = m_serverEntityIdToClient.begin(); it != m_serverEntityIdToClient.end(); ++it)
-		{
-			ServerEntity& serverEntity = it.value();
-			if (!serverEntity.entity)
-				continue;
-
-			if (serverEntity.health)
-			{
-				auto& healthData = serverEntity.health.value();
-				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				auto& entityGfx = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
-
-				const Nz::Boxf& aabb = entityGfx.GetAABB();
-
-				auto& healthBarNode = healthData.healthBarEntity->GetComponent<Ndk::NodeComponent>();
-				healthBarNode.SetPosition(aabb.GetCenter() - Nz::Vector3f(0.f, aabb.height / 2.f + 3.f, 0.f));
-			}
-
-			if (serverEntity.name)
-			{
-				auto& nameData = serverEntity.name.value();
-
-				auto& entityNode = serverEntity.entity->GetComponent<Ndk::NodeComponent>();
-				auto& entityGfx = serverEntity.entity->GetComponent<Ndk::GraphicsComponent>();
-
-				const Nz::Boxf& aabb = entityGfx.GetAABB();
-
-				auto& nameNode = nameData.nameEntity->GetComponent<Ndk::NodeComponent>();
-				nameNode.SetPosition(aabb.GetCenter() - Nz::Vector3f(0.f, aabb.height / 2.f + 15, 0.f));
-			}
-		}*/
-
 		if (m_debug)
 		{
 			Nz::NetPacket debugPacket;
@@ -660,17 +568,36 @@ namespace bw
 			}
 		}
 
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->PreFrameUpdate(elapsedTime);
+		}
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnFrame");
+
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->FrameUpdate(elapsedTime);
+		}
+
+		m_animationManager.Update(elapsedTime);
+
 		for (auto& layerPtr : m_layers)
 		{
 			if (layerPtr->IsEnabled())
 				layerPtr->SyncVisuals();
 		}
 
-		m_animationManager.Update(elapsedTime);
-		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnFrame");
-
 		m_renderWorld.Update(elapsedTime);
+
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->PostFrameUpdate(elapsedTime);
+		}
 
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
@@ -993,7 +920,7 @@ namespace bw
 			{
 				if (layer->IsEnabled() && layer->IsPredictionEnabled())
 				{
-					layer->Update(GetTickDuration());
+					layer->TickUpdate(GetTickDuration());
 				}
 			}
 		}
@@ -1148,7 +1075,7 @@ namespace bw
 		for (auto& layer : m_layers)
 		{
 			if (layer->IsEnabled())
-				layer->Update(GetTickDuration());
+				layer->TickUpdate(GetTickDuration());
 		}
 
 #ifdef DEBUG_PREDICTION

@@ -68,7 +68,7 @@ namespace bw
 
 	SharedLayer::~SharedLayer() = default;
 
-	void SharedLayer::Update(float elapsedTime)
+	void SharedLayer::TickUpdate(float elapsedTime)
 	{
 		m_world.Update(elapsedTime);
 	}
