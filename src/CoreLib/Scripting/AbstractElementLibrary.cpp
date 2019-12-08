@@ -12,16 +12,20 @@ namespace bw
 
 	const Ndk::EntityHandle& AbstractElementLibrary::AssertScriptEntity(const sol::table& entityTable)
 	{
-		sol::object entityObject = entityTable["_Entity"];
-		if (!entityObject)
-			throw std::runtime_error("Invalid entity");
-
-		const Ndk::EntityHandle& entity = entityObject.as<Ndk::EntityHandle>();
-
+		const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
 		if (!entity || !entity->HasComponent<ScriptComponent>())
 			throw std::runtime_error("Invalid entity");
 
 		return entity;
+	}
+
+	const Ndk::EntityHandle& AbstractElementLibrary::RetrieveScriptEntity(const sol::table& entityTable)
+	{
+		sol::object entityObject = entityTable["_Entity"];
+		if (!entityObject)
+			throw std::runtime_error("Invalid entity");
+
+		return entityObject.as<Ndk::EntityHandle>();
 	}
 
 }

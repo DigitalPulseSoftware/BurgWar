@@ -107,12 +107,6 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
 		};
 
-		elementMetatable["IsValid"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-			return entity.IsValid();
-		};
-
 		elementMetatable["Kill"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);

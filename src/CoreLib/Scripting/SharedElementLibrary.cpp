@@ -73,5 +73,12 @@ namespace bw
 			else
 				return sol::nil;
 		};
+
+		elementMetatable["IsValid"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
+			return entity.IsValid();
+		};
+
 	}
 }
