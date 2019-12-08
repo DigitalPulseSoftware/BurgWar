@@ -2,14 +2,12 @@ RegisterClientScript()
 RegisterClientAssets("placeholder/healthpack.png")
 
 ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
 
 ENTITY.Properties = {}
 
 function ENTITY:Initialize()
 	local colliderSize = Vec2(400, 200) / 4 / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
+	self:SetCollider(Rect(-colliderSize, colliderSize), true)
 	self:EnableCollisionCallbacks(true)
 
 	if (CLIENT) then

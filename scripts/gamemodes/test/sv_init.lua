@@ -12,7 +12,9 @@ end
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
+	player:GiveWeapon("weapon_rifle")
 	player:GiveWeapon("weapon_grenade")
+	player:GiveWeapon("weapon_graspain")
 end
 
 function GM:OnTick()

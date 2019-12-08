@@ -8,7 +8,7 @@ ENTITY.MaxHealth = 0
 ENTITY.Properties = {}
 
 function ENTITY:Initialize()
-	self:SetCollider(Circle(Vec2(0, 0) * 0.3, 128 * 0.3))
+	self:SetCollider(Circle(Vec2(0, 0) * 0.3, 128 * 0.3), true)
 	self:EnableCollisionCallbacks(true)
 
 	if (CLIENT) then

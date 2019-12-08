@@ -48,14 +48,6 @@ namespace bw
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation())); //<FIXME: not very efficient
 		};
 
-		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetScale().x > 0.f;
-		};
-
 		elementMetatable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
@@ -74,11 +66,34 @@ namespace bw
 				return sol::nil;
 		};
 
+		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return nodeComponent.GetScale().x > 0.f;
+		};
+
 		elementMetatable["IsValid"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
 		};
 
+		elementMetatable["ToLocalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
+		};
+
+		elementMetatable["ToGlobalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& localPosition)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
+		};
 	}
 }

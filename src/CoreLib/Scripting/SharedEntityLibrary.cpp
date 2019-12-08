@@ -31,6 +31,17 @@ namespace bw
 
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["ApplyImpulse"] = [this](const sol::table& entityTable, const Nz::Vector2f& force)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				Ndk::PhysicsComponent2D& hitEntityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				hitEntityPhys.AddImpulse(force);
+			}
+		};
+
 		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
@@ -125,7 +136,7 @@ namespace bw
 			entity->Kill();
 		};
 
-		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
+		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable, std::optional<bool> isTriggerOpt)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
@@ -174,7 +185,27 @@ namespace bw
 				collider = Nz::CompoundCollider2D::New(std::move(colliders));
 			}
 
+			collider->SetTrigger((isTriggerOpt) ? *isTriggerOpt : false);
+
 			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
+		};
+
+		elementMetatable["SetPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& position)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetPosition(position);
+			}
+			else
+			{
+				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				nodeComponent.SetPosition(position);
+			}
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
