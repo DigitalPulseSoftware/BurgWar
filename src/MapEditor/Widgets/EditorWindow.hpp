@@ -96,12 +96,14 @@ namespace bw
 
 			void OpenMap(const QString& mapFolder);
 
+			void RefreshLayerList();
 			void RefreshRecentFileListMenu();
 			void RefreshRecentFileListMenu(const QStringList& recentFileList);
 
 			void RegisterEditorConfig();
 			void RegisterEntity(std::size_t entityIndex);
-			void RefreshLayerList();
+
+			void ReloadScripts();
 
 			void SwapEntities(std::size_t oldPosition, std::size_t newPosition);
 			void SwapLayers(std::size_t oldPosition, std::size_t newPosition);

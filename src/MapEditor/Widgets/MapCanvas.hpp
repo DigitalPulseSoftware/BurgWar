@@ -29,6 +29,8 @@ namespace bw
 			const Ndk::EntityHandle& CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
 			void DeleteEntity(Ndk::EntityId entityId);
 
+			template<typename F> void ForEachEntity(F&& func);
+
 			inline const Ndk::EntityList& GetMapEntities() const;
 
 			void EditEntityPosition(Ndk::EntityId entityId);

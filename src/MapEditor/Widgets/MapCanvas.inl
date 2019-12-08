@@ -6,6 +6,13 @@
 
 namespace bw
 {
+	template<typename F>
+	void MapCanvas::ForEachEntity(F&& func)
+	{
+		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
+			func(entity);
+	}
+
 	inline const Ndk::EntityList& MapCanvas::GetMapEntities() const
 	{
 		return m_mapEntities;

@@ -52,7 +52,8 @@ namespace bw
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
 	ClientEditorApp(argc, argv, LogSide::Editor),
 	m_entityInfoDialog(nullptr),
-	m_playWindow(nullptr)
+	m_playWindow(nullptr),
+	m_canvas(nullptr)
 	{
 		RegisterEditorConfig();
 
@@ -69,28 +70,7 @@ namespace bw
 		m_scriptFolder = std::make_shared<VirtualDirectory>(scriptFolder);
 
 		m_assetStore.emplace(GetLogger(), m_assetFolder);
-
-		m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), m_scriptFolder);
-		m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(GetLogger()));
-		m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
-		m_scriptingContext->GetLuaState()["Editor"] = this;
-
-		m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
-		m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
-		m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(GetLogger(), *m_assetStore));
-
-		VirtualDirectory::Entry entry;
-		
-		if (m_scriptFolder->GetEntry("entities", &entry))
-		{
-			std::filesystem::path path = "entities";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
+		ReloadScripts();
 
 		// Load some resources
 
@@ -550,6 +530,12 @@ namespace bw
 
 			m_compileMap = fileMenu->addAction(tr("Compile map..."));
 			connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
+		}
+
+		QMenu* editorMenu = menuBar()->addMenu(tr("&Editor"));
+		{
+			QAction* reloadScripts = editorMenu->addAction(tr("Reload scripts"));
+			connect(reloadScripts, &QAction::trigger, this, &EditorWindow::ReloadScripts);
 		}
 
 		m_mapMenu = menuBar()->addMenu(tr("&Map"));
@@ -1274,6 +1260,54 @@ namespace bw
 			m_entityList.listWidget->addItem(item);
 
 		m_entityIndexes.emplace(canvasId, entityIndex);
+	}
+
+	void EditorWindow::ReloadScripts()
+	{
+		if (!m_scriptingContext)
+		{
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), m_scriptFolder);
+			m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(GetLogger()));
+			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
+		}
+		else
+			m_scriptingContext->ReloadLibraries();
+
+		m_scriptingContext->GetLuaState()["Editor"] = this;
+
+		if (!m_entityStore)
+		{
+			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
+			m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
+			m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(GetLogger(), *m_assetStore));
+		}
+		else
+		{
+			m_entityStore->ClearElements();
+			m_entityStore->ReloadLibraries();
+		}
+
+		VirtualDirectory::Entry entry;
+		
+		if (m_scriptFolder->GetEntry("entities", &entry))
+		{
+			std::filesystem::path path = "entities";
+
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
+			});
+		}
+
+		if (m_canvas)
+		{
+			m_canvas->ForEachEntity([this](const Ndk::EntityHandle& entity)
+			{
+				if (entity->HasComponent<ScriptComponent>())
+					m_entityStore->UpdateEntityElement(entity);
+			});
+		}
 	}
 
 	void EditorWindow::RefreshLayerList()
