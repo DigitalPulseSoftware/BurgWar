@@ -23,6 +23,7 @@ namespace bw
 			void EnableBodyCollision(bool enable);
 
 			bool IsBodyCollisionEnabled() const;
+			inline bool IsValid() const;
 
 			void Remove();
 
@@ -30,6 +31,7 @@ namespace bw
 			Constraint& operator=(Constraint&&) noexcept = default;
 
 		protected:
+			void AssertValid() const;
 			template<typename T> T* GetConstraint();
 			template<typename T> const T* GetConstraint() const;
 

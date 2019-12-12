@@ -13,18 +13,23 @@ namespace bw
 	{
 	}
 
+	inline bool Constraint::IsValid() const
+	{
+		return m_constraint.IsValid();
+	}
+
 	template<typename T>
 	T* Constraint::GetConstraint()
 	{
-		assert(dynamic_cast<T*>(m_constraint.Get()) != nullptr);
-		return static_cast<T*>(m_constraint.Get());
+		assert(dynamic_cast<T*>(m_constraint.GetObject()) != nullptr);
+		return static_cast<T*>(m_constraint.GetObject());
 	}
 
 	template<typename T>
 	const T* Constraint::GetConstraint() const
 	{
-		assert(dynamic_cast<T*>(m_constraint.Get()) != nullptr);
-		return static_cast<T*>(m_constraint.Get());
+		assert(dynamic_cast<T*>(m_constraint.GetObject()) != nullptr);
+		return static_cast<T*>(m_constraint.GetObject());
 	}
 
 	inline DampedSpringConstraint::DampedSpringConstraint(Ndk::EntityHandle entity, Nz::DampedSpringConstraint2D* constraint) :

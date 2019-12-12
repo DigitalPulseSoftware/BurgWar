@@ -11,22 +11,19 @@ namespace bw
 	
 	void Constraint::EnableBodyCollision(bool enable)
 	{
-		if (!m_constraint)
-			throw std::runtime_error("Constraint has been removed");
-
+		AssertValid();
 		m_constraint->EnableBodyCollision(enable);
 	}
 	
 	bool Constraint::IsBodyCollisionEnabled() const
 	{
-		if (!m_constraint)
-			throw std::runtime_error("Constraint has been removed");
-
+		AssertValid();
 		return m_constraint->IsBodyCollisionEnabled();
 	}
 	
 	void Constraint::Remove()
 	{
+		AssertValid();
 		if (m_entity && !m_entity->GetComponent<Ndk::ConstraintComponent2D>().RemoveConstraint(m_constraint))
 			m_entity->Kill();
 	}
