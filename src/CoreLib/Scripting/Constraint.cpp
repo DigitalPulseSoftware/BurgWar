@@ -27,4 +27,22 @@ namespace bw
 		if (m_entity && !m_entity->GetComponent<Ndk::ConstraintComponent2D>().RemoveConstraint(m_constraint))
 			m_entity->Kill();
 	}
+
+	void Constraint::AssertValid() const
+	{
+		if (!IsValid())
+			throw std::runtime_error("Constraint has been removed");
+	}
+
+	float PinConstraint::GetDistance() const
+	{
+		AssertValid();
+		return GetConstraint<Nz::PinConstraint2D>()->GetDistance();
+	}
+
+	void PinConstraint::SetDistance(float distance)
+	{
+		AssertValid();
+		GetConstraint<Nz::PinConstraint2D>()->SetDistance(distance);
+	}
 }

@@ -20,12 +20,14 @@ namespace bw
 	class Constraint;
 	class DampedSpringConstraint;
 	class NoclipPlayerMovementController;
+	class PinConstraint;
 	class PlayerMovementController;
 }
 
 // Constraint
+SOL_BASE_CLASSES(bw::PinConstraint, bw::Constraint);
 SOL_BASE_CLASSES(bw::DampedSpringConstraint, bw::Constraint);
-SOL_DERIVED_CLASSES(bw::Constraint, bw::DampedSpringConstraint);
+SOL_DERIVED_CLASSES(bw::Constraint, bw::DampedSpringConstraint, bw::PinConstraint);
 
 // PlayerMovementController
 SOL_BASE_CLASSES(bw::BasicPlayerMovementController, bw::PlayerMovementController);
