@@ -50,6 +50,21 @@ namespace bw
 			DampedSpringConstraint& operator=(const DampedSpringConstraint&) = delete;
 			DampedSpringConstraint& operator=(DampedSpringConstraint&&) noexcept = default;
 	};
+
+	class PinConstraint : public Constraint
+	{
+		public:
+			inline PinConstraint(Ndk::EntityHandle entity, Nz::PinConstraint2D* constraint);
+			PinConstraint(PinConstraint&&) noexcept = default;
+			~PinConstraint() = default;
+
+			float GetDistance() const;
+
+			void SetDistance(float distance);
+
+			PinConstraint& operator=(const PinConstraint&) = delete;
+			PinConstraint& operator=(PinConstraint&&) noexcept = default;
+	};
 }
 
 #include <CoreLib/Scripting/Constraint.inl>

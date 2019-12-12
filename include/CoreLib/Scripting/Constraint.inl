@@ -36,4 +36,9 @@ namespace bw
 	Constraint(std::move(entity), constraint->CreateHandle())
 	{
 	}
+
+	inline PinConstraint::PinConstraint(Ndk::EntityHandle entity, Nz::PinConstraint2D* constraint) :
+	Constraint(std::move(entity), constraint->CreateHandle())
+	{
+	}
 }
