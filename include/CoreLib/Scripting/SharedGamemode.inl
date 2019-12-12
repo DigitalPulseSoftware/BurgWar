@@ -3,12 +3,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedGamemode.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <cassert>
 
 namespace bw
 {
 	template<typename... Args>
-	sol::object SharedGamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	std::optional<sol::object> SharedGamemode::ExecuteCallback(const std::string& callbackName, Args&&... args)
 	{
 		sol::protected_function callback = m_gamemodeTable[callbackName];
 		if (callback)
@@ -19,7 +20,8 @@ namespace bw
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::cerr << callbackName << " gamemode callback failed: " << err.what() << std::endl;
+				bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "Gamemode callback {} failed: {}", callbackName, err.what());
+				return std::nullopt;
 			}
 			
 			return result;

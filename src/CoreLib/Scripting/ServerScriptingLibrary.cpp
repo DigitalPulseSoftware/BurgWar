@@ -173,6 +173,18 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<PlayerHandle>("Player", 
 			"new", sol::no_constructor,
+			"GetControlledEntity", [](const PlayerHandle& player) -> sol::object
+			{
+				if (!player)
+					return sol::nil;
+
+				const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+				if (!controlledEntity)
+					return sol::nil;
+
+				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
+				return scriptComponent.GetTable();
+			},
 			"GetLayerIndex", [](const PlayerHandle& player) -> LayerIndex
 			{
 				if (!player)
@@ -201,6 +213,13 @@ namespace bw
 
 				return player->HasWeapon(weaponName);
 			},
+			"IsAdmin", [](const PlayerHandle& player)
+			{
+				if (!player)
+					return false;
+
+				return player->IsAdmin();
+			},
 			"MoveToLayer", [](const PlayerHandle& player, sol::object layerIndex)
 			{
 				if (!player)
@@ -210,6 +229,13 @@ namespace bw
 					player->MoveToLayer(layerIndex.as<LayerIndex>());
 				else
 					player->MoveToLayer(Player::NoLayer);
+			},
+			"PrintChatMessage", [](const PlayerHandle& player, std::string message)
+			{
+				if (!player)
+					return;
+
+				player->PrintChatMessage(std::move(message));
 			},
 			"RemoveWeapon", [](const PlayerHandle& player, const std::string& weaponName)
 			{
@@ -224,6 +250,13 @@ namespace bw
 					return;
 
 				return player->Spawn();
+			},
+			"SetAdmin", [](const PlayerHandle& player, bool isAdmin)
+			{
+				if (!player)
+					return;
+
+				return player->SetAdmin(isAdmin);
 			},
 			"UpdateLayerVisibility", [](const PlayerHandle& player, LayerIndex layerIndex, bool visible)
 			{

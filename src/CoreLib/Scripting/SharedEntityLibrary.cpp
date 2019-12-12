@@ -79,6 +79,16 @@ namespace bw
 			return entityHealth.GetHealth();
 		};
 
+		elementMetatable["GetPlayerMovementController"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().GetController();
+		};
+
 		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);

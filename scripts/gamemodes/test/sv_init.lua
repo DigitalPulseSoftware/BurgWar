@@ -17,6 +17,45 @@ function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_graspain")
 end
 
+local noclipController = NoclipPlayerMovementController.new()
+
+function GM:OnPlayerChat(player, message)
+	if (message:sub(1,1) == "/") then
+		local commandName, commandArgs = message:match("/(%w+)%s*(.*)")
+		if (not commandName) then
+			return
+		end
+
+		if (commandName == "admin") then
+			if (commandArgs == "okboomer") then
+				player:SetAdmin(true)
+				player:PrintChatMessage("You are now admin")
+			end
+		elseif (commandName == "noclip") then
+			if (not player:IsAdmin()) then
+				return
+			end
+
+			local controlledEntity = player:GetControlledEntity()
+			if (not controlledEntity) then
+				return
+			end
+
+			if (controlledEntity.previousController) then
+				controlledEntity:UpdatePlayerMovementController(controlledEntity.previousController)
+				controlledEntity.previousController = nil
+				player:PrintChatMessage("Noclip disabled")
+			else
+				controlledEntity.previousController = controlledEntity:GetPlayerMovementController()
+				controlledEntity:UpdatePlayerMovementController(noclipController)
+				player:PrintChatMessage("Noclip enabled")
+			end
+		end
+	else
+		return player:GetName() .. ": " .. message
+	end
+end
+
 function GM:OnTick()
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()

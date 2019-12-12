@@ -51,10 +51,13 @@ namespace bw
 
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
+			inline bool IsAdmin() const;
 			inline bool IsInMatch() const;
 			inline bool IsReady() const;
 
 			void MoveToLayer(LayerIndex layerIndex);
+
+			void PrintChatMessage(std::string message);
 
 			void OnTick(bool lastTick);
 
@@ -63,6 +66,7 @@ namespace bw
 			template<typename T> void SendPacket(const T& packet);
 
 			void SelectWeapon(std::size_t weaponIndex);
+			void SetAdmin(bool isAdmin);
 
 			void Spawn();
 
@@ -98,6 +102,7 @@ namespace bw
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;
+			bool m_isAdmin;
 			bool m_isReady;
 			bool m_shouldSendWeapons;
 	};

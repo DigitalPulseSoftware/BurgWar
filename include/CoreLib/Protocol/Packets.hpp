@@ -145,6 +145,7 @@ namespace bw
 
 		DeclarePacket(ChatMessage)
 		{
+			Nz::UInt8 playerIndex;
 			std::string content;
 		};
 		

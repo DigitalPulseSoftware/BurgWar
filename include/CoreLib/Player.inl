@@ -51,6 +51,11 @@ namespace bw
 		return m_weaponByName.find(weaponClass) != m_weaponByName.end();
 	}
 
+	inline bool Player::IsAdmin() const
+	{
+		return m_isAdmin;
+	}
+
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;

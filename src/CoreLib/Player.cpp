@@ -36,6 +36,7 @@ namespace bw
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
 	m_session(session),
+	m_isAdmin(false),
 	m_shouldSendWeapons(false),
 	m_isReady(false)
 	{
@@ -90,6 +91,9 @@ namespace bw
 
 	void Player::HandleConsoleCommand(const std::string& str)
 	{
+		if (!m_isAdmin)
+			return;
+
 		if (!m_scriptingEnvironment)
 		{
 			const std::string& scriptFolder = m_match->GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
@@ -171,6 +175,15 @@ namespace bw
 			if (m_layerIndex != NoLayer)
 				UpdateLayerVisibility(m_layerIndex, true);
 		}
+	}
+
+	void Player::PrintChatMessage(std::string message)
+	{
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = std::move(message);
+		chatPacket.playerIndex = m_playerIndex;
+
+		SendPacket(chatPacket);
 	}
 	
 	void Player::OnTick(bool lastTick)
@@ -276,6 +289,11 @@ namespace bw
 			session.GetVisibility().PushEntitiesPacket(m_layerIndex, entityIds, weaponPacket);
 		});
 	}
+
+	void Player::SetAdmin(bool isAdmin)
+	{
+		m_isAdmin = isAdmin;
+	}
 	
 	void Player::Spawn()
 	{
@@ -290,7 +308,11 @@ namespace bw
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
+			auto spawnPositionOpt = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition");
+			if (!spawnPositionOpt)
+				return;
+
+			Nz::Vector2f spawnPosition = spawnPositionOpt->as<Nz::Vector2f>();
 			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, spawnPosition, 0.f, {});
 			if (!playerEntity)
 				return;

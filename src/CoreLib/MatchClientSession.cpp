@@ -9,6 +9,7 @@
 #include <CoreLib/Player.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <cassert>
 
@@ -100,14 +101,28 @@ namespace bw
 		if (packet.playerIndex >= m_players.size())
 			return;
 
-		Packets::ChatMessage chatPacket;
-		chatPacket.content = m_players[packet.playerIndex]->GetName() + ": " + std::move(packet.message);
-
-		//FIXME: Should be for each session
-		m_match.ForEachPlayer([&](Player* player)
+		if (auto contentOpt = m_match.GetGamemode()->ExecuteCallback("OnPlayerChat", m_players[packet.playerIndex]->CreateHandle(), packet.message))
 		{
-			player->SendPacket(chatPacket);
-		});
+			sol::object& content = *contentOpt;
+			if (content.is<sol::nil_t>())
+				return;
+
+			if (!content.is<std::string>())
+			{
+				bwLog(m_match.GetLogger(), LogLevel::Error, "OnPlayerChat was excepted to return a string, but returned a {}", content.get_type());
+				return;
+			}
+
+			Packets::ChatMessage chatPacket;
+			chatPacket.content = content.as<std::string>();
+
+			m_match.ForEachPlayer([&](Player* player)
+			{
+				chatPacket.playerIndex = player->GetPlayerIndex();
+
+				player->SendPacket(chatPacket);
+			});
+		}
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerConsoleCommand& packet)
