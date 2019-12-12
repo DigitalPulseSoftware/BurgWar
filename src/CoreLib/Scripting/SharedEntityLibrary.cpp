@@ -3,9 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
-#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp> // For sol metainfo
+#include <CoreLib/Scripting/SharedScriptingLibrary.hpp> // For sol metainfo
 #include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/Components/CollisionComponent2D.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -216,6 +218,16 @@ namespace bw
 
 			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			physComponent.SetVelocity(velocity);
+		};
+
+		elementMetatable["UpdatePlayerMovementController"] = [](const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(controller));
 		};
 	}
 }

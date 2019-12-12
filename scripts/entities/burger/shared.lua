@@ -17,6 +17,8 @@ for _, texturePath in pairs(ENTITY.Faces) do
 	RegisterClientAssets(texturePath)
 end
 
+local controller = BasicPlayerMovementController.new()
+
 function ENTITY:Initialize()
 	local size = {277 / 3, 253 / 3}
 
@@ -26,6 +28,7 @@ function ENTITY:Initialize()
 	rect.width = size[1] - 10
 	rect.height = size[2] - 3 + 20
 
+	self:UpdatePlayerMovementController(controller)
 	self:SetCollider(rect)
 	self:InitRigidBody(50, 10, false)
 end

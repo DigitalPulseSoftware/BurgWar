@@ -3,6 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
+#include <CoreLib/PlayerMovementController.hpp>
+#include <CoreLib/BasicPlayerMovementController.hpp>
+#include <CoreLib/NoclipPlayerMovementController.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/Constraint.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
@@ -32,6 +35,7 @@ namespace bw
 		RegisterMatchLibrary(context, luaState.create_named_table("match"));
 		RegisterMetatableLibrary(context);
 		RegisterPhysicsLibrary(context, luaState.create_named_table("physics"));
+		RegisterPlayerMovementControllerClass(context);
 		RegisterScriptLibrary(context, luaState.create_named_table("scripts"));
 		RegisterTimerLibrary(context, luaState.create_named_table("timer"));
 	}
@@ -53,6 +57,22 @@ namespace bw
 			"new", sol::no_constructor,
 
 			sol::base_classes, sol::bases<Constraint>()
+		);
+	}
+
+	void SharedScriptingLibrary::RegisterPlayerMovementControllerClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<PlayerMovementController>("PlayerMovementController");
+
+		state.new_usertype<BasicPlayerMovementController>("BasicPlayerMovementController",
+			sol::base_classes, sol::bases<PlayerMovementController>(),
+			"new", sol::factories(&std::make_shared<BasicPlayerMovementController>)
+		);
+		
+		state.new_usertype<NoclipPlayerMovementController>("NoclipPlayerMovementController",
+			sol::base_classes, sol::bases<PlayerMovementController>(),
+			"new", sol::factories(&std::make_shared<NoclipPlayerMovementController>)
 		);
 	}
 

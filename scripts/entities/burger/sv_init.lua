@@ -1,9 +1,6 @@
 RegisterClientScript("cl_init.lua")
 RegisterClientScript("shared.lua")
 
-function ENTITY:Init()
-end
-
 function ENTITY:OnHealthChange(newHealth)
 end
 
