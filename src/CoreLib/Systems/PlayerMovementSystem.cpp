@@ -59,17 +59,6 @@ namespace bw
 
 			const auto& inputs = inputComponent.GetInputs();
 
-			/*if (inputs.isJumping && !playerMovementComponent.WasJumping() && playerMovementComponent.IsOnGround())
-			{
-				constexpr float jumpHeight = 80.f;
-				constexpr float jumpBoostHeight = 55.f;
-
-				float jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 128.f);
-				physicsComponent.SetVelocity(physicsComponent.GetVelocity() + Nz::Vector2f(0.f, -jumpVelocity));
-
-				playerMovementComponent.UpdateJumpTime(jumpBoostHeight / jumpVelocity);
-			}*/
-
 			bool isFacingRight = playerMovementComponent.IsFacingRight();
 
 			if (inputs.aimDirection.x > 0.f)

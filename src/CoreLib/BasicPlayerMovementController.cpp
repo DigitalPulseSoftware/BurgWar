@@ -24,8 +24,20 @@ namespace bw
 		playerMovement.UpdateGroundState(isOnGround);
 
 		bool disableGravity = false;
+		float jumpVelocity = 0.f;
+
 		if (inputs.isJumping)
 		{
+			if (!playerMovement.WasJumping() && playerMovement.IsOnGround())
+			{
+				constexpr float jumpHeight = 80.f;
+				constexpr float jumpBoostHeight = 55.f;
+
+				jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 128.f);
+
+				playerMovement.UpdateJumpTime(jumpBoostHeight / jumpVelocity);
+			}
+
 			float jumpTime = playerMovement.GetJumpTime();
 			if (jumpTime > 0.f)
 			{
@@ -55,11 +67,14 @@ namespace bw
 		rigidBody.SetSurfaceVelocity(Nz::Vector2f(-targetVelocity, 0.f));
 		rigidBody.SetFriction((isOnGround) ? groundAccel / gravity.y : 0.f);
 
+		Nz::Vector2f velocity = rigidBody.GetVelocity();
+
+		velocity.y -= jumpVelocity;
+
+		// Air control
 		if (!isOnGround)
-		{
-			Nz::Vector2f velocity = rigidBody.GetVelocity();
 			velocity.x = Nz::Approach(velocity.x, targetVelocity, airAccel * dt);
-			rigidBody.SetVelocity(velocity);
-		}
+
+		rigidBody.SetVelocity(velocity);
 	}
 }
