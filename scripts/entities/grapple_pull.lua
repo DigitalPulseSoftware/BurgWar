@@ -17,7 +17,9 @@ function ENTITY:GrappleInit()
 end
 
 function ENTITY:OnKilled()
-	self.Constraint:Remove()
+	if (self.Constraint) then
+		self.Constraint:Remove()
+	end
 end
 
 function ENTITY:UpdatePositions()
