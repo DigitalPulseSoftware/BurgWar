@@ -209,33 +209,33 @@ namespace bw
 			totalSize += widget->GetSize().y;
 
 		Nz::Vector2f cursor = center;
-		cursor.y -= totalSize / 2.f;
+		cursor.y += totalSize / 2.f;
 
 		m_statusLabel->SetPosition({ 0.f, cursor.y, 0.f });
 		m_statusLabel->CenterHorizontal();
-		cursor.y += m_statusLabel->GetSize().y + padding;
+		cursor.y -= m_statusLabel->GetSize().y + padding;
 
 		m_loginArea->SetPosition({ 0.f, cursor.y, 0.f });
 		m_loginArea->CenterHorizontal();
-		cursor.y += m_loginArea->GetSize().y + padding;
+		cursor.y -= m_loginArea->GetSize().y + padding;
 
-		m_loginLabel->SetPosition(m_loginArea->GetPosition() - Nz::Vector2f(m_loginLabel->GetSize().x, 0.f));
+		m_loginLabel->SetPosition(m_loginArea->GetPosition() + Nz::Vector2f(m_loginLabel->GetSize().x, 0.f));
 
 		m_serverAddressLayout->SetPosition({ 0.f, cursor.y, 0.f });
 		m_serverAddressLayout->CenterHorizontal();
-		cursor.y += m_serverAddressLayout->GetSize().y + padding;
+		cursor.y -= m_serverAddressLayout->GetSize().y + padding;
 
-		m_serverLabel->SetPosition(m_serverAddressLayout->GetPosition() - Nz::Vector2f(m_serverLabel->GetSize().x, 0.f));
+		m_serverLabel->SetPosition(m_serverAddressLayout->GetPosition() + Nz::Vector2f(m_serverLabel->GetSize().x, 0.f));
 
 		m_connectionButton->SetPosition({ 0.f, cursor.y, 0.f });
 		m_connectionButton->CenterHorizontal();
-		cursor.y += m_connectionButton->GetSize().y + padding;
+		cursor.y -= m_connectionButton->GetSize().y + padding;
 
 		m_startServerButton->SetPosition({ 0.f, cursor.y, 0.f });
 		m_startServerButton->CenterHorizontal();
-		cursor.y += m_startServerButton->GetSize().y + padding;
+		cursor.y -= m_startServerButton->GetSize().y + padding;
 
-		m_quitButton->SetPosition(canvasSize.x - m_quitButton->GetSize().x - 10.f, canvasSize.y - m_quitButton->GetSize().y - 10.f);
+		m_quitButton->SetPosition(canvasSize.x - m_quitButton->GetSize().x - 10.f, m_quitButton->GetSize().y + 10.f);
 	}
 
 	void LoginState::UpdateStatus(const std::string& status, const Nz::Color& color)

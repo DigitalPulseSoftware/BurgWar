@@ -60,7 +60,7 @@ namespace bw
 
 			m_backgroundSprite->SetSize(newSize);
 
-			m_spriteEntity->GetComponent<Ndk::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
+			m_spriteEntity->GetComponent<Ndk::NodeComponent>().SetPosition(canvasSize.x / 2.f - newSize.x / 2.f, canvasSize.y / 2.f + newSize.y / 2.f);
 		}
 	}
 }

@@ -79,7 +79,6 @@ namespace bw
 		m_colorBackground = Nz::ColorBackground::New(Nz::Color::Black);
 
 		Ndk::RenderSystem& renderSystem = m_renderWorld.GetSystem<Ndk::RenderSystem>();
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
 		m_camera = m_renderWorld.CreateEntity();
@@ -87,7 +86,7 @@ namespace bw
 
 		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
 		viewer.SetTarget(window);
-		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
+		viewer.SetProjectionType(Nz::ProjectionType_OrthogonalBL);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer->AddComponent<Ndk::NodeComponent>();

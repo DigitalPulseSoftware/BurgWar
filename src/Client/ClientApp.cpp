@@ -34,12 +34,11 @@ namespace bw
 
 		Ndk::World& world = AddWorld();
 		world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
-		world.GetSystem<Ndk::RenderSystem>().SetGlobalUp(Nz::Vector3f::Down());
 
 		const Ndk::EntityHandle& camera2D = world.CreateEntity();
 
 		auto& cameraComponent2D = camera2D->AddComponent<Ndk::CameraComponent>();
-		cameraComponent2D.SetProjectionType(Nz::ProjectionType_Orthogonal);
+		cameraComponent2D.SetProjectionType(Nz::ProjectionType_OrthogonalBL);
 		cameraComponent2D.SetTarget(&m_mainWindow);
 
 		camera2D->AddComponent<Ndk::NodeComponent>();

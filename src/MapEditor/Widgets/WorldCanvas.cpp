@@ -17,13 +17,12 @@ namespace bw
 	m_isPhysicsDebugDrawEnabled(false)
 	{
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
 		m_cameraEntity = m_world.CreateEntity();
 		m_cameraEntity->AddComponent<Ndk::NodeComponent>();
 
 		Ndk::CameraComponent& viewer = m_cameraEntity->AddComponent<Ndk::CameraComponent>();
-		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
+		viewer.SetProjectionType(Nz::ProjectionType_OrthogonalBL);
 		viewer.SetTarget(this);
 
 		Nz::EventHandler& eventHandler = GetEventHandler();
