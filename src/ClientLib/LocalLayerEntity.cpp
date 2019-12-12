@@ -173,9 +173,9 @@ namespace bw
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
 
-		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition());
-		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale());
-		Nz::Quaternionf rotation = entityNode.GetRotation();
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys_Global));
+		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys_Global);
 
 		for (VisualEntity* visualEntity : m_visualEntities)
 		{
