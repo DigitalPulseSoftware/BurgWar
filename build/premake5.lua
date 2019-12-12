@@ -152,7 +152,7 @@ local frameworkConfigs = {
 location(_ACTION)
 
 workspace("Burgwar")
-	configurations({"Debug", "Release"})
+	configurations({"Debug", "Release", "ReleaseWithDebug"})
 	platforms("x64")
 	architecture("x86_64")
 	language("C++")
@@ -163,6 +163,13 @@ workspace("Burgwar")
 
 	filter("configurations:Release")
 		optimize("On")
+
+	filter("configurations:ReleaseWithDebug")
+		symbols("On")
+		optimize("Speed")
+
+	filter("configurations:ReleaseWithDebug", "action:vs*")
+		buildoptions "/Zo"
 
 	filter {"configurations:Debug", "kind:*Lib"}
 		targetsuffix("-d")
