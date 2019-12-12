@@ -470,6 +470,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayerInputData& input)
 		{
 			serializer &= input.isAttacking;
+			serializer &= input.isCrouching;
 			serializer &= input.isJumping;
 			serializer &= input.isMovingLeft;
 			serializer &= input.isMovingRight;
