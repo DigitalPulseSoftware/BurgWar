@@ -92,6 +92,19 @@ namespace bw
 				return 0.f;
 		};
 
+		elementMetatable["GetMomentOfInertia"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				return physComponent.GetMomentOfInertia();
+			}
+			else
+				return 0.f;
+		};
+
 		elementMetatable["GetPlayerMovementController"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
@@ -237,6 +250,19 @@ namespace bw
 			{
 				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				physComponent.SetMass(mass, false);
+			}
+		};
+
+		elementMetatable["SetMomentOfInertia"] = [](const sol::table& entityTable, float momentum)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetMomentOfInertia(momentum);
 			}
 		};
 

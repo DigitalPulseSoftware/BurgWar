@@ -73,6 +73,17 @@ namespace bw
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
+
+		state.new_usertype<RotaryLimitConstraint>("RotaryLimitConstraint",
+			"new", sol::no_constructor,
+
+			"GetMaxAngle", &RotaryLimitConstraint::GetMaxAngle,
+			"GetMinAngle", &RotaryLimitConstraint::GetMinAngle,
+			"SetMaxAngle", &RotaryLimitConstraint::SetMaxAngle,
+			"SetMinAngle", &RotaryLimitConstraint::SetMinAngle,
+
+			sol::base_classes, sol::bases<Constraint>()
+		);
 	}
 
 	void SharedScriptingLibrary::RegisterPlayerMovementControllerClass(ScriptingContext& context)
@@ -136,7 +147,7 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& context, sol::table& library)
 	{
-		library["CreateDampenedSpringConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping) -> DampedSpringConstraint
+		library["CreateDampenedSpringConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -150,7 +161,7 @@ namespace bw
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		};
 
-		library["CreatePinConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor) -> PinConstraint
+		library["CreatePinConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -162,6 +173,20 @@ namespace bw
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
+		};
+
+		library["CreateRotaryLimitConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
+		{
+			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+
+			if (firstEntity == secondEntity)
+				throw std::runtime_error("Cannot apply a constraint to the same entity");
+
+			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
+			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+
+			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		};
 
 		library["Trace"] = [this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
