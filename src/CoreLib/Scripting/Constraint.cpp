@@ -34,6 +34,7 @@ namespace bw
 			throw std::runtime_error("Constraint has been removed");
 	}
 
+
 	float PinConstraint::GetDistance() const
 	{
 		AssertValid();
@@ -44,5 +45,30 @@ namespace bw
 	{
 		AssertValid();
 		GetConstraint<Nz::PinConstraint2D>()->SetDistance(distance);
+	}
+
+
+	Nz::RadianAnglef RotaryLimitConstraint::GetMaxAngle() const
+	{
+		AssertValid();
+		return GetConstraint<Nz::RotaryLimitConstraint2D>()->GetMaxAngle();
+	}
+
+	Nz::RadianAnglef RotaryLimitConstraint::GetMinAngle() const
+	{
+		AssertValid();
+		return GetConstraint<Nz::RotaryLimitConstraint2D>()->GetMinAngle();
+	}
+
+	void RotaryLimitConstraint::SetMaxAngle(Nz::RadianAnglef maxAngle)
+	{
+		AssertValid();
+		GetConstraint<Nz::RotaryLimitConstraint2D>()->SetMaxAngle(maxAngle);
+	}
+
+	void RotaryLimitConstraint::SetMinAngle(Nz::RadianAnglef minAngle)
+	{
+		AssertValid();
+		GetConstraint<Nz::RotaryLimitConstraint2D>()->SetMinAngle(minAngle);
 	}
 }

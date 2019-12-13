@@ -65,6 +65,23 @@ namespace bw
 			PinConstraint& operator=(const PinConstraint&) = delete;
 			PinConstraint& operator=(PinConstraint&&) noexcept = default;
 	};
+
+	class RotaryLimitConstraint : public Constraint
+	{
+		public:
+			inline RotaryLimitConstraint(Ndk::EntityHandle entity, Nz::RotaryLimitConstraint2D* constraint);
+			RotaryLimitConstraint(RotaryLimitConstraint&&) noexcept = default;
+			~RotaryLimitConstraint() = default;
+
+			Nz::RadianAnglef GetMaxAngle() const;
+			Nz::RadianAnglef GetMinAngle() const;
+
+			void SetMaxAngle(Nz::RadianAnglef minAngle);
+			void SetMinAngle(Nz::RadianAnglef maxAngle);
+
+			RotaryLimitConstraint& operator=(const RotaryLimitConstraint&) = delete;
+			RotaryLimitConstraint& operator=(RotaryLimitConstraint&&) noexcept = default;
+	};
 }
 
 #include <CoreLib/Scripting/Constraint.inl>
