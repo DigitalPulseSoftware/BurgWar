@@ -236,7 +236,7 @@ namespace bw
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{
 				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetMass(mass);
+				physComponent.SetMass(mass, false);
 			}
 		};
 
