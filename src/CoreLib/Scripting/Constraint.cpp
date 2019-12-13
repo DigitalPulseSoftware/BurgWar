@@ -35,7 +35,9 @@ namespace bw
 	
 	void Constraint::Remove()
 	{
-		AssertValid();
+		if (!IsValid())
+			return;
+
 		if (m_entity && !m_entity->GetComponent<Ndk::ConstraintComponent2D>().RemoveConstraint(m_constraint))
 			m_entity->Kill();
 	}
