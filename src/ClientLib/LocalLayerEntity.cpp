@@ -105,7 +105,7 @@ namespace bw
 	Nz::Vector2f LocalLayerEntity::GetPosition() const
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		return Nz::Vector2f(entityNode.GetPosition() - entityNode.GetInitialPosition()); //< FIXME
+		return Nz::Vector2f(entityNode.GetPosition()); //< FIXME
 	}
 
 	Nz::RadianAnglef LocalLayerEntity::GetRotation() const
