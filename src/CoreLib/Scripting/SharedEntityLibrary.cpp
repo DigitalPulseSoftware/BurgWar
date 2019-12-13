@@ -187,6 +187,13 @@ namespace bw
 
 					return Nz::CircleCollider2D::New(radius, origin);
 				}
+				else if (typeName == "segment")
+				{
+					Nz::Vector2f first = collider["first"];
+					Nz::Vector2f second = collider["second"];
+
+					return Nz::SegmentCollider2D::New(first, second);
+				}
 				else
 				{
 					luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
