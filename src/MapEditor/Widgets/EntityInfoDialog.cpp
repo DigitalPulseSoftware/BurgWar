@@ -308,8 +308,8 @@ namespace bw
 
 		QHBoxLayout* propertyLayout = new QHBoxLayout;
 
-		m_propertiesList = new QTableWidget(0, 2);
-		m_propertiesList->setHorizontalHeaderLabels({ tr("Property"), tr("Value") });
+		m_propertiesList = new QTableWidget(0, 3);
+		m_propertiesList->setHorizontalHeaderLabels({ tr("Property"), tr("Value"), tr("Required") });
 		m_propertiesList->setSelectionBehavior(QAbstractItemView::SelectRows);
 		m_propertiesList->setSelectionMode(QAbstractItemView::SingleSelection);
 		m_propertiesList->setShowGrid(false);
@@ -334,15 +334,15 @@ namespace bw
 		m_propertyContentWidget = new QWidget;
 		m_propertyContentWidget->setMinimumSize(320, 320);
 
-		QPushButton* restoreDefault = new QPushButton(tr("Restore defaults"));
-		connect(restoreDefault, &QPushButton::released, [this]() { OnResetProperty(); });
+		m_resetDefaultButton = new QPushButton(tr("Restore defaults"));
+		connect(m_resetDefaultButton, &QPushButton::released, [this]() { OnResetProperty(); });
 
 		propertyContentLayout->addWidget(m_propertyTitle);
 		propertyContentLayout->addWidget(m_propertyDescription);
 		propertyContentLayout->addStretch();
 		propertyContentLayout->addWidget(m_propertyContentWidget);
 		propertyContentLayout->addStretch();
-		propertyContentLayout->addWidget(restoreDefault);
+		propertyContentLayout->addWidget(m_resetDefaultButton);
 
 		propertyLayout->addWidget(m_propertiesList);
 		propertyLayout->addLayout(propertyContentLayout);
@@ -420,7 +420,10 @@ namespace bw
 				throw std::runtime_error("Property " + propertyName + " does not exist");
 
 			const auto& propertyData = m_properties[propertyIt->second];
-			property = &propertyData.defaultValue;
+			if (!propertyData.defaultValue)
+				throw std::runtime_error("Property " + propertyName + " has value nor default value");
+
+			property = &propertyData.defaultValue.value();
 		}
 
 		return *property;
@@ -569,9 +572,9 @@ namespace bw
 		for (const auto& [propertyName, propertyInfo] : entityTypeInfo->properties)
 		{
 			auto& propertyData = m_properties.emplace_back();
+			propertyData.defaultValue = propertyInfo.defaultValue;
 			propertyData.index = propertyInfo.index;
 			propertyData.isArray = propertyInfo.isArray;
-			propertyData.defaultValue = *propertyInfo.defaultValue;
 			propertyData.keyName = propertyName;
 			propertyData.visualName = propertyData.keyName; //< FIXME
 			propertyData.type = propertyInfo.type;
@@ -610,6 +613,7 @@ namespace bw
 				valueItem->setFont(boldFont);
 			
 			m_propertiesList->setItem(rowIndex, 1, valueItem);
+			m_propertiesList->setItem(rowIndex, 2, new QTableWidgetItem( propertyInfo.defaultValue.has_value() ? "" : "*" ));
 
 			++rowIndex;
 		}
@@ -662,24 +666,30 @@ namespace bw
 
 		assert(propertyIndex < m_properties.size());
 		const auto& propertyInfo = m_properties[propertyIndex];
-		const EntityProperty& propertyValue = GetProperty(propertyInfo);
+		EntityPropertyConstRefOpt propertyValue = GetProperty(propertyInfo);
 
 		m_propertyTitle->setText(QString::fromStdString(propertyInfo.visualName));
 
+		// Only allow to reset if a default value exists
+		m_resetDefaultButton->setEnabled(propertyInfo.defaultValue.has_value());
+
 		QVBoxLayout* layout = new QVBoxLayout;
 
-		bool isArray;
-		int arraySize;
+		bool isArray = propertyInfo.isArray;
+		int arraySize = 0;
 
-		std::visit([&](auto&& propertyValue)
+		if (propertyValue)
 		{
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, std::decay_t<decltype(propertyValue)>>;
+			std::visit([&](auto&& propertyValue)
+			{
+				constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, std::decay_t<decltype(propertyValue)>>;
 
-			isArray = IsArray;
-			if constexpr (IsArray)
-				arraySize = int(propertyValue.size());
+				isArray = IsArray;
+				if constexpr (IsArray)
+					arraySize = int(propertyValue.size());
 
-		}, propertyValue);
+			}, propertyValue->get());
+		}
 
 		auto OnPropertyOverride = [this, propertyIndex]()
 		{
@@ -710,29 +720,42 @@ namespace bw
 				if (auto it = m_entityInfo.properties.find(propertyInfo.keyName); it != m_entityInfo.properties.end())
 					property = &it.value();
 				else
-					property = &m_entityInfo.properties.emplace(propertyInfo.keyName, propertyInfo.defaultValue).first.value(); //< This is ugly
-
-				std::visit([&](auto&& propertyValue)
 				{
-					using T = std::decay_t<decltype(propertyValue)>;
-					constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-					using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
-
-					// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
-					assert(IsArray);
-					if constexpr (IsArray) //< always true
+					if (propertyInfo.defaultValue)
 					{
-						EntityPropertyArray<PropertyType> newArray(newSize);
+						const EntityProperty& defaultValue = propertyInfo.defaultValue.value();
 
-						// Copy old values
-						std::size_t size = std::min(newArray.size(), propertyValue.size());
-						for (std::size_t i = 0; i < size; ++i)
-							newArray[i] = propertyValue[i];
-
-						propertyValue = std::move(newArray);
+						auto it = m_entityInfo.properties.emplace(propertyInfo.keyName, defaultValue);
+						property = &it.first.value();
 					}
+					else
+						property = nullptr;
+				}
 
-				}, *property);
+				if (property)
+				{
+					std::visit([&](auto&& propertyValue)
+					{
+						using T = std::decay_t<decltype(propertyValue)>;
+						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+
+						// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
+						assert(IsArray);
+						if constexpr (IsArray) //< always true
+						{
+							EntityPropertyArray<PropertyType> newArray(newSize);
+
+							// Copy old values
+							std::size_t size = std::min(newArray.size(), propertyValue.size());
+							for (std::size_t i = 0; i < size; ++i)
+								newArray[i] = propertyValue[i];
+
+							propertyValue = std::move(newArray);
+						}
+
+					}, *property);
+				}
 
 				RefreshPropertyEditor(propertyIndex);
 				UpdatePropertyPreview(ToString(*property, propertyInfo.type));
@@ -767,8 +790,6 @@ namespace bw
 				{
 					using T = EntityPropertyArray<bool>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
-
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
 					tableView->setModel(model);
@@ -779,9 +800,15 @@ namespace bw
 					{
 						QStandardItem* item = new QStandardItem(1);
 						item->setCheckable(true);
-						item->setCheckState((propertyArray[i]) ? Qt::Checked : Qt::Unchecked);
 
 						model->setItem(i, 0, item);
+					}
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							model->item(i)->setCheckState((propertyArray[i]) ? Qt::Checked : Qt::Unchecked);
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
@@ -797,8 +824,6 @@ namespace bw
 				{
 					using T = EntityPropertyArray<float>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
-
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
 					tableView->setItemDelegate(&m_delegates->floatDelegate);
@@ -806,8 +831,12 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
-					for (int i = 0; i < arraySize; ++i)
-						m_delegates->floatDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->floatDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
@@ -822,8 +851,6 @@ namespace bw
 				case PropertyType::FloatSize:
 				{
 					using T = EntityPropertyArray<Nz::Vector2f>;
-
-					auto& propertyArray = std::get<T>(propertyValue);
 					
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -832,8 +859,12 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ tr("Value") });
 
-					for (int i = 0; i < arraySize; ++i)
-						m_delegates->float2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->float2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
@@ -848,8 +879,6 @@ namespace bw
 				{
 					using T = EntityPropertyArray<Nz::Int64>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
-
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
 					tableView->setItemDelegate(&m_delegates->intDelegate);
@@ -857,8 +886,12 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
-					for (int i = 0; i < arraySize; ++i)
-						m_delegates->intDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->intDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
@@ -885,8 +918,6 @@ namespace bw
 
 					using T = EntityPropertyArray<Nz::Int64>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
-
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
 					tableView->setItemDelegate(&m_delegates->comboBoxDelegate.value());
@@ -894,16 +925,21 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
-					for (int i = 0; i < arraySize; ++i)
+					if (propertyValue)
 					{
-						assert(propertyArray[i] <= 0xFFFF);
-						int layerIndex = int(propertyArray[i]);
-						if (layerIndex == NoLayer)
-							layerIndex = 0;
-						else
-							layerIndex++;
+						auto& propertyArray = std::get<T>(propertyValue->get());
 
-						m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), layerIndex);
+						for (int i = 0; i < arraySize; ++i)
+						{
+							assert(propertyArray[i] <= 0xFFFF);
+							int layerIndex = int(propertyArray[i]);
+							if (layerIndex == NoLayer)
+								layerIndex = 0;
+							else
+								layerIndex++;
+
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), layerIndex);
+						}
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
@@ -926,7 +962,6 @@ namespace bw
 				{
 					using T = EntityPropertyArray<Nz::Vector2i64>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -935,8 +970,13 @@ namespace bw
 
 					model->setHorizontalHeaderLabels({ tr("Value") });
 
-					for (int i = 0; i < arraySize; ++i)
-						m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
@@ -952,16 +992,19 @@ namespace bw
 				{
 					using T = EntityPropertyArray<std::string>;
 
-					auto& propertyArray = std::get<T>(propertyValue);
-
 					QTableWidget* table = new QTableWidget(arraySize, 1);
 					table->setHorizontalHeaderLabels({ tr("Value") });
 					table->setSelectionMode(QAbstractItemView::NoSelection);
 					table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
 
-					QAbstractItemModel* model = table->model();
-					for (int i = 0; i < arraySize; ++i)
-						model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+
+						QAbstractItemModel* model = table->model();
+						for (int i = 0; i < arraySize; ++i)
+							model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
+					}
 
 					connect(table, &QTableWidget::cellChanged, [=](int row, int column)
 					{
@@ -996,8 +1039,8 @@ namespace bw
 				case PropertyType::Bool:
 				{
 					QCheckBox* checkBox = new QCheckBox;
-					if (std::holds_alternative<bool>(propertyValue))
-						checkBox->setChecked(std::get<bool>(propertyValue));
+					if (propertyValue && std::holds_alternative<bool>(propertyValue->get()))
+						checkBox->setChecked(std::get<bool>(propertyValue->get()));
 
 					connect(checkBox, &QCheckBox::toggled, [=](bool checked)
 					{
@@ -1012,8 +1055,8 @@ namespace bw
 				{
 					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
 					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-					if (std::holds_alternative<float>(propertyValue))
-						spinbox->setValue(std::get<float>(propertyValue));
+					if (propertyValue && std::holds_alternative<float>(propertyValue->get()))
+						spinbox->setValue(std::get<float>(propertyValue->get()));
 
 					connect(spinbox, &QDoubleSpinBox::editingFinished, [=]()
 					{
@@ -1029,8 +1072,8 @@ namespace bw
 				{
 					Float2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Float2SpinBox::LabelMode::PositionLabel : Float2SpinBox::LabelMode::SizeLabel;
 					Float2SpinBox* spinbox = new Float2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (std::holds_alternative<Nz::Vector2f>(propertyValue))
-						spinbox->setValue(std::get<Nz::Vector2f>(propertyValue));
+					if (propertyValue && std::holds_alternative<Nz::Vector2f>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector2f>(propertyValue->get()));
 
 					connect(spinbox, &Float2SpinBox::valueChanged, [=]()
 					{
@@ -1047,8 +1090,8 @@ namespace bw
 					QSpinBox* spinbox = new QSpinBox;
 					spinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
 
-					if (std::holds_alternative<Nz::Int64>(propertyValue))
-						spinbox->setValue(std::get<Nz::Int64>(propertyValue));
+					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Int64>(propertyValue->get()));
 
 					connect(spinbox, &QSpinBox::editingFinished, [=]()
 					{
@@ -1071,9 +1114,10 @@ namespace bw
 						comboBox->addItem(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
 					}
 
-					if (std::holds_alternative<Nz::Int64>(propertyValue))
+
+					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
 					{
-						int index = int(std::get<Nz::Int64>(propertyValue));
+						int index = int(std::get<Nz::Int64>(propertyValue->get()));
 						if (index == NoLayer)
 							index = 0;
 						else
@@ -1102,8 +1146,8 @@ namespace bw
 					// TODO: Handle properly int64
 					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
 					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (std::holds_alternative<Nz::Vector2i64>(propertyValue))
-						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(propertyValue)));
+					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
+						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(propertyValue->get())));
 
 					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
 					{
@@ -1118,8 +1162,8 @@ namespace bw
 				case PropertyType::Texture:
 				{
 					QLineEdit* lineEdit = new QLineEdit;
-					if (std::holds_alternative<std::string>(propertyValue))
-						lineEdit->setText(QString::fromStdString(std::get<std::string>(propertyValue)));
+					if (propertyValue && std::holds_alternative<std::string>(propertyValue->get()))
+						lineEdit->setText(QString::fromStdString(std::get<std::string>(propertyValue->get())));
 
 					connect(lineEdit, &QLineEdit::editingFinished, [=]()
 					{
@@ -1188,8 +1232,11 @@ namespace bw
 		return QString::fromStdString(value);
 	}
 
-	QString EntityInfoDialog::ToString(const EntityProperty& property, PropertyType type)
+	QString EntityInfoDialog::ToString(EntityPropertyConstRefOpt property, PropertyType type)
 	{
+		if (!property)
+			return QString("<No value>");
+
 		return std::visit([=](const auto& value) -> QString
 		{
 			using T = std::decay_t<decltype(value)>;
@@ -1204,10 +1251,10 @@ namespace bw
 			{
 				return ToString(value, type);
 			}
-		}, property);
+		}, property->get());
 	}
 
-	const EntityProperty& EntityInfoDialog::GetProperty(const PropertyData& property) const
+	auto EntityInfoDialog::GetProperty(const PropertyData& property) const -> EntityPropertyConstRefOpt
 	{
 		if (auto it = m_entityInfo.properties.find(property.keyName); it != m_entityInfo.properties.end())
 			return it->second;
@@ -1221,6 +1268,18 @@ namespace bw
 		{
 			QMessageBox::critical(this, tr("Invalid entity type"), tr("You must select a valid entity type"), QMessageBox::Ok);
 			return;
+		}
+
+		for (const auto& propertyInfo : m_properties)
+		{
+			if (!propertyInfo.defaultValue)
+			{
+				if (m_entityInfo.properties.find(propertyInfo.keyName) == m_entityInfo.properties.end())
+				{
+					QMessageBox::critical(this, tr("Missing required property"), tr("Property %1 has no value (mandatory field)").arg(QString::fromStdString(propertyInfo.visualName)), QMessageBox::Ok);
+					return;
+				}
+			}
 		}
 
 		accept();

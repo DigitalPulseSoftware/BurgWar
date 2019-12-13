@@ -223,38 +223,50 @@ namespace bw
 		std::optional<LocalLayerEntity> layerEntity;
 
 		Ndk::EntityHandle entity;
-		if (entityClass.compare(0, entityPrefix.size(), entityPrefix) == 0)
+		//FIXME: Entity creation failure should instantiate some placeholder entity
+		try
 		{
-			// Entity
-			if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
+			if (entityClass.compare(0, entityPrefix.size(), entityPrefix) == 0)
 			{
-				auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle );
-				if (!entity)
-					return;
+				// Entity
+				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
+				{
+					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
+					if (!entity)
+					{
+						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {} of type {}", entityId, entityClass);
+						return;
+					}
 
-				layerEntity.emplace(std::move(entity.value()));
+					layerEntity.emplace(std::move(entity.value()));
+				}
+			}
+			else if (entityClass.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
+			{
+				// Weapon
+				if (std::size_t weaponIndex = weaponStore.GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)
+				{
+					assert(parent);
+
+					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, properties, parent->GetEntity());
+					if (!weapon)
+						return;
+
+					weapon->Disable(); //< Disable weapon entities by default
+
+					layerEntity.emplace(std::move(weapon.value()));
+				}
+			}
+			else
+			{
+				// Unknown
+				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to decode entity type: {0}", entityClass);
+				return;
 			}
 		}
-		else if (entityClass.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
+		catch (const std::exception & e)
 		{
-			// Weapon
-			if (std::size_t weaponIndex = weaponStore.GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)
-			{
-				assert(parent);
-
-				auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, properties, parent->GetEntity());
-				if (!weapon)
-					return;
-
-				weapon->Disable(); //< Disable weapon entities by default
-
-				layerEntity.emplace(std::move(weapon.value()));
-			}
-		}
-		else
-		{
-			// Unknown
-			bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to decode entity type: {0}", entityClass);
+			bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {} of type {}: {}", entityId, entityClass, e.what());
 			return;
 		}
 

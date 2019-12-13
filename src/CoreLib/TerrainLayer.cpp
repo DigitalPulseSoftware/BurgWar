@@ -33,7 +33,14 @@ namespace bw
 				continue;
 			}
 
-			entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+			try
+			{
+				entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+			}
+			catch (const std::exception& e)
+			{
+				bwLog(match.GetLogger(), LogLevel::Error, "Failed to instantiate entity {0}: {1}", entityData.entityType, e.what());
+			}
 		}
 	}
 

@@ -218,38 +218,41 @@ namespace bw
 						}
 					};
 
-					switch (property.type)
+					if (!propertyDefault.is<sol::nil_t>())
 					{
-						case PropertyType::Bool:
-							property.defaultValue = PropertyChecker(bool());
-							break;
+						switch (property.type)
+						{
+							case PropertyType::Bool:
+								property.defaultValue = PropertyChecker(bool());
+								break;
 
-						case PropertyType::Float:
-							property.defaultValue = PropertyChecker(float());
-							break;
+							case PropertyType::Float:
+								property.defaultValue = PropertyChecker(float());
+								break;
 
-						case PropertyType::FloatPosition:
-						case PropertyType::FloatSize:
-							property.defaultValue = PropertyChecker(Nz::Vector2f());
-							break;
+							case PropertyType::FloatPosition:
+							case PropertyType::FloatSize:
+								property.defaultValue = PropertyChecker(Nz::Vector2f());
+								break;
 
-						case PropertyType::Integer:
-						case PropertyType::Layer:
-							property.defaultValue = PropertyChecker(Nz::Int64());
-							break;
+							case PropertyType::Integer:
+							case PropertyType::Layer:
+								property.defaultValue = PropertyChecker(Nz::Int64());
+								break;
 
-						case PropertyType::IntegerPosition:
-						case PropertyType::IntegerSize:
-							property.defaultValue = PropertyChecker(Nz::Vector2i64());
-							break;
+							case PropertyType::IntegerPosition:
+							case PropertyType::IntegerSize:
+								property.defaultValue = PropertyChecker(Nz::Vector2i64());
+								break;
 
-						case PropertyType::String:
-						case PropertyType::Texture:
-							property.defaultValue = PropertyChecker(std::string());
-							break;
+							case PropertyType::String:
+							case PropertyType::Texture:
+								property.defaultValue = PropertyChecker(std::string());
+								break;
 
-						default:
-							break;
+							default:
+								break;
+						}
 					}
 
 					auto it = element->properties.find(propertyName);
@@ -332,14 +335,12 @@ namespace bw
 
 				filteredProperties.emplace(propertyName, it->second);
 			}
-/*
 			else
 			{
 				// Property doesn't exist, check for it's default value
 				if (!propertyInfo.defaultValue)
 					throw std::runtime_error("Missing property " + propertyName);
 			}
-*/
 		}
 
 		const auto& scriptingContext = GetScriptingContext();

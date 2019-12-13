@@ -22,6 +22,7 @@ class QFormLayout;
 class QLabel;
 class QLayout;
 class QLineEdit;
+class QPushButton;
 class QTableWidget;
 class QTextEdit;
 class QWidget;
@@ -68,7 +69,9 @@ namespace bw
 			struct Delegates;
 			struct PropertyData;
 
-			const EntityProperty& GetProperty(const PropertyData& property) const;
+			using EntityPropertyConstRefOpt = std::optional<std::reference_wrapper<const EntityProperty>>;
+
+			EntityPropertyConstRefOpt GetProperty(const PropertyData& property) const;
 
 			void OnAccept();
 			void OnEntityTypeUpdate();
@@ -83,7 +86,7 @@ namespace bw
 			QString ToString(const Nz::Vector2f& value, PropertyType type);
 			QString ToString(const Nz::Vector2i64& value, PropertyType type);
 			QString ToString(const std::string& value, PropertyType type);
-			QString ToString(const EntityProperty& property, PropertyType type);
+			QString ToString(EntityPropertyConstRefOpt property, PropertyType type);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
@@ -92,7 +95,7 @@ namespace bw
 				std::size_t index;
 				std::string keyName;
 				std::string visualName;
-				EntityProperty defaultValue;
+				std::optional<EntityProperty> defaultValue;
 				PropertyType type;
 				bool isArray;
 			};
@@ -118,6 +121,7 @@ namespace bw
 			QLabel* m_propertyDescription;
 			QLayout* m_editorActionLayout;
 			QLineEdit* m_nameWidget;
+			QPushButton* m_resetDefaultButton;
 			QWidget* m_editorActionWidget;
 			QWidget* m_propertyContentWidget;
 			QTableWidget* m_propertiesList;
