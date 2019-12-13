@@ -55,6 +55,9 @@ namespace sol
 	struct lua_type_of<bw::PlayerInputData> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
+	struct lua_type_of<Nz::RadianAnglef> : std::integral_constant<sol::type, sol::type::number> {};
+
+	template<>
 	struct lua_type_of<Nz::Rectf> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<typename T>
@@ -82,6 +85,16 @@ namespace sol
 	}
 
 	inline Nz::DegreeAnglef sol_lua_get(sol::types<Nz::DegreeAnglef>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+
+		float angle = sol::stack::get<float>(L, absoluteIndex);
+		tracking.use(1);
+
+		return Nz::DegreeAnglef(angle);
+	}
+
+	inline Nz::RadianAnglef sol_lua_get(sol::types<Nz::RadianAnglef>, lua_State* L, int index, sol::stack::record& tracking)
 	{
 		int absoluteIndex = lua_absindex(L, index);
 
@@ -136,6 +149,12 @@ namespace sol
 
 	template<typename T>
 	int sol_lua_push(sol::types<Nz::DegreeAngle<T>>, lua_State* L, const Nz::DegreeAngle<T>& angle)
+	{
+		return sol::stack::push(L, angle.ToDegrees());
+	}
+
+	template<typename T>
+	int sol_lua_push(sol::types<Nz::RadianAngle<T>>, lua_State* L, const Nz::RadianAngle<T>& angle)
 	{
 		return sol::stack::push(L, angle.ToDegrees());
 	}
