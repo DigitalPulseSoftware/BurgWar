@@ -12,7 +12,7 @@ RegisterClientAssets(WEAPON.Sprite)
 local maxDist = 1000
 
 function WEAPON:OnAttack()
-	if (self.AttachedEntity) then
+	if (self.Constraint) then
 		self:Release()
 	else
 		self:Launch()
@@ -51,22 +51,31 @@ function WEAPON:Launch()
 		return
 	end
 
-	self.AttachedEntity = nearestResult.hitEntity
-	self.EntityMass = self.AttachedEntity:GetMass()
-	self.AttachedEntity:SetMass(0)
+	self.EntityOffset = self:ToLocalPosition(nearestResult.hitPos)
 
-	self.EntityOffset = self:ToLocalPosition(self.AttachedEntity:GetPosition())
+	local constraint = match.CreateEntity({
+		Type = "entity_constraint_position",
+		LayerIndex = self:GetLayerIndex(),
+		Position = nearestResult.hitPos
+	})
+
+	constraint.TargetEntity = nearestResult.hitEntity
+	constraint.TargetOffset = nearestResult.hitEntity:ToLocalPosition(nearestResult.hitPos)
+
+	constraint:TempInit() -- FIXME: Waiting for entities in properties to fix this
+
+	self.Constraint = constraint
 end
 
 function WEAPON:Release()
-	if (self.AttachedEntity and self.AttachedEntity:IsValid()) then
-		self.AttachedEntity:SetMass(self.EntityMass)
+	if (self.Constraint and self.Constraint:IsValid()) then
+		self.Constraint:Remove()
 	end
-	self.AttachedEntity = nil
+	self.Constraint = nil
 end
 
 function WEAPON:OnTick()
-	if (self.AttachedEntity and self.AttachedEntity:IsValid()) then
-		self.AttachedEntity:SetPosition(self:ToGlobalPosition(self.EntityOffset))
+	if (self.Constraint and self.Constraint:IsValid()) then
+		self.Constraint:SetPosition(self:ToGlobalPosition(self.EntityOffset))
 	end
 end
