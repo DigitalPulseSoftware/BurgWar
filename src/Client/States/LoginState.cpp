@@ -182,7 +182,14 @@ namespace bw
 			return;
 		}
 
-		m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), login.ToStdString());
+		try
+		{
+			m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), login.ToStdString());
+		}
+		catch (const std::exception& e)
+		{
+			UpdateStatus("Failed to start server: " + std::string(e.what()), Nz::Color::Red);
+		}
 	}
 
 	void LoginState::OnQuitPressed()
