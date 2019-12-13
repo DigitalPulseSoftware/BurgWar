@@ -126,6 +126,7 @@ namespace sol
 		sol::stack_table vec(L);
 		vec["aimDirection"] = inputs.aimDirection;
 		vec["isAttacking"] = inputs.isAttacking;
+		vec["isCrouching"] = inputs.isCrouching;
 		vec["isJumping"] = inputs.isJumping;
 		vec["isMovingLeft"] = inputs.isMovingLeft;
 		vec["isMovingRight"] = inputs.isMovingRight;

@@ -3,10 +3,28 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
+#include <NDK/Components/GraphicsComponent.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 
 namespace bw
 {
+	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
+	{
+		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, properties, parent);
+		if (!entity)
+			return Ndk::EntityHandle::InvalidHandle;
+
+		entity->AddComponent<Ndk::GraphicsComponent>();
+
+		if (!InitializeEntity(entity))
+		{
+			entity->Kill();
+			return Ndk::EntityHandle::InvalidHandle;
+		}
+
+		return entity;
+	}
+
 	std::shared_ptr<ScriptedEntity> EditorEntityStore::CreateElement() const
 	{
 		return std::make_shared<EditorScriptedEntity>();
@@ -14,7 +32,7 @@ namespace bw
 
 	void EditorEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		ClientEntityStore::InitializeElement(elementTable, element);
+		ClientEditorEntityStore::InitializeElement(elementTable, element);
 
 		EditorScriptedEntity& entity = static_cast<EditorScriptedEntity&>(element);
 

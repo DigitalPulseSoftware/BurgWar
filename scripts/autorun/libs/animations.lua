@@ -1,4 +1,4 @@
-RegisterClientScript("animations.lua")
+RegisterClientScript()
 
 animation = {}
 function animation.PositionByOffset(entity, from, to, time)

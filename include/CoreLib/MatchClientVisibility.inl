@@ -26,22 +26,66 @@ namespace bw
 
 	inline MatchClientVisibility::MatchClientVisibility(Match& match, MatchClientSession& session) :
 	m_match(match),
-	m_session(session),
-	m_activeLayer(NoLayer)
+	m_session(session)
 	{
 	}
-	
-	inline std::size_t MatchClientVisibility::GetActiveLayer() const
+
+	inline void MatchClientVisibility::ClearLayers()
 	{
-		return m_activeLayer;
+		for (auto&& [layerIndex, layer] : m_layers)
+		{
+			m_newlyVisibleLayers.UnboundedReset(layerIndex);
+
+			if (m_clientVisibleLayers.UnboundedTest(layerIndex))
+				m_newlyHiddenLayers.UnboundedSet(layerIndex);
+		}
+
+		m_layers.clear();
+	}
+
+	inline void MatchClientVisibility::HideLayer(LayerIndex layerIndex)
+	{
+		auto it = m_layers.find(layerIndex);
+		assert(it != m_layers.end());
+		auto& layer = *it.value();
+		if (--layer.visibilityCounter > 0)
+			return;
+
+		m_newlyVisibleLayers.UnboundedReset(layerIndex);
+
+		if (m_clientVisibleLayers.UnboundedTest(layerIndex))
+			m_newlyHiddenLayers.UnboundedSet(layerIndex);
+
+		m_layers.erase(it);
+	}
+
+	inline bool MatchClientVisibility::IsLayerVisible(LayerIndex layerIndex) const
+	{
+		return m_layers.find(layerIndex) != m_layers.end();
+	}
+
+	inline void MatchClientVisibility::PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex)
+	{
+		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ playerIndex, layerIndex });
+	}
+
+	inline void MatchClientVisibility::SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled)
+	{
+		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | entityId;
+		if (isControlled)
+			m_controlledEntities.insert(entityKey);
+		else
+			m_controlledEntities.erase(entityKey);
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntityPacket(Nz::UInt32 entityId, T&& packet)
+	void MatchClientVisibility::PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet)
 	{
-		auto it = m_pendingEntitiesEvent.find(entityId);
+		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | entityId;
+
+		auto it = m_pendingEntitiesEvent.find(entityKey);
 		if (it == m_pendingEntitiesEvent.end())
-			it = m_pendingEntitiesEvent.emplace(entityId, std::vector<EntityPacketSendFunction>()).first;
+			it = m_pendingEntitiesEvent.emplace(entityKey, std::vector<EntityPacketSendFunction>()).first;
 
 		if constexpr (Detail::HasStateTick<T>::value)
 		{
@@ -62,11 +106,12 @@ namespace bw
 	}
 
 	template<typename T>
-	void MatchClientVisibility::PushEntitiesPacket(Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
+	void MatchClientVisibility::PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet)
 	{
 		if constexpr (Detail::HasStateTick<T>::value)
 		{
 			m_multiplePendingEntitiesEvent.emplace_back(PendingMultipleEntities{
+				layerIndex,
 				std::move(entitiesId),
 				[this, packet = std::forward<T>(packet)]() mutable
 				{
@@ -79,6 +124,7 @@ namespace bw
 		else
 		{
 			m_multiplePendingEntitiesEvent.emplace_back(PendingMultipleEntities{
+				layerIndex,
 				std::move(entitiesId),
 				[this, packet = std::forward<T>(packet)]() mutable
 				{

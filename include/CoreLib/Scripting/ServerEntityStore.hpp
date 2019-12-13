@@ -11,17 +11,18 @@
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/SharedEntityStore.hpp>
 #include <NDK/Entity.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
+	class TerrainLayer;
+
 	class ServerEntityStore : public SharedEntityStore
 	{
 		public:
 			inline ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
+			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

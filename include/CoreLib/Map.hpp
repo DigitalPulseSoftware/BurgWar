@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_MAP_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -37,9 +38,16 @@ namespace bw
 			inline Map(MapInfo mapInfo);
 			~Map() = default;
 
+			template<typename... Args> Layer& AddLayer(Args&&... args);
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
+
+			inline Layer DropLayer(std::size_t i);
+
+			template<typename... Args> Layer& EmplaceLayer(std::size_t index, Args&&... args);
+
+			template<typename F> void ForeachEntity(F&& func);
 
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
@@ -71,8 +79,7 @@ namespace bw
 			struct Layer
 			{
 				Nz::Color backgroundColor = Nz::Color::Black;
-				std::string name;
-				float depth = 0.f;
+				std::string name = "unnamed layer";
 				std::vector<Entity> entities;
 			};
 

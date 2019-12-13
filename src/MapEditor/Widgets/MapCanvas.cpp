@@ -10,6 +10,7 @@
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Systems/DebugSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 
@@ -19,6 +20,8 @@ namespace bw
 	WorldCanvas(parent),
 	m_editor(editor)
 	{
+		GetWorld().GetSystem<Ndk::DebugSystem>().EnableDepthBuffer(false);
+
 		EnableCameraControl(true);
 
 		GetCameraController().OnCameraZoomUpdated.Connect([this](CameraMovement* controller)
@@ -46,15 +49,28 @@ namespace bw
 
 	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
 	{
-		const ClientEntityStore& entityStore = m_editor.GetEntityStore();
+		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
 
 		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
 		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash
 
 		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
-		m_mapEntities.Insert(entity);
+		if (entity)
+		{
+			m_mapEntities.Insert(entity);
 
-		return entity;
+			return entity;
+		}
+		else
+		{
+			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
+			dummyEntity->AddComponent<Ndk::GraphicsComponent>();
+			dummyEntity->AddComponent<Ndk::NodeComponent>();
+
+			m_mapEntities.Insert(dummyEntity);
+			
+			return dummyEntity;
+		}
 	}
 
 	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)

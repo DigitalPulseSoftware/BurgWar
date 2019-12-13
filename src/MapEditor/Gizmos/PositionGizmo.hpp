@@ -20,7 +20,7 @@ namespace bw
 	{
 		public:
 			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity);
-			~PositionGizmo() = default;
+			~PositionGizmo();
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;

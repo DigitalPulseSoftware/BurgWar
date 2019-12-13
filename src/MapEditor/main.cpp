@@ -1,16 +1,19 @@
 #include <QtWidgets/QApplication>
 #include <MapEditor/Widgets/EditorWindow.hpp>
+#include <Nazara/Core/Initializer.hpp>
+#include <Nazara/Network/Network.hpp>
 #include <NDK/Application.hpp>
 
 int main(int argc, char *argv[])
 {
-	Ndk::Application ndkApp;
 	QApplication app(argc, argv);
 	app.setOrganizationName("DigitalPulseSoftware");
-	app.setApplicationName("Burg'war map editor");
+	app.setApplicationName("Burgwar_mapeditor");
 	app.setApplicationDisplayName("Burg'War Map Editor");
 
-	bw::EditorWindow mainWindow;
+	Nz::Initializer<Nz::Network> netInit;
+
+	bw::EditorWindow mainWindow(argc, argv);
 	mainWindow.show();
 
 	return app.exec();

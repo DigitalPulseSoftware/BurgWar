@@ -25,7 +25,9 @@ namespace bw
 			virtual QSize sizeHint() const override;
 
 		protected:
-			virtual void OnUpdate(float elasedTime);
+			virtual void OnHide();
+			virtual void OnShow();
+			virtual void OnUpdate(float elapsedTime);
 
 		private:
 			void closeEvent(QCloseEvent *event) override;

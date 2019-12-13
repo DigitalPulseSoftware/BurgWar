@@ -1,4 +1,4 @@
-RegisterClientScript("enums.lua")
+RegisterClientScript()
 
 enums = {}
 
@@ -24,6 +24,8 @@ function enums.Create(content)
 end
 
 -- FIXME: This shouldn't be here
+NoLayer = 0xFFFF
+
 PropertyType = enums.Create({
 	Boolean         = 0,
 	Float           = 1,
@@ -32,6 +34,7 @@ PropertyType = enums.Create({
 	Integer         = 4,
 	IntegerPosition = 5,
 	IntegerSize     = 6,
-	String          = 7,
-	Texture         = 8
+	Layer           = 7,
+	String          = 8,
+	Texture         = 9
 })

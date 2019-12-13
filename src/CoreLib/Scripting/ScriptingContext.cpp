@@ -6,6 +6,7 @@
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Utils.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
 
@@ -32,12 +33,18 @@ namespace bw
 
 			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 			{
+				m_currentFile = folderOrFile;
 				m_currentFolder = folderOrFile.parent_path();
+				Nz::CallOnExit resetOnExit([&]
+				{
+					m_currentFile.clear();
+					m_currentFolder.clear();
+				});
 
 				sol::state& state = GetLuaState();
 				sol::protected_function_result result;
 				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
-					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()));
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()), folderOrFile.generic_string());
 				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 				{
 					std::vector<Nz::UInt8> content;
@@ -56,7 +63,7 @@ namespace bw
 						return false;
 					}
 
-					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()));
+					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()), folderOrFile.generic_string());
 				}
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive if");

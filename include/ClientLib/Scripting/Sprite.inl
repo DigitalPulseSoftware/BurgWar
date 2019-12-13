@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Sprite::Sprite(Ndk::EntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Sprite::Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
 	m_entity(std::move(entity)),
 	m_transformMatrix(transformMatrix),
 	m_sprite(std::move(sprite)),
@@ -27,5 +27,24 @@ namespace bw
 	inline void Sprite::Hide()
 	{
 		return Show(false);
+	}
+
+	inline void Sprite::SetOffset(const Nz::Vector2f& newOffset)
+	{
+		m_transformMatrix.SetTranslation(newOffset);
+
+		UpdateTransformMatrix();
+	}
+
+	inline void Sprite::SetRotation(const Nz::DegreeAnglef& newRotation)
+	{
+		m_transformMatrix.SetRotation(newRotation);
+
+		UpdateTransformMatrix();
+	}
+
+	inline void Sprite::SetSize(const Nz::Vector2f& newSize)
+	{
+		m_sprite->SetSize(newSize);
 	}
 }

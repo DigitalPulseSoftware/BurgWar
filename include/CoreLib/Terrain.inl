@@ -7,21 +7,21 @@
 
 namespace bw
 {
-	inline TerrainLayer& Terrain::GetLayer(std::size_t layerIndex)
+	inline TerrainLayer& Terrain::GetLayer(LayerIndex layerIndex)
 	{
 		assert(layerIndex < m_layers.size());
 		return m_layers[layerIndex];
 	}
 
-	inline const TerrainLayer& Terrain::GetLayer(std::size_t layerIndex) const
+	inline const TerrainLayer& Terrain::GetLayer(LayerIndex layerIndex) const
 	{
 		assert(layerIndex < m_layers.size());
 		return m_layers[layerIndex];
 	}
 
-	inline std::size_t Terrain::GetLayerCount() const
+	inline LayerIndex Terrain::GetLayerCount() const
 	{
-		return m_layers.size();
+		return LayerIndex(m_layers.size());
 	}
 
 	inline const Map& Terrain::GetMap() const

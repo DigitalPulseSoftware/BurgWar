@@ -34,17 +34,6 @@ namespace bw
 		sol::state& state = context->GetLuaState();
 		state["GM"] = GetGamemodeTable();
 
-		sol::table& gamemodeTable = GetGamemodeTable();
-		gamemodeTable["GetLocalTick"] = [&](const sol::table& gmTable)
-		{
-			return m_match.GetCurrentTick();
-		};
-
-		gamemodeTable["GetMatchTick"] = [&](const sol::table& gmTable)
-		{
-			return m_match.AdjustServerTick(m_match.EstimateServerTick());
-		};
-
 		const std::filesystem::path& gamemodePath = GetGamemodePath();
 		Load(gamemodePath / "shared.lua");
 		Load(gamemodePath / "cl_init.lua");

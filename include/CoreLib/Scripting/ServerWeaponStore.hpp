@@ -9,11 +9,11 @@
 
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
 #include <NDK/Entity.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
 	class BurgApp;
+	class TerrainLayer;
 
 	class ServerWeaponStore : public SharedWeaponStore
 	{
@@ -21,7 +21,7 @@ namespace bw
 			inline ServerWeaponStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerWeaponStore() = default;
 
-			const Ndk::EntityHandle& InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
+			const Ndk::EntityHandle& InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;

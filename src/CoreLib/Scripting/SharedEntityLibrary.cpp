@@ -3,9 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
-#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp> // For sol metainfo
+#include <CoreLib/Scripting/SharedScriptingLibrary.hpp> // For sol metainfo
 #include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/Components/CollisionComponent2D.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -19,8 +21,29 @@ namespace bw
 		RegisterSharedLibrary(elementMetatable);
 	}
 
+	void SharedEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	{
+		auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
+		entityPhys.SetMass(mass);
+		entityPhys.SetFriction(friction);
+
+		if (!canRotate)
+			entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+	}
+
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["ApplyImpulse"] = [this](const sol::table& entityTable, const Nz::Vector2f& force)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				Ndk::PhysicsComponent2D& hitEntityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				hitEntityPhys.AddImpulse(force);
+			}
+		};
+
 		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
@@ -56,20 +79,27 @@ namespace bw
 			return entityHealth.GetHealth();
 		};
 
-		elementMetatable["GetPosition"] = [](const sol::table& entityTable)
+		elementMetatable["GetMass"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition());
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				return physComponent.GetMass();
+			}
+			else
+				return 0.f;
 		};
 
-		elementMetatable["GetRotation"] = [](const sol::table& entityTable)
+		elementMetatable["GetPlayerMovementController"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetRotation().ToEulerAngles().roll;
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().GetController();
 		};
 
 		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
@@ -86,22 +116,17 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
-				return 0;
+				return false;
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 			return entityHealth.GetHealth() >= entityHealth.GetMaxHealth();
 		};
 
-		auto InitRigidBody = [](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
+		auto InitRigidBody = [this](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
-			entityPhys.SetMass(mass);
-			entityPhys.SetFriction(friction);
-
-			if (!canRotate)
-				entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
+			this->InitRigidBody(entity, mass, friction, canRotate);
 		};
 
 		elementMetatable["InitRigidBody"] = sol::overload(InitRigidBody,
@@ -118,19 +143,25 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
 		};
 
-		elementMetatable["IsValid"] = [](const sol::table& entityTable)
+		elementMetatable["Kill"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-			return entity.IsValid();
+			if (entity->HasComponent<HealthComponent>())
+			{
+				auto& entityHealth = entity->GetComponent<HealthComponent>();
+				entityHealth.Damage(entityHealth.GetHealth(), entity);
+			}
+			else
+				entity->Kill();
 		};
 
-		elementMetatable["Kill"] = [](const sol::table& entityTable)
+		elementMetatable["Remove"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			entity->Kill();
 		};
 
-		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
+		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable, std::optional<bool> isTriggerOpt)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
@@ -156,6 +187,13 @@ namespace bw
 
 					return Nz::CircleCollider2D::New(radius, origin);
 				}
+				else if (typeName == "segment")
+				{
+					Nz::Vector2f first = collider["first"];
+					Nz::Vector2f second = collider["second"];
+
+					return Nz::SegmentCollider2D::New(first, second);
+				}
 				else
 				{
 					luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
@@ -169,17 +207,55 @@ namespace bw
 				std::size_t colliderCount = colliderTable.size();
 				luaL_argcheck(L, colliderCount > 0, 2, "Invalid collider count");
 
-				std::vector<Nz::Collider2DRef> colliders(colliderCount);
-				for (std::size_t i = 0; i < colliderCount; ++i)
+				if (colliderCount == 1)
+					collider = ParseCollider(colliderTable[1]);
+				else
 				{
-					colliders[i] = ParseCollider(colliderTable[i + 1]);
-					luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
-				}
+					std::vector<Nz::Collider2DRef> colliders(colliderCount);
+					for (std::size_t i = 0; i < colliderCount; ++i)
+					{
+						colliders[i] = ParseCollider(colliderTable[i + 1]);
+						luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
+					}
 
-				collider = Nz::CompoundCollider2D::New(std::move(colliders));
+					collider = Nz::CompoundCollider2D::New(std::move(colliders));
+				}
 			}
 
+			collider->SetTrigger((isTriggerOpt) ? *isTriggerOpt : false);
+
 			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
+		};
+
+		elementMetatable["SetMass"] = [](const sol::table& entityTable, float mass)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetMass(mass);
+			}
+		};
+
+		elementMetatable["SetPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& position)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetPosition(position);
+			}
+			else
+			{
+				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				nodeComponent.SetPosition(position);
+			}
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
@@ -190,6 +266,16 @@ namespace bw
 
 			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			physComponent.SetVelocity(velocity);
+		};
+
+		elementMetatable["UpdatePlayerMovementController"] = [](const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(controller));
 		};
 	}
 }

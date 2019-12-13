@@ -8,31 +8,25 @@
 #define BURGWAR_CORELIB_TERRAINLAYER_HPP
 
 #include <CoreLib/Map.hpp>
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 
 namespace bw
 {
 	class BurgApp;
 	class Match;
 
-	class TerrainLayer
+	class TerrainLayer : public SharedLayer
 	{
 		public:
-			TerrainLayer(Match& match, const Map::Layer& layerData);
+			TerrainLayer(Match& match, LayerIndex layerIndex, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
 			TerrainLayer(TerrainLayer&&) noexcept = default;
 			~TerrainLayer() = default;
 
-			inline SharedWorld& GetWorld();
-
-			void Update(float elapsedTime);
+			Match& GetMatch();
 
 			TerrainLayer& operator=(const TerrainLayer&) = delete;
 			TerrainLayer& operator=(TerrainLayer&&) noexcept = default;
-
-		private:
-			Ndk::EntityHandle m_camera;
-			SharedWorld m_world;
 	};
 }
 

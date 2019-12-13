@@ -150,6 +150,8 @@ namespace bw
 		element->name = std::move(elementName);
 		element->fullName = std::move(fullName);
 		element->elementTable = std::move(elementTable);
+		element->frameFunction = element->elementTable["OnFrame"];
+		element->postFrameFunction = element->elementTable["OnPostFrame"];
 		element->tickFunction = element->elementTable["OnTick"];
 
 		sol::object properties = element->elementTable["Properties"];
@@ -232,6 +234,7 @@ namespace bw
 							break;
 
 						case PropertyType::Integer:
+						case PropertyType::Layer:
 							property.defaultValue = PropertyChecker(Nz::Int64());
 							break;
 

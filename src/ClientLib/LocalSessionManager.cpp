@@ -25,7 +25,7 @@ namespace bw
 		if (peerId == m_peers.size())
 			m_peers.emplace_back();
 
-		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Error, "Local session #{0} created", peerId);
+		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Local session #{0} created", peerId);
 		auto& peer = m_peers[peerId];
 		peer.emplace();
 		peer->clientBridge = std::make_shared<LocalSessionBridge>(*this, peerId, false);

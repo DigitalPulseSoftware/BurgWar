@@ -22,8 +22,10 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void RegisterPlayer(ScriptingContext& context);
-			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterGlobalLibrary(ScriptingContext& context) override;
+			void RegisterMatchLibrary(ScriptingContext& context, sol::table& library) override;
+			void RegisterPlayerClass(ScriptingContext& context);
+			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;
 
 			Match& GetMatch();
 	};

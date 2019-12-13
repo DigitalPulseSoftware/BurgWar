@@ -1,7 +1,23 @@
-RegisterClientScript("vector2.lua")
+RegisterClientScript()
 
 local vec2meta = RegisterMetatable("vec2")
 vec2meta.__index = vec2meta
+
+function vec2meta:Length()
+	return math.sqrt(self:SquaredLength())
+end
+
+function vec2meta:Normalize()
+	local length = self:Length()
+	self.x = self.x / length
+	self.y = self.y / length
+
+	return self, length
+end
+
+function vec2meta:SquaredLength()
+	return self.x * self.x + self.y * self.y
+end
 
 function vec2meta:__add(other)
 	if (getmetatable(other) == vec2meta) then

@@ -3,20 +3,25 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/LayerIndex.hpp>
 
 namespace bw
 {
-	Terrain::Terrain(Match& match, Map& map) :
+	Terrain::Terrain(Map& map) :
 	m_map(map)
+	{
+	}
+
+	void Terrain::Initialize(Match& match)
 	{
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
-			m_layers.emplace_back(match, m_map.GetLayer(layerIndex));
+			m_layers.emplace_back(match, LayerIndex(layerIndex), m_map.GetLayer(layerIndex));
 	}
 
 	void Terrain::Update(float elapsedTime)
 	{
 		for (TerrainLayer& layer : m_layers)
-			layer.Update(elapsedTime);
+			layer.TickUpdate(elapsedTime);
 	}
 }

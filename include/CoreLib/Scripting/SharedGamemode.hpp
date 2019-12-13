@@ -22,7 +22,7 @@ namespace bw
 			~SharedGamemode() = default;
 
 			template<typename... Args>
-			sol::object ExecuteCallback(const std::string& callbackName, Args&&... args);
+			std::optional<sol::object> ExecuteCallback(const std::string& callbackName, Args&&... args);
 
 			inline sol::table& GetTable();
 

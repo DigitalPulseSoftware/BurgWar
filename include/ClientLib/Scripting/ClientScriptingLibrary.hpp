@@ -23,8 +23,10 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void RegisterDummyInputController(ScriptingContext& context);
-			void RegisterScriptLibrary(ScriptingContext& context);
+			void RegisterDummyInputControllerClass(ScriptingContext& context);
+			void RegisterGlobalLibrary(ScriptingContext& context) override;
+			void RegisterMatchLibrary(ScriptingContext& context, sol::table& library) override;
+			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;
 			void RegisterSpriteClass(ScriptingContext& context);
 
 			LocalMatch& GetMatch();

@@ -3,10 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/KeyboardAndMouseController.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Platform/Mouse.hpp>
 #include <NDK/Components/CameraComponent.hpp>
+#include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 
 namespace bw
@@ -21,7 +23,7 @@ namespace bw
 		});
 	}
 
-	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const Ndk::EntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
 
@@ -29,6 +31,7 @@ namespace bw
 		{
 			case 0:
 				inputData.isAttacking = Nz::Mouse::IsButtonPressed(Nz::Mouse::Left);
+				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::LControl);
 				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Space);
 				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Q);
 				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::D);
@@ -36,6 +39,7 @@ namespace bw
 
 			case 1:
 				inputData.isAttacking = Nz::Mouse::IsButtonPressed(Nz::Mouse::Right);
+				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Down);
 				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Up);
 				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Left);
 				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Right);
@@ -49,18 +53,27 @@ namespace bw
 
 		if (controlledEntity)
 		{
+			const auto& entity = controlledEntity->GetEntity();
+			
 			Nz::Vector2i mousePosition = Nz::Mouse::GetPosition(m_window);
 
-			const Ndk::EntityHandle& cameraEntity = localMatch.GetCamera();
+			const Ndk::EntityHandle& cameraEntity = localMatch.GetCameraEntity();
 			if (cameraEntity)
 			{
 				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
 
+				Nz::Vector2f originPosition = controlledEntity->GetPosition();
+				if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
+				{
+					auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
+					const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
+					originPosition += weaponElement.weaponOffset;
+				}
+				else if (entity->HasComponent<Ndk::GraphicsComponent>())
+					originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
+
 				Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mousePosition.x), float(mousePosition.y), 0.f));
-
-				auto& controlledEntityNode = controlledEntity->GetComponent<Ndk::NodeComponent>();
-
-				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition - controlledEntityNode.GetPosition()));
+				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition) - originPosition);
 			}
 		}
 		

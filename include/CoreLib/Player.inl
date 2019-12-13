@@ -11,7 +11,7 @@ namespace bw
 		return m_playerEntity;
 	}
 
-	inline std::size_t Player::GetLayerIndex() const
+	inline LayerIndex Player::GetLayerIndex() const
 	{
 		return m_layerIndex;
 	}
@@ -51,9 +51,19 @@ namespace bw
 		return m_weaponByName.find(weaponClass) != m_weaponByName.end();
 	}
 
+	inline bool Player::IsAdmin() const
+	{
+		return m_isAdmin;
+	}
+
 	inline bool Player::IsInMatch() const
 	{
 		return m_match != nullptr;
+	}
+
+	inline bool Player::IsReady() const
+	{
+		return m_isReady;
 	}
 
 	template<typename T>

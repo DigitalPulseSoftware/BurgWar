@@ -2,20 +2,29 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
+#include <NDK/Systems/LifetimeSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <NDK/Systems/VelocitySystem.hpp>
 #include <cassert>
 
 namespace bw
 {
-	SharedWorld::SharedWorld(SharedMatch& match)
+	SharedLayer::SharedLayer(SharedMatch& match, LayerIndex layerIndex) :
+	m_match(match),
+	m_world(false),
+	m_layerIndex(layerIndex)
 	{
+		m_world.AddSystem<Ndk::LifetimeSystem>();
+		m_world.AddSystem<Ndk::PhysicsSystem2D>();
+		m_world.AddSystem<Ndk::VelocitySystem>();
+
 		m_world.AddSystem<AnimationSystem>(match);
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>(match);
@@ -57,5 +66,10 @@ namespace bw
 		});
 	}
 
-	SharedWorld::~SharedWorld() = default;
+	SharedLayer::~SharedLayer() = default;
+
+	void SharedLayer::TickUpdate(float elapsedTime)
+	{
+		m_world.Update(elapsedTime);
+	}
 }

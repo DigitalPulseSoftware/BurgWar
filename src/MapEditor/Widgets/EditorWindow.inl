@@ -20,4 +20,28 @@ namespace bw
 	{
 		return m_canvas;
 	}
+
+	template<typename T>
+	void EditorWindow::ForeachEntityProperty(PropertyType type, T&& func)
+	{
+		m_workingMap.ForeachEntity([&](Map::Entity& entity)
+		{
+			if (std::size_t entityIndex = m_entityStore->GetElementIndex(entity.entityType); entityIndex != m_entityStore->InvalidIndex)
+			{
+				const auto& entityTypeInfo = m_entityStore->GetElement(entityIndex);
+
+				for (auto propertyIt = entity.properties.begin(); propertyIt != entity.properties.end(); ++propertyIt)
+				{
+					if (auto it = entityTypeInfo->properties.find(propertyIt.key()); it != entityTypeInfo->properties.end())
+					{
+						const auto& propertyData = it->second;
+						if (propertyData.type == type)
+							func(entity, *entityTypeInfo, propertyData, propertyIt.value());
+					}
+				}
+			}
+			else
+				bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
+		});
+	}
 }

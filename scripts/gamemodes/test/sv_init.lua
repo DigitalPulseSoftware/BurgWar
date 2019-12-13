@@ -6,23 +6,66 @@ end
 
 function GM:OnPlayerJoin(player)
 	print(player:GetName() .. " joined")
+	player:MoveToLayer(0)
 	player:Spawn()
+end
+
+function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
+	player:GiveWeapon("weapon_rifle")
 	player:GiveWeapon("weapon_grenade")
+	player:GiveWeapon("weapon_graspain")
+end
+
+local noclipController = NoclipPlayerMovementController.new()
+
+function GM:OnPlayerChat(player, message)
+	if (message:sub(1,1) == "/") then
+		local commandName, commandArgs = message:match("/(%w+)%s*(.*)")
+		if (not commandName) then
+			return
+		end
+
+		if (commandName == "admin") then
+			if (commandArgs == "okboomer") then
+				player:SetAdmin(true)
+				player:PrintChatMessage("You are now admin")
+			end
+		elseif (commandName == "noclip") then
+			if (not player:IsAdmin()) then
+				return
+			end
+
+			local controlledEntity = player:GetControlledEntity()
+			if (not controlledEntity) then
+				return
+			end
+
+			if (controlledEntity.previousController) then
+				controlledEntity:UpdatePlayerMovementController(controlledEntity.previousController)
+				controlledEntity.previousController = nil
+				player:PrintChatMessage("Noclip disabled")
+			else
+				controlledEntity.previousController = controlledEntity:GetPlayerMovementController()
+				controlledEntity:UpdatePlayerMovementController(noclipController)
+				player:PrintChatMessage("Noclip enabled")
+			end
+		end
+	else
+		return player:GetName() .. ": " .. message
+	end
 end
 
 function GM:OnTick()
-	for _, burger in pairs(GetEntitiesByClass("entity_burger")) do
+	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 2000) then
-			burger:Damage(burger:GetHealth())
+			burger:Kill()
 		end
 	end
 end
 
 function GM:OnInit()
-	print(self, "Le match a été créé")
-
 	--[[for i = 0, 20 do
 		self:CreateEntity("entity_box", Vec2(math.random(0, 10000), -200), {
 			size = math.random(10, 20) / 10.0
@@ -31,8 +74,25 @@ function GM:OnInit()
 end
 
 function GM:ChoosePlayerSpawnPosition()
-	local spawnpoints = GetEntitiesByClass("entity_spawnpoint")
+	local spawnpoints = match.GetEntitiesByClass("entity_spawnpoint")
 	local spawnpointIndex = math.random(1, #spawnpoints)
 
 	return spawnpoints[spawnpointIndex]:GetPosition()
+end
+
+function GM:OnPlayerChangeLayer(player, newLayer)
+	-- FIXME: This shouldn't be handled by this callback
+
+	local oldLayer = player:GetLayerIndex()
+	if (oldLayer ~= NoLayer) then
+		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", oldLayer)) do
+			ent:OnPlayerLeaveLayer(player)
+		end
+	end
+
+	if (newLayer ~= NoLayer) then
+		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", newLayer)) do
+			ent:OnPlayerEnterLayer(player)
+		end
+	end
 end

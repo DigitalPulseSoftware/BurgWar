@@ -26,8 +26,11 @@ namespace bw
 		IncomingCommand(ControlEntity);
 		IncomingCommand(CreateEntities);
 		IncomingCommand(DeleteEntities);
+		IncomingCommand(DisableLayer);
 		IncomingCommand(DownloadClientScriptResponse);
+		IncomingCommand(EnableLayer);
 		IncomingCommand(EntitiesAnimation);
+		IncomingCommand(EntitiesDeath);
 		IncomingCommand(EntitiesInputs);
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
@@ -35,6 +38,7 @@ namespace bw
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
+		IncomingCommand(PlayerLayer);
 		IncomingCommand(PlayerWeapons);
 
 		// Outgoing commands

@@ -10,6 +10,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
 #include <tsl/hopscotch_map.h>
@@ -36,7 +37,7 @@ namespace bw
 			~Player();
 
 			inline const Ndk::EntityHandle& GetControlledEntity() const;
-			inline std::size_t GetLayerIndex() const;
+			inline LayerIndex GetLayerIndex() const;
 			inline Match* GetMatch() const;
 			inline const std::string& GetName() const;
 			inline Nz::UInt8 GetPlayerIndex() const;
@@ -50,47 +51,59 @@ namespace bw
 
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
-			void RemoveWeapon(const std::string& weaponClass);
-
+			inline bool IsAdmin() const;
 			inline bool IsInMatch() const;
+			inline bool IsReady() const;
 
-			void Spawn();
+			void MoveToLayer(LayerIndex layerIndex);
+
+			void PrintChatMessage(std::string message);
+
+			void OnTick(bool lastTick);
+
+			void RemoveWeapon(const std::string& weaponClass);
 
 			template<typename T> void SendPacket(const T& packet);
 
 			void SelectWeapon(std::size_t weaponIndex);
+			void SetAdmin(bool isAdmin);
+
+			void Spawn();
 
 			std::string ToString() const;
-
-			void OnTick(bool lastTick);
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
+			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
 
 			Player& operator=(const Player&) = delete;
 			Player& operator=(Player&&) = delete;
 
+			static constexpr LayerIndex NoLayer = std::numeric_limits<LayerIndex>::max();
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
 		private:
 			void OnDeath(const Ndk::EntityHandle& attacker);
+			void OnReady();
 
-			void UpdateLayer(std::size_t layerIndex);
 			void UpdateMatch(Match* match);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
-			std::size_t m_layerIndex;
+			LayerIndex m_layerIndex;
 			std::size_t m_inputIndex;
 			std::size_t m_activeWeaponIndex = NoWeapon;
 			std::string m_name;
 			std::vector<Ndk::EntityOwner> m_weapons;
 			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
 			Ndk::EntityOwner m_playerEntity;
+			Nz::Bitset<Nz::UInt64> m_visibleLayers;
 			Nz::MovablePtr<Match> m_match;
 			Nz::UInt8 m_playerIndex;
 			MatchClientSession& m_session;
+			bool m_isAdmin;
+			bool m_isReady;
 			bool m_shouldSendWeapons;
 	};
 }

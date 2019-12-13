@@ -11,7 +11,7 @@ namespace bw
 		return m_inputs;
 	}
 	
-	PlayerInputData DummyInputController::Poll(LocalMatch& /*localMatch*/, const Ndk::EntityHandle& /*controlledEntity*/)
+	PlayerInputData DummyInputController::Poll(LocalMatch& /*localMatch*/, const LocalLayerEntityHandle& /*controlledEntity*/)
 	{
 		return m_inputs;
 	}

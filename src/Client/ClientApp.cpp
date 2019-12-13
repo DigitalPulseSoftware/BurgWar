@@ -11,34 +11,23 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
-#include <ClientLib/Components/SoundEmitterComponent.hpp>
-#include <ClientLib/Systems/SoundSystem.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/LoginState.hpp>
 
 namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
-	Application(argc, argv),
-	BurgApp(LogSide::Client),
+	ClientEditorApp(argc, argv, LogSide::Client),
 	m_mainWindow(AddWindow<Nz::RenderWindow>(Nz::VideoMode(1280, 720), "Burg'war", Nz::WindowStyle_Default, Nz::RenderTargetParameters(8))),
 	m_stateMachine(nullptr),
 	m_networkReactors(GetLogger())
 	{
-		//FIXME: This should be a part of ClientLib
-		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
-		Ndk::InitializeSystem<SoundSystem>();
-
 		RegisterClientConfig();
 
 		if (!m_config.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
-		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
-
-		Nz::TextureLibrary::Register("MenuBackground", Nz::Texture::LoadFromFile(gameResourceFolder + "/background.png"));
+		FillStores();
 
 		m_mainWindow.EnableVerticalSync(false);
 		m_mainWindow.SetFramerateLimit(100);

@@ -27,8 +27,8 @@ namespace bw
 			virtual void RegisterLibrary(ScriptingContext& context) = 0;
 
 		protected:
-			void RegisterGlobalLibrary(ScriptingContext& context);
-			void RegisterMetatableLibrary(ScriptingContext& context);
+			virtual void RegisterGlobalLibrary(ScriptingContext& context);
+			virtual void RegisterMetatableLibrary(ScriptingContext& context);
 
 			const Logger& m_logger;
 	};

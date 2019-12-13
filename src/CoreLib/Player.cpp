@@ -9,6 +9,7 @@
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
 #include <CoreLib/BurgApp.hpp>
+#include <CoreLib/Map.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
@@ -18,6 +19,7 @@
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
@@ -29,12 +31,14 @@
 namespace bw
 {
 	Player::Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string playerName) :
-	m_layerIndex(std::numeric_limits<std::size_t>::max()),
+	m_layerIndex(NoLayer),
 	m_inputIndex(0),
 	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
 	m_session(session),
-	m_shouldSendWeapons(false)
+	m_isAdmin(false),
+	m_shouldSendWeapons(false),
+	m_isReady(false)
 	{
 	}
 
@@ -42,11 +46,18 @@ namespace bw
 	{
 		if (m_match)
 			m_match->Leave(this);
+
+		MatchClientVisibility& visibility = GetSession().GetVisibility();
+		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
+			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
 	}
 
 	bool Player::GiveWeapon(std::string weaponClass)
 	{
 		if (!m_match)
+			return false;
+
+		if (m_layerIndex == NoLayer)
 			return false;
 
 		if (!m_playerEntity)
@@ -56,14 +67,13 @@ namespace bw
 			return false;
 
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
 
 		// Create weapon
 		if (std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); weaponEntityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(world, weaponEntityIndex, {}, m_playerEntity);
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, {}, m_playerEntity);
 			if (!weapon)
 				return false;
 
@@ -81,6 +91,9 @@ namespace bw
 
 	void Player::HandleConsoleCommand(const std::string& str)
 	{
+		if (!m_isAdmin)
+			return;
+
 		if (!m_scriptingEnvironment)
 		{
 			const std::string& scriptFolder = m_match->GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
@@ -103,9 +116,114 @@ namespace bw
 		m_scriptingEnvironment->Execute(str);
 	}
 
+	void Player::MoveToLayer(LayerIndex layerIndex)
+	{
+		if (m_layerIndex != layerIndex)
+		{
+			m_match->GetGamemode()->ExecuteCallback("OnPlayerChangeLayer", CreateHandle(), layerIndex);
+
+			if (m_layerIndex != NoLayer)
+				UpdateLayerVisibility(m_layerIndex, false);
+
+			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
+			{
+				if (m_playerEntity)
+				{
+					Terrain& terrain = m_match->GetTerrain();
+					Ndk::World& world = terrain.GetLayer(layerIndex).GetWorld();
+
+					const Ndk::EntityHandle& newPlayerEntity = world.CloneEntity(m_playerEntity);
+					/*const auto& componentBits = m_playerEntity->GetComponentBits();
+					for (std::size_t i = componentBits.FindFirst(); i != componentBits.npos; i = componentBits.FindNext(i))
+					{
+						// Leave physics component because dropping it during a physics callback would crash the physics engine
+						if (i != Ndk::GetComponentIndex<MatchComponent>() && i != Ndk::GetComponentIndex<Ndk::PhysicsComponent2D>())
+							newPlayerEntity->AddComponent(m_playerEntity->DropComponent(static_cast<Ndk::ComponentIndex>(i)));
+					}
+
+					newPlayerEntity->AddComponent(m_playerEntity->GetComponent<Ndk::PhysicsComponent2D>().Clone());*/
+					newPlayerEntity->AddComponent<MatchComponent>(*m_match, layerIndex);
+
+					UpdateControlledEntity(newPlayerEntity);
+
+					for (auto& weaponEntity : m_weapons)
+					{
+						weaponEntity = world.CloneEntity(weaponEntity);
+						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex);
+						weaponEntity->GetComponent<Ndk::NodeComponent>().SetParent(newPlayerEntity);
+						weaponEntity->GetComponent<NetworkSyncComponent>().UpdateParent(newPlayerEntity);
+						weaponEntity->GetComponent<WeaponComponent>().UpdateOwner(newPlayerEntity);
+					}
+
+					m_shouldSendWeapons = true;
+				}
+			}
+			else
+			{
+				m_playerEntity.Reset();
+
+				m_activeWeaponIndex = NoWeapon;
+				m_weapons.clear();
+				m_weaponByName.clear();
+			}
+
+			m_layerIndex = layerIndex;
+
+			MatchClientVisibility& visibility = GetSession().GetVisibility();
+			visibility.PushLayerUpdate(m_playerIndex, m_layerIndex);
+
+			if (m_layerIndex != NoLayer)
+				UpdateLayerVisibility(m_layerIndex, true);
+		}
+	}
+
+	void Player::PrintChatMessage(std::string message)
+	{
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = std::move(message);
+		chatPacket.playerIndex = m_playerIndex;
+
+		SendPacket(chatPacket);
+	}
+	
+	void Player::OnTick(bool lastTick)
+	{
+		if (lastTick && m_shouldSendWeapons)
+		{
+			Packets::PlayerWeapons weaponPacket;
+			weaponPacket.playerIndex = m_playerIndex;
+			weaponPacket.layerIndex = m_layerIndex;
+
+			Nz::Bitset<Nz::UInt64> weaponIds;
+			for (const Ndk::EntityHandle& weapon : m_weapons)
+			{
+				assert(weapon);
+
+				weaponPacket.weaponEntities.emplace_back(Nz::UInt32(weapon->GetId()));
+				weaponIds.UnboundedSet(weapon->GetId());
+			}
+
+			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));
+
+			m_shouldSendWeapons = false;
+		}
+
+		if (auto& inputOpt = m_inputBuffer[m_inputIndex])
+		{
+			UpdateInputs(inputOpt.value());
+			inputOpt.reset();
+		}
+
+		if (++m_inputIndex >= m_inputBuffer.size())
+			m_inputIndex = 0;
+	}
+
 	void Player::RemoveWeapon(const std::string& weaponClass)
 	{
 		if (!m_match)
+			return;
+
+		if (m_layerIndex == NoLayer)
 			return;
 
 		if (!m_playerEntity)
@@ -134,19 +252,68 @@ namespace bw
 		m_shouldSendWeapons = true;
 	}
 
+	void Player::SelectWeapon(std::size_t weaponIndex)
+	{
+		assert(weaponIndex == NoWeapon || weaponIndex < m_weapons.size());
+
+		if (m_activeWeaponIndex == weaponIndex || !m_playerEntity)
+			return;
+
+		if (m_activeWeaponIndex != NoWeapon)
+		{
+			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
+			weapon.SetActive(false);
+		}
+
+		m_activeWeaponIndex = weaponIndex;
+		if (m_activeWeaponIndex != NoWeapon)
+		{
+			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
+			weapon.SetActive(true);
+		}
+
+		Packets::EntityWeapon weaponPacket;
+		weaponPacket.layerIndex = m_layerIndex;
+		weaponPacket.entityId = m_playerEntity->GetId();
+		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : Packets::EntityWeapon::NoWeapon;
+
+		Nz::Bitset<Nz::UInt64> entityIds;
+		entityIds.UnboundedSet(weaponPacket.entityId);
+
+		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
+			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
+
+		m_match->ForEachPlayer([&](Player* ply)
+		{
+			MatchClientSession& session = ply->GetSession();
+			session.GetVisibility().PushEntitiesPacket(m_layerIndex, entityIds, weaponPacket);
+		});
+	}
+
+	void Player::SetAdmin(bool isAdmin)
+	{
+		m_isAdmin = isAdmin;
+	}
+	
 	void Player::Spawn()
 	{
 		if (!m_match)
 			return;
 
+		if (m_layerIndex == NoLayer)
+			return;
+
 		Terrain& terrain = m_match->GetTerrain();
-		Ndk::World& world = terrain.GetLayer(m_layerIndex).GetWorld().GetWorld();
 
 		ServerEntityStore& entityStore = m_match->GetEntityStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			Nz::Vector2f spawnPosition = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition").as<Nz::Vector2f>();
-			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(world, entityIndex, spawnPosition, 0.f, {});
+			auto spawnPositionOpt = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition");
+			if (!spawnPositionOpt)
+				return;
+
+			Nz::Vector2f spawnPosition = spawnPositionOpt->as<Nz::Vector2f>();
+			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, spawnPosition, 0.f, {});
 			if (!playerEntity)
 				return;
 
@@ -170,44 +337,9 @@ namespace bw
 			}
 
 			UpdateControlledEntity(playerEntity);
+
+			m_match->GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
 		}
-	}
-
-	void Player::SelectWeapon(std::size_t weaponIndex)
-	{
-		assert(weaponIndex == NoWeapon || weaponIndex < m_weapons.size());
-
-		if (m_activeWeaponIndex == weaponIndex || !m_playerEntity)
-			return;
-
-		if (m_activeWeaponIndex != NoWeapon)
-		{
-			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
-			weapon.SetActive(false);
-		}
-
-		m_activeWeaponIndex = weaponIndex;
-		if (m_activeWeaponIndex != NoWeapon)
-		{
-			auto& weapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
-			weapon.SetActive(true);
-		}
-
-		Packets::EntityWeapon weaponPacket;
-		weaponPacket.entityId = m_playerEntity->GetId();
-		weaponPacket.weaponEntityId = (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex]->GetId() : 0xFFFFFFFF;
-
-		Nz::Bitset<Nz::UInt64> entityIds;
-		entityIds.UnboundedSet(weaponPacket.entityId);
-
-		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
-			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
-
-		m_match->ForEachPlayer([&](Player* ply)
-		{
-			MatchClientSession& session = ply->GetSession();
-			session.GetVisibility().PushEntitiesPacket(entityIds, weaponPacket);
-		});
 	}
 
 	std::string Player::ToString() const
@@ -215,46 +347,37 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::OnTick(bool lastTick)
-	{
-		if (lastTick && m_shouldSendWeapons)
-		{
-			Packets::PlayerWeapons weaponPacket;
-			weaponPacket.playerIndex = m_playerIndex;
-
-			Nz::Bitset<Nz::UInt64> weaponIds;
-			for (const Ndk::EntityHandle& weapon : m_weapons)
-			{
-				assert(weapon);
-
-				weaponPacket.weaponEntities.emplace_back(weapon->GetId());
-				weaponIds.UnboundedSet(weapon->GetId());
-			}
-
-			m_session.GetVisibility().PushEntitiesPacket(std::move(weaponIds), std::move(weaponPacket));
-
-			m_shouldSendWeapons = false;
-		}
-
-		if (auto& inputOpt = m_inputBuffer[m_inputIndex])
-		{
-			UpdateInputs(inputOpt.value());
-			inputOpt.reset();
-		}
-
-		if (++m_inputIndex >= m_inputBuffer.size())
-			m_inputIndex = 0;
-	}
-
 	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
 	{
+		MatchClientVisibility& visibility = m_session.GetVisibility();
+
+		if (m_playerEntity)
+		{
+			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), false);
+		}
+
 		m_playerEntity = entity;
 
 		Packets::ControlEntity controlEntity;
-		controlEntity.entityId = (entity) ? static_cast<Nz::UInt32>(entity->GetId()) : 0;
 		controlEntity.playerIndex = m_playerIndex;
+		if (entity)
+		{
+			auto& matchComponent = entity->GetComponent<MatchComponent>();
 
-		m_session.GetVisibility().PushEntityPacket(controlEntity.entityId, controlEntity);
+			controlEntity.layerIndex = matchComponent.GetLayerIndex();
+			controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
+
+			visibility.PushEntityPacket(matchComponent.GetLayerIndex(), controlEntity.entityId, controlEntity);
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
+		}
+		else
+		{
+			controlEntity.layerIndex = NoLayer;
+			controlEntity.entityId = 0;
+
+			SendPacket(controlEntity);
+		}
 	}
 
 	void Player::UpdateInputs(const PlayerInputData& inputData)
@@ -274,6 +397,21 @@ namespace bw
 		std::size_t index = (m_inputIndex + tickDelay) % m_inputBuffer.size();
 
 		m_inputBuffer[index] = std::move(inputData);
+	}
+
+	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
+	{
+		if (isVisible == m_visibleLayers.UnboundedTest(layerIndex))
+			return;
+
+		MatchClientVisibility& visibility = GetSession().GetVisibility();
+
+		if (isVisible)
+			visibility.ShowLayer(layerIndex);
+		else
+			visibility.HideLayer(layerIndex);
+
+		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
 	}
 
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)
@@ -296,9 +434,10 @@ namespace bw
 		m_activeWeaponIndex = NoWeapon;
 	}
 
-	void Player::UpdateLayer(std::size_t layerIndex)
+	void Player::OnReady()
 	{
-		m_layerIndex = layerIndex;
+		assert(!m_isReady);
+		m_isReady = true;
 	}
 
 	void Player::UpdateMatch(Match* match)

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -41,5 +42,12 @@ namespace bw
 
 		elementTable["DealDamage"] = sol::overload(DealDamage,
 			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); });
+
+		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
+		};
 	}
 }

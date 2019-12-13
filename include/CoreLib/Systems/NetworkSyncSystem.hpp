@@ -31,11 +31,14 @@ namespace bw
 			struct EntityDestruction;
 			struct EntityMovement;
 
-			NetworkSyncSystem();
+			NetworkSyncSystem(Nz::UInt16 layerIndex);
 			~NetworkSyncSystem() = default;
 
 			void CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const;
 			void DeleteEntities(const std::function<void(const EntityDestruction* entityDestruction, std::size_t entityCount)>& callback) const;
+			
+			inline Nz::UInt16 GetLayerIndex() const;
+			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
 			static Ndk::SystemIndex systemIndex;
@@ -109,6 +112,7 @@ namespace bw
 			NazaraSignal(OnEntityDeleted, NetworkSyncSystem* /*emitter*/, const EntityDestruction& /*event*/);
 			NazaraSignal(OnEntityPlayAnimation, NetworkSyncSystem* /*emitter*/, const EntityPlayAnimation& /*event*/);
 			NazaraSignal(OnEntityInvalidated, NetworkSyncSystem* /*emitter*/, const EntityMovement& /*event*/);
+			NazaraSignal(OnEntitiesDeath, NetworkSyncSystem* /*emitter*/, const Ndk::EntityId* /*entityIds*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesInputUpdate, NetworkSyncSystem* /*emitter*/, const EntityInputs* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
 
@@ -124,6 +128,7 @@ namespace bw
 			struct EntitySlots
 			{
 				NazaraSlot(AnimationComponent, OnAnimationStart, onAnimationStart);
+				NazaraSlot(HealthComponent, OnDied, onDied);
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
 				NazaraSlot(InputComponent, OnInputUpdate, onInputUpdate);
 				NazaraSlot(NetworkSyncComponent, OnInvalidated, onInvalidated);
@@ -136,8 +141,10 @@ namespace bw
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
 			Ndk::EntityList m_invalidatedEntities;
+			Nz::UInt16 m_layerIndex;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
+			std::vector<Ndk::EntityId> m_deadEvents;
 			std::vector<EntityHealth> m_healthEvents;
 			std::vector<EntityInputs> m_inputEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;

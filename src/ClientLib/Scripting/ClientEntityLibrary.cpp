@@ -4,8 +4,14 @@
 
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
@@ -13,6 +19,7 @@
 #include <Nazara/Graphics/TileMap.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
 {
@@ -23,35 +30,94 @@ namespace bw
 		RegisterClientLibrary(elementMetatable);
 	}
 
+	void ClientEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	{
+		SharedEntityLibrary::InitRigidBody(entity, mass, friction, canRotate);
+
+		entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
+		entity->AddComponent<VisualInterpolationComponent>();
+	}
+
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["AddLayer"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
+
+			LayerIndex layerIndex = parameters["LayerIndex"];
+			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
+			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
+
+			if (!entity->HasComponent<VisibleLayerComponent>())
+				entity->AddComponent<VisibleLayerComponent>(localMatch.GetRenderWorld());
+
+			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
+			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
+		};
+
 		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			std::string texturePath = parameters["TexturePath"];
+			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
 			Nz::Vector2f offset = parameters.get_or("Offset", Nz::Vector2f(0.f, 0.f));
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f origin = parameters.get_or("Origin", Nz::Vector2f(0.5f, 0.5f));
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
+			Nz::Vector2f textureCoords = parameters.get_or("TextureCoords", Nz::Vector2f::Unit());
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
+			Nz::Color color;
+			if (std::optional<sol::table> colorParameter = parameters.get_or<std::optional<sol::table>>("Color", std::nullopt); colorParameter)
+			{
+				color = Nz::Color::Black;
+				color.r = colorParameter->get_or("r", color.r);
+				color.g = colorParameter->get_or("g", color.g);
+				color.b = colorParameter->get_or("b", color.b);
+				color.a = colorParameter->get_or("a", color.a);
+			}
+			else
+				color = Nz::Color::White;
+
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
+			if (!texturePath.empty())
+				mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
+
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+			sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
 			Nz::SpriteRef sprite = Nz::Sprite::New();
+			sprite->SetColor(color);
 			sprite->SetMaterial(mat);
-			sprite->SetSize(sprite->GetSize() * scale);
+			sprite->SetTextureCoords(textureCoords);
+
+			Nz::Vector2f size = parameters.get_or("Size", sprite->GetSize());
+
+			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
-			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(sprite, transformMatrix, renderOrder);
+			//FIXME
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
 
-			return Sprite(entity, sprite, transformMatrix, renderOrder);
+				Sprite scriptSprite(layerEntityComponent.GetLayerEntity(), sprite, transformMatrix, renderOrder);
+				scriptSprite.Show();
+
+				return scriptSprite;
+			}
+			else
+			{
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite, transformMatrix, renderOrder);
+
+				return Sprite({}, sprite, transformMatrix, renderOrder);
+			}
 		};
 
 		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
@@ -100,25 +166,32 @@ namespace bw
 				Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % mapSize.x), static_cast<unsigned int>(i / mapSize.x) };
 				if (value > 0)
 				{
-					if (value - 1 >= content.size())
-						throw std::runtime_error("");
+					if (value <= tiles.size())
+					{
+						const auto& tileData = tiles[value - 1];
 
-					const auto& tileData = tiles[value - 1];
+						auto matIt = materials.find(tileData.materialPath);
+						assert(matIt != materials.end());
 
-					auto matIt = materials.find(tileData.materialPath);
-					assert(matIt != materials.end());
-
-					tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+						tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+					}
 				}
 			}
 
-			Ndk::GraphicsComponent& gfxComponent = (entity->HasComponent<Ndk::GraphicsComponent>()) ? entity->GetComponent<Ndk::GraphicsComponent>() : entity->AddComponent<Ndk::GraphicsComponent>();
-			gfxComponent.Attach(tileMap);
+			//FIXME
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+				layerEntityComponent.GetLayerEntity()->AttachRenderable(tileMap, Nz::Matrix4f::Identity(), 0);
+			}
+			else
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
 		};
 
 		elementMetatable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			/*const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
@@ -130,7 +203,7 @@ namespace bw
 				entity->AddComponent<SoundEmitterComponent>();
 
 			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);*/
 		};
 	}
 }

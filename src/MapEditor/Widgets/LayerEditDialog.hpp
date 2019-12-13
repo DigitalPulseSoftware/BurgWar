@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_LAYERINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_LAYERINFODIALOG_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <QtGui/QColor>
 #include <QtWidgets/QDialog>
@@ -15,6 +16,7 @@
 class QDoubleSpinBox;
 class QLineEdit;
 class QPushButton;
+class QListWidget;
 
 namespace bw
 {
@@ -22,15 +24,16 @@ namespace bw
 	{
 		Nz::Color backgroundColor;
 		std::string name;
-		float depth;
 	};
 
-	class LayerInfoDialog : public QDialog
+	class Map;
+
+	class LayerEditDialog : public QDialog
 	{
 		public:
-			LayerInfoDialog(QWidget* parent = nullptr);
-			LayerInfoDialog(LayerInfo layerInfo, QWidget* parent = nullptr);
-			~LayerInfoDialog() = default;
+			LayerEditDialog(const Map& map, QWidget* parent = nullptr);
+			LayerEditDialog(LayerIndex layerIndex, LayerInfo layerInfo, const Map& map, QWidget* parent = nullptr);
+			~LayerEditDialog() = default;
 
 			LayerInfo GetLayerInfo() const;
 
@@ -38,13 +41,16 @@ namespace bw
 			void OnAccept();
 			void OnEditLayerColor();
 
+			const Map& m_map;
+			LayerIndex m_layerIndex;
 			QColor m_layerColor;
 			QDoubleSpinBox* m_layerDepth;
 			QLineEdit* m_layerName;
+			QListWidget* m_visibilityList;
 			QPushButton* m_layerColorEdit;
 	};
 }
 
-#include <MapEditor/Widgets/LayerInfoDialog.inl>
+#include <MapEditor/Widgets/LayerEditDialog.inl>
 
 #endif

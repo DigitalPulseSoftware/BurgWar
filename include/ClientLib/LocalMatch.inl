@@ -12,6 +12,11 @@ namespace bw
 		return tick - 3;
 	}
 
+	inline Nz::UInt16 LocalMatch::GetActiveLayer()
+	{
+		return m_activeLayerIndex;
+	}
+
 	inline AnimationManager& LocalMatch::GetAnimationManager()
 	{
 		return m_animationManager;
@@ -28,13 +33,18 @@ namespace bw
 		return m_application;
 	}
 
-	inline const Ndk::EntityHandle& LocalMatch::GetCamera()
+	inline const Ndk::EntityHandle& LocalMatch::GetCameraEntity() const
 	{
 		return m_camera;
 	}
 
-	inline const Nz::SpriteRef& LocalMatch::GetTrailSprite() const
+	inline ClientSession& LocalMatch::GetClientSession()
 	{
-		return m_trailSpriteTest;
+		return m_session;
+	}
+	
+	inline Ndk::World& LocalMatch::GetRenderWorld()
+	{
+		return m_renderWorld;
 	}
 }

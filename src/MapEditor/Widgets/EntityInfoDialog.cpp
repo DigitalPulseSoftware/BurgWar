@@ -4,7 +4,7 @@
 
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <ClientLib/Scripting/ClientEntityStore.hpp>
+#include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
@@ -31,6 +31,62 @@
 
 namespace bw
 {
+	class ComboBoxPropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			ComboBoxPropertyDelegate(std::vector<QString> options) :
+			m_options(std::move(options))
+			{
+			}
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, int value) const
+			{
+				model->setData(index, value, Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				QComboBox* editor = new QComboBox(parent);
+				editor->setFrame(false);
+
+				for (const QString& option : m_options)
+					editor->addItem(option);
+
+				return editor;
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				return m_options[value.toInt()];
+			}
+
+			int RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).toInt();
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				QComboBox* comboBox = static_cast<QComboBox*>(editor);
+				comboBox->setCurrentIndex(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				QComboBox* comboBox = static_cast<QComboBox*>(editor);
+
+				ApplyModelData(model, index, comboBox->currentIndex());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+
+		private:
+			std::vector<QString> m_options;
+	};
+
 	class FloatPropertyDelegate : public QStyledItemDelegate
 	{
 		public:
@@ -212,15 +268,27 @@ namespace bw
 			}
 	};
 
-	EntityInfoDialog::EntityInfoDialog(const Logger& logger, ClientEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
+	struct EntityInfoDialog::Delegates
+	{
+		std::optional<ComboBoxPropertyDelegate> comboBoxDelegate;
+		FloatPropertyDelegate floatDelegate;
+		Float2PropertyDelegate float2Delegate;
+		IntegerPropertyDelegate intDelegate;
+		Integer2PropertyDelegate int2Delegate;
+	};
+
+	EntityInfoDialog::EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
 	m_propertyTypeIndex(InvalidIndex),
 	m_entityStore(clientEntityStore),
 	m_logger(logger),
+	m_map(map),
 	m_scriptingContext(scriptingContext)
 	{
 		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+		m_delegates = std::make_unique<Delegates>();
 
 		m_entityTypeWidget = new QComboBox;
 		m_entityStore.ForEachElement([this](const ScriptedEntity& entityData)
@@ -241,7 +309,7 @@ namespace bw
 		QHBoxLayout* propertyLayout = new QHBoxLayout;
 
 		m_propertiesList = new QTableWidget(0, 2);
-		m_propertiesList->setHorizontalHeaderLabels({ QString("Property"), QString("Value") });
+		m_propertiesList->setHorizontalHeaderLabels({ tr("Property"), tr("Value") });
 		m_propertiesList->setSelectionBehavior(QAbstractItemView::SelectRows);
 		m_propertiesList->setSelectionMode(QAbstractItemView::SingleSelection);
 		m_propertiesList->setShowGrid(false);
@@ -300,10 +368,10 @@ namespace bw
 		});
 
 		QFormLayout* genericPropertyLayout = new QFormLayout;
-		genericPropertyLayout->addRow("Entity type", m_entityTypeWidget);
-		genericPropertyLayout->addRow("Entity name", m_nameWidget);
-		genericPropertyLayout->addRow("Entity position", m_positionWidget);
-		genericPropertyLayout->addRow("Entity rotation", m_rotationWidget);
+		genericPropertyLayout->addRow(tr("Entity type"), m_entityTypeWidget);
+		genericPropertyLayout->addRow(tr("Entity name"), m_nameWidget);
+		genericPropertyLayout->addRow(tr("Entity position"), m_positionWidget);
+		genericPropertyLayout->addRow(tr("Entity rotation"), m_rotationWidget);
 
 		QDialogButtonBox* button = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		connect(button, &QDialogButtonBox::accepted, this, &EntityInfoDialog::OnAccept);
@@ -332,8 +400,11 @@ namespace bw
 			}
 		});
 
+		setWindowTitle("Entity editor");
 		hide();
 	}
+
+	EntityInfoDialog::~EntityInfoDialog() = default;
 
 	const EntityProperty& EntityInfoDialog::GetProperty(const std::string& propertyName) const
 	{
@@ -379,7 +450,17 @@ namespace bw
 			m_positionWidget->setValue(m_entityInfo.position);
 			m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
-			m_entityTypeWidget->setCurrentText(QString::fromStdString(m_entityInfo.entityClass));
+			QString oldClass = m_entityTypeWidget->currentText();
+			QString newClass = QString::fromStdString(m_entityInfo.entityClass);
+			if (oldClass != newClass)
+			{
+				if (!newClass.isEmpty())
+					m_entityTypeWidget->setCurrentText(newClass);
+				else
+					m_entityTypeWidget->setCurrentIndex(-1);
+			}
+			else
+				OnEntityTypeUpdate();
 		}
 		else
 		{
@@ -387,10 +468,10 @@ namespace bw
 			m_entityInfo = EntityInfo();
 
 			m_entityTypeWidget->setCurrentIndex(-1);
+			m_propertiesList->clearSelection();
 		}
 
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
-		m_propertiesList->clearSelection();
 		m_positionWidget->setValue(m_entityInfo.position);
 		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
@@ -427,8 +508,22 @@ namespace bw
 
 		m_entityTypeIndex = m_entityStore.GetElementIndex(entityType);
 
+		std::string propertyName;
+		if (m_propertyTypeIndex != InvalidIndex)
+			propertyName = m_properties[m_propertyTypeIndex].keyName;
+
 		RefreshEntityType();
-		RefreshPropertyEditor(InvalidIndex);
+
+		if (!propertyName.empty())
+		{
+			auto propertyIt = m_propertyByName.find(propertyName);
+			if (propertyIt != m_propertyByName.end())
+				m_propertiesList->selectRow(int(propertyIt->second));
+			else
+				RefreshPropertyEditor(InvalidIndex);
+		}
+		else
+			RefreshPropertyEditor(InvalidIndex);
 
 		m_entityInfo.entityClass = (m_entityTypeIndex != m_entityStore.InvalidIndex) ? std::move(entityType) : std::string();
 	}
@@ -444,7 +539,7 @@ namespace bw
 
 		QTableWidgetItem* item = m_propertiesList->item(int(m_propertyTypeIndex), 1);
 		item->setFont(QFont());
-		item->setText(ToString(GetProperty(propertyInfo)));
+		item->setText(ToString(GetProperty(propertyInfo), propertyInfo.type));
 
 		RefreshPropertyEditor(m_propertyTypeIndex);
 	}
@@ -510,7 +605,7 @@ namespace bw
 		{
 			m_propertiesList->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(propertyInfo.visualName)));
 
-			QTableWidgetItem* valueItem = new QTableWidgetItem(ToString(GetProperty(propertyInfo)));
+			QTableWidgetItem* valueItem = new QTableWidgetItem(ToString(GetProperty(propertyInfo), propertyInfo.type));
 			if (modifiedProperties.test(propertyInfo.index))
 				valueItem->setFont(boldFont);
 			
@@ -640,7 +735,7 @@ namespace bw
 				}, *property);
 
 				RefreshPropertyEditor(propertyIndex);
-				UpdatePropertyPreview(ToString(*property));
+				UpdatePropertyPreview(ToString(*property, propertyInfo.type));
 			});
 
 			QHBoxLayout* arraySizeLayout = new QHBoxLayout;
@@ -700,25 +795,23 @@ namespace bw
 
 				case PropertyType::Float:
 				{
-					static FloatPropertyDelegate delegate; //FIXME?
-
 					using T = EntityPropertyArray<float>;
 
 					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&delegate);
+					tableView->setItemDelegate(&m_delegates->floatDelegate);
 					tableView->setModel(model);
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+						m_delegates->floatDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
+						SetProperty(item->index().row(), m_delegates->floatDelegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -728,25 +821,23 @@ namespace bw
 				case PropertyType::FloatPosition:
 				case PropertyType::FloatSize:
 				{
-					static Float2PropertyDelegate delegate; //< FIXME?
-
 					using T = EntityPropertyArray<Nz::Vector2f>;
 
 					auto& propertyArray = std::get<T>(propertyValue);
 					
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&delegate);
+					tableView->setItemDelegate(&m_delegates->float2Delegate);
 					tableView->setModel(model);
 
-					model->setHorizontalHeaderLabels({ QString("Value") });
+					model->setHorizontalHeaderLabels({ tr("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+						m_delegates->float2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
+						SetProperty(item->index().row(), m_delegates->float2Delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -754,27 +845,76 @@ namespace bw
 				}
 
 				case PropertyType::Integer:
-				case PropertyType::Layer:
 				{
-					static IntegerPropertyDelegate delegate; //FIXME?
-					
 					using T = EntityPropertyArray<Nz::Int64>;
 
 					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&delegate);
+					tableView->setItemDelegate(&m_delegates->intDelegate);
 					tableView->setModel(model);
 
 					model->setHorizontalHeaderLabels({ QString("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+						m_delegates->intDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
+						SetProperty(item->index().row(), m_delegates->intDelegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
+				case PropertyType::Layer:
+				{
+					std::vector<QString> options;
+					options.push_back(tr("<No layer>"));
+
+					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+					{
+						auto& layer = m_map.GetLayer(i);
+
+						options.push_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
+					}
+
+					m_delegates->comboBoxDelegate.emplace(std::move(options));
+
+					using T = EntityPropertyArray<Nz::Int64>;
+
+					auto& propertyArray = std::get<T>(propertyValue);
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->comboBoxDelegate.value());
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ QString("Value") });
+
+					for (int i = 0; i < arraySize; ++i)
+					{
+						assert(propertyArray[i] <= 0xFFFF);
+						int layerIndex = int(propertyArray[i]);
+						if (layerIndex == NoLayer)
+							layerIndex = 0;
+						else
+							layerIndex++;
+
+						m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), layerIndex);
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						Nz::Int64 layerIndex = m_delegates->comboBoxDelegate->RetrieveModelData(item->index());
+						if (layerIndex == 0)
+							layerIndex = NoLayer;
+						else
+							layerIndex--;
+
+						SetProperty(item->index().row(), layerIndex);
 					});
 
 					layout->addWidget(tableView);
@@ -784,25 +924,23 @@ namespace bw
 				case PropertyType::IntegerPosition:
 				case PropertyType::IntegerSize:
 				{
-					static Integer2PropertyDelegate delegate; //< FIXME?
-
 					using T = EntityPropertyArray<Nz::Vector2i64>;
 
 					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&delegate);
+					tableView->setItemDelegate(&m_delegates->int2Delegate);
 					tableView->setModel(model);
 
-					model->setHorizontalHeaderLabels({ QString("Value") });
+					model->setHorizontalHeaderLabels({ tr("Value") });
 
 					for (int i = 0; i < arraySize; ++i)
-						delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+						m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), delegate.RetrieveModelData(item->index()));
+						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -817,7 +955,7 @@ namespace bw
 					auto& propertyArray = std::get<T>(propertyValue);
 
 					QTableWidget* table = new QTableWidget(arraySize, 1);
-					table->setHorizontalHeaderLabels({ QString("Value") });
+					table->setHorizontalHeaderLabels({ tr("Value") });
 					table->setSelectionMode(QAbstractItemView::NoSelection);
 					table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
 
@@ -840,7 +978,7 @@ namespace bw
 		}
 		else
 		{
-			auto SetProperty = [this, keyName = propertyInfo.keyName, OnPropertyOverride, UpdatePropertyPreview](auto&& value)
+			auto SetProperty = [this, keyName = propertyInfo.keyName, type = propertyInfo.type, OnPropertyOverride, UpdatePropertyPreview](auto&& value)
 			{
 				auto it = m_entityInfo.properties.find(keyName);
 				if (it == m_entityInfo.properties.end())
@@ -850,7 +988,7 @@ namespace bw
 				}
 
 				it.value() = std::forward<decltype(value)>(value);
-				UpdatePropertyPreview(ToString(it.value()));
+				UpdatePropertyPreview(ToString(it.value(), type));
 			};
 
 			switch (propertyInfo.type)
@@ -904,7 +1042,6 @@ namespace bw
 				}
 
 				case PropertyType::Integer:
-				case PropertyType::Layer:
 				{
 					// TODO: Handle properly int64
 					QSpinBox* spinbox = new QSpinBox;
@@ -919,6 +1056,43 @@ namespace bw
 					});
 
 					layout->addWidget(spinbox);
+					break;
+				}
+
+				case PropertyType::Layer:
+				{
+					QComboBox* comboBox = new QComboBox;
+					comboBox->addItem(tr("<No layer>"));
+
+					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+					{
+						auto& layer = m_map.GetLayer(i);
+
+						comboBox->addItem(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
+					}
+
+					if (std::holds_alternative<Nz::Int64>(propertyValue))
+					{
+						int index = int(std::get<Nz::Int64>(propertyValue));
+						if (index == NoLayer)
+							index = 0;
+						else
+							index++;
+
+						comboBox->setCurrentIndex(index);
+					}
+
+					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
+					{
+						if (index <= 0)
+							index = NoLayer;
+						else
+							index--;
+
+						SetProperty(Nz::Int64(index));
+					});
+
+					layout->addWidget(comboBox);
 					break;
 				}
 
@@ -964,37 +1138,57 @@ namespace bw
 		m_propertyContentWidget->setLayout(layout);
 	}
 
-	QString EntityInfoDialog::ToString(bool value)
+	QString EntityInfoDialog::ToString(bool value, PropertyType type)
 	{
 		return (value) ? "true" : "false";
 	}
 
-	QString EntityInfoDialog::ToString(float value)
+	QString EntityInfoDialog::ToString(float value, PropertyType type)
 	{
 		return QString::number(value);
 	}
 
-	QString EntityInfoDialog::ToString(Nz::Int64 value)
+	QString EntityInfoDialog::ToString(Nz::Int64 value, PropertyType type)
 	{
-		return QString::number(value);
+		assert(type == PropertyType::Integer || type == PropertyType::Layer);
+		switch (type)
+		{
+			case PropertyType::Integer:
+				return QString::number(value);
+
+			case PropertyType::Layer:
+			{
+				if (value == NoLayer)
+					return tr("<No layer>");
+				else
+				{
+					auto& layer = m_map.GetLayer(value);
+					return tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(value + 1);
+				}
+			}
+
+			default:
+				assert(false);
+				return "<error>";
+		}
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector2f& value)
+	QString EntityInfoDialog::ToString(const Nz::Vector2f& value, PropertyType type)
 	{
 		return QString("(%1; %2)").arg(value.x).arg(value.y);
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value)
+	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value, PropertyType type)
 	{
 		return QString("(%1; %2)").arg(value.x).arg(value.y);
 	}
 
-	QString EntityInfoDialog::ToString(const std::string& value)
+	QString EntityInfoDialog::ToString(const std::string& value, PropertyType type)
 	{
 		return QString::fromStdString(value);
 	}
 
-	QString EntityInfoDialog::ToString(const EntityProperty& property)
+	QString EntityInfoDialog::ToString(const EntityProperty& property, PropertyType type)
 	{
 		return std::visit([=](const auto& value) -> QString
 		{
@@ -1008,7 +1202,7 @@ namespace bw
 			}
 			else
 			{
-				return ToString(value);
+				return ToString(value, type);
 			}
 		}, property);
 	}

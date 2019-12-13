@@ -7,18 +7,19 @@
 #ifndef BURGWAR_CORELIB_SHAREDMATCH_HPP
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
-#include <CoreLib/SharedWorld.hpp>
+#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>
 
-#define DEBUG_PREDICTION
+//#define DEBUG_PREDICTION
 
 namespace bw
 {
 	class BurgApp;
 	class ScriptingContext;
 	class SharedEntityStore;
+	class SharedLayer;
 	class SharedWeaponStore;
 
 	class SharedMatch
@@ -32,11 +33,14 @@ namespace bw
 			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
 
 			inline Nz::UInt64 GetCurrentTick() const;
+			inline Nz::UInt64 GetCurrentTime() const;
 			inline MatchLogger& GetLogger();
+			virtual SharedLayer& GetLayer(LayerIndex layerIndex) = 0;
+			virtual const SharedLayer& GetLayer(LayerIndex layerIndex) const = 0;
+			virtual LayerIndex GetLayerCount() const = 0;
 			inline const std::string& GetName() const;
 			inline Nz::UInt16 GetNetworkTick() const;
 			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
-			inline Nz::UInt64 GetCurrentTime() const;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 

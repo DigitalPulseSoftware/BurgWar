@@ -18,14 +18,16 @@ namespace bw
 	class Terrain
 	{
 		public:
-			Terrain(Match& match, Map& map);
+			Terrain(Map& map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
-			inline TerrainLayer& GetLayer(std::size_t layerIndex);
-			inline const TerrainLayer& GetLayer(std::size_t layerIndex) const;
-			inline std::size_t GetLayerCount() const;
+			inline TerrainLayer& GetLayer(LayerIndex layerIndex);
+			inline const TerrainLayer& GetLayer(LayerIndex layerIndex) const;
+			inline LayerIndex GetLayerCount() const;
 			inline const Map& GetMap() const;
+
+			void Initialize(Match& match);
 
 			void Update(float elapsedTime);
 

@@ -4,7 +4,9 @@
 
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
 #include <CoreLib/BurgApp.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
@@ -17,11 +19,12 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(Ndk::World& world, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent)
+	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, const EntityProperties& properties, const Ndk::EntityHandle& parent)
 	{
 		const auto& weaponClass = GetElement(weaponIndex);
 
-		const Ndk::EntityHandle& weapon = CreateEntity(world, weaponClass, properties);
+		const Ndk::EntityHandle& weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
+		weapon->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex());
 		weapon->AddComponent<NetworkSyncComponent>(weaponClass->fullName, parent);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);

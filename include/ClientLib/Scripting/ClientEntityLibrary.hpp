@@ -22,6 +22,9 @@ namespace bw
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
+		protected:
+			void InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate) override;
+
 		private:
 			void RegisterClientLibrary(sol::table& elementMetatable);
 

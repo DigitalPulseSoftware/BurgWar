@@ -50,6 +50,8 @@ function ENTITY:OnTick()
 			self.CurrentFace:Hide()
 			self.CurrentFace = self.DefaultFace
 			self.CurrentFace:Show()
+
+			self.FaceExpiration = nil
 		end
 	end
 end
@@ -81,8 +83,8 @@ function ENTITY:OnInputUpdate(input)
 				self.IsHopping = true
 				while (self.IsMoving) do
 					if (self:IsValid() and self:IsPlayerOnGround()) then
-						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -25), 0.15)
-						animation.PositionByOffset(self, Vec2(0, -25), Vec2(0, 0), 0.15)
+						animation.PositionByOffset(self, Vec2(0, 0), Vec2(0, -15), 0.15)
+						animation.PositionByOffset(self, Vec2(0, -15), Vec2(0, 0), 0.15)
 					else
 						timer.Sleep(30)
 					end

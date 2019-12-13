@@ -3,63 +3,24 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
-#include <CoreLib/AssetStore.hpp>
-#include <CoreLib/Components/InputComponent.hpp>
-#include <CoreLib/Components/PlayerMovementComponent.hpp>
-#include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
 {
-	const Ndk::EntityHandle& ClientEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
+	std::optional<LocalLayerEntity> ClientEntityStore::InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
 	{
-		const auto& entityClass = GetElement(entityIndex);
+		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, properties, parentEntity);
 
-		bool hasInputs;
-		bool playerControlled;
-		try
-		{
-			hasInputs = entityClass->elementTable["HasInputs"];
-			playerControlled = entityClass->elementTable["PlayerControlled"];
-		}
-		catch (const std::exception& e)
-		{
-			bwLog(GetLogger(), LogLevel::Error, "Failed to get entity class \"{0}\" informations: {1}", entityClass->name, e.what());
-			return Ndk::EntityHandle::InvalidHandle;
-		}
+		LocalLayerEntity layerEntity(layer, entity, serverId);
+		entity->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());
+		entity->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex());
 
-		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+		if (!InitializeEntity(entity))
+			return std::nullopt;
 
-		entity->AddComponent<Ndk::GraphicsComponent>();
-
-		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
-		nodeComponent.SetPosition(position);
-		nodeComponent.SetRotation(rotation);
-
-		if (playerControlled)
-			entity->AddComponent<PlayerMovementComponent>();
-
-		if (hasInputs)
-			entity->AddComponent<InputComponent>();
-
-		if (!InitializeEntity(*entityClass, entity))
-			entity->Kill();
-
-		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
-
-		return entity;
-	}
-
-	void ClientEntityStore::InitializeElementTable(sol::table& elementTable)
-	{
-		SharedEntityStore::InitializeElementTable(elementTable);
-	}
-
-	void ClientEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& entity)
-	{
-		SharedEntityStore::InitializeElement(elementTable, entity);
+		return layerEntity;
 	}
 }

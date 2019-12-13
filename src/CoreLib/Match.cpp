@@ -8,14 +8,15 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Protocol/CompressedInteger.hpp>
+#include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ServerElementLibrary.hpp>
 #include <CoreLib/Scripting/ServerEntityLibrary.hpp>
 #include <CoreLib/Scripting/ServerWeaponLibrary.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
-#include <CoreLib/Protocol/CompressedInteger.hpp>
-#include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
+#include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
@@ -23,43 +24,34 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration) :
+	Match::Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration) :
 	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
-	m_gamemodePath(std::filesystem::path("gamemodes") / gamemodeFolder),
+	m_gamemodePath(std::move(gamemodeFolder)),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
-	m_app(app)
+	m_app(app),
+	m_map(std::move(map))
 	{
 		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
-
-		m_map = Map::LoadFromBinary(app.GetConfig().GetStringOption("GameSettings.MapFile"));
 
 		ReloadAssets();
 		ReloadScripts();
 
-		m_terrain = std::make_unique<Terrain>(*this, *m_map);
+		m_terrain = std::make_unique<Terrain>(m_map);
+		m_terrain->Initialize(*this);
 
 		BuildMatchData();
 
 		m_gamemode->ExecuteCallback("OnInit");
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
-
-		if (m_app.GetConfig().GetBoolOption("Debug.SendServerState"))
-		{
-			m_debug.emplace();
-			if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
-				m_debug->socket.EnableBlocking(false);
-			else
-			{
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
-				m_debug.reset();
-			}
-		}
 	}
 
 	Match::~Match()
 	{
+		// Destroy players before scripting context
+		m_sessions.Clear();
+
 		// Clear timer manager before scripting context gets deleted
 		GetTimerManager().Clear();
 
@@ -72,10 +64,10 @@ namespace bw
 
 	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
-		for (std::size_t i = 0; i < m_terrain->GetLayerCount(); ++i)
+		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
-			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetWorld().GetEntities())
+			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
 		}
 	}
@@ -89,7 +81,7 @@ namespace bw
 
 		m_players.erase(it);
 
-		player->UpdateLayer(std::numeric_limits<std::size_t>::max());
+		player->MoveToLayer(Player::NoLayer);
 		player->UpdateMatch(nullptr);
 
 		Packets::ChatMessage chatPacket;
@@ -124,6 +116,21 @@ namespace bw
 		return *m_entityStore;
 	}
 
+	TerrainLayer& Match::GetLayer(LayerIndex layerIndex)
+	{
+		return m_terrain->GetLayer(layerIndex);
+	}
+
+	const TerrainLayer& Match::GetLayer(LayerIndex layerIndex) const
+	{
+		return m_terrain->GetLayer(layerIndex);
+	}
+
+	LayerIndex Match::GetLayerCount() const
+	{
+		return m_terrain->GetLayerCount();
+	}
+
 	ServerWeaponStore& Match::GetWeaponStore()
 	{
 		return *m_weaponStore;
@@ -132,6 +139,18 @@ namespace bw
 	const ServerWeaponStore& Match::GetWeaponStore() const
 	{
 		return *m_weaponStore;
+	}
+
+	void Match::InitDebugGhosts()
+	{
+		m_debug.emplace();
+		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+			m_debug->socket.EnableBlocking(false);
+		else
+		{
+			bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
+			m_debug.reset();
+		}
 	}
 
 	bool Match::Join(Player* player)
@@ -144,18 +163,7 @@ namespace bw
 		m_players.emplace_back(player);
 		player->UpdateMatch(this);
 
-		player->UpdateLayer(0);
-
-		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
-
-		Packets::ChatMessage chatPacket;
-		chatPacket.content = player->GetName() + " has joined.";
-
-		//FIXME: Should be for each session
-		ForEachPlayer([&](Player* player)
-		{
-			player->SendPacket(chatPacket);
-		});
+		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
 
 		return true;
 	}
@@ -250,8 +258,8 @@ namespace bw
 			m_assetStore->Clear();
 		}
 
-		assert(m_map);
-		for (const auto& asset : m_map->GetAssets())
+		assert(m_map.IsValid());
+		for (const auto& asset : m_map.GetAssets())
 		{
 			Nz::ByteArray checksum(asset.sha1Checksum.size(), 0);
 			std::memcpy(checksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
@@ -399,42 +407,48 @@ namespace bw
 			Nz::UInt32 entityCount = 0;
 			debugPacket << entityCount;
 
-			ForEachEntity([&](const Ndk::EntityHandle& entity)
+			for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 			{
-				if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
-					return;
-
-				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-
-				entityCount++;
-
-				CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
-				debugPacket << entityId;
-
-				bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
-
-				debugPacket << isPhysical;
-
-				Nz::Vector2f entityPosition;
-				Nz::RadianAnglef entityRotation;
-
-				if (isPhysical)
+				auto& layer = m_terrain->GetLayer(i);
+				layer.ForEachEntity([&](const Ndk::EntityHandle& entity)
 				{
-					auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+					if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
+						return;
 
-					entityPosition = entityPhys.GetPosition();
-					entityRotation = entityPhys.GetRotation();
+					auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
-					debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
-				}
-				else
-				{
-					entityPosition = Nz::Vector2f(entityNode.GetPosition());
-					entityRotation = Nz::RadianAnglef::FromDegrees(entityNode.GetRotation().ToEulerAngles().roll);
-				}
+					entityCount++;
 
-				debugPacket << entityPosition << entityRotation;
-			});
+					CompressedUnsigned<Nz::UInt16> layerId(i);
+					CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
+					debugPacket << layerId;
+					debugPacket << entityId;
+
+					bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
+
+					debugPacket << isPhysical;
+
+					Nz::Vector2f entityPosition;
+					Nz::RadianAnglef entityRotation;
+
+					if (isPhysical)
+					{
+						auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+
+						entityPosition = entityPhys.GetPosition();
+						entityRotation = entityPhys.GetRotation();
+
+						debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
+					}
+					else
+					{
+						entityPosition = Nz::Vector2f(entityNode.GetPosition());
+						entityRotation = AngleFromQuaternion(entityNode.GetRotation());
+					}
+
+					debugPacket << entityPosition << entityRotation;
+				});
+			}
 
 			debugPacket.GetStream()->SetCursorPos(offset);
 			debugPacket << entityCount;
@@ -474,6 +488,23 @@ namespace bw
 
 		m_matchData.scripts.clear();
 		BuildClientScriptListPacket(m_matchData);
+	}
+
+	void Match::OnPlayerReady(Player* player)
+	{
+		if (player->IsReady())
+			return;
+
+		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
+
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = player->GetName() + " has joined.";
+
+		//FIXME: Should be for each session
+		ForEachPlayer([&](Player* player)
+		{
+			player->SendPacket(chatPacket);
+		});
 	}
 
 	void Match::OnTick(bool lastTick)

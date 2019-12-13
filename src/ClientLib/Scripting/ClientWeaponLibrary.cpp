@@ -29,7 +29,8 @@ namespace bw
 	{
 		elementMetatable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			return 0; //< FIXME
+			/*const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
@@ -41,7 +42,7 @@ namespace bw
 				entity->AddComponent<SoundEmitterComponent>();
 
 			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);
+			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);*/
 		};
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
@@ -80,7 +81,7 @@ namespace bw
 
 			const float trailSpeed = 2500.f;
 
-			const Nz::SpriteRef& trailSprite = localMatch.GetTrailSprite();
+			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
 			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
 			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
 			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);

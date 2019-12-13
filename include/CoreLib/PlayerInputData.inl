@@ -8,7 +8,12 @@ namespace bw
 {
 	inline bool PlayerInputData::operator==(const PlayerInputData& rhs)
 	{
-		return aimDirection == rhs.aimDirection && isAttacking == rhs.isAttacking && isJumping == rhs.isJumping && isMovingLeft == rhs.isMovingLeft && isMovingRight == rhs.isMovingRight;
+		return aimDirection == rhs.aimDirection && 
+		       isAttacking == rhs.isAttacking && 
+		       isCrouching == rhs.isCrouching &&
+		       isJumping == rhs.isJumping && 
+		       isMovingLeft == rhs.isMovingLeft && 
+		       isMovingRight == rhs.isMovingRight;
 	}
 
 	inline bool PlayerInputData::operator!=(const PlayerInputData& rhs)

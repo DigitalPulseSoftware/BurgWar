@@ -1,4 +1,4 @@
-RegisterClientScript("tilemap.lua")
+RegisterClientScript()
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

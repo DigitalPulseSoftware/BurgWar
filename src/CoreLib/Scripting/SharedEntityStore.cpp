@@ -25,9 +25,7 @@ namespace bw
 	{
 		if (entityClass.initializeFunction)
 		{
-			sol::protected_function init = entityClass.initializeFunction;
-
-			auto result = init(entity->GetComponent<ScriptComponent>().GetTable());
+			auto result = entityClass.initializeFunction(entity->GetComponent<ScriptComponent>().GetTable());
 			if (!result.valid())
 			{
 				sol::error err = result;

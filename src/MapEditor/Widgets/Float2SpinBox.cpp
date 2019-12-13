@@ -40,6 +40,7 @@ namespace bw
 				break;
 
 			case LabelMode::PositionLabel:
+			case LabelMode::ScaleLabel:
 			case LabelMode::SizeLabel:
 			{
 				QString xLabel;

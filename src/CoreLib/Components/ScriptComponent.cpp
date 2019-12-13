@@ -16,6 +16,16 @@ namespace bw
 
 	ScriptComponent::~ScriptComponent() = default;
 
+	void ScriptComponent::UpdateEntity(const Ndk::EntityHandle& entity)
+	{
+		m_entityTable["_Entity"] = entity;
+	}
+
+	void ScriptComponent::OnAttached()
+	{
+		UpdateEntity(m_entity);
+	}
+
 	Ndk::ComponentIndex ScriptComponent::componentIndex;
 }
 

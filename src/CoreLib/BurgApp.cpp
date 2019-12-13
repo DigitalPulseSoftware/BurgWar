@@ -8,6 +8,7 @@
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
@@ -36,6 +37,7 @@ namespace bw
 		Ndk::InitializeComponent<CooldownComponent>("Cooldown");
 		Ndk::InitializeComponent<HealthComponent>("Health");
 		Ndk::InitializeComponent<InputComponent>("Input");
+		Ndk::InitializeComponent<MatchComponent>("Match");
 		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
 		Ndk::InitializeComponent<OwnerComponent>("Owner");
 		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");

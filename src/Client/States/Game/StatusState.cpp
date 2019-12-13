@@ -34,6 +34,7 @@ namespace bw
 	void StatusState::UpdateStatus(const std::string& status, const Nz::Color& color)
 	{
 		m_statusLabel->UpdateText(Nz::SimpleTextDrawer::Draw(status, 24, 0L, color));
+		m_statusLabel->Resize(m_statusLabel->GetPreferredSize());
 		m_statusLabel->Center();
 	}
 }

@@ -9,10 +9,12 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Utils.hpp>
 
 namespace bw
 {
-	NetworkSyncSystem::NetworkSyncSystem()
+	NetworkSyncSystem::NetworkSyncSystem(Nz::UInt16 layerIndex) :
+	m_layerIndex(layerIndex)
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
 		SetMaximumUpdateRate(30.f);
@@ -62,7 +64,10 @@ namespace bw
 		creationEvent.entityClass = syncComponent.GetEntityClass();
 
 		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
+		{
+			assert(parent->GetWorld() == entity->GetWorld());
 			creationEvent.parent = parent->GetId();
+		}
 
 		if (entity->HasComponent<HealthComponent>())
 		{
@@ -96,7 +101,7 @@ namespace bw
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			creationEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())
@@ -156,7 +161,7 @@ namespace bw
 		{
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			movementEvent.rotation = Nz::DegreeAnglef(entityNode.GetRotation(Nz::CoordSys_Local).ToEulerAngles().roll); //< Erk
+			movementEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())
@@ -207,7 +212,14 @@ namespace bw
 
 		if (entity->HasComponent<HealthComponent>())
 		{
-			slots.onHealthChange.Connect(entity->GetComponent<HealthComponent>().OnHealthChange, [&](HealthComponent* health)
+			auto& entityHealth = entity->GetComponent<HealthComponent>();
+
+			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle&)
+			{
+				m_deadEvents.emplace_back(health->GetEntity()->GetId());
+			});
+
+			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health)
 			{
 				m_healthUpdateEntities.Insert(health->GetEntity());
 			});
@@ -251,8 +263,15 @@ namespace bw
 				healthEvent.entityId = entity->GetId();
 				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
 			}
-
 			m_healthUpdateEntities.Clear();
+
+			for (Ndk::EntityId entityId : m_deadEvents)
+			{
+				EntityHealth& healthEvent = m_healthEvents.emplace_back();
+				healthEvent.entityId = entityId;
+				healthEvent.currentHealth = 0;
+			}
+			m_deadEvents.clear();
 
 			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
 		}

@@ -27,34 +27,40 @@ namespace bw
 		});
 	}
 
-	void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc)
+	void LocalMatchPrediction::RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc)
 	{
-		auto it = m_entities.find(entity->GetId());
+		auto it = m_entities.find(layerEntityId);
 		if (it == m_entities.end())
-			syncFunc(entity, CreateReconciliationEntity(entity));
+			syncFunc(entity, CreateReconciliationEntity(layerEntityId, entity));
 		else
-			syncFunc(entity, it->second);
+		{
+			auto& entityData = it.value();
+			entityData.isRegistered = true;
 
-		m_registeredEntities.UnboundedSet(entity->GetId());
+			syncFunc(entity, entityData.entity);
+		}
 	}
 
-	void LocalMatchPrediction::RegisterForPrediction(const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc)
+	void LocalMatchPrediction::RegisterForPrediction(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& entity, const std::function<void(const Ndk::EntityHandle& entity)>& constructor, const std::function<void(const Ndk::EntityHandle& source, const Ndk::EntityHandle& target)>& syncFunc)
 	{
-		auto it = m_entities.find(entity->GetId());
+		auto it = m_entities.find(layerEntityId);
 		if (it == m_entities.end())
 		{
-			const Ndk::EntityHandle& reconciliationEntity = CreateReconciliationEntity(entity);
+			const Ndk::EntityHandle& reconciliationEntity = CreateReconciliationEntity(layerEntityId, entity);
 			constructor(reconciliationEntity);
 
 			syncFunc(entity, reconciliationEntity);
 		}
 		else
-			syncFunc(entity, it->second);
+		{
+			auto& entityData = it.value();
+			entityData.isRegistered = true;
 
-		m_registeredEntities.UnboundedSet(entity->GetId());
+			syncFunc(entity, entityData.entity);
+		}
 	}
 
-	const Ndk::EntityHandle& LocalMatchPrediction::CreateReconciliationEntity(const Ndk::EntityHandle& serverEntity)
+	const Ndk::EntityHandle& LocalMatchPrediction::CreateReconciliationEntity(Nz::UInt64 layerEntityId, const Ndk::EntityHandle& serverEntity)
 	{
 		const Ndk::EntityHandle& entity = m_world.CreateEntity();
 		entity->AddComponent<Ndk::NodeComponent>();
@@ -74,8 +80,11 @@ namespace bw
 			entityPhys.SetSurfaceVelocity(originalPhys.GetSurfaceVelocity());
 		}
 
-		assert(m_entities.find(serverEntity->GetId()) == m_entities.end());
-		m_entities.emplace(serverEntity->GetId(), entity);
+		assert(m_entities.find(layerEntityId) == m_entities.end());
+		EntityData entityData;
+		entityData.entity = entity;
+
+		m_entities.emplace(layerEntityId, std::move(entityData));
 
 		return entity;
 	}

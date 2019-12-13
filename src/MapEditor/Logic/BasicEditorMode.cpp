@@ -48,6 +48,8 @@ namespace bw
 
 			if (bestEntity)
 				editorWindow.SelectEntity(bestEntity->GetId());
+			else
+				editorWindow.ClearSelectedEntity();
 		}
 	}
 }

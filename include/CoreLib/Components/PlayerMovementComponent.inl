@@ -14,6 +14,11 @@ namespace bw
 	{
 	}
 
+	inline const std::shared_ptr<PlayerMovementController>& PlayerMovementComponent::GetController() const
+	{
+		return m_controller;
+	}
+
 	inline float PlayerMovementComponent::GetJumpTime() const
 	{
 		return m_jumpTime;
@@ -27,6 +32,11 @@ namespace bw
 	inline bool PlayerMovementComponent::IsOnGround() const
 	{
 		return m_isOnGround;
+	}
+
+	inline void PlayerMovementComponent::UpdateController(std::shared_ptr<PlayerMovementController> controller)
+	{
+		m_controller = std::move(controller);
 	}
 
 	inline bool PlayerMovementComponent::UpdateFacingRightState(bool isFacingRight)

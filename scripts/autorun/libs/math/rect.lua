@@ -1,4 +1,4 @@
-RegisterClientScript("rect.lua")
+RegisterClientScript()
 
 local rectmeta = RegisterMetatable("rect")
 rectmeta.__index = rectmeta

@@ -152,7 +152,7 @@ local frameworkConfigs = {
 location(_ACTION)
 
 workspace("Burgwar")
-	configurations({"Debug", "Release"})
+	configurations({"Debug", "Release", "ReleaseWithDebug"})
 	platforms("x64")
 	architecture("x86_64")
 	language("C++")
@@ -164,11 +164,19 @@ workspace("Burgwar")
 	filter("configurations:Release")
 		optimize("On")
 
+	filter("configurations:ReleaseWithDebug")
+		symbols("On")
+		optimize("Speed")
+
+	filter("configurations:ReleaseWithDebug", "action:vs*")
+		buildoptions "/Zo"
+
 	filter {"configurations:Debug", "kind:*Lib"}
 		targetsuffix("-d")
 
 	filter "action:vs*"
 		defines "_CRT_SECURE_NO_WARNINGS"
+		buildoptions "/bigobj"
 
 	filter({})
 
@@ -283,6 +291,9 @@ workspace("Burgwar")
 				filter "action:gmake or gmake2"
 					links "stdc++fs"
 					links "pthread"
+
+				filter "action:vs*"
+					files("../thirdparty/include/**.natvis")
 
 				filter {}
 

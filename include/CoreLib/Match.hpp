@@ -15,6 +15,7 @@
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
@@ -37,11 +38,13 @@ namespace bw
 
 	class Match : public SharedMatch
 	{
+		friend class MatchClientSession;
+
 		public:
 			struct Asset;
 			struct ClientScript;
 
-			Match(BurgApp& app, std::string matchName, const std::string& gamemodeFolder, std::size_t maxPlayerCount, float tickDuration);
+			Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -59,6 +62,9 @@ namespace bw
 			const ServerEntityStore& GetEntityStore() const override;
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
 			inline const std::filesystem::path& GetGamemodePath() const;
+			TerrainLayer& GetLayer(LayerIndex layerIndex) override;
+			const TerrainLayer& GetLayer(LayerIndex layerIndex) const override;
+			LayerIndex GetLayerCount() const override;
 			inline sol::state& GetLuaState();
 			inline const Packets::MatchData& GetMatchData() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
@@ -69,6 +75,8 @@ namespace bw
 			inline const Terrain& GetTerrain() const;
 			ServerWeaponStore& GetWeaponStore() override;
 			const ServerWeaponStore& GetWeaponStore() const override;
+
+			void InitDebugGhosts();
 
 			void Leave(Player* player);
 			bool Join(Player* player);
@@ -100,6 +108,7 @@ namespace bw
 
 		private:
 			void BuildMatchData();
+			void OnPlayerReady(Player* player);
 			void OnTick(bool lastTick) override;
 
 			struct Debug
@@ -111,7 +120,6 @@ namespace bw
 			std::filesystem::path m_gamemodePath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
-			std::optional<Map> m_map;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
@@ -125,6 +133,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			BurgApp& m_app;
+			Map m_map;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
 	};

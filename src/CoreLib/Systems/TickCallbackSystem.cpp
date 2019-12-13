@@ -39,13 +39,14 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
 			const auto& element = scriptComponent.GetElement();
-			sol::protected_function onTick = element->tickFunction;
 
-			auto result = onTick(scriptComponent.GetTable());
+			assert(element->tickFunction);
+
+			auto result = element->tickFunction(scriptComponent.GetTable());
 			if (!result.valid())
 			{
 				sol::error err = result;
-				bwLog(m_match.GetLogger(), LogLevel::Error, "OnAnimationStart failed: {0}", err.what());
+				bwLog(m_match.GetLogger(), LogLevel::Error, "OnTick failed: {0}", err.what());
 			}
 		}
 	}

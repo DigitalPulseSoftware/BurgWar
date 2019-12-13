@@ -8,29 +8,25 @@
 #define BURGWAR_CORELIB_SCRIPTING_CLIENTENTITYSTORE_HPP
 
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
-#include <CoreLib/Scripting/SharedEntityStore.hpp>
+#include <ClientLib/Scripting/ClientEditorEntityStore.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/World.hpp>
+#include <optional>
 
 namespace bw
 {
 	class AssetStore;
+	class LocalLayer;
+	class LocalLayerEntity;
 
-	class ClientEntityStore : public SharedEntityStore
+	class ClientEntityStore : public ClientEditorEntityStore
 	{
 		public:
-			inline ClientEntityStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
+			using ClientEditorEntityStore::ClientEditorEntityStore;
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const;
-
-		protected:
-			void InitializeElementTable(sol::table& elementTable) override;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
-
-			AssetStore& m_assetStore;
+			std::optional<LocalLayerEntity> InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
 	};
 }
 

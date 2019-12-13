@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 #define BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/PacketSerializer.hpp>
@@ -37,9 +38,12 @@ namespace bw
 		ControlEntity,
 		CreateEntities,
 		DeleteEntities,
+		DisableLayer,
 		DownloadClientScriptRequest,
 		DownloadClientScriptResponse,
+		EnableLayer,
 		EntitiesAnimation,
+		EntitiesDeath,
 		EntitiesInputs,
 		EntityWeapon,
 		InputTimingCorrection,
@@ -49,10 +53,11 @@ namespace bw
 		NetworkStrings,
 		PlayerChat,
 		PlayerConsoleCommand,
+		PlayerLayer,
 		PlayersInput,
 		PlayerSelectWeapon,
 		PlayerWeapons,
-		Ready
+		Ready,
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -62,6 +67,62 @@ namespace bw
 
 	namespace Packets
 	{
+		namespace Helper
+		{
+			struct EntityId
+			{
+				CompressedUnsigned<Nz::UInt16> layerId;
+				CompressedUnsigned<Nz::UInt32> entityId;
+			};
+
+			struct HealthData
+			{
+				Nz::UInt16 maxHealth;
+				Nz::UInt16 currentHealth;
+			};
+
+			struct PlayerMovementData
+			{
+				bool isFacingRight;
+			};
+
+			struct PhysicsProperties
+			{
+				Nz::RadianAnglef angularVelocity;
+				Nz::Vector2f linearVelocity;
+			};
+
+			struct Properties
+			{
+				using PropertyValue = std::variant<
+					std::vector<bool>,
+					std::vector<float>,
+					std::vector<Nz::Int64>,
+					std::vector<Nz::Vector2f>,
+					std::vector<Nz::Vector2i64>,
+					std::vector<std::string>
+				>;
+
+				CompressedUnsigned<Nz::UInt32> name;
+				PropertyValue value;
+				bool isArray;
+			};
+
+			struct EntityData
+			{
+				CompressedUnsigned<Nz::UInt32> entityClass;
+				Nz::RadianAnglef rotation;
+				Nz::Vector2f position;
+				std::optional<std::string> name;
+				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
+				std::optional<HealthData> health;
+				std::optional<PlayerInputData> inputs;
+				std::optional<PlayerMovementData> playerMovement;
+				std::optional<PhysicsProperties> physicsProperties;
+				std::vector<Properties> properties;
+			};
+		}
+
 #define DeclarePacket(Type) struct Type : PacketTag<PacketType:: Type >
 
 		DeclarePacket(Auth)
@@ -84,6 +145,7 @@ namespace bw
 
 		DeclarePacket(ChatMessage)
 		{
+			Nz::UInt8 playerIndex;
 			std::string content;
 		};
 		
@@ -122,61 +184,27 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
+			CompressedUnsigned<LayerIndex> layerIndex;
 			CompressedUnsigned<Nz::UInt32> entityId;
 		};
 
 		DeclarePacket(CreateEntities)
 		{
-			struct HealthData
-			{
-				Nz::UInt16 maxHealth;
-				Nz::UInt16 currentHealth;
-			};
-
-			struct PlayerMovementData
-			{
-				bool isFacingRight;
-			};
-
-			struct PhysicsProperties
-			{
-				Nz::RadianAnglef angularVelocity;
-				Nz::Vector2f linearVelocity;
-			};
-
-			struct Properties
-			{
-				using PropertyValue = std::variant<
-					std::vector<bool>,
-					std::vector<float>,
-					std::vector<Nz::Int64>,
-					std::vector<Nz::Vector2f>,
-					std::vector<Nz::Vector2i64>,
-					std::vector<std::string>
-				>;
-
-				CompressedUnsigned<Nz::UInt32> name;
-				PropertyValue value;
-				bool isArray;
-			};
-
 			struct Entity
 			{
 				CompressedUnsigned<Nz::UInt32> id;
-				CompressedUnsigned<Nz::UInt32> entityClass;
-				Nz::RadianAnglef rotation;
-				Nz::Vector2f position;
-				std::optional<std::string> name;
-				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
-				std::optional<HealthData> health;
-				std::optional<PlayerInputData> inputs;
-				std::optional<PlayerMovementData> playerMovement;
-				std::optional<PhysicsProperties> physicsProperties;
-				std::vector<Properties> properties;
+				Helper::EntityData data;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(DeleteEntities)
@@ -186,8 +214,21 @@ namespace bw
 				CompressedUnsigned<Nz::UInt32> id;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
+		};
+
+		DeclarePacket(DisableLayer)
+		{
+			Nz::UInt16 stateTick;
+			CompressedUnsigned<LayerIndex> layerIndex;
 		};
 
 		DeclarePacket(DownloadClientScriptRequest)
@@ -200,6 +241,19 @@ namespace bw
 			std::vector<Nz::UInt8> fileContent;
 		};
 
+		DeclarePacket(EnableLayer)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityData data;
+			};
+
+			Nz::UInt16 stateTick;
+			CompressedUnsigned<LayerIndex> layerIndex;
+			std::vector<Entity> layerEntities;
+		};
+
 		DeclarePacket(EntitiesAnimation)
 		{
 			struct Entity
@@ -208,8 +262,33 @@ namespace bw
 				Nz::UInt8 animId;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
+		};
+
+		DeclarePacket(EntitiesDeath)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(EntitiesInputs)
@@ -220,15 +299,25 @@ namespace bw
 				PlayerInputData inputs;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
+			CompressedUnsigned<LayerIndex> layerIndex;
 			CompressedUnsigned<Nz::UInt32> entityId;
 			CompressedUnsigned<Nz::UInt32> weaponEntityId;
+
+			static constexpr Nz::UInt32 NoWeapon = 0xFFFFFFFF;
 		};
 
 		DeclarePacket(HealthUpdate)
@@ -239,8 +328,15 @@ namespace bw
 				Nz::UInt16 currentHealth;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(InputTimingCorrection)
@@ -300,8 +396,15 @@ namespace bw
 				std::optional<PhysicsProperties> physicsProperties;
 			};
 
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
+			std::vector<Layer> layers;
 		};
 
 		DeclarePacket(NetworkStrings)
@@ -322,6 +425,13 @@ namespace bw
 			std::string command;
 		};
 
+		DeclarePacket(PlayerLayer)
+		{
+			Nz::UInt16 stateTick;
+			Nz::UInt8 playerIndex;
+			CompressedUnsigned<LayerIndex> layerIndex;
+		};
+
 		DeclarePacket(PlayersInput)
 		{
 			Nz::UInt16 estimatedServerTick;
@@ -340,6 +450,7 @@ namespace bw
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 playerIndex;
+			CompressedUnsigned<LayerIndex> layerIndex;
 			std::vector<CompressedUnsigned<Nz::UInt32>> weaponEntities;
 		};
 
@@ -360,9 +471,12 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, ControlEntity& data);
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
+		void Serialize(PacketSerializer& serializer, DisableLayer& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
 		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
+		void Serialize(PacketSerializer& serializer, EnableLayer& data);
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
+		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
@@ -372,6 +486,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
+		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
@@ -379,6 +494,7 @@ namespace bw
 
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
+		void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
 	}
 }
 

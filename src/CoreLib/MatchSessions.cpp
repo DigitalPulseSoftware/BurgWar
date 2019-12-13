@@ -18,8 +18,15 @@ namespace bw
 
 	MatchSessions::~MatchSessions()
 	{
+		Clear();
+	}
+
+	void MatchSessions::Clear()
+	{
 		for (const auto& pair : m_sessionIdToSession)
 			m_sessionPool.Delete(pair.second);
+
+		m_sessionIdToSession.clear();
 	}
 
 	void MatchSessions::Poll()

@@ -69,12 +69,32 @@ namespace bw
 			Nz::RenderWindow::Create(Nz::WindowHandle(winId()));
 		}
 
-		m_updateTimer.start();
+		OnShow();
 	}
 
 	QPaintEngine* NazaraCanvas::paintEngine() const
 	{
 		return nullptr;
+	}
+
+	void NazaraCanvas::OnHide()
+	{
+		m_updateTimer.stop();
+
+		Nz::WindowEvent event;
+		event.type = Nz::WindowEventType_LostFocus;
+
+		PushEvent(event);
+	}
+
+	void NazaraCanvas::OnShow()
+	{
+		m_updateTimer.start();
+
+		Nz::WindowEvent event;
+		event.type = Nz::WindowEventType_GainedFocus;
+
+		PushEvent(event);
 	}
 
 	void NazaraCanvas::OnUpdate(float elapsedTime)
@@ -85,12 +105,12 @@ namespace bw
 
 	void NazaraCanvas::closeEvent(QCloseEvent* event)
 	{
-		m_updateTimer.stop();
+		OnHide();
 	}
 
 	void NazaraCanvas::hideEvent(QHideEvent* event)
 	{
-		m_updateTimer.stop();
+		OnHide();
 	}
 
 	void NazaraCanvas::paintEvent(QPaintEvent*)

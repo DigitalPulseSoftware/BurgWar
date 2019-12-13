@@ -5,6 +5,8 @@
 #include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <sol3/sol.hpp>
@@ -18,42 +20,15 @@ namespace bw
 
 	void SharedWeaponLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
+		elementMetatable["GetOwnerEntity"] = [](const sol::table& weaponTable) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			const Ndk::EntityHandle& ownerEntity = entity->GetComponent<WeaponComponent>().GetOwner();
+			if (!ownerEntity)
+				return sol::nil;
 
-			Nz::Vector2f direction(nodeComponent.GetRotation() * Nz::Vector2f::UnitX());
-			if (nodeComponent.GetScale().x < 0.f)
-				direction = -direction;
-
-			return direction;
-		};
-
-		elementMetatable["GetPosition"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition());
-		};
-
-		elementMetatable["GetRotation"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetRotation().ToEulerAngles().roll; //<FIXME: not very efficient
-		};
-
-		//FIXME: Move this is SharedElementLibrary?
-		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return nodeComponent.GetScale().x > 0.f;
+			return ownerEntity->GetComponent<ScriptComponent>().GetTable();
 		};
 	}
 }

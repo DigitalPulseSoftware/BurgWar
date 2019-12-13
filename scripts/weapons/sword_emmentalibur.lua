@@ -1,4 +1,4 @@
-RegisterClientScript("sword_emmentalibur.lua")
+RegisterClientScript()
 
 WEAPON.Cooldown = 0.5
 WEAPON.Scale = 0.6

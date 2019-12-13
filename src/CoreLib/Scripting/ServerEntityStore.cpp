@@ -5,8 +5,9 @@
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <NDK/Components.hpp>
 #include <Nazara/Utility/Image.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
-#include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -16,27 +17,21 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties) const
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
-		bool playerControlled;
-		try
-		{
-			playerControlled = entityClass->elementTable["PlayerControlled"];
-		}
-		catch (const std::exception& e)
-		{
-			bwLog(GetLogger(), LogLevel::Error, "Failed to get entity class \"{0}\" informations: {1}", entityClass->name, e.what());
-			return Ndk::EntityHandle::InvalidHandle;
-		}
+		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
-
-		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, properties);
+		const Ndk::EntityHandle& entity = CreateEntity(layer.GetWorld(), entityClass, properties);
+		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex());
 
 		auto& node = entity->AddComponent<Ndk::NodeComponent>();
 		node.SetPosition(position);
 		node.SetRotation(rotation);
+
+		if (parent)
+			node.SetParent(parent);
 
 		if (entityClass->maxHealth > 0)
 		{
@@ -66,7 +61,13 @@ namespace bw
 		}
 
 		if (entityClass->isNetworked)
-			entity->AddComponent<NetworkSyncComponent>(entityClass->fullName);
+		{
+			// Not quite sure about this, maybe parent handling should be automatic?
+			if (parent && parent->HasComponent<NetworkSyncComponent>())
+				entity->AddComponent<NetworkSyncComponent>(entityClass->fullName, parent);
+			else
+				entity->AddComponent<NetworkSyncComponent>(entityClass->fullName);
+		}
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();

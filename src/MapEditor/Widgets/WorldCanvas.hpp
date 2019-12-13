@@ -21,6 +21,7 @@ namespace bw
 			~WorldCanvas() = default;
 
 			void EnableCameraControl(bool enable);
+			void EnablePhysicsDebugDraw(bool enable);
 
 			inline const CameraMovement& GetCameraController() const;
 			inline const Ndk::EntityHandle& GetCameraEntity();
@@ -48,6 +49,7 @@ namespace bw
 			std::optional<CameraMovement> m_cameraMovement;
 			Ndk::EntityHandle m_cameraEntity;
 			Ndk::World m_world;
+			bool m_isPhysicsDebugDrawEnabled;
 	};
 }
 

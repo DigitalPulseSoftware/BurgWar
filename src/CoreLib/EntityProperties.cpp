@@ -81,6 +81,8 @@ namespace bw
 			return PropertyType::IntegerPosition;
 		else if (str == "intsize" || str == "integersize")
 			return PropertyType::IntegerSize;
+		else if (str == "layer")
+			return PropertyType::Layer;
 		else if (str == "string")
 			return PropertyType::String;
 		else if (str == "texture")
@@ -131,6 +133,9 @@ namespace bw
 
 			case PropertyType::IntegerSize:
 				return "integersize";
+
+			case PropertyType::Layer:
+				return "layer";
 
 			case PropertyType::String:
 				return "string";
@@ -206,6 +211,7 @@ namespace bw
 					return HandleDataArray(Nz::Vector2f());
 
 				case PropertyType::Integer:
+				case PropertyType::Layer:
 					return HandleDataArray(Nz::Int64());
 
 				case PropertyType::IntegerPosition:
@@ -235,6 +241,7 @@ namespace bw
 					return value.as<Nz::Vector2f>();
 
 				case PropertyType::Integer:
+				case PropertyType::Layer:
 					return value.as<Nz::Int64>();
 
 				case PropertyType::IntegerPosition:

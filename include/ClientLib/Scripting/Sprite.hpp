@@ -7,6 +7,8 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_SPRITE_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_SPRITE_HPP
 
+#include <ClientLib/LocalLayerEntity.hpp>
+#include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Entity.hpp>
@@ -16,7 +18,7 @@ namespace bw
 	class Sprite
 	{
 		public:
-			inline Sprite(Ndk::EntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
 			Sprite(const Sprite&) = default;
 			Sprite(Sprite&&) = default;
 			~Sprite() = default;
@@ -28,13 +30,18 @@ namespace bw
 
 			//bool IsVisible() const;
 
+			inline void SetOffset(const Nz::Vector2f& newOffset);
+			inline void SetRotation(const Nz::DegreeAnglef& newRotation);
+			inline void SetSize(const Nz::Vector2f& newSize);
 			void Show(bool show = true);
 
 			Sprite& operator=(const Sprite&) = default;
 			Sprite& operator=(Sprite&&) = default;
 
 		private:
-			Ndk::EntityHandle m_entity;
+			void UpdateTransformMatrix();
+
+			LocalLayerEntityHandle m_entity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SpriteRef m_sprite;
 			int m_renderOrder;
