@@ -122,7 +122,7 @@ namespace sol
 
 	inline int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
 	{
-		lua_createtable(L, 0, 5);
+		lua_createtable(L, 0, 6);
 		sol::stack_table vec(L);
 		vec["aimDirection"] = inputs.aimDirection;
 		vec["isAttacking"] = inputs.isAttacking;
