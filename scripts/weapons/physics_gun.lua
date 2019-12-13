@@ -46,7 +46,7 @@ function WEAPON:Launch()
 		return
 	end
 
-	local entityMass = self.AttachedEntity:GetMass()
+	local entityMass = nearestResult.hitEntity:GetMass()
 	if (entityMass <= 0) then
 		return
 	end
