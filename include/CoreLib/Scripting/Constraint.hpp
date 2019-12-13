@@ -22,10 +22,16 @@ namespace bw
 
 			void EnableBodyCollision(bool enable);
 
+			float GetErrorBias() const;
+			float GetMaxForce() const;
+
 			bool IsBodyCollisionEnabled() const;
 			inline bool IsValid() const;
 
 			void Remove();
+
+			void SetErrorBias(float errorBias);
+			void SetMaxForce(float maxForce);
 
 			Constraint& operator=(const Constraint&) = delete;
 			Constraint& operator=(Constraint&&) noexcept = default;

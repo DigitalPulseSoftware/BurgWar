@@ -48,9 +48,15 @@ namespace bw
 
 			"EnableBodyCollision", &Constraint::EnableBodyCollision,
 
+			"GetErrorBias", &Constraint::GetErrorBias,
+			"GetMaxForce", &Constraint::GetMaxForce,
+
 			"IsBodyCollisionEnabled", &Constraint::IsBodyCollisionEnabled,
 
-			"Remove", &Constraint::Remove
+			"Remove", &Constraint::Remove,
+
+			"SetErrorBias", &Constraint::SetErrorBias,
+			"SetMaxForce",  &Constraint::SetMaxForce
 		);
 
 		state.new_usertype<DampedSpringConstraint>("SpringConstraint",

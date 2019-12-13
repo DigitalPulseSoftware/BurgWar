@@ -14,6 +14,18 @@ namespace bw
 		AssertValid();
 		m_constraint->EnableBodyCollision(enable);
 	}
+
+	float Constraint::GetErrorBias() const
+	{
+		AssertValid();
+		return m_constraint->GetErrorBias();
+	}
+
+	float Constraint::GetMaxForce() const
+	{
+		AssertValid();
+		return m_constraint->GetMaxForce();
+	}
 	
 	bool Constraint::IsBodyCollisionEnabled() const
 	{
@@ -26,6 +38,18 @@ namespace bw
 		AssertValid();
 		if (m_entity && !m_entity->GetComponent<Ndk::ConstraintComponent2D>().RemoveConstraint(m_constraint))
 			m_entity->Kill();
+	}
+
+	void Constraint::SetErrorBias(float errorBias)
+	{
+		AssertValid();
+		m_constraint->SetErrorBias(errorBias);
+	}
+
+	void Constraint::SetMaxForce(float maxForce)
+	{
+		AssertValid();
+		m_constraint->SetMaxForce(maxForce);
 	}
 
 	void Constraint::AssertValid() const
