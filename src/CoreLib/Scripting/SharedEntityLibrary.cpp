@@ -200,14 +200,19 @@ namespace bw
 				std::size_t colliderCount = colliderTable.size();
 				luaL_argcheck(L, colliderCount > 0, 2, "Invalid collider count");
 
-				std::vector<Nz::Collider2DRef> colliders(colliderCount);
-				for (std::size_t i = 0; i < colliderCount; ++i)
+				if (colliderCount == 1)
+					collider = ParseCollider(colliderTable[1]);
+				else
 				{
-					colliders[i] = ParseCollider(colliderTable[i + 1]);
-					luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
-				}
+					std::vector<Nz::Collider2DRef> colliders(colliderCount);
+					for (std::size_t i = 0; i < colliderCount; ++i)
+					{
+						colliders[i] = ParseCollider(colliderTable[i + 1]);
+						luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
+					}
 
-				collider = Nz::CompoundCollider2D::New(std::move(colliders));
+					collider = Nz::CompoundCollider2D::New(std::move(colliders));
+				}
 			}
 
 			collider->SetTrigger((isTriggerOpt) ? *isTriggerOpt : false);
