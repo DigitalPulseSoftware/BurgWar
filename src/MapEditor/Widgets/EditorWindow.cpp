@@ -219,8 +219,11 @@ namespace bw
 		m_workingMapPath = std::move(mapPath);
 
 		// Reset entity info dialog (as it depends on the map)
-		m_entityInfoDialog->deleteLater();
-		m_entityInfoDialog = nullptr;
+		if (m_entityInfoDialog)
+		{
+			m_entityInfoDialog->deleteLater();
+			m_entityInfoDialog = nullptr;
+		}
 
 		setWindowFilePath(QString::fromStdString(mapPath.generic_u8string()));
 
@@ -535,7 +538,7 @@ namespace bw
 		QMenu* editorMenu = menuBar()->addMenu(tr("&Editor"));
 		{
 			QAction* reloadScripts = editorMenu->addAction(tr("Reload scripts"));
-			connect(reloadScripts, &QAction::trigger, this, &EditorWindow::ReloadScripts);
+			connect(reloadScripts, &QAction::triggered, this, &EditorWindow::ReloadScripts);
 		}
 
 		m_mapMenu = menuBar()->addMenu(tr("&Map"));
