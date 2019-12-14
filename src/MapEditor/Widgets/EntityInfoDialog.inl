@@ -6,11 +6,6 @@
 
 namespace bw
 {
-	const EntityInfo& EntityInfoDialog::GetInfo() const
-	{
-		return m_entityInfo;
-	}
-
 	inline const Nz::Vector2f& EntityInfoDialog::GetPosition() const
 	{
 		return m_entityInfo.position;

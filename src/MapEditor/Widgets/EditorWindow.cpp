@@ -744,18 +744,14 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
 
-		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog)
-		{
-			const EntityInfo& entityInfo = createEntityDialog->GetInfo();
-
-			auto& layer = m_workingMap.GetLayer(layerIndex);
-			
-			std::size_t entityIndex = layer.entities.size();
-			auto& layerEntity = layer.entities.emplace_back();
-			layerEntity.entityType = entityInfo.entityClass;
-			layerEntity.name = entityInfo.entityName;
+		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		{			
+			std::size_t entityIndex = m_workingMap.GetEntityCount(layerIndex);
+			auto& layerEntity = m_workingMap.AddEntity(layerIndex);
+			layerEntity.entityType = std::move(entityInfo.entityClass);
+			layerEntity.name = std::move(entityInfo.entityName);
 			layerEntity.position = entityInfo.position;
-			layerEntity.properties = entityInfo.properties;
+			layerEntity.properties = std::move(entityInfo.properties);
 			layerEntity.rotation = entityInfo.rotation;
 
 			RegisterEntity(entityIndex);
@@ -885,40 +881,53 @@ namespace bw
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex, item, canvasId](EntityInfoDialog* editEntityDialog)
+		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex](EntityInfoDialog* editEntityDialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
-			const EntityInfo& entityInfo = editEntityDialog->GetInfo();
-
 			auto& layer = m_workingMap.GetLayer(layerIndex);
-
 			auto& layerEntity = layer.entities[entityIndex];
-			layerEntity.entityType = entityInfo.entityClass;
-			layerEntity.position = entityInfo.position;
-			layerEntity.properties = entityInfo.properties;
-			layerEntity.rotation = entityInfo.rotation;
-
-			// TODO: Recreate entity only if properties/class updated
-
-			//m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
-			m_canvas->DeleteEntity(canvasId);
-			m_entityIndexes.erase(canvasId);
-
-			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties)->GetId();
-			m_entityIndexes.emplace(newCanvasId, entityIndex);
-			item->setData(Qt::UserRole + 1, newCanvasId);
 
 			bool resetItemName = false;
-			if (layerEntity.entityType != entityInfo.entityClass)
+
+			if (updateFlags & EntityInfoUpdate::EntityClass)
 			{
-				layerEntity.entityType = entityInfo.entityClass;
+				layerEntity.entityType = std::move(entityInfo.entityClass);
 				resetItemName = true;
 			}
 
-			if (layerEntity.name != entityInfo.entityName)
+			if (updateFlags & EntityInfoUpdate::EntityName)
 			{
-				layerEntity.name = entityInfo.entityName;
+				layerEntity.name = std::move(entityInfo.entityName);
 				resetItemName = true;
 			}
+
+			if (updateFlags & EntityInfoUpdate::PositionRotation)
+			{
+				layerEntity.position = entityInfo.position;
+				layerEntity.rotation = entityInfo.rotation;
+			}
+
+			if (updateFlags & EntityInfoUpdate::Properties)
+				layerEntity.properties = std::move(entityInfo.properties);
+
+			// TODO: Recreate entity only if properties/class updated
+			if (!m_currentLayer || *m_currentLayer != layerIndex)
+				return;
+
+			QListWidgetItem* item = m_entityList.listWidget->item(entityIndex);
+			assert(item);
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+			if (updateFlags & EntityInfoUpdate::Properties)
+			{
+				m_canvas->DeleteEntity(canvasId);
+				m_entityIndexes.erase(canvasId);
+
+				Ndk::EntityId newCanvasId = m_canvas->CreateEntity(layerEntity.entityType, layerEntity.position, layerEntity.rotation, layerEntity.properties)->GetId();
+				m_entityIndexes.emplace(newCanvasId, entityIndex);
+				item->setData(Qt::UserRole + 1, newCanvasId);
+			}
+			else if (updateFlags & EntityInfoUpdate::PositionRotation)
+				m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
 
 			if (resetItemName)
 			{

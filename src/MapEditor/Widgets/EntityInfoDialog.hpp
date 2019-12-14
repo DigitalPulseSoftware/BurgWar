@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
+#include <Nazara/Core/Flags.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Map.hpp>
@@ -29,6 +30,30 @@ class QWidget;
 
 namespace bw
 {
+	enum class EntityInfoUpdate
+	{
+		EntityClass,
+		EntityName,
+		PositionRotation,
+		Properties,
+
+		Max = Properties
+	};
+}
+
+namespace Nz
+{
+	template<>
+	struct EnumAsFlags<bw::EntityInfoUpdate>
+	{
+		static constexpr bw::EntityInfoUpdate max = bw::EntityInfoUpdate::Max;
+	};
+}
+
+namespace bw
+{
+	using EntityInfoUpdateFlags = Nz::Flags<bw::EntityInfoUpdate>;
+
 	class EditorEntityStore;
 	class ScriptingContext;
 	class Float2SpinBox;
@@ -46,12 +71,11 @@ namespace bw
 	class EntityInfoDialog : public QDialog
 	{
 		public:
-			using Callback = std::function<void(EntityInfoDialog* dialog)>;
+			using Callback = std::function<void(EntityInfoDialog* dialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)>;
 
 			EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
 			~EntityInfoDialog();
 
-			inline const EntityInfo& GetInfo() const;
 			inline const Nz::Vector2f& GetPosition() const;
 			inline const Nz::DegreeAnglef& GetRotation() const;
 
@@ -110,6 +134,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::size_t> m_propertyByName;
 			Callback m_callback;
 			EditorEntityStore& m_entityStore;
+			EntityInfoUpdateFlags m_updateFlags;
 			const Logger& m_logger;
 			const Map& m_map;
 			ScriptingContext& m_scriptingContext;

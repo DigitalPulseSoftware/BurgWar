@@ -304,6 +304,7 @@ namespace bw
 		connect(m_entityTypeWidget, qOverload<int>(&QComboBox::currentIndexChanged), [this](int) 
 		{
 			OnEntityTypeUpdate();
+			m_updateFlags |= EntityInfoUpdate::EntityClass;
 		});
 
 		QHBoxLayout* propertyLayout = new QHBoxLayout;
@@ -351,12 +352,14 @@ namespace bw
 		connect(m_nameWidget, &QLineEdit::textEdited, [this](const QString& text)
 		{
 			m_entityInfo.entityName = text.toStdString();
+			m_updateFlags |= EntityInfoUpdate::EntityName;
 		});
 
 		m_positionWidget = new Float2SpinBox(Float2SpinBox::LabelMode::PositionLabel, QBoxLayout::LeftToRight);
 		connect(m_positionWidget, &Float2SpinBox::valueChanged, [this](Nz::Vector2f value)
 		{
 			m_entityInfo.position = value;
+			m_updateFlags |= EntityInfoUpdate::PositionRotation;
 		});
 
 		m_rotationWidget = new QDoubleSpinBox;
@@ -365,6 +368,7 @@ namespace bw
 		{
 			m_entityInfo.rotation = Nz::DegreeAnglef::FromDegrees(float(rotation));
 			m_entityInfo.rotation.Normalize();
+			m_updateFlags |= EntityInfoUpdate::PositionRotation;
 		});
 
 		QFormLayout* genericPropertyLayout = new QFormLayout;
@@ -394,7 +398,7 @@ namespace bw
 			if (m_callback)
 			{
 				if (result == QDialog::Accepted)
-					m_callback(this);
+					m_callback(this, std::move(m_entityInfo), m_updateFlags);
 
 				m_callback = Callback();
 			}
@@ -443,6 +447,7 @@ namespace bw
 	{
 		m_callback = std::move(callback);
 		m_targetEntity = targetEntity;
+		m_updateFlags.Clear();
 
 		if (info)
 		{
@@ -483,19 +488,18 @@ namespace bw
 
 	void EntityInfoDialog::UpdatePosition(const Nz::Vector2f& position)
 	{
-		m_entityInfo.position = position;
 		m_positionWidget->setValue(position);
 	}
 
 	void EntityInfoDialog::UpdateRotation(const Nz::DegreeAnglef& rotation)
 	{
-		m_entityInfo.rotation = rotation;
 		m_rotationWidget->setValue(rotation.ToDegrees());
 	}
 
 	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, EntityProperty propertyValue)
 	{
 		m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue));
+		m_updateFlags |= EntityInfoUpdate::Properties;
 
 		// Check if we should reload panel
 		auto propertyIt = m_propertyByName.find(propertyName);
@@ -697,6 +701,8 @@ namespace bw
 			boldFont.setWeight(QFont::Medium);
 
 			m_propertiesList->item(int(propertyIndex), 1)->setFont(boldFont);
+
+			m_updateFlags |= EntityInfoUpdate::Properties;
 		};
 
 		auto UpdatePropertyPreview = [this, propertyIndex](const QString& preview)
