@@ -30,14 +30,19 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState.open_libraries();
 
+		sol::table matchTable = luaState.create_named_table("match");
+		sol::table physicsTable = luaState.create_named_table("physics");
+		sol::table scriptsTable = luaState.create_named_table("scripts");
+		sol::table timerTable = luaState.create_named_table("timer");
+
 		RegisterConstraintClass(context);
 		RegisterGlobalLibrary(context);
-		RegisterMatchLibrary(context, luaState.create_named_table("match"));
+		RegisterMatchLibrary(context, matchTable);
 		RegisterMetatableLibrary(context);
-		RegisterPhysicsLibrary(context, luaState.create_named_table("physics"));
+		RegisterPhysicsLibrary(context, physicsTable);
 		RegisterPlayerMovementControllerClass(context);
-		RegisterScriptLibrary(context, luaState.create_named_table("scripts"));
-		RegisterTimerLibrary(context, luaState.create_named_table("timer"));
+		RegisterScriptLibrary(context, scriptsTable);
+		RegisterTimerLibrary(context, timerTable);
 	}
 
 	void SharedScriptingLibrary::RegisterConstraintClass(ScriptingContext& context)
