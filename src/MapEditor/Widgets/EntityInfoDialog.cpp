@@ -1110,7 +1110,7 @@ namespace bw
 					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
 					{
 						if (index > 0)
-							SetProperty(comboBox->itemData(index).toLongLong());
+							SetProperty(static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong()));
 						else
 							SetProperty(NoEntity);
 					});
@@ -1189,7 +1189,7 @@ namespace bw
 
 					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
 					{
-						SetProperty(comboBox->itemData(index).toLongLong());
+						SetProperty(static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong()));
 					});
 
 					layout->addWidget(comboBox);
