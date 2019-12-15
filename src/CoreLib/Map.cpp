@@ -510,7 +510,7 @@ namespace bw
 	void Map::Sanitize()
 	{
 		// Ensures every entity gets an unique id
-		Nz::Int64 biggestId = 1;
+		Nz::Int64 biggestId = 0;
 		for (const auto& layer : m_layers)
 		{
 			for (const auto& entity : layer.entities)
@@ -522,11 +522,11 @@ namespace bw
 			for (auto& entity : layer.entities)
 			{
 				if (entity.uniqueId <= 0)
-					entity.uniqueId = biggestId++;
+					entity.uniqueId = ++biggestId;
 			}
 		}
 
-		m_freeUniqueId = biggestId;
+		m_freeUniqueId = ++biggestId;
 	}
 
 	void Map::SetupDefault()
