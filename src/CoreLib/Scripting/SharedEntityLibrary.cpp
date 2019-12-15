@@ -277,11 +277,9 @@ namespace bw
 				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				physComponent.SetPosition(position);
 			}
-			else
-			{
-				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-				nodeComponent.SetPosition(position);
-			}
+			
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			nodeComponent.SetPosition(position);
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
