@@ -7,17 +7,18 @@
 #ifndef BURGWAR_MAPEDITOR_SCRIPTING_BASIC_EDITOR_MODE_HPP
 #define BURGWAR_MAPEDITOR_SCRIPTING_BASIC_EDITOR_MODE_HPP
 
-#include <MapEditor/Logic/EditorMode.hpp>
+#include <MapEditor/Logic/AbstractSelectionEditorMode.hpp>
 
 namespace bw
 {
-	class BasicEditorMode : public EditorMode
+	class BasicEditorMode : public AbstractSelectionEditorMode
 	{
 		public:
-			using EditorMode::EditorMode;
+			using AbstractSelectionEditorMode::AbstractSelectionEditorMode;
 			~BasicEditorMode() = default;
 
-			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
+		private:
+			void OnEntitySelected(Ndk::Entity* selectedEntity) override;
 	};
 }
 
