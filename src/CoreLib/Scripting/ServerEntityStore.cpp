@@ -17,14 +17,14 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
 		const Ndk::EntityHandle& entity = CreateEntity(layer.GetWorld(), entityClass, properties);
-		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex());
+		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
 
 		auto& node = entity->AddComponent<Ndk::NodeComponent>();
 		node.SetPosition(position);

@@ -220,6 +220,8 @@ namespace bw
 			parent = &it.value();
 		}
 
+		Nz::Int64 uniqueId = static_cast<Nz::Int64>(entityData.uniqueId);
+
 		std::optional<LocalLayerEntity> layerEntity;
 
 		Ndk::EntityHandle entity;
@@ -231,7 +233,7 @@ namespace bw
 				// Entity
 				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
 				{
-					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
+					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
 					if (!entity)
 					{
 						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {} of type {}", entityId, entityClass);
@@ -248,7 +250,7 @@ namespace bw
 				{
 					assert(parent);
 
-					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, properties, parent->GetEntity());
+					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, uniqueId, properties, parent->GetEntity());
 					if (!weapon)
 						return;
 

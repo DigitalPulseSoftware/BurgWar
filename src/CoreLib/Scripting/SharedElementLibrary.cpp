@@ -48,24 +48,6 @@ namespace bw
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
 		};
 
-		elementMetatable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
-
-			auto& properties = entity->GetComponent<ScriptComponent>();
-
-			auto propertyVal = properties.GetProperty(propertyName);
-			if (propertyVal.has_value())
-			{
-				sol::state_view lua(s);
-				const EntityProperty& property = propertyVal.value();
-
-				return TranslateEntityPropertyToLua(lua, property);
-			}
-			else
-				return sol::nil;
-		};
-
 		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);

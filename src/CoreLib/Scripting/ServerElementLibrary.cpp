@@ -7,6 +7,8 @@
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -52,6 +54,35 @@ namespace bw
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<MatchComponent>().GetLayerIndex();
+		};
+
+		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+			auto propertyVal = entityScript.GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				sol::state_view lua(s);
+				const EntityProperty& property = propertyVal.value();
+
+				Match* match;
+				if (entity->HasComponent<MatchComponent>())
+					match = &entity->GetComponent<MatchComponent>().GetMatch();
+				else
+					match = nullptr;
+
+				const auto& entityElement = entityScript.GetElement();
+				
+				auto propertyIt = entityElement->properties.find(propertyName);
+				assert(propertyIt != entityElement->properties.end());
+
+				return TranslateEntityPropertyToLua(match, lua, property, propertyIt->second.type);
+			}
+			else
+				return sol::nil;
 		};
 
 		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object

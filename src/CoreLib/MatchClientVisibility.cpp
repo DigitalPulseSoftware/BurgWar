@@ -33,12 +33,12 @@ namespace bw
 			
 			layer.onEntityCreatedSlot.Connect(syncSystem.OnEntityCreated, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityCreation& entityCreation)
 			{
-				HandleEntityCreation(syncSystem->GetLayerIndex(), entityCreation);
+				HandleEntityCreation(syncSystem->GetLayer().GetLayerIndex(), entityCreation);
 			});
 
 			layer.onEntityDeletedSlot.Connect(syncSystem.OnEntityDeleted, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityDestruction& entityDestruction)
 			{
-				HandleEntityDestruction(syncSystem->GetLayerIndex(), entityDestruction, false);
+				HandleEntityDestruction(syncSystem->GetLayer().GetLayerIndex(), entityDestruction, false);
 			});
 
 			layer.onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
@@ -187,13 +187,18 @@ namespace bw
 					if (!eventData.has_value())
 						return;
 
-					if (eventData->parent)
+					auto HandleDependentEntity = [&](Nz::UInt32 entityId)
 					{
-						Nz::UInt32 parentId = static_cast<Nz::UInt32>(eventData->parent.value());
-						auto it = pendingCreationMap.find(parentId);
-						if (it != pendingCreationMap.end())
-							PushEntity(it);
-					}
+						auto dependentIt = pendingCreationMap.find(entityId);
+						if (dependentIt != pendingCreationMap.end() && dependentIt != it)
+							PushEntity(dependentIt);
+					};
+
+					if (eventData->parent)
+						HandleDependentEntity(static_cast<Nz::UInt32>(eventData->parent.value()));
+
+					for (auto&& [layerIndex, entityIndex] : eventData->dependentIds)
+						HandleDependentEntity(static_cast<Nz::UInt32>(entityIndex));
 
 					auto& entityData = enableLayerPacket.layerEntities.emplace_back();
 					entityData.id = eventData->entityId;
@@ -319,13 +324,18 @@ namespace bw
 					if (!eventData.has_value())
 						return;
 
-					if (eventData->parent)
+					auto HandleDependentEntity = [&](Nz::UInt32 entityId)
 					{
-						Nz::UInt32 parentId = static_cast<Nz::UInt32>(eventData->parent.value());
-						auto it = layer.creationEvents.find(parentId);
-						if (it != layer.creationEvents.end())
-							PushEntity(it);
-					}
+						auto dependentIt = layer.creationEvents.find(entityId);
+						if (dependentIt != layer.creationEvents.end() && dependentIt != it)
+							PushEntity(dependentIt);
+					};
+
+					if (eventData->parent)
+						HandleDependentEntity(static_cast<Nz::UInt32>(eventData->parent.value()));
+
+					for (auto&& [layerIndex, entityIndex] : eventData->dependentIds)
+						HandleDependentEntity(static_cast<Nz::UInt32>(entityIndex));
 
 					auto& entityData = m_createEntitiesPacket.entities.emplace_back();
 					entityData.id = eventData->entityId;
@@ -600,7 +610,10 @@ namespace bw
 	{
 		const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 
+		assert(creationEvent.uniqueId > 0);
+
 		entityData.entityClass = networkStringStore.CheckStringIndex(creationEvent.entityClass);
+		entityData.uniqueId = static_cast<Nz::UInt64>(creationEvent.uniqueId);
 		entityData.position = creationEvent.position;
 		entityData.rotation = creationEvent.rotation;
 

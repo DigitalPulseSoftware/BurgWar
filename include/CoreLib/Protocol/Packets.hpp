@@ -111,6 +111,7 @@ namespace bw
 			struct EntityData
 			{
 				CompressedUnsigned<Nz::UInt32> entityClass;
+				CompressedUnsigned<Nz::UInt64> uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<std::string> name;

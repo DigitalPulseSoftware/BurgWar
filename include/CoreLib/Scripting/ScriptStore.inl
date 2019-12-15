@@ -235,6 +235,7 @@ namespace bw
 								property.defaultValue = PropertyChecker(Nz::Vector2f());
 								break;
 
+							case PropertyType::Entity: //< TODO: Check if default value is NoEntity (only acceptable integer value)
 							case PropertyType::Integer:
 							case PropertyType::Layer:
 								property.defaultValue = PropertyChecker(Nz::Int64());

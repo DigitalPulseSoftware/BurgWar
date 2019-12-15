@@ -49,6 +49,8 @@ namespace bw
 			Match(Match&&) = delete;
 			~Match();
 
+			inline Nz::Int64 AllocateUniqueId();
+
 			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;
 			template<typename T> void BuildClientScriptListPacket(T& clientScript) const;
 
@@ -84,9 +86,13 @@ namespace bw
 			void RegisterAsset(const std::filesystem::path& assetPath);
 			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
+			void RegisterEntity(Nz::Int64 uniqueId, Ndk::EntityHandle entity);
 
 			void ReloadAssets();
 			void ReloadScripts();
+
+			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
+			Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
 
 			void Update(float elapsedTime);
 
@@ -117,6 +123,13 @@ namespace bw
 				Nz::UInt64 lastBroadcastTime = 0;
 			};
 
+			struct Entity
+			{
+				Ndk::EntityHandle entity;
+
+				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
+			};
+
 			std::filesystem::path m_gamemodePath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
@@ -132,6 +145,8 @@ namespace bw
 			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
+			tsl::hopscotch_map<Nz::Int64, Entity> m_entitiesByUniqueId;
+			Nz::Int64 m_freeUniqueId;
 			BurgApp& m_app;
 			Map m_map;
 			MatchSessions m_sessions;

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 #define BURGWAR_CORELIB_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
@@ -24,6 +25,8 @@
 
 namespace bw
 {
+	class TerrainLayer;
+
 	class NetworkSyncSystem : public Ndk::System<NetworkSyncSystem>
 	{
 		public:
@@ -31,13 +34,14 @@ namespace bw
 			struct EntityDestruction;
 			struct EntityMovement;
 
-			NetworkSyncSystem(Nz::UInt16 layerIndex);
+			NetworkSyncSystem(TerrainLayer& layer);
 			~NetworkSyncSystem() = default;
 
 			void CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const;
 			void DeleteEntities(const std::function<void(const EntityDestruction* entityDestruction, std::size_t entityCount)>& callback) const;
 			
-			inline Nz::UInt16 GetLayerIndex() const;
+			inline TerrainLayer& GetLayer();
+			inline const TerrainLayer& GetLayer() const;
 			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
@@ -70,6 +74,7 @@ namespace bw
 			struct EntityCreation
 			{
 				Ndk::EntityId entityId;
+				Nz::Int64 uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<std::string> name;
@@ -80,6 +85,7 @@ namespace bw
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
 				tsl::hopscotch_map<std::string /*key*/, EntityProperty> properties;
+				std::vector<std::pair<LayerIndex, Ndk::EntityId>> dependentIds;
 			};
 
 			struct EntityDestruction
@@ -141,13 +147,13 @@ namespace bw
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
 			Ndk::EntityList m_invalidatedEntities;
-			Nz::UInt16 m_layerIndex;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<Ndk::EntityId> m_deadEvents;
 			std::vector<EntityHealth> m_healthEvents;
 			std::vector<EntityInputs> m_inputEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;
+			TerrainLayer& m_layer;
 	};
 }
 

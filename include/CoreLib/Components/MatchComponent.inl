@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline MatchComponent::MatchComponent(Match& match, LayerIndex layerIndex) :
+	inline MatchComponent::MatchComponent(Match& match, LayerIndex layerIndex, Nz::Int64 uniqueId) :
+	m_uniqueId(uniqueId),
 	m_layerIndex(layerIndex),
 	m_match(match)
 	{
@@ -20,5 +21,10 @@ namespace bw
 	inline Match& MatchComponent::GetMatch() const
 	{
 		return m_match;
+	}
+
+	inline Nz::Int64 MatchComponent::GetUniqueId() const
+	{
+		return m_uniqueId;
 	}
 }

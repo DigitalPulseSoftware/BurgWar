@@ -40,6 +40,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
+#include <tsl/bhopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 
 namespace bw
@@ -678,10 +679,7 @@ namespace bw
 			return OnCloneEntity(entityIndex);
 
 		assert(m_currentLayer);
-		auto& sourceLayer = m_workingMap.GetLayer(m_currentLayer.value());
-		auto& targetLayer = m_workingMap.GetLayer(layerIndex);
-
-		auto& cloneEntity = targetLayer.entities.emplace_back(sourceLayer.entities[entityIndex]);
+		auto& cloneEntity = m_workingMap.AddEntity(layerIndex, m_workingMap.GetEntity(m_currentLayer.value(), entityIndex));
 		cloneEntity.name += " (Clone)";
 	}
 
@@ -725,6 +723,7 @@ namespace bw
 			fileName += ".bmap";
 
 		BuildAssetList();
+		RebuildUniqueIds();
 
 		if (m_workingMap.Compile(fileName.toStdString()))
 			QMessageBox::information(this, tr("Compilation succeeded"), tr("Map has been successfully compiled"), QMessageBox::Ok);
@@ -748,7 +747,7 @@ namespace bw
 		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
 
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
-		{			
+		{
 			std::size_t entityIndex = m_workingMap.GetEntityCount(layerIndex);
 			auto& layerEntity = m_workingMap.AddEntity(layerIndex);
 			layerEntity.entityType = std::move(entityInfo.entityClass);
@@ -1121,11 +1120,26 @@ namespace bw
 		assert(m_currentLayer);
 		assert(targetLayer != *m_currentLayer);
 
-		auto& currentLayer = m_workingMap.GetLayer(*m_currentLayer);
-		auto& newLayer = m_workingMap.GetLayer(targetLayer);
-		newLayer.entities.emplace_back(std::move(currentLayer.entities[entityIndex]));
+		m_workingMap.MoveEntity(*m_currentLayer, entityIndex, targetLayer);
 
-		DeleteEntity(entityIndex);
+		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
+		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+		delete item;
+
+		m_canvas->DeleteEntity(canvasId);
+
+		m_entityIndexes.erase(canvasId);
+
+		// FIXME...
+		for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+		{
+			if (it->second >= entityIndex)
+			{
+				std::size_t newEntityIndex = --it.value();
+				m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+			}
+		}
 	}
 
 	void EditorWindow::OnOpenMap()
@@ -1199,6 +1213,8 @@ namespace bw
 
 			AddToRecentFileList(workingPath);
 		}
+
+		RebuildUniqueIds();
 
 		if (m_workingMap.Save(m_workingMapPath))
 			statusBar()->showMessage(tr("Map saved"), 3000);
@@ -1320,6 +1336,51 @@ namespace bw
 					m_entityStore->UpdateEntityElement(entity);
 			});
 		}
+	}
+
+	void EditorWindow::RebuildUniqueIds()
+	{
+		// Since we have no guarantee on current unique ids, use a secure hashmap
+		tsl::bhopscotch_map<Nz::Int64 /* from */, Nz::Int64 /* to */> uniqueIds;
+
+		Nz::Int64 uniqueId = 0;
+
+		std::size_t layerCount = m_workingMap.GetLayerCount();
+		for (std::size_t i = 0; i < layerCount; ++i)
+		{
+			auto& layer = m_workingMap.GetLayer(i);
+			for (auto& entity : layer.entities)
+			{
+				Nz::Int64 previousId = entity.uniqueId;
+				entity.uniqueId = uniqueId++;
+
+				if (previousId >= 0)
+					uniqueIds.emplace(previousId, entity.uniqueId);
+			}
+		}
+
+		auto UpdateEntityIndex = [=](Nz::Int64& entityIndex)
+		{
+			if (entityIndex >= 0)
+			{
+				auto it = uniqueIds.find(entityIndex);
+				if (it != uniqueIds.end())
+					entityIndex = it.value();
+			}
+		};
+
+		// Update entities pointing to this layer
+		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		{
+			if (propertyData.isArray)
+			{
+				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+					UpdateEntityIndex(layerIndex);
+			}
+			else
+				UpdateEntityIndex(std::get<Nz::Int64>(value));
+		});
+
 	}
 
 	void EditorWindow::RefreshLayerList()

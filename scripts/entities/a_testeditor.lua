@@ -7,6 +7,8 @@ ENTITY.MaxHealth = 1000
 ENTITY.Properties = {
 	{ Name = "bool", Type = PropertyType.Boolean, Default = false, Shared = true },
 	{ Name = "bool_array", Type = PropertyType.Boolean, Array = true, Default = { false }, Shared = true },
+	{ Name = "entity", Type = PropertyType.Entity, Default = NoEntity, Shared = true },
+	{ Name = "entity_array", Type = PropertyType.Entity, Default = NoEntity, Shared = true },
 	{ Name = "float", Type = PropertyType.Float, Default = 0, Shared = true },
 	{ Name = "float_array", Type = PropertyType.Float, Array = true, Default = { 0 }, Shared = true },
 	{ Name = "float_position", Type = PropertyType.FloatPosition, Default = Vec2(0, 0), Shared = true },

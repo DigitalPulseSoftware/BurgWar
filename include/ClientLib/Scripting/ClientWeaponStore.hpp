@@ -21,7 +21,7 @@ namespace bw
 			inline ClientWeaponStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
-			std::optional<LocalLayerEntity> InstantiateWeapon(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, const EntityProperties& properties, const Ndk::EntityHandle& parent);
+			std::optional<LocalLayerEntity> InstantiateWeapon(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, Nz::Int64 uniqueId, const EntityProperties& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(sol::table& elementTable) override;

@@ -3,6 +3,9 @@
 // For conditions of distribution and use, see copyright notice in Prerequisites.hpp
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Utils.hpp>
 
@@ -69,6 +72,8 @@ namespace bw
 	{
 		if (str == "bool" || str == "boolean")
 			return PropertyType::Bool;
+		else if (str == "entity")
+			return PropertyType::Entity;
 		else if (str == "float" || str == "double")
 			return PropertyType::Float;
 		else if (str == "floatpos" || str == "floatposition")
@@ -115,6 +120,9 @@ namespace bw
 		{
 			case PropertyType::Bool:
 				return "bool";
+
+			case PropertyType::Entity:
+				return "entity";
 
 			case PropertyType::Float:
 				return "float";
@@ -178,14 +186,50 @@ namespace bw
 		return nullptr;
 	}
 
-	EntityProperty TranslateEntityPropertyFromLua(const sol::object& value, PropertyType expectedType, bool isArray)
+	EntityProperty TranslateEntityPropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray)
 	{
+		auto TranslateEntityToUniqueId = [&](const sol::object& value) -> Nz::Int64
+		{
+			assert(match);
+			if (value.is<Nz::Int64>())
+			{
+				Nz::Int64 intValue = value.as<Nz::Int64>();
+				if (intValue != NoEntity)
+					throw std::runtime_error("Entity property must be entities or NoEntity constant");
+
+				return intValue;
+			}
+			else
+			{
+				const Ndk::EntityHandle& entity = AbstractElementLibrary::RetrieveScriptEntity(value);
+				return match->RetrieveUniqueIdByEntity(entity);
+			}
+		};
+
 		if (isArray)
 		{
 			sol::table content = value.as<sol::table>();
 			std::size_t elementCount = content.size();
 			if (elementCount == 0)
 				throw std::runtime_error("Property array must contain at least one element");
+
+			if (match)
+			{
+				switch (expectedType)
+				{
+					case PropertyType::Entity:
+					{
+						EntityPropertyArray<Nz::Int64> container(elementCount);
+						for (std::size_t i = 0; i < elementCount; ++i)
+							container[i] = TranslateEntityToUniqueId(content[i + 1]);
+
+						break;
+					}
+
+					default:
+						break;
+				}
+			}
 
 			auto HandleDataArray = [&](auto dummyType) -> EntityProperty
 			{
@@ -202,7 +246,11 @@ namespace bw
 			{
 				case PropertyType::Bool:
 					return HandleDataArray(bool());
-					
+
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
+					return HandleDataArray(Nz::Vector2i64());
+
 				case PropertyType::Float:
 					return HandleDataArray(float());
 
@@ -210,28 +258,38 @@ namespace bw
 				case PropertyType::FloatSize:
 					return HandleDataArray(Nz::Vector2f());
 
+				case PropertyType::Entity:
 				case PropertyType::Integer:
 				case PropertyType::Layer:
 					return HandleDataArray(Nz::Int64());
 
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-					return HandleDataArray(Nz::Vector2i64());
-
 				case PropertyType::String:
 				case PropertyType::Texture:
 					return HandleDataArray(std::string());
-
-				default:
-					break;
 			}
 		}
 		else
 		{
+			if (match)
+			{
+				switch (expectedType)
+				{
+					case PropertyType::Entity:
+						return TranslateEntityToUniqueId(value);
+
+					default:
+						break;
+				}
+			}
+
 			switch (expectedType)
 			{
 				case PropertyType::Bool:
 					return value.as<bool>();
+
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
+					return value.as<Nz::Vector2i64>();
 
 				case PropertyType::Float:
 					return value.as<float>();
@@ -240,41 +298,77 @@ namespace bw
 				case PropertyType::FloatSize:
 					return value.as<Nz::Vector2f>();
 
+				case PropertyType::Entity:
 				case PropertyType::Integer:
 				case PropertyType::Layer:
 					return value.as<Nz::Int64>();
 
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-					return value.as<Nz::Vector2i64>();
-
 				case PropertyType::String:
 				case PropertyType::Texture:
 					return value.as<std::string>();
-
-				default:
-					break;
 			}
 		}
 
 		throw std::runtime_error("Unhandled type");
 	}
 
-	sol::object TranslateEntityPropertyToLua(sol::state_view& lua, const EntityProperty& property)
+	sol::object TranslateEntityPropertyToLua(SharedMatch* match, sol::state_view& lua, const EntityProperty& property, PropertyType propertyType)
 	{
 		return std::visit([&](auto&& value) -> sol::object
 		{
 			using T = std::decay_t<decltype(value)>;
 			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-			using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-			if constexpr (std::is_same_v<PropertyType, bool> ||
-			              std::is_same_v<PropertyType, float> ||
-			              std::is_same_v<PropertyType, Nz::Int64> ||
-			              std::is_same_v<PropertyType, Nz::Vector2f> ||
-			              std::is_same_v<PropertyType, Nz::Vector2i64> ||
-			              std::is_same_v<PropertyType, std::string>)
+			if constexpr (std::is_same_v<InternalType, bool> ||
+			              std::is_same_v<InternalType, float> ||
+			              std::is_same_v<InternalType, Nz::Int64> ||
+			              std::is_same_v<InternalType, Nz::Vector2f> ||
+			              std::is_same_v<InternalType, Nz::Vector2i64> ||
+			              std::is_same_v<InternalType, std::string>)
 			{
+				switch (propertyType)
+				{
+					case PropertyType::Entity:
+					{
+						if constexpr (std::is_same_v<InternalType, Nz::Int64>)
+						{
+							auto PushEntity = [&](Nz::Int64 uniqueId) -> sol::object
+							{
+								if (uniqueId == NoEntity)
+									return sol::make_object(lua, NoEntity);
+
+								const Ndk::EntityHandle& entity = match->RetrieveEntityByUniqueId(uniqueId);
+								if (!entity || !entity->HasComponent<ScriptComponent>())
+									return sol::make_object(lua, NoEntity);
+
+								auto& entityScript = entity->GetComponent<ScriptComponent>();
+								return entityScript.GetTable();
+							};
+
+							if constexpr (IsArray)
+							{
+								std::size_t elementCount = value.GetSize();
+								sol::table content = lua.create_table(int(elementCount));
+
+								for (std::size_t i = 0; i < elementCount; ++i)
+									content[i + 1] = PushEntity(value[i]);
+
+								return content;
+							}
+							else
+								return PushEntity(value);
+						}
+						else
+							throw std::runtime_error("Property type doesn't match internal type");
+
+						break;
+					}
+
+					default:
+						break;
+				}
+
 				if constexpr (IsArray)
 				{
 					std::size_t elementCount = value.GetSize();

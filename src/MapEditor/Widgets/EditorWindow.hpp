@@ -96,6 +96,7 @@ namespace bw
 
 			void OpenMap(const QString& mapFolder);
 
+			void RebuildUniqueIds();
 			void RefreshLayerList();
 			void RefreshRecentFileListMenu();
 			void RefreshRecentFileListMenu(const QStringList& recentFileList);

@@ -17,7 +17,7 @@
 
 namespace bw
 {
-	std::optional<LocalLayerEntity> ClientWeaponStore::InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, const EntityProperties& properties, const Ndk::EntityHandle& parent)
+	std::optional<LocalLayerEntity> ClientWeaponStore::InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, Nz::Int64 uniqueId, const EntityProperties& properties, const Ndk::EntityHandle& parent)
 	{
 		const auto& weaponClass = GetElement(entityIndex);
 
@@ -34,11 +34,11 @@ namespace bw
 
 		const Ndk::EntityHandle& weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
-		LocalLayerEntity layerEntity(layer, weapon, serverId);
+		LocalLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
 
 		weapon->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());
-		weapon->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex());
+		weapon->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex(), uniqueId);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 

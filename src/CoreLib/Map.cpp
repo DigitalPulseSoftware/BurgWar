@@ -3,7 +3,9 @@
 // For conditions of distribution and use, see copyright notice in Prerequisites.hpp
 
 #include <CoreLib/Map.hpp>
+#include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Utils.hpp>
+#include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
@@ -88,6 +90,7 @@ namespace bw
 				entityInfo["name"] = entityEntry.name;
 				entityInfo["position"] = entityEntry.position;
 				entityInfo["rotation"] = entityEntry.rotation.ToDegrees();
+				entityInfo["uniqueId"] = entityEntry.uniqueId;
 
 				auto propertiesObject = nlohmann::json::object();
 				for (auto&& propertyPair : entityEntry.properties)
@@ -179,6 +182,9 @@ namespace bw
 				stream << entity.name;
 				stream << entity.position.x << entity.position.y;
 				stream << entity.rotation.ToDegrees();
+
+				CompressedSigned<Nz::Int64> compressedUniqueId;
+				stream << compressedUniqueId;
 
 				Nz::UInt8 propertyCount = Nz::UInt8(entity.properties.size());
 				stream << propertyCount;
@@ -328,6 +334,10 @@ namespace bw
 				stream >> degRot;
 				entity.rotation = Nz::DegreeAnglef::FromDegrees(degRot);
 
+				CompressedSigned<Nz::Int64> compressedUniqueId;
+				stream >> compressedUniqueId;
+				entity.uniqueId = compressedUniqueId;
+
 				Nz::UInt8 propertyCount;
 				stream >> propertyCount;
 
@@ -403,6 +413,7 @@ namespace bw
 			stream.Read(asset.sha1Checksum.data(), asset.sha1Checksum.size());
 		}
 
+		Sanitize();
 		m_isValid = true;
 	}
 
@@ -444,7 +455,8 @@ namespace bw
 				entity.name = entityInfo.value("name", "");
 				entity.position = entityInfo.at("position");
 				entity.rotation = Nz::DegreeAnglef(float(entityInfo.at("rotation")));
-
+				entity.uniqueId = entityInfo.value("uniqueId", NoEntity);
+				
 				for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
 				{
 					bool isArray = propertyData.value<bool>("isArray", false);
@@ -491,7 +503,30 @@ namespace bw
 			}
 		}
 
+		Sanitize();
 		m_isValid = true;
+	}
+
+	void Map::Sanitize()
+	{
+		// Ensures every entity gets an unique id
+		Nz::Int64 biggestId = 1;
+		for (const auto& layer : m_layers)
+		{
+			for (const auto& entity : layer.entities)
+				biggestId = std::max(biggestId, entity.uniqueId);
+		}
+
+		for (auto& layer : m_layers)
+		{
+			for (auto& entity : layer.entities)
+			{
+				if (entity.uniqueId <= 0)
+					entity.uniqueId = biggestId++;
+			}
+		}
+
+		m_freeUniqueId = biggestId;
 	}
 
 	void Map::SetupDefault()

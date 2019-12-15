@@ -17,15 +17,17 @@ namespace bw
 	class MatchComponent : public Ndk::Component<MatchComponent>
 	{
 		public:
-			inline MatchComponent(Match& match, LayerIndex layerIndex);
+			inline MatchComponent(Match& match, LayerIndex layerIndex, Nz::Int64 uniqueId);
 			~MatchComponent() = default;
 
 			inline LayerIndex GetLayerIndex() const;
 			inline Match& GetMatch() const;
+			inline Nz::Int64 GetUniqueId() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			Nz::Int64 m_uniqueId;
 			Match& m_match;
 			LayerIndex m_layerIndex;
 	};

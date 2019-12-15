@@ -31,9 +31,9 @@ namespace bw
 		friend VisualEntity;
 
 		public:
-			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId);
+			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, Nz::Int64 uniqueId);
 			LocalLayerEntity(const LocalLayerEntity&) = delete;
-			LocalLayerEntity(LocalLayerEntity&&) noexcept = default;
+			LocalLayerEntity(LocalLayerEntity&& entity) noexcept;
 			~LocalLayerEntity();
 
 			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
@@ -68,7 +68,7 @@ namespace bw
 			void UpdateWeaponEntity(const LocalLayerEntityHandle& entity);
 
 			LocalLayerEntity& operator=(const LocalLayerEntity&) = delete;
-			LocalLayerEntity& operator=(LocalLayerEntity&&) noexcept = default;
+			LocalLayerEntity& operator=(LocalLayerEntity&&) = delete;
 
 			static constexpr Nz::UInt32 ClientsideId = 0xFFFFFFFF;
 
@@ -113,6 +113,7 @@ namespace bw
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
+			Nz::Int64 m_freeUniqueId;
 			Nz::UInt32 m_serverEntityId;
 			LocalLayerEntityHandle m_weaponEntity;
 			LocalLayer& m_layer;

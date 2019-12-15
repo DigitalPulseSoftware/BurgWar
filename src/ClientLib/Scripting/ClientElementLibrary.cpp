@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
+#include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
@@ -49,5 +51,35 @@ namespace bw
 
 			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
 		};
+		
+		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+			auto propertyVal = entityScript.GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				sol::state_view lua(s);
+				const EntityProperty& property = propertyVal.value();
+
+				LocalMatch* match;
+				if (entity->HasComponent<LocalMatchComponent>())
+					match = &entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
+				else
+					match = nullptr;
+
+				const auto& entityElement = entityScript.GetElement();
+
+				auto propertyIt = entityElement->properties.find(propertyName);
+				assert(propertyIt != entityElement->properties.end());
+
+				return TranslateEntityPropertyToLua(match, lua, property, propertyIt->second.type);
+			}
+			else
+				return sol::nil;
+		};
+
 	}
 }

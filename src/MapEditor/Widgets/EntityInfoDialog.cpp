@@ -825,6 +825,51 @@ namespace bw
 					layout->addWidget(tableView);
 					break;
 				}
+				
+				case PropertyType::Entity:
+				{
+					m_delegates->comboBoxDelegate.emplace(BuildEntityComboBoxOptions());
+
+					using T = EntityPropertyArray<Nz::Int64>;
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->comboBoxDelegate.value());
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ QString("Value") });
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+
+						for (int i = 0; i < arraySize; ++i)
+						{
+							assert(propertyArray[i] <= 0xFFFF);
+							int entityIndex = int(propertyArray[i]);
+							if (entityIndex < 0)
+								entityIndex = 0;
+							else
+								entityIndex++;
+
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), entityIndex);
+						}
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						Nz::Int64 layerIndex = m_delegates->comboBoxDelegate->RetrieveModelData(item->index());
+						if (layerIndex == 0)
+							layerIndex = NoEntity;
+						else
+							layerIndex--;
+
+						SetProperty(item->index().row(), layerIndex);
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
 
 				case PropertyType::Float:
 				{
@@ -908,19 +953,39 @@ namespace bw
 					break;
 				}
 
-				case PropertyType::Layer:
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
 				{
-					std::vector<QString> options;
-					options.push_back(tr("<No layer>"));
+					using T = EntityPropertyArray<Nz::Vector2i64>;
 
-					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->int2Delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ tr("Value") });
+
+					if (propertyValue)
 					{
-						auto& layer = m_map.GetLayer(i);
+						auto& propertyArray = std::get<T>(propertyValue->get());
 
-						options.push_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 					}
 
-					m_delegates->comboBoxDelegate.emplace(std::move(options));
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+				
+				case PropertyType::Layer:
+				{
+					m_delegates->comboBoxDelegate.emplace(BuildLayerComboBoxOptions());
 
 					using T = EntityPropertyArray<Nz::Int64>;
 
@@ -957,36 +1022,6 @@ namespace bw
 							layerIndex--;
 
 						SetProperty(item->index().row(), layerIndex);
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-				{
-					using T = EntityPropertyArray<Nz::Vector2i64>;
-
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->int2Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -1056,6 +1091,37 @@ namespace bw
 					layout->addWidget(checkBox);
 					break;
 				}
+				
+				case PropertyType::Entity:
+				{
+					QComboBox* comboBox = new QComboBox;
+					for (const QString& option : BuildEntityComboBoxOptions())
+						comboBox->addItem(option);
+
+					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
+					{
+						int index = int(std::get<Nz::Int64>(propertyValue->get()));
+						if (index < 0)
+							index = 0;
+						else
+							index++;
+
+						comboBox->setCurrentIndex(index);
+					}
+
+					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
+					{
+						if (index <= 0)
+							index = NoEntity;
+						else
+							index--;
+
+						SetProperty(Nz::Int64(index));
+					});
+
+					layout->addWidget(comboBox);
+					break;
+				}
 
 				case PropertyType::Float:
 				{
@@ -1111,15 +1177,8 @@ namespace bw
 				case PropertyType::Layer:
 				{
 					QComboBox* comboBox = new QComboBox;
-					comboBox->addItem(tr("<No layer>"));
-
-					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
-					{
-						auto& layer = m_map.GetLayer(i);
-
-						comboBox->addItem(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
-					}
-
+					for (const QString& option : BuildLayerComboBoxOptions())
+						comboBox->addItem(option);
 
 					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
 					{
@@ -1200,9 +1259,42 @@ namespace bw
 
 	QString EntityInfoDialog::ToString(Nz::Int64 value, PropertyType type)
 	{
-		assert(type == PropertyType::Integer || type == PropertyType::Layer);
+		assert(type == PropertyType::Entity || type == PropertyType::Integer || type == PropertyType::Layer);
 		switch (type)
 		{
+			case PropertyType::Entity:
+			{
+				if (value < 0)
+					return tr("<No entity>");
+				else
+				{
+					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+					{
+						auto& layer = m_map.GetLayer(i);
+						for (std::size_t j = 0; j < layer.entities.size(); ++j)
+						{
+							auto& entity = layer.entities[j];
+							if (entity.uniqueId == value)
+							{
+								QString layerName = QString::fromStdString(layer.name);
+								QString entityName = QString::fromStdString(entity.name);
+								if (entityName.isEmpty())
+									entityName = tr("<unnamed>");
+
+								return tr("Layer %1 (%2) - Entity %3 (%4) of type %5")
+								       .arg(layerName)
+								       .arg(i + 1)
+								       .arg(entityName)
+								       .arg(j + 1)
+								       .arg(QString::fromStdString(entity.entityType));
+							}
+						}
+					}
+
+					return tr("<Invalid entity>");
+				}
+			}
+
 			case PropertyType::Integer:
 				return QString::number(value);
 
@@ -1258,6 +1350,52 @@ namespace bw
 				return ToString(value, type);
 			}
 		}, property->get());
+	}
+
+	std::vector<QString> EntityInfoDialog::BuildEntityComboBoxOptions()
+	{
+		std::vector<QString> options;
+		options.push_back(tr("<No entity>"));
+
+		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+		{
+			auto& layer = m_map.GetLayer(i);
+
+			QString layerName = QString::fromStdString(layer.name);
+
+			for (std::size_t j = 0; j < layer.entities.size(); ++j)
+			{
+				auto& entity = layer.entities[j];
+
+				QString entityName = QString::fromStdString(entity.name);
+				if (entityName.isEmpty())
+					entityName = tr("<unnamed>");
+
+				options.push_back(tr("Layer %1 (%2) - Entity %3 (%4) of type %5")
+				                 .arg(layerName)
+				                 .arg(i + 1)
+				                 .arg(entityName)
+				                 .arg(j + 1)
+				                 .arg(QString::fromStdString(entity.entityType)));
+			}
+		}
+
+		return options;
+	}
+
+	std::vector<QString> EntityInfoDialog::BuildLayerComboBoxOptions()
+	{
+		std::vector<QString> options;
+		options.push_back(tr("<No layer>"));
+
+		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
+		{
+			auto& layer = m_map.GetLayer(i);
+
+			options.push_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
+		}
+
+		return options;
 	}
 
 	auto EntityInfoDialog::GetProperty(const PropertyData& property) const -> EntityPropertyConstRefOpt

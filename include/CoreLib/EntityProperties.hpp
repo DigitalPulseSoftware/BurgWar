@@ -17,18 +17,24 @@
 
 namespace bw
 {
+	class SharedMatch;
+
+	constexpr std::size_t MaxPropertyCount = 256;
+	constexpr Nz::Int64 NoEntity = 0;
+
 	enum class PropertyType
 	{
 		Bool            = 0,
-		Float           = 1,
-		FloatPosition   = 2,
-		FloatSize       = 3,
-		Integer         = 4,
-		IntegerPosition = 5,
-		IntegerSize     = 6,
-		Layer           = 7,
-		String          = 8,
-		Texture         = 9
+		Entity          = 1,
+		Float           = 2,
+		FloatPosition   = 3,
+		FloatSize       = 4,
+		Integer         = 5,
+		IntegerPosition = 6,
+		IntegerSize     = 7,
+		Layer           = 8,
+		String          = 9,
+		Texture         = 10
 	};
 
 	enum class PropertyInternalType
@@ -82,8 +88,6 @@ namespace bw
 	
 	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
 
-	constexpr std::size_t MaxPropertyCount = 256;
-
 	std::pair<PropertyInternalType, bool> ExtractPropertyType(const EntityProperty& property);
 
 	PropertyType ParsePropertyType(const std::string_view& str);
@@ -92,8 +96,8 @@ namespace bw
 	const char* ToString(PropertyType propertyType);
 	const char* ToString(PropertyInternalType propertyType);
 
-	EntityProperty TranslateEntityPropertyFromLua(const sol::object& value, PropertyType expectedType, bool isArray);
-	sol::object TranslateEntityPropertyToLua(sol::state_view& lua, const EntityProperty& property);
+	EntityProperty TranslateEntityPropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
+	sol::object TranslateEntityPropertyToLua(SharedMatch* match, sol::state_view& lua, const EntityProperty& property, PropertyType propertyType);
 }
 
 #include <CoreLib/EntityProperties.inl>

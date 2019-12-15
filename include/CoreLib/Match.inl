@@ -7,6 +7,11 @@
 
 namespace bw
 {
+	inline Nz::Int64 Match::AllocateUniqueId()
+	{
+		return m_freeUniqueId++;
+	}
+
 	template<typename T>
 	void Match::BuildClientAssetListPacket(T& clientAsset) const
 	{

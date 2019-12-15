@@ -12,6 +12,11 @@ namespace bw
 		return tick - 3;
 	}
 
+	inline Nz::Int64 bw::LocalMatch::AllocateClientUniqueId()
+	{
+		return m_freeClientId--;
+	}
+
 	inline Nz::UInt16 LocalMatch::GetActiveLayer()
 	{
 		return m_activeLayerIndex;

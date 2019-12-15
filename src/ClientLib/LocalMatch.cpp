@@ -49,6 +49,7 @@ namespace bw
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_renderWorld(false),
+	m_freeClientId(-1),
 	m_window(window),
 	m_activeLayerIndex(0xFFFF),
 	m_application(burgApp),
@@ -189,6 +190,8 @@ namespace bw
 	{
 		// Clear timer manager before scripting context gets deleted
 		GetTimerManager().Clear();
+
+		m_layers.clear();
 
 		// Release scripts classes before scripting context
 		m_entityStore.reset();
@@ -477,6 +480,36 @@ namespace bw
 		}
 		else
 			m_gamemode->Reload();
+	}
+
+	void LocalMatch::RegisterEntity(Nz::Int64 uniqueId, LocalLayerEntityHandle entity)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.emplace(uniqueId, std::move(entity));
+	}
+
+	const Ndk::EntityHandle& LocalMatch::RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		if (it == m_entitiesByUniqueId.end())
+			return Ndk::EntityHandle::InvalidHandle;
+
+		return it.value()->GetEntity();
+	}
+
+	Nz::Int64 LocalMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	{
+		if (!entity || !entity->HasComponent<LocalMatchComponent>())
+			return NoEntity;
+
+		return entity->GetComponent<LocalMatchComponent>().GetUniqueId();
+	}
+
+	void LocalMatch::UnregisterEntity(Nz::Int64 uniqueId)
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		assert(it != m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.erase(it);
 	}
 
 	void LocalMatch::Update(float elapsedTime)

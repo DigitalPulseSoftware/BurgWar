@@ -93,17 +93,18 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 
+			const auto& entityPtr = entityStore.GetElement(elementIndex);
+
 			EntityProperties entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
 			{
 				sol::table& propertyTable = propertyTableOpt.value();
 
-				const auto& entityPtr = entityStore.GetElement(elementIndex);
 				for (auto&& [propertyName, propertyData] : entityPtr->properties)
 				{
 					sol::object propertyValue = propertyTable[propertyName];
 					if (propertyValue)
-						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(propertyValue, propertyData.type, propertyData.isArray));
+						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
 				}
 			}
 
@@ -111,8 +112,10 @@ namespace bw
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
+			Nz::Int64 clientUniqueId = match.AllocateClientUniqueId();
+
 			LocalLayer& layer = match.GetLayer(layerIndex);
-			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, position, rotation, entityProperties, parentEntity);
+			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entityOpt)
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
 

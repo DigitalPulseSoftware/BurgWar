@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_LOCALMATCHCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_LOCALMATCHCOMPONENT_HPP
 
+#include <CoreLib/LayerIndex.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
@@ -16,17 +17,19 @@ namespace bw
 	class LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
 	{
 		public:
-			inline LocalMatchComponent(LocalMatch& localMatch, Nz::UInt16 layerIndex);
+			inline LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, Nz::Int64 uniqueId);
 			~LocalMatchComponent() = default;
 
-			inline Nz::UInt16 GetLayerIndex() const;
+			inline LayerIndex GetLayerIndex() const;
 			inline LocalMatch& GetLocalMatch() const;
+			inline Nz::Int64 GetUniqueId() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			Nz::Int64 m_uniqueId;
 			LocalMatch& m_localMatch;
-			Nz::UInt16 m_layerIndex;
+			LayerIndex m_layerIndex;
 	};
 }
 

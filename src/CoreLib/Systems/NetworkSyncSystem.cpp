@@ -4,7 +4,10 @@
 
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <NDK/Components.hpp>
+#include <CoreLib/Match.hpp>
+#include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -13,8 +16,8 @@
 
 namespace bw
 {
-	NetworkSyncSystem::NetworkSyncSystem(Nz::UInt16 layerIndex) :
-	m_layerIndex(layerIndex)
+	NetworkSyncSystem::NetworkSyncSystem(TerrainLayer& layer) :
+	m_layer(layer)
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
 		SetMaximumUpdateRate(30.f);
@@ -62,6 +65,9 @@ namespace bw
 
 		creationEvent.entityId = entity->GetId();
 		creationEvent.entityClass = syncComponent.GetEntityClass();
+
+		auto& entityMatch = entity->GetComponent<MatchComponent>();
+		creationEvent.uniqueId = entityMatch.GetUniqueId();
 
 		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
 		{
@@ -133,6 +139,23 @@ namespace bw
 					continue;
 
 				creationEvent.properties.emplace(key, value);
+
+				switch (it->second.type)
+				{
+					case PropertyType::Entity:
+					{
+						const Ndk::EntityHandle& entity = m_layer.GetMatch().RetrieveEntityByUniqueId(std::get<Nz::Int64>(value));
+						if (entity)
+						{
+							auto& entityMatch = entity->GetComponent<MatchComponent>();
+							creationEvent.dependentIds.emplace_back(entityMatch.GetLayerIndex(), entity->GetId());
+						}
+						break;
+					}
+
+					default:
+						break;
+				}
 			}
 		}
 	}

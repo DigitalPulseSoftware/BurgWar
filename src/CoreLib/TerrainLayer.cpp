@@ -21,7 +21,7 @@ namespace bw
 	SharedLayer(match, layerIndex)
 	{
 		Ndk::World& world = GetWorld();
-		world.AddSystem<NetworkSyncSystem>(static_cast<Nz::UInt16>(layerIndex));
+		world.AddSystem<NetworkSyncSystem>(*this);
 
 		auto& entityStore = match.GetEntityStore();
 		for (const Map::Entity& entityData : layerData.entities)
@@ -35,7 +35,9 @@ namespace bw
 
 			try
 			{
-				entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.position, entityData.rotation, entityData.properties);
+				const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(*this, entityTypeIndex, entityData.uniqueId, entityData.position, entityData.rotation, entityData.properties);
+				if (entity)
+					match.RegisterEntity(entityData.uniqueId, entity);
 			}
 			catch (const std::exception& e)
 			{

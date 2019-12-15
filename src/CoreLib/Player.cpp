@@ -73,9 +73,13 @@ namespace bw
 		// Create weapon
 		if (std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); weaponEntityIndex != ServerEntityStore::InvalidIndex)
 		{
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, {}, m_playerEntity);
+			Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, uniqueId, {}, m_playerEntity);
 			if (!weapon)
 				return false;
+
+			m_match->RegisterEntity(uniqueId, weapon);
 
 			weapon->AddComponent<OwnerComponent>(CreateHandle());
 
@@ -142,17 +146,26 @@ namespace bw
 					}
 
 					newPlayerEntity->AddComponent(m_playerEntity->GetComponent<Ndk::PhysicsComponent2D>().Clone());*/
-					newPlayerEntity->AddComponent<MatchComponent>(*m_match, layerIndex);
+
+					Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+
+					newPlayerEntity->AddComponent<MatchComponent>(*m_match, layerIndex, uniqueId);
+
+					m_match->RegisterEntity(uniqueId, newPlayerEntity);
 
 					UpdateControlledEntity(newPlayerEntity);
 
 					for (auto& weaponEntity : m_weapons)
 					{
+						Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+
 						weaponEntity = world.CloneEntity(weaponEntity);
-						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex);
+						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex, uniqueId);
 						weaponEntity->GetComponent<Ndk::NodeComponent>().SetParent(newPlayerEntity);
 						weaponEntity->GetComponent<NetworkSyncComponent>().UpdateParent(newPlayerEntity);
 						weaponEntity->GetComponent<WeaponComponent>().UpdateOwner(newPlayerEntity);
+
+						m_match->RegisterEntity(uniqueId, weaponEntity);
 					}
 
 					m_shouldSendWeapons = true;
@@ -312,10 +325,14 @@ namespace bw
 			if (!spawnPositionOpt)
 				return;
 
+			Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+
 			Nz::Vector2f spawnPosition = spawnPositionOpt->as<Nz::Vector2f>();
-			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, spawnPosition, 0.f, {});
+			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, uniqueId, spawnPosition, 0.f, {});
 			if (!playerEntity)
 				return;
+
+			m_match->RegisterEntity(uniqueId, playerEntity);
 
 			bwLog(m_match->GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
 

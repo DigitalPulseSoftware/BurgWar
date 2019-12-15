@@ -8,6 +8,7 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ServerElementLibrary.hpp>
@@ -29,6 +30,7 @@ namespace bw
 	m_gamemodePath(std::move(gamemodeFolder)),
 	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
+	m_freeUniqueId(map.GetFreeUniqueId()),
 	m_app(app),
 	m_map(std::move(map))
 	{
@@ -244,6 +246,18 @@ namespace bw
 		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
 	}
 
+	void Match::RegisterEntity(Nz::Int64 uniqueId, Ndk::EntityHandle entity)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
+
+		Entity& entityData = m_entitiesByUniqueId.emplace(uniqueId, Entity{}).first.value();
+		entityData.entity = std::move(entity);
+		entityData.onDestruction.Connect(entityData.entity->OnEntityDestruction, [this, uniqueId](Ndk::Entity* /*entity*/)
+		{
+			m_entitiesByUniqueId.erase(uniqueId);
+		});
+	}
+
 	void Match::ReloadAssets()
 	{
 		const std::string& resourceFolder = m_app.GetConfig().GetStringOption("Assets.ResourceFolder");
@@ -388,6 +402,23 @@ namespace bw
 
 	}
 
+	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		if (it == m_entitiesByUniqueId.end())
+			return Ndk::EntityHandle::InvalidHandle;
+
+		return it.value().entity;
+	}
+
+	Nz::Int64 Match::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	{
+		if (!entity || !entity->HasComponent<MatchComponent>())
+			return NoEntity;
+
+		return entity->GetComponent<MatchComponent>().GetUniqueId();
+	}
+
 	void Match::Update(float elapsedTime)
 	{
 		m_sessions.Poll();
@@ -500,9 +531,10 @@ namespace bw
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = player->GetName() + " has joined.";
 
-		//FIXME: Should be for each session
 		ForEachPlayer([&](Player* player)
 		{
+			chatPacket.playerIndex = player->GetPlayerIndex();
+
 			player->SendPacket(chatPacket);
 		});
 	}

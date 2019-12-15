@@ -141,7 +141,7 @@ namespace bw
 				{
 					sol::object propertyValue = propertyTable[propertyName];
 					if (propertyValue)
-						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(propertyValue, propertyData.type, propertyData.isArray));
+						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
 				}
 			}
 
@@ -149,9 +149,13 @@ namespace bw
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
-			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, position, rotation, entityProperties, parentEntity);
+			Nz::Int64 uniqueId = match.AllocateUniqueId();
+
+			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
+
+			match.RegisterEntity(uniqueId, entity);
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();

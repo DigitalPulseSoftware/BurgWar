@@ -53,6 +53,9 @@ namespace bw
 			~LocalMatch();
 
 			template<typename T> T AdjustServerTick(T tick);
+
+			inline Nz::Int64 AllocateClientUniqueId();
+
 			Nz::UInt64 EstimateServerTick() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
@@ -76,6 +79,13 @@ namespace bw
 
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
+
+			void RegisterEntity(Nz::Int64 uniqueId, LocalLayerEntityHandle entity);
+			
+			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
+			Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+
+			void UnregisterEntity(Nz::Int64 uniqueId);
 
 			void Update(float elapsedTime);
 
@@ -207,8 +217,10 @@ namespace bw
 			Ndk::EntityHandle m_currentLayer;
 			Ndk::World m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;
+			Nz::Int64 m_freeClientId;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
+			tsl::hopscotch_map<Nz::Int64, LocalLayerEntityHandle> m_entitiesByUniqueId;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			BurgApp& m_application;

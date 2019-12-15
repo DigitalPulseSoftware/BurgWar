@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalLayerEntity.hpp>
-#include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -11,23 +10,46 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components.hpp>
 
 namespace bw
 {
-	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId) :
+	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, Nz::Int64 uniqueId) :
 	m_entity(entity),
+	m_freeUniqueId(uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
 	{
+		m_layer.GetLocalMatch().RegisterEntity(m_freeUniqueId, CreateHandle());
+	}
+
+	LocalLayerEntity::LocalLayerEntity(LocalLayerEntity&& entity) noexcept :
+	HandledObject(std::move(entity)),
+	m_ghostEntity(std::move(entity.m_ghostEntity)),
+	m_entityId(std::move(entity.m_entityId)),
+	m_health(std::move(entity.m_health)),
+	m_name(std::move(entity.m_name)),
+	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
+	m_visualEntities(std::move(entity.m_visualEntities)),
+	m_entity(std::move(entity.m_entity)),
+	m_freeUniqueId(entity.m_freeUniqueId),
+	m_serverEntityId(entity.m_serverEntityId),
+	m_weaponEntity(std::move(entity.m_weaponEntity)),
+	m_layer(entity.m_layer)
+	{
+		entity.m_freeUniqueId = NoEntity;
 	}
 
 	LocalLayerEntity::~LocalLayerEntity()
 	{
 		if (m_ghostEntity)
 			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
+
+		if (m_freeUniqueId != NoEntity)
+			m_layer.GetLocalMatch().UnregisterEntity(m_freeUniqueId);
 	}
 
 	void LocalLayerEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
@@ -70,7 +92,7 @@ namespace bw
 			const Ndk::EntityHandle& ghostEntity = m_entity->GetWorld()->CreateEntity();
 			ghostEntity->AddComponent<Ndk::NodeComponent>();
 
-			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId);
+			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetLocalMatch().AllocateClientUniqueId());
 
 			for (auto& renderable : m_attachedRenderables)
 			{

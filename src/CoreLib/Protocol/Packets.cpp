@@ -527,6 +527,7 @@ namespace bw
 			}
 
 			serializer &= data.entityClass;
+			serializer &= data.uniqueId;
 			serializer &= data.position;
 			serializer &= data.rotation;
 

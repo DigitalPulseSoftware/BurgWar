@@ -34,6 +34,8 @@ namespace bw
 
 			inline Nz::UInt64 GetCurrentTick() const;
 			inline Nz::UInt64 GetCurrentTime() const;
+			virtual SharedEntityStore& GetEntityStore() = 0;
+			virtual const SharedEntityStore& GetEntityStore() const = 0;
 			inline MatchLogger& GetLogger();
 			virtual SharedLayer& GetLayer(LayerIndex layerIndex) = 0;
 			virtual const SharedLayer& GetLayer(LayerIndex layerIndex) const = 0;
@@ -43,11 +45,11 @@ namespace bw
 			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
-
-			virtual SharedEntityStore& GetEntityStore() = 0;
-			virtual const SharedEntityStore& GetEntityStore() const = 0;
 			virtual SharedWeaponStore& GetWeaponStore() = 0;
 			virtual const SharedWeaponStore& GetWeaponStore() const = 0;
+
+			virtual const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const = 0;
+			virtual Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const = 0;
 
 			void Update(float elapsedTime);
 

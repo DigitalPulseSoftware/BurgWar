@@ -6,8 +6,13 @@
 
 namespace bw
 {
-	inline Nz::UInt16 NetworkSyncSystem::GetLayerIndex() const
+	inline TerrainLayer& NetworkSyncSystem::GetLayer()
 	{
-		return m_layerIndex;
+		return m_layer;
+	}
+
+	inline const TerrainLayer& NetworkSyncSystem::GetLayer() const
+	{
+		return m_layer;
 	}
 }

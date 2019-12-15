@@ -61,8 +61,10 @@ namespace bw
 
 			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state L)
 			{
+				auto [propertyType, isArray] = entityInfo.GetPropertyType(propertyName);
+
 				sol::state_view state(L);
-				return TranslateEntityPropertyToLua(state, entityInfo.GetProperty(propertyName));
+				return TranslateEntityPropertyToLua(nullptr, state, entityInfo.GetProperty(propertyName), propertyType);
 			},
 
 			"GetTargetEntity", &EntityInfoDialog::GetTargetEntity,
@@ -75,7 +77,7 @@ namespace bw
 			"UpdateProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, const sol::object& propertyValue, sol::this_state state)
 			{
 				auto [propertyType, isArray] = entityInfo.GetPropertyType(propertyName);
-				entityInfo.UpdateProperty(propertyName, TranslateEntityPropertyFromLua(propertyValue, propertyType, isArray));
+				entityInfo.UpdateProperty(propertyName, TranslateEntityPropertyFromLua(nullptr, propertyValue, propertyType, isArray));
 			}
 		);
 	}

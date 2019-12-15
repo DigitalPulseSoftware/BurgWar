@@ -38,25 +38,33 @@ namespace bw
 			inline Map(MapInfo mapInfo);
 			~Map() = default;
 
+			template<typename... Args> Entity& AddEntity(std::size_t layerIndex, Args&&... args);
 			template<typename... Args> Layer& AddLayer(Args&&... args);
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
 
-			inline Layer DropLayer(std::size_t i);
+			inline Layer DropLayer(std::size_t layerIndex);
 
-			template<typename... Args> Layer& EmplaceLayer(std::size_t index, Args&&... args);
+			template<typename... Args> Layer& EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args);
+			template<typename... Args> Layer& EmplaceLayer(std::size_t layerIndex, Args&&... args);
 
 			template<typename F> void ForeachEntity(F&& func);
 
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
-			inline Layer& GetLayer(std::size_t i);
-			inline const Layer& GetLayer(std::size_t i) const;
+			inline Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex);
+			inline const Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex) const;
+			inline std::size_t GetEntityCount(std::size_t layerIndex) const;
+			inline Nz::Int64 GetFreeUniqueId() const;
+			inline Layer& GetLayer(std::size_t layerIndex);
+			inline const Layer& GetLayer(std::size_t layerIndex) const;
 			inline std::size_t GetLayerCount() const;
 			inline const MapInfo& GetMapInfo() const;
 
 			inline bool IsValid() const;
+
+			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex);
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
 
@@ -72,6 +80,7 @@ namespace bw
 				std::string entityType;
 				std::string name;
 				Nz::DegreeAnglef rotation;
+				Nz::Int64 uniqueId;
 				Nz::Vector2f position;
 				EntityProperties properties;
 			};
@@ -89,11 +98,13 @@ namespace bw
 		private:
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
+			void Sanitize();
 			void SetupDefault();
 
-			MapInfo m_mapInfo;
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;
+			Nz::Int64 m_freeUniqueId;
+			MapInfo m_mapInfo;
 			bool m_isValid;
 	};
 }

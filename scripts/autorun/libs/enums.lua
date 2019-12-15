@@ -24,17 +24,19 @@ function enums.Create(content)
 end
 
 -- FIXME: This shouldn't be here
+NoEntity = 0
 NoLayer = 0xFFFF
 
 PropertyType = enums.Create({
 	Boolean         = 0,
-	Float           = 1,
-	FloatPosition   = 2,
-	FloatSize       = 3,
-	Integer         = 4,
-	IntegerPosition = 5,
-	IntegerSize     = 6,
-	Layer           = 7,
-	String          = 8,
-	Texture         = 9
+	Entity          = 1,
+	Float           = 2,
+	FloatPosition   = 3,
+	FloatSize       = 4,
+	Integer         = 5,
+	IntegerPosition = 6,
+	IntegerSize     = 7,
+	Layer           = 8,
+	String          = 9,
+	Texture         = 10
 })
