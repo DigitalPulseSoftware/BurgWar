@@ -1,16 +1,14 @@
 ENTITY.IsNetworked = false
 
 ENTITY.Properties = {
-	{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0) },
-	{ Name = "target_layer", Type = PropertyType.Layer, Default = NoLayer },
+	{ Name = "size", Type = PropertyType.FloatSize },
+	{ Name = "target", Type = PropertyType.Entity },
 }
 
 function ENTITY:Initialize()
-	assert(self:GetProperty("target_layer") >= 0)
-
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
+	self:SetCollider(Rect(-colliderSize, colliderSize), true)
 	self:EnableCollisionCallbacks(true)
 
 	if (EDITOR) then
@@ -23,14 +21,18 @@ function ENTITY:Initialize()
 end
 
 function ENTITY:OnCollisionStart(other)
-	local targetLayer = self:GetProperty("target_layer")
-	if (targetLayer == NoLayer) then
+	local targetEntity = self:GetProperty("target")
+	if (targetEntity == NoEntity) then
 		return false
 	end
 
+	local targetLayer = targetEntity:GetLayerIndex()
+	local targetPosition = targetEntity:GetPosition()
+
 	if (other.Name == "burger") then
-		local owner = other:GetOwner()
-		owner:MoveToLayer(self:GetProperty("target_layer"))
+		local playerOwner = other:GetOwner()
+		other:SetPosition(targetPosition)
+		playerOwner:MoveToLayer(targetLayer)
 	end
 
 	return false
