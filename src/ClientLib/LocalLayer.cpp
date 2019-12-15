@@ -65,7 +65,11 @@ namespace bw
 		else
 		{
 			OnDisabled(this);
+			m_clientEntities.clear();
 			m_serverEntities.clear();
+
+			// Since we are disabled, refresh won't be called until we are enabled, refresh the world now to kill entities
+			GetWorld().Refresh();
 		}
 	}
 
