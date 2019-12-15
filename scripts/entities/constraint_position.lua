@@ -1,21 +1,23 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = false -- TODO
+ENTITY.IsNetworked = true
 
-ENTITY.Properties = {}
+ENTITY.Properties = {
+	{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
+	{ Name = "target_offset", Type = PropertyType.FloatPosition, Default = Vec2(0, 0), Shared = true },
+}
 
 function ENTITY:Initialize()
-	self:InitRigidBody(0)
-end
-
---FIXME: This is required because entities cannot be used as properties yet
-function ENTITY:TempInit()
-	if (not self.TargetEntity:IsValid()) then
+	local targetEntity = self:GetProperty("target_entity")
+	local targetOffset = self:GetProperty("target_offset")
+	if (targetEntity == NoEntity or not targetEntity:IsValid()) then
 		self:Remove()
 		return
 	end
 
-	self.PositionConstraint = physics.CreatePinConstraint(self, self.TargetEntity, Vec2(0,0), self.TargetOffset)
+	self:InitRigidBody(0)
+
+	self.PositionConstraint = physics.CreatePinConstraint(self, targetEntity, Vec2(0,0), targetOffset)
 	self.PositionConstraint:SetDistance(0)
 end
 

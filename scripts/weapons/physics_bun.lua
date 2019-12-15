@@ -46,25 +46,22 @@ function WEAPON:Launch()
 		return
 	end
 
-	--local entityMass = nearestResult.hitEntity:GetMass()
-	--if (entityMass <= 0) then
-	--	return
-	--end
+	local entityMass = nearestResult.hitEntity:GetMass()
+	if (entityMass <= 0) then
+		return
+	end
 
 	self.EntityOffset = self:ToLocalPosition(nearestResult.hitPos)
 
-	local constraint = match.CreateEntity({
+	self.Constraint = match.CreateEntity({
 		Type = "entity_constraint_position",
 		LayerIndex = self:GetLayerIndex(),
-		Position = nearestResult.hitPos
+		Position = nearestResult.hitPos,
+		Properties = {
+			target_entity = nearestResult.hitEntity,
+			target_offset = nearestResult.hitEntity:ToLocalPosition(nearestResult.hitPos)
+		}
 	})
-
-	constraint.TargetEntity = nearestResult.hitEntity
-	constraint.TargetOffset = nearestResult.hitEntity:ToLocalPosition(nearestResult.hitPos)
-
-	constraint:TempInit() -- FIXME: Waiting for entities in properties to fix this
-
-	self.Constraint = constraint
 end
 
 function WEAPON:Release()

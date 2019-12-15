@@ -18,15 +18,16 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:OnCollisionStart(other)
-	if (SERVER and other.Name == "burger") then
-		if (not other:IsFullHealth()) then
-			other:Heal(250)
-			self:Kill()
-			self.Parent:OnPowerupConsumed()
+if (SERVER) then
+	function ENTITY:OnCollisionStart(other)
+		if (other.Name == "burger") then
+			if (not other:IsFullHealth()) then
+				other:Heal(250)
+				self:Kill()
+				self.Parent:OnPowerupConsumed()
+			end
 		end
+
+		return false
 	end
-
-	return false
 end
-

@@ -2,9 +2,6 @@ RegisterClientScript()
 RegisterClientAssets("placeholder/socle.png")
 
 ENTITY.IsNetworked = true
-ENTITY.CollisionType = 2
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
 
 ENTITY.Properties = {
 	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
