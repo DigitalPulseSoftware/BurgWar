@@ -15,9 +15,9 @@ namespace bw
 	class Constraint
 	{
 		public:
-			inline Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint);
+			Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint);
 			Constraint(const Constraint&) = delete;
-			Constraint(Constraint&&) noexcept = default;
+			Constraint(Constraint&& constraint) noexcept;
 			virtual ~Constraint();
 
 			void EnableBodyCollision(bool enable);
@@ -34,14 +34,17 @@ namespace bw
 			void SetMaxForce(float maxForce);
 
 			Constraint& operator=(const Constraint&) = delete;
-			Constraint& operator=(Constraint&&) noexcept = default;
+			Constraint& operator=(Constraint&&) = delete;
 
 		protected:
 			void AssertValid() const;
 			template<typename T> T* GetConstraint();
 			template<typename T> const T* GetConstraint() const;
+			void KillEntity();
 
 		private:
+			NazaraSlot(Nz::HandledObject<Nz::Constraint2D>, OnHandledObjectDestruction, m_onDestruction);
+
 			Ndk::EntityHandle m_entity;
 			Nz::Constraint2DHandle m_constraint;
 	};

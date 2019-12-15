@@ -23,6 +23,7 @@ namespace bw
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
 	{
+		assert(m_entity);
 		m_layer.GetLocalMatch().RegisterEntity(m_freeUniqueId, CreateHandle());
 	}
 

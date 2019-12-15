@@ -63,7 +63,8 @@ namespace bw
 
 		private:
 			void CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData);
-			void HandleLocalEntityDestruction(Ndk::Entity* entity);
+			void HandleClientEntityDestruction(Ndk::Entity* entity);
+			void HandleServerEntityDestruction(Nz::UInt32 serverId);
 			void HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::DeleteEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EnableLayer::Entity* entities, std::size_t entityCount);
@@ -73,22 +74,22 @@ namespace bw
 			void HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::MatchState::Entity* entities, std::size_t entityCount);
 
-			struct ClientEntity
+			struct EntityData
 			{
-				ClientEntity(LocalLayerEntity&& entity) :
+				EntityData(LocalLayerEntity&& entity) :
 				layerEntity(std::move(entity))
 				{
 				}
 
-				ClientEntity(ClientEntity&& rhs) noexcept = default;
+				EntityData(EntityData&& rhs) noexcept = default;
 
 				LocalLayerEntity layerEntity;
 
 				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
 			};
 
-			tsl::hopscotch_map<Ndk::EntityId /*clientEntityId*/, ClientEntity /*localEntity*/> m_clientEntities;
-			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, LocalLayerEntity /*localEntity*/> m_serverEntities;
+			tsl::hopscotch_map<Ndk::EntityId /*clientEntityId*/, EntityData /*localEntity*/> m_clientEntities;
+			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, EntityData /*localEntity*/> m_serverEntities;
 			Nz::Color m_backgroundColor;
 			bool m_isEnabled;
 			bool m_isPredictionEnabled;

@@ -7,12 +7,6 @@
 
 namespace bw
 {
-	inline Constraint::Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint) :
-	m_entity(std::move(entity)),
-	m_constraint(std::move(constraint))
-	{
-	}
-
 	inline bool Constraint::IsValid() const
 	{
 		return m_constraint.IsValid();

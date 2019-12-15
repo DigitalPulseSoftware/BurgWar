@@ -22,7 +22,7 @@ namespace bw
 		assert(m_isEnabled);
 
 		for (auto it = m_serverEntities.begin(); it != m_serverEntities.end(); ++it)
-			func(it.value());
+			func(it.value().layerEntity);
 
 		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
 			func(it.value().layerEntity);
@@ -41,7 +41,7 @@ namespace bw
 		if (it == m_serverEntities.end())
 			return std::nullopt;
 
-		return it.value();
+		return it.value().layerEntity;
 	}
 
 	inline bool LocalLayer::IsEnabled() const

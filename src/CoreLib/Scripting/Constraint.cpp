@@ -7,6 +7,25 @@
 
 namespace bw
 {
+	Constraint::Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint) :
+	m_entity(std::move(entity)),
+	m_constraint(std::move(constraint))
+	{
+		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
+			KillEntity();
+		});
+	}
+
+	Constraint::Constraint(Constraint&& constraint) noexcept :
+	m_entity(std::move(constraint.m_entity)),
+	m_constraint(std::move(constraint.m_constraint))
+	{
+		constraint.m_onDestruction.Disconnect();
+		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
+			KillEntity();
+		});
+	}
+
 	Constraint::~Constraint() = default;
 	
 	void Constraint::EnableBodyCollision(bool enable)
@@ -58,6 +77,13 @@ namespace bw
 	{
 		if (!IsValid())
 			throw std::runtime_error("Constraint has been removed");
+	}
+
+	void Constraint::KillEntity()
+	{
+		//< FIXME: Deleting entity client-side crashes LocalLayerEntity
+		if (m_entity)
+			m_entity->Kill();
 	}
 
 

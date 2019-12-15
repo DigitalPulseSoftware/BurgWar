@@ -37,8 +37,17 @@ namespace bw
 	{
 		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
 		{
-			ClientEntity& clientEntity = it.value();
-			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleLocalEntityDestruction);
+			EntityData& clientEntity = it.value();
+			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleClientEntityDestruction);
+		}
+
+		for (auto it = m_serverEntities.begin(); it != m_serverEntities.end(); ++it)
+		{
+			EntityData& serverEntity = it.value();
+			serverEntity.onDestruction.Connect(serverEntity.layerEntity.GetEntity()->OnEntityDestruction, [this, serverId = serverEntity.layerEntity.GetServerId()](Ndk::Entity*)
+			{
+				HandleServerEntityDestruction(serverId);
+			});
 		}
 	}
 
@@ -116,9 +125,9 @@ namespace bw
 			auto it = m_clientEntities.emplace(entity->GetId(), std::move(layerEntity)).first;
 			// Warning: entity reference is invalidated from here
 
-			ClientEntity& clientEntity = it.value();
+			EntityData& clientEntity = it.value();
 
-			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleLocalEntityDestruction);
+			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleClientEntityDestruction);
 
 			OnEntityCreated(this, clientEntity.layerEntity);
 
@@ -126,14 +135,21 @@ namespace bw
 		}
 		else
 		{
-			assert(m_serverEntities.find(layerEntity.GetServerId()) == m_serverEntities.end());
-			auto it = m_serverEntities.emplace(layerEntity.GetServerId(), std::move(layerEntity)).first;
+			Nz::UInt32 serverId = layerEntity.GetServerId();
+			assert(m_serverEntities.find(serverId) == m_serverEntities.end());
+			auto it = m_serverEntities.emplace(serverId, std::move(layerEntity)).first;
+			// Warning: entity reference is invalidated from here
 
-			// TODO: Register entity on destruction signal for server entities too, to handle the possibility of client scripts deleting server entities locally
+			EntityData& serverEntity = it.value();
 
-			OnEntityCreated(this, it.value());
+			serverEntity.onDestruction.Connect(serverEntity.layerEntity.GetEntity()->OnEntityDestruction, [this, serverId = serverEntity.layerEntity.GetServerId()](Ndk::Entity*)
+			{
+				HandleServerEntityDestruction(serverId);
+			});
 
-			return it.value();
+			OnEntityCreated(this, serverEntity.layerEntity);
+
+			return serverEntity.layerEntity;
 		}
 	}
 
@@ -217,7 +233,7 @@ namespace bw
 			auto it = m_serverEntities.find(entityData.parentId.value());
 			assert(it != m_serverEntities.end());
 
-			parent = &it.value();
+			parent = &it.value().layerEntity;
 		}
 
 		Nz::Int64 uniqueId = static_cast<Nz::Int64>(entityData.uniqueId);
@@ -272,9 +288,6 @@ namespace bw
 			return;
 		}
 
-		//if (m_debug)
-		//	CreateGhostEntity(serverEntity);
-
 		if (entityData.health)
 			layerEntity->InitializeHealth(entityData.health->maxHealth, entityData.health->currentHealth);
 
@@ -284,13 +297,22 @@ namespace bw
 		RegisterEntity(std::move(layerEntity.value()));
 	}
 
-	void LocalLayer::HandleLocalEntityDestruction(Ndk::Entity* entity)
+	void LocalLayer::HandleClientEntityDestruction(Ndk::Entity* entity)
 	{
 		auto it = m_clientEntities.find(entity->GetId());
 		assert(it != m_clientEntities.end());
 
 		OnEntityDelete(this, it.value().layerEntity);
 		m_clientEntities.erase(it);
+	}
+
+	void LocalLayer::HandleServerEntityDestruction(Nz::UInt32 serverId)
+	{
+		auto it = m_serverEntities.find(serverId);
+		assert(it != m_serverEntities.end());
+
+		OnEntityDelete(this, it.value().layerEntity);
+		m_serverEntities.erase(it);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
@@ -314,16 +336,14 @@ namespace bw
 		{
 			Nz::UInt32 entityId = entities[i].id;
 
-			bwLog(GetMatch().GetLogger(), LogLevel::Debug, "Deleting entity {} on layer {}", entityId, GetLayerIndex());
-
 			auto it = m_serverEntities.find(entityId);
-			//assert(it != m_serverEntityIdToClient.end());
 			if (it == m_serverEntities.end())
 				continue;
 
-			OnEntityDelete(this, it.value());
+			bwLog(GetMatch().GetLogger(), LogLevel::Debug, "Deleting entity {} on layer {}", entityId, GetLayerIndex());
 
-			//m_prediction->DeleteEntity(BuildEntityId(entityData.id.layerId, it->second.entity->GetId()));
+			OnEntityDelete(this, it.value().layerEntity);
+
 			m_serverEntities.erase(it);
 		}
 	}
@@ -354,7 +374,7 @@ namespace bw
 			if (it == m_serverEntities.end())
 				continue;
 
-			LocalLayerEntity& localEntity = it.value();
+			LocalLayerEntity& localEntity = it.value().layerEntity;
 			localEntity.UpdateAnimation(animationId);
 		}
 	}
@@ -371,7 +391,7 @@ namespace bw
 			if (it == m_serverEntities.end())
 				continue;
 
-			LocalLayerEntity& localEntity = it.value();
+			LocalLayerEntity& localEntity = it.value().layerEntity;
 			localEntity.UpdateHealth(0);
 		}
 	}
@@ -389,7 +409,7 @@ namespace bw
 			if (it == m_serverEntities.end())
 				continue;
 
-			LocalLayerEntity& localEntity = it.value();
+			LocalLayerEntity& localEntity = it.value().layerEntity;
 			localEntity.UpdateInputs(inputs);
 		}
 	}
@@ -407,7 +427,7 @@ namespace bw
 			if (it == m_serverEntities.end())
 				continue;
 
-			LocalLayerEntity& localEntity = it.value();
+			LocalLayerEntity& localEntity = it.value().layerEntity;
 			localEntity.UpdateHealth(currentHealth);
 		}
 	}
@@ -424,7 +444,7 @@ namespace bw
 			if (it == m_serverEntities.end())
 				continue;
 
-			LocalLayerEntity& localEntity = it.value();
+			LocalLayerEntity& localEntity = it.value().layerEntity;
 			if (localEntity.IsPhysical())
 			{
 				assert(entityData.physicsProperties.has_value());
