@@ -46,10 +46,10 @@ function WEAPON:Launch()
 		return
 	end
 
-	local entityMass = nearestResult.hitEntity:GetMass()
-	if (entityMass <= 0) then
-		return
-	end
+	--local entityMass = nearestResult.hitEntity:GetMass()
+	--if (entityMass <= 0) then
+	--	return
+	--end
 
 	self.EntityOffset = self:ToLocalPosition(nearestResult.hitPos)
 

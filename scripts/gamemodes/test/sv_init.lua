@@ -15,7 +15,7 @@ function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_rifle")
 	player:GiveWeapon("weapon_grenade")
 	player:GiveWeapon("weapon_graspain")
-	player:GiveWeapon("weapon_physics_gun")
+	player:GiveWeapon("weapon_physics_bun")
 end
 
 local noclipController = NoclipPlayerMovementController.new()
