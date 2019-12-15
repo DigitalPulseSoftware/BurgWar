@@ -670,8 +670,6 @@ namespace bw
 			});
 
 			m_editorActionLayout->addWidget(button);
-
-			actionIndex++;
 		}
 	}
 

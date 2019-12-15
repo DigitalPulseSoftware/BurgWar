@@ -60,6 +60,9 @@ namespace bw
 				throw std::runtime_error("entity class is not registered");
 
 			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
+			if (!entity)
+				throw std::runtime_error("failed to instantiate entity");
+
 			assert(entity);
 				
 			m_mapEntities.Insert(entity);
