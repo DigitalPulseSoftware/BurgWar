@@ -1,19 +1,25 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = false -- TODO
+ENTITY.IsNetworked = true
 
-ENTITY.Properties = {}
+ENTITY.Properties = {
+	{ Name = "source_entity", Type = PropertyType.Entity, Shared = true },
+	{ Name = "source_offset", Type = PropertyType.FloatPosition, Shared = true },
+	{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
+	{ Name = "target_offset", Type = PropertyType.FloatPosition, Shared = true },
+}
 
 function ENTITY:Initialize()
-end
-
---FIXME: This is required because entities cannot be used as properties yet
-function ENTITY:GrappleInit()
-	if (not self.SourceEntity:IsValid()) then
+	local sourceEntity = self:GetProperty("source_entity")
+	local sourceOffset = self:GetProperty("source_offset")
+	local targetEntity = self:GetProperty("target_entity")
+	local targetOffset = self:GetProperty("target_offset")
+	if (sourceEntity == NoEntity or not sourceEntity:IsValid()) then
 		self:Remove()
+		return
 	end
 
-	self.Constraint = physics.CreateDampenedSpringConstraint(self.SourceEntity, self.TargetEntity, self.SourceOffset, self.TargetOffset, 10, 500, 0)
+	self.Constraint = physics.CreateDampenedSpringConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset, 10, 500, 0)
 end
 
 function ENTITY:OnKilled()
