@@ -34,7 +34,11 @@ namespace bw
 	template<typename... Args> 
 	auto Map::AddLayer(Args&&... args) -> Layer&
 	{
-		return m_layers.emplace_back(std::forward<Args>(args)...);
+		Layer& layer = m_layers.emplace_back(std::forward<Args>(args)...);
+		for (auto& entity : layer.entities)
+			entity.uniqueId = m_freeUniqueId++;
+
+		return layer;
 	}
 
 	inline auto Map::DropLayer(std::size_t layerIndex) -> Layer
@@ -59,7 +63,11 @@ namespace bw
 	template<typename... Args> 
 	auto Map::EmplaceLayer(std::size_t index, Args&&... args) -> Layer&
 	{
-		return *m_layers.emplace(m_layers.begin() + index, std::forward<Args>(args)...);
+		Layer& layer = *m_layers.emplace(m_layers.begin() + index, std::forward<Args>(args)...);
+		for (auto& entity : layer.entities)
+			entity.uniqueId = m_freeUniqueId++;
+
+		return layer;
 	}
 
 	template<typename F>
