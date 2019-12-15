@@ -1343,7 +1343,7 @@ namespace bw
 		// Since we have no guarantee on current unique ids, use a secure hashmap
 		tsl::bhopscotch_map<Nz::Int64 /* from */, Nz::Int64 /* to */> uniqueIds;
 
-		Nz::Int64 uniqueId = 0;
+		Nz::Int64 uniqueId = 1;
 
 		std::size_t layerCount = m_workingMap.GetLayerCount();
 		for (std::size_t i = 0; i < layerCount; ++i)

@@ -34,12 +34,12 @@ namespace bw
 	class ComboBoxPropertyDelegate : public QStyledItemDelegate
 	{
 		public:
-			ComboBoxPropertyDelegate(std::vector<QString> options) :
+			ComboBoxPropertyDelegate(std::vector<std::pair<QString, QVariant>> options) :
 			m_options(std::move(options))
 			{
 			}
 
-			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, int value) const
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, QVariant value) const
 			{
 				model->setData(index, value, Qt::EditRole);
 			}
@@ -49,33 +49,50 @@ namespace bw
 				QComboBox* editor = new QComboBox(parent);
 				editor->setFrame(false);
 
-				for (const QString& option : m_options)
-					editor->addItem(option);
+				for (const auto& option : m_options)
+					editor->addItem(option.first, option.second);
 
 				return editor;
 			}
 
 			QString displayText(const QVariant& value, const QLocale& locale) const override
 			{
-				return m_options[value.toInt()];
+				for (int i = 0; i < int(m_options.size()); ++i)
+				{
+					if (m_options[i].second == value)
+						return m_options[i].first;
+				}
+
+				return "<Error>";
 			}
 
-			int RetrieveModelData(const QModelIndex& index) const
+			QVariant RetrieveModelData(const QModelIndex& index) const
 			{
-				return index.model()->data(index, Qt::EditRole).toInt();
+				return index.model()->data(index, Qt::EditRole);
 			}
 
 			void setEditorData(QWidget* editor, const QModelIndex& index) const override
 			{
 				QComboBox* comboBox = static_cast<QComboBox*>(editor);
-				comboBox->setCurrentIndex(RetrieveModelData(index));
+
+				QVariant value = RetrieveModelData(index);
+				for (int i = 0; i < int(m_options.size()); ++i)
+				{
+					if (m_options[i].second == value)
+					{
+						comboBox->setCurrentIndex(i);
+						return;
+					}
+				}
+
+				comboBox->setCurrentIndex(0);
 			}
 
 			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
 			{
 				QComboBox* comboBox = static_cast<QComboBox*>(editor);
 
-				ApplyModelData(model, index, comboBox->currentIndex());
+				ApplyModelData(model, index, m_options[comboBox->currentIndex()].second);
 			}
 
 			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -84,7 +101,7 @@ namespace bw
 			}
 
 		private:
-			std::vector<QString> m_options;
+			std::vector<std::pair<QString, QVariant>> m_options;
 	};
 
 	class FloatPropertyDelegate : public QStyledItemDelegate
@@ -447,7 +464,6 @@ namespace bw
 	{
 		m_callback = std::move(callback);
 		m_targetEntity = targetEntity;
-		m_updateFlags.Clear();
 
 		if (info)
 		{
@@ -482,6 +498,8 @@ namespace bw
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
 		m_positionWidget->setValue(m_entityInfo.position);
 		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
+
+		m_updateFlags.Clear();
 
 		QDialog::open();
 	}
@@ -544,6 +562,8 @@ namespace bw
 		const auto& propertyInfo = m_properties[m_propertyTypeIndex];
 		m_entityInfo.properties.erase(propertyInfo.keyName);
 
+		m_updateFlags |= EntityInfoUpdate::Properties;
+
 		QTableWidgetItem* item = m_propertiesList->item(int(m_propertyTypeIndex), 1);
 		item->setFont(QFont());
 		item->setText(ToString(GetProperty(propertyInfo), propertyInfo.type));
@@ -586,7 +606,7 @@ namespace bw
 			if (auto it = oldProperties.find(propertyData.keyName); it != oldProperties.end())
 			{
 				// Only keep old property value if types are compatibles
-				if (it->second.index() == propertyInfo.defaultValue->index())
+				if (!propertyInfo.defaultValue || it->second.index() == propertyInfo.defaultValue->index())
 				{
 					assert(propertyData.index < modifiedProperties.size());
 					modifiedProperties[propertyData.index] = true;
@@ -701,8 +721,6 @@ namespace bw
 			boldFont.setWeight(QFont::Medium);
 
 			m_propertiesList->item(int(propertyIndex), 1)->setFont(boldFont);
-
-			m_updateFlags |= EntityInfoUpdate::Properties;
 		};
 
 		auto UpdatePropertyPreview = [this, propertyIndex](const QString& preview)
@@ -788,6 +806,8 @@ namespace bw
 
 				ArrayType& propertyArray = std::get<ArrayType>(it.value());
 				propertyArray[rowIndex] = std::forward<decltype(value)>(value);
+
+				m_updateFlags |= EntityInfoUpdate::Properties;
 			};
 
 			switch (propertyInfo.type)
@@ -844,27 +864,12 @@ namespace bw
 						auto& propertyArray = std::get<T>(propertyValue->get());
 
 						for (int i = 0; i < arraySize; ++i)
-						{
-							assert(propertyArray[i] <= 0xFFFF);
-							int entityIndex = int(propertyArray[i]);
-							if (entityIndex < 0)
-								entityIndex = 0;
-							else
-								entityIndex++;
-
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), entityIndex);
-						}
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						Nz::Int64 layerIndex = m_delegates->comboBoxDelegate->RetrieveModelData(item->index());
-						if (layerIndex == 0)
-							layerIndex = NoEntity;
-						else
-							layerIndex--;
-
-						SetProperty(item->index().row(), layerIndex);
+						SetProperty(item->index().row(), m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
 					});
 
 					layout->addWidget(tableView);
@@ -1001,27 +1006,12 @@ namespace bw
 						auto& propertyArray = std::get<T>(propertyValue->get());
 
 						for (int i = 0; i < arraySize; ++i)
-						{
-							assert(propertyArray[i] <= 0xFFFF);
-							int layerIndex = int(propertyArray[i]);
-							if (layerIndex == NoLayer)
-								layerIndex = 0;
-							else
-								layerIndex++;
-
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), layerIndex);
-						}
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), propertyArray[i]);
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						Nz::Int64 layerIndex = m_delegates->comboBoxDelegate->RetrieveModelData(item->index());
-						if (layerIndex == 0)
-							layerIndex = NoLayer;
-						else
-							layerIndex--;
-
-						SetProperty(item->index().row(), layerIndex);
+						SetProperty(item->index().row(), m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
 					});
 
 					layout->addWidget(tableView);
@@ -1073,6 +1063,8 @@ namespace bw
 
 				it.value() = std::forward<decltype(value)>(value);
 				UpdatePropertyPreview(ToString(it.value(), type));
+
+				m_updateFlags |= EntityInfoUpdate::Properties;
 			};
 
 			switch (propertyInfo.type)
@@ -1095,28 +1087,34 @@ namespace bw
 				case PropertyType::Entity:
 				{
 					QComboBox* comboBox = new QComboBox;
-					for (const QString& option : BuildEntityComboBoxOptions())
-						comboBox->addItem(option);
+					for (const auto& option : BuildEntityComboBoxOptions())
+						comboBox->addItem(option.first, option.second);
 
 					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
 					{
-						int index = int(std::get<Nz::Int64>(propertyValue->get()));
-						if (index < 0)
-							index = 0;
-						else
-							index++;
+						Nz::Int64 uniqueId = std::get<Nz::Int64>(propertyValue->get());
+						int listSize = comboBox->count();
 
-						comboBox->setCurrentIndex(index);
+						int i = 0;
+						for (; i < listSize; ++i)
+						{
+							if (comboBox->itemData(i) == uniqueId)
+							{
+								comboBox->setCurrentIndex(i);
+								break;
+							}
+						}
+
+						if (i >= listSize)
+							comboBox->setCurrentIndex(0);
 					}
 
 					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
 					{
-						if (index <= 0)
-							index = NoEntity;
+						if (index > 0)
+							SetProperty(comboBox->itemData(index).toLongLong());
 						else
-							index--;
-
-						SetProperty(Nz::Int64(index));
+							SetProperty(NoEntity);
 					});
 
 					layout->addWidget(comboBox);
@@ -1177,8 +1175,8 @@ namespace bw
 				case PropertyType::Layer:
 				{
 					QComboBox* comboBox = new QComboBox;
-					for (const QString& option : BuildLayerComboBoxOptions())
-						comboBox->addItem(option);
+					for (const auto& option : BuildLayerComboBoxOptions())
+						comboBox->addItem(option.first, option.second);
 
 					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
 					{
@@ -1193,12 +1191,7 @@ namespace bw
 
 					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
 					{
-						if (index <= 0)
-							index = NoLayer;
-						else
-							index--;
-
-						SetProperty(Nz::Int64(index));
+						SetProperty(comboBox->itemData(index).toLongLong());
 					});
 
 					layout->addWidget(comboBox);
@@ -1352,10 +1345,10 @@ namespace bw
 		}, property->get());
 	}
 
-	std::vector<QString> EntityInfoDialog::BuildEntityComboBoxOptions()
+	std::vector<std::pair<QString, QVariant>> EntityInfoDialog::BuildEntityComboBoxOptions()
 	{
-		std::vector<QString> options;
-		options.push_back(tr("<No entity>"));
+		std::vector<std::pair<QString, QVariant>> options;
+		options.emplace_back(tr("<No entity>"), NoEntity);
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{
@@ -1371,28 +1364,28 @@ namespace bw
 				if (entityName.isEmpty())
 					entityName = tr("<unnamed>");
 
-				options.push_back(tr("Layer %1 (%2) - Entity %3 (%4) of type %5")
-				                 .arg(layerName)
-				                 .arg(i + 1)
-				                 .arg(entityName)
-				                 .arg(j + 1)
-				                 .arg(QString::fromStdString(entity.entityType)));
+				options.emplace_back(tr("Layer %1 (%2) - Entity %3 (%4) of type %5")
+				                    .arg(layerName)
+				                    .arg(i + 1)
+				                    .arg(entityName)
+				                    .arg(j + 1)
+				                    .arg(QString::fromStdString(entity.entityType)), entity.uniqueId);
 			}
 		}
 
 		return options;
 	}
 
-	std::vector<QString> EntityInfoDialog::BuildLayerComboBoxOptions()
+	std::vector<std::pair<QString, QVariant>> EntityInfoDialog::BuildLayerComboBoxOptions()
 	{
-		std::vector<QString> options;
-		options.push_back(tr("<No layer>"));
+		std::vector<std::pair<QString, QVariant>> options;
+		options.emplace_back(tr("<No layer>"), NoLayer);
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{
 			auto& layer = m_map.GetLayer(i);
 
-			options.push_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1));
+			options.emplace_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1), LayerIndex(i));
 		}
 
 		return options;

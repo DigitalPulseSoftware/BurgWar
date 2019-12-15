@@ -95,8 +95,8 @@ namespace bw
 
 			using EntityPropertyConstRefOpt = std::optional<std::reference_wrapper<const EntityProperty>>;
 
-			std::vector<QString> BuildEntityComboBoxOptions();
-			std::vector<QString> BuildLayerComboBoxOptions();
+			std::vector<std::pair<QString, QVariant>> BuildEntityComboBoxOptions();
+			std::vector<std::pair<QString, QVariant>> BuildLayerComboBoxOptions();
 
 			EntityPropertyConstRefOpt GetProperty(const PropertyData& property) const;
 

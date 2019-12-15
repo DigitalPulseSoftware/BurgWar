@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/MapCanvas.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
@@ -52,23 +53,29 @@ namespace bw
 		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
 
 		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
-		assert(classIndex != entityStore.InvalidIndex); //< FIXME: This shouldn't crash
 
-		const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
-		if (entity)
+		try
 		{
+			if (classIndex == entityStore.InvalidIndex)
+				throw std::runtime_error("entity class is not registered");
+
+			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, properties);
+			assert(entity);
+				
 			m_mapEntities.Insert(entity);
 
 			return entity;
 		}
-		else
+		catch (const std::exception& e)
 		{
+			bwLog(m_editor.GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {}: {}", entityClass, e.what());
+
 			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
 			dummyEntity->AddComponent<Ndk::GraphicsComponent>();
 			dummyEntity->AddComponent<Ndk::NodeComponent>();
 
 			m_mapEntities.Insert(dummyEntity);
-			
+
 			return dummyEntity;
 		}
 	}
