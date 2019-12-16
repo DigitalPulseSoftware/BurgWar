@@ -29,6 +29,10 @@
 #include <bitset>
 #include <limits>
 
+// TODO: Replace Nz::Int64 by some EntityIndex using
+static_assert(sizeof(Nz::Int64) == sizeof(qlonglong));
+static_assert(std::is_signed_v<Nz::Int64> == std::is_signed_v<qlonglong>);
+
 namespace bw
 {
 	class ComboBoxPropertyDelegate : public QStyledItemDelegate
@@ -862,7 +866,7 @@ namespace bw
 						auto& propertyArray = std::get<T>(propertyValue->get());
 
 						for (int i = 0; i < arraySize; ++i)
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
