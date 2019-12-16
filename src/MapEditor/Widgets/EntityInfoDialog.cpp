@@ -1004,7 +1004,7 @@ namespace bw
 						auto& propertyArray = std::get<T>(propertyValue->get());
 
 						for (int i = 0; i < arraySize; ++i)
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
 					}
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
@@ -1346,7 +1346,7 @@ namespace bw
 	std::vector<std::pair<QString, QVariant>> EntityInfoDialog::BuildEntityComboBoxOptions()
 	{
 		std::vector<std::pair<QString, QVariant>> options;
-		options.emplace_back(tr("<No entity>"), NoEntity);
+		options.emplace_back(tr("<No entity>"), static_cast<qlonglong>(NoEntity));
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{
@@ -1367,7 +1367,7 @@ namespace bw
 				                    .arg(i + 1)
 				                    .arg(entityName)
 				                    .arg(j + 1)
-				                    .arg(QString::fromStdString(entity.entityType)), entity.uniqueId);
+				                    .arg(QString::fromStdString(entity.entityType)), static_cast<qlonglong>(entity.uniqueId));
 			}
 		}
 
