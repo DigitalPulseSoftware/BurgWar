@@ -867,7 +867,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+						SetProperty(item->index().row(), static_cast<Nz::Int64>(m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong()));
 					});
 
 					layout->addWidget(tableView);
@@ -1009,7 +1009,7 @@ namespace bw
 
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
-						SetProperty(item->index().row(), m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+						SetProperty(item->index().row(), static_cast<Nz::Int64>(m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong()));
 					});
 
 					layout->addWidget(tableView);
@@ -1096,7 +1096,7 @@ namespace bw
 						int i = 0;
 						for (; i < listSize; ++i)
 						{
-							if (comboBox->itemData(i) == uniqueId)
+							if (static_cast<Nz::Int64>(comboBox->itemData(i).toLongLong()) == uniqueId)
 							{
 								comboBox->setCurrentIndex(i);
 								break;
