@@ -1,6 +1,6 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 0.5
+WEAPON.Cooldown = 1
 WEAPON.Scale = 0.75
 WEAPON.Sprite = "placeholder/baguette.png"
 WEAPON.SpriteOrigin = Vec2(40, 20) * WEAPON.Scale
