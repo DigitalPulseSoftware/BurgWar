@@ -25,7 +25,7 @@ namespace bw
 	class TileMapEditorMode : public EntityEditorMode
 	{
 		public:
-			TileMapEditorMode(const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileData>& tiles, EditorWindow& editor);
+			TileMapEditorMode(EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles);
 			~TileMapEditorMode() = default;
 
 			void EnableClearMode(bool clearMode);
@@ -44,9 +44,11 @@ namespace bw
 			NazaraSignal(OnEditionFinished, TileMapEditorMode* /*editorMode*/, const TileMapData& /*tileMapData*/);
 
 		private:
+			struct SelectedTiles;
+
 			void ApplyTile(std::optional<Nz::Vector2ui> tilePosition);
 			std::optional<Nz::Vector2ui> GetTilePositionFromMouse(int mouseX, int mouseY) const;
-			void OnTileSelected(std::size_t tileIndex);
+			void UpdateSelection(std::size_t width, std::size_t height, const std::vector<TileSelectionWidget::TileSelection>& selectedTiles);
 
 			enum class EditionMode
 			{
@@ -55,9 +57,22 @@ namespace bw
 				None
 			};
 
-			std::size_t m_selectedTile;
-			std::vector<Nz::MaterialRef> m_materials;
-			std::vector<TileSelectionWidget::TileData> m_tileData;
+			struct SelectedTiles
+			{
+				std::size_t width = 0;
+				std::size_t height = 0;
+				std::vector<std::size_t> tiles;
+			};
+
+			struct Tiles
+			{
+				std::size_t materialIndex;
+				Nz::Rectf texCoords;
+			};
+
+			SelectedTiles m_selection;
+			std::vector<TileSelectionWidget::TilesetGroup> m_tilesetGroups;
+			std::vector<Tiles> m_tiles;
 			Ndk::EntityOwner m_tileSelectionEntity;
 			Ndk::EntityOwner m_tilemapEntity;
 			Nz::CursorRef m_eraserCursor;

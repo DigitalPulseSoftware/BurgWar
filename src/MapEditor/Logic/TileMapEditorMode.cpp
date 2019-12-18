@@ -16,7 +16,7 @@
 
 namespace bw
 {
-	TileMapEditorMode::TileMapEditorMode(const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileData>& tiles, EditorWindow& editor) :
+	TileMapEditorMode::TileMapEditorMode(EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) :
 	EntityEditorMode(targetEntity, editor),
 	m_editionMode(EditionMode::None),
 	m_tilemapData(std::move(tilemapData)),
@@ -33,44 +33,57 @@ namespace bw
 
 		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.ResourceFolder");
 
-		tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
-		for (const auto& tile : tiles)
+		tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> matPathToIndex;
+
+		std::size_t matIndex = 0;
+		for (const auto& material : materials)
 		{
-			auto it = materials.find(tile.materialPath);
-			if (it == materials.end())
+			if (!matPathToIndex.emplace(material.path, matIndex).second)
+				throw std::runtime_error(material.path + " appeared multiple times in materials");
+
+			auto it = std::find_if(m_tilesetGroups.begin(), m_tilesetGroups.end(), [&](const TileSelectionWidget::TilesetGroup& group) { return group.groupName == material.group; });
+			if (it == m_tilesetGroups.end())
 			{
-				materials.emplace(tile.materialPath, materials.size());
+				auto& newGroup = m_tilesetGroups.emplace_back();
+				newGroup.groupName = material.group;
 
-				Nz::MaterialRef material = Nz::MaterialManager::Get(gameAssetsFolder + "/" + tile.materialPath);
-				if (material)
-				{
-					// Force alpha blending
-					material->Configure("Translucent2D");
-					material->SetDiffuseMap(gameAssetsFolder + "/" + tile.materialPath); //< FIXME
-				}
-				else
-					material = Nz::Material::GetDefault();
-
-				m_materials.emplace_back(material);
+				it = m_tilesetGroups.end() - 1;
 			}
+
+			auto& newMaterial = it->materials.emplace_back();
+
+			//TODO: Use asset manager
+			newMaterial.material = Nz::MaterialManager::Get(gameAssetsFolder + "/" + material.path);
+			if (newMaterial.material)
+			{
+				// Force alpha blending
+				newMaterial.material->Configure("Translucent2D");
+				newMaterial.material->SetDiffuseMap(gameAssetsFolder + "/" + material.path); //< FIXME
+			}
+			else
+				newMaterial.material = Nz::Material::GetDefault();
+
+			newMaterial.tileCount = material.tileCount;
+
+			++matIndex;
 		}
 
-		m_tileData.resize(tiles.size());
-		for (std::size_t i = 0; i < tiles.size(); ++i)
+		std::size_t tileIndex = 0;
+		for (const auto& tile : tiles)
 		{
-			const auto& tile = tiles[i];
+			auto matIt = matPathToIndex.find(tile.materialPath);
+			if (matIt == matPathToIndex.end())
+				throw std::runtime_error("Tile #" + std::to_string(tileIndex) + " uses material " + tile.materialPath + " which is not referenced in materials");
 
-			auto it = materials.find(tile.materialPath);
-			assert(it != materials.end());
+			auto& tileData = m_tiles.emplace_back();
+			tileData.materialIndex = matIt.value();
+			tileData.texCoords = tile.texCoords;
 
-			auto& widgetTile = m_tileData[i];
-			widgetTile.materialIndex = it->second;
-			widgetTile.texCoords = tile.texCoords;
+			tileIndex++;
 		}
 
 		m_hoveringTileSprite = Nz::Sprite::New();
 		m_hoveringTileSprite->SetMaterial(Nz::MaterialLibrary::Get("TileSelection"));
-		m_hoveringTileSprite->SetSize(m_tilemapData.tileSize);
 	}
 
 	void TileMapEditorMode::EnableClearMode(bool clearMode)
@@ -125,19 +138,18 @@ namespace bw
 
 		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.EditorFolder");
 
-		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tileData, m_materials);
-		tileWidget->OnNoTileSelected.Connect([this](TileSelectionWidget* tileSelection)
+		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tilesetGroups);
+		tileWidget->OnClearMode.Connect([this](TileSelectionWidget* tileSelection)
 		{
+			UpdateSelection(1, 1, {});
 			EnableClearMode(true);
 		});
 
-		tileWidget->OnTileSelected.Connect([this](TileSelectionWidget* tileSelection, std::size_t tileIndex)
+		tileWidget->OnSelectionMode.Connect([this](TileSelectionWidget* tileSelection, std::size_t width, std::size_t height, std::vector<TileSelectionWidget::TileSelection> tiles)
 		{
+			UpdateSelection(width, height, tiles);
 			EnableClearMode(false);
-			OnTileSelected(tileIndex);
 		});
-
-		tileWidget->SelectTile(0);
 
 		tileWidget->resize(256, 256); //< FIXME: This is ignored for some reason
 
@@ -149,9 +161,18 @@ namespace bw
 
 		m_tilemapEntity = mapCanvas->GetWorld().CreateEntity();
 
-		m_tileMap = Nz::TileMap::New(m_tilemapData.mapSize, m_tilemapData.tileSize, m_materials.size());
-		for (std::size_t matIndex = 0; matIndex < m_materials.size(); ++matIndex)
-			m_tileMap->SetMaterial(matIndex, m_materials[matIndex]);
+		std::size_t materialCount = 0;
+		for (const auto& tilesetGroup : m_tilesetGroups)
+			materialCount += tilesetGroup.materials.size();
+
+		m_tileMap = Nz::TileMap::New(m_tilemapData.mapSize, m_tilemapData.tileSize, materialCount);
+
+		std::size_t materialIndex = 0;
+		for (const auto& tilesetGroup : m_tilesetGroups)
+		{
+			for (const auto& mat : tilesetGroup.materials)
+				m_tileMap->SetMaterial(materialIndex++, mat.material);
+		}
 
 		m_tilemapData.content.resize(m_tilemapData.mapSize.x * m_tilemapData.mapSize.y);
 		for (std::size_t i = 0; i < m_tilemapData.content.size(); ++i)
@@ -161,9 +182,9 @@ namespace bw
 			Nz::Vector2ui tilePos = { static_cast<unsigned int>(i % m_tilemapData.mapSize.x), static_cast<unsigned int>(i / m_tilemapData.mapSize.x) };
 			if (value > 0)
 			{
-				assert(value - 1 < m_tileData.size());
+				assert(value - 1 < m_tiles.size());
 
-				const auto& tileData = m_tileData[value - 1];
+				const auto& tileData = m_tiles[value - 1];
 				m_tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
 			}
 		}
@@ -238,6 +259,11 @@ namespace bw
 			auto& node = m_tileSelectionEntity->GetComponent<Ndk::NodeComponent>();
 			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tilemapData.tileSize + m_tilemapData.origin);
 
+			std::size_t selectionWidth = std::min<std::size_t>(m_tilemapData.mapSize.x - tilePosition->x, m_selection.width);
+			std::size_t selectionHeight = std::min<std::size_t>(m_tilemapData.mapSize.y - tilePosition->y, m_selection.height);
+
+			m_hoveringTileSprite->SetSize({ m_tilemapData.tileSize.x * selectionWidth, m_tilemapData.tileSize.y * selectionHeight });
+
 			ApplyTile(tilePosition);
 		}
 		else
@@ -250,6 +276,7 @@ namespace bw
 		{
 			case EditionMode::DisableTile:
 			{
+				assert(tilePosition);
 				m_tileMap->DisableTile(*tilePosition);
 
 				std::size_t tileIndex = tilePosition->y * m_tilemapData.mapSize.x + tilePosition->x;
@@ -261,14 +288,31 @@ namespace bw
 
 			case EditionMode::EnableTile:
 			{
-				const auto& tileData = m_tileData[m_selectedTile];
+				assert(tilePosition);
 
-				m_tileMap->EnableTile(*tilePosition, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
+				std::size_t selectionWidth = std::min<std::size_t>(m_tilemapData.mapSize.x - tilePosition->x, m_selection.width);
+				std::size_t selectionHeight = std::min<std::size_t>(m_tilemapData.mapSize.y - tilePosition->y, m_selection.height);
 
-				std::size_t tileIndex = tilePosition->y * m_tilemapData.mapSize.x + tilePosition->x;
+				for (std::size_t y = 0; y < selectionHeight; ++y)
+				{
+					for (std::size_t x = 0; x < selectionWidth; ++x)
+					{
+						std::size_t tileDataIndex = m_selection.tiles[y * m_selection.width + x];
 
-				assert(tileIndex < m_tilemapData.content.size());
-				m_tilemapData.content[tileIndex] = static_cast<Nz::UInt32>(m_selectedTile + 1);
+						assert(tileDataIndex < m_tiles.size());
+						const auto& tileData = m_tiles[tileDataIndex];
+
+						Nz::Vector2ui position(tilePosition->x + x, tilePosition->y + y);
+
+						m_tileMap->EnableTile(position, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
+
+						std::size_t tileIndex = position.y * m_tilemapData.mapSize.x + position.x;
+
+						assert(tileIndex < m_tilemapData.content.size());
+						m_tilemapData.content[tileIndex] = static_cast<Nz::UInt32>(tileDataIndex + 1);
+					}
+				}
+
 				break;
 			}
 
@@ -298,10 +342,39 @@ namespace bw
 			return std::nullopt;
 	}
 
-	void TileMapEditorMode::OnTileSelected(std::size_t tileIndex)
+	void TileMapEditorMode::UpdateSelection(std::size_t width, std::size_t height, const std::vector<TileSelectionWidget::TileSelection>& selectedTiles)
 	{
-		assert(tileIndex < m_tileData.size());
+		m_tileSelectionEntity->Disable();
+		m_selection.width = width;
+		m_selection.height = height;
+		m_selection.tiles.clear();
+		for (const auto& tileSelection : selectedTiles)
+		{
+			assert(tileSelection.groupIndex < m_tilesetGroups.size());
+			std::size_t tileIndex = 0;
+			for (std::size_t groupIndex = 0; groupIndex < tileSelection.groupIndex; ++groupIndex)
+			{
+				const auto& group = m_tilesetGroups[groupIndex];
+				for (const auto& material : group.materials)
+					tileIndex += material.tileCount.x * material.tileCount.y;
+			}
 
-		m_selectedTile = tileIndex;
+			const auto& currentGroup = m_tilesetGroups[tileSelection.groupIndex];
+			assert(tileSelection.materialIndex < currentGroup.materials.size());
+
+			for (std::size_t matIndex = 0; matIndex < tileSelection.materialIndex; ++matIndex)
+			{
+				const auto& mat = currentGroup.materials[matIndex];
+				tileIndex += mat.tileCount.x * mat.tileCount.y;
+			}
+
+			const auto& currentMaterial = currentGroup.materials[tileSelection.materialIndex];
+			assert(tileSelection.tileIndex < currentMaterial.tileCount.x * currentMaterial.tileCount.y);
+
+			tileIndex += tileSelection.tileIndex;
+			assert(tileIndex < m_tiles.size());
+
+			m_selection.tiles.push_back(tileIndex);
+		}
 	}
 }

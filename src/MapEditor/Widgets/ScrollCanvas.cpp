@@ -74,6 +74,9 @@ namespace bw
 
 		m_canvas->setMaximumSize(m_contentSize.x, m_contentSize.y);
 		m_canvas->resize(std::max(m_contentSize.x, m_canvas->width()), std::max(m_contentSize.y, m_canvas->height()));
+
+		// Call OnCameraMoved to bounds camera to new size
+		OnCameraMoved(m_canvas);
 	}
 
 	void ScrollCanvas::UpdateBackgroundColor(Nz::Color color)

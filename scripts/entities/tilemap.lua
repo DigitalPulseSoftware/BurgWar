@@ -4,26 +4,26 @@ ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false
 ENTITY.MaxHealth = 0
 
+local defaultTextureCell = Vec2(1, 1)
+
 ENTITY.Properties = {
 	{ Name = "mapSize", Type = PropertyType.IntegerSize, Default = Vec2(1, 1), Shared = true },
 	{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
 	{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
 	{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
-	{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { Vec2(1, 1) }, Shared = true },
+	{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { defaultTextureCell }, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
 	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true }
 }
 
 local function GenerateTiles(textures, textureCells)
-	local textureCount = math.min(#textures, #textureCells)
-
 	local tiles = {}
-	for i = 1, textureCount do
-		local cellCount = textureCells[i]
+	for i = 1, #textures do
+		local cellCount = textureCells[i] or defaultTextureCell
 		for y = 1, cellCount.y do
 			for x = 1, cellCount.x do
 				table.insert(tiles, {
-					material = textures[i],
+					materialPath = textures[i],
 					texCoords = Rect(Vec2((x - 1) / cellCount.x, (y - 1) / cellCount.y), Vec2(x / cellCount.x, y / cellCount.y))
 				})
 			end
@@ -33,19 +33,46 @@ local function GenerateTiles(textures, textureCells)
 	return tiles
 end
 
+local function GenerateMaterialData(textures, textureCells)
+	local materialData = {}
+	for i = 1, #textures do
+		local cellCount = textureCells[i] or defaultTextureCell
+
+		local group
+		if (textureCells[i].x > 1 or textureCells[i].y > 1) then
+			group = textures[i]
+		else
+			group = "single"
+		end
+
+		table.insert(materialData, {
+			group = group,
+			path = textures[i],
+			tileCount = textureCells[i]
+		})
+	end
+
+	return materialData
+end
+
 if (EDITOR) then
 	ENTITY.EditorActions = {
 		{
 			Name = "editTilemap",
 			Label = "Edit Tilemap",
 			OnTrigger = function (entityEditor)
-				local tileMapEditor = TileMapEditorMode.new(entityEditor:GetTargetEntity(), {
+				local textures = entityEditor:GetProperty("textures")
+				local textureCells = entityEditor:GetProperty("textureCells")
+				local tiles = GenerateTiles(textures, textureCells)
+				local materials = GenerateMaterialData(textures, textureCells)
+
+				local tileMapEditor = TileMapEditorMode.new(Editor, entityEditor:GetTargetEntity(), {
 					mapSize = entityEditor:GetProperty("mapSize"),
 					tileSize = entityEditor:GetProperty("cellSize"),
 					origin = entityEditor:GetPosition(),
 					rotation = entityEditor:GetRotation(),
 					content = entityEditor:GetProperty("content")
-				}, GenerateTiles(entityEditor:GetProperty("textures"), entityEditor:GetProperty("textureCells")), Editor)
+				}, materials, tiles)
 
 				tileMapEditor:SetFinishedCallback(function (tileMapData)
 					if (tileMapData) then
@@ -103,7 +130,11 @@ function ENTITY:Initialize()
 		self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 
 		if (CLIENT) then
-			self:AddTilemap(mapSize, cellSize, content, GenerateTiles(self:GetProperty("textures"), self:GetProperty("textureCells")))
+			local textures = self:GetProperty("textures")
+			local textureCells = self:GetProperty("textureCells")
+			local tiles = GenerateTiles(textures, textureCells)
+
+			self:AddTilemap(mapSize, cellSize, content, tiles)
 		end
 	end
 end

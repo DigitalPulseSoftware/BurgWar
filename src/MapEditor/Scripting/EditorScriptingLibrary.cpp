@@ -87,9 +87,9 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 
 		state.new_usertype<TileMapEditorMode>("TileMapEditorMode",
-			"new", sol::factories([](const Ndk::EntityHandle& targetEntity, TileMapData tileMapData, const std::vector<TileData>& tileData, EditorWindow& editor) -> std::shared_ptr<TileMapEditorMode>
+			"new", sol::factories([](EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) -> std::shared_ptr<TileMapEditorMode>
 			{
-				return std::make_shared<TileMapEditorMode>(targetEntity, std::move(tileMapData), tileData, editor);
+				return std::make_shared<TileMapEditorMode>(editor, targetEntity, std::move(tilemapData), materials, tiles);
 			}),
 
 			"SetFinishedCallback", [this](TileMapEditorMode& tileMapEditor, sol::protected_function callback, sol::this_state state)

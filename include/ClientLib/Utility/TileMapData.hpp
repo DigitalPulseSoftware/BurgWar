@@ -29,6 +29,13 @@ namespace bw
 		Nz::Vector2f tileSize;
 		Nz::Vector2ui mapSize;
 	};
+
+	struct TileMaterialData
+	{
+		std::string group;
+		std::string path;
+		Nz::Vector2ui tileCount;
+	};
 }
 
 #endif

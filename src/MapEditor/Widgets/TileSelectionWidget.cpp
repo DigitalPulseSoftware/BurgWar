@@ -15,15 +15,19 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QTabBar>
 #include <QtWidgets/QWidget>
 #include <tsl/hopscotch_map.h>
+#include <algorithm>
 
 namespace bw
 {
-	TileSelectionWidget::TileSelectionWidget(const std::string& editorResourceFolder, const std::vector<TileData>& tileData, const std::vector<Nz::MaterialRef>& materials, QWidget* parent) :
+	TileSelectionWidget::TileSelectionWidget(const std::string& editorResourceFolder, const std::vector<TilesetGroup>& tilesetGroups, QWidget* parent) :
 	QWidget(parent),
+	m_activeGroup(InvalidGroup),
 	m_tileSize(64.f, 64.f),
-	m_selectedTile(0)
+	m_firstSelectedTile(0),
+	m_lastSelectedTile(0)
 	{
 		setWindowTitle(tr("Tile selector"));
 
@@ -35,36 +39,103 @@ namespace bw
 			OnMouseButtonPressed(mouseEvent);
 		});
 
-		unsigned int tileMapSide = static_cast<unsigned int>(std::ceil(std::sqrt(tileData.size() + 1)));
-		m_mapSize = Nz::Vector2ui(tileMapSide, tileMapSide);
-		m_tileCount = tileData.size();
-
-		Nz::TileMapRef tileMap = Nz::TileMap::New(m_mapSize, m_tileSize, materials.size());
-		for (std::size_t matIndex = 0; matIndex < materials.size(); ++matIndex)
-			tileMap->SetMaterial(matIndex, materials[matIndex]);
-
-		for (std::size_t tileId = 0; tileId < m_tileCount; ++tileId)
+		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
 		{
-			const auto& tile = tileData[tileId];
+			OnMouseButtonReleased(mouseEvent);
+		});
 
-			Nz::Vector2ui tilePosition(Nz::Vector2<std::size_t>(tileId % tileMapSide, tileId / tileMapSide));
-			tileMap->EnableTile(tilePosition, tile.texCoords, Nz::Color::White, tile.materialIndex);
+		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseEvent)
+		{
+			OnMouseMoved(mouseEvent);
+		});
+
+
+		QTabBar* groupBar = new QTabBar;
+
+		for (const TilesetGroup& tilesetGroup : tilesetGroups)
+		{
+			groupBar->addTab(QString::fromStdString(tilesetGroup.groupName));
+
+			Nz::Vector2ui mapSize = Nz::Vector2ui::Zero();
+			for (const MaterialData& material : tilesetGroup.materials)
+			{
+				mapSize.x = std::max(mapSize.x, material.tileCount.x);
+				mapSize.y += material.tileCount.y;
+			}
+			//unsigned int tileMapSide = static_cast<unsigned int>(std::ceil(std::sqrt(tileData.size() + 1)));
+
+			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, m_tileSize, tilesetGroup.materials.size());
+
+			Nz::Vector2ui tileCursor = Nz::Vector2ui::Zero();
+
+			std::size_t matIndex = 0;
+			for (const MaterialData& materialData : tilesetGroup.materials)
+			{
+				tileMap->SetMaterial(matIndex, materialData.material);
+
+				Nz::Vector2ui materialSize = Nz::Vector2ui(materialData.material->GetDiffuseMap()->GetSize());
+
+				Nz::Vector2f invTileCount = 1.f / Nz::Vector2f(materialData.tileCount);
+
+				for (std::size_t y = 0; y < materialData.tileCount.y; ++y)
+				{
+					for (std::size_t x = 0; x < materialData.tileCount.x; ++x)
+					{
+						Nz::Rectf texCoords = Nz::Rectf(invTileCount * Nz::Vector2f(x, y), invTileCount * Nz::Vector2f(x + 1, y + 1));
+						tileMap->EnableTile(Nz::Vector2ui(tileCursor.x + x, tileCursor.y + y), texCoords, Nz::Color::White, matIndex);
+					}
+				}
+				
+				tileCursor.y += materialData.tileCount.y;
+
+				matIndex++;
+			}
+
+			const Ndk::EntityHandle& tilemapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
+			tilemapEntity->AddComponent<Ndk::NodeComponent>();
+			tilemapEntity->AddComponent<Ndk::GraphicsComponent>().Attach(tileMap);
+			tilemapEntity->Disable();
+
+			Nz::Vector2f tileMapSize = Nz::Vector2f(tileMap->GetMapSize()) * tileMap->GetTileSize();
+
+			GroupData& group = m_groups.emplace_back();
+			group.contentSize = Nz::Vector2i(std::ceil(tileMapSize.x), std::ceil(tileMapSize.y));
+			group.mapSize = mapSize;
+			group.tilemap = tilemapEntity;
+
+			std::size_t rectIndex = 0;
+			for (const MaterialData& materialData : tilesetGroup.materials)
+			{
+				group.materialFirstRectIndices.push_back(rectIndex);
+				rectIndex += mapSize.x * materialData.tileCount.y;
+			}
 		}
+		
+		connect(groupBar, &QTabBar::currentChanged, [this](int newIndex)
+		{
+			if (newIndex < 0)
+				return;
 
-		m_tileMapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
-		m_tileMapEntity->AddComponent<Ndk::NodeComponent>();
-		m_tileMapEntity->AddComponent<Ndk::GraphicsComponent>().Attach(tileMap);
+			SelectTilesetGroup(static_cast<std::size_t>(newIndex));
+		});
 
-		Nz::Vector2f tileMapSize = Nz::Vector2f(tileMap->GetMapSize()) * tileMap->GetTileSize();
-		m_tileSelectionCanvas->SetContentSize(Nz::Vector2i(std::ceil(tileMapSize.x), std::ceil(tileMapSize.y)));
+		m_selectedSprite = Nz::Sprite::New();
+		m_selectedSprite->SetMaterial(Nz::MaterialLibrary::Get("TileSelection"));
+		m_selectedSprite->SetSize(m_tileSize);
 
-		m_selectionSprite = Nz::Sprite::New();
+		m_selectionSprite = Nz::Sprite::New(*m_selectedSprite);
+		m_selectionSprite->SetColor(Nz::Color(192, 192, 192, 128));
 		m_selectionSprite->SetMaterial(Nz::MaterialLibrary::Get("TileSelection"));
-		m_selectionSprite->SetSize(tileMap->GetTileSize());
+		m_selectionSprite->SetSize(m_tileSize);
 
 		m_selectedEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
 		m_selectedEntity->AddComponent<Ndk::NodeComponent>();
-		m_selectedEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_selectionSprite, 1);
+		m_selectedEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_selectedSprite, 1);
+
+		m_selectionEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
+		m_selectionEntity->AddComponent<Ndk::NodeComponent>();
+		m_selectionEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_selectionSprite, 1);
+		m_selectionEntity->Disable();
 
 		QToolBar* toolbar = new QToolBar;
 		QAction* tileAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/gui/icons/cloth-24.png").c_str())), tr("Tile mode"));
@@ -75,58 +146,126 @@ namespace bw
 
 		QVBoxLayout* layout = new QVBoxLayout;
 		layout->addWidget(toolbar);
+		layout->addWidget(groupBar);
 		layout->addWidget(m_tileSelectionCanvas);
 
 		setLayout(layout);
 
+		SelectTilesetGroup(0);
 		EnableTileMode();
 	}
 
-	void TileSelectionWidget::SelectTile(std::size_t tileIndex)
+	void TileSelectionWidget::SelectTilesetGroup(std::size_t groupIndex)
 	{
-		assert(tileIndex < m_tileCount);
+		assert(groupIndex < m_groups.size());
 
-		SelectRect(tileIndex);
+		if (m_activeGroup != InvalidGroup)
+			m_groups[m_activeGroup].tilemap->Disable();
+
+		m_activeGroup = groupIndex;
+
+		m_groups[m_activeGroup].tilemap->Enable();
+		m_tileSelectionCanvas->SetContentSize(m_groups[m_activeGroup].contentSize);
 	}
 
-	void TileSelectionWidget::SelectRect(std::size_t rectIndex)
+	void TileSelectionWidget::SelectRect(std::size_t firstRect, std::size_t lastRect)
 	{
-		assert(rectIndex < m_mapSize.x * m_mapSize.y);
+		assert(m_activeGroup < m_groups.size());
+		auto& currentGroup = m_groups[m_activeGroup];
+
+		assert(firstRect < currentGroup.mapSize.x * currentGroup.mapSize.y);
+		assert(lastRect < currentGroup.mapSize.x * currentGroup.mapSize.y);
+
+		if (firstRect > lastRect)
+			std::swap(firstRect, lastRect);
+
+		std::size_t firstX = firstRect % currentGroup.mapSize.x;
+		std::size_t firstY = firstRect / currentGroup.mapSize.x;
+		std::size_t lastX = lastRect % currentGroup.mapSize.x;
+		std::size_t lastY = lastRect / currentGroup.mapSize.x;
+
+		if (firstX > lastX)
+			std::swap(firstX, lastX);
+
+		if (firstY > lastY)
+			std::swap(firstY, lastY);
+
+		Nz::Vector2f firstPosition = Nz::Vector2f(firstX, firstY) * m_tileSize;
+		Nz::Vector2f lastPosition = Nz::Vector2f(lastX, lastY) * m_tileSize;
 
 		auto& selectedEntityNode = m_selectedEntity->GetComponent<Ndk::NodeComponent>();
-		selectedEntityNode.SetPosition(Nz::Vector2f(rectIndex % m_mapSize.x, rectIndex / m_mapSize.y) * m_tileSize);
+		selectedEntityNode.SetPosition(firstPosition);
+		m_selectedSprite->SetSize(lastPosition - firstPosition + m_tileSize);
 
-		if (rectIndex >= 0 && rectIndex < m_tileCount)
-		{
-			m_selectedTile = rectIndex;
-			EnableTileMode();
-		}
-		else
-			EnableClearMode();
+		m_firstSelectedTile = firstRect;
+		m_lastSelectedTile = lastRect;
+
+		EnableTileMode();
 	}
 
 	void TileSelectionWidget::EnableClearMode()
 	{
-		m_selectionSprite->SetColor(Nz::Color(128, 128, 128));
-		OnNoTileSelected(this);
+		m_selectedEntity->Disable();
+		OnClearMode(this);
 	}
 
 	void TileSelectionWidget::EnableTileMode()
 	{
-		m_selectionSprite->SetColor(Nz::Color::White);
-		OnTileSelected(this, m_selectedTile);
+		assert(m_activeGroup < m_groups.size());
+		auto& currentGroup = m_groups[m_activeGroup];
+
+		m_selectedEntity->Enable();
+
+		auto BuildTileSelection = [&](std::size_t tileIndex)
+		{
+			TileSelection selection;
+			selection.groupIndex = m_activeGroup;
+
+			auto it = std::upper_bound(currentGroup.materialFirstRectIndices.begin(), currentGroup.materialFirstRectIndices.end(), tileIndex) - 1;
+			assert(it != currentGroup.materialFirstRectIndices.end());
+
+			selection.materialIndex = std::distance(currentGroup.materialFirstRectIndices.begin(), it);
+			selection.tileIndex = tileIndex - *it;
+
+			return selection;
+		};
+
+		if (m_firstSelectedTile == m_lastSelectedTile)
+			OnSelectionMode(this, 1, 1, { BuildTileSelection(m_firstSelectedTile) });
+		else
+		{
+			std::size_t firstX = m_firstSelectedTile % currentGroup.mapSize.x;
+			std::size_t firstY = m_firstSelectedTile / currentGroup.mapSize.x;
+			std::size_t lastX = m_lastSelectedTile % currentGroup.mapSize.x;
+			std::size_t lastY = m_lastSelectedTile / currentGroup.mapSize.x;
+
+			if (firstX > lastX)
+				std::swap(firstX, lastX);
+
+			if (firstY > lastY)
+				std::swap(firstY, lastY);
+
+			std::vector<TileSelection> selectedTiles;
+			for (std::size_t y = firstY; y <= lastY; ++y)
+			{
+				for (std::size_t x = firstX; x <= lastX; ++x)
+					selectedTiles.push_back(BuildTileSelection(y * currentGroup.mapSize.x + x));
+			}
+
+			OnSelectionMode(this, lastX - firstX + 1, lastY - firstY + 1, std::move(selectedTiles));
+		}
 	}
 
-	void TileSelectionWidget::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
+	std::size_t TileSelectionWidget::GetHoveredTile(int x, int y)
 	{
-		if (mouseEvent.button != Nz::Mouse::Left)
-			return;
-
 		WorldCanvas* worldCanvas = m_tileSelectionCanvas->GetWorldCanvas();
 		auto& cameraComponent = worldCanvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
-		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(mouseEvent.x, mouseEvent.y, 0.f)));
+		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(x, y, 0.f)));
 
-		Nz::Rectf tilemapRect(0.f, 0.f, m_mapSize.x * m_tileSize.x, m_mapSize.y * m_tileSize.y);
+		assert(m_activeGroup < m_groups.size());
+		auto& currentGroup = m_groups[m_activeGroup];
+
+		Nz::Rectf tilemapRect(0.f, 0.f, currentGroup.mapSize.x * m_tileSize.x, currentGroup.mapSize.y * m_tileSize.y);
 
 		if (tilemapRect.Contains(worldPos))
 		{
@@ -134,7 +273,91 @@ namespace bw
 			worldPos.y = std::floor(worldPos.y / m_tileSize.y);
 
 			Nz::Vector2ui tilePos(worldPos);
-			SelectRect(tilePos.y * m_mapSize.x + tilePos.x);
+			return tilePos.y * currentGroup.mapSize.x + tilePos.x;
 		}
+
+		return InvalidTile;
+	}
+
+	void TileSelectionWidget::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
+	{
+		if (mouseEvent.button != Nz::Mouse::Left)
+			return;
+		
+		std::size_t hoveredTile = GetHoveredTile(mouseEvent.x, mouseEvent.y);
+		if (hoveredTile != InvalidTile)
+			m_currentSelectionFirstRect = hoveredTile;
+	}
+	
+	void TileSelectionWidget::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
+	{
+		if (mouseEvent.button != Nz::Mouse::Left)
+			return;
+
+		std::size_t selectionFirstRect = (m_currentSelectionFirstRect) ? *m_currentSelectionFirstRect : InvalidTile;
+		std::size_t selectionLastRect = GetHoveredTile(mouseEvent.x, mouseEvent.y);
+
+		m_currentSelectionFirstRect.reset();
+		m_selectionEntity->Disable();
+
+		if (selectionFirstRect == InvalidTile && selectionLastRect != InvalidTile)
+			SelectRect(selectionLastRect, selectionLastRect);
+		else if (selectionFirstRect != InvalidTile && selectionLastRect == InvalidTile)
+			SelectRect(selectionFirstRect, selectionFirstRect);
+		else if (selectionFirstRect != InvalidTile && selectionLastRect != InvalidTile)
+			SelectRect(selectionFirstRect, selectionLastRect);
+	}
+
+	void TileSelectionWidget::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseEvent)
+	{
+		std::size_t selectionLastRect = GetHoveredTile(mouseEvent.x, mouseEvent.y);
+
+		assert(m_activeGroup < m_groups.size());
+		auto& currentGroup = m_groups[m_activeGroup];
+
+		if (m_currentSelectionFirstRect)
+		{
+			std::size_t selectionFirstRect = (m_currentSelectionFirstRect) ? *m_currentSelectionFirstRect : InvalidTile;
+
+			auto UpdateSelection = [&](std::size_t firstRect, std::size_t lastRect)
+			{
+				std::size_t firstX = firstRect % currentGroup.mapSize.x;
+				std::size_t firstY = firstRect / currentGroup.mapSize.x;
+				std::size_t lastX = lastRect % currentGroup.mapSize.x;
+				std::size_t lastY = lastRect / currentGroup.mapSize.x;
+
+				if (firstX > lastX)
+					std::swap(firstX, lastX);
+
+				if (firstY > lastY)
+					std::swap(firstY, lastY);
+
+				Nz::Vector2f firstPosition = Nz::Vector2f(firstX, firstY) * m_tileSize;
+				Nz::Vector2f lastPosition = Nz::Vector2f(lastX, lastY) * m_tileSize;
+
+				m_selectionEntity->Enable();
+				auto& selectionEntityNode = m_selectionEntity->GetComponent<Ndk::NodeComponent>();
+				selectionEntityNode.SetPosition(firstPosition);
+				m_selectionSprite->SetSize(lastPosition - firstPosition + m_tileSize);
+			};
+
+			if (selectionFirstRect == InvalidTile && selectionLastRect != InvalidTile)
+				UpdateSelection(selectionLastRect, selectionLastRect);
+			else if (selectionFirstRect != InvalidTile && selectionLastRect == InvalidTile)
+				UpdateSelection(selectionFirstRect, selectionFirstRect);
+			else if (selectionFirstRect != InvalidTile && selectionLastRect != InvalidTile)
+				UpdateSelection(selectionFirstRect, selectionLastRect);
+		}
+		else if (selectionLastRect != InvalidTile)
+		{
+			Nz::Vector2f firstPosition = Nz::Vector2f(selectionLastRect % currentGroup.mapSize.x, selectionLastRect / currentGroup.mapSize.x) * m_tileSize;
+
+			m_selectionEntity->Enable();
+			auto& selectionEntityNode = m_selectionEntity->GetComponent<Ndk::NodeComponent>();
+			selectionEntityNode.SetPosition(firstPosition);
+			m_selectionSprite->SetSize(m_tileSize);
+		}
+		else
+			m_selectionEntity->Disable();
 	}
 }

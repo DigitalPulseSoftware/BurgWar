@@ -29,6 +29,12 @@ namespace sol
 	struct lua_type_of<std::vector<bw::TileData>> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
+	struct lua_size<std::vector<bw::TileMaterialData>> : std::integral_constant<int, 1> {};
+
+	template<>
+	struct lua_type_of<std::vector<bw::TileMaterialData>> : std::integral_constant<sol::type, sol::type::table> {};
+
+	template<>
 	struct lua_size<bw::TileMapData> : std::integral_constant<int, 1> {};
 
 	template<>
@@ -52,7 +58,7 @@ namespace sol
 			{
 				sol::stack_table tileTable(L);
 
-				tileData.materialPath = tileTable["material"];
+				tileData.materialPath = tileTable["materialPath"];
 				tileData.texCoords = tileTable["texCoords"];
 			}
 			lua_pop(L, 1);
@@ -61,6 +67,36 @@ namespace sol
 		tracking.use(1);
 
 		return tileVec;
+	}
+
+	inline std::vector<bw::TileMaterialData> sol_lua_get(sol::types<std::vector<bw::TileMaterialData>>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+
+		std::vector<bw::TileMaterialData> materials;
+
+		sol::table tileTable(L, absoluteIndex);
+		std::size_t materialCount = tileTable.size();
+
+		materials.resize(materialCount);
+		for (std::size_t i = 0; i < materialCount; ++i)
+		{
+			auto& materialData = materials[i];
+
+			lua_geti(L, absoluteIndex, i + 1);
+			{
+				sol::stack_table tileTable(L);
+
+				materialData.group = tileTable["group"];
+				materialData.path = tileTable["path"];
+				materialData.tileCount = tileTable["tileCount"];
+			}
+			lua_pop(L, 1);
+		}
+
+		tracking.use(1);
+
+		return materials;
 	}
 
 	inline bw::TileMapData sol_lua_get(sol::types<bw::TileMapData>, lua_State* L, int index, sol::stack::record& tracking)
