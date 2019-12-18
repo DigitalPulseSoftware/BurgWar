@@ -178,7 +178,7 @@ namespace bw
 				}
 			}
 
-			//FIXME
+			//FIXME: Map editor is currently unable to show multiple layers
 			if (entity->HasComponent<LayerEntityComponent>())
 			{
 				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
