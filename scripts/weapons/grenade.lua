@@ -15,7 +15,7 @@ if (SERVER) then
 			LayerIndex = self:GetLayerIndex(),
 			Position = self:GetPosition() + self:GetDirection() * 32,
 			Properties = {
-				lifetime = math.random(1, 2)
+				lifetime = math.random(3, 4)
 			}
 		})
 
