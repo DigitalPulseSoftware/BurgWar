@@ -100,7 +100,7 @@ if (SERVER) then
 else
 	function ENTITY:OnKilled()
 		--TODO: Use RPC to prevent creating a second entity
-		if (not self.isRetracting) then
+		if (not self:GetProperty("retracting")) then
 			local elapsedTime = match.GetCurrentTime() - self.startTime
 
 			match.CreateEntity({
