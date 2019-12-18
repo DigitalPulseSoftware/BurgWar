@@ -200,7 +200,6 @@ namespace bw
 		const NetworkStringStore& networkStringStore = localMatch.GetClientSession().GetNetworkStringStore();
 
 		const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
-		bwLog(GetMatch().GetLogger(), LogLevel::Debug, "Creating entity {} on layer {} of type {}", entityId, GetLayerIndex(), entityClass);
 
 		EntityProperties properties;
 		for (const auto& property : entityData.properties)
@@ -349,8 +348,6 @@ namespace bw
 			auto it = m_serverEntities.find(entityId);
 			if (it == m_serverEntities.end())
 				continue;
-
-			bwLog(GetMatch().GetLogger(), LogLevel::Debug, "Deleting entity {} on layer {}", entityId, GetLayerIndex());
 
 			OnEntityDelete(this, it.value().layerEntity);
 

@@ -75,6 +75,8 @@ namespace bw
 		if (!InitializeEntity(*entityClass, entity))
 			entity->Kill();
 
+		bwLog(GetLogger(), LogLevel::Debug, "Created entity {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
+
 		return entity;
 	}
 

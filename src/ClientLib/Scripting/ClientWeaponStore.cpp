@@ -42,6 +42,8 @@ namespace bw
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 
+		bwLog(GetLogger(), LogLevel::Debug, "Created {} weapon {} on layer {} of type {}", (serverId != LocalLayerEntity::ClientsideId) ? "server" : "client", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
+
 		return layerEntity;
 	}
 

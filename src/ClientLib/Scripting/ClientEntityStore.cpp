@@ -21,6 +21,8 @@ namespace bw
 		if (!InitializeEntity(entity))
 			return std::nullopt;
 
+		bwLog(GetLogger(), LogLevel::Debug, "Created {} entity {} on layer {} of type {}", (serverId != LocalLayerEntity::ClientsideId) ? "server" : "client", uniqueId, layer.GetLayerIndex(), GetElement(elementIndex)->fullName);
+
 		return layerEntity;
 	}
 }

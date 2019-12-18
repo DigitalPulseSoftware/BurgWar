@@ -29,6 +29,8 @@ namespace bw
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 
+		bwLog(GetLogger(), LogLevel::Debug, "Created weapon {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(weaponIndex)->fullName);
+
 		return weapon;
 	}
 
