@@ -43,6 +43,10 @@ if (SERVER) then
 			end
 		end)
 
+		if (nearestFraction <= 0.001) then
+			return
+		end
+
 		local targetEntity
 		local targetOffset
 		local duration = 0.5
