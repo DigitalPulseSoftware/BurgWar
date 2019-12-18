@@ -28,7 +28,7 @@ namespace bw
 			LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor);
 			LocalLayer(const LocalLayer&) = delete;
 			LocalLayer(LocalLayer&&) noexcept;
-			~LocalLayer() = default;
+			~LocalLayer();
 
 			inline void Disable();
 			void Enable(bool enable = true);

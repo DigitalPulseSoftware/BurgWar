@@ -27,6 +27,12 @@ namespace bw
 		world.AddSystem<VisualInterpolationSystem>();
 	}
 
+	LocalLayer::~LocalLayer()
+	{
+		// Kill all entities while still alive
+		GetWorld().Clear();
+	}
+
 	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
 	SharedLayer(std::move(layer)),
 	m_clientEntities(std::move(layer.m_clientEntities)),
