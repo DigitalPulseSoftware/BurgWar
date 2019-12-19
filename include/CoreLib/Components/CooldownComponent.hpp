@@ -18,6 +18,8 @@ namespace bw
 			CooldownComponent(const CooldownComponent&) = default;
 			~CooldownComponent() = default;
 
+			inline void SetNextTriggerTime(Nz::UInt64 time);
+
 			inline bool Trigger(Nz::UInt64 currentTime);
 
 			static Ndk::ComponentIndex componentIndex;

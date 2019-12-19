@@ -49,7 +49,7 @@ function ENTITY:UpdateFace(face, duration)
 	end
 
 	if (duration) then
-		self.FaceExpiration = match.GetCurrentTime() + duration
+		self.FaceExpiration = match.GetSeconds() + duration
 	else
 		self.FaceExpiration = nil
 	end
@@ -57,7 +57,7 @@ end
 
 function ENTITY:OnTick()
 	if (self.FaceExpiration) then
-		if (match.GetCurrentTime() >= self.FaceExpiration) then
+		if (match.GetSeconds() >= self.FaceExpiration) then
 			self.CurrentFace:Hide()
 			self.CurrentFace = self.DefaultFace
 			self.CurrentFace:Show()

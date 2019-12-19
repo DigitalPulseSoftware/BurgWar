@@ -115,11 +115,6 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
 	{
-		library["GetCurrentTime"] = [this]()
-		{
-			return m_match.GetCurrentTime() / 1000.f;
-		};
-
 		library["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
 			sol::state_view state(s);
@@ -148,6 +143,16 @@ namespace bw
 				m_match.ForEachEntity(entityFunc);
 
 			return result;
+		};
+
+		library["GetMilliseconds"] = [this]()
+		{
+			return m_match.GetCurrentTime();
+		};
+
+		library["GetSeconds"] = [this]()
+		{
+			return m_match.GetCurrentTime() / 1000.f;
 		};
 
 		library["GetTickDuration"] = [&]()

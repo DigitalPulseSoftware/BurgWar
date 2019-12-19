@@ -21,7 +21,7 @@ function ENTITY:Initialize()
 	self.TargetOffset = self:GetProperty("target_offset")
 
 	self.isRetracting = false
-	self.startTime = match.GetCurrentTime()
+	self.startTime = match.GetSeconds()
 
 	if (self.SourceEntity == NoEntity) then
 		self:Remove()
@@ -75,13 +75,13 @@ function ENTITY:Retract()
 	if (SERVER) then
 		self:Remove()
 	else
-		local elapsedTime = match.GetCurrentTime() - self.startTime
+		local elapsedTime = match.GetSeconds() - self.startTime
 		if (elapsedTime > 0) then 
 			self.retractTime = math.min(elapsedTime, self:GetProperty("duration"))
 			print("Retract time", self.retractTime)
 
 			self.isRetracting = true
-			self.startTime = match.GetCurrentTime()
+			self.startTime = match.GetSeconds()
 		else
 			self:Remove()
 		end
@@ -91,7 +91,7 @@ end
 if (SERVER) then
 	function ENTITY:OnTick()
 		if (self.isRetracting) then
-			local elapsedTime = match.GetCurrentTime() - self.startTime
+			local elapsedTime = match.GetSeconds() - self.startTime
 			if (elapsedTime > self.retractTime) then
 				self:Remove()
 				return
@@ -102,7 +102,7 @@ else
 	function ENTITY:OnKilled()
 		--TODO: Use RPC to prevent creating a second entity
 		if (not self:GetProperty("retracting")) then
-			local elapsedTime = match.GetCurrentTime() - self.startTime
+			local elapsedTime = match.GetSeconds() - self.startTime
 
 			match.CreateEntity({
 				Type = self.FullName,
@@ -123,7 +123,7 @@ else
 		local direction, length = (self.endPos - self.startPos):Normalize()
 		local rotation = math.atan(direction.y, direction.x) * 180 / math.pi
 
-		local elapsedTime = match.GetCurrentTime() - self.startTime
+		local elapsedTime = match.GetSeconds() - self.startTime
 		if (self.isRetracting) then
 			length = length * (1 - elapsedTime / self.retractTime)
 			if (length < 0) then

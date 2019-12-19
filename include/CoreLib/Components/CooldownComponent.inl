@@ -12,6 +12,11 @@ namespace bw
 	{
 	}
 
+	inline void CooldownComponent::SetNextTriggerTime(Nz::UInt64 time)
+	{
+		m_nextTriggerTime = time;
+	}
+
 	inline bool CooldownComponent::Trigger(Nz::UInt64 currentTime)
 	{
 		if (currentTime < m_nextTriggerTime)
