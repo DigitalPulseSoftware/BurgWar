@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
@@ -29,6 +30,13 @@ namespace bw
 				return sol::nil;
 
 			return ownerEntity->GetComponent<ScriptComponent>().GetTable();
+		};
+
+		elementMetatable["SetNextTriggerTime"] = [](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			
+			entity->GetComponent<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
 		};
 	}
 }

@@ -1,6 +1,11 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 1
+if (SERVER) then
+	WEAPON.Cooldown = 1
+else
+	WEAPON.Cooldown = 0.5
+end
+
 WEAPON.Scale = 0.75
 WEAPON.Sprite = "placeholder/baguette.png"
 WEAPON.SpriteOrigin = Vec2(40, 20) * WEAPON.Scale
@@ -89,6 +94,8 @@ if (SERVER) then
 					target_offset = targetOffset
 				}
 			})
+
+			self:SetNextTriggerTime(match.GetMilliseconds())
 		else
 			self:Release()
 		end
