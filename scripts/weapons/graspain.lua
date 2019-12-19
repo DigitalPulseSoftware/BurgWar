@@ -1,11 +1,6 @@
 RegisterClientScript()
 
-if (SERVER) then
-	WEAPON.Cooldown = 1
-else
-	WEAPON.Cooldown = 0.5
-end
-
+WEAPON.Cooldown = 0.5
 WEAPON.Scale = 0.75
 WEAPON.Sprite = "placeholder/baguette.png"
 WEAPON.SpriteOrigin = Vec2(40, 20) * WEAPON.Scale
