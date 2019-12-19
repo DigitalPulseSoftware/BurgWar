@@ -44,6 +44,7 @@ function ENTITY:Initialize()
 	if (CLIENT) then
 		self.sprite = self:AddSprite({
 			Color = { r = 255, g = 255, b = 0, a = 220 },
+			RenderOrder = -5,
 			Size = Vec2(0, 0)
 		})
 
