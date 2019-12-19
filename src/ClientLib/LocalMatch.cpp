@@ -437,6 +437,11 @@ namespace bw
 				return sol::nil;
 		};
 
+		state["engine_GetActiveLayer"] = [&]()
+		{
+			return m_activeLayerIndex;
+		};
+
 		state["engine_GetCameraViewport"] = [&]()
 		{
 			return m_camera->GetComponent<Ndk::CameraComponent>().GetTarget()->GetSize();
