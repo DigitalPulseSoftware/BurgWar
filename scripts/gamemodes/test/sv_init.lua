@@ -87,13 +87,13 @@ function GM:OnPlayerChangeLayer(player, newLayer)
 	local oldLayer = player:GetLayerIndex()
 	if (oldLayer ~= NoLayer) then
 		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", oldLayer)) do
-			ent:OnPlayerLeaveLayer(player)
+			ent:OnPlayerLeaveLayer(player, oldLayer)
 		end
 	end
 
 	if (newLayer ~= NoLayer) then
 		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", newLayer)) do
-			ent:OnPlayerEnterLayer(player)
+			ent:OnPlayerEnterLayer(player, newLayer)
 		end
 	end
 end
