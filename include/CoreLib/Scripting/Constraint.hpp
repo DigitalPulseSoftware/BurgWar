@@ -75,6 +75,17 @@ namespace bw
 			PinConstraint& operator=(PinConstraint&&) noexcept = default;
 	};
 
+	class PivotConstraint : public Constraint
+	{
+	public:
+		inline PivotConstraint(Ndk::EntityHandle entity, Nz::PivotConstraint2D* constraint);
+		PivotConstraint(PivotConstraint&&) noexcept = default;
+		~PivotConstraint() = default;
+
+		PivotConstraint& operator=(const PivotConstraint&) = delete;
+		PivotConstraint& operator=(PivotConstraint&&) noexcept = default;
+	};
+
 	class RotaryLimitConstraint : public Constraint
 	{
 		public:

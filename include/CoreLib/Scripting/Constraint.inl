@@ -35,6 +35,11 @@ namespace bw
 	Constraint(std::move(entity), constraint->CreateHandle())
 	{
 	}
+	
+	inline PivotConstraint::PivotConstraint(Ndk::EntityHandle entity, Nz::PivotConstraint2D* constraint) :
+	Constraint(std::move(entity), constraint->CreateHandle())
+	{
+	}
 
 	inline RotaryLimitConstraint::RotaryLimitConstraint(Ndk::EntityHandle entity, Nz::RotaryLimitConstraint2D* constraint) :
 	Constraint(std::move(entity), constraint->CreateHandle())

@@ -17,8 +17,7 @@ function ENTITY:Initialize()
 
 	self:InitRigidBody(0)
 
-	self.PositionConstraint = physics.CreatePinConstraint(self, targetEntity, Vec2(0,0), targetOffset)
-	self.PositionConstraint:SetDistance(0)
+	self.PositionConstraint = physics.CreatePivotConstraint(self, targetEntity, Vec2(0,0), targetOffset)
 end
 
 function ENTITY:OnKilled()

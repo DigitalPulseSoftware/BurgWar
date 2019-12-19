@@ -79,6 +79,12 @@ namespace bw
 			sol::base_classes, sol::bases<Constraint>()
 		);
 
+		state.new_usertype<PivotConstraint>("PivotConstraint",
+			"new", sol::no_constructor,
+
+			sol::base_classes, sol::bases<Constraint>()
+		);
+
 		state.new_usertype<RotaryLimitConstraint>("RotaryLimitConstraint",
 			"new", sol::no_constructor,
 
@@ -178,6 +184,20 @@ namespace bw
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
+		};
+
+		library["CreatePivotConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		{
+			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+
+			if (firstEntity == secondEntity)
+				throw std::runtime_error("Cannot apply a constraint to the same entity");
+
+			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
+			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+
+			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		};
 
 		library["CreateRotaryLimitConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
