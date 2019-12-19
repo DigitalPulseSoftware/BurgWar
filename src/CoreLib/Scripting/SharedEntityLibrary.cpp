@@ -69,6 +69,17 @@ namespace bw
 			collisionComponent.SetGeom(std::move(geom));
 		};
 
+		elementMetatable["ForceSleep"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.ForceSleep();
+			}
+		};
+
 		elementMetatable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
@@ -154,6 +165,13 @@ namespace bw
 				throw std::runtime_error("Entity has no player movement");
 
 			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
+		};
+
+		elementMetatable["IsSleeping"] = [](const sol::table& entityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+				return entity->GetComponent<Ndk::PhysicsComponent2D>().IsSleeping();
 		};
 
 		elementMetatable["Kill"] = [](const sol::table& entityTable)
