@@ -578,9 +578,13 @@ namespace bw
 					BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), entitiesMovement[i]);
 			});
 
-			auto& layerData = m_matchStatePacket.layers.emplace_back();
-			layerData.layerIndex = layerIndex;
-			layerData.entityCount = static_cast<Nz::UInt32>(m_matchStatePacket.entities.size() - oldEntityCount);
+			std::size_t entityCount = m_matchStatePacket.entities.size() - oldEntityCount;
+			if (entityCount > 0)
+			{
+				auto& layerData = m_matchStatePacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(entityCount);
+			}
 		}
 
 		m_session.SendPacket(m_matchStatePacket);
