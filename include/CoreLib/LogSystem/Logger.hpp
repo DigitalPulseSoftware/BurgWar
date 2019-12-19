@@ -11,6 +11,7 @@
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <CoreLib/LogSystem/LogContextPtr.hpp>
+#include <Nazara/Core/MovablePtr.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
 #include <fmt/format.h>
 #include <memory>
@@ -35,7 +36,9 @@ namespace bw
 
 		public:
 			inline Logger(LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
-			inline Logger(LogSide logSide, AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
+			inline Logger(LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
+			inline Logger(const Logger& logger);
+			Logger(Logger&&) noexcept = default;
 			~Logger() = default;
 
 			template<typename... Args> void LogFormat(const LogContext& context, Args&& ... args) const;
@@ -51,6 +54,9 @@ namespace bw
 
 			bool ShouldLog(const LogContext& context) const override;
 
+			Logger& operator=(const Logger& logger) = delete;
+			Logger& operator=(Logger&&) noexcept = default;
+
 		protected:
 			virtual LogContext* AllocateContext(Nz::MemoryPool& pool) const;
 			virtual void InitializeContext(LogContext& context) const;
@@ -61,7 +67,7 @@ namespace bw
 
 			mutable Nz::MemoryPool m_contextPool;
 			LogLevel m_minimumLogLevel;
-			AbstractLogger* m_logParent;
+			Nz::MovablePtr<const AbstractLogger> m_logParent;
 			std::vector<std::shared_ptr<LogSink>> m_sinks;
 	};
 }

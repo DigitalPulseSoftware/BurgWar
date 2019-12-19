@@ -16,6 +16,8 @@ namespace bw
 	{
 		public:
 			inline AbstractLogger(LogSide logSide);
+			AbstractLogger(const AbstractLogger&) = default;
+			AbstractLogger(AbstractLogger&&) noexcept = default;
 			virtual ~AbstractLogger();
 
 			inline LogSide GetSide() const;
@@ -24,6 +26,9 @@ namespace bw
 			virtual void LogRaw(const LogContext& context, std::string_view content) const = 0;
 
 			virtual bool ShouldLog(const LogContext& context) const = 0;
+
+			AbstractLogger& operator=(const AbstractLogger&) = default;
+			AbstractLogger& operator=(AbstractLogger&&) noexcept = default;
 
 		private:
 			LogSide m_side;

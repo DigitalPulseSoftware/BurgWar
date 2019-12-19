@@ -15,6 +15,8 @@
 
 namespace bw
 {
+	class Logger;
+
 	template<typename Peer>
 	class CommandStore
 	{
@@ -24,7 +26,7 @@ namespace bw
 			struct IncomingCommand;
 			struct OutgoingCommand;
 
-			CommandStore() = default;
+			CommandStore(const Logger& logger);
 			~CommandStore() = default;
 
 			template<typename T> const IncomingCommand& GetIncomingCommand() const;
@@ -61,6 +63,7 @@ namespace bw
 
 			std::vector<IncomingCommand> m_incomingCommands;
 			std::vector<OutgoingCommand> m_outgoingCommands;
+			const Logger& m_logger;
 	};
 }
 

@@ -16,7 +16,7 @@ namespace bw
 	class PlayerCommandStore : public CommandStore<MatchClientSession>
 	{
 		public:
-			PlayerCommandStore();
+			PlayerCommandStore(const Logger& logger);
 			~PlayerCommandStore() = default;
 	};
 }

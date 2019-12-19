@@ -8,7 +8,8 @@
 
 namespace bw
 {
-	PlayerCommandStore::PlayerCommandStore()
+	PlayerCommandStore::PlayerCommandStore(const Logger& logger) :
+	CommandStore(logger)
 	{
 #define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](MatchClientSession& session, Packets::Type&& packet) \
 { \

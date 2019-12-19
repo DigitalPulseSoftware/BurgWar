@@ -280,9 +280,6 @@ namespace bw
 			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: {2}", m_elementTypeName, elementName, e.what());
 		}
 
-		//if (IsServer && !isNetworked && hasSharedFiles)
-		//	std::cerr << "Warning: " << m_elementTypeName << " " << elementName << " has client-side files but is not marked as networked, this is likely an error" << std::endl;
-
 		m_elementsByName[element->fullName] = m_elements.size();
 		m_elements.emplace_back(std::move(element));
 
@@ -352,7 +349,7 @@ namespace bw
 		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 
-		entity->AddComponent<ScriptComponent>(std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
+		entity->AddComponent<ScriptComponent>(m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
 
 		return entity;
 	}

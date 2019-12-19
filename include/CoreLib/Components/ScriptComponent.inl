@@ -18,7 +18,7 @@ namespace bw
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::cerr << callbackName << " entity callback failed: " << err.what() << std::endl;
+				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", callbackName, err.what());
 				return std::nullopt;
 			}
 

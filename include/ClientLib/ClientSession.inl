@@ -3,12 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientSession.hpp>
+#include <CoreLib/BurgApp.hpp>
 #include <Nazara/Network/NetPacket.hpp>
 
 namespace bw
 {
 	inline ClientSession::ClientSession(BurgApp& application) :
-	m_application(application)
+	m_application(application),
+	m_commandStore(m_application.GetLogger())
 	{
 	}
 

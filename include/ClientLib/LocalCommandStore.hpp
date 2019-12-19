@@ -16,7 +16,7 @@ namespace bw
 	class LocalCommandStore : public CommandStore<ClientSession*>
 	{
 		public:
-			LocalCommandStore();
+			LocalCommandStore(const Logger& logger);
 			~LocalCommandStore() = default;
 	};
 }

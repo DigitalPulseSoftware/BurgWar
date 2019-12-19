@@ -15,10 +15,19 @@ namespace bw
 	{
 	}
 
-	inline Logger::Logger(LogSide logSide, AbstractLogger& logParent, std::size_t contextSize) :
+	inline Logger::Logger(LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
 	Logger(logSide, contextSize)
 	{
 		m_logParent = &logParent;
+	}
+
+	inline Logger::Logger(const Logger& logger) :
+	AbstractLogger(logger),
+	m_contextPool(logger.m_contextPool.GetBlockSize()),
+	m_minimumLogLevel(logger.m_minimumLogLevel),
+	m_logParent(logger.m_logParent),
+	m_sinks(logger.m_sinks)
+	{
 	}
 
 	template<typename... Args>

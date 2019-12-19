@@ -12,7 +12,7 @@ namespace bw
 	{
 	}
 
-	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch, LogSide logSide, AbstractLogger& logParent, std::size_t contextSize) :
+	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
 	Logger(logSide, logParent, contextSize),
 	m_sharedMatch(sharedMatch)
 	{

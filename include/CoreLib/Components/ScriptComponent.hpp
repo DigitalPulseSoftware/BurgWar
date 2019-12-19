@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_COMPONENTS_SCRIPTCOMPONENT_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/LogSystem/EntityLogger.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <NDK/Component.hpp>
@@ -18,10 +19,12 @@
 
 namespace bw
 {
+	class AbstractLogger;
+
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		public:
-			ScriptComponent(std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
+			ScriptComponent(const AbstractLogger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
 			~ScriptComponent();
 
 			template<typename... Args>
@@ -44,6 +47,7 @@ namespace bw
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_entityTable;
+			EntityLogger m_logger;
 			EntityProperties m_properties;
 	};
 }

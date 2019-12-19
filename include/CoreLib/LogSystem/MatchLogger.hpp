@@ -16,7 +16,9 @@ namespace bw
 	{
 		public:
 			inline MatchLogger(SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));
-			inline MatchLogger(SharedMatch& sharedMatch, LogSide logSide, AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
+			inline MatchLogger(SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
+			MatchLogger(const MatchLogger&) = default;
+			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;
 
 			bool ShouldLog(const LogContext& context) const override;
@@ -26,7 +28,6 @@ namespace bw
 			void InitializeContext(LogContext& context) const override;
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 
-			LogLevel m_minimumLogLevel;
 			SharedMatch& m_sharedMatch;
 	};
 }

@@ -3,11 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/CommandStore.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <cassert>
 
 namespace bw
 {
+	template<typename Peer>
+	inline CommandStore<Peer>::CommandStore(const Logger& logger) :
+	m_logger(logger)
+	{
+	}
+
 	template<typename Peer>
 	template<typename T>
 	auto CommandStore<Peer>::GetIncomingCommand() const -> const IncomingCommand&
@@ -45,7 +52,7 @@ namespace bw
 
 		IncomingCommand& newCommand = m_incomingCommands[packetId];
 		newCommand.enabled = true;
-		newCommand.unserialize = [cb = std::forward<CB>(callback)](PeerRef peer, Nz::NetPacket& packet)
+		newCommand.unserialize = [this, cb = std::forward<CB>(callback)](PeerRef peer, Nz::NetPacket& packet)
 		{
 			T data;
 			try
@@ -56,7 +63,7 @@ namespace bw
 			}
 			catch (const std::exception&)
 			{
-				//std::cerr << "Failed to unserialize packet" << std::endl;
+				bwLog(m_logger, LogLevel::Error, "Failed to unserialize packet");
 				return false;
 			}
 
@@ -108,13 +115,13 @@ namespace bw
 		}
 		catch (const std::exception&)
 		{
-			std::cerr << "Failed to unserialize opcode" << std::endl;
+			bwLog(m_logger, LogLevel::Error, "Failed to unserialize opcode");
 			return false;
 		}
 
 		if (m_incomingCommands.size() <= opcode || !m_incomingCommands[opcode].enabled)
 		{
-			std::cerr << "Client :derp: sent invalid or disabled opcode " << +opcode << std::endl;
+			bwLog(m_logger, LogLevel::Error, "Client :derp: sent invalid or disabled opcode: {}", +opcode);
 			return false;
 		}
 
