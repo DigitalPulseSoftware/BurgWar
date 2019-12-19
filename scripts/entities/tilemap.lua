@@ -39,7 +39,7 @@ local function GenerateMaterialData(textures, textureCells)
 		local cellCount = textureCells[i] or defaultTextureCell
 
 		local group
-		if (textureCells[i].x > 1 or textureCells[i].y > 1) then
+		if (cellCount.x > 1 or cellCount.y > 1) then
 			group = textures[i]
 		else
 			group = "single"
@@ -48,7 +48,7 @@ local function GenerateMaterialData(textures, textureCells)
 		table.insert(materialData, {
 			group = group,
 			path = textures[i],
-			tileCount = textureCells[i]
+			tileCount = cellCount
 		})
 	end
 
