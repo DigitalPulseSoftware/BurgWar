@@ -11,7 +11,7 @@ function ENTITY:Initialize()
 		TexturePath = self.Sprite
 	})
 
-	local faceOrigin = mainSprite:GetSize() * Vec2(0.65, 0.31) - mainSprite:GetOrigin()
+	local faceOrigin = mainSprite:GetSize() * Vec2(0.65, 0.31) - mainSprite:GetOrigin() * mainSprite:GetSize()
 
 	for name, texture in pairs(self.Faces) do
 		local face = self:AddSprite({

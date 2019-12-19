@@ -16,7 +16,7 @@ namespace bw
 
 	inline Nz::Vector2f Sprite::GetOrigin() const
 	{
-		return Nz::Vector2f(m_sprite->GetOrigin());
+		return Nz::Vector2f(m_sprite->GetOrigin()) / m_sprite->GetSize();
 	}
 
 	inline const Nz::Vector2f& Sprite::GetSize() const
