@@ -67,7 +67,11 @@ namespace bw
 				{
 					auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
 					const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
-					originPosition += weaponElement.weaponOffset;
+					Nz::Vector2f weaponOffset = weaponElement.weaponOffset;
+					if (!controlledEntity->IsFacingRight())
+						weaponOffset.x = -weaponOffset.x;
+
+					originPosition += weaponOffset;
 				}
 				else if (entity->HasComponent<Ndk::GraphicsComponent>())
 					originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());

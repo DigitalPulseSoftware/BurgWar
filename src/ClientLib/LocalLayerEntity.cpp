@@ -187,6 +187,12 @@ namespace bw
 			ShowName(visualEntity, textBox);
 	}
 
+	bool LocalLayerEntity::IsFacingRight() const
+	{
+		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		return entityNode.GetScale().x > 0.f;
+	}
+
 	bool LocalLayerEntity::IsPhysical() const
 	{
 		return m_entity->HasComponent<Ndk::PhysicsComponent2D>(); //< TODO: Cache this?

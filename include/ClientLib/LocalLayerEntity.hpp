@@ -53,6 +53,7 @@ namespace bw
 			void InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth);
 			void InitializeName(const std::string& name);
 
+			bool IsFacingRight() const;
 			bool IsPhysical() const;
 
 			void SyncVisuals();

@@ -61,9 +61,11 @@ namespace bw
 
 			bool isFacingRight = playerMovementComponent.IsFacingRight();
 
-			if (inputs.aimDirection.x > 0.f)
+			float switchValue = (isFacingRight) ? -0.3f : 0.3f;
+
+			if (inputs.aimDirection.x > switchValue)
 				isFacingRight = true;
-			else if (inputs.aimDirection.x < 0.f)
+			else if (inputs.aimDirection.x < switchValue)
 				isFacingRight = false;
 
 			playerMovementComponent.UpdateWasJumpingState(inputs.isJumping);
