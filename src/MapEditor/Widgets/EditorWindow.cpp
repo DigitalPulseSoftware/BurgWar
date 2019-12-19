@@ -660,13 +660,11 @@ namespace bw
 
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex)
 	{
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
-
-		auto& layer = m_workingMap.GetLayer(layerIndex);
+		assert(m_currentLayer);
 
 		std::size_t cloneEntityIndex = entityIndex + 1;
-		auto cloneIt = layer.entities.emplace(layer.entities.begin() + entityIndex, layer.entities[entityIndex]);
-		cloneIt->name += " (Clone)";
+		auto& cloneEntity = m_workingMap.EmplaceEntity(*m_currentLayer, entityIndex, m_workingMap.GetEntity(*m_currentLayer, entityIndex));
+		cloneEntity.name += " (Clone)";
 
 		RegisterEntity(cloneEntityIndex);
 

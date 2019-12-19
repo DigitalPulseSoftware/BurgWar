@@ -46,7 +46,7 @@ namespace bw
 
 			inline Layer DropLayer(std::size_t layerIndex);
 
-			template<typename... Args> Layer& EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args);
+			template<typename... Args> Entity& EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args);
 			template<typename... Args> Layer& EmplaceLayer(std::size_t layerIndex, Args&&... args);
 
 			template<typename F> void ForeachEntity(F&& func);

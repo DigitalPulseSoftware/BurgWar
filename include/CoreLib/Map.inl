@@ -51,7 +51,7 @@ namespace bw
 	}
 
 	template<typename ...Args>
-	auto Map::EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args) -> Layer&
+	auto Map::EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args) -> Entity&
 	{
 		auto& layer = GetLayer(layerIndex);
 		auto& entity = *layer.entities.emplace(layer.entities.begin() + entityIndex, std::forward<Args>(args)...);
