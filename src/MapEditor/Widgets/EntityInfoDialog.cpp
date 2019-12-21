@@ -169,7 +169,10 @@ namespace bw
 
 			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector2f& value) const
 			{
-				model->setData(index, QVariant(value), Qt::EditRole);
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
 			}
 
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -214,7 +217,10 @@ namespace bw
 
 			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector4f& value) const
 			{
-				model->setData(index, QVariant(value), Qt::EditRole);
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
 			}
 
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -304,7 +310,10 @@ namespace bw
 
 			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector2i64& value) const
 			{
-				model->setData(index, QPoint(value.x, value.y), Qt::EditRole);
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
 			}
 
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -349,7 +358,10 @@ namespace bw
 
 			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector4i64& value) const
 			{
-				model->setData(index, QVariant(value), Qt::EditRole);
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
 			}
 
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
