@@ -70,9 +70,6 @@ namespace bw
 				}
 			}
 
-			const auto& localMatchComponent = entity->GetComponent<LocalMatchComponent>();
-			LocalMatch& localMatch = localMatchComponent.GetLocalMatch();
-
 			const auto& trailEntity = world->CreateEntity();
 			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
 

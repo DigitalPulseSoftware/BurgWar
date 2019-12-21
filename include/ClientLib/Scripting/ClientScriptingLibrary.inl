@@ -56,10 +56,10 @@ namespace sol
 
 			lua_geti(L, absoluteIndex, i + 1);
 			{
-				sol::stack_table tileTable(L);
+				sol::stack_table tileDataTable(L);
 
-				tileData.materialPath = tileTable["materialPath"];
-				tileData.texCoords = tileTable["texCoords"];
+				tileData.materialPath = tileDataTable["materialPath"];
+				tileData.texCoords = tileDataTable["texCoords"];
 			}
 			lua_pop(L, 1);
 		}
@@ -75,8 +75,8 @@ namespace sol
 
 		std::vector<bw::TileMaterialData> materials;
 
-		sol::table tileTable(L, absoluteIndex);
-		std::size_t materialCount = tileTable.size();
+		sol::table materialTable(L, absoluteIndex);
+		std::size_t materialCount = materialTable.size();
 
 		materials.resize(materialCount);
 		for (std::size_t i = 0; i < materialCount; ++i)
@@ -85,11 +85,11 @@ namespace sol
 
 			lua_geti(L, absoluteIndex, i + 1);
 			{
-				sol::stack_table tileTable(L);
+				sol::stack_table materialDataTable(L);
 
-				materialData.group = tileTable["group"];
-				materialData.path = tileTable["path"];
-				materialData.tileCount = tileTable["tileCount"];
+				materialData.group = materialDataTable["group"];
+				materialData.path = materialDataTable["path"];
+				materialData.tileCount = materialDataTable["tileCount"];
 			}
 			lua_pop(L, 1);
 		}

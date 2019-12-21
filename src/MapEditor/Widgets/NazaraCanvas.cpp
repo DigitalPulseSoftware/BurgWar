@@ -237,8 +237,6 @@ namespace bw
 
 			case QEvent::HoverEnter:
 			{
-				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
-
 				Nz::WindowEvent event;
 				event.type = Nz::WindowEventType_MouseEntered;
 
@@ -248,8 +246,6 @@ namespace bw
 
 			case QEvent::HoverLeave:
 			{
-				QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
-
 				Nz::WindowEvent event;
 				event.type = Nz::WindowEventType_MouseLeft;
 

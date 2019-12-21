@@ -88,8 +88,8 @@ namespace bw
 			m_chatLines.erase(m_chatLines.begin());
 
 		m_chatBox->Clear();
-		for (const Nz::String& message : m_chatLines)
-			m_chatBox->AppendText(message + "\n");
+		for (const Nz::String& line : m_chatLines)
+			m_chatBox->AppendText(line + "\n");
 
 		m_chatBox->Resize({ m_chatBox->GetWidth(), m_chatBox->GetPreferredHeight() });
 		m_chatboxScrollArea->Resize(m_chatboxScrollArea->GetSize()); // force layout update

@@ -192,8 +192,6 @@ namespace bw
 
 		assert(m_isEnabled);
 
-		Ndk::World& world = GetWorld();
-
 		LocalMatch& localMatch = GetLocalMatch();
 		ClientEntityStore& entityStore = localMatch.GetEntityStore();
 		ClientWeaponStore& weaponStore = localMatch.GetWeaponStore();
@@ -238,7 +236,6 @@ namespace bw
 
 		std::optional<LocalLayerEntity> layerEntity;
 
-		Ndk::EntityHandle entity;
 		//FIXME: Entity creation failure should instantiate some placeholder entity
 		try
 		{

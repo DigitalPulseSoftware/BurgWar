@@ -11,7 +11,7 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
-#include <tsl/hopscotch_set.h>
+#include <Thirdparty/tsl/hopscotch_set.h>
 
 namespace bw
 {

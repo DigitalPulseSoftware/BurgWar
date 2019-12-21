@@ -36,7 +36,7 @@ namespace bw
 #ifdef NAZARA_PLATFORM_WINDOWS
 		namespace ConsoleForeground
 		{
-			enum
+			enum : WORD
 			{
 				BLACK             = 0,
 				DARKBLUE          = FOREGROUND_BLUE,

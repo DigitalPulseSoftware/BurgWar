@@ -21,7 +21,7 @@ namespace bw
 		float tickRate = GetConfig().GetFloatOption<float>("GameSettings.TickRate");
 
 		m_match = std::make_unique<Match>(*this, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate);
-		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(14768, 64);
+		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(Nz::UInt16(14768), 64);
 	}
 
 	int ServerApp::Run()

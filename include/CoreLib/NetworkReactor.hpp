@@ -9,7 +9,7 @@
 
 #include <Nazara/Core/Thread.hpp>
 #include <Nazara/Network/ENetHost.hpp>
-#include <concurrentqueue/concurrentqueue.h>
+#include <Thirdparty/concurrentqueue/concurrentqueue.h>
 #include <atomic>
 #include <functional>
 #include <variant>

@@ -20,7 +20,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <memory>
 #include <optional>
 #include <string>

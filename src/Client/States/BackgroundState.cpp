@@ -35,8 +35,10 @@ namespace bw
 
 	void BackgroundState::Leave(Ndk::StateMachine& fsm)
 	{
+		/*
 		StateData& stateData = GetStateData();
-		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
+		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
+		*/
 	}
 
 	bool BackgroundState::Update(Ndk::StateMachine& /*fsm*/, float elapsedTime)

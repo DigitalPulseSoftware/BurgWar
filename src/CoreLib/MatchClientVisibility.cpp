@@ -131,10 +131,6 @@ namespace bw
 			{
 				LayerIndex layerIndex = LayerIndex(i);
 
-				Terrain& terrain = m_match.GetTerrain();
-				assert(layerIndex < terrain.GetLayerCount());
-				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-
 				// The client will destroy automatically all entities that belong to this layer
 				Packets::DisableLayer disableLayer;
 				disableLayer.layerIndex = layerIndex;
@@ -162,9 +158,9 @@ namespace bw
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
 				NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
 
-				auto it = m_layers.find(layerIndex);
-				assert(it != m_layers.end());
-				Layer& layer = *it.value();
+				auto layerIt = m_layers.find(layerIndex);
+				assert(layerIt != m_layers.end());
+				Layer& layer = *layerIt.value();
 
 				Packets::EnableLayer enableLayerPacket;
 				enableLayerPacket.layerIndex = layerIndex;
@@ -250,8 +246,6 @@ namespace bw
 				if (layer.deathEvents.empty())
 					continue;
 
-				LayerIndex layerIndex = it.key();
-
 				auto& layerData = m_entitiesDeathPacket.layers.emplace_back();
 				layerData.layerIndex = it.key();
 				layerData.entityCount = static_cast<Nz::UInt32>(layer.deathEvents.size());
@@ -319,7 +313,6 @@ namespace bw
 				std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
 				PushEntity = [&](PendingCreationEventMap::iterator it)
 				{
-					auto& entityId = it.key();
 					auto& eventData = it.value();
 					if (!eventData.has_value())
 						return;
@@ -348,8 +341,8 @@ namespace bw
 				layerData.layerIndex = layerIndex;
 				layerData.entityCount = static_cast<Nz::UInt32>(layer.creationEvents.size());
 
-				for (auto it = layer.creationEvents.begin(); it != layer.creationEvents.end(); ++it)
-					PushEntity(it);
+				for (auto eventIt = layer.creationEvents.begin(); eventIt != layer.creationEvents.end(); ++eventIt)
+					PushEntity(eventIt);
 				layer.creationEvents.clear();
 			}
 

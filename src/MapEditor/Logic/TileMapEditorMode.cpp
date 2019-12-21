@@ -249,8 +249,6 @@ namespace bw
 
 	void TileMapEditorMode::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
-		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
-
 		std::optional<Nz::Vector2ui> tilePosition = GetTilePositionFromMouse(mouseMoved.x, mouseMoved.y);
 		if (tilePosition)
 		{
@@ -302,7 +300,7 @@ namespace bw
 						assert(tileDataIndex < m_tiles.size());
 						const auto& tileData = m_tiles[tileDataIndex];
 
-						Nz::Vector2ui position(tilePosition->x + x, tilePosition->y + y);
+						Nz::Vector2ui position(tilePosition->x + static_cast<unsigned int>(x), tilePosition->y + static_cast<unsigned int>(y));
 
 						m_tileMap->EnableTile(position, tileData.texCoords, Nz::Color::White, tileData.materialIndex);
 

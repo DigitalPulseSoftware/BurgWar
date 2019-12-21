@@ -144,11 +144,11 @@ namespace bw
 				{
 					case PropertyType::Entity:
 					{
-						const Ndk::EntityHandle& entity = m_layer.GetMatch().RetrieveEntityByUniqueId(std::get<Nz::Int64>(value));
-						if (entity)
+						const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(std::get<Nz::Int64>(value));
+						if (propertyEntity)
 						{
-							auto& entityMatch = entity->GetComponent<MatchComponent>();
-							creationEvent.dependentIds.emplace_back(entityMatch.GetLayerIndex(), entity->GetId());
+							auto& propertyEntityMatch = propertyEntity->GetComponent<MatchComponent>();
+							creationEvent.dependentIds.emplace_back(propertyEntityMatch.GetLayerIndex(), propertyEntity->GetId());
 						}
 						break;
 					}

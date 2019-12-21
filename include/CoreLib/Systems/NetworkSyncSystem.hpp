@@ -17,7 +17,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/System.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <optional>
 #include <string>
 #include <variant>

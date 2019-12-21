@@ -40,8 +40,8 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
-#include <tsl/bhopscotch_map.h>
-#include <tsl/hopscotch_set.h>
+#include <Thirdparty/tsl/bhopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_set.h>
 
 namespace bw
 {
@@ -833,7 +833,7 @@ namespace bw
 			{
 				assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
 
-				if (layerIndex == deletedIndex)
+				if (static_cast<LayerIndex>(layerIndex) == deletedIndex)
 					layerIndex = NoLayer;
 				else if (static_cast<LayerIndex>(layerIndex) > deletedIndex)
 					layerIndex--;
@@ -913,7 +913,7 @@ namespace bw
 			if (!m_currentLayer || *m_currentLayer != layerIndex)
 				return;
 
-			QListWidgetItem* item = m_entityList.listWidget->item(entityIndex);
+			QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
 			assert(item);
 			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 
@@ -1436,9 +1436,11 @@ namespace bw
 
 		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
 		{
-			if (layerIndex == oldPosition)
+			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
+
+			if (static_cast<LayerIndex>(layerIndex) == oldPosition)
 				layerIndex = newPosition;
-			else if (layerIndex == newPosition)
+			else if (static_cast<LayerIndex>(layerIndex) == newPosition)
 				layerIndex = oldPosition;
 		};
 

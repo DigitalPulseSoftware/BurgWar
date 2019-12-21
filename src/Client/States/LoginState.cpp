@@ -25,8 +25,6 @@ namespace bw
 	{
 		AbstractState::Enter(fsm);
 
-		StateData& stateData = GetStateData();
-
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Show(false);
 
@@ -97,7 +95,6 @@ namespace bw
 
 	bool LoginState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
-		StateData& stateData = GetStateData();
 		if (m_nextState)
 			fsm.ResetState(m_nextState);
 
@@ -106,8 +103,6 @@ namespace bw
 
 	void LoginState::OnConnectionPressed()
 	{
-		StateData& stateData = GetStateData();
-
 		Nz::String serverHostname = m_serverAddressArea->GetText();
 		if (serverHostname.IsEmpty())
 		{

@@ -10,7 +10,7 @@
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Renderer/Texture.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 
 namespace bw
 {

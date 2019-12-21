@@ -62,8 +62,8 @@ namespace bw
 				QComboBox* editor = new QComboBox(parent);
 				editor->setFrame(false);
 
-				for (const auto& option : m_options)
-					editor->addItem(option.first, option.second);
+				for (const auto& boxOption : m_options)
+					editor->addItem(boxOption.first, boxOption.second);
 
 				return editor;
 			}
@@ -446,8 +446,6 @@ namespace bw
 			RefreshPropertyEditor(currentRow);
 		});
 
-		QWidget* propertyWidget = new QWidget;
-
 		m_propertyTitle = new QLabel;
 		m_propertyDescription = new QLabel;
 
@@ -621,7 +619,7 @@ namespace bw
 
 	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, EntityProperty propertyValue)
 	{
-		auto& it = m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue)).first;
+		auto it = m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue)).first;
 		m_updateFlags |= EntityInfoUpdate::Properties;
 
 		// Check if we should reload panel
@@ -793,8 +791,6 @@ namespace bw
 		if (m_propertyTypeIndex == InvalidIndex)
 			return;
 
-		const auto& entityTypeInfo = m_entityStore.GetElement(m_entityTypeIndex);
-
 		assert(propertyIndex < m_properties.size());
 		const auto& propertyInfo = m_properties[propertyIndex];
 		EntityPropertyConstRefOpt propertyValue = GetProperty(propertyInfo);
@@ -856,8 +852,8 @@ namespace bw
 					{
 						const EntityProperty& defaultValue = propertyInfo.defaultValue.value();
 
-						auto it = m_entityInfo.properties.emplace(propertyInfo.keyName, defaultValue);
-						property = &it.first.value();
+						auto propertyIt = m_entityInfo.properties.emplace(propertyInfo.keyName, defaultValue);
+						property = &propertyIt.first.value();
 					}
 					else
 						property = nullptr;

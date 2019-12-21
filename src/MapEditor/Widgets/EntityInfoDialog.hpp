@@ -12,7 +12,7 @@
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
 #include <functional>
 #include <optional>

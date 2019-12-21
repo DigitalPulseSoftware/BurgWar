@@ -157,15 +157,15 @@ namespace bw
 
 					for (auto& weaponEntity : m_weapons)
 					{
-						Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+						Nz::Int64 weaponUniqueId = m_match->AllocateUniqueId();
 
 						weaponEntity = world.CloneEntity(weaponEntity);
-						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex, uniqueId);
+						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex, weaponUniqueId);
 						weaponEntity->GetComponent<Ndk::NodeComponent>().SetParent(newPlayerEntity);
 						weaponEntity->GetComponent<NetworkSyncComponent>().UpdateParent(newPlayerEntity);
 						weaponEntity->GetComponent<WeaponComponent>().UpdateOwner(newPlayerEntity);
 
-						m_match->RegisterEntity(uniqueId, weaponEntity);
+						m_match->RegisterEntity(weaponUniqueId, weaponEntity);
 					}
 
 					m_shouldSendWeapons = true;
@@ -255,9 +255,9 @@ namespace bw
 		m_weapons.erase(m_weapons.begin() + droppedIndex);
 
 		// Shift indexes by one
-		for (auto it = m_weaponByName.begin(); it != m_weaponByName.end(); ++it)
+		for (auto weaponIt = m_weaponByName.begin(); weaponIt != m_weaponByName.end(); ++weaponIt)
 		{
-			std::size_t& weaponIndex = it.value();
+			std::size_t& weaponIndex = weaponIt.value();
 			if (weaponIndex > droppedIndex)
 				weaponIndex--;
 		}

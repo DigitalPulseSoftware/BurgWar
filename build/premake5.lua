@@ -5,6 +5,7 @@ Projects = {
 		Name = "libfmt",
 		Kind = "StaticLib",
 		Defines = {},
+		DisableWarnings = true,
 		Files = {
 			"../contrib/fmt/include/fmt/**.h",
 			"../contrib/fmt/src/fmt/**.cc",
@@ -19,6 +20,7 @@ Projects = {
 		Name = "lua",
 		Kind = "StaticLib",
 		Defines = {},
+		DisableWarnings = true,
 		Files = {
 			"../contrib/lua/include/**.h",
 			"../contrib/lua/include/**.hpp",
@@ -276,6 +278,13 @@ workspace("Burgwar")
 
 				links(projectData.Libs)
 
+				if (not projectData.DisableWarnings) then
+					warnings("Extra")
+
+					filter("action:vs*")
+						disablewarnings("4100") -- Temporary (parameter not used, disabled until fixed since it triggers way too many warnings)
+				end
+
 				filter("configurations:Debug")
 					defines({"DEBUG"})
 					links(projectData.LibsDebug)
@@ -288,7 +297,7 @@ workspace("Burgwar")
 					links(projectData.LinkStaticRelease)
 					optimize("On")
 
-				filter "action:gmake or gmake2"
+				filter "action:gmake*"
 					links "stdc++fs"
 					links "pthread"
 

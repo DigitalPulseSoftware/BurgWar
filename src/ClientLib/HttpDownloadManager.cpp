@@ -291,7 +291,9 @@ namespace bw
 						curl_off_t downloadedSize;
 						curl_easy_getinfo(handle, CURLINFO_SIZE_DOWNLOAD_T, &downloadedSize);
 
-						if (pendingDownload.expectedSize == downloadedSize)
+						assert(downloadedSize > 0);
+
+						if (pendingDownload.expectedSize == static_cast<Nz::UInt64>(downloadedSize))
 						{
 							Nz::ByteArray byteArray = metadata.hash->End();
 							if (pendingDownload.expectedChecksum == byteArray)

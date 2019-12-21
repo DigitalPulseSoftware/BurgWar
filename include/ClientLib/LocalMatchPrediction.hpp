@@ -11,7 +11,7 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <NDK/World.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <optional>
 #include <vector>
 

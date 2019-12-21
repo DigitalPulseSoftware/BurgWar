@@ -11,7 +11,7 @@
 #include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
 #include <optional>

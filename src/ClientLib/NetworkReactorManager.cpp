@@ -42,7 +42,7 @@ namespace bw
 		}
 
 		// We don't have any reactor compatible with the server's protocol, allocate a new one
-		std::size_t reactorId = AddReactor(std::make_unique<NetworkReactor>(reactorCount * MaxPeerCount, serverAddress.GetProtocol(), 0, MaxPeerCount));
+		std::size_t reactorId = AddReactor(std::make_unique<NetworkReactor>(reactorCount * MaxPeerCount, serverAddress.GetProtocol(), Nz::UInt16(0), MaxPeerCount));
 		return ConnectWithReactor(GetReactor(reactorId).get());
 	}
 

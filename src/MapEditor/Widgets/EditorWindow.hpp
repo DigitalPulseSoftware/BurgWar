@@ -14,7 +14,7 @@
 #include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
 #include <optional>

@@ -9,7 +9,7 @@
 
 #include <Nazara/Audio/Sound.hpp>
 #include <NDK/System.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <vector>
 
 namespace bw

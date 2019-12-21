@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_NETWORK_NETWORKSTRINGSTORE_HPP
 
 #include <CoreLib/Protocol/Packets.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
 #include <vector>

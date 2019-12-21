@@ -207,10 +207,7 @@ namespace bw
 		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys_Global);
 
 		for (VisualEntity* visualEntity : m_visualEntities)
-		{
-			auto& visualNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
 			visualEntity->Update(position, rotation, scale);
-		}
 	}
 
 	void LocalLayerEntity::UpdateAnimation(Nz::UInt8 animationId)

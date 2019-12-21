@@ -55,7 +55,6 @@ namespace bw
 			auto& inputComponent = entity->GetComponent<InputComponent>();
 			auto& playerMovementComponent = entity->GetComponent<PlayerMovementComponent>();
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			auto& physicsComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
 			const auto& inputs = inputComponent.GetInputs();
 

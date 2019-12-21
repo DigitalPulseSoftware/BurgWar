@@ -13,7 +13,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <nlohmann/json_fwd.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <array>
 #include <filesystem>
 #include <vector>

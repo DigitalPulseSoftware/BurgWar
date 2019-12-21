@@ -17,7 +17,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QWidget>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <algorithm>
 
 namespace bw
@@ -82,7 +82,7 @@ namespace bw
 					for (std::size_t x = 0; x < materialData.tileCount.x; ++x)
 					{
 						Nz::Rectf texCoords = Nz::Rectf(invTileCount * Nz::Vector2f(x, y), invTileCount * Nz::Vector2f(x + 1, y + 1));
-						tileMap->EnableTile(Nz::Vector2ui(tileCursor.x + x, tileCursor.y + y), texCoords, Nz::Color::White, matIndex);
+						tileMap->EnableTile(Nz::Vector2ui(tileCursor.x + static_cast<unsigned int>(x), tileCursor.y + static_cast<unsigned int>(y)), texCoords, Nz::Color::White, matIndex);
 					}
 				}
 				

@@ -13,7 +13,7 @@
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
-#include <tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
 #include <string>

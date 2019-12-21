@@ -17,8 +17,8 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
-#include <tsl/hopscotch_map.h>
-#include <tsl/hopscotch_set.h>
+#include <Thirdparty/tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_set.h>
 #include <limits>
 #include <vector>
 

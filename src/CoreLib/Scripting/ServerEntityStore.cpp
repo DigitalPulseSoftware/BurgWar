@@ -92,6 +92,6 @@ namespace bw
 		SharedEntityStore::InitializeElement(elementTable, element);
 
 		element.isNetworked = elementTable["IsNetworked"];
-		element.maxHealth = elementTable.get_or("MaxHealth", 0);
+		element.maxHealth = elementTable.get_or("MaxHealth", Nz::UInt16(0));
 	}
 }
