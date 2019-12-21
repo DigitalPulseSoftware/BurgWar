@@ -13,7 +13,8 @@ ENTITY.Properties = {
 	{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
 	{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { defaultTextureCell }, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
-	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true }
+	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
+	{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true }
 }
 
 local function GenerateTiles(textures, textureCells)
@@ -99,42 +100,44 @@ function ENTITY:Initialize()
 	local cellSize = self:GetProperty("cellSize")
 	local content = self:GetProperty("content")
 
-	local colliders = {}
-	local y = 0
+	if (self:GetProperty("physical")) then
+		local colliders = {}
+		local y = 0
 
-	while (y < mapSize.y) do
-		local x = 0
-		while (x < mapSize.x) do
-			if (content[y * mapSize.x + x + 1] ~= 0) then
-				local startX = x
-				x = x + 1
-
-				while (x < mapSize.x and content[y * mapSize.x + x + 1] ~= 0) do
+		while (y < mapSize.y) do
+			local x = 0
+			while (x < mapSize.x) do
+				if (content[y * mapSize.x + x + 1] ~= 0) then
+					local startX = x
 					x = x + 1
+
+					while (x < mapSize.x and content[y * mapSize.x + x + 1] ~= 0) do
+						x = x + 1
+					end
+
+					local mins = Vec2(startX * cellSize.x, y * cellSize.y)
+					local maxs = mins + Vec2((x - startX) * cellSize.x, cellSize.y)
+
+					table.insert(colliders, Rect(mins, maxs))
 				end
 
-				local mins = Vec2(startX * cellSize.x, y * cellSize.y)
-				local maxs = mins + Vec2((x - startX) * cellSize.x, cellSize.y)
-
-				table.insert(colliders, Rect(mins, maxs))
+				x = x + 1
 			end
 
-			x = x + 1
+			y = y + 1
 		end
 
-		y = y + 1
+		if (#colliders > 0) then
+			self:SetCollider(colliders)
+			self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
+		end
 	end
 
-	if (#colliders > 0) then
-		self:SetCollider(colliders)
-		self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
+	if (CLIENT) then
+		local textures = self:GetProperty("textures")
+		local textureCells = self:GetProperty("textureCells")
+		local tiles = GenerateTiles(textures, textureCells)
 
-		if (CLIENT) then
-			local textures = self:GetProperty("textures")
-			local textureCells = self:GetProperty("textureCells")
-			local tiles = GenerateTiles(textures, textureCells)
-
-			self:AddTilemap(mapSize, cellSize, content, tiles)
-		end
+		self:AddTilemap(mapSize, cellSize, content, tiles)
 	end
 end

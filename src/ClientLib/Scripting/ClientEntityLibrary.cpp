@@ -133,6 +133,9 @@ namespace bw
 					materials.emplace(tile.materialPath, materials.size());
 			}
 
+			if (materials.empty())
+				return;
+
 			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
