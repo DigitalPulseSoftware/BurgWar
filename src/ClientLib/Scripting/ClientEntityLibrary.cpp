@@ -68,7 +68,7 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f origin = parameters.get_or("Origin", Nz::Vector2f(0.5f, 0.5f));
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
-			Nz::Vector2f textureCoords = parameters.get_or("TextureCoords", Nz::Vector2f::Unit());
+			Nz::Rectf textureCoords = parameters.get_or("TextureCoords", Nz::Rectf(0.f, 0.f, 1.f, 1.f));
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 

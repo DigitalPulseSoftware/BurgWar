@@ -82,4 +82,16 @@ namespace bw
 
 		return *this;
 	}
+
+	template<typename T>
+	Nz::Vector4<T> TranslateRectToVec(const Nz::Rect<T>& value)
+	{
+		return { value.x, value.y, value.width, value.height };
+	};
+
+	template<typename T>
+	Nz::Rect<T> TranslateVecToRect(const Nz::Vector4<T>& value)
+	{
+		return { value.x, value.y, value.z, value.w };
+	};
 }

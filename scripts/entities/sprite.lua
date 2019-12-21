@@ -13,7 +13,7 @@ ENTITY.Properties = {
 	{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
 	{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
 	{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
-	{ Name = "textureCoords", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true }
+	{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
 }
 
 if (EDITOR) then

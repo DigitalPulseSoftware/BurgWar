@@ -100,6 +100,10 @@ namespace bw
 					std::vector<Nz::Int64>,
 					std::vector<Nz::Vector2f>,
 					std::vector<Nz::Vector2i64>,
+					std::vector<Nz::Vector3f>,
+					std::vector<Nz::Vector3i64>,
+					std::vector<Nz::Vector4f>,
+					std::vector<Nz::Vector4i64>,
 					std::vector<std::string>
 				>;
 

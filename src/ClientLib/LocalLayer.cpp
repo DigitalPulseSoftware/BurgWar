@@ -209,29 +209,18 @@ namespace bw
 			std::visit([&](auto&& value)
 			{
 				using T = std::decay_t<decltype(value)>;
+				using StoredType = typename T::value_type;
 
-				if constexpr (std::is_same_v<T, std::vector<bool>> ||
-				              std::is_same_v<T, std::vector<float>> ||
-				              std::is_same_v<T, std::vector<Nz::Int64>> ||
-				              std::is_same_v<T, std::vector<Nz::Vector2f>> ||
-				              std::is_same_v<T, std::vector<Nz::Vector2i64>> ||
-				              std::is_same_v<T, std::vector<std::string>>)
+				if (property.isArray)
 				{
-					using StoredType = typename T::value_type;
+					EntityPropertyArray<StoredType> elements(value.size());
+					for (std::size_t i = 0; i < value.size(); ++i)
+						elements[i] = value[i];
 
-					if (property.isArray)
-					{
-						EntityPropertyArray<StoredType> elements(value.size());
-						for (std::size_t i = 0; i < value.size(); ++i)
-							elements[i] = value[i];
-
-						properties.emplace(propertyName, std::move(elements));
-					}
-					else
-						properties.emplace(propertyName, value.front());
+					properties.emplace(propertyName, std::move(elements));
 				}
 				else
-					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+					properties.emplace(propertyName, value.front());
 
 			}, property.value);
 		}

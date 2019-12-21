@@ -42,8 +42,8 @@ namespace sol
 	template<>
 	struct lua_size<Nz::DegreeAnglef> : std::integral_constant<int, 1> {};
 
-	template<>
-	struct lua_size<Nz::Rectf> : std::integral_constant<int, 1> {};
+	template<typename T>
+	struct lua_size<Nz::Rect<T>> : std::integral_constant<int, 1> {};
 
 	template<typename T>
 	struct lua_size<Nz::Vector2<T>> : std::integral_constant<int, 1> {};
@@ -57,8 +57,8 @@ namespace sol
 	template<>
 	struct lua_type_of<Nz::RadianAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
-	template<>
-	struct lua_type_of<Nz::Rectf> : std::integral_constant<sol::type, sol::type::table> {};
+	template<typename T>
+	struct lua_type_of<Nz::Rect<T>> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<typename T>
 	struct lua_type_of<Nz::Vector2<T>> : std::integral_constant<sol::type, sol::type::table> {};
@@ -104,19 +104,20 @@ namespace sol
 		return Nz::DegreeAnglef(angle);
 	}
 
-	inline Nz::Rectf sol_lua_get(sol::types<Nz::Rectf>, lua_State* L, int index, sol::stack::record& tracking)
+	template<typename T>
+	inline Nz::Rect<T> sol_lua_get(sol::types<Nz::Rect<T>>, lua_State* L, int index, sol::stack::record& tracking)
 	{
 		int absoluteIndex = lua_absindex(L, index);
 
 		sol::table rect = sol::stack::get<sol::table>(L, absoluteIndex);
-		float x = rect["x"];
-		float y = rect["y"];
-		float width = rect["width"];
-		float height = rect["height"];
+		T x = rect["x"];
+		T y = rect["y"];
+		T width = rect["width"];
+		T height = rect["height"];
 
 		tracking.use(1);
 
-		return Nz::Rectf(x, y, width, height);
+		return Nz::Rect<T>(x, y, width, height);
 	}
 
 	template<typename T>
@@ -157,6 +158,20 @@ namespace sol
 	int sol_lua_push(sol::types<Nz::RadianAngle<T>>, lua_State* L, const Nz::RadianAngle<T>& angle)
 	{
 		return sol::stack::push(L, angle.ToDegrees());
+	}
+
+	template<typename T>
+	int sol_lua_push(sol::types<Nz::Rect<T>>, lua_State* L, const Nz::Rect<T>& rect)
+	{
+		lua_createtable(L, 0, 4);
+		luaL_setmetatable(L, "rect");
+		sol::stack_table vec(L);
+		vec["x"] = rect.x;
+		vec["y"] = rect.y;
+		vec["width"] = rect.width;
+		vec["height"] = rect.height;
+
+		return 1;
 	}
 
 	template<typename T>

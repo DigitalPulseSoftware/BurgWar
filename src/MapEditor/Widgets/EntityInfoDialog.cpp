@@ -7,7 +7,9 @@
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
+#include <MapEditor/Widgets/Float4SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
+#include <MapEditor/Widgets/Integer4SpinBox.hpp>
 #include <Nazara/Core/TypeTag.hpp>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QCheckBox>
@@ -32,6 +34,13 @@
 // TODO: Replace Nz::Int64 by some EntityIndex using
 static_assert(sizeof(Nz::Int64) == sizeof(qlonglong));
 static_assert(std::is_signed_v<Nz::Int64> == std::is_signed_v<qlonglong>);
+
+Q_DECLARE_METATYPE(Nz::Vector2f);
+Q_DECLARE_METATYPE(Nz::Vector2i64);
+Q_DECLARE_METATYPE(Nz::Vector3f);
+Q_DECLARE_METATYPE(Nz::Vector3i64);
+Q_DECLARE_METATYPE(Nz::Vector4f);
+Q_DECLARE_METATYPE(Nz::Vector4i64);
 
 namespace bw
 {
@@ -121,6 +130,7 @@ namespace bw
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 			{
 				QDoubleSpinBox* editor = new QDoubleSpinBox(parent);
+				editor->setDecimals(6);
 				editor->setFrame(false);
 				editor->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
 
@@ -159,7 +169,7 @@ namespace bw
 
 			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector2f& value) const
 			{
-				model->setData(index, QPointF(value.x, value.y), Qt::EditRole);
+				model->setData(index, QVariant(value), Qt::EditRole);
 			}
 
 			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -169,14 +179,13 @@ namespace bw
 
 			QString displayText(const QVariant& value, const QLocale& locale) const override
 			{
-				QPointF point = value.toPointF();
-				return QString("(%1; %2)").arg(locale.toString(point.x())).arg(locale.toString(point.y()));
+				Nz::Vector2f point = value.value<Nz::Vector2f>();
+				return QString("(%1; %2)").arg(locale.toString(point.x)).arg(locale.toString(point.y));
 			}
 
 			Nz::Vector2f RetrieveModelData(const QModelIndex& index) const
 			{
-				QPointF point = index.model()->data(index, Qt::EditRole).toPointF();
-				return { float(point.x()), float(point.y()) };
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector2f>();
 			}
 
 			void setEditorData(QWidget* editor, const QModelIndex& index) const override
@@ -188,6 +197,51 @@ namespace bw
 			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
 			{
 				Float2SpinBox* spinBox = static_cast<Float2SpinBox*>(editor);
+
+				ApplyModelData(model, index, spinBox->value());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+	
+	class Float4PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector4f& value) const
+			{
+				model->setData(index, QVariant(value), Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				return new Float4SpinBox(Float4SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				Nz::Vector4f vec = value.value<Nz::Vector4f>();
+				return QString("(%1; %2; %3; %4)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y)).arg(locale.toString(vec.z)).arg(locale.toString(vec.w));
+			}
+
+			Nz::Vector4f RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector4f>();
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Float4SpinBox* spinBox = static_cast<Float4SpinBox*>(editor);
+				spinBox->setValue(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Float4SpinBox* spinBox = static_cast<Float4SpinBox*>(editor);
 
 				ApplyModelData(model, index, spinBox->value());
 			}
@@ -260,27 +314,71 @@ namespace bw
 
 			QString displayText(const QVariant& value, const QLocale& locale) const override
 			{
-				QPoint point = value.toPoint();
-				return QString("(%1; %2)").arg(locale.toString(point.x())).arg(locale.toString(point.y()));
+				Nz::Vector2i64 vec = value.value<Nz::Vector2i64>();
+				return QString("(%1; %2)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y));
 			}
 
 			Nz::Vector2i64 RetrieveModelData(const QModelIndex& index) const
 			{
-				QPoint point = index.model()->data(index, Qt::EditRole).toPoint();
-				return { Nz::Int64(point.x()), Nz::Int64(point.y()) };
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector2i64>();
 			}
 
 			void setEditorData(QWidget* editor, const QModelIndex& index) const override
 			{
 				Integer2SpinBox* spinBox = static_cast<Integer2SpinBox*>(editor);
-				spinBox->setValue(Nz::Vector2i(RetrieveModelData(index)));
+				spinBox->setValue(RetrieveModelData(index));
 			}
 
 			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
 			{
 				Integer2SpinBox* spinBox = static_cast<Integer2SpinBox*>(editor);
 
-				ApplyModelData(model, index, Nz::Vector2i64(spinBox->value()));
+				ApplyModelData(model, index, spinBox->value());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+	
+	class Integer4PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector4i64& value) const
+			{
+				model->setData(index, QVariant(value), Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			{
+				return new Integer4SpinBox(Integer4SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				Nz::Vector4i64 vec = value.value<Nz::Vector4i64>();
+				return QString("(%1; %2; %3; %4)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y)).arg(locale.toString(vec.z)).arg(locale.toString(vec.w));
+			}
+
+			Nz::Vector4i64 RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector4i64>();
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Integer4SpinBox* spinBox = static_cast<Integer4SpinBox*>(editor);
+				spinBox->setValue(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Integer4SpinBox* spinBox = static_cast<Integer4SpinBox*>(editor);
+
+				ApplyModelData(model, index, spinBox->value());
 			}
 
 			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -294,8 +392,10 @@ namespace bw
 		std::optional<ComboBoxPropertyDelegate> comboBoxDelegate;
 		FloatPropertyDelegate floatDelegate;
 		Float2PropertyDelegate float2Delegate;
+		Float4PropertyDelegate float4Delegate;
 		IntegerPropertyDelegate intDelegate;
 		Integer2PropertyDelegate int2Delegate;
+		Integer4PropertyDelegate int4Delegate;
 	};
 
 	EntityInfoDialog::EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
@@ -933,6 +1033,33 @@ namespace bw
 					break;
 				}
 
+				case PropertyType::FloatRect:
+				{
+					using T = EntityPropertyArray<Nz::Vector4f>;
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->float4Delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ tr("Value") });
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->float4Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						SetProperty(item->index().row(), m_delegates->float2Delegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
 				case PropertyType::Integer:
 				{
 					using T = EntityPropertyArray<Nz::Int64>;
@@ -984,6 +1111,34 @@ namespace bw
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
 						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
+				case PropertyType::IntegerRect:
+				{
+					using T = EntityPropertyArray<Nz::Vector4i64>;
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->int4Delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ tr("Value") });
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->int4Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						SetProperty(item->index().row(), m_delegates->int4Delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -1047,9 +1202,6 @@ namespace bw
 					layout->addWidget(table);
 					break;
 				}
-
-				default:
-					break;
 			}
 		}
 		else
@@ -1126,6 +1278,7 @@ namespace bw
 				case PropertyType::Float:
 				{
 					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
+					spinbox->setDecimals(6);
 					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
 					if (propertyValue && std::holds_alternative<float>(propertyValue->get()))
 						spinbox->setValue(std::get<float>(propertyValue->get()));
@@ -1156,6 +1309,21 @@ namespace bw
 					break;
 				}
 
+				case PropertyType::FloatRect:
+				{
+					Float4SpinBox* spinbox = new Float4SpinBox(Float4SpinBox::LabelMode::RectLabel, QBoxLayout::TopToBottom);
+					if (propertyValue && std::holds_alternative<Nz::Vector4f>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector4f>(propertyValue->get()));
+
+					connect(spinbox, &Float4SpinBox::valueChanged, [=]()
+					{
+						SetProperty(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
 				case PropertyType::Integer:
 				{
 					// TODO: Handle properly int64
@@ -1168,6 +1336,39 @@ namespace bw
 					connect(spinbox, &QSpinBox::editingFinished, [=]()
 					{
 						SetProperty(Nz::Int64(spinbox->value()));
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
+				case PropertyType::IntegerPosition:
+				case PropertyType::IntegerSize:
+				{
+					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
+					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
+					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector2i64>(propertyValue->get()));
+
+					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
+					{
+						SetProperty(Nz::Vector2i64(spinbox->value()));
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+				
+				case PropertyType::IntegerRect:
+				{
+					// TODO: Handle properly int64
+					Integer4SpinBox* spinbox = new Integer4SpinBox(Integer4SpinBox::LabelMode::RectLabel, QBoxLayout::TopToBottom);
+					if (propertyValue && std::holds_alternative<Nz::Vector4i64>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector4i64>(propertyValue->get()));
+
+					connect(spinbox, &Integer4SpinBox::valueChanged, [=]()
+					{
+						SetProperty(spinbox->value());
 					});
 
 					layout->addWidget(spinbox);
@@ -1200,24 +1401,6 @@ namespace bw
 					break;
 				}
 
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-				{
-					// TODO: Handle properly int64
-					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
-					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
-						spinbox->setValue(Nz::Vector2i(std::get<Nz::Vector2i64>(propertyValue->get())));
-
-					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
-					{
-						SetProperty(Nz::Vector2i64(spinbox->value()));
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
 				case PropertyType::String:
 				case PropertyType::Texture:
 				{
@@ -1233,9 +1416,6 @@ namespace bw
 					layout->addWidget(lineEdit);
 					break;
 				}
-
-				default:
-					break;
 			}
 		}
 
@@ -1318,6 +1498,32 @@ namespace bw
 	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value, PropertyType type)
 	{
 		return QString("(%1; %2)").arg(value.x).arg(value.y);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector3f& value, PropertyType type)
+	{
+		return QString("(%1; %2; %3)").arg(value.x).arg(value.y).arg(value.z);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector3i64& value, PropertyType type)
+	{
+		return QString("(%1; %2; %3)").arg(value.x).arg(value.y).arg(value.z);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector4f& value, PropertyType type)
+	{
+		if (type == PropertyType::FloatRect)
+			return QString("(%1, %2, %3, %4)").arg(value.x).arg(value.y).arg(value.z).arg(value.w);
+		else
+			return QString("(%1; %2; %3; %4)").arg(value.x).arg(value.y).arg(value.z).arg(value.w);
+	}
+
+	QString EntityInfoDialog::ToString(const Nz::Vector4i64& value, PropertyType type)
+	{
+		if (type == PropertyType::IntegerRect)
+			return QString("(%1, %2, %3, %4)").arg(value.x).arg(value.y).arg(value.z).arg(value.w);
+		else
+			return QString("(%1; %2; %3; %4)").arg(value.x).arg(value.y).arg(value.z).arg(value.w);
 	}
 
 	QString EntityInfoDialog::ToString(const std::string& value, PropertyType type)

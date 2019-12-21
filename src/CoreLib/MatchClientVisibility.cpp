@@ -661,30 +661,20 @@ namespace bw
 				constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
 				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-				if constexpr (std::is_same_v<PropertyType, bool> ||
-				              std::is_same_v<PropertyType, float> ||
-				              std::is_same_v<PropertyType, Nz::Int64> ||
-				              std::is_same_v<PropertyType, std::string> ||
-				              std::is_same_v<PropertyType, Nz::Vector2f> ||
-				              std::is_same_v<PropertyType, Nz::Vector2i64>)
+				propertyData.isArray = IsArray;
+
+				auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
+
+				if constexpr (IsArray)
 				{
-					propertyData.isArray = IsArray;
+					std::size_t elementCount = propertyValue.GetSize();
+					vec.reserve(elementCount);
 
-					auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
-
-					if constexpr (IsArray)
-					{
-						std::size_t elementCount = propertyValue.GetSize();
-						vec.reserve(elementCount);
-
-						for (std::size_t i = 0; i < elementCount; ++i)
-							vec.emplace_back(std::move(propertyValue[i]));
-					}
-					else
-						vec.push_back(propertyValue);
+					for (std::size_t i = 0; i < elementCount; ++i)
+						vec.emplace_back(std::move(propertyValue[i]));
 				}
 				else
-					static_assert(AlwaysFalse<PropertyType>::value, "non-exhaustive visitor");
+					vec.push_back(propertyValue);
 
 			}, std::move(propertyValue));
 		}

@@ -9,6 +9,7 @@
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
+#include <Nazara/Math/Rect.hpp>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -39,6 +40,21 @@ namespace Nz
 	}
 
 	template<typename T>
+	void from_json(const nlohmann::json& j, Nz::Rect<T>& rect)
+	{
+		j.at("x").get_to(rect.x);
+		j.at("y").get_to(rect.y);
+		j.at("width").get_to(rect.width);
+		j.at("height").get_to(rect.height);
+	}
+
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::Rect<T>& rect)
+	{
+		j = nlohmann::json{ {"x", rect.x}, {"y", rect.y}, {"width", rect.width}, {"height", rect.height} };
+	}
+
+	template<typename T>
 	void from_json(const nlohmann::json& j, Nz::Vector2<T>& vec)
 	{
 		j.at("x").get_to(vec.x);
@@ -49,6 +65,35 @@ namespace Nz
 	void to_json(nlohmann::json& j, const Nz::Vector2<T>& vec)
 	{
 		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y} };
+	}
+
+	template<typename T>
+	void from_json(const nlohmann::json& j, Nz::Vector3<T>& vec)
+	{
+		j.at("x").get_to(vec.x);
+		j.at("y").get_to(vec.y);
+		j.at("z").get_to(vec.z);
+	}
+
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::Vector3<T>& vec)
+	{
+		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y}, {"z", vec.z} };
+	}
+
+	template<typename T>
+	void from_json(const nlohmann::json& j, Nz::Vector4<T>& vec)
+	{
+		j.at("x").get_to(vec.x);
+		j.at("y").get_to(vec.y);
+		j.at("z").get_to(vec.z);
+		j.at("w").get_to(vec.w);
+	}
+
+	template<typename T>
+	void to_json(nlohmann::json& j, const Nz::Vector4<T>& vec)
+	{
+		j = nlohmann::json{ {"x", vec.x}, {"y", vec.y}, {"z", vec.z}, {"w", vec.w} };
 	}
 }
 
@@ -108,27 +153,17 @@ namespace bw
 						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
 						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
 
-						if constexpr (std::is_same_v<PropertyType, bool> ||
-						              std::is_same_v<PropertyType, float> ||
-						              std::is_same_v<PropertyType, Nz::Int64> ||
-						              std::is_same_v<PropertyType, Nz::Vector2f> ||
-						              std::is_same_v<PropertyType, Nz::Vector2i64> ||
-						              std::is_same_v<PropertyType, std::string>)
+						if constexpr (IsArray)
 						{
-							if constexpr (IsArray)
-							{
-								auto elementArray = nlohmann::json::array();
-								for (std::size_t i = 0; i < propertyValue.size(); ++i)
-									elementArray.push_back(propertyValue[i]);
+							auto elementArray = nlohmann::json::array();
+							for (std::size_t i = 0; i < propertyValue.size(); ++i)
+								elementArray.push_back(propertyValue[i]);
 
-								propertyData["isArray"] = true;
-								propertyData["value"] = std::move(elementArray);
-							}
-							else
-								propertyData["value"] = propertyValue;
+							propertyData["isArray"] = true;
+							propertyData["value"] = std::move(elementArray);
 						}
 						else
-							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+							propertyData["value"] = propertyValue;
 
 					}, propertyPair.second);
 
@@ -215,16 +250,8 @@ namespace bw
 								Nz::UInt8 boolValue = (value) ? 1 : 0;
 								stream << boolValue;
 							}
-							else if constexpr (std::is_same_v<T, float>          ||
-							                   std::is_same_v<T, Nz::Int64>      ||
-							                   std::is_same_v<T, Nz::Vector2f>   ||
-							                   std::is_same_v<T, Nz::Vector2i64> ||
-							                   std::is_same_v<T, std::string>)
-							{
-								stream << value;
-							}
 							else
-								static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+								stream << value;
 						};
 
 						if constexpr (IsArray)
@@ -387,8 +414,12 @@ namespace bw
 						case PropertyInternalType::Bool: Unserialize(bool()); break;
 						case PropertyInternalType::Float: Unserialize(float()); break;
 						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
+						case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
+						case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
 						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
 						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
+						case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
+						case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
 						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}
@@ -495,8 +526,12 @@ namespace bw
 						case PropertyInternalType::Bool: Unserialize(bool()); break;
 						case PropertyInternalType::Float: Unserialize(float()); break;
 						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
+						case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
+						case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
 						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
 						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
+						case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
+						case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
 						case PropertyInternalType::String: Unserialize(std::string()); break;
 					}
 				}

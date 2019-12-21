@@ -599,7 +599,7 @@ namespace bw
 				};
 
 
-				static_assert(std::variant_size_v<Helper::Properties::PropertyValue> == 6);
+				static_assert(std::variant_size_v<Helper::Properties::PropertyValue> == 10);
 				switch (dataType)
 				{
 					case 0:
@@ -631,8 +631,12 @@ namespace bw
 					case 2: SerializeValue(Nz::Int64()); break;
 					case 3: SerializeValue(Nz::Vector2f()); break;
 					case 4: SerializeValue(Nz::Vector2i64()); break;
+					case 5: SerializeValue(Nz::Vector3f()); break;
+					case 6: SerializeValue(Nz::Vector3i64()); break;
+					case 7: SerializeValue(Nz::Vector4f()); break;
+					case 8: SerializeValue(Nz::Vector4i64()); break;
 
-					case 5: // std::string
+					case 9: // std::string
 					{
 						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
 
@@ -659,8 +663,8 @@ namespace bw
 					default:
 						assert(!"Unexpected datatype");
 						break;
-					}
 				}
+			}
 		}
 	}
 }

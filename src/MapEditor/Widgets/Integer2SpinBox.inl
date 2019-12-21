@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Integer2SpinBox::Integer2SpinBox(const Nz::Vector2i& value, LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent) :
+	inline Integer2SpinBox::Integer2SpinBox(const Nz::Vector2i64& value, LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent) :
 	Integer2SpinBox(labelMode, dir, parent)
 	{
 		setValue(value);

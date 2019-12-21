@@ -181,80 +181,8 @@ namespace bw
 						property.isArray = propertyArray.as<bool>();
 
 					sol::object propertyDefault = propertyTable["Default"];
-					
-					auto PropertyChecker = [&](auto dummyType) -> EntityProperty
-					{
-						using T = std::decay_t<decltype(dummyType)>;
-
-						if (property.isArray)
-						{
-							if (!propertyDefault.is<sol::table>())
-								throw std::runtime_error("Property " + propertyName + " default value is not of the right type");
-
-							sol::table valueArray = propertyDefault.as<sol::table>();
-
-							std::size_t elementCount = valueArray.size();
-							if (elementCount == 0)
-								throw std::runtime_error("Property " + propertyName + " default value must have at least one element");
-
-							EntityPropertyArray<T> array(elementCount);
-							for (std::size_t i = 1; i <= elementCount; ++i)
-							{
-								sol::object value = valueArray[i];
-								if (!value.is<T>())
-									throw std::runtime_error("Property " + propertyName + " default value #" + std::to_string(i) + " is not of the right type");
-
-								array[i - 1] = value.as<T>();
-							}
-
-							return array;
-						}
-						else
-						{
-							if (propertyDefault.is<T>())
-								return propertyDefault.as<T>();
-							else
-								throw std::runtime_error("Property " + propertyName + " default value is not of the right type");
-						}
-					};
-
 					if (!propertyDefault.is<sol::nil_t>())
-					{
-						switch (property.type)
-						{
-							case PropertyType::Bool:
-								property.defaultValue = PropertyChecker(bool());
-								break;
-
-							case PropertyType::Float:
-								property.defaultValue = PropertyChecker(float());
-								break;
-
-							case PropertyType::FloatPosition:
-							case PropertyType::FloatSize:
-								property.defaultValue = PropertyChecker(Nz::Vector2f());
-								break;
-
-							case PropertyType::Entity: //< TODO: Check if default value is NoEntity (only acceptable integer value)
-							case PropertyType::Integer:
-							case PropertyType::Layer:
-								property.defaultValue = PropertyChecker(Nz::Int64());
-								break;
-
-							case PropertyType::IntegerPosition:
-							case PropertyType::IntegerSize:
-								property.defaultValue = PropertyChecker(Nz::Vector2i64());
-								break;
-
-							case PropertyType::String:
-							case PropertyType::Texture:
-								property.defaultValue = PropertyChecker(std::string());
-								break;
-
-							default:
-								break;
-						}
-					}
+						property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
 
 					auto it = element->properties.find(propertyName);
 					if (it == element->properties.end())

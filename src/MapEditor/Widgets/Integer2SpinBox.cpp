@@ -14,6 +14,8 @@ namespace bw
 	{
 		auto onValueChanged = [this](int) { onSpinBoxValueChanged(); };
 
+		// TODO: Handle properly int64
+
 		m_xSpinbox = new QSpinBox;
 		m_xSpinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
 		connect(m_xSpinbox, qOverload<int>(&QSpinBox::valueChanged), onValueChanged);
@@ -22,7 +24,7 @@ namespace bw
 		m_ySpinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
 		connect(m_ySpinbox, qOverload<int>(&QSpinBox::valueChanged), onValueChanged);
 		
-		QLayout* layout;
+		QLayout* layout = nullptr;
 
 		switch (labelMode)
 		{
@@ -73,23 +75,23 @@ namespace bw
 				}
 				break;
 			}
-
-			default:
-				break;
 		}
+
+		assert(layout);
+
 		layout->setContentsMargins(0, 0, 0, 0);
 		setLayout(layout);
 	}
 
-	void Integer2SpinBox::setValue(const Nz::Vector2i& value)
+	void Integer2SpinBox::setValue(const Nz::Vector2i64& value)
 	{
 		m_xSpinbox->setValue(value.x);
 		m_ySpinbox->setValue(value.y);
 	}
 
-	Nz::Vector2i Integer2SpinBox::value()
+	Nz::Vector2i64 Integer2SpinBox::value()
 	{
-		Nz::Vector2i vec;
+		Nz::Vector2i64 vec;
 		vec.x = m_xSpinbox->value();
 		vec.y = m_ySpinbox->value();
 

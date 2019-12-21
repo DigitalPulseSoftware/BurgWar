@@ -112,6 +112,10 @@ namespace bw
 			QString ToString(Nz::Int64 value, PropertyType type);
 			QString ToString(const Nz::Vector2f& value, PropertyType type);
 			QString ToString(const Nz::Vector2i64& value, PropertyType type);
+			QString ToString(const Nz::Vector3f& value, PropertyType type);
+			QString ToString(const Nz::Vector3i64& value, PropertyType type);
+			QString ToString(const Nz::Vector4f& value, PropertyType type);
+			QString ToString(const Nz::Vector4i64& value, PropertyType type);
 			QString ToString(const std::string& value, PropertyType type);
 			QString ToString(EntityPropertyConstRefOpt property, PropertyType type);
 

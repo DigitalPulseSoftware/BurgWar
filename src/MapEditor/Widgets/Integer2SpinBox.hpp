@@ -28,14 +28,14 @@ namespace bw
 			};
 
 			Integer2SpinBox(LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent = nullptr);
-			inline Integer2SpinBox(const Nz::Vector2i& value, LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent = nullptr);
+			inline Integer2SpinBox(const Nz::Vector2i64& value, LabelMode labelMode, QBoxLayout::Direction dir, QWidget* parent = nullptr);
 			~Integer2SpinBox() = default;
 
-			void setValue(const Nz::Vector2i& value);
-			Nz::Vector2i value();
+			void setValue(const Nz::Vector2i64& value);
+			Nz::Vector2i64 value();
 
 		signals:
-			void valueChanged(Nz::Vector2i newValue);
+			void valueChanged(Nz::Vector2i64 newValue);
 
 		private:
 			void onSpinBoxValueChanged();
