@@ -1334,6 +1334,13 @@ namespace bw
 					m_entityStore->UpdateEntityElement(entity);
 			});
 		}
+
+		// Force entity info dialog update
+		if (m_entityInfoDialog)
+		{
+			m_entityInfoDialog->deleteLater();
+			m_entityInfoDialog = nullptr;
+		}
 	}
 
 	void EditorWindow::RebuildUniqueIds()
