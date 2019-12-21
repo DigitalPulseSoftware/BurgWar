@@ -484,6 +484,7 @@ namespace bw
 		});
 
 		m_rotationWidget = new QDoubleSpinBox;
+		m_rotationWidget->setDecimals(6);
 		m_rotationWidget->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
 		connect(m_rotationWidget, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double rotation)
 		{
@@ -620,14 +621,18 @@ namespace bw
 
 	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, EntityProperty propertyValue)
 	{
-		m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue));
+		auto& it = m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue)).first;
 		m_updateFlags |= EntityInfoUpdate::Properties;
 
 		// Check if we should reload panel
 		auto propertyIt = m_propertyByName.find(propertyName);
 		assert(propertyIt != m_propertyByName.end());
 
-		if (m_propertyTypeIndex == propertyIt->second)
+		std::size_t propertyIndex = propertyIt->second;
+
+		m_propertiesList->item(int(propertyIndex), 1)->setText(ToString(it.value(), m_properties[propertyIndex].type));
+
+		if (m_propertyTypeIndex == propertyIndex)
 			RefreshPropertyEditor(m_propertyTypeIndex);
 	}
 

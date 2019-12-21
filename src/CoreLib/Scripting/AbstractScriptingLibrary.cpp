@@ -77,7 +77,7 @@ namespace bw
 
 			lua_pop(s, 2);
 
-			if (!metatable)
+			if (!equal)
 				throw std::runtime_error("Table is not of type " + std::string(metaname));
 
 			return tableRef;

@@ -172,6 +172,8 @@ namespace bw
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 				return entity->GetComponent<Ndk::PhysicsComponent2D>().IsSleeping();
+			else
+				return false;
 		};
 
 		elementMetatable["Kill"] = [](const sol::table& entityTable)
