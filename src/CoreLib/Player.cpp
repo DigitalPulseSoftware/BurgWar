@@ -452,8 +452,15 @@ namespace bw
 		UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle, false);
 
 		Packets::ChatMessage chatPacket;
-		if (attacker && attacker->HasComponent<PlayerControlledComponent>() && attacker != m_playerEntity)
-			chatPacket.content = attacker->GetComponent<PlayerControlledComponent>().GetOwner()->GetName() + " killed " + GetName();
+		if (attacker && attacker->HasComponent<OwnerComponent>())
+		{
+			auto& ownerComponent = attacker->GetComponent<OwnerComponent>();
+			Player* playerKiller = ownerComponent.GetOwner();
+			if (playerKiller != this)
+				chatPacket.content = playerKiller->GetName() + " killed " + GetName();
+			else
+				chatPacket.content = GetName() + " suicided";
+		}
 		else
 			chatPacket.content = GetName() + " suicided";
 

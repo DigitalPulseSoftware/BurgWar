@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 
 namespace bw
 {
@@ -128,6 +129,8 @@ namespace bw
 			if (layerIndex > match.GetLayerCount())
 				throw std::runtime_error("Layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
 
+			PlayerHandle owner = parameters.get_or<PlayerHandle>("Owner", PlayerHandle::InvalidHandle);
+
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 
@@ -154,6 +157,9 @@ namespace bw
 			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
+
+			if (owner)
+				entity->AddComponent<OwnerComponent>(std::move(owner));
 
 			match.RegisterEntity(uniqueId, entity);
 
