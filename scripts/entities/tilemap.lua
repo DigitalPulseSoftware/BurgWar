@@ -1,8 +1,6 @@
 RegisterClientScript()
 
 ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
 
 local defaultTextureCell = Vec2(1, 1)
 

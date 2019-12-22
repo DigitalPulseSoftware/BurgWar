@@ -114,7 +114,7 @@ namespace bw
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
-			Nz::Int64 m_freeUniqueId;
+			Nz::Int64 m_uniqueId;
 			Nz::UInt32 m_serverEntityId;
 			LocalLayerEntityHandle m_weaponEntity;
 			LocalLayer& m_layer;

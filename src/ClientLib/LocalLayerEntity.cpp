@@ -19,12 +19,12 @@ namespace bw
 {
 	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, Nz::Int64 uniqueId) :
 	m_entity(entity),
-	m_freeUniqueId(uniqueId),
+	m_uniqueId(uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
 	{
 		assert(m_entity);
-		m_layer.GetLocalMatch().RegisterEntity(m_freeUniqueId, CreateHandle());
+		m_layer.GetLocalMatch().RegisterEntity(m_uniqueId, CreateHandle());
 	}
 
 	LocalLayerEntity::LocalLayerEntity(LocalLayerEntity&& entity) noexcept :
@@ -36,12 +36,12 @@ namespace bw
 	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
 	m_visualEntities(std::move(entity.m_visualEntities)),
 	m_entity(std::move(entity.m_entity)),
-	m_freeUniqueId(entity.m_freeUniqueId),
+	m_freeUniqueId(entity.m_uniqueId),
 	m_serverEntityId(entity.m_serverEntityId),
 	m_weaponEntity(std::move(entity.m_weaponEntity)),
 	m_layer(entity.m_layer)
 	{
-		entity.m_freeUniqueId = NoEntity;
+		entity.m_uniqueId = NoEntity;
 	}
 
 	LocalLayerEntity::~LocalLayerEntity()
@@ -49,8 +49,8 @@ namespace bw
 		if (m_ghostEntity)
 			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
 
-		if (m_freeUniqueId != NoEntity)
-			m_layer.GetLocalMatch().UnregisterEntity(m_freeUniqueId);
+		if (m_uniqueId != NoEntity)
+			m_layer.GetLocalMatch().UnregisterEntity(m_uniqueId);
 	}
 
 	void LocalLayerEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
