@@ -53,7 +53,7 @@ namespace bw
 		{
 			auto& visualGfx = m_entity->GetComponent<Ndk::GraphicsComponent>();
 
-			Nz::Vector3f absoluteScale = visualNode.GetScale(); // GetScale retrieves the absolute scale by default
+			Nz::Vector3f absoluteScale = visualNode.GetScale(Nz::CoordSys_Global);
 			Nz::Vector2f positiveScale(std::abs(absoluteScale.x), std::abs(absoluteScale.y));
 
 			const Nz::Boxf& aabb = visualGfx.GetAABB();
