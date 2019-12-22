@@ -289,6 +289,11 @@ namespace bw
 
 					layerEntity.emplace(std::move(entity.value()));
 				}
+				else
+				{
+					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Unregistered entity type: {0}", entityClass);
+					return;
+				}
 			}
 			else if (entityClass.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
 			{
@@ -304,6 +309,11 @@ namespace bw
 					weapon->Disable(); //< Disable weapon entities by default
 
 					layerEntity.emplace(std::move(weapon.value()));
+				}
+				else
+				{
+					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Unregistered entity type: {0}", entityClass);
+					return;
 				}
 			}
 			else
@@ -457,6 +467,12 @@ namespace bw
 				continue;
 
 			LocalLayerEntity& localEntity = it.value().layerEntity;
+			if (!localEntity.HasHealth())
+			{
+				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received health data for entity {} which has none", localEntity.GetUniqueId());
+				continue;
+			}
+
 			localEntity.UpdateHealth(currentHealth);
 		}
 	}
