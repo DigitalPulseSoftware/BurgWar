@@ -1304,7 +1304,7 @@ namespace bw
 		if (!m_entityStore)
 		{
 			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
-			m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger()));
+			m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger(), *m_assetStore));
 			m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(GetLogger(), *m_assetStore));
 		}
 		else

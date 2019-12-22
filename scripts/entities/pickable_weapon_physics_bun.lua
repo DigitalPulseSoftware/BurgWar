@@ -1,5 +1,5 @@
 RegisterClientScript()
-RegisterClientAssets("rifle-30349_640.png")
+RegisterClientAssets("placeholder/physgun.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false
@@ -13,7 +13,7 @@ function ENTITY:Initialize()
 
 	if (CLIENT) then
 		self:AddSprite({
-			TexturePath = "placeholder/baguette.png"
+			TexturePath = "placeholder/physgun.png"
 		})
 	end
 end

@@ -7,9 +7,10 @@
 #ifndef BURGWAR_STATES_GAME_GAMESTATE_HPP
 #define BURGWAR_STATES_GAME_GAMESTATE_HPP
 
+#include <CoreLib/Protocol/Packets.hpp>
 #include <Client/States/AbstractState.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <CoreLib/Protocol/Packets.hpp>
+#include <Nazara/Audio/Music.hpp>
 
 namespace bw
 {
@@ -31,6 +32,7 @@ namespace bw
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
 			std::shared_ptr<LocalMatch> m_match;
+			Nz::Music m_music;
 	};
 }
 

@@ -28,7 +28,7 @@ function WEAPON:Launch()
 	local nearestFraction = math.huge
 	local nearestResult
 
-	local traceResult = physics.TraceMultiple(0, startPos, endPos, function (result)
+	local traceResult = physics.TraceMultiple(self:GetLayerIndex(), startPos, endPos, function (result)
 		if (result.fraction < nearestFraction) then
 			if (result.hitEntity) then
 				-- Ignore player

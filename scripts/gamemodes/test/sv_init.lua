@@ -12,13 +12,19 @@ end
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
-	player:GiveWeapon("weapon_rifle")
-	player:GiveWeapon("weapon_grenade")
-	player:GiveWeapon("weapon_graspain")
-	player:GiveWeapon("weapon_physics_bun")
 end
 
 local noclipController = NoclipPlayerMovementController.new()
+
+local possibleCharacters = "0123456789abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ"
+local password = {}
+for i = 1, 8 do
+	local index = math.random(1, #possibleCharacters)
+	table.insert(password, possibleCharacters:sub(index, index))
+end
+password = table.concat(password)
+
+print("Admin password: " .. password)
 
 function GM:OnPlayerChat(player, message)
 	if (message:sub(1,1) == "/") then
@@ -28,10 +34,17 @@ function GM:OnPlayerChat(player, message)
 		end
 
 		if (commandName == "admin") then
-			if (commandArgs == "okboomer") then
+			if (commandArgs == password) then
 				player:SetAdmin(true)
 				player:PrintChatMessage("You are now admin")
 			end
+		elseif (commandName == "suicide") then
+			local controlledEntity = player:GetControlledEntity()
+			if (not controlledEntity) then
+				return
+			end
+
+			controlledEntity:Kill()
 		elseif (commandName == "noclip") then
 			if (not player:IsAdmin()) then
 				return
@@ -60,7 +73,7 @@ end
 function GM:OnTick()
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
-		if (pos.y > 2000) then
+		if (pos.y > 10000) then
 			burger:Kill()
 		end
 	end

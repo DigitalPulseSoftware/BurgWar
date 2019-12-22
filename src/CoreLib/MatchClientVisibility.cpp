@@ -114,9 +114,7 @@ namespace bw
 			});
 
 			m_newlyHiddenLayers.UnboundedReset(layerIndex);
-
-			if (!m_clientVisibleLayers.UnboundedTest(layerIndex))
-				m_newlyVisibleLayers.UnboundedSet(layerIndex);
+			m_newlyVisibleLayers.UnboundedSet(layerIndex);
 		}
 	}
 
@@ -129,6 +127,9 @@ namespace bw
 		{
 			for (std::size_t i = m_newlyHiddenLayers.FindFirst(); i != m_newlyHiddenLayers.npos; i = m_newlyHiddenLayers.FindNext(i))
 			{
+				if (!m_clientVisibleLayers.UnboundedTest(i))
+					continue;
+
 				LayerIndex layerIndex = LayerIndex(i);
 
 				// The client will destroy automatically all entities that belong to this layer
@@ -164,6 +165,9 @@ namespace bw
 
 			for (std::size_t i = m_newlyVisibleLayers.FindFirst(); i != m_newlyVisibleLayers.npos; i = m_newlyVisibleLayers.FindNext(i))
 			{
+				if (m_clientVisibleLayers.UnboundedTest(i))
+					continue;
+
 				LayerIndex layerIndex = LayerIndex(i);
 
 				Terrain& terrain = m_match.GetTerrain();

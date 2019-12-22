@@ -968,6 +968,7 @@ namespace bw
 	{
 		m_playerData[packet.playerIndex].layerIndex = packet.layerIndex;
 
+		m_gamemode->ExecuteCallback("OnChangeLayer", m_activeLayerIndex, static_cast<LayerIndex>(packet.layerIndex));
 		m_activeLayerIndex = packet.layerIndex;
 
 		auto& layer = m_layers[m_activeLayerIndex];

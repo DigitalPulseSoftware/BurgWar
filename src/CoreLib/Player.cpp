@@ -434,7 +434,7 @@ namespace bw
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)
 	{
 		Packets::ChatMessage chatPacket;
-		if (attacker && attacker->HasComponent<PlayerControlledComponent>())
+		if (attacker && attacker->HasComponent<PlayerControlledComponent>() && attacker != m_playerEntity)
 			chatPacket.content = attacker->GetComponent<PlayerControlledComponent>().GetOwner()->GetName() + " killed " + GetName();
 		else
 			chatPacket.content = GetName() + " suicided";

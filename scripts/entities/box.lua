@@ -7,6 +7,7 @@ ENTITY.PlayerControlled = false
 ENTITY.MaxHealth = 1000
 
 ENTITY.Properties = {
+	{ Name = "asleep", Type = PropertyType.Boolean, Default = false, Shared = true },
 	{ Name = "dynamic", Type = PropertyType.Boolean, Default = true, Shared = true },
 	{ Name = "size", Type = PropertyType.Float, Default = 1.0, Shared = true }
 }
@@ -19,6 +20,11 @@ function ENTITY:Initialize()
 
 	if (self:GetProperty("dynamic")) then
 		self:InitRigidBody(size * 50, 10)
+
+		-- Temp fix
+		if (self:GetProperty("asleep")) then
+			self:ForceSleep()
+		end
 	end
 
 	if (CLIENT) then

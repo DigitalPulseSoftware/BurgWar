@@ -30,7 +30,7 @@ namespace bw
 		FillStores();
 
 		m_mainWindow.EnableVerticalSync(false);
-		m_mainWindow.SetFramerateLimit(100);
+		//m_mainWindow.SetFramerateLimit(100);
 
 		Ndk::World& world = AddWorld();
 		world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);

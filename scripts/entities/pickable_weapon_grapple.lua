@@ -1,5 +1,5 @@
 RegisterClientScript()
-RegisterClientAssets("rifle-30349_640.png")
+RegisterClientAssets("placeholder/baguette.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false

@@ -24,6 +24,15 @@ namespace bw
 		if (stateData.app->GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
 			m_match->InitDebugGhosts();
 
+		const std::string& resourceFolder = stateData.app->GetConfig().GetStringOption("Assets.ResourceFolder");
+
+		if (m_music.OpenFromFile(resourceFolder + "/Music/mushroomdance_0.ogg"))
+		{
+			m_music.EnableLooping(true);
+			m_music.Play();
+			m_music.SetVolume(50.f);
+		}
+
 		m_clientSession->SendPacket(Packets::Ready{});
 	}
 

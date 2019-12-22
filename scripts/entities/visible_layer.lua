@@ -17,14 +17,31 @@ function ENTITY:Initialize()
 	end
 
 	if (CLIENT) then
+		self.isVisible = false
 		if (engine_GetActiveLayer() == self:GetLayerIndex() or self:GetProperty("recursive")) then
-			self:AddLayer({
-				LayerIndex = self:GetProperty("layer"),
-				ParallaxFactor = self:GetProperty("parallaxFactor"),
-				RenderOrder = self:GetProperty("renderOrder"),
-				Scale = self:GetProperty("scale")
-			})
+			self:Show()
 		end
+	end
+end
+
+if (CLIENT) then
+	function ENTITY:Hide()
+		assert(self.isVisible)
+		self.isVisible = false
+
+		self:ClearLayers()
+	end
+
+	function ENTITY:Show()
+		assert(not self.isVisible)
+		self.isVisible = true
+
+		self:AddLayer({
+			LayerIndex = self:GetProperty("layer"),
+			ParallaxFactor = self:GetProperty("parallaxFactor"),
+			RenderOrder = self:GetProperty("renderOrder"),
+			Scale = self:GetProperty("scale")
+		})
 	end
 end
 
@@ -33,6 +50,10 @@ function ENTITY:OnPlayerEnterLayer(player, newLayer)
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " visible")
 		player:UpdateLayerVisibility(layer, true)
+
+		if (CLIENT) then
+
+		end
 	end
 end
 
@@ -41,5 +62,21 @@ function ENTITY:OnPlayerLeaveLayer(player, oldLayer)
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " invisible")
 		player:UpdateLayerVisibility(layer, false)
+	end
+end
+
+function ENTITY:OnEnterLayer(newLayer)
+	if (newLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
+		local layer = self:GetProperty("layer")
+		print("Making layer " .. layer .. " visible")
+		self:Show()
+	end
+end
+
+function ENTITY:OnLeaveLayer(oldLayer)
+	if (oldLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
+		local layer = self:GetProperty("layer")
+		print("Making layer " .. layer .. " invisible")
+		self:Hide()
 	end
 end

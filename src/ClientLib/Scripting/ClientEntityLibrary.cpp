@@ -190,5 +190,13 @@ namespace bw
 			else
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
 		};
+
+		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<VisibleLayerComponent>())
+				entity->GetComponent<VisibleLayerComponent>().Clear();
+		};
 	}
 }
