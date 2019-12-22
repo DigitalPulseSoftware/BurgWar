@@ -7,8 +7,8 @@
 namespace bw
 {
 	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent) :
-	m_entityClass(entityClass),
-	m_parent(parent)
+	m_parent(parent),
+	m_entityClass(entityClass)
 	{
 	}
 

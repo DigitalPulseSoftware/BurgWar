@@ -1115,19 +1115,6 @@ namespace bw
 			if (layer->IsEnabled())
 				layer->TickUpdate(GetTickDuration());
 		}
-
-#ifdef DEBUG_PREDICTION
-		ForEachEntity([&](const Ndk::EntityHandle& entity)
-		{
-			if (entity->HasComponent<InputComponent>())
-			{
-				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				
-				static std::ofstream debugFile("client.csv", std::ios::trunc);
-				debugFile << m_application.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << estimatedServerTick << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
-			}
-		});
-#endif
 	}
 
 	void LocalMatch::ProcessInputs(float elapsedTime)

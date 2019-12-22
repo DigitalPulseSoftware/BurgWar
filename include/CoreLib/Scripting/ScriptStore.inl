@@ -126,7 +126,6 @@ namespace bw
 
 		};
 
-		bool hasSharedFiles = false;
 		if (!isDirectory)
 		{
 			// Element script
@@ -135,8 +134,7 @@ namespace bw
 		else
 		{
 			// Element folder
-			if (LoadFile(elementPath / "shared.lua"))
-				hasSharedFiles = true;
+			LoadFile(elementPath / "shared.lua");
 
 			if (m_isServer)
 				LoadFile(elementPath / "sv_init.lua");

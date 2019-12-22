@@ -37,8 +37,8 @@ namespace bw
 	m_playerIndex(playerIndex),
 	m_session(session),
 	m_isAdmin(false),
-	m_shouldSendWeapons(false),
-	m_isReady(false)
+	m_isReady(false),
+	m_shouldSendWeapons(false)
 	{
 	}
 
@@ -368,7 +368,7 @@ namespace bw
 			{
 				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
 
-				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* health, const Ndk::EntityHandle& attacker)
+				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* /*health*/, const Ndk::EntityHandle& attacker)
 				{
 					OnDeath(attacker);
 				});

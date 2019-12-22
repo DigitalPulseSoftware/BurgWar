@@ -27,7 +27,7 @@ namespace bw
 		               [&](std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo) { HandlePeerInfo(peerId, peerInfo); });
 	}
 
-	void NetworkSessionManager::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
+	void NetworkSessionManager::HandlePeerConnection(bool /*outgoing*/, std::size_t peerId, Nz::UInt32 /*data*/)
 	{
 		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} connected", peerId);
 
@@ -41,7 +41,7 @@ namespace bw
 		m_peerIdToSession[peerId] = session;
 	}
 
-	void NetworkSessionManager::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data)
+	void NetworkSessionManager::HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 /*data*/)
 	{
 		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} disconnected", peerId);
 
@@ -52,8 +52,9 @@ namespace bw
 		session = nullptr;
 	}
 
-	void NetworkSessionManager::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
+	void NetworkSessionManager::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& /*peerInfo*/)
 	{
+		//TODO
 		MatchClientSession* session = m_peerIdToSession[peerId];
 		assert(session);
 

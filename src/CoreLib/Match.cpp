@@ -28,8 +28,8 @@ namespace bw
 	Match::Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration) :
 	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
 	m_gamemodePath(std::move(gamemodeFolder)),
-	m_sessions(*this),
 	m_maxPlayerCount(maxPlayerCount),
+	m_sessions(*this),
 	m_freeUniqueId(map.GetFreeUniqueId()),
 	m_app(app),
 	m_map(std::move(map))
@@ -549,19 +549,6 @@ namespace bw
 		m_gamemode->ExecuteCallback("OnTick");
 
 		m_terrain->Update(elapsedTime);
-
-#ifdef DEBUG_PREDICTION
-		ForEachEntity([&](const Ndk::EntityHandle& entity)
-		{
-			if (entity->HasComponent<InputComponent>() && entity->HasComponent< Ndk::PhysicsComponent2D>())
-			{
-				auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				
-				static std::ofstream debugFile("server.csv", std::ios::trunc);
-				debugFile << m_app.GetAppTime() << ";" << ((entity->GetComponent<InputComponent>().GetInputs().isJumping) ? "Jumping;" : ";") << GetNetworkTick() << ";" << entityPhys.GetPosition().y << ";" << entityPhys.GetVelocity().y << '\n';
-			}
-		});
-#endif
 
 		if (lastTick)
 		{

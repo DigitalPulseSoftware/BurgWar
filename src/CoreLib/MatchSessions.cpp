@@ -10,10 +10,10 @@
 namespace bw
 {
 	MatchSessions::MatchSessions(Match& match) :
+	m_nextSessionId(0),
 	m_match(match),
 	m_commandStore(m_match.GetLogger()),
-	m_sessionPool(sizeof(MatchClientSession)),
-	m_nextSessionId(0)
+	m_sessionPool(sizeof(MatchClientSession))
 	{
 	}
 

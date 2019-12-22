@@ -40,7 +40,7 @@ namespace bw
 		m_commandStore.UnserializePacket(*this, packet);
 	}
 
-	void MatchClientSession::Update(float elapsedTime)
+	void MatchClientSession::Update(float /*elapsedTime*/)
 	{
 		m_visibility->Update();
 	}

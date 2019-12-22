@@ -20,11 +20,11 @@ namespace bw
 				serializer &= player.nickname;
 		}
 
-		void Serialize(PacketSerializer& serializer, AuthFailure& data)
+		void Serialize(PacketSerializer& /*serializer*/, AuthFailure& /*data*/)
 		{
 		}
 
-		void Serialize(PacketSerializer& serializer, AuthSuccess& data)
+		void Serialize(PacketSerializer& /*serializer*/, AuthSuccess& /*data*/)
 		{
 		}
 

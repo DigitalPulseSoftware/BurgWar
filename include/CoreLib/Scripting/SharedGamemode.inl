@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedGamemode.hpp>
+#include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <cassert>
 

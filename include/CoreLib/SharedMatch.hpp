@@ -12,8 +12,6 @@
 #include <CoreLib/TimerManager.hpp>
 #include <NDK/Entity.hpp>
 
-//#define DEBUG_PREDICTION
-
 namespace bw
 {
 	class BurgApp;

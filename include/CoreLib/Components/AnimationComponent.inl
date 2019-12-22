@@ -12,8 +12,8 @@ namespace bw
 	}
 
 	inline AnimationComponent::AnimationComponent(const AnimationComponent& animation) :
-	m_animationStore(animation.m_animationStore),
-	m_playingAnimation(animation.m_playingAnimation)
+	m_playingAnimation(animation.m_playingAnimation),
+	m_animationStore(animation.m_animationStore)
 	{
 	}
 

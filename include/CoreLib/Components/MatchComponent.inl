@@ -8,8 +8,8 @@ namespace bw
 {
 	inline MatchComponent::MatchComponent(Match& match, LayerIndex layerIndex, Nz::Int64 uniqueId) :
 	m_uniqueId(uniqueId),
-	m_layerIndex(layerIndex),
-	m_match(match)
+	m_match(match),
+	m_layerIndex(layerIndex)
 	{
 	}
 

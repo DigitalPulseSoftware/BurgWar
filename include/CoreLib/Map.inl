@@ -14,6 +14,7 @@ namespace bw
 
 	inline Map::Map(MapInfo mapInfo) :
 	m_freeUniqueId(0),
+	m_mapInfo(std::move(mapInfo)),
 	m_isValid(true)
 	{
 		SetupDefault();

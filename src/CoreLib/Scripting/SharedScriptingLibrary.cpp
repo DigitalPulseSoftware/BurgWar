@@ -113,7 +113,7 @@ namespace bw
 		);
 	}
 
-	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
+	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
 		library["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
@@ -161,9 +161,9 @@ namespace bw
 		};
 	}
 
-	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& context, sol::table& library)
+	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateDampenedSpringConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
+		library["CreateDampenedSpringConstraint"] = [this](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -177,7 +177,7 @@ namespace bw
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		};
 
-		library["CreatePinConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePinConstraint"] = [this](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -191,7 +191,7 @@ namespace bw
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		};
 
-		library["CreatePivotConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePivotConstraint"] = [this](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -205,7 +205,7 @@ namespace bw
 			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		};
 
-		library["CreateRotaryLimitConstraint"] = [this](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
+		library["CreateRotaryLimitConstraint"] = [this](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
 		{
 			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
@@ -273,7 +273,7 @@ namespace bw
 		};
 	}
 
-	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context, sol::table& library)
+	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& /*context*/, sol::table& /*library*/)
 	{
 		// empty for now
 	}

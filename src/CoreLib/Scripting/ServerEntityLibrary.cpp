@@ -13,7 +13,7 @@ namespace bw
 		RegisterServerLibrary(elementMetatable);
 	}
 
-	void ServerEntityLibrary::RegisterServerLibrary(sol::table& elementMetatable)
+	void ServerEntityLibrary::RegisterServerLibrary(sol::table& /*elementMetatable*/)
 	{
 	}
 }

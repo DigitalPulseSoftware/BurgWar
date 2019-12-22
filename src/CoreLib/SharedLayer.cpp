@@ -37,7 +37,7 @@ namespace bw
 		physics.SetStepSize(match.GetTickDuration());
 
 		Ndk::PhysicsSystem2D::Callback triggerCallbacks;
-		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& world, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* userdata)
+		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
 		{
 			bool shouldCollide = true;
 
