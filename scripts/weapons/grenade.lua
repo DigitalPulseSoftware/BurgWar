@@ -13,9 +13,10 @@ if (SERVER) then
 		local projectile = match.CreateEntity({
 			Type = "entity_grenade",
 			LayerIndex = self:GetLayerIndex(),
+			Owner = self:GetOwner(),
 			Position = self:GetPosition() + self:GetDirection() * 32,
 			Properties = {
-				lifetime = math.random(3, 4)
+				lifetime = math.random(2, 4)
 			}
 		})
 
