@@ -16,6 +16,7 @@ namespace bw
 		Nz::Vector2f aimDirection = Nz::Vector2f::UnitX();
 		bool isAttacking = false;
 		bool isCrouching = false;
+		bool isLookingRight = true;
 		bool isJumping = false;
 		bool isMovingLeft = false;
 		bool isMovingRight = false;

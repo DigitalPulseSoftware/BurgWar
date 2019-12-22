@@ -58,18 +58,9 @@ namespace bw
 
 			const auto& inputs = inputComponent.GetInputs();
 
-			bool isFacingRight = playerMovementComponent.IsFacingRight();
-
-			float switchValue = (isFacingRight) ? -0.3f : 0.3f;
-
-			if (inputs.aimDirection.x > switchValue)
-				isFacingRight = true;
-			else if (inputs.aimDirection.x < switchValue)
-				isFacingRight = false;
-
 			playerMovementComponent.UpdateWasJumpingState(inputs.isJumping);
 
-			if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
+			if (playerMovementComponent.UpdateFacingRightState(inputs.isLookingRight))
 				nodeComponent.Scale(-1.f, 1.f);
 		}
 	}

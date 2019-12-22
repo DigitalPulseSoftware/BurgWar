@@ -11,6 +11,7 @@ namespace bw
 		return aimDirection == rhs.aimDirection && 
 		       isAttacking == rhs.isAttacking && 
 		       isCrouching == rhs.isCrouching &&
+		       isLookingRight == rhs.isLookingRight &&
 		       isJumping == rhs.isJumping && 
 		       isMovingLeft == rhs.isMovingLeft && 
 		       isMovingRight == rhs.isMovingRight;

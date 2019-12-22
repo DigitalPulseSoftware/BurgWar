@@ -472,6 +472,7 @@ namespace bw
 		{
 			serializer &= input.isAttacking;
 			serializer &= input.isCrouching;
+			serializer &= input.isLookingRight;
 			serializer &= input.isJumping;
 			serializer &= input.isMovingLeft;
 			serializer &= input.isMovingRight;

@@ -63,21 +63,28 @@ namespace bw
 				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
 
 				Nz::Vector2f originPosition = controlledEntity->GetPosition();
+				float lookSwitch = originPosition.x;
+
 				if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
 				{
 					auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
 					const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
 					Nz::Vector2f weaponOffset = weaponElement.weaponOffset;
+					
 					if (!controlledEntity->IsFacingRight())
 						weaponOffset.x = -weaponOffset.x;
-
+					
 					originPosition += weaponOffset;
 				}
 				else if (entity->HasComponent<Ndk::GraphicsComponent>())
+				{
 					originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
+					lookSwitch = originPosition.x;
+				}
 
 				Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mousePosition.x), float(mousePosition.y), 0.f));
 				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition) - originPosition);
+				inputData.isLookingRight = worldPosition.x >= lookSwitch;
 			}
 		}
 		

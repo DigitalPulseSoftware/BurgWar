@@ -44,6 +44,7 @@ namespace bw
 			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
 			BW_INPUT_PROPERTY(isAttacking, bool),
 			BW_INPUT_PROPERTY(isCrouching, bool),
+			BW_INPUT_PROPERTY(isLookingRight, bool),
 			BW_INPUT_PROPERTY(isJumping, bool),
 			BW_INPUT_PROPERTY(isMovingLeft, bool),
 			BW_INPUT_PROPERTY(isMovingRight, bool)

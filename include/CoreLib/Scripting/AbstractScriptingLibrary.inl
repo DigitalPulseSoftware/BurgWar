@@ -141,6 +141,7 @@ namespace sol
 		vec["aimDirection"] = inputs.aimDirection;
 		vec["isAttacking"] = inputs.isAttacking;
 		vec["isCrouching"] = inputs.isCrouching;
+		vec["isLookingRight"] = inputs.isLookingRight;
 		vec["isJumping"] = inputs.isJumping;
 		vec["isMovingLeft"] = inputs.isMovingLeft;
 		vec["isMovingRight"] = inputs.isMovingRight;
