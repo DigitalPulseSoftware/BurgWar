@@ -121,6 +121,21 @@ namespace bw
 		world.GetSystem<PostFrameCallbackSystem>().Enable(true);
 
 		world.Update(elapsedTime);
+
+		// Sound
+		for (auto& soundOpt : m_sounds)
+		{
+			if (soundOpt)
+			{
+				if (!soundOpt->sound.Update(elapsedTime))
+				{
+					OnSoundDelete(this, soundOpt->soundIndex, soundOpt->sound);
+
+					m_freeSoundIds.Set(soundOpt->soundIndex);
+					soundOpt.reset();
+				}
+			}
+		}
 	}
 
 	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
@@ -161,6 +176,27 @@ namespace bw
 
 			return serverEntity.layerEntity;
 		}
+	}
+
+	LocalLayerSound& LocalLayer::RegisterSound(LocalLayerSound layerEntity)
+	{
+		std::size_t soundIndex = m_freeSoundIds.FindFirst();
+		if (soundIndex == m_freeSoundIds.npos)
+		{
+			soundIndex = m_freeSoundIds.GetSize();
+			m_freeSoundIds.Resize(soundIndex + 1, false);
+		}
+		else
+			m_freeSoundIds.Reset(soundIndex);
+
+		auto& soundOpt = m_sounds.emplace_back();
+		soundOpt.emplace(std::move(layerEntity));
+
+		soundOpt->soundIndex = soundIndex;
+
+		OnSoundCreated(this, soundOpt->soundIndex, soundOpt->sound);
+
+		return soundOpt->sound;
 	}
 
 	void LocalLayer::SyncVisuals()

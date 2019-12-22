@@ -3,10 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Scripting/Sound.hpp>
 #include <NDK/World.hpp>
+#include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol3/sol.hpp>
@@ -81,5 +85,29 @@ namespace bw
 				return sol::nil;
 		};
 
+		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			auto& entityMatch = entity->GetComponent<LocalMatchComponent>();
+
+			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
+			if (!soundBuffer)
+				throw std::runtime_error("failed to load " + soundPath);
+
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+
+			auto& layer = entityMatch.GetLayer();
+
+			std::optional<LocalLayerSound> localLayerSound;
+			if (isAttachedToEntity)
+				localLayerSound.emplace(layer, entityNode);
+			else
+				localLayerSound.emplace(layer);
+
+			auto& layerSound = layer.RegisterSound(std::move(localLayerSound.value()));
+
+			std::size_t soundIndex = layerSound.PlaySound(soundBuffer, isLooping, isSpatialized);
+			return Sound(layerSound.CreateHandle(), soundIndex);
+		};
 	}
 }

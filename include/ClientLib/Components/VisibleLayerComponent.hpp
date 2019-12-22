@@ -9,6 +9,7 @@
 
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/Node.hpp>
 #include <NDK/Component.hpp>
@@ -33,7 +34,10 @@ namespace bw
 		private:
 			struct VisibleLayer;
 
+			void CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
 			void CreateVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity);
+
+			void DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
 			void DeleteVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity);
 
 			struct VisibleLayer
@@ -43,11 +47,14 @@ namespace bw
 
 				tsl::hopscotch_map<Nz::UInt32 /*clientId*/, VisualEntity> localEntities;
 				tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> visualEntities;
+				tsl::hopscotch_map<std::size_t /*sound*/, SoundEntity> soundEntities;
 
 				NazaraSlot(LocalLayer, OnDisabled, onDisabled);
 				NazaraSlot(LocalLayer, OnEnabled, onEnabled);
 				NazaraSlot(LocalLayer, OnEntityCreated, onEntityCreated);
 				NazaraSlot(LocalLayer, OnEntityDelete, onEntityDelete);
+				NazaraSlot(LocalLayer, OnSoundCreated, onSoundCreated);
+				NazaraSlot(LocalLayer, OnSoundDelete, onSoundDelete);
 				NazaraSlot(LocalMatch, OnCameraMoved, onCameraMoved);
 			};
 

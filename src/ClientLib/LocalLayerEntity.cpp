@@ -36,7 +36,7 @@ namespace bw
 	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
 	m_visualEntities(std::move(entity.m_visualEntities)),
 	m_entity(std::move(entity.m_entity)),
-	m_freeUniqueId(entity.m_uniqueId),
+	m_uniqueId(entity.m_uniqueId),
 	m_serverEntityId(entity.m_serverEntityId),
 	m_weaponEntity(std::move(entity.m_weaponEntity)),
 	m_layer(entity.m_layer)
@@ -346,11 +346,11 @@ namespace bw
 		visualEntity->Enable(m_entity->IsEnabled());
 
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys_Global));
+		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys_Global);
 
-		auto& visualNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
-		visualNode.SetPosition(entityNode.GetPosition());
-		visualNode.SetRotation(entityNode.GetRotation());
-		visualNode.SetScale(entityNode.GetScale());
+		visualEntity->Update(position, rotation, scale);
 
 		for (auto& renderableData : m_attachedRenderables)
 			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.renderOrder);

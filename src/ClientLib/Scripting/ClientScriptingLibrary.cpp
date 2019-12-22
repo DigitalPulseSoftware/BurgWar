@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 
@@ -21,6 +22,7 @@ namespace bw
 
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
+		RegisterSoundClass(context);
 		RegisterSpriteClass(context);
 
 		context.Load("autorun");
@@ -144,6 +146,17 @@ namespace bw
 		{
 			throw std::runtime_error("Only the server can reload scripts");
 		};
+	}
+
+	void ClientScriptingLibrary::RegisterSoundClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Sound>("Sound",
+			"new", sol::no_constructor,
+
+			"Stop", &Sound::Stop
+		);
 	}
 
 	void ClientScriptingLibrary::RegisterSpriteClass(ScriptingContext& context)

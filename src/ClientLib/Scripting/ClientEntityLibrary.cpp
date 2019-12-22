@@ -190,23 +190,5 @@ namespace bw
 			else
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
 		};
-
-		elementMetatable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
-		{
-			/*const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-			auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-
-			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
-			if (!soundBuffer)
-				throw std::runtime_error("failed to load " + soundPath);
-
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-
-			if (!entity->HasComponent<SoundEmitterComponent>())
-				entity->AddComponent<SoundEmitterComponent>();
-
-			auto& soundEmitter = entity->GetComponent<SoundEmitterComponent>();
-			return soundEmitter.PlaySound(soundBuffer, entityNode.GetPosition(), isAttachedToEntity, isLooping, isSpatialized);*/
-		};
 	}
 }

@@ -48,7 +48,11 @@ namespace bw
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
+			inline Nz::Int64 GetUniqueId() const;
 			inline const LocalLayerEntityHandle& GetWeaponEntity() const;
+
+			inline bool HasHealth() const;
+			inline bool HasName() const;
 
 			void InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth);
 			void InitializeName(const std::string& name);

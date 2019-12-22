@@ -21,8 +21,23 @@ namespace bw
 		return m_serverEntityId;
 	}
 
+	inline Nz::Int64 LocalLayerEntity::GetUniqueId() const
+	{
+		return m_uniqueId;
+	}
+
 	inline const LocalLayerEntityHandle& LocalLayerEntity::GetWeaponEntity() const
 	{
 		return m_weaponEntity;
+	}
+	
+	inline bool LocalLayerEntity::HasHealth() const
+	{
+		return m_health.has_value();
+	}
+	
+	inline bool LocalLayerEntity::HasName() const
+	{
+		return m_name.has_value();
 	}
 }

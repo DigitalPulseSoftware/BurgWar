@@ -11,16 +11,20 @@
 
 namespace bw
 {
+	class AssetStore;
+
 	class ClientElementLibrary : public SharedElementLibrary
 	{
 		public:
-			using SharedElementLibrary::SharedElementLibrary;
+			inline ClientElementLibrary(const Logger& logger, AssetStore& assetStore);
 			~ClientElementLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		private:
 			void RegisterClientLibrary(sol::table& elementTable);
+
+			AssetStore& m_assetStore;
 	};
 }
 

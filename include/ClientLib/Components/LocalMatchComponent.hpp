@@ -12,6 +12,7 @@
 
 namespace bw
 {
+	class LocalLayer;
 	class LocalMatch;
 
 	class LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
@@ -20,6 +21,8 @@ namespace bw
 			inline LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, Nz::Int64 uniqueId);
 			~LocalMatchComponent() = default;
 
+			LocalLayer& GetLayer();
+			const LocalLayer& GetLayer() const;
 			inline LayerIndex GetLayerIndex() const;
 			inline LocalMatch& GetLocalMatch() const;
 			inline Nz::Int64 GetUniqueId() const;

@@ -46,12 +46,27 @@ namespace bw
 		{
 			DeleteVisual(visibleLayerPtr, entity);
 		});
+		
+		visibleLayer->onSoundCreated.Connect(localLayer.OnSoundCreated, [=](LocalLayer*, std::size_t soundIndex, LocalLayerSound& sound)
+		{
+			CreateSound(visibleLayerPtr, soundIndex, sound);
+		});
+
+		visibleLayer->onSoundDelete.Connect(localLayer.OnSoundDelete, [=](LocalLayer*, std::size_t soundIndex, LocalLayerSound& sound)
+		{
+			DeleteSound(visibleLayerPtr, soundIndex, sound);
+		});
 
 		if (localLayer.IsEnabled())
 		{
 			localLayer.ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 			{
 				CreateVisual(visibleLayerPtr, layerEntity);
+			});
+
+			localLayer.ForEachLayerSound([&](std::size_t soundIndex, LocalLayerSound& layerSound)
+			{
+				CreateSound(visibleLayerPtr, soundIndex, layerSound);
 			});
 		}
 
@@ -68,12 +83,22 @@ namespace bw
 		m_visibleLayers.emplace_back(std::move(visibleLayer));
 	}
 
+	void VisibleLayerComponent::CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound)
+	{
+		layer->soundEntities.emplace(soundIndex, SoundEntity(m_renderWorld, layerSound.CreateHandle()));
+	}
+
 	void VisibleLayerComponent::CreateVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)
 	{
 		if (Nz::UInt32 id = layerEntity.GetServerId(); id != LocalLayerEntity::ClientsideId)
 			layer->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
 		else
 			layer->localEntities.emplace(layerEntity.GetEntity()->GetId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
+	}
+
+	void VisibleLayerComponent::DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& /*layerSound*/)
+	{
+		layer->soundEntities.erase(soundIndex);
 	}
 
 	void VisibleLayerComponent::DeleteVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)

@@ -28,6 +28,18 @@ namespace bw
 			func(it.value().layerEntity);
 	}
 
+	template<typename F>
+	void LocalLayer::ForEachLayerSound(F&& func)
+	{
+		assert(m_isEnabled);
+
+		for (auto& soundOpt : m_sounds)
+		{
+			if (soundOpt)
+				func(soundOpt.value().soundIndex, soundOpt.value().sound);
+		}
+	}
+
 	inline const Nz::Color& LocalLayer::GetBackgroundColor() const
 	{
 		return m_backgroundColor;

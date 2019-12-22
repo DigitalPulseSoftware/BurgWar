@@ -19,8 +19,8 @@ namespace bw
 	{
 		public:
 			inline Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
-			Sprite(const Sprite&) = default;
-			Sprite(Sprite&&) = default;
+			Sprite(const Sprite&) = delete;
+			Sprite(Sprite&&) noexcept = default;
 			~Sprite() = default;
 
 			inline Nz::Vector2f GetOrigin() const;
@@ -35,8 +35,8 @@ namespace bw
 			inline void SetSize(const Nz::Vector2f& newSize);
 			void Show(bool show = true);
 
-			Sprite& operator=(const Sprite&) = default;
-			Sprite& operator=(Sprite&&) = default;
+			Sprite& operator=(const Sprite&) = delete;
+			Sprite& operator=(Sprite&&) noexcept = default;
 
 		private:
 			void UpdateTransformMatrix();

@@ -317,7 +317,7 @@ namespace bw
 		if (!m_entityStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger(), *m_assetStore);
 
 			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(clientElementLib);
@@ -332,7 +332,7 @@ namespace bw
 		if (!m_weaponStore)
 		{
 			if (!clientElementLib)
-				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger());
+				clientElementLib = std::make_shared<ClientElementLibrary>(GetLogger(), *m_assetStore);
 
 			m_weaponStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
 			m_weaponStore->LoadLibrary(clientElementLib);

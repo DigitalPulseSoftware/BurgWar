@@ -5,6 +5,11 @@
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <cassert>
 
-namespace sol
+namespace bw
 {
+	inline ClientElementLibrary::ClientElementLibrary(const Logger& logger, AssetStore& assetStore) :
+	SharedElementLibrary(logger),
+	m_assetStore(assetStore)
+	{
+	}
 }

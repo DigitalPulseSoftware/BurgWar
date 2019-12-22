@@ -7,10 +7,12 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALLAYER_HPP
 #define BURGWAR_CLIENTLIB_LOCALLAYER_HPP
 
+#include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/LocalLayerSound.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
@@ -35,6 +37,7 @@ namespace bw
 			inline void EnablePrediction(bool enable = true);
 
 			template<typename F> void ForEachLayerEntity(F&& func);
+			template<typename F> void ForEachLayerSound(F&& func);
 
 			inline const Nz::Color& GetBackgroundColor() const;
 			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntity(Nz::UInt32 serverId);
@@ -48,6 +51,7 @@ namespace bw
 			void PostFrameUpdate(float elapsedTime);
 
 			LocalLayerEntity& RegisterEntity(LocalLayerEntity layerEntity);
+			LocalLayerSound& RegisterSound(LocalLayerSound layerEntity);
 
 			void SyncVisuals();
 
@@ -60,6 +64,8 @@ namespace bw
 			NazaraSignal(OnEnabled, LocalLayer* /*emitter*/);
 			NazaraSignal(OnEntityCreated, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
 			NazaraSignal(OnEntityDelete, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
+			NazaraSignal(OnSoundCreated, LocalLayer* /*emitter*/, std::size_t /*soundIndex*/, LocalLayerSound& /*layerSound*/);
+			NazaraSignal(OnSoundDelete, LocalLayer* /*emitter*/, std::size_t /*soundIndex*/, LocalLayerSound& /*layerSound*/);
 
 		private:
 			void CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData);
@@ -88,8 +94,23 @@ namespace bw
 				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
 			};
 
+			struct SoundData
+			{
+				SoundData(LocalLayerSound&& layerSound) :
+				sound(std::move(layerSound))
+				{
+				}
+
+				SoundData(SoundData&& rhs) = default;
+
+				LocalLayerSound sound;
+				std::size_t soundIndex;
+			};
+
 			tsl::hopscotch_map<Ndk::EntityId /*clientEntityId*/, EntityData /*localEntity*/> m_clientEntities;
 			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, EntityData /*localEntity*/> m_serverEntities;
+			std::vector<std::optional<SoundData>> m_sounds;
+			Nz::Bitset<Nz::UInt64> m_freeSoundIds;
 			Nz::Color m_backgroundColor;
 			bool m_isEnabled;
 			bool m_isPredictionEnabled;
