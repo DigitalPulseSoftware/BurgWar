@@ -143,6 +143,21 @@ namespace bw
 			m_newlyHiddenLayers.Clear();
 		}
 
+		if (!m_pendingLayerUpdates.empty())
+		{
+			for (auto&& layerUpdate : m_pendingLayerUpdates)
+			{
+				Packets::PlayerLayer layerPacket;
+				layerPacket.stateTick = networkTick;
+				layerPacket.layerIndex = layerUpdate.layerIndex;
+				layerPacket.playerIndex = layerUpdate.playerIndex;
+
+				m_session.SendPacket(layerPacket);
+			}
+
+			m_pendingLayerUpdates.clear();
+		}
+
 		if (m_newlyVisibleLayers.GetSize() != 0)
 		{
 			PendingCreationEventMap pendingCreationMap; //< Used to resolve parenting
@@ -215,21 +230,6 @@ namespace bw
 				pendingCreationMap.clear();
 			}
 			m_newlyVisibleLayers.Clear();
-		}
-
-		if (!m_pendingLayerUpdates.empty())
-		{
-			for (auto&& layerUpdate : m_pendingLayerUpdates)
-			{
-				Packets::PlayerLayer layerPacket;
-				layerPacket.stateTick = networkTick;
-				layerPacket.layerIndex = layerUpdate.layerIndex;
-				layerPacket.playerIndex = layerUpdate.playerIndex;
-
-				m_session.SendPacket(layerPacket);
-			}
-
-			m_pendingLayerUpdates.clear();
 		}
 
 		// Send packet in fixed order

@@ -971,7 +971,6 @@ namespace bw
 		m_activeLayerIndex = packet.layerIndex;
 
 		auto& layer = m_layers[m_activeLayerIndex];
-		assert(layer->IsEnabled());
 
 		m_colorBackground->SetColor(layer->GetBackgroundColor());
 		auto& visibleLayer = m_currentLayer->GetComponent<VisibleLayerComponent>();
