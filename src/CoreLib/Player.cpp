@@ -340,27 +340,6 @@ namespace bw
 			playerEntity->AddComponent<OwnerComponent>(CreateHandle());
 			playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
 
-			if (playerEntity->HasComponent<HealthComponent>())
-			{
-				auto& healthComponent = playerEntity->GetComponent<HealthComponent>();
-
-				/*healthComponent.OnDied.Connect([ply = CreateHandle()](const HealthComponent* health, const Ndk::EntityHandle& attacker)
-				{
-					if (!ply)
-						return;
-
-					ply->OnDeath(attacker);
-				});*/
-			}
-
-			playerEntity->OnEntityDestruction.Connect([ply = CreateHandle()](Ndk::Entity* /*entity*/)
-			{
-				if (!ply)
-					return;
-
-				ply->OnDeath(Ndk::EntityHandle::InvalidHandle);
-			});
-
 			UpdateControlledEntity(playerEntity);
 
 			m_match->GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
@@ -372,7 +351,7 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity)
+	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket)
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
@@ -383,25 +362,52 @@ namespace bw
 		}
 
 		m_playerEntity = entity;
-
-		Packets::ControlEntity controlEntity;
-		controlEntity.playerIndex = m_playerIndex;
-		if (entity)
+		if (m_playerEntity)
 		{
-			auto& matchComponent = entity->GetComponent<MatchComponent>();
+			if (m_playerEntity->HasComponent<HealthComponent>())
+			{
+				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
 
-			controlEntity.layerIndex = matchComponent.GetLayerIndex();
-			controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
+				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* health, const Ndk::EntityHandle& attacker)
+				{
+					OnDeath(attacker);
+				});
+			}
 
-			visibility.PushEntityPacket(matchComponent.GetLayerIndex(), controlEntity.entityId, controlEntity);
+			m_onPlayerEntityDestruction.Connect(m_playerEntity->OnEntityDestruction, [this](Ndk::Entity* /*entity*/)
+			{
+				OnDeath(Ndk::EntityHandle::InvalidHandle);
+			});
+
+			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
 			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
 		}
 		else
 		{
-			controlEntity.layerIndex = NoLayer;
-			controlEntity.entityId = 0;
+			m_onPlayerEntityDied.Disconnect();
+			m_onPlayerEntityDestruction.Disconnect();
+		}
 
-			SendPacket(controlEntity);
+		if (sendPacket)
+		{
+			Packets::ControlEntity controlEntity;
+			controlEntity.playerIndex = m_playerIndex;
+			if (m_playerEntity)
+			{
+				auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
+
+				controlEntity.layerIndex = matchComponent.GetLayerIndex();
+				controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
+
+				visibility.PushEntityPacket(matchComponent.GetLayerIndex(), controlEntity.entityId, controlEntity);
+			}
+			else
+			{
+				controlEntity.layerIndex = NoLayer;
+				controlEntity.entityId = 0;
+
+				SendPacket(controlEntity);
+			}
 		}
 	}
 
@@ -441,6 +447,10 @@ namespace bw
 
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)
 	{
+		assert(m_playerEntity);
+
+		UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle, false);
+
 		Packets::ChatMessage chatPacket;
 		if (attacker && attacker->HasComponent<PlayerControlledComponent>() && attacker != m_playerEntity)
 			chatPacket.content = attacker->GetComponent<PlayerControlledComponent>().GetOwner()->GetName() + " killed " + GetName();

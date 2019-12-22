@@ -13,6 +13,7 @@
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
+#include <CoreLib/Components/HealthComponent.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
@@ -72,7 +73,7 @@ namespace bw
 
 			std::string ToString() const;
 
-			void UpdateControlledEntity(const Ndk::EntityHandle& entity);
+			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
@@ -88,6 +89,9 @@ namespace bw
 			void OnReady();
 
 			void UpdateMatch(Match* match);
+
+			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
+			NazaraSlot(HealthComponent, OnDied, m_onPlayerEntityDied);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
