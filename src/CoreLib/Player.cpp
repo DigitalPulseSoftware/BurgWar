@@ -344,14 +344,22 @@ namespace bw
 			{
 				auto& healthComponent = playerEntity->GetComponent<HealthComponent>();
 
-				healthComponent.OnDied.Connect([ply = CreateHandle()](const HealthComponent* health, const Ndk::EntityHandle& attacker)
+				/*healthComponent.OnDied.Connect([ply = CreateHandle()](const HealthComponent* health, const Ndk::EntityHandle& attacker)
 				{
 					if (!ply)
 						return;
 
 					ply->OnDeath(attacker);
-				});
+				});*/
 			}
+
+			playerEntity->OnEntityDestruction.Connect([ply = CreateHandle()](Ndk::Entity* /*entity*/)
+			{
+				if (!ply)
+					return;
+
+				ply->OnDeath(Ndk::EntityHandle::InvalidHandle);
+			});
 
 			UpdateControlledEntity(playerEntity);
 

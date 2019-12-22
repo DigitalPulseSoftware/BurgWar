@@ -300,6 +300,9 @@ namespace bw
 				// Weapon
 				if (std::size_t weaponIndex = weaponStore.GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)
 				{
+					if (!parent)
+						return;
+
 					assert(parent);
 
 					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, uniqueId, properties, parent->GetEntity());
