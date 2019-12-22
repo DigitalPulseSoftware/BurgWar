@@ -74,8 +74,8 @@ namespace bw
 		{
 			// Parallax factor
 			Nz::Vector2f layerPosition = newPosition * (Nz::Vector2f(1.f) - parallaxFactor);
-			layerPosition.x = std::floor(layerPosition.x);
-			layerPosition.y = std::floor(layerPosition.y);
+// 			layerPosition.x = std::floor(layerPosition.x);
+// 			layerPosition.y = std::floor(layerPosition.y);
 
 			visibleLayerPtr->baseNode.SetPosition(layerPosition);
 		});

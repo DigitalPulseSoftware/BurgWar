@@ -49,6 +49,11 @@ namespace bw
 		visualNode.SetRotation(rotation);
 		visualNode.SetScale(scale);
 
+		Nz::Vector2f absolutePosition = Nz::Vector2f(visualNode.GetPosition(Nz::CoordSys_Global));
+		absolutePosition.x = std::floor(absolutePosition.x);
+		absolutePosition.y = std::floor(absolutePosition.y);
+		visualNode.SetPosition(absolutePosition, Nz::CoordSys_Global);
+
 		if (!m_hoveringRenderables.empty())
 		{
 			auto& visualGfx = m_entity->GetComponent<Ndk::GraphicsComponent>();
