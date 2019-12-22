@@ -1,3 +1,5 @@
+RegisterClientScript()
+
 ENTITY.IsNetworked = true
 
 ENTITY.Properties = {
