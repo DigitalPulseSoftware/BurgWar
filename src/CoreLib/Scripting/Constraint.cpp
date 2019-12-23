@@ -81,7 +81,6 @@ namespace bw
 
 	void Constraint::KillEntity()
 	{
-		//< FIXME: Deleting entity client-side crashes LocalLayerEntity
 		if (m_entity)
 			m_entity->Kill();
 	}
