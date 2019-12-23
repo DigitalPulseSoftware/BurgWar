@@ -3,9 +3,9 @@ RegisterClientScript()
 ENTITY.IsNetworked = true
 
 ENTITY.Properties = {
-	{ Name = "friction", Type = PropertyType.Float, Default = 1 },
-	{ Name = "mass", Type = PropertyType.Float, Default = 0 },
-	{ Name = "size", Type = PropertyType.FloatSize },
+	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
+	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
+	{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
 }
 
 function ENTITY:Initialize()
