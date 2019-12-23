@@ -75,6 +75,7 @@ if (SERVER) then
 				target_offset = targetOffset
 			}
 		})
+		self:DeleteOnRemove(self.GrappleSprite)
 
 		timer.Sleep(math.floor(duration * 1000))
 
@@ -89,6 +90,7 @@ if (SERVER) then
 					target_offset = targetOffset
 				}
 			})
+			self:DeleteOnRemove(self.GrapplePull)
 
 			self:SetNextTriggerTime(match.GetMilliseconds())
 		else

@@ -6,6 +6,7 @@
 #include <Nazara/Core/Clock.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
+#include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
@@ -35,6 +36,7 @@ namespace bw
 
 		Ndk::InitializeComponent<AnimationComponent>("Anim");
 		Ndk::InitializeComponent<CooldownComponent>("Cooldown");
+		Ndk::InitializeComponent<EntityOwnerComponent>("EntOwner");
 		Ndk::InitializeComponent<HealthComponent>("Health");
 		Ndk::InitializeComponent<InputComponent>("Input");
 		Ndk::InitializeComponent<MatchComponent>("Match");

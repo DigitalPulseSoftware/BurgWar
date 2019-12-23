@@ -62,6 +62,7 @@ function WEAPON:Launch()
 			target_offset = nearestResult.hitEntity:ToLocalPosition(nearestResult.hitPos)
 		}
 	})
+	self:DeleteOnRemove(self.Constraint)
 end
 
 function WEAPON:Release()
