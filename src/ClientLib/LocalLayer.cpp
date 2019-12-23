@@ -495,13 +495,22 @@ namespace bw
 			LocalLayerEntity& localEntity = it.value().layerEntity;
 			if (localEntity.IsPhysical())
 			{
-				assert(entityData.physicsProperties.has_value());
-				auto& physData = entityData.physicsProperties.value();
-				localEntity.UpdateState(entityData.position, entityData.rotation, physData.linearVelocity, physData.angularVelocity);
+				if (entityData.physicsProperties.has_value())
+				{
+					auto& physData = entityData.physicsProperties.value();
+					localEntity.UpdateState(entityData.position, entityData.rotation, physData.linearVelocity, physData.angularVelocity);
+				}
+				else
+				{
+					bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {} has client-side physics but server sends no data", localEntity.GetUniqueId());
+					localEntity.UpdateState(entityData.position, entityData.rotation);
+				}
 			}
 			else
 			{
-				assert(!entityData.physicsProperties.has_value());
+				if (entityData.physicsProperties.has_value())
+					bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Received physics properties for entity {} which is not physical client-side", localEntity.GetUniqueId());
+
 				localEntity.UpdateState(entityData.position, entityData.rotation);
 			}
 

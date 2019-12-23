@@ -33,5 +33,5 @@ function ENTITY:Initialize()
 
 	self:UpdatePlayerMovementController(controller)
 	self:SetCollider(rect)
-	self:InitRigidBody(50, 10, false)
+	self:InitRigidBody(50, 1, false)
 end

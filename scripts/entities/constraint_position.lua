@@ -8,14 +8,14 @@ ENTITY.Properties = {
 }
 
 function ENTITY:Initialize()
+	self:InitRigidBody(0)
+
 	local targetEntity = self:GetProperty("target_entity")
 	local targetOffset = self:GetProperty("target_offset")
 	if (targetEntity == NoEntity or not targetEntity:IsValid()) then
 		self:Remove()
 		return
 	end
-
-	self:InitRigidBody(0)
 
 	self.PositionConstraint = physics.CreatePivotConstraint(self, targetEntity, Vec2(0,0), targetOffset)
 end
