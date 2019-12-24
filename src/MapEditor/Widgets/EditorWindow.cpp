@@ -253,6 +253,9 @@ namespace bw
 				if (keyEvent->key() == Qt::Key_Delete)
 					OnDeleteEntity();
 			}
+
+			default:
+				break;
 		}
 
 		return QMainWindow::event(e);
@@ -265,7 +268,7 @@ namespace bw
 
 		recentlyOpenedMaps.removeAll(mapFolder);
 		recentlyOpenedMaps.prepend(mapFolder);
-		while (recentlyOpenedMaps.size() > MaxRecentFiles)
+		while (recentlyOpenedMaps.size() > int(MaxRecentFiles))
 			recentlyOpenedMaps.removeLast();
 
 		settings.setValue("recentFiles", recentlyOpenedMaps);
@@ -277,7 +280,7 @@ namespace bw
 	{
 		tsl::hopscotch_set<std::string> textures;
 
-		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 		{
 			if (propertyData.isArray)
 			{
@@ -696,7 +699,7 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 		{
 			if (propertyData.isArray)
 			{
@@ -840,7 +843,7 @@ namespace bw
 			};
 
 			// Update entities pointing to this layer
-			ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+			ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 			{
 				if (propertyData.isArray)
 				{
@@ -1007,13 +1010,13 @@ namespace bw
 			return;
 
 		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
-		if (entityIndex + 1 >= m_entityList.listWidget->count())
+		if (int(entityIndex + 1) >= m_entityList.listWidget->count())
 			return;
 
 		std::size_t newEntityIndex = entityIndex + 1;
 		SwapEntities(entityIndex, newEntityIndex);
 
-		m_entityList.downArrowButton->setDisabled(newEntityIndex + 1 >= m_entityList.listWidget->count());
+		m_entityList.downArrowButton->setDisabled(int(newEntityIndex + 1) >= m_entityList.listWidget->count());
 		m_entityList.upArrowButton->setDisabled(false);
 	}
 
@@ -1033,7 +1036,7 @@ namespace bw
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		m_canvas->EditEntityPosition(canvasId);
 
-		m_entityList.downArrowButton->setDisabled(entityIndex + 1 >= m_entityList.listWidget->count());
+		m_entityList.downArrowButton->setDisabled(int(entityIndex + 1) >= m_entityList.listWidget->count());
 		m_entityList.upArrowButton->setDisabled(entityIndex <= 0);
 	}
 
@@ -1268,7 +1271,7 @@ namespace bw
 		Ndk::EntityId canvasId = m_canvas->CreateEntity(entity.entityType, entity.position, entity.rotation, entity.properties)->GetId();
 		item->setData(Qt::UserRole + 1, canvasId);
 
-		if (entityIndex != m_entityList.listWidget->count())
+		if (int(entityIndex) != m_entityList.listWidget->count())
 		{
 			assert(entityIndex < m_entityList.listWidget->count());
 			m_entityList.listWidget->insertItem(int(entityIndex), item);
@@ -1452,7 +1455,7 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 		{
 			if (propertyData.isArray)
 			{
@@ -1472,7 +1475,7 @@ namespace bw
 		oldItem->setText(newItem->text());
 		newItem->setText(oldItemText);
 
-		if (m_layerList.listWidget->currentRow() == oldPosition)
+		if (m_layerList.listWidget->currentRow() == int(oldPosition))
 			m_layerList.listWidget->setCurrentRow(int(newPosition));
 	}
 }

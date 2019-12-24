@@ -120,6 +120,7 @@ namespace bw
 		QObject::connect(m_tileEditorWidget, &QObject::destroyed, [this](QObject* w)
 		{
 			assert(m_tileEditorWidget == w);
+			NazaraUnused(w);
 
 			m_tileEditorWidget = nullptr;
 

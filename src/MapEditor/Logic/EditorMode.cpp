@@ -16,11 +16,11 @@ namespace bw
 	{
 	}
 
-	void EditorMode::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	void EditorMode::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/)
 	{
 	}
 	
-	void EditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	void EditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& /*mouseButton*/)
 	{
 	}
 
@@ -32,7 +32,7 @@ namespace bw
 	{
 	}
 	
-	void EditorMode::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
+	void EditorMode::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& /*mouseMoved*/)
 	{
 	}
 }

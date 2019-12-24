@@ -74,7 +74,7 @@ namespace bw
 			"UpdatePosition", &EntityInfoDialog::UpdatePosition,
 			"UpdateRotation", &EntityInfoDialog::UpdateRotation,
 
-			"UpdateProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, const sol::object& propertyValue, sol::this_state state)
+			"UpdateProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, const sol::object& propertyValue)
 			{
 				auto [propertyType, isArray] = entityInfo.GetPropertyType(propertyName);
 				entityInfo.UpdateProperty(propertyName, TranslateEntityPropertyFromLua(nullptr, propertyValue, propertyType, isArray));

@@ -1,3 +1,15 @@
+local function luaDefines()
+	if (os.istarget("macosx")) then
+		return {"LUA_USE_MACOSX"}
+	elseif (os.istarget("linux")) then
+		return {"LUA_USE_LINUX"}
+	elseif (os.istarget("posix")) then
+		return {"LUA_USE_POSIX"}
+	else
+		return {}
+	end
+end
+
 WorkspaceName = "Burgwar"
 Projects = {
 	{
@@ -19,7 +31,7 @@ Projects = {
 		Group = "3rdparties",
 		Name = "lua",
 		Kind = "StaticLib",
-		Defines = {},
+		Defines = luaDefines(),
 		DisableWarnings = true,
 		Files = {
 			"../contrib/lua/include/**.h",
@@ -27,7 +39,7 @@ Projects = {
 			"../contrib/lua/src/**.h",
 			"../contrib/lua/src/**.c",
 		},
-		Libs = {},
+		Libs = os.istarget("linux") and {"dl"} or {},
 		LibsDebug = {},
 		LibsRelease = {},
 		AdditionalDependencies = {}

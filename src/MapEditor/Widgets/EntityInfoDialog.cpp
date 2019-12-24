@@ -57,7 +57,7 @@ namespace bw
 				model->setData(index, value, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				QComboBox* editor = new QComboBox(parent);
 				editor->setFrame(false);
@@ -68,7 +68,7 @@ namespace bw
 				return editor;
 			}
 
-			QString displayText(const QVariant& value, const QLocale& locale) const override
+			QString displayText(const QVariant& value, const QLocale& /*locale*/) const override
 			{
 				for (int i = 0; i < int(m_options.size()); ++i)
 				{
@@ -108,7 +108,7 @@ namespace bw
 				ApplyModelData(model, index, m_options[comboBox->currentIndex()].second);
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -127,7 +127,7 @@ namespace bw
 				model->setData(index, value, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				QDoubleSpinBox* editor = new QDoubleSpinBox(parent);
 				editor->setDecimals(6);
@@ -156,7 +156,7 @@ namespace bw
 				ApplyModelData(model, index, float(spinBox->value()));
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -175,7 +175,7 @@ namespace bw
 				model->setData(index, qvalue, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				return new Float2SpinBox(Float2SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
 			}
@@ -204,7 +204,7 @@ namespace bw
 				ApplyModelData(model, index, spinBox->value());
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -223,7 +223,7 @@ namespace bw
 				model->setData(index, qvalue, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				return new Float4SpinBox(Float4SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
 			}
@@ -252,7 +252,7 @@ namespace bw
 				ApplyModelData(model, index, spinBox->value());
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -297,7 +297,7 @@ namespace bw
 				ApplyModelData(model, index, spinBox->value());
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -316,7 +316,7 @@ namespace bw
 				model->setData(index, qvalue, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				return new Integer2SpinBox(Integer2SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
 			}
@@ -324,7 +324,7 @@ namespace bw
 			QString displayText(const QVariant& value, const QLocale& locale) const override
 			{
 				Nz::Vector2i64 vec = value.value<Nz::Vector2i64>();
-				return QString("(%1; %2)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y));
+				return QString("(%1; %2)").arg(locale.toString(qlonglong(vec.x))).arg(locale.toString(qlonglong(vec.y)));
 			}
 
 			Nz::Vector2i64 RetrieveModelData(const QModelIndex& index) const
@@ -345,7 +345,7 @@ namespace bw
 				ApplyModelData(model, index, spinBox->value());
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -364,7 +364,7 @@ namespace bw
 				model->setData(index, qvalue, Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				return new Integer4SpinBox(Integer4SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
 			}
@@ -372,7 +372,7 @@ namespace bw
 			QString displayText(const QVariant& value, const QLocale& locale) const override
 			{
 				Nz::Vector4i64 vec = value.value<Nz::Vector4i64>();
-				return QString("(%1; %2; %3; %4)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y)).arg(locale.toString(vec.z)).arg(locale.toString(vec.w));
+				return QString("(%1; %2; %3; %4)").arg(locale.toString(qlonglong(vec.x))).arg(locale.toString(qlonglong(vec.y))).arg(locale.toString(qlonglong(vec.z))).arg(locale.toString(qlonglong(vec.w)));
 			}
 
 			Nz::Vector4i64 RetrieveModelData(const QModelIndex& index) const
@@ -393,7 +393,7 @@ namespace bw
 				ApplyModelData(model, index, spinBox->value());
 			}
 
-			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
 			{
 				editor->setGeometry(option.rect);
 			}
@@ -450,7 +450,7 @@ namespace bw
 		m_propertiesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
-		connect(m_propertiesList, &QTableWidget::currentCellChanged, [this](int currentRow, int currentColumn, int previousRow, int previousColumn)
+		connect(m_propertiesList, &QTableWidget::currentCellChanged, [this](int currentRow, int /*currentColumn*/, int previousRow, int /*previousColumn*/)
 		{
 			if (currentRow < 0 || currentRow == previousRow)
 				return;
@@ -1435,12 +1435,12 @@ namespace bw
 		m_propertyContentWidget->setLayout(layout);
 	}
 
-	QString EntityInfoDialog::ToString(bool value, PropertyType type)
+	QString EntityInfoDialog::ToString(bool value, PropertyType /*type*/)
 	{
 		return (value) ? "true" : "false";
 	}
 
-	QString EntityInfoDialog::ToString(float value, PropertyType type)
+	QString EntityInfoDialog::ToString(float value, PropertyType /*type*/)
 	{
 		return QString::number(value);
 	}
@@ -1503,22 +1503,22 @@ namespace bw
 		}
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector2f& value, PropertyType type)
+	QString EntityInfoDialog::ToString(const Nz::Vector2f& value, PropertyType /*type*/)
 	{
 		return QString("(%1; %2)").arg(value.x).arg(value.y);
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value, PropertyType type)
+	QString EntityInfoDialog::ToString(const Nz::Vector2i64& value, PropertyType /*type*/)
 	{
 		return QString("(%1; %2)").arg(value.x).arg(value.y);
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector3f& value, PropertyType type)
+	QString EntityInfoDialog::ToString(const Nz::Vector3f& value, PropertyType /*type*/)
 	{
 		return QString("(%1; %2; %3)").arg(value.x).arg(value.y).arg(value.z);
 	}
 
-	QString EntityInfoDialog::ToString(const Nz::Vector3i64& value, PropertyType type)
+	QString EntityInfoDialog::ToString(const Nz::Vector3i64& value, PropertyType /*type*/)
 	{
 		return QString("(%1; %2; %3)").arg(value.x).arg(value.y).arg(value.z);
 	}
@@ -1539,7 +1539,7 @@ namespace bw
 			return QString("(%1; %2; %3; %4)").arg(value.x).arg(value.y).arg(value.z).arg(value.w);
 	}
 
-	QString EntityInfoDialog::ToString(const std::string& value, PropertyType type)
+	QString EntityInfoDialog::ToString(const std::string& value, PropertyType /*type*/)
 	{
 		return QString::fromStdString(value);
 	}
