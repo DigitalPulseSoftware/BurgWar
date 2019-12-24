@@ -301,9 +301,10 @@ namespace bw
 				if (std::size_t weaponIndex = weaponStore.GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)
 				{
 					if (!parent)
+					{
+						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Weapon entities should always have parents", entityClass);
 						return;
-
-					assert(parent);
+					}
 
 					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, uniqueId, properties, parent->GetEntity());
 					if (!weapon)
