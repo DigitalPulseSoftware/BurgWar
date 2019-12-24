@@ -40,6 +40,8 @@ namespace bw
 			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
 
 		private:
+			sol::thread& CreateThread();
+
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;

@@ -19,20 +19,7 @@ namespace bw
 	template<typename... Args>
 	sol::coroutine ScriptingContext::CreateCoroutine(Args&&... args)
 	{
-		auto CreateThread = [&]() -> sol::thread&
-		{
-			return m_runningThreads.emplace_back(sol::thread::create(m_luaState));
-		};
-
-		auto PopThread = [&]() -> sol::thread&
-		{
-			sol::thread& thread = m_runningThreads.emplace_back(std::move(m_availableThreads.back()));
-			m_availableThreads.pop_back();
-
-			return thread;
-		};
-
-		sol::thread& thread = (!m_availableThreads.empty()) ? PopThread() : CreateThread();
+		sol::thread& thread = CreateThread();
 
 		return sol::coroutine(thread.state(), std::forward<Args>(args)...);
 	}

@@ -12,6 +12,11 @@
 
 namespace bw
 {
+	namespace
+	{
+		std::size_t MaxInactiveCoroutines = 50;
+	}
+
 	ScriptingContext::~ScriptingContext()
 	{
 		m_availableThreads.clear();
@@ -121,7 +126,8 @@ namespace bw
 			{
 				case sol::thread_status::ok:
 					// Coroutine has finished without error, we can recycle its thread
-					//m_availableThreads.emplace_back(std::move(runningThread));
+					if (m_availableThreads.size() < MaxInactiveCoroutines)
+						m_availableThreads.emplace_back(std::move(runningThread));
 					break;
 
 				case sol::thread_status::yielded:
@@ -142,5 +148,24 @@ namespace bw
 			else
 				++it;
 		}
+	}
+
+	sol::thread& ScriptingContext::CreateThread()
+	{
+		auto AllocateThread = [&]() -> sol::thread&
+		{
+			bwLog(m_logger, LogLevel::Debug, "Allocating new coroutine ({} total)", m_availableThreads.size() + m_runningThreads.size() + 1);
+			return m_runningThreads.emplace_back(sol::thread::create(m_luaState));
+		};
+
+		auto PopThread = [&]() -> sol::thread&
+		{
+			sol::thread& thread = m_runningThreads.emplace_back(std::move(m_availableThreads.back()));
+			m_availableThreads.pop_back();
+
+			return thread;
+		};
+
+		return (!m_availableThreads.empty()) ? PopThread() : AllocateThread();
 	}
 }
