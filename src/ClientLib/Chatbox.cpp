@@ -27,6 +27,7 @@ namespace bw
 
 		m_chatboxScrollArea = canvas->Add<Ndk::ScrollAreaWidget>(m_chatBox);
 		m_chatboxScrollArea->Resize({ 480.f, 0.f });
+		m_chatboxScrollArea->EnableScrollbar(false);
 
 		m_chatEnteringBox = canvas->Add<Ndk::TextAreaWidget>();
 		m_chatEnteringBox->EnableBackground(true);
