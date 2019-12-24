@@ -160,6 +160,11 @@ namespace bw
 		}
 	}
 
+	void NetworkSyncSystem::BuildEvent(EntityDeath& deathEvent, Ndk::Entity* entity) const
+	{
+		deathEvent.entityId = entity->GetId();
+	}
+
 	void NetworkSyncSystem::BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const
 	{
 		deleteEvent.entityId = entity->GetId();
@@ -239,7 +244,10 @@ namespace bw
 
 			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle&)
 			{
-				m_deadEvents.emplace_back(health->GetEntity()->GetId());
+				EntityDeath deathEvent;
+				BuildEvent(deathEvent, health->GetEntity());
+
+				OnEntityDeath(this, deathEvent);
 			});
 
 			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health)
@@ -287,14 +295,6 @@ namespace bw
 				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
 			}
 			m_healthUpdateEntities.Clear();
-
-			for (Ndk::EntityId entityId : m_deadEvents)
-			{
-				EntityHealth& healthEvent = m_healthEvents.emplace_back();
-				healthEvent.entityId = entityId;
-				healthEvent.currentHealth = 0;
-			}
-			m_deadEvents.clear();
 
 			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
 		}

@@ -434,7 +434,14 @@ namespace bw
 				continue;
 
 			LocalLayerEntity& localEntity = it.value().layerEntity;
-			localEntity.UpdateHealth(0);
+			if (localEntity.HasHealth())
+				localEntity.UpdateHealth(0);
+			else
+				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received death event for entity {} which has no life", localEntity.GetUniqueId());
+
+			OnEntityDelete(this, it.value().layerEntity);
+
+			m_serverEntities.erase(it);
 		}
 	}
 
@@ -470,13 +477,10 @@ namespace bw
 				continue;
 
 			LocalLayerEntity& localEntity = it.value().layerEntity;
-			if (!localEntity.HasHealth())
-			{
+			if (localEntity.HasHealth())
+				localEntity.UpdateHealth(currentHealth);
+			else
 				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received health data for entity {} which has none", localEntity.GetUniqueId());
-				continue;
-			}
-
-			localEntity.UpdateHealth(currentHealth);
 		}
 	}
 

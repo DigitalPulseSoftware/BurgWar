@@ -38,7 +38,7 @@ namespace bw
 
 			layer.onEntityDeletedSlot.Connect(syncSystem.OnEntityDeleted, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityDestruction& entityDestruction)
 			{
-				HandleEntityDestruction(syncSystem->GetLayer().GetLayerIndex(), entityDestruction, false);
+				HandleEntityRemove(syncSystem->GetLayer().GetLayerIndex(), entityDestruction.entityId, false);
 			});
 
 			layer.onEntityInvalidated.Connect(syncSystem.OnEntityInvalidated, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityMovement& entityMovement)
@@ -64,19 +64,9 @@ namespace bw
 				m_pendingEvents.Set(VisibilityEventType::PlayAnimation);
 			});
 
-			layer.onEntitiesDeath.Connect(syncSystem.OnEntitiesDeath, [this, layerIndex](NetworkSyncSystem*, const Ndk::EntityId* entityIds, std::size_t entityCount)
+			layer.onEntityDeath.Connect(syncSystem.OnEntityDeath, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityDeath& entityDeath)
 			{
-				assert(m_layers.find(layerIndex) != m_layers.end());
-				Layer& layer = *m_layers[layerIndex];
-				
-				for (std::size_t i = 0; i < entityCount; ++i)
-				{
-					if (!layer.visibleEntities.UnboundedTest(entityIds[i]))
-						return;
-
-					layer.deathEvents.emplace(entityIds[i]);
-					m_pendingEvents.Set(VisibilityEventType::Death);
-				}
+				HandleEntityRemove(syncSystem->GetLayer().GetLayerIndex(), entityDeath.entityId, true);
 			});
 
 			layer.onEntitiesHealthUpdate.Connect(syncSystem.OnEntitiesHealthUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityHealth* events, std::size_t entityCount)
@@ -521,29 +511,35 @@ namespace bw
 		m_pendingEvents.Set(VisibilityEventType::Creation);
 	}
 
-	void MatchClientVisibility::HandleEntityDestruction(LayerIndex layerIndex, const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath)
+	void MatchClientVisibility::HandleEntityRemove(LayerIndex layerIndex, Ndk::EntityId entityId, bool deathEvent)
 	{
 		assert(m_layers.find(layerIndex) != m_layers.end());
 		Layer& layer = *m_layers[layerIndex];
 
 		// Only send entity destruction packet if this entity was already created client-side
-		auto it = layer.creationEvents.find(eventData.entityId);
+		auto it = layer.creationEvents.find(entityId);
 		if (it != layer.creationEvents.end())
 			layer.creationEvents.erase(it);
 		else
-			layer.destructionEvents.insert(eventData.entityId);
+		{
+			if (deathEvent)
+			{
+				layer.deathEvents.insert(entityId);
+				m_pendingEvents.Set(VisibilityEventType::Death);
+			}
+			else
+			{
+				layer.destructionEvents.insert(entityId);
+				m_pendingEvents.Set(VisibilityEventType::Destruction);
+			}
+		}
 
-		layer.inputUpdateEvents.erase(eventData.entityId);
-		layer.healthUpdateEvents.erase(eventData.entityId);
-		layer.playAnimationEvents.erase(eventData.entityId);
-		layer.staticMovementUpdateEvents.erase(eventData.entityId);
+		layer.inputUpdateEvents.erase(entityId);
+		layer.healthUpdateEvents.erase(entityId);
+		layer.playAnimationEvents.erase(entityId);
+		layer.staticMovementUpdateEvents.erase(entityId);
 
-		if (clearDeath)
-			layer.deathEvents.erase(eventData.entityId);
-
-		layer.visibleEntities.UnboundedReset(eventData.entityId);
-
-		m_pendingEvents.Set(VisibilityEventType::Destruction);
+		layer.visibleEntities.UnboundedReset(entityId);
 	}
 
 	void MatchClientVisibility::SendMatchState()

@@ -76,7 +76,7 @@ namespace bw
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 			void FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData);
 			void HandleEntityCreation(LayerIndex layerIndex, const NetworkSyncSystem::EntityCreation& eventData);
-			void HandleEntityDestruction(LayerIndex layerIndex, const NetworkSyncSystem::EntityDestruction& eventData, bool clearDeath);
+			void HandleEntityRemove(LayerIndex layerIndex, Ndk::EntityId entityId, bool deathEvent);
 			void SendMatchState();
 
 			using EntityPacketSendFunction = std::function<void()>;
@@ -109,10 +109,10 @@ namespace bw
 				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> destructionEvents;
 
 				NazaraSlot(NetworkSyncSystem, OnEntityCreated,        onEntityCreatedSlot);
+				NazaraSlot(NetworkSyncSystem, OnEntityDeath,          onEntityDeath);
 				NazaraSlot(NetworkSyncSystem, OnEntityDeleted,        onEntityDeletedSlot);
 				NazaraSlot(NetworkSyncSystem, OnEntityInvalidated,    onEntityInvalidated);
 				NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation,  onEntityPlayAnimation);
-				NazaraSlot(NetworkSyncSystem, OnEntitiesDeath,        onEntitiesDeath);
 				NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, onEntitiesHealthUpdate);
 				NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate,  onEntitiesInputUpdate);
 			};
