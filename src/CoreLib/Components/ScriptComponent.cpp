@@ -6,11 +6,11 @@
 
 namespace bw
 {
-	ScriptComponent::ScriptComponent(const AbstractLogger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties) :
+	ScriptComponent::ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties) :
 	m_element(std::move(element)),
 	m_context(std::move(context)),
 	m_entityTable(std::move(entityTable)),
-	m_logger(Ndk::EntityHandle::InvalidHandle, logger.GetSide(), logger),
+	m_logger(Ndk::EntityHandle::InvalidHandle, logger),
 	m_properties(std::move(properties))
 	{
 	}

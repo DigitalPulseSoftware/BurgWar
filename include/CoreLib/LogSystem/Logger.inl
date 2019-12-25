@@ -7,27 +7,19 @@
 
 namespace bw
 {
-	inline Logger::Logger(LogSide logSide, std::size_t contextSize) :
+	inline Logger::Logger(BurgApp& app, LogSide logSide, std::size_t contextSize) :
 	AbstractLogger(logSide),
 	m_contextPool(static_cast<unsigned int>(contextSize), 4),
+	m_app(app),
 	m_minimumLogLevel(LogLevel::Debug),
 	m_logParent(nullptr)
 	{
 	}
 
-	inline Logger::Logger(LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
-	Logger(logSide, contextSize)
+	inline Logger::Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
+	Logger(app, logSide, contextSize)
 	{
 		m_logParent = &logParent;
-	}
-
-	inline Logger::Logger(const Logger& logger) :
-	AbstractLogger(logger),
-	m_contextPool(logger.m_contextPool.GetBlockSize()),
-	m_minimumLogLevel(logger.m_minimumLogLevel),
-	m_logParent(logger.m_logParent),
-	m_sinks(logger.m_sinks)
-	{
 	}
 
 	template<typename... Args>
@@ -36,12 +28,20 @@ namespace bw
 		Log(context, fmt::format(std::forward<Args>(args)...));
 	}
 
+	template<typename T>
+	T* Logger::AllocateContext(Nz::MemoryPool& pool) const
+	{
+		static_assert(std::is_base_of_v<LogContext, T>);
+
+		T* logContext = pool.New<T>();
+		logContext->side = GetSide();
+
+		return logContext;
+	}
+
 	inline LogContextPtr Logger::PushContext() const
 	{
-		LogContextPtr context(this, AllocateContext(m_contextPool));
-		InitializeContext(*context);
-
-		return context;
+		return LogContextPtr(this, NewContext(m_contextPool));
 	}
 
 	inline void Logger::RegisterSink(std::shared_ptr<LogSink> sinkPtr)

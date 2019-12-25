@@ -7,27 +7,24 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGGER_HPP
 
-#include <CoreLib/LogSystem/Logger.hpp>
+#include <CoreLib/LogSystem/LoggerProxy.hpp>
 #include <CoreLib/LogSystem/EntityLogContext.hpp>
 
 namespace bw
 {
-	class EntityLogger : public Logger
+	class EntityLogger : public LoggerProxy
 	{
 		public:
-			inline EntityLogger(Ndk::EntityHandle entity, LogSide logSide, std::size_t contextSize = sizeof(bw::EntityLogContext));
-			inline EntityLogger(Ndk::EntityHandle entity, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::EntityLogContext));
+			inline EntityLogger(Ndk::EntityHandle entity, const Logger& logParent);
 			EntityLogger(const EntityLogger&) = default;
 			EntityLogger(EntityLogger&&) = default;
 			~EntityLogger() = default;
 
-			bool ShouldLog(const LogContext& context) const override;
+			void InitializeContext(LogContext& context) const override;
 
-			void UpdateEntity(Ndk::EntityHandle newEntity);
+			inline void UpdateEntity(Ndk::EntityHandle newEntity);
 
 		private:
-			LogContext* AllocateContext(Nz::MemoryPool& pool) const override;
-			void InitializeContext(LogContext& context) const override;
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 
 			Ndk::EntityHandle m_entity;

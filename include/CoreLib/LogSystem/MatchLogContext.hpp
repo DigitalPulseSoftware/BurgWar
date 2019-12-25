@@ -16,6 +16,7 @@ namespace bw
 	struct MatchLogContext : LogContext
 	{
 		SharedMatch* match;
+		Nz::UInt64 tick;
 	};
 }
 

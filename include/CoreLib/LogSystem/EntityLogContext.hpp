@@ -7,12 +7,12 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGCONTEXT_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGCONTEXT_HPP
 
-#include <CoreLib/LogSystem/LogContext.hpp>
+#include <CoreLib/LogSystem/MatchLogContext.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
 {
-	struct EntityLogContext : LogContext
+	struct EntityLogContext : MatchLogContext
 	{
 		Ndk::EntityHandle entity;
 	};

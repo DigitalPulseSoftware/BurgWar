@@ -22,12 +22,16 @@
 	auto _bwLogContext = (logObject).PushContext(); \
 	_bwLogContext->level = lvl; \
 	if ((logObject).ShouldLog(*_bwLogContext)) \
+	{ \
+		(logObject).InitializeContext(*_bwLogContext); \
 		(logObject).LogFormat(*_bwLogContext, __VA_ARGS__); \
+	} \
 } \
 while (false)
 
 namespace bw
 {
+	class BurgApp;
 	class LogSink;
 
 	class Logger : public AbstractLogger
@@ -35,9 +39,9 @@ namespace bw
 		friend class LogContextPtr;
 
 		public:
-			inline Logger(LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
-			inline Logger(LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
-			inline Logger(const Logger& logger);
+			inline Logger(BurgApp& app, LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
+			inline Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
+			Logger(const Logger&) = delete;
 			Logger(Logger&&) noexcept = default;
 			~Logger() = default;
 
@@ -45,6 +49,8 @@ namespace bw
 
 			void Log(const LogContext& context, std::string content) const override;
 			void LogRaw(const LogContext& context, std::string_view content) const override;
+
+			virtual void InitializeContext(LogContext& context) const;
 
 			inline LogContextPtr PushContext() const;
 
@@ -58,14 +64,15 @@ namespace bw
 			Logger& operator=(Logger&&) noexcept = default;
 
 		protected:
-			virtual LogContext* AllocateContext(Nz::MemoryPool& pool) const;
-			virtual void InitializeContext(LogContext& context) const;
+			template<typename T> T* AllocateContext(Nz::MemoryPool& pool) const;
+			virtual LogContext* NewContext(Nz::MemoryPool& pool) const;
 			virtual void OverrideContent(const LogContext& context, std::string& content) const;
 
 		private:
 			void FreeContext(LogContext* context) const;
 
 			mutable Nz::MemoryPool m_contextPool;
+			BurgApp& m_app;
 			LogLevel m_minimumLogLevel;
 			Nz::MovablePtr<const AbstractLogger> m_logParent;
 			std::vector<std::shared_ptr<LogSink>> m_sinks;

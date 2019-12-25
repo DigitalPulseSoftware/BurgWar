@@ -283,7 +283,7 @@ namespace bw
 					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
 					if (!entity)
 					{
-						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {} of type {}", entityId, entityClass);
+						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {0} of type {1}", uniqueId, entityClass);
 						return;
 					}
 
@@ -291,7 +291,7 @@ namespace bw
 				}
 				else
 				{
-					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Unregistered entity type: {0}", entityClass);
+					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {0}: {0}", uniqueId, entityClass);
 					return;
 				}
 			}
@@ -308,7 +308,10 @@ namespace bw
 
 					auto weapon = weaponStore.InstantiateWeapon(*this, weaponIndex, entityId, uniqueId, properties, parent->GetEntity());
 					if (!weapon)
+					{
+						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate weapon {0} of type {1}", uniqueId, entityClass);
 						return;
+					}
 
 					weapon->Disable(); //< Disable weapon entities by default
 
@@ -316,20 +319,20 @@ namespace bw
 				}
 				else
 				{
-					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Unregistered entity type: {0}", entityClass);
+					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate weapon {0}: unknown entity type: {0}", uniqueId, entityClass);
 					return;
 				}
 			}
 			else
 			{
 				// Unknown
-				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to decode entity type: {0}", entityClass);
+				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to decode element {0} entity type: {1}", uniqueId, entityClass);
 				return;
 			}
 		}
 		catch (const std::exception & e)
 		{
-			bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {} of type {}: {}", entityId, entityClass, e.what());
+			bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate element {0} of type {1}: {2}", entityId, entityClass, e.what());
 			return;
 		}
 

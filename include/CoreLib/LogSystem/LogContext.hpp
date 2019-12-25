@@ -17,6 +17,7 @@ namespace bw
 
 		LogLevel level;
 		LogSide side;
+		float elapsedTime;
 	};
 }
 

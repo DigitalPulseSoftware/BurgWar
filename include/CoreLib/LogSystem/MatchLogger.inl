@@ -6,14 +6,14 @@
 
 namespace bw
 {
-	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize) :
-	Logger(logSide, contextSize),
+	inline MatchLogger::MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize) :
+	Logger(app, logSide, contextSize),
 	m_sharedMatch(sharedMatch)
 	{
 	}
 
-	inline MatchLogger::MatchLogger(SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
-	Logger(logSide, logParent, contextSize),
+	inline MatchLogger::MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize) :
+	Logger(app, logSide, logParent, contextSize),
 	m_sharedMatch(sharedMatch)
 	{
 	}

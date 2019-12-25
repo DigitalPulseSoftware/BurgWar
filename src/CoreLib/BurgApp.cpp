@@ -26,7 +26,7 @@
 namespace bw
 {
 	BurgApp::BurgApp(LogSide side) :
-	m_logger(side),
+	m_logger(*this, side),
 	m_config(*this),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds())

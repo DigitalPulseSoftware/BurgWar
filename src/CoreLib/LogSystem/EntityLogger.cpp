@@ -3,22 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/LogSystem/EntityLogger.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
 
 namespace bw
 {
-	bool EntityLogger::ShouldLog(const LogContext& context) const
-	{
-		if (!Logger::ShouldLog(context))
-			return false;
-
-		return true;
-	}
-
-	void EntityLogger::UpdateEntity(Ndk::EntityHandle newEntity)
-	{
-		m_entity = newEntity;
-	}
-
 	void EntityLogger::OverrideContent(const LogContext& context, std::string& content) const
 	{
 		const EntityLogContext& entityContext = static_cast<const EntityLogContext&>(context);
@@ -28,17 +16,12 @@ namespace bw
 		else
 			content = "[Entity <invalid>] " + content;
 
-		Logger::OverrideContent(context, content);
-	}
-
-	LogContext* EntityLogger::AllocateContext(Nz::MemoryPool& pool) const
-	{
-		return pool.New<EntityLogContext>();
+		LoggerProxy::OverrideContent(context, content);
 	}
 
 	void EntityLogger::InitializeContext(LogContext& context) const
 	{
-		Logger::InitializeContext(context);
+		LoggerProxy::InitializeContext(context);
 
 		EntityLogContext& matchContext = static_cast<EntityLogContext&>(context);
 		matchContext.entity = m_entity;

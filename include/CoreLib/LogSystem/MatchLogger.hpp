@@ -15,17 +15,17 @@ namespace bw
 	class MatchLogger : public Logger
 	{
 		public:
-			inline MatchLogger(SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));
-			inline MatchLogger(SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
+			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));
+			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
 			MatchLogger(const MatchLogger&) = default;
 			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;
 
+			void InitializeContext(LogContext& context) const override;
 			bool ShouldLog(const LogContext& context) const override;
 
 		private:
-			LogContext* AllocateContext(Nz::MemoryPool& pool) const override;
-			void InitializeContext(LogContext& context) const override;
+			LogContext* NewContext(Nz::MemoryPool& pool) const override;
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 
 			SharedMatch& m_sharedMatch;

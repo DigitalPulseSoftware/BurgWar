@@ -19,14 +19,17 @@ namespace bw
 	{
 		const MatchLogContext& matchContext = static_cast<const MatchLogContext&>(context);
 
-		content = "[Match " + matchContext.match->GetName() + "] " + content;
+		content = "[Match " + matchContext.match->GetName() + "@T" + std::to_string(matchContext.tick) + "] " + content;
 	
 		Logger::OverrideContent(context, content);
 	}
 
-	LogContext* MatchLogger::AllocateContext(Nz::MemoryPool& pool) const
+	LogContext* MatchLogger::NewContext(Nz::MemoryPool& pool) const
 	{
-		return pool.New<MatchLogContext>();
+		MatchLogContext* matchLogContext = AllocateContext<MatchLogContext>(pool);
+		matchLogContext->match = &m_sharedMatch;
+
+		return matchLogContext;
 	}
 
 	void MatchLogger::InitializeContext(LogContext& context) const
@@ -34,6 +37,6 @@ namespace bw
 		Logger::InitializeContext(context);
 
 		MatchLogContext& matchContext = static_cast<MatchLogContext&>(context);
-		matchContext.match = &m_sharedMatch;
+		matchContext.tick = matchContext.match->GetCurrentTick();
 	}
 }
