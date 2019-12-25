@@ -26,10 +26,7 @@ namespace bw
 
 	LogContext* MatchLogger::NewContext(Nz::MemoryPool& pool) const
 	{
-		MatchLogContext* matchLogContext = AllocateContext<MatchLogContext>(pool);
-		matchLogContext->match = &m_sharedMatch;
-
-		return matchLogContext;
+		return AllocateContext<MatchLogContext>(pool);
 	}
 
 	void MatchLogger::InitializeContext(LogContext& context) const
@@ -37,6 +34,7 @@ namespace bw
 		Logger::InitializeContext(context);
 
 		MatchLogContext& matchContext = static_cast<MatchLogContext&>(context);
-		matchContext.tick = matchContext.match->GetCurrentTick();
+		matchContext.match = &m_sharedMatch;
+		matchContext.tick = m_sharedMatch.GetCurrentTick();
 	}
 }

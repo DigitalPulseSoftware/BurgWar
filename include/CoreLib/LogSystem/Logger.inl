@@ -34,9 +34,15 @@ namespace bw
 		static_assert(std::is_base_of_v<LogContext, T>);
 
 		T* logContext = pool.New<T>();
-		logContext->side = GetSide();
+		InitializeContext(*logContext);
 
 		return logContext;
+	}
+
+	template<typename T>
+	LogContextPtr Logger::PushCustomContext() const
+	{
+		return LogContextPtr(this, AllocateContext<T>(m_contextPool));
 	}
 
 	inline LogContextPtr Logger::PushContext() const

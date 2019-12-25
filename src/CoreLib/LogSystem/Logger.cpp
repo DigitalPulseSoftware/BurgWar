@@ -44,6 +44,7 @@ namespace bw
 	void Logger::InitializeContext(LogContext& context) const
 	{
 		context.elapsedTime = m_app.GetAppTime() / 1000.f;
+		context.side = GetSide();
 	}
 
 	void Logger::OverrideContent(const LogContext& context, std::string& content) const

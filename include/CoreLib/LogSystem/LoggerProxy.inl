@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/LogSystem/LoggerProxy.hpp>
+#include <CoreLib/LogSystem/EntityLogContext.hpp>
 
 namespace bw
 {
@@ -20,6 +21,9 @@ namespace bw
 
 	inline LogContextPtr LoggerProxy::PushContext() const
 	{
-		return m_logParent.PushContext();
+		LogContextPtr contextPtr = m_logParent.PushCustomContext<EntityLogContext>();
+		InitializeContext(*contextPtr);
+
+		return contextPtr;
 	}
 }

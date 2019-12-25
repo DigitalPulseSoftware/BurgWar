@@ -21,10 +21,10 @@ namespace bw
 			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;
 
-			void InitializeContext(LogContext& context) const override;
 			bool ShouldLog(const LogContext& context) const override;
 
 		private:
+			void InitializeContext(LogContext& context) const override;
 			LogContext* NewContext(Nz::MemoryPool& pool) const override;
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 

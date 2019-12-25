@@ -22,10 +22,7 @@
 	auto _bwLogContext = (logObject).PushContext(); \
 	_bwLogContext->level = lvl; \
 	if ((logObject).ShouldLog(*_bwLogContext)) \
-	{ \
-		(logObject).InitializeContext(*_bwLogContext); \
 		(logObject).LogFormat(*_bwLogContext, __VA_ARGS__); \
-	} \
 } \
 while (false)
 
@@ -37,6 +34,7 @@ namespace bw
 	class Logger : public AbstractLogger
 	{
 		friend class LogContextPtr;
+		friend class LoggerProxy;
 
 		public:
 			inline Logger(BurgApp& app, LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
@@ -49,8 +47,6 @@ namespace bw
 
 			void Log(const LogContext& context, std::string content) const override;
 			void LogRaw(const LogContext& context, std::string_view content) const override;
-
-			virtual void InitializeContext(LogContext& context) const;
 
 			inline LogContextPtr PushContext() const;
 
@@ -65,6 +61,9 @@ namespace bw
 
 		protected:
 			template<typename T> T* AllocateContext(Nz::MemoryPool& pool) const;
+			template<typename T> LogContextPtr PushCustomContext() const;
+
+			virtual void InitializeContext(LogContext& context) const;
 			virtual LogContext* NewContext(Nz::MemoryPool& pool) const;
 			virtual void OverrideContent(const LogContext& context, std::string& content) const;
 
