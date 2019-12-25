@@ -21,7 +21,7 @@ namespace bw
 		m_tickableEntities.Remove(entity);
 	}
 
-	void TickCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool justAdded)
+	void TickCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 		const auto& element = scriptComponent.GetElement();
@@ -32,7 +32,7 @@ namespace bw
 			m_tickableEntities.Remove(entity);
 	}
 
-	void TickCallbackSystem::OnUpdate(float elapsedTime)
+	void TickCallbackSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		for (const Ndk::EntityHandle& entity : m_tickableEntities)
 		{

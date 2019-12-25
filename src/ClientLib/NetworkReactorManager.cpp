@@ -57,7 +57,7 @@ namespace bw
 		}
 	}
 
-	void NetworkReactorManager::HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data)
+	void NetworkReactorManager::HandlePeerConnection(bool /*outgoing*/, std::size_t peerId, Nz::UInt32 data)
 	{
 		m_connections[peerId]->HandleConnection(data);
 	}
@@ -68,7 +68,7 @@ namespace bw
 		m_connections[peerId].reset();
 	}
 
-	void NetworkReactorManager::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo)
+	void NetworkReactorManager::HandlePeerInfo(std::size_t /*peerId*/, const NetworkReactor::PeerInfo& /*peerInfo*/)
 	{
 		/*NetworkClientSession::ConnectionInfo connectionInfo;
 		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;

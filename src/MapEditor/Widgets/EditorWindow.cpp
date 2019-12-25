@@ -747,7 +747,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
 
-		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* createEntityDialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			std::size_t entityIndex = m_workingMap.GetEntityCount(layerIndex);
 			auto& layerEntity = m_workingMap.AddEntity(layerIndex);
@@ -884,7 +884,7 @@ namespace bw
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex](EntityInfoDialog* editEntityDialog, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
+		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
 			auto& layer = m_workingMap.GetLayer(layerIndex);
 			auto& layerEntity = layer.entities[entityIndex];
@@ -1378,7 +1378,7 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& entity, const ScriptedEntity& entityInfo, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
 		{
 			if (propertyData.isArray)
 			{

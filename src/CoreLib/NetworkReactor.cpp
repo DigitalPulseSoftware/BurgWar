@@ -127,10 +127,10 @@ namespace bw
 		}
 	}
 
-	void NetworkReactor::HandleConnectionRequests(const moodycamel::ConsumerToken& token)
+	void NetworkReactor::HandleConnectionRequests(moodycamel::ConsumerToken& token)
 {
 		ConnectionRequest request;
-		while (m_connectionRequests.try_dequeue(request))
+		while (m_connectionRequests.try_dequeue(token, request))
 		{
 			if (Nz::ENetPeer* peer = m_host.Connect(request.remoteAddress, NetworkChannelCount, request.data))
 			{
@@ -210,10 +210,10 @@ namespace bw
 		}
 	}
 
-	void NetworkReactor::SendPackets(const moodycamel::ProducerToken& producterToken, const moodycamel::ConsumerToken& token)
+	void NetworkReactor::SendPackets(const moodycamel::ProducerToken& producterToken, moodycamel::ConsumerToken& token)
 	{
 		OutgoingEvent outEvent;
-		while (m_outgoingQueue.try_dequeue(outEvent))
+		while (m_outgoingQueue.try_dequeue(token, outEvent))
 		{
 			std::visit([&](auto&& arg) {
 				using T = std::decay_t<decltype(arg)>;

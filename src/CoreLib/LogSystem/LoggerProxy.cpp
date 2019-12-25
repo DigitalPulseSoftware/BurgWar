@@ -28,7 +28,7 @@ namespace bw
 		return m_logParent.ShouldLog(context);
 	}
 
-	void LoggerProxy::OverrideContent(const LogContext& context, std::string& content) const
+	void LoggerProxy::OverrideContent(const LogContext& /*context*/, std::string& /*content*/) const
 	{
 	}
 }

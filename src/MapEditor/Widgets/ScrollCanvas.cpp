@@ -133,7 +133,7 @@ namespace bw
 		}
 	}
 
-	void ScrollCanvas::resizeEvent(QResizeEvent* event)
+	void ScrollCanvas::resizeEvent(QResizeEvent* /*event*/)
 	{
 		QSize canvasSize = m_canvas->size();
 		int visibleWidth = canvasSize.width();

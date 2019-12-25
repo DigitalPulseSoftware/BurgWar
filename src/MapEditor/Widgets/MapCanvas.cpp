@@ -140,7 +140,7 @@ namespace bw
 		}
 	}
 
-	void MapCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& key)
+	void MapCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& /*key*/)
 	{
 	}
 

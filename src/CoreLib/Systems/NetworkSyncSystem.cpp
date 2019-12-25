@@ -282,7 +282,7 @@ namespace bw
 		m_entitySlots.erase(it);
 	}
 
-	void NetworkSyncSystem::OnUpdate(float elapsedTime)
+	void NetworkSyncSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		if (!m_healthUpdateEntities.empty())
 		{

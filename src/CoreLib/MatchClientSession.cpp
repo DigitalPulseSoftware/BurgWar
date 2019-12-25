@@ -192,7 +192,7 @@ namespace bw
 		player->SelectWeapon((packet.newWeaponIndex != packet.NoWeapon) ? packet.newWeaponIndex : Player::NoWeapon);
 	}
 
-	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& packet)
+	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& /*packet*/)
 	{
 		ForEachPlayer([this](Player* player)
 		{

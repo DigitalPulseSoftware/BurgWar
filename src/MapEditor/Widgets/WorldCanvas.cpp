@@ -105,7 +105,7 @@ namespace bw
 		if (m_isPhysicsDebugDrawEnabled)
 		{
 			Ndk::PhysicsSystem2D::DebugDrawOptions options;
-			options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
+			options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float /*radius*/, Nz::Color /*outline*/, Nz::Color /*fillColor*/, void* /*userData*/)
 			{
 				for (std::size_t i = 0; i < vertexCount - 1; ++i)
 					Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
@@ -120,11 +120,11 @@ namespace bw
 		SetActive(false);
 	}
 
-	void WorldCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& key)
+	void WorldCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& /*key*/)
 	{
 	}
 
-	void WorldCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& key)
+	void WorldCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& /*key*/)
 	{
 	}
 

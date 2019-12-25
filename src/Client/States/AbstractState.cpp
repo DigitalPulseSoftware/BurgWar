@@ -21,7 +21,7 @@ namespace bw
 			widget->Destroy();
 	}
 
-	void AbstractState::Enter(Ndk::StateMachine& fsm)
+	void AbstractState::Enter(Ndk::StateMachine& /*fsm*/)
 	{
 		m_isVisible = true;
 

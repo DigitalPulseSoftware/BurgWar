@@ -22,7 +22,7 @@ namespace bw
 		m_frameUpdateEntities.Remove(entity);
 	}
 
-	void FrameCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool justAdded)
+	void FrameCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 		const auto& element = scriptComponent.GetElement();
@@ -33,7 +33,7 @@ namespace bw
 			m_frameUpdateEntities.Remove(entity);
 	}
 
-	void FrameCallbackSystem::OnUpdate(float elapsedTime)
+	void FrameCallbackSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		for (const Ndk::EntityHandle& entity : m_frameUpdateEntities)
 		{

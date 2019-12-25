@@ -24,7 +24,7 @@ namespace bw
 		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(100, 185, 191)));
 	}
 
-	void StatusState::Leave(Ndk::StateMachine & fsm)
+	void StatusState::Leave(Ndk::StateMachine & /*fsm*/)
 	{
 		StateData& stateData = GetStateData();
 

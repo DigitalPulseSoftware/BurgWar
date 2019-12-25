@@ -268,7 +268,7 @@ namespace bw
 				model->setData(index, int(value), Qt::EditRole);
 			}
 
-			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
 			{
 				//TODO: Subclass for int64
 				QSpinBox* editor = new QSpinBox(parent);

@@ -31,19 +31,19 @@ namespace bw
 
 		auto scriptDirectory = std::make_shared<VirtualDirectory>();
 
-		m_downloadManager->OnFileChecked.Connect([scriptDirectory](ClientScriptDownloadManager* downloadManager, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
+		m_downloadManager->OnFileChecked.Connect([scriptDirectory](ClientScriptDownloadManager* /*downloadManager*/, const std::string& filePath, const std::vector<Nz::UInt8>& fileContent)
 		{
 			scriptDirectory->StoreFile(filePath, fileContent);
 		});
 
-		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* downloadManager, const Packets::DownloadClientScriptRequest& request)
+		m_downloadManager->OnDownloadRequest.Connect([this](ClientScriptDownloadManager* /*downloadManager*/, const Packets::DownloadClientScriptRequest& request)
 		{
 			UpdateStatus("Downloading " + request.path + "...", Nz::Color::White);
 
 			m_clientSession->SendPacket(request);
 		});
 
-		m_downloadManager->OnFinished.Connect([this, app, assetDirectory, scriptDirectory](ClientScriptDownloadManager* downloadManager) mutable
+		m_downloadManager->OnFinished.Connect([this, app, assetDirectory, scriptDirectory](ClientScriptDownloadManager* /*downloadManager*/) mutable
 		{
 			bwLog(app->GetLogger(), LogLevel::Info, "Creating match...");
 			UpdateStatus("Entering match...", Nz::Color::White);

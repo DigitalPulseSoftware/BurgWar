@@ -93,7 +93,7 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	bool LoginState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool LoginState::Update(Ndk::StateMachine& fsm, float /*elapsedTime*/)
 	{
 		if (m_nextState)
 			fsm.ResetState(m_nextState);

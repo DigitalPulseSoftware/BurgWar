@@ -27,7 +27,7 @@ namespace bw
 
 	void ClientWeaponLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
-		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
+		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();

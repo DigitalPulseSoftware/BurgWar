@@ -100,7 +100,7 @@ Projects = {
 		LinkStatic = {},
 		LinkStaticDebug = {"ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d"},
 		LinkStaticRelease = {"ClientLib", "CoreLib", "lua", "libfmt"},
-		Libs = os.istarget("windows") and {"libcurl"} or {"curl", "dl"},
+		Libs = os.istarget("windows") and {"libcurl"} or {"curl"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}
@@ -119,7 +119,7 @@ Projects = {
 		LinkStatic = {},
 		LinkStaticDebug = {"CoreLib-d", "lua-d", "libfmt-d"},
 		LinkStaticRelease = {"CoreLib", "lua", "libfmt"},
-		Libs = os.istarget("linux") and {"dl"} or {},
+		Libs = {},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
 		AdditionalDependencies = {"Newton"}
@@ -138,7 +138,7 @@ Projects = {
 		LinkStatic = {},
 		LinkStaticDebug = {"ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d"},
 		LinkStaticRelease = {"ClientLib", "CoreLib", "lua", "libfmt"},
-		Libs = os.istarget("linux") and {"pthread", "dl"} or {},
+		Libs = {},
 		LibsDebug = {"Qt5Cored", "Qt5Guid", "Qt5Widgetsd", "NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"Qt5Core", "Qt5Gui", "Qt5Widgets", "NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}
@@ -292,9 +292,6 @@ workspace("Burgwar")
 
 				if (not projectData.DisableWarnings) then
 					warnings("Extra")
-
-					filter("action:vs*")
-						disablewarnings("4100") -- Temporary (parameter not used, disabled until fixed since it triggers way too many warnings)
 				end
 
 				filter("configurations:Debug")
@@ -311,6 +308,7 @@ workspace("Burgwar")
 
 				filter "action:gmake*"
 					links "stdc++fs"
+					links "dl"
 					links "pthread"
 
 				filter "action:vs*"

@@ -19,7 +19,7 @@ namespace bw
 		SetMaximumUpdateRate(0);
 	}
 
-	void WeaponSystem::OnUpdate(float elapsedTime)
+	void WeaponSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		for (const Ndk::EntityHandle& weapon : GetEntities())
 		{

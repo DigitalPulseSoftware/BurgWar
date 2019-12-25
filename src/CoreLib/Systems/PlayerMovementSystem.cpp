@@ -48,7 +48,7 @@ namespace bw
 		entityPhys.ResetVelocityFunction();
 	}
 
-	void PlayerMovementSystem::OnUpdate(float elapsedTime)
+	void PlayerMovementSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		for (const Ndk::EntityHandle& entity : GetEntities())
 		{

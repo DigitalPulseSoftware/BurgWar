@@ -33,7 +33,7 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	void BackgroundState::Leave(Ndk::StateMachine& fsm)
+	void BackgroundState::Leave(Ndk::StateMachine& /*fsm*/)
 	{
 		/*
 		StateData& stateData = GetStateData();
@@ -41,7 +41,7 @@ namespace bw
 		*/
 	}
 
-	bool BackgroundState::Update(Ndk::StateMachine& /*fsm*/, float elapsedTime)
+	bool BackgroundState::Update(Ndk::StateMachine& /*fsm*/, float /*elapsedTime*/)
 	{
 		return true;
 	}

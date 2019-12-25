@@ -191,7 +191,7 @@ namespace bw
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
 		};
 
-		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 

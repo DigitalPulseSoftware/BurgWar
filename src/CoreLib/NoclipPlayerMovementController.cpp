@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	void NoclipPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const
+	void NoclipPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& /*playerMovement*/, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& /*gravity*/, float damping, float dt) const
 	{
 		constexpr float noclipVelocity = 2000.f;
 		constexpr float noclipAccelTime = 0.2f;

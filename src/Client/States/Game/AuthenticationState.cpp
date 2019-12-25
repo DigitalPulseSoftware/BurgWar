@@ -22,7 +22,7 @@ namespace bw
 			m_nextStateDelay = 3.f;
 		});
 
-		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& data)
+		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
 			UpdateStatus("Failed to authenticate", Nz::Color::Red);
 
@@ -30,7 +30,7 @@ namespace bw
 			m_nextStateDelay = 3.f;
 		});
 
-		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& data)
+		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& /*data*/)
 		{
 			UpdateStatus("Authentication succeeded, waiting for match data...", Nz::Color::White);
 		});

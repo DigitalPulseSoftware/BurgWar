@@ -140,13 +140,13 @@ namespace bw
 		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.EditorFolder");
 
 		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tilesetGroups);
-		tileWidget->OnClearMode.Connect([this](TileSelectionWidget* tileSelection)
+		tileWidget->OnClearMode.Connect([this](TileSelectionWidget* /*tileSelection*/)
 		{
 			UpdateSelection(1, 1, {});
 			EnableClearMode(true);
 		});
 
-		tileWidget->OnSelectionMode.Connect([this](TileSelectionWidget* tileSelection, std::size_t width, std::size_t height, std::vector<TileSelectionWidget::TileSelection> tiles)
+		tileWidget->OnSelectionMode.Connect([this](TileSelectionWidget* /*tileSelection*/, std::size_t width, std::size_t height, std::vector<TileSelectionWidget::TileSelection> tiles)
 		{
 			UpdateSelection(width, height, tiles);
 			EnableClearMode(false);

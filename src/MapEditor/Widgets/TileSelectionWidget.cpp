@@ -73,8 +73,6 @@ namespace bw
 			{
 				tileMap->SetMaterial(matIndex, materialData.material);
 
-				Nz::Vector2ui materialSize = Nz::Vector2ui(materialData.material->GetDiffuseMap()->GetSize());
-
 				Nz::Vector2f invTileCount = 1.f / Nz::Vector2f(materialData.tileCount);
 
 				for (std::size_t y = 0; y < materialData.tileCount.y; ++y)

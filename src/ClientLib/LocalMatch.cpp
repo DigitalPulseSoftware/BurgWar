@@ -522,8 +522,6 @@ namespace bw
 		if (m_scriptingContext)
 			m_scriptingContext->Update();
 
-		ProcessInputs(elapsedTime);
-
 		SharedMatch::Update(elapsedTime);
 
 		if (m_debug)
@@ -1115,50 +1113,6 @@ namespace bw
 			if (layer->IsEnabled())
 				layer->TickUpdate(GetTickDuration());
 		}
-	}
-
-	void LocalMatch::ProcessInputs(float elapsedTime)
-	{
-		/*constexpr float MaxInputSendInterval = 1.f / 60.f;
-		constexpr float MinInputSendInterval = 1.f / 10.f;
-
-		m_playerInputTimer += elapsedTime;
-		m_timeSinceLastInputSending += elapsedTime;
-
-		bool inputUpdated = false;
-
-		if (m_playerInputTimer >= MaxInputSendInterval)
-		{
-			m_playerInputTimer -= MaxInputSendInterval;
-			if (SendInputs(TODO,m_timeSinceLastInputSending >= MinInputSendInterval))
-				inputUpdated = true;
-		}
-
-		if (inputUpdated)
-		{
-			m_timeSinceLastInputSending = 0.f;
-
-			// Remember inputs for reconciliation
-			PredictedInput predictedInputs;
-			predictedInputs.serverTick = m_inputPacket.estimatedServerTick;
-
-			predictedInputs.inputs.resize(m_playerData.size());
-			for (std::size_t i = 0; i < m_playerData.size(); ++i)
-			{
-				auto& controllerData = m_playerData[i];
-
-				// Remember and apply inputs
-				predictedInputs.inputs[i] = controllerData.lastInputData;
-
-				if (controllerData.controlledEntity && controllerData.controlledEntity->HasComponent<InputComponent>())
-				{
-					auto& entityInputs = controllerData.controlledEntity->GetComponent<InputComponent>();
-					entityInputs.UpdateInputs(controllerData.lastInputData);
-				}
-			}
-
-			m_prediction.predictedInputs.emplace_back(std::move(predictedInputs));
-		}*/
 	}
 
 	void LocalMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)

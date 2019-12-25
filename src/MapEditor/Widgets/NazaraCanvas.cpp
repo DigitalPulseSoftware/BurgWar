@@ -97,18 +97,18 @@ namespace bw
 		PushEvent(event);
 	}
 
-	void NazaraCanvas::OnUpdate(float elapsedTime)
+	void NazaraCanvas::OnUpdate(float /*elapsedTime*/)
 	{
 		ProcessEvents();
 		Display();
 	}
 
-	void NazaraCanvas::closeEvent(QCloseEvent* event)
+	void NazaraCanvas::closeEvent(QCloseEvent* /*event*/)
 	{
 		OnHide();
 	}
 
-	void NazaraCanvas::hideEvent(QHideEvent* event)
+	void NazaraCanvas::hideEvent(QHideEvent* /*event*/)
 	{
 		OnHide();
 	}
@@ -288,7 +288,7 @@ namespace bw
 		return QWidget::event(e);
 	}
 
-	void NazaraCanvas::keyPressEvent(QKeyEvent* key)
+	void NazaraCanvas::keyPressEvent(QKeyEvent* /*key*/)
 	{
 	}
 }

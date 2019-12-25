@@ -26,7 +26,7 @@ namespace bw
 		if (soundId == InvalidSoundId)
 			soundId = m_nextSoundId++;
 
-		std::size_t entryIndex;
+		std::size_t entryIndex = std::numeric_limits<std::size_t>::max();
 		if (m_soundPool.size() >= m_maxSoundInPool)
 		{
 			// Find oldest entry
@@ -49,6 +49,7 @@ namespace bw
 				}
 			}
 
+			assert(entryIndex < m_soundPool.size());
 			auto& entry = m_soundPool[entryIndex];
 			entry.sound.Stop();
 			m_playingSounds.erase(entry.playingSoundId);
@@ -91,7 +92,7 @@ namespace bw
 		m_movableEntities.Remove(entity);
 	}
 
-	void SoundSystem::OnEntityValidation(Ndk::Entity* entity, bool justAdded)
+	void SoundSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		if (entity->HasComponent<Ndk::NodeComponent>())
 		{

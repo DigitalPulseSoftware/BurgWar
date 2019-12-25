@@ -92,7 +92,7 @@ namespace bw
 				return std::make_shared<TileMapEditorMode>(editor, targetEntity, std::move(tilemapData), materials, tiles);
 			}),
 
-			"SetFinishedCallback", [this](TileMapEditorMode& tileMapEditor, sol::protected_function callback, sol::this_state state)
+			"SetFinishedCallback", [this](TileMapEditorMode& tileMapEditor, sol::protected_function callback)
 			{
 				tileMapEditor.OnEditionCancelled.Connect([this, callback](TileMapEditorMode* /*emitter*/)
 				{

@@ -11,6 +11,7 @@
 namespace bw
 {
 	PlayWindow::PlayWindow(BurgApp& app, Map map, std::shared_ptr<VirtualDirectory> assetFolder, std::shared_ptr<VirtualDirectory> scriptFolder, float tickRate, QWidget* parent) :
+	NazaraCanvas(parent),
 	m_canvas(m_world.CreateHandle(), GetEventHandler(), GetCursorController().CreateHandle()),
 	m_match(app, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate)
 	{

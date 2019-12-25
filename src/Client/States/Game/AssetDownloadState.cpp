@@ -46,7 +46,7 @@ namespace bw
 			targetResourceDirectory->StoreFile(resourcePath, content);
 		});
 
-		m_httpDownloadManager->OnFinished.Connect([this, targetResourceDirectory](HttpDownloadManager* downloadManager) mutable
+		m_httpDownloadManager->OnFinished.Connect([this, targetResourceDirectory](HttpDownloadManager* /*downloadManager*/) mutable
 		{
 			UpdateStatus("Assets download finished", Nz::Color::White);
 

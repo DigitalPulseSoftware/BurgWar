@@ -15,7 +15,7 @@ namespace bw
 		SetMaximumUpdateRate(100.f);
 	}
 
-	void AnimationSystem::OnUpdate(float elapsedTime)
+	void AnimationSystem::OnUpdate(float /*elapsedTime*/)
 	{
 		Nz::UInt64 now = m_match.GetCurrentTime();
 
