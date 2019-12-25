@@ -155,9 +155,6 @@ namespace bw
 
 			for (std::size_t i = m_newlyVisibleLayers.FindFirst(); i != m_newlyVisibleLayers.npos; i = m_newlyVisibleLayers.FindNext(i))
 			{
-				if (m_clientVisibleLayers.UnboundedTest(i))
-					continue;
-
 				LayerIndex layerIndex = LayerIndex(i);
 
 				Terrain& terrain = m_match.GetTerrain();
@@ -171,9 +168,13 @@ namespace bw
 				assert(layerIt != m_layers.end());
 				Layer& layer = *layerIt.value();
 
-				Packets::EnableLayer enableLayerPacket;
-				enableLayerPacket.layerIndex = layerIndex;
-				enableLayerPacket.stateTick = networkTick;
+				if (m_clientVisibleLayers.UnboundedTest(i))
+				{
+					for (const Ndk::EntityHandle& entity : syncSystem.GetEntities())
+						layer.visibleEntities.UnboundedSet(entity->GetId());
+
+					continue;
+				}
 
 				syncSystem.CreateEntities([&](const NetworkSyncSystem::EntityCreation* entitiesCreation, std::size_t entityCount)
 				{
@@ -183,6 +184,10 @@ namespace bw
 							pendingCreationMap[entitiesCreation[i].entityId] = entitiesCreation[i];
 					}
 				});
+
+				Packets::EnableLayer enableLayerPacket;
+				enableLayerPacket.layerIndex = layerIndex;
+				enableLayerPacket.stateTick = networkTick;
 
 				std::function<void(PendingCreationEventMap::iterator it)> PushEntity;
 				PushEntity = [&](PendingCreationEventMap::iterator it)
