@@ -76,6 +76,8 @@ namespace bw
 			}
 		}
 
+		m_httpDownloadManager->Update();
+
 		return true;
 	}
 }
