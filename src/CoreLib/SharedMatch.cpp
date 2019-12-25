@@ -5,11 +5,17 @@
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
+#include <CoreLib/LogSystem/Logger.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
 
 namespace bw
 {
+	namespace
+	{
+		unsigned int MaxDelayedTick = 10;
+	}
+
 	SharedMatch::SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration) :
 	m_name(std::move(matchName)),
 	m_logger(*this, side, app.GetLogger()),
@@ -17,6 +23,7 @@ namespace bw
 	m_currentTick(0),
 	m_currentTime(0),
 	m_floatingTime(0.f),
+	m_maxTickTimer(MaxDelayedTick * tickDuration),
 	m_tickDuration(tickDuration),
 	m_tickTimer(0.f)
 	{
@@ -28,6 +35,14 @@ namespace bw
 	void SharedMatch::Update(float elapsedTime)
 	{
 		m_tickTimer += elapsedTime;
+		if (m_tickTimer > m_maxTickTimer)
+		{
+			float lostTicks = (m_tickTimer - m_maxTickTimer) / m_tickDuration;
+			bwLog(m_logger, LogLevel::Warning, "Update is too slow, {} ticks have been discarded to preserve realtime", lostTicks);
+
+			m_tickTimer = m_maxTickTimer;
+		}
+
 		while (m_tickTimer >= m_tickDuration)
 		{
 			m_tickTimer -= m_tickDuration;

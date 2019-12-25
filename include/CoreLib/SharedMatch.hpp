@@ -64,6 +64,7 @@ namespace bw
 			Nz::UInt64 m_currentTick;
 			Nz::UInt64 m_currentTime;
 			float m_floatingTime;
+			float m_maxTickTimer;
 			float m_tickDuration;
 			float m_tickTimer;
 	};
