@@ -4,11 +4,15 @@
 
 #include <Nazara/Core/Initializer.hpp>
 #include <Nazara/Network/Network.hpp>
+#include <CoreLib/Utility/CrashHandler.hpp>
 #include <Server/ServerApp.hpp>
 #include <filesystem>
 
 int main(int argc, char* argv[])
 {
+	bw::CrashHandler crashHandler;
+	crashHandler.Install();
+
 	Nz::Initializer<Nz::Network> network;
 	bw::ServerApp app(argc, argv);
 

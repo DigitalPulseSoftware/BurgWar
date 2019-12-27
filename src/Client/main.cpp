@@ -7,10 +7,14 @@
 #include <Nazara/Core/AbstractLogger.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/Network.hpp>
+#include <CoreLib/Utility/CrashHandler.hpp>
 #include <Client/ClientApp.hpp>
 
 int main(int argc, char* argv[])
 {
+	bw::CrashHandler crashHandler;
+	crashHandler.Install();
+
 	Nz::Initializer<Nz::Network> network;
 	bw::ClientApp app(argc, argv);
 	app.EnableFPSCounter(true);
