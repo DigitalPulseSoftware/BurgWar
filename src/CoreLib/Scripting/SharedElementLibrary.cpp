@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
+#include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -19,6 +20,17 @@ namespace bw
 
 	void SharedElementLibrary::RegisterCommonLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["DeleteOnRemove"] = [](const sol::table& entityTable, const sol::table& targetEntityTable)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
+
+			if (!entity->HasComponent<EntityOwnerComponent>())
+				entity->AddComponent<EntityOwnerComponent>();
+
+			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
+		};
+
 		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);

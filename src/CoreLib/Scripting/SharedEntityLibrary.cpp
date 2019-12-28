@@ -4,7 +4,6 @@
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
-#include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp> // For sol metainfo
@@ -53,17 +52,6 @@ namespace bw
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 			entityHealth.Damage(damage, Ndk::EntityHandle::InvalidHandle);
-		};
-
-		elementMetatable["DeleteOnRemove"] = [](const sol::table& entityTable, const sol::table& targetEntityTable)
-		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
-			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
-			
-			if (!entity->HasComponent<EntityOwnerComponent>())
-				entity->AddComponent<EntityOwnerComponent>();
-
-			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
 		};
 
 		elementMetatable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
