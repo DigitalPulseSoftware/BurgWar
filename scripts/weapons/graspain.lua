@@ -67,6 +67,7 @@ if (SERVER) then
 		self.GrappleSprite = match.CreateEntity({
 			Type = "entity_grapple_sprite",
 			LayerIndex = self:GetLayerIndex(),
+			LifeOwner = self,
 			Properties = {
 				duration = duration,
 				source_entity = self,
@@ -75,7 +76,6 @@ if (SERVER) then
 				target_offset = targetOffset
 			}
 		})
-		self:DeleteOnRemove(self.GrappleSprite)
 
 		timer.Sleep(math.floor(duration * 1000))
 
@@ -83,6 +83,7 @@ if (SERVER) then
 			self.GrapplePull = match.CreateEntity({
 				Type = "entity_grapple_pull",
 				LayerIndex = self:GetLayerIndex(),
+				LifeOwner = self,
 				Properties = {
 					source_entity = self:GetOwnerEntity(),
 					source_offset = startOffset,
@@ -90,7 +91,6 @@ if (SERVER) then
 					target_offset = targetOffset
 				}
 			})
-			self:DeleteOnRemove(self.GrapplePull)
 
 			self:SetNextTriggerTime(match.GetMilliseconds())
 		else

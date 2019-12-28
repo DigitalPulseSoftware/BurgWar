@@ -56,13 +56,13 @@ function WEAPON:Launch()
 	self.Constraint = match.CreateEntity({
 		Type = "entity_constraint_position",
 		LayerIndex = self:GetLayerIndex(),
+		LifeOwner = self,
 		Position = nearestResult.hitPos,
 		Properties = {
 			target_entity = nearestResult.hitEntity,
 			target_offset = nearestResult.hitEntity:ToLocalPosition(nearestResult.hitPos)
 		}
 	})
-	self:DeleteOnRemove(self.Constraint)
 end
 
 function WEAPON:Release()

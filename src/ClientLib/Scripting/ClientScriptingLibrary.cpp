@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
@@ -96,6 +97,10 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 
+			Ndk::EntityHandle lifeOwner;
+			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
+				lifeOwner = AbstractElementLibrary::AssertScriptEntity(*lifeOwnerEntitytable);
+
 			const auto& entityPtr = entityStore.GetElement(elementIndex);
 
 			EntityProperties entityProperties;
@@ -123,6 +128,14 @@ namespace bw
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
 
 			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
+
+			if (lifeOwner)
+			{
+				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
+					lifeOwner->AddComponent<EntityOwnerComponent>();
+
+				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
+			}
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();

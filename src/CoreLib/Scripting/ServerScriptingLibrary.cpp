@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
+#include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 
 namespace bw
@@ -134,6 +135,10 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 
+			Ndk::EntityHandle lifeOwner;
+			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
+				lifeOwner = AbstractElementLibrary::AssertScriptEntity(*lifeOwnerEntitytable);
+
 			EntityProperties entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
 			{
@@ -162,6 +167,14 @@ namespace bw
 				entity->AddComponent<OwnerComponent>(std::move(owner));
 
 			match.RegisterEntity(uniqueId, entity);
+
+			if (lifeOwner)
+			{
+				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
+					lifeOwner->AddComponent<EntityOwnerComponent>();
+
+				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
+			}
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();
