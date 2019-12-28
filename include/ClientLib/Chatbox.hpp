@@ -12,8 +12,10 @@
 #include <NDK/Canvas.hpp>
 #include <NDK/Entity.hpp>
 #include <NDK/EntityOwner.hpp>
+#include <NDK/Widgets/RichTextAreaWidget.hpp>
 #include <NDK/Widgets/ScrollAreaWidget.hpp>
 #include <NDK/Widgets/TextAreaWidget.hpp>
+#include <variant>
 
 namespace bw
 {
@@ -22,6 +24,18 @@ namespace bw
 	class Chatbox
 	{
 		public:
+			struct ColorItem
+			{
+				Nz::Color color;
+			};
+
+			struct TextItem
+			{
+				std::string text;
+			};
+
+			using Item = std::variant<ColorItem, TextItem>;
+
 			Chatbox(const Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			Chatbox(const Chatbox&) = delete;
 			Chatbox(Chatbox&&) = delete;
@@ -35,7 +49,7 @@ namespace bw
 
 			void Open(bool shouldOpen = true);
 
-			void PrintMessage(const std::string& message);
+			void PrintMessage(std::vector<Item> message);
 
 			Chatbox& operator=(const Chatbox&) = delete;
 			Chatbox& operator=(Chatbox&&) = delete;
@@ -44,12 +58,13 @@ namespace bw
 
 		private:
 			void OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget);
+			void Refresh();
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
-			std::vector<Nz::String> m_chatLines;
+			std::vector<std::vector<Item>> m_chatLines;
 			Ndk::ScrollAreaWidget* m_chatboxScrollArea;
-			Ndk::TextAreaWidget* m_chatBox;
+			Ndk::RichTextAreaWidget* m_chatBox;
 			Ndk::TextAreaWidget* m_chatEnteringBox;
 			const Logger& m_logger;
 	};

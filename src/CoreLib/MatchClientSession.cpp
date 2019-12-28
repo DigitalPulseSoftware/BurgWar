@@ -114,6 +114,7 @@ namespace bw
 			}
 
 			Packets::ChatMessage chatPacket;
+			chatPacket.playerName = m_players[packet.playerIndex]->GetName();
 			chatPacket.content = content.as<std::string>();
 
 			m_match.ForEachPlayer([&](Player* player)

@@ -31,6 +31,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, ChatMessage& data)
 		{
 			serializer &= data.playerIndex;
+			serializer &= data.playerName;
 			serializer &= data.content;
 		}
 

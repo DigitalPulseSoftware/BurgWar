@@ -738,7 +738,25 @@ namespace bw
 
 	void LocalMatch::HandleChatMessage(const Packets::ChatMessage& packet)
 	{
-		m_chatBox.PrintMessage(packet.content);
+		//TODO: Implement local players
+		//TODO: Use gamemode callback
+		if (packet.playerName.empty())
+		{
+			m_chatBox.PrintMessage({ 
+				Chatbox::ColorItem { Nz::Color(173, 216, 230) }, // light blue
+				Chatbox::TextItem { packet.content }
+			});
+		}
+		else
+		{
+			m_chatBox.PrintMessage({ 
+				Chatbox::ColorItem { Nz::Color::Yellow },
+				Chatbox::TextItem { packet.playerName },
+				Chatbox::ColorItem { Nz::Color::White },
+				Chatbox::TextItem { ": " },
+				Chatbox::TextItem { packet.content }
+			});
+		}
 	}
 
 	void LocalMatch::HandleConsoleAnswer(const Packets::ConsoleAnswer& packet)

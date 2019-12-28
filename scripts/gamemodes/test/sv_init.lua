@@ -66,7 +66,7 @@ function GM:OnPlayerChat(player, message)
 			end
 		end
 	else
-		return player:GetName() .. ": " .. message
+		return message
 	end
 end
 
