@@ -42,8 +42,11 @@ namespace bw
 		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress, std::move(m_name)));*/
 	}
 
-	bool ServerState::Update(Ndk::StateMachine& /*fsm*/, float elapsedTime)
+	bool ServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
+		if (!AbstractState::Update(fsm, elapsedTime))
+			return false;
+
 		m_match->Update(elapsedTime);
 		return true;
 	}

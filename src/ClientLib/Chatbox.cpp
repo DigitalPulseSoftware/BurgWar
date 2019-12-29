@@ -138,7 +138,8 @@ namespace bw
 					}
 					else if constexpr (std::is_same_v<T, TextItem>)
 					{
-						m_chatBox->AppendText(item.text);
+						if (!item.text.empty())
+							m_chatBox->AppendText(item.text);
 					}
 					else
 						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");

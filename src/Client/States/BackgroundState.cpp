@@ -33,16 +33,21 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	void BackgroundState::Leave(Ndk::StateMachine& /*fsm*/)
+	void BackgroundState::Leave(Ndk::StateMachine& fsm)
 	{
+		AbstractState::Leave(fsm);
+
 		/*
 		StateData& stateData = GetStateData();
 		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
 		*/
 	}
 
-	bool BackgroundState::Update(Ndk::StateMachine& /*fsm*/, float /*elapsedTime*/)
+	bool BackgroundState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
+		if (!AbstractState::Update(fsm, elapsedTime))
+			return false;
+
 		return true;
 	}
 

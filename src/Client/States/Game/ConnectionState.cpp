@@ -57,6 +57,9 @@ namespace bw
 
 	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
+		if (!AbstractState::Update(fsm, elapsedTime))
+			return false;
+
 		if (m_nextState)
 		{
 			if ((m_nextStateDelay -= elapsedTime) < 0.f)

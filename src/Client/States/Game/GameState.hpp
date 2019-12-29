@@ -26,7 +26,6 @@ namespace bw
 			inline const std::shared_ptr<LocalMatch>& GetMatch();
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
 			std::shared_ptr<AbstractState> m_nextState;

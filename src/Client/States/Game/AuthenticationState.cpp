@@ -56,6 +56,9 @@ namespace bw
 
 	bool AuthenticationState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
+		if (!StatusState::Update(fsm, elapsedTime))
+			return false;
+
 		if (m_nextState)
 		{
 			if ((m_nextStateDelay -= elapsedTime) < 0.f)

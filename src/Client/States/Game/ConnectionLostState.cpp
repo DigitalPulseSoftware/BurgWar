@@ -21,6 +21,9 @@ namespace bw
 
 	bool ConnectionLostState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
+		if (!AbstractState::Update(fsm, elapsedTime))
+			return false;
+
 		if ((m_timer -= elapsedTime) < 0.f)
 			fsm.ChangeState(std::make_shared<LoginState>(GetStateDataPtr()));
 

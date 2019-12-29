@@ -36,11 +36,6 @@ namespace bw
 		m_clientSession->SendPacket(Packets::Ready{});
 	}
 
-	void GameState::Enter(Ndk::StateMachine& fsm)
-	{
-		AbstractState::Enter(fsm);
-	}
-
 	bool GameState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
 		if (!m_clientSession->IsConnected())
