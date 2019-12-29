@@ -300,11 +300,10 @@ workspace("Burgwar")
 					links(projectData.LinkStaticDebug)
 					symbols("On")
 
-				filter("configurations:Release")
+				filter("configurations:Release*")
 					defines({ "NDEBUG"})
 					links(projectData.LibsRelease)
 					links(projectData.LinkStaticRelease)
-					optimize("On")
 
 				filter "action:gmake*"
 					links "stdc++fs"
@@ -433,7 +432,8 @@ workspace("Burgwar")
 		value       = "VALUE",
 		allowed = {
 			{ "Debug", "/Debug" },
-			{ "Release", "/Release" }
+			{ "Release", "/Release" },
+			{ "ReleaseWithDebug", "/ReleaseWithDebug" }
 		}
 	})
 
@@ -482,7 +482,12 @@ workspace("Burgwar")
 
 			local libs = {}
 			for name,projectData in pairs(Projects) do
-				libs = table.join(libs, projectData.Libs, projectData["Libs" .. _OPTIONS["buildmode"]], projectData.AdditionalDependencies)
+				local buildmodeDir = _OPTIONS["buildmode"]
+				if (buildmodeDir == "ReleaseWithDebug") then
+					buildmodeDir = "Release"
+				end
+
+				libs = table.join(libs, projectData.Libs, projectData["Libs" .. buildmodeDir], projectData.AdditionalDependencies)
 			end
 
 			for k,lib in pairs(libs) do
