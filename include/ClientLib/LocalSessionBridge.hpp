@@ -16,18 +16,23 @@ namespace bw
 	class LocalSessionBridge : public SessionBridge
 	{
 		public:
-			inline LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId, bool isServer);
+			LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId, bool isServer);
 			~LocalSessionBridge() = default;
 
 			void Disconnect() override;
 
+			void HandleIncomingPacket(Nz::NetPacket& packet) override;
 			inline bool IsServer() const;
+
+			void QueryInfo(std::function<void(const SessionInfo& info)> callback) const override;
 
 			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
 
 		private:
-			LocalSessionManager& m_sessionManager;
 			std::size_t m_peerId;
+			Nz::UInt64 m_lastReceiveTime;
+			mutable SessionInfo m_sessionInfo;
+			LocalSessionManager& m_sessionManager;
 			bool m_isServer;
 	};
 }

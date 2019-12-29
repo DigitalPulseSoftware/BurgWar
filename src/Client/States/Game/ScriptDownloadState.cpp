@@ -4,6 +4,7 @@
 
 #include <Client/States/Game/ScriptDownloadState.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <ClientLib/ClientSession.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/LoginState.hpp>
 #include <Client/States/Game/GameState.hpp>
@@ -16,14 +17,6 @@ namespace bw
 	m_matchData(std::move(matchData))
 	{
 		ClientApp* app = GetStateData().app;
-
-		m_onDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
-		{
-			UpdateStatus("Connection lost", Nz::Color::Red);
-
-			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
-			m_nextStateDelay = 3.f;
-		});
 
 		bwLog(app->GetLogger(), LogLevel::Info, "Downloading scripts...");
 

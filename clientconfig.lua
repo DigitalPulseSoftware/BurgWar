@@ -4,6 +4,7 @@ Assets = {
 }
 Debug = {
 	SendServerState = false,
+	ShowConnectionData = "ping", -- ping|download|upload|usage
 	ShowServerGhosts = false
 }
 GameSettings = {

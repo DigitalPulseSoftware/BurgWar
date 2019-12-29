@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/AssetDownloadState.hpp>
+#include <ClientLib/ClientSession.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/LoginState.hpp>
 #include <Client/States/Game/ScriptDownloadState.hpp>
@@ -15,14 +16,6 @@ namespace bw
 	m_matchData(std::move(matchData))
 	{
 		ClientApp* app = GetStateData().app;
-
-		m_onDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
-		{
-			UpdateStatus("Connection lost", Nz::Color::Red);
-
-			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
-			m_nextStateDelay = 3.f;
-		});
 
 		bwLog(app->GetLogger(), LogLevel::Info, "Downloading assets...");
 

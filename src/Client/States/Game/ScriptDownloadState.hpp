@@ -7,7 +7,6 @@
 #ifndef BURGWAR_STATES_GAME_SCRIPTDOWNLOADSTATE_HPP
 #define BURGWAR_STATES_GAME_SCRIPTDOWNLOADSTATE_HPP
 
-#include <ClientLib/ClientSession.hpp>
 #include <ClientLib/ClientScriptDownloadManager.hpp>
 #include <Client/States/Game/StatusState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
@@ -15,6 +14,7 @@
 
 namespace bw
 {
+	class ClientSession;
 	class VirtualDirectory;
 
 	class ScriptDownloadState final : public StatusState
@@ -32,8 +32,6 @@ namespace bw
 			std::shared_ptr<ClientSession> m_clientSession;
 			Packets::MatchData m_matchData;
 			float m_nextStateDelay;
-
-			NazaraSlot(ClientSession, OnDisconnected, m_onDisconnectedSlot);
 	};
 }
 

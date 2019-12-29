@@ -52,8 +52,7 @@ namespace bw
 		{
 			reactorPtr->Poll([&](bool outgoing, std::size_t clientId, Nz::UInt32 data) { HandlePeerConnection(outgoing, clientId, data); },
 			                 [&](std::size_t clientId, Nz::UInt32 data) { HandlePeerDisconnection(clientId, data); },
-			                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, packet); },
-			                 [&](std::size_t clientId, const NetworkReactor::PeerInfo& peerInfo) { HandlePeerInfo(clientId, peerInfo); });
+			                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, packet); });
 		}
 	}
 
@@ -66,15 +65,6 @@ namespace bw
 	{
 		m_connections[peerId]->HandleDisconnection(data);
 		m_connections[peerId].reset();
-	}
-
-	void NetworkReactorManager::HandlePeerInfo(std::size_t /*peerId*/, const NetworkReactor::PeerInfo& /*peerInfo*/)
-	{
-		/*NetworkClientSession::ConnectionInfo connectionInfo;
-		connectionInfo.lastReceiveTime = GetAppTime() - peerInfo.lastReceiveTime;
-		connectionInfo.ping = peerInfo.ping;
-
-		m_connections[peerId]->UpdateInfo(connectionInfo);*/
 	}
 
 	void NetworkReactorManager::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)

@@ -14,14 +14,6 @@ namespace bw
 	m_clientSession(std::move(clientSession)),
 	m_playerName(std::move(playerName))
 	{
-		m_onDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
-		{
-			UpdateStatus("Connection lost", Nz::Color::Red);
-
-			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
-			m_nextStateDelay = 3.f;
-		});
-
 		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
 			UpdateStatus("Failed to authenticate", Nz::Color::Red);

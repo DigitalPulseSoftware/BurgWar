@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	template<typename ConnectCB, typename DisconnectCB, typename DataCB, typename InfoCB>
-	void NetworkReactor::Poll(ConnectCB&& onConnection, DisconnectCB&& onDisconnection, DataCB&& onData, InfoCB&& onInfo)
+	template<typename ConnectCB, typename DisconnectCB, typename DataCB>
+	void NetworkReactor::Poll(ConnectCB&& onConnection, DisconnectCB&& onDisconnection, DataCB&& onData)
 	{
 		IncomingEvent inEvent;
 		while (m_incomingQueue.try_dequeue(inEvent))
@@ -27,9 +27,9 @@ namespace bw
 				{
 					onData(inEvent.peerId, std::move(arg.packet));
 				}
-				else if constexpr (std::is_same_v<T, PeerInfo>)
+				else if constexpr (std::is_same_v<T, IncomingEvent::PeerInfoResponse>)
 				{
-					onInfo(inEvent.peerId, arg);
+					arg.callback(arg.peerInfo);
 				}
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");

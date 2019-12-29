@@ -23,8 +23,7 @@ namespace bw
 	{
 		m_reactor.Poll([&](bool outgoing, std::size_t peerId, Nz::UInt32 data) { HandlePeerConnection(outgoing, peerId, data); },
 		               [&](std::size_t peerId, Nz::UInt32 data) { HandlePeerDisconnection(peerId, data); },
-		               [&](std::size_t peerId, Nz::NetPacket&& packet) { HandlePeerPacket(peerId, std::move(packet)); },
-		               [&](std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo) { HandlePeerInfo(peerId, peerInfo); });
+		               [&](std::size_t peerId, Nz::NetPacket&& packet) { HandlePeerPacket(peerId, std::move(packet)); });
 	}
 
 	void NetworkSessionManager::HandlePeerConnection(bool /*outgoing*/, std::size_t peerId, Nz::UInt32 /*data*/)
@@ -50,15 +49,6 @@ namespace bw
 
 		GetOwner()->DeleteSession(session);
 		session = nullptr;
-	}
-
-	void NetworkSessionManager::HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& /*peerInfo*/)
-	{
-		//TODO
-		MatchClientSession* session = m_peerIdToSession[peerId];
-		assert(session);
-
-		bwLog(GetOwner()->GetMatch().GetLogger(), LogLevel::Info, "Peer #{0} refresh info", peerId);
 	}
 
 	void NetworkSessionManager::HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet)

@@ -80,6 +80,7 @@ namespace bw
 
 	void ClientApp::RegisterClientConfig()
 	{
+		m_config.RegisterStringOption("Debug.ShowConnectionData");
 		m_config.RegisterBoolOption("Debug.ShowServerGhosts");
 		m_config.RegisterStringOption("GameSettings.MapFile");
 	}

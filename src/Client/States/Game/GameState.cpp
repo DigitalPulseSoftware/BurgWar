@@ -4,8 +4,6 @@
 
 #include <Client/States/Game/GameState.hpp>
 #include <Client/ClientApp.hpp>
-#include <Client/States/BackgroundState.hpp>
-#include <Client/States/Game/ConnectionLostState.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <random>
 
@@ -38,12 +36,8 @@ namespace bw
 
 	bool GameState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
-		if (!m_clientSession->IsConnected())
-		{
-			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
-			fsm.PushState(std::make_shared<ConnectionLostState>(GetStateDataPtr()));
-			return true;
-		}
+		if (!AbstractState::Update(fsm, elapsedTime))
+			return false;
 
 		m_match->Update(elapsedTime);
 

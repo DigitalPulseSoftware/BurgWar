@@ -7,7 +7,6 @@
 #ifndef BURGWAR_STATES_GAME_ASSETDOWNLOADSTATE_HPP
 #define BURGWAR_STATES_GAME_ASSETDOWNLOADSTATE_HPP
 
-#include <ClientLib/ClientSession.hpp>
 #include <ClientLib/HttpDownloadManager.hpp>
 #include <Client/States/Game/StatusState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
@@ -15,6 +14,8 @@
 
 namespace bw
 {
+	class ClientSession;
+
 	class AssetDownloadState final : public StatusState
 	{
 		public:
@@ -30,8 +31,6 @@ namespace bw
 			std::shared_ptr<ClientSession> m_clientSession;
 			Packets::MatchData m_matchData;
 			float m_nextStateDelay;
-
-			NazaraSlot(ClientSession, OnDisconnected, m_onDisconnectedSlot);
 	};
 }
 

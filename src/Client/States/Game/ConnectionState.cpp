@@ -9,6 +9,7 @@
 #include <Client/ClientApp.hpp>
 #include <Client/States/LoginState.hpp>
 #include <Client/States/Game/AuthenticationState.hpp>
+#include <Client/States/Game/ConnectedState.hpp>
 #include <random>
 
 namespace bw
@@ -25,7 +26,9 @@ namespace bw
 		{
 			UpdateStatus("Connected, authenticating...", Nz::Color::White);
 
-			m_nextState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, playerName);
+			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, playerName);
+
+			m_nextState = std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState));
 			m_nextStateDelay = 0.5f;
 		});
 

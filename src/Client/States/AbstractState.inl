@@ -23,6 +23,15 @@ namespace bw
 		return widget;
 	}
 
+	inline const Ndk::EntityHandle& AbstractState::CreateEntity()
+	{
+		const Ndk::EntityHandle& entity = m_stateData->world->CreateEntity();
+		entity->Enable(m_isVisible);
+		m_entities.emplace_back(entity);
+
+		return entity;
+	}
+
 	inline void AbstractState::DestroyWidget(Ndk::BaseWidget* widget)
 	{
 		auto it = std::find(m_widgets.begin(), m_widgets.end(), widget);

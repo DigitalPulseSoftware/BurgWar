@@ -22,25 +22,4 @@ namespace bw
 	{
 		return m_isConnected;
 	}
-
-	inline void SessionBridge::HandleConnection(Nz::UInt32 data)
-	{
-		m_isConnected = true;
-
-		OnConnected(data);
-	}
-
-	inline void SessionBridge::HandleDisconnection(Nz::UInt32 data)
-	{
-		m_isConnected = false;
-
-		OnDisconnected(data);
-	}
-
-	inline void SessionBridge::HandleIncomingPacket(Nz::NetPacket& packet)
-	{
-		assert(m_isConnected);
-
-		OnIncomingPacket(packet);
-	}
 }

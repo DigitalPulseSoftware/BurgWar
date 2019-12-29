@@ -9,6 +9,7 @@
 
 #include <Nazara/Math/Quaternion.hpp>
 #include <Nazara/Math/Vector3.hpp>
+#include <string>
 #include <type_traits>
 
 namespace bw
@@ -61,8 +62,11 @@ namespace bw
 	template<typename... Args> constexpr OverloadResolver<Args...> Overload = {};
 
 	inline Nz::RadianAnglef AngleFromQuaternion(const Nz::Quaternionf& quat);
+	std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);
 	template<typename T> bool IsMoreRecent(T a, T b);
+	template<typename F> bool SplitString(const std::string_view& str, const std::string_view& token, F&& func);
+	template<typename F> bool SplitStringAny(const std::string_view& str, const std::string_view& token, F&& func);
 }
 
 #include <CoreLib/Utils.inl>

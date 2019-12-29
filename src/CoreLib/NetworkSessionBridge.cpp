@@ -14,6 +14,23 @@ namespace bw
 		m_reactor.DisconnectPeer(m_peerId);
 	}
 
+	void NetworkSessionBridge::QueryInfo(std::function<void(const SessionInfo& info)> callback) const
+	{
+		m_reactor.QueryInfo(m_peerId, [callback = std::move(callback)](NetworkReactor::PeerInfo& peerInfo)
+		{
+			SessionInfo info;
+			info.ping = peerInfo.ping;
+			info.timeSinceLastReceive = peerInfo.timeSinceLastReceive;
+			info.totalByteReceived = peerInfo.totalByteReceived;
+			info.totalByteSent = peerInfo.totalByteSent;
+			info.totalPacketReceived = peerInfo.totalPacketReceived;
+			info.totalPacketLost = peerInfo.totalPacketLost;
+			info.totalPacketSent = peerInfo.totalPacketSent;
+
+			callback(info);
+		});
+	}
+
 	void NetworkSessionBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
 	{
 		packet.FlushBits();

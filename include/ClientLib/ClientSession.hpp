@@ -24,8 +24,6 @@ namespace bw
 		friend class LocalCommandStore;
 
 		public:
-			struct ConnectionInfo;
-
 			inline ClientSession(BurgApp& app);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
@@ -36,12 +34,13 @@ namespace bw
 
 			inline BurgApp& GetApp();
 			inline const BurgApp& GetApp() const;
-			inline const ConnectionInfo& GetConnectionInfo() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 
 			inline bool IsConnected() const;
 
 			void HandleIncomingPacket(Nz::NetPacket& packet);
+
+			inline void QuerySessionInfo(std::function<void(const SessionBridge::SessionInfo& info)> callback) const;
 
 			template<typename T> void SendPacket(const T& packet);
 
@@ -49,7 +48,6 @@ namespace bw
 			ClientSession& operator=(ClientSession&&) = delete;
 
 			NazaraSignal(OnConnected, ClientSession* /*session*/);
-			NazaraSignal(OnConnectionInfoUpdate, ClientSession* /*session*/, const ConnectionInfo& /*info*/);
 			NazaraSignal(OnDisconnected, ClientSession* /*session*/);
 
 			// Packet signals
@@ -77,15 +75,6 @@ namespace bw
 			NazaraSignal(OnPlayerLayer,                  ClientSession* /*session*/, const Packets::PlayerLayer&                  /*data*/);
 			NazaraSignal(OnPlayerWeapons,                ClientSession* /*session*/, const Packets::PlayerWeapons&                /*data*/);
 
-			struct ConnectionInfo
-			{
-				Nz::UInt32 ping;
-				Nz::UInt64 lastReceiveTime;
-			};
-
-		protected:
-			inline void UpdateInfo(const ConnectionInfo& connectionInfo);
-
 		private:
 			void OnSessionConnected();
 			void OnSessionDisconnected();
@@ -96,7 +85,6 @@ namespace bw
 
 			std::shared_ptr<SessionBridge> m_bridge;
 			BurgApp& m_application;
-			ConnectionInfo m_connectionInfo;
 			LocalCommandStore m_commandStore;
 			NetworkStringStore m_stringStore;
 	};

@@ -28,6 +28,7 @@ namespace bw
 	{
 		public:
 			struct PeerInfo;
+			using PeerInfoCallback = std::function<void(PeerInfo& peerInfo)>;
 
 			NetworkReactor(std::size_t firstId, Nz::NetProtocol protocol, Nz::UInt16 port, std::size_t maxClient);
 			NetworkReactor(const NetworkReactor&) = delete;
@@ -37,12 +38,12 @@ namespace bw
 			std::size_t ConnectTo(Nz::IpAddress address, Nz::UInt32 data = 0);
 			void DisconnectPeer(std::size_t peerId, Nz::UInt32 data = 0, DisconnectionType type = DisconnectionType::Normal);
 
-			template<typename ConnectCB, typename DisconnectCB, typename DataCB, typename InfoCB>
-			void Poll(ConnectCB&& onConnection, DisconnectCB&& onDisconnection, DataCB&& onData, InfoCB&& onInfo);
+			template<typename ConnectCB, typename DisconnectCB, typename DataCB>
+			void Poll(ConnectCB&& onConnection, DisconnectCB&& onDisconnection, DataCB&& onData);
 
 			inline Nz::NetProtocol GetProtocol() const;
 
-			void QueryInfo(std::size_t peerId);
+			void QueryInfo(std::size_t peerId, PeerInfoCallback callback);
 
 			void SendData(std::size_t peerId, Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet);
 
@@ -51,8 +52,13 @@ namespace bw
 
 			struct PeerInfo
 			{
-				Nz::UInt32 lastReceiveTime;
 				Nz::UInt32 ping;
+				Nz::UInt32 timeSinceLastReceive;
+				Nz::UInt32 totalPacketLost;
+				Nz::UInt32 totalPacketReceived;
+				Nz::UInt32 totalPacketSent;
+				Nz::UInt64 totalByteReceived;
+				Nz::UInt64 totalByteSent;
 			};
 
 			static constexpr std::size_t InvalidPeerId = std::numeric_limits<std::size_t>::max();
@@ -90,8 +96,14 @@ namespace bw
 					Nz::NetPacket packet;
 				};
 
+				struct PeerInfoResponse
+				{
+					PeerInfo peerInfo;
+					PeerInfoCallback callback;
+				};
+
 				std::size_t peerId = InvalidPeerId;
-				std::variant<ConnectEvent, DisconnectEvent, PacketEvent, PeerInfo> data;
+				std::variant<ConnectEvent, DisconnectEvent, PacketEvent, PeerInfoResponse> data;
 			};
 
 			struct OutgoingEvent
@@ -109,7 +121,10 @@ namespace bw
 					Nz::NetPacket packet;
 				};
 
-				struct QueryPeerInfo {};
+				struct QueryPeerInfo 
+				{
+					PeerInfoCallback callback;
+				};
 
 				std::size_t peerId = InvalidPeerId;
 				std::variant<DisconnectEvent, PacketEvent, QueryPeerInfo> data;

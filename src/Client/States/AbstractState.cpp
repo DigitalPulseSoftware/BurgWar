@@ -29,6 +29,9 @@ namespace bw
 
 		for (Ndk::BaseWidget* widget : m_widgets)
 			widget->Show(true);
+
+		for (const Ndk::EntityHandle& entity : m_entities)
+			entity->Enable();
 	}
 
 	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
@@ -38,6 +41,9 @@ namespace bw
 
 		for (Ndk::BaseWidget* widget : m_widgets)
 			widget->Show(false);
+
+		for (const Ndk::EntityHandle& entity : m_entities)
+			entity->Disable();
 	}
 
 	bool AbstractState::Update(Ndk::StateMachine& /*fsm*/, float /*elapsedTime*/)

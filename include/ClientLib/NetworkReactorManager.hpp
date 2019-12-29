@@ -35,7 +35,6 @@ namespace bw
 		private:
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);
 			void HandlePeerDisconnection(std::size_t peerId, Nz::UInt32 data);
-			void HandlePeerInfo(std::size_t peerId, const NetworkReactor::PeerInfo& peerInfo);
 			void HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet);
 
 			std::vector<std::unique_ptr<NetworkReactor>> m_reactors;

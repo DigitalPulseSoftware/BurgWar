@@ -3,9 +3,46 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Utils.hpp>
+#include <array>
+#include <cassert>
 
 namespace bw
 {
+	std::string ByteToString(Nz::UInt64 bytes, bool speed)
+	{
+		constexpr std::array<const char*, 9> suffixes = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+
+		std::size_t suffixIndex = 0;
+		Nz::UInt64 rem = 0;
+		while (bytes > 1024 && suffixIndex < suffixes.size() - 1)
+		{
+			rem = bytes % 1024;
+			bytes /= 1024;
+			suffixIndex++;
+		}
+
+		assert(suffixIndex < suffixes.size());
+		std::string str = std::to_string(bytes);
+		if (rem > 0)
+		{
+			str += ".";
+
+			std::string decimalStr = std::to_string(1000 * rem / 1024);
+			if (decimalStr.size() < 3)
+				str += std::string(3 - decimalStr.size(), '0');
+
+			str += decimalStr;
+		}
+
+		str += " ";
+		str += suffixes[suffixIndex];
+
+		if (speed)
+			str += "/s";
+
+		return str;
+	}
+
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength)
 	{
 		// Lynix: I didn't write this function, I took it from http://nccastaff.bournemouth.ac.uk/jmacey/RobTheBloke/www/opengl_programming.html#4 (Floaty Camera Example)

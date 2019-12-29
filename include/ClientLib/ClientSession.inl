@@ -24,11 +24,6 @@ namespace bw
 		return m_application;
 	}
 
-	inline const ClientSession::ConnectionInfo& ClientSession::GetConnectionInfo() const
-	{
-		return m_connectionInfo;
-	}
-
 	inline const NetworkStringStore& ClientSession::GetNetworkStringStore() const
 	{
 		return m_stringStore;
@@ -37,6 +32,14 @@ namespace bw
 	inline bool ClientSession::IsConnected() const
 	{
 		return m_bridge && m_bridge->IsConnected();
+	}
+
+	inline void ClientSession::QuerySessionInfo(std::function<void(const SessionBridge::SessionInfo & info)> callback) const
+	{
+		if (!IsConnected())
+			return;
+
+		m_bridge->QueryInfo(std::move(callback));
 	}
 
 	template<typename T>
@@ -50,11 +53,5 @@ namespace bw
 
 		const auto& command = m_commandStore.GetOutgoingCommand<T>();
 		m_bridge->SendPacket(command.channelId, command.flags, std::move(data));
-	}
-
-	inline void ClientSession::UpdateInfo(const ConnectionInfo& connectionInfo)
-	{
-		OnConnectionInfoUpdate(this, connectionInfo);
-		m_connectionInfo = connectionInfo;
 	}
 }

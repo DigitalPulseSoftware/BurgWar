@@ -84,13 +84,15 @@ namespace bw
 		m_outgoingQueue.enqueue(std::move(outgoingData));
 	}
 
-	void NetworkReactor::QueryInfo(std::size_t peerId)
+	void NetworkReactor::QueryInfo(std::size_t peerId, PeerInfoCallback callback)
 	{
 		assert(peerId >= m_firstId);
+		assert(callback);
 
 		OutgoingEvent outgoingRequest;
 		outgoingRequest.peerId = peerId - m_firstId;
-		outgoingRequest.data.emplace<OutgoingEvent::QueryPeerInfo>();
+		auto& queryInfo = outgoingRequest.data.emplace<OutgoingEvent::QueryPeerInfo>();
+		queryInfo.callback = std::move(callback);
 
 		m_outgoingQueue.enqueue(std::move(outgoingRequest));
 	}
@@ -266,9 +268,15 @@ namespace bw
 						IncomingEvent newEvent;
 						newEvent.peerId = m_firstId + outEvent.peerId;
 
-						auto& peerInfo = newEvent.data.emplace<PeerInfo>();
-						peerInfo.lastReceiveTime = m_host.GetServiceTime() - peer->GetLastReceiveTime();
-						peerInfo.ping = peer->GetRoundTripTime();
+						auto& peerInfo = newEvent.data.emplace<IncomingEvent::PeerInfoResponse>();
+						peerInfo.callback = std::move(arg.callback);
+						peerInfo.peerInfo.timeSinceLastReceive = m_host.GetServiceTime() - peer->GetLastReceiveTime();
+						peerInfo.peerInfo.ping = peer->GetRoundTripTime();
+						peerInfo.peerInfo.totalByteReceived = peer->GetTotalByteReceived();
+						peerInfo.peerInfo.totalByteSent = peer->GetTotalByteSent();
+						peerInfo.peerInfo.totalPacketLost = peer->GetTotalPacketLost();
+						peerInfo.peerInfo.totalPacketReceived = peer->GetTotalPacketReceived();
+						peerInfo.peerInfo.totalPacketSent = peer->GetTotalPacketSent();
 
 						m_incomingQueue.enqueue(producterToken, std::move(newEvent));
 					}

@@ -28,7 +28,6 @@ namespace bw
 			std::string m_playerName;
 			float m_nextStateDelay;
 
-			NazaraSlot(ClientSession, OnDisconnected, m_onDisconnectedSlot);
 			NazaraSlot(ClientSession, OnAuthFailure, m_onAuthFailedSlot);
 			NazaraSlot(ClientSession, OnAuthSuccess, m_onAuthSucceededSlot);
 			NazaraSlot(ClientSession, OnMatchData, m_onMatchDataSlot);
