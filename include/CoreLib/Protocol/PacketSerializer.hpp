@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_PACKETSERIALIZER_HPP
 #define BURGWAR_CORELIB_NETWORK_PACKETSERIALIZER_HPP
 
-#include <Nazara/Network/NetPacket.hpp>
+#include <Nazara/Core/ByteStream.hpp>
 #include <vector>
 
 namespace bw
@@ -15,7 +15,7 @@ namespace bw
 	class PacketSerializer
 	{
 		public:
-			inline PacketSerializer(Nz::NetPacket& packetBuffer, bool isWriting);
+			inline PacketSerializer(Nz::ByteStream& packetBuffer, bool isWriting);
 			~PacketSerializer() = default;
 
 			inline void Read(void* ptr, std::size_t size);
@@ -37,7 +37,7 @@ namespace bw
 			template<typename DataType> void operator&=(const DataType& data) const;
 
 		private:
-			Nz::NetPacket& m_buffer;
+			Nz::ByteStream& m_buffer;
 			bool m_isWriting;
 	};
 }

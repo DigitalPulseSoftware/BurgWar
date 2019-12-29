@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	inline PacketSerializer::PacketSerializer(Nz::NetPacket& packetBuffer, bool isWriting) :
+	inline PacketSerializer::PacketSerializer(Nz::ByteStream& packetBuffer, bool isWriting) :
 	m_buffer(packetBuffer),
 	m_isWriting(isWriting)
 	{
