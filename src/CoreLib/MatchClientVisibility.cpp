@@ -77,7 +77,7 @@ namespace bw
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
 					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
-						return;
+						continue;
 
 					layer.healthUpdateEvents[events[i].entityId] = events[i];
 					m_pendingEvents.Set(VisibilityEventType::HealthUpdate);
@@ -93,10 +93,10 @@ namespace bw
 				{
 					Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | events[i].entityId;
 					if (m_controlledEntities.find(entityKey) != m_controlledEntities.end())
-						return;
+						continue;
 
 					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
-						return;
+						continue;
 
 					layer.inputUpdateEvents[events[i].entityId] = events[i];
 					m_pendingEvents.Set(VisibilityEventType::InputUpdate);
