@@ -9,6 +9,10 @@
 
 namespace bw
 {
+	struct CrashHandler::InternalData
+	{
+	};
+
 	CrashHandler::CrashHandler() = default;
 	CrashHandler::~CrashHandler() = default;
 
