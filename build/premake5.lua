@@ -296,14 +296,14 @@ workspace("Burgwar")
 
 				filter("configurations:Debug")
 					defines({"DEBUG"})
-					links(projectData.LibsDebug)
 					links(projectData.LinkStaticDebug)
+					links(projectData.LibsDebug)
 					symbols("On")
 
 				filter("configurations:Release*")
 					defines({ "NDEBUG"})
-					links(projectData.LibsRelease)
 					links(projectData.LinkStaticRelease)
+					links(projectData.LibsRelease)
 
 				filter "action:gmake*"
 					links "stdc++fs"
