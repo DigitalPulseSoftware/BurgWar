@@ -7,6 +7,7 @@
 #include <CoreLib/LogSystem/LogSink.hpp>
 #include <array>
 #include <charconv>
+#include <sstream>
 
 namespace bw
 {
@@ -49,6 +50,7 @@ namespace bw
 
 	void Logger::OverrideContent(const LogContext& context, std::string& content) const
 	{
+#ifdef _MSC_VER
 		auto TimePart = [](float elapsedTime) -> std::string
 		{
 			std::array<char, 40> buffer;
@@ -61,7 +63,21 @@ namespace bw
 
 			return std::string(buffer.data(), result.ptr - buffer.data() + 1);
 		};
+#else
+		// libstdc++ doesn't support std::to_chars for floating-point values :(
 
+		auto TimePart = [](float elapsedTime) -> std::string
+		{
+			std::stringstream ss;
+			ss.precision(3);
+
+			ss << '[';
+			ss << elapsedTime;
+			ss << ']';
+
+			return ss.str();
+		};
+#endif
 		switch (context.side)
 		{
 			case LogSide::Irrelevant:
