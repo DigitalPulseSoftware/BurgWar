@@ -69,6 +69,7 @@ namespace bw
 		auto TimePart = [](float elapsedTime) -> std::string
 		{
 			std::stringstream ss;
+			ss.setf(std::ios::fixed, std::ios::floatfield);
 			ss.precision(3);
 
 			ss << '[';
