@@ -28,10 +28,12 @@ namespace bw
 
 		FillStores();
 
-		Nz::UInt8 aaLevel = m_config.GetIntegerOption<Nz::UInt8>("GameSettings.AntialiasingLevel");
-		bool fullscreen = m_config.GetBoolOption("GameSettings.Fullscreen");
-		unsigned int height = m_config.GetIntegerOption<unsigned int>("GameSettings.RenderHeight");
-		unsigned int width = m_config.GetIntegerOption<unsigned int>("GameSettings.RenderWidth");
+		Nz::UInt8 aaLevel = m_config.GetIntegerOption<Nz::UInt8>("WindowSettings.AntialiasingLevel");
+		bool fullscreen = m_config.GetBoolOption("WindowSettings.Fullscreen");
+		bool vsync = m_config.GetBoolOption("WindowSettings.VSync");
+		unsigned int fpsLimit = m_config.GetIntegerOption<unsigned int>("WindowSettings.FPSLimit");
+		unsigned int height = m_config.GetIntegerOption<unsigned int>("WindowSettings.Height");
+		unsigned int width = m_config.GetIntegerOption<unsigned int>("WindowSettings.Width");
 
 		Nz::VideoMode desktopMode = Nz::VideoMode::GetDesktopMode();
 
@@ -52,8 +54,8 @@ namespace bw
 
 		m_mainWindow = &AddWindow<Nz::RenderWindow>(chosenVideoMode, "Burg'war", (fullscreen) ? Nz::WindowStyle_Fullscreen : Nz::WindowStyle_Default, Nz::RenderTargetParameters(aaLevel));
 
-		m_mainWindow->EnableVerticalSync(false);
-		//m_mainWindow.SetFramerateLimit(100);
+		m_mainWindow->EnableVerticalSync(vsync);
+		m_mainWindow->SetFramerateLimit(fpsLimit);
 
 		Ndk::World& world = AddWorld();
 		world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
@@ -108,6 +110,8 @@ namespace bw
 		m_config.RegisterStringOption("GameSettings.MapFile");
 		m_config.RegisterIntegerOption("WindowSettings.AntialiasingLevel", 0, 16);
 		m_config.RegisterBoolOption("WindowSettings.Fullscreen");
+		m_config.RegisterBoolOption("WindowSettings.VSync");
+		m_config.RegisterIntegerOption("WindowSettings.FPSLimit", 0, 1000);
 		m_config.RegisterIntegerOption("WindowSettings.Height", 0, 0xFFFFFFFF);
 		m_config.RegisterIntegerOption("WindowSettings.Width", 0, 0xFFFFFFFF);
 	}

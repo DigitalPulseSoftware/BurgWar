@@ -14,6 +14,8 @@ GameSettings = {
 WindowSettings = {
 	AntialiasingLevel = 8,
 	Fullscreen = false,
-	RenderHeight = 0,
-	RenderWidth = 0,
+	FPSLimit = 0,
+	Height = 0,
+	VSync = false,
+	Width = 0,
 }
