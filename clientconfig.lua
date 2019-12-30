@@ -11,3 +11,9 @@ GameSettings = {
 	MapFile = "mapdetest.bmap",
 	TickRate = 33,
 }
+WindowSettings = {
+	AntialiasingLevel = 8,
+	Fullscreen = false,
+	RenderHeight = 0,
+	RenderWidth = 0,
+}

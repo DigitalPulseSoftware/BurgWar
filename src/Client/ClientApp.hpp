@@ -33,7 +33,7 @@ namespace bw
 
 			std::shared_ptr<StateData> m_stateData;
 			Ndk::StateMachine m_stateMachine;
-			Nz::RenderWindow& m_mainWindow;
+			Nz::RenderWindow* m_mainWindow;
 			NetworkReactorManager m_networkReactors;
 	};
 }
