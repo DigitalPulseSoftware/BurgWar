@@ -88,7 +88,7 @@ Projects = {
 	},
 	{
 		Group = "Executable",
-		Name = "Client",
+		Name = "BurgWar",
 		Kind = "ConsoleApp",
 		Defines = { "SOL_SAFE_NUMERICS=1" },
 		Files = {
@@ -107,7 +107,7 @@ Projects = {
 	},
 	{
 		Group = "Executable",
-		Name = "Server",
+		Name = "BWServer",
 		Kind = "ConsoleApp",
 		Defines = { "NDK_SERVER", "SOL_SAFE_NUMERICS=1" },
 		Files = {
