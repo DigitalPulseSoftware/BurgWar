@@ -281,6 +281,8 @@ namespace bw
 
 				metadata.file.Close();
 
+				bool downloadError = true;
+
 				if (m->data.result == CURLE_OK)
 				{
 					long responseCode;
@@ -298,6 +300,7 @@ namespace bw
 							Nz::ByteArray byteArray = metadata.hash->End();
 							if (pendingDownload.expectedChecksum == byteArray)
 							{
+								downloadError = false;
 								OnFileChecked(this, pendingDownload.resourcePath, pendingDownload.outputPath);
 							}
 							else
@@ -311,6 +314,12 @@ namespace bw
 				}
 				else
 					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", pendingDownload.resourcePath, m->data.result, curl_easy_strerror(m->data.result));
+
+				if (downloadError)
+				{
+					if (!metadata.file.Delete())
+						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath);
+				}
 
 				// Cleanup
 				requestIt->isActive = false;
