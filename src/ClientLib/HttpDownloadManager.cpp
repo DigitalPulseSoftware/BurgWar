@@ -318,7 +318,7 @@ namespace bw
 				if (downloadError)
 				{
 					if (!metadata.file.Delete())
-						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath);
+						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
 				}
 
 				// Cleanup
