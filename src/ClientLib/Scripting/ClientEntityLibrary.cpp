@@ -30,9 +30,9 @@ namespace bw
 		RegisterClientLibrary(elementMetatable);
 	}
 
-	void ClientEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	void ClientEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass)
 	{
-		SharedEntityLibrary::InitRigidBody(entity, mass, friction, canRotate);
+		SharedEntityLibrary::InitRigidBody(entity, mass);
 
 		entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
 		entity->AddComponent<VisualInterpolationComponent>();

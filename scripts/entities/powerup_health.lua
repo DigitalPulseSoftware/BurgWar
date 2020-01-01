@@ -7,7 +7,7 @@ ENTITY.Properties = {}
 
 function ENTITY:Initialize()
 	local colliderSize = Vec2(400, 200) / 4 / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize), true)
+	self:SetCollider({ Collider = Rect(-colliderSize, colliderSize), IsTrigger = true })
 	self:EnableCollisionCallbacks(true)
 
 	if (CLIENT) then

@@ -3,6 +3,19 @@ RegisterClientScript()
 local rectmeta = RegisterMetatable("rect")
 rectmeta.__index = rectmeta
 
+function rectmeta:GetCorner(maxX, maxY)
+	local x = self.x
+	if (maxX) then
+		x = x + self.width
+	end
+
+	local y = self.y
+	if (maxY) then
+		y = y + self.height
+	end
+
+	return Vec2(x, y)
+end
 
 function rectmeta:__tostring()
 	return "rect(" .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.width) .. ", " .. tostring(self.height) .. ")"

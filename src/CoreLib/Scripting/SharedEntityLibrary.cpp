@@ -16,19 +16,91 @@
 
 namespace bw
 {
+	namespace
+	{
+		Nz::Collider2DRef ParseCollider(lua_State* L, const sol::table& colliderData)
+		{
+			float elasticity = 0.f;
+			float friction = 1.f;
+			bool isTrigger = false;
+			Nz::Vector2f surfaceVelocity = Nz::Vector2f::Zero();
+
+			sol::table colliderTable;
+			sol::object metatableOpt = colliderData[sol::metatable_key];
+			if (!metatableOpt)
+			{
+				colliderTable = colliderData["Collider"];
+
+				metatableOpt = colliderTable[sol::metatable_key];
+				if (!metatableOpt)
+				{
+					luaL_argerror(L, 2, "Invalid collider");
+					return nullptr;
+				}
+
+				elasticity = colliderData.get_or("Elasticity", elasticity);
+				friction = colliderData.get_or("Friction", friction);
+				isTrigger = colliderData.get_or("IsTrigger", isTrigger);
+				surfaceVelocity = colliderData.get_or("Friction", surfaceVelocity);
+			}
+			else
+				colliderTable = colliderData;
+
+			sol::table metatable = metatableOpt.as<sol::table>();
+
+			std::string typeName = metatable["__name"];
+
+			Nz::Collider2DRef collider;
+			if (typeName == "rect")
+			{
+				Nz::Rectf rect = colliderTable.as<Nz::Rectf>();
+				collider = Nz::BoxCollider2D::New(rect);
+			}
+			else if (typeName == "circle")
+			{
+				Nz::Vector2f origin = colliderTable["origin"];
+				float radius = colliderTable["radius"];
+
+				collider = Nz::CircleCollider2D::New(radius, origin);
+			}
+			else if (typeName == "segment")
+			{
+				Nz::Vector2f from = colliderTable["from"];
+				Nz::Vector2f to = colliderTable["to"];
+
+				Nz::Vector2f fromNeighbor = from;
+				Nz::Vector2f toNeighbor = to;
+
+				if (colliderData != colliderTable)
+				{
+					fromNeighbor = colliderData.get_or("FromNeighbor", fromNeighbor);
+					toNeighbor = colliderData.get_or("ToNeighbor", toNeighbor);
+				}
+
+				collider = Nz::SegmentCollider2D::New(from, fromNeighbor, to, toNeighbor);
+			}
+			else
+				luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
+
+			assert(collider);
+			collider->SetElasticity(elasticity);
+			collider->SetFriction(friction);
+			collider->SetSurfaceVelocity(surfaceVelocity);
+			collider->SetTrigger(isTrigger);
+
+			return collider;
+		};
+	}
+
 	void SharedEntityLibrary::RegisterLibrary(sol::table& elementMetatable)
 	{
 		RegisterSharedLibrary(elementMetatable);
 	}
 
-	void SharedEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass, float friction, bool canRotate)
+	void SharedEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass)
 	{
 		auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
 		entityPhys.SetMass(mass);
-		entityPhys.SetFriction(friction);
-
-		if (!canRotate)
-			entityPhys.SetMomentOfInertia(std::numeric_limits<float>::infinity());
 	}
 
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
@@ -146,16 +218,12 @@ namespace bw
 			return entityHealth.GetHealth() >= entityHealth.GetMaxHealth();
 		};
 
-		auto InitRigidBody = [this](const sol::table& entityTable, float mass, float friction = 0.f, bool canRotate = true)
+		elementMetatable["InitRigidBody"] = [this](const sol::table& entityTable, float mass)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			this->InitRigidBody(entity, mass, friction, canRotate);
+			this->InitRigidBody(entity, mass);
 		};
-
-		elementMetatable["InitRigidBody"] = sol::overload(InitRigidBody,
-			[=](const sol::table& entityTable, float mass, float friction) { InitRigidBody(entityTable, mass, friction); },
-			[=](const sol::table& entityTable, float mass) { InitRigidBody(entityTable, mass); });
 
 		elementMetatable["IsPlayerOnGround"] = [](const sol::table& entityTable)
 		{
@@ -194,68 +262,37 @@ namespace bw
 			entity->Kill();
 		};
 
-		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable, std::optional<bool> isTriggerOpt)
+		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 
-			auto ParseCollider = [&L](const sol::table& collider) -> Nz::Collider2DRef
+			Nz::Collider2DRef collider;
+			std::size_t colliderCount = colliderTable.size();
+			if (colliderCount == 0)
 			{
-				sol::object metatableOpt = collider[sol::metatable_key];
-				if (!metatableOpt)
-					return nullptr;
-
-				sol::table metatable = metatableOpt.as<sol::table>();
-
-				std::string typeName = metatable["__name"];
-
-				if (typeName == "rect")
-				{
-					Nz::Rectf rect = collider.as<Nz::Rectf>();
-					return Nz::BoxCollider2D::New(rect);
-				}
-				else if (typeName == "circle")
-				{
-					Nz::Vector2f origin = collider["origin"];
-					float radius = collider["radius"];
-
-					return Nz::CircleCollider2D::New(radius, origin);
-				}
-				else if (typeName == "segment")
-				{
-					Nz::Vector2f first = collider["first"];
-					Nz::Vector2f second = collider["second"];
-
-					return Nz::SegmentCollider2D::New(first, second);
-				}
-				else
-				{
-					luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
-					return nullptr;
-				}
-			};
-
-			Nz::Collider2DRef collider = ParseCollider(colliderTable);
-			if (!collider)
-			{
-				std::size_t colliderCount = colliderTable.size();
-				luaL_argcheck(L, colliderCount > 0, 2, "Invalid collider count");
-
-				if (colliderCount == 1)
-					collider = ParseCollider(colliderTable[1]);
-				else
-				{
-					std::vector<Nz::Collider2DRef> colliders(colliderCount);
-					for (std::size_t i = 0; i < colliderCount; ++i)
-					{
-						colliders[i] = ParseCollider(colliderTable[i + 1]);
-						luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
-					}
-
-					collider = Nz::CompoundCollider2D::New(std::move(colliders));
-				}
+				// Case where a collider has been passed directly
+				collider = ParseCollider(L, colliderTable);
 			}
+			else if (colliderCount == 1)
+			{
+				// Only one collider passed in a table
+				collider = ParseCollider(L, colliderTable[1]);
+			}
+			else
+			{
+				// Multiple colliders passed in a table
+				std::vector<Nz::Collider2DRef> colliders(colliderCount);
+				for (std::size_t i = 0; i < colliderCount; ++i)
+				{
+					colliders[i] = ParseCollider(L, colliderTable[i + 1]);
+					luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
+				}
 
-			collider->SetTrigger((isTriggerOpt) ? *isTriggerOpt : false);
+				Nz::CompoundCollider2DRef compound = Nz::CompoundCollider2D::New(std::move(colliders));
+				compound->OverridesCollisionProperties(false);
+
+				collider = compound;
+			}
 
 			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
 		};
@@ -278,6 +315,9 @@ namespace bw
 			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
+
+			if (momentum < 0.f)
+				throw std::runtime_error("moment of inertia must be positive");
 
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{

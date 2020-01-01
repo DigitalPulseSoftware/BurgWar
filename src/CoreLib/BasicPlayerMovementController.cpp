@@ -64,8 +64,8 @@ namespace bw
 		if (inputs.isMovingRight)
 			targetVelocity += playerVelocity;
 
-		rigidBody.SetSurfaceVelocity(Nz::Vector2f(-targetVelocity, 0.f));
-		rigidBody.SetFriction((isOnGround) ? groundAccel / gravity.y : 0.f);
+		rigidBody.SetSurfaceVelocity(0, Nz::Vector2f(-targetVelocity, 0.f));
+		rigidBody.SetFriction(0, (isOnGround) ? groundAccel / gravity.y : 0.f);
 
 		Nz::Vector2f velocity = rigidBody.GetVelocity();
 

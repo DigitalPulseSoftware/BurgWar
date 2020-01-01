@@ -15,7 +15,7 @@ namespace bw
 		RegisterEditorLibrary(elementMetatable);
 	}
 
-	void EditorEntityLibrary::InitRigidBody(const Ndk::EntityHandle& /*entity*/, float /*mass*/, float /*friction*/, bool /*canRotate*/)
+	void EditorEntityLibrary::InitRigidBody(const Ndk::EntityHandle& /*entity*/, float /*mass*/)
 	{
 		// Do nothing
 	}

@@ -31,7 +31,47 @@ function ENTITY:Initialize()
 	rect.width = size[1] - 10
 	rect.height = size[2] - 3 + 20
 
+	local topLeft = rect:GetCorner(false, false)
+	local topRight = rect:GetCorner(true, false)
+	local bottomLeft = rect:GetCorner(false, true)
+	local bottomRight = rect:GetCorner(true, true)
+
+	-- Note that some positions are adjusted to prevent getting stuck
+
+	local colliders = {
+		{
+			-- Bottom
+			-- Adjust offsets to prevent
+			Collider = Segment(bottomLeft + Vec2(2, 0), bottomRight - Vec2(2, 0)),
+			Friction = 0,
+			FromNeighbor = topLeft,
+			ToNeighbor = topRight
+		},
+		{
+			-- Right side
+			Collider = Segment(bottomRight - Vec2(0, 2), topRight),
+			Friction = 0,
+			FromNeighbor = bottomLeft,
+			ToNeighbor = topLeft
+		},
+		{
+			-- Top
+			Collider = Segment(topRight - Vec2(2, 0), topLeft + Vec2(2, 0)),
+			Friction = 1,
+			FromNeighbor = bottomRight,
+			ToNeighbor = bottomLeft
+		},
+		{
+			-- Left side
+			Collider = Segment(topLeft, bottomLeft - Vec2(0, 2)),
+			Friction = 0,
+			FromNeighbor = topRight,
+			ToNeighbor = bottomRight
+		},
+	}
+
 	self:UpdatePlayerMovementController(controller)
-	self:SetCollider(rect)
+	self:SetCollider(colliders)
 	self:InitRigidBody(50, 1, false)
+	self:SetMomentOfInertia(math.huge) -- Disable rotation
 end

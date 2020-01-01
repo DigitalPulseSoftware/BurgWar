@@ -636,10 +636,23 @@ namespace bw
 		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
 		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
 		{
+			//Nz::DebugDrawer::SetPrimaryColor(outline);
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
 				Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
 
 			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
+		};
+
+		options.segmentCallback = [](const Nz::Vector2f& first, const Nz::Vector2f& second, Nz::Color color, void* userdata)
+		{
+			//Nz::DebugDrawer::SetPrimaryColor(color);
+			Nz::DebugDrawer::DrawLine(first, second);
+		};
+
+		options.thickSegmentCallback = [](const Nz::Vector2f& first, const Nz::Vector2f& second, float thickness, Nz::Color outline, Nz::Color fillColor, void* userdata)
+		{
+			//Nz::DebugDrawer::SetPrimaryColor(outline);
+			Nz::DebugDrawer::DrawLine(first, second);
 		};
 
 		m_layers[0]->GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
@@ -962,8 +975,8 @@ namespace bw
 						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
 						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
 
-						playerPhysics.SetFriction(playerInputData.movement->friction);
-						playerPhysics.SetSurfaceVelocity(playerInputData.movement->surfaceVelocity);
+						playerPhysics.SetFriction(0, playerInputData.movement->friction);
+						playerPhysics.SetSurfaceVelocity(0, playerInputData.movement->surfaceVelocity);
 					}
 				}
 			}
@@ -1108,8 +1121,8 @@ namespace bw
 						movementData.jumpTime = playerMovement.GetJumpTime();
 						movementData.wasJumping = playerMovement.WasJumping();
 
-						movementData.friction = playerPhysics.GetFriction();
-						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity();
+						movementData.friction = playerPhysics.GetFriction(0);
+						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
 					}
 
 					if (entity->HasComponent<InputComponent>())
