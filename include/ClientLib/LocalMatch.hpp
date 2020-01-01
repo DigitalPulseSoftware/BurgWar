@@ -18,7 +18,6 @@
 #include <ClientLib/Chatbox.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
-#include <ClientLib/LocalMatchPrediction.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -202,7 +201,6 @@ namespace bw
 			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
 			std::optional<LocalConsole> m_localConsole;
-			std::optional<LocalMatchPrediction> m_prediction;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;

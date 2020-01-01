@@ -132,8 +132,6 @@ namespace bw
 			});
 		}
 
-		m_prediction.emplace(GetTickDuration());
-
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
 			Packets::PlayerChat chatPacket;
