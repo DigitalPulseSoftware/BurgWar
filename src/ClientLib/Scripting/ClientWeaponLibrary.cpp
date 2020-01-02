@@ -52,18 +52,33 @@ namespace bw
 				}
 			}
 
-			const auto& trailEntity = world->CreateEntity();
-			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
+			const float trailSpeed = 500.f;
 
+			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
+			if (!trailSprite)
+				return;
+
+			auto& entityLocalMatch = entity->GetComponent<LocalMatchComponent>();
+
+			LocalMatch& localMatch = entityLocalMatch.GetLocalMatch();
+			LocalLayer& localLayer = entityLocalMatch.GetLayer();
+			
+			Nz::Int64 trailId = localMatch.AllocateClientUniqueId();
+
+			const auto& trailEntity = localLayer.GetWorld().CreateEntity();
+			trailEntity->AddComponent<LocalMatchComponent>(localMatch, localLayer.GetLayerIndex(), trailId);
+
+			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
 			trailNode.SetPosition(startPos);
 			trailNode.SetRotation(Nz::Quaternionf::RotationBetween(Nz::Vector3f::UnitX(), direction));
 
-			const float trailSpeed = 2500.f;
-
-			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
-			trailEntity->AddComponent<Ndk::GraphicsComponent>().Attach(trailSprite, -1);
 			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
 			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);
+
+			LocalLayerEntity layerEntity(localLayer, trailEntity, LocalLayerEntity::ClientsideId, trailId);
+			layerEntity.AttachRenderable(trailSprite, Nz::Matrix4f::Identity(), -1);
+
+			entityLocalMatch.GetLayer().RegisterEntity(std::move(layerEntity));
 		};
 
 		elementMetatable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
