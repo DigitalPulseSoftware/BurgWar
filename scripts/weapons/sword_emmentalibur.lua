@@ -30,7 +30,12 @@ end
 if (CLIENT) then
 	function WEAPON:OnAnimationStart(animationId)
 		local startRotation = self:GetRotation()
-		local endRotation = self:IsLookingRight() and 110 or -110
+		local endRotation
+		if (self:IsLookingRight()) then
+			endRotation = startRotation + 180
+		else
+			endRotation = startRotation - 180
+		end
 
 		animation.Rotate(self, startRotation, endRotation, 0.1)
 		animation.Rotate(self, endRotation, startRotation, 0.2)
