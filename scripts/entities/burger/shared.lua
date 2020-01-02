@@ -11,14 +11,11 @@ ENTITY.Faces = {
 	Rampage = "faces/face_rampage.png",
 	Victory = "faces/face_victory.png"
 }
-ENTITY.Hat = "hats/santa_hat.png"
 
 RegisterClientAssets(ENTITY.Sprite)
 for _, texturePath in pairs(ENTITY.Faces) do
 	RegisterClientAssets(texturePath)
 end
-
-RegisterClientAssets(ENTITY.Hat)
 
 local controller = BasicPlayerMovementController.new()
 

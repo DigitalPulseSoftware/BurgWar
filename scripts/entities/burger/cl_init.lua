@@ -25,17 +25,6 @@ function ENTITY:Initialize()
 		self[name .. "Face"] = face
 	end
 
-	if (self.Hat) then
-		self:AddSprite({
-			Offset = mainSprite:GetSize() * Vec2(0.4512, 0.2272) - mainSprite:GetOrigin() * mainSprite:GetSize(),
-			Origin = Vec2(0.75, 0.95),
-			RenderOrder = 2,
-			Rotation = -15,
-			Scale = Vec2(self.Scale, self.Scale) * 0.8,
-			TexturePath = self.Hat
-		})
-	end
-
 	self.CurrentFace = self.DefaultFace
 	self.DefaultFace:Show()
 end
