@@ -944,8 +944,8 @@ namespace bw
 			// Trigger selection signal
 			if (item->isSelected())
 			{
-				item->setSelected(false);
-				item->setSelected(true);
+				m_entityList.listWidget->setCurrentRow(-1);
+				m_entityList.listWidget->setCurrentRow(int(entityIndex));
 			}
 		});
 
