@@ -23,7 +23,7 @@ function vec2meta:__add(other)
 	if (getmetatable(other) == vec2meta) then
 		return Vec2(self.x + other.x, self.y + other.y)
 	else
-		error("Must be a vector")
+		error("Must be a vector2")
 	end
 end
 
@@ -33,7 +33,7 @@ function vec2meta:__mul(other)
 	elseif (type(other) == "number") then
 		return Vec2(self.x * other, self.y * other)
 	else
-		error("Factor must be a number")
+		error("Factor must be a vector2 or a number")
 	end
 end
 
@@ -43,7 +43,7 @@ function vec2meta:__div(divider)
 	elseif (type(divider) == "number") then
 		return Vec2(self.x / divider, self.y / divider)
 	else
-		error("Divider must be a number")
+		error("Divider must be a vector2 or a number")
 	end
 end
 

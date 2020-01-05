@@ -162,18 +162,26 @@ namespace bw
 			return PropertyType::Float;
 		else if (str == "floatpos" || str == "floatposition")
 			return PropertyType::FloatPosition;
+		else if (str == "floatposition3d")
+			return PropertyType::FloatPosition3D;
 		else if (str == "floatrect")
 			return PropertyType::FloatRect;
 		else if (str == "floatsize")
 			return PropertyType::FloatSize;
+		else if (str == "floatsize3d")
+			return PropertyType::FloatSize3D;
 		else if (str == "int" || str == "integer")
 			return PropertyType::Integer;
 		else if (str == "intpos" || str == "integerposition")
+			return PropertyType::IntegerPosition;
+		else if (str == "intpos3" || str == "integerposition3" || str == "intpos3d" || str == "integerposition3d")
 			return PropertyType::IntegerPosition;
 		else if (str == "intrect")
 			return PropertyType::IntegerRect;
 		else if (str == "intsize" || str == "integersize")
 			return PropertyType::IntegerSize;
+		else if (str == "intsize" || str == "intsize3d" || str == "integersize" || str == "integersize3d")
+			return PropertyType::IntegerSize3D;
 		else if (str == "layer")
 			return PropertyType::Layer;
 		else if (str == "string")
@@ -226,11 +234,17 @@ namespace bw
 			case PropertyType::FloatPosition:
 				return "floatposition";
 
+			case PropertyType::FloatPosition3D:
+				return "floatposition3d";
+
 			case PropertyType::FloatRect:
 				return "floatrect";
 
 			case PropertyType::FloatSize:
 				return "floatsize";
+
+			case PropertyType::FloatSize3D:
+				return "floatsize3d";
 
 			case PropertyType::Integer:
 				return "integer";
@@ -238,11 +252,17 @@ namespace bw
 			case PropertyType::IntegerPosition:
 				return "integerposition";
 
+			case PropertyType::IntegerPosition3D:
+				return "integerposition3d";
+
 			case PropertyType::IntegerRect:
 				return "integerrect";
 
 			case PropertyType::IntegerSize:
 				return "integersize";
+
+			case PropertyType::IntegerSize3D:
+				return "integersize3d";
 
 			case PropertyType::Layer:
 				return "layer";
@@ -362,6 +382,10 @@ namespace bw
 				case PropertyType::FloatSize:
 					return HandleDataArray(Nz::Vector2f());
 
+				case PropertyType::FloatPosition3D:
+				case PropertyType::FloatSize3D:
+					return HandleDataArray(Nz::Vector3f());
+
 				case PropertyType::FloatRect:
 				{
 					EntityPropertyArray<Nz::Vector4f> container(elementCount);
@@ -374,6 +398,10 @@ namespace bw
 				case PropertyType::IntegerPosition:
 				case PropertyType::IntegerSize:
 					return HandleDataArray(Nz::Vector2i64());
+
+				case PropertyType::IntegerPosition3D:
+				case PropertyType::IntegerSize3D:
+					return HandleDataArray(Nz::Vector3i64());
 
 				case PropertyType::IntegerRect:
 				{
@@ -406,6 +434,10 @@ namespace bw
 				case PropertyType::FloatSize:
 					return value.as<Nz::Vector2f>();
 
+				case PropertyType::FloatPosition3D:
+				case PropertyType::FloatSize3D:
+					return value.as<Nz::Vector3f>();
+
 				case PropertyType::FloatRect:
 					return TranslateRectToVec<float>(value.as<Nz::Rectf>());
 
@@ -416,6 +448,10 @@ namespace bw
 				case PropertyType::IntegerPosition:
 				case PropertyType::IntegerSize:
 					return value.as<Nz::Vector2i64>();
+
+				case PropertyType::IntegerPosition3D:
+				case PropertyType::IntegerSize3D:
+					return value.as<Nz::Vector3i64>();
 
 				case PropertyType::IntegerRect:
 					return TranslateRectToVec<Nz::Int64>(value.as<Nz::Recti64>());

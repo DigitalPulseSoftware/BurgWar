@@ -6,6 +6,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <Nazara/Math/Vector3.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <sol3/sol.hpp>
@@ -48,6 +49,9 @@ namespace sol
 	template<typename T>
 	struct lua_size<Nz::Vector2<T>> : std::integral_constant<int, 1> {};
 
+	template<typename T>
+	struct lua_size<Nz::Vector3<T>> : std::integral_constant<int, 1> {};
+
 	template<>
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
 
@@ -63,6 +67,9 @@ namespace sol
 	template<typename T>
 	struct lua_type_of<Nz::Vector2<T>> : std::integral_constant<sol::type, sol::type::table> {};
 
+	template<typename T>
+	struct lua_type_of<Nz::Vector3<T>> : std::integral_constant<sol::type, sol::type::table> {};
+
 	template <typename T, typename Handler>
 	bool sol_lua_check(sol::types<Nz::Vector2<T>>, lua_State* L, int index, Handler&& handler, sol::stack::record& tracking)
 	{
@@ -71,6 +78,27 @@ namespace sol
 		if (success)
 		{
 			luaL_getmetatable(L, "vec2");
+			sol::stack_table expectedMetatable;
+
+			lua_getmetatable(L, absoluteIndex);
+
+			success = lua_rawequal(L, -1, -2);
+
+			lua_pop(L, 2);
+		}
+		tracking.use(1);
+
+		return success;
+	}
+	
+	template <typename T, typename Handler>
+	bool sol_lua_check(sol::types<Nz::Vector3<T>>, lua_State* L, int index, Handler&& handler, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+		bool success = stack::check<sol::table>(L, absoluteIndex, handler);
+		if (success)
+		{
+			luaL_getmetatable(L, "vec3");
 			sol::stack_table expectedMetatable;
 
 			lua_getmetatable(L, absoluteIndex);
@@ -134,6 +162,21 @@ namespace sol
 		return Nz::Vector2<T>(x, y);
 	}
 
+	template<typename T>
+	Nz::Vector3<T> sol_lua_get(sol::types<Nz::Vector3<T>>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+
+		sol::table rect = sol::stack::get<sol::table>(L, absoluteIndex);
+		T x = rect["x"];
+		T y = rect["y"];
+		T z = rect["z"];
+
+		tracking.use(1);
+
+		return Nz::Vector3<T>(x, y, z);
+	}
+
 	inline int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
 	{
 		lua_createtable(L, 0, 6);
@@ -183,6 +226,19 @@ namespace sol
 		sol::stack_table vec(L);
 		vec["x"] = v.x;
 		vec["y"] = v.y;
+
+		return 1;
+	}
+
+	template<typename T>
+	int sol_lua_push(sol::types<Nz::Vector3<T>>, lua_State* L, const Nz::Vector3<T>& v)
+	{
+		lua_createtable(L, 0, 2);
+		luaL_setmetatable(L, "vec3");
+		sol::stack_table vec(L);
+		vec["x"] = v.x;
+		vec["y"] = v.y;
+		vec["z"] = v.z;
 
 		return 1;
 	}

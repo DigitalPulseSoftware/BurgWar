@@ -7,8 +7,10 @@
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Widgets/Float2SpinBox.hpp>
+#include <MapEditor/Widgets/Float3SpinBox.hpp>
 #include <MapEditor/Widgets/Float4SpinBox.hpp>
 #include <MapEditor/Widgets/Integer2SpinBox.hpp>
+#include <MapEditor/Widgets/Integer3SpinBox.hpp>
 #include <MapEditor/Widgets/Integer4SpinBox.hpp>
 #include <Nazara/Core/TypeTag.hpp>
 #include <QtGui/QStandardItemModel>
@@ -210,6 +212,54 @@ namespace bw
 			}
 	};
 	
+	class Float3PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector3f& value) const
+			{
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
+			{
+				return new Float3SpinBox(Float3SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				Nz::Vector3f vec = value.value<Nz::Vector3f>();
+				return QString("(%1; %2; %3)").arg(locale.toString(vec.x)).arg(locale.toString(vec.y)).arg(locale.toString(vec.z));
+			}
+
+			Nz::Vector3f RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector3f>();
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Float3SpinBox* spinBox = static_cast<Float3SpinBox*>(editor);
+				spinBox->setValue(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Float3SpinBox* spinBox = static_cast<Float3SpinBox*>(editor);
+
+				ApplyModelData(model, index, spinBox->value());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+
 	class Float4PropertyDelegate : public QStyledItemDelegate
 	{
 		public:
@@ -351,6 +401,54 @@ namespace bw
 			}
 	};
 	
+	class Integer3PropertyDelegate : public QStyledItemDelegate
+	{
+		public:
+			using QStyledItemDelegate::QStyledItemDelegate;
+
+			void ApplyModelData(QAbstractItemModel* model, const QModelIndex& index, const Nz::Vector3i64& value) const
+			{
+				QVariant qvalue;
+				qvalue.setValue(value);
+
+				model->setData(index, qvalue, Qt::EditRole);
+			}
+
+			QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
+			{
+				return new Integer3SpinBox(Integer3SpinBox::LabelMode::NoLabel, QBoxLayout::LeftToRight, parent);
+			}
+
+			QString displayText(const QVariant& value, const QLocale& locale) const override
+			{
+				Nz::Vector3i64 vec = value.value<Nz::Vector3i64>();
+				return QString("(%1; %2; %3)").arg(locale.toString(qlonglong(vec.x))).arg(locale.toString(qlonglong(vec.y))).arg(locale.toString(qlonglong(vec.z)));
+			}
+
+			Nz::Vector3i64 RetrieveModelData(const QModelIndex& index) const
+			{
+				return index.model()->data(index, Qt::EditRole).value<Nz::Vector3i64>();
+			}
+
+			void setEditorData(QWidget* editor, const QModelIndex& index) const override
+			{
+				Integer3SpinBox* spinBox = static_cast<Integer3SpinBox*>(editor);
+				spinBox->setValue(RetrieveModelData(index));
+			}
+
+			void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+			{
+				Integer3SpinBox* spinBox = static_cast<Integer3SpinBox*>(editor);
+
+				ApplyModelData(model, index, spinBox->value());
+			}
+
+			void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const override
+			{
+				editor->setGeometry(option.rect);
+			}
+	};
+	
 	class Integer4PropertyDelegate : public QStyledItemDelegate
 	{
 		public:
@@ -404,9 +502,11 @@ namespace bw
 		std::optional<ComboBoxPropertyDelegate> comboBoxDelegate;
 		FloatPropertyDelegate floatDelegate;
 		Float2PropertyDelegate float2Delegate;
+		Float3PropertyDelegate float3Delegate;
 		Float4PropertyDelegate float4Delegate;
 		IntegerPropertyDelegate intDelegate;
 		Integer2PropertyDelegate int2Delegate;
+		Integer3PropertyDelegate int3Delegate;
 		Integer4PropertyDelegate int4Delegate;
 	};
 
@@ -1045,6 +1145,34 @@ namespace bw
 					layout->addWidget(tableView);
 					break;
 				}
+				
+				case PropertyType::FloatPosition3D:
+				case PropertyType::FloatSize3D:
+				{
+					using T = EntityPropertyArray<Nz::Vector3f>;
+					
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->float3Delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ tr("Value") });
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->float3Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						SetProperty(item->index().row(), m_delegates->float3Delegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
 
 				case PropertyType::FloatRect:
 				{
@@ -1124,6 +1252,35 @@ namespace bw
 					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
 					{
 						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
+					});
+
+					layout->addWidget(tableView);
+					break;
+				}
+
+				case PropertyType::IntegerPosition3D:
+				case PropertyType::IntegerSize3D:
+				{
+					using T = EntityPropertyArray<Nz::Vector3i64>;
+
+					QTableView* tableView = new QTableView;
+					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+					tableView->setItemDelegate(&m_delegates->int3Delegate);
+					tableView->setModel(model);
+
+					model->setHorizontalHeaderLabels({ tr("Value") });
+
+					if (propertyValue)
+					{
+						auto& propertyArray = std::get<T>(propertyValue->get());
+
+						for (int i = 0; i < arraySize; ++i)
+							m_delegates->int3Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+					}
+
+					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
+					{
+						SetProperty(item->index().row(), m_delegates->int3Delegate.RetrieveModelData(item->index()));
 					});
 
 					layout->addWidget(tableView);
@@ -1321,6 +1478,23 @@ namespace bw
 					layout->addWidget(spinbox);
 					break;
 				}
+				
+				case PropertyType::FloatPosition3D:
+				case PropertyType::FloatSize3D:
+				{
+					Float3SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition3D) ? Float3SpinBox::LabelMode::PositionLabel : Float3SpinBox::LabelMode::SizeLabel;
+					Float3SpinBox* spinbox = new Float3SpinBox(labelMode, QBoxLayout::TopToBottom);
+					if (propertyValue && std::holds_alternative<Nz::Vector3f>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector3f>(propertyValue->get()));
+
+					connect(spinbox, &Float3SpinBox::valueChanged, [=]()
+					{
+						SetProperty(spinbox->value());
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
 
 				case PropertyType::FloatRect:
 				{
@@ -1371,7 +1545,24 @@ namespace bw
 					layout->addWidget(spinbox);
 					break;
 				}
-				
+
+				case PropertyType::IntegerPosition3D:
+				case PropertyType::IntegerSize3D:
+				{
+					Integer3SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::IntegerPosition3D) ? Integer3SpinBox::LabelMode::PositionLabel : Integer3SpinBox::LabelMode::SizeLabel;
+					Integer3SpinBox* spinbox = new Integer3SpinBox(labelMode, QBoxLayout::TopToBottom);
+					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
+						spinbox->setValue(std::get<Nz::Vector3i64>(propertyValue->get()));
+
+					connect(spinbox, &Integer3SpinBox::valueChanged, [=]()
+					{
+						SetProperty(Nz::Vector3i64(spinbox->value()));
+					});
+
+					layout->addWidget(spinbox);
+					break;
+				}
+
 				case PropertyType::IntegerRect:
 				{
 					// TODO: Handle properly int64
