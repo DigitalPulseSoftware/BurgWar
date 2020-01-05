@@ -25,6 +25,7 @@ namespace bw
 		Ndk::CameraComponent& viewer = m_cameraEntity->AddComponent<Ndk::CameraComponent>();
 		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
 		viewer.SetTarget(this);
+		viewer.SetZFar(1000.f);
 
 		Nz::EventHandler& eventHandler = GetEventHandler();
 

@@ -15,8 +15,10 @@
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
+#include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
+#include <Nazara/Math/EulerAngles.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
@@ -118,6 +120,31 @@ namespace bw
 
 				return Sprite({}, sprite, transformMatrix, renderOrder);
 			}
+		};
+
+		elementMetatable["AddModel"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		{
+			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+
+			std::string modelPath = parameters["ModelPath"];
+			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector3f offset = parameters.get_or("Offset", Nz::Vector3f::Zero());
+			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
+			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
+
+			Nz::ModelRef model = Nz::ModelManager::Get(modelPath);
+			if (!model)
+				return;
+
+			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
+
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+				layerEntityComponent.GetLayerEntity()->AttachRenderable(model, transformMatrix, renderOrder);
+			}
+			else
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
 		};
 
 		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
