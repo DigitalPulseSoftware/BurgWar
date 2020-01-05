@@ -20,51 +20,55 @@ end
 local controller = BasicPlayerMovementController.new()
 
 function ENTITY:Initialize()
-	local size = {277 / 3, 253 / 3}
+	local size = Vec2(277, 253) / 3
 
-	local rect = Rect()
-	rect.x = -size[1] / 2 + 5
-	rect.y = -size[2] - 20
-	rect.width = size[1] - 10
-	rect.height = size[2] - 3 + 20
+	local widthOffset = -10 -- reduce a bit
+	local heightOffset = 20 -- for hopping animation
 
-	local topLeft = rect:GetCorner(false, false)
-	local topRight = rect:GetCorner(true, false)
-	local bottomLeft = rect:GetCorner(false, true)
-	local bottomRight = rect:GetCorner(true, true)
+	local topLeft = Vec2(-size.x / 2 - widthOffset / 2, -size.y - heightOffset)
+	local topRight = topLeft + Vec2(size.x + widthOffset, 0)
+	local bottomLeft = topLeft + Vec2(0, size.y + heightOffset)
+	local bottomRight = topRight + Vec2(0, size.y + heightOffset)
 
 	-- Note that some positions are adjusted to prevent getting stuck
+
+	local colliderOffset = 2
 
 	local colliders = {
 		{
 			-- Bottom
 			-- Adjust offsets to prevent
-			Collider = Segment(bottomLeft + Vec2(2, 0), bottomRight - Vec2(2, 0)),
+			Collider = Segment(bottomLeft + Vec2(colliderOffset, 0), bottomRight - Vec2(colliderOffset, 0)),
 			Friction = 0,
 			FromNeighbor = topLeft,
 			ToNeighbor = topRight
 		},
 		{
 			-- Right side
-			Collider = Segment(bottomRight - Vec2(0, 2), topRight),
+			Collider = Segment(bottomRight - Vec2(0, colliderOffset), topRight),
 			Friction = 0,
 			FromNeighbor = bottomLeft,
 			ToNeighbor = topLeft
 		},
 		{
 			-- Top
-			Collider = Segment(topRight - Vec2(2, 0), topLeft + Vec2(2, 0)),
+			Collider = Segment(topRight - Vec2(colliderOffset, 0), topLeft + Vec2(colliderOffset, 0)),
 			Friction = 1,
 			FromNeighbor = bottomRight,
 			ToNeighbor = bottomLeft
 		},
 		{
 			-- Left side
-			Collider = Segment(topLeft, bottomLeft - Vec2(0, 2)),
+			Collider = Segment(topLeft, bottomLeft - Vec2(0, colliderOffset)),
 			Friction = 0,
 			FromNeighbor = topRight,
 			ToNeighbor = bottomRight
 		},
+		{
+			-- Internal cube (helps with high-speed collisions)
+			Collider = Rect(topLeft + Vec2(colliderOffset, colliderOffset) * 2, bottomRight - Vec2(colliderOffset, colliderOffset) * 2),
+			Friction = 0
+		}
 	}
 
 	self:UpdatePlayerMovementController(controller)
