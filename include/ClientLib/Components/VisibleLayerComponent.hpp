@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 
+#include <ClientLib/Camera.hpp>
 #include <ClientLib/LocalLayer.hpp>
-#include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/Node.hpp>
@@ -49,13 +49,13 @@ namespace bw
 				tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> visualEntities;
 				tsl::hopscotch_map<std::size_t /*sound*/, SoundEntity> soundEntities;
 
+				NazaraSlot(Camera, OnCameraMove, onCameraMove);
 				NazaraSlot(LocalLayer, OnDisabled, onDisabled);
 				NazaraSlot(LocalLayer, OnEnabled, onEnabled);
 				NazaraSlot(LocalLayer, OnEntityCreated, onEntityCreated);
 				NazaraSlot(LocalLayer, OnEntityDelete, onEntityDelete);
 				NazaraSlot(LocalLayer, OnSoundCreated, onSoundCreated);
 				NazaraSlot(LocalLayer, OnSoundDelete, onSoundDelete);
-				NazaraSlot(LocalMatch, OnCameraMoved, onCameraMoved);
 			};
 
 			//FIXME (shared_ptr => unique_ptr)

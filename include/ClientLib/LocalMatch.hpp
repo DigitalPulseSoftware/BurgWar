@@ -15,6 +15,7 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Utility/AverageValues.hpp>
+#include <ClientLib/Camera.hpp>
 #include <ClientLib/Chatbox.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
@@ -36,6 +37,7 @@
 namespace bw
 {
 	class BurgApp;
+	class Camera;
 	class ClientGamemode;
 	class ClientSession;
 	class InputController;
@@ -63,7 +65,8 @@ namespace bw
 			inline AnimationManager& GetAnimationManager();
 			inline AssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
-			inline const Ndk::EntityHandle& GetCameraEntity() const;
+			inline Camera& GetCamera();
+			inline const Camera& GetCamera() const;
 			inline ClientSession& GetClientSession();
 			ClientEntityStore& GetEntityStore() override;
 			const ClientEntityStore& GetEntityStore() const override;
@@ -90,8 +93,6 @@ namespace bw
 
 			LocalMatch& operator=(const LocalMatch&) = delete;
 			LocalMatch& operator=(LocalMatch&&) = delete;
-
-			NazaraSignal(OnCameraMoved, LocalMatch* /*match*/, const Nz::Vector2f& /*newPosition*/);
 
 		private:
 			struct ServerEntity;
@@ -198,6 +199,7 @@ namespace bw
 			std::optional<AssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
+			std::optional<Camera> m_camera;
 			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
 			std::optional<LocalConsole> m_localConsole;
@@ -210,7 +212,6 @@ namespace bw
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
 			Ndk::Canvas* m_canvas;
-			Ndk::EntityHandle m_camera;
 			Ndk::EntityHandle m_currentLayer;
 			Ndk::World m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;

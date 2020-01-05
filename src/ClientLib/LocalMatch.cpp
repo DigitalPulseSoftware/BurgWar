@@ -83,12 +83,7 @@ namespace bw
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
-		m_camera = m_renderWorld.CreateEntity();
-		m_camera->AddComponent<Ndk::NodeComponent>();
-
-		Ndk::CameraComponent& viewer = m_camera->AddComponent<Ndk::CameraComponent>();
-		viewer.SetTarget(window);
-		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
+		m_camera.emplace(m_renderWorld, m_window, true);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer->AddComponent<Ndk::NodeComponent>();
@@ -442,17 +437,12 @@ namespace bw
 
 		state["engine_GetCameraViewport"] = [&]()
 		{
-			return m_camera->GetComponent<Ndk::CameraComponent>().GetTarget()->GetSize();
+			return m_window->GetSize();
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
 		{
-			position.x = std::floor(position.x);
-			position.y = std::floor(position.y);
-
-			m_camera->GetComponent<Ndk::NodeComponent>().SetPosition(position);
-
-			OnCameraMoved(this, position);
+			m_camera->MoveToPosition(position);
 		};
 
 		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 playerIndex, std::shared_ptr<InputController> inputController)

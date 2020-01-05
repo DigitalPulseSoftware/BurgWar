@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/LocalMatch.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 
 namespace bw
@@ -70,7 +71,7 @@ namespace bw
 			});
 		}
 
-		visibleLayer->onCameraMoved.Connect(localLayer.GetLocalMatch().OnCameraMoved, [=](LocalMatch*, const Nz::Vector2f& newPosition)
+		visibleLayer->onCameraMove.Connect(localLayer.GetLocalMatch().GetCamera().OnCameraMove, [=](Camera*, const Nz::Vector2f& newPosition)
 		{
 			// Parallax factor
 			Nz::Vector2f layerPosition = newPosition * (Nz::Vector2f(1.f) - parallaxFactor);

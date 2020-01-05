@@ -38,9 +38,14 @@ namespace bw
 		return m_application;
 	}
 
-	inline const Ndk::EntityHandle& LocalMatch::GetCameraEntity() const
+	inline Camera& LocalMatch::GetCamera()
 	{
-		return m_camera;
+		return *m_camera;
+	}
+
+	inline const Camera& LocalMatch::GetCamera() const
+	{
+		return *m_camera;
 	}
 
 	inline ClientSession& LocalMatch::GetClientSession()

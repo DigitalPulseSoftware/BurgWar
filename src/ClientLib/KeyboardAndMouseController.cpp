@@ -4,12 +4,11 @@
 
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <ClientLib/Camera.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Platform/Mouse.hpp>
-#include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -55,37 +54,32 @@ namespace bw
 		{
 			const auto& entity = controlledEntity->GetEntity();
 			
-			Nz::Vector2i mousePosition = Nz::Mouse::GetPosition(m_window);
+			const Camera& camera = localMatch.GetCamera();
 
-			const Ndk::EntityHandle& cameraEntity = localMatch.GetCameraEntity();
-			if (cameraEntity)
+			Nz::Vector2f originPosition = controlledEntity->GetPosition();
+			float lookSwitch = originPosition.x;
+
+			if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
 			{
-				auto& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
+				auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
+				const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
+				Nz::Vector2f weaponOffset = weaponElement.weaponOffset;
 
-				Nz::Vector2f originPosition = controlledEntity->GetPosition();
-				float lookSwitch = originPosition.x;
+				if (!controlledEntity->IsFacingRight())
+					weaponOffset.x = -weaponOffset.x;
 
-				if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
-				{
-					auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
-					const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
-					Nz::Vector2f weaponOffset = weaponElement.weaponOffset;
-					
-					if (!controlledEntity->IsFacingRight())
-						weaponOffset.x = -weaponOffset.x;
-					
-					originPosition += weaponOffset;
-				}
-				else if (entity->HasComponent<Ndk::GraphicsComponent>())
-				{
-					originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
-					lookSwitch = originPosition.x;
-				}
-
-				Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mousePosition.x), float(mousePosition.y), 0.f));
-				inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition) - originPosition);
-				inputData.isLookingRight = worldPosition.x >= lookSwitch;
+				originPosition += weaponOffset;
 			}
+			else if (entity->HasComponent<Ndk::GraphicsComponent>())
+			{
+				originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
+				lookSwitch = originPosition.x;
+			}
+
+			Nz::Vector2f mousePosition = Nz::Vector2f(Nz::Mouse::GetPosition(m_window));
+			Nz::Vector2f worldPosition = camera.Unproject(mousePosition);
+			inputData.aimDirection = Nz::Vector2f::Normalize(Nz::Vector2f(worldPosition) - originPosition);
+			inputData.isLookingRight = worldPosition.x >= lookSwitch;
 		}
 		
 		return inputData;

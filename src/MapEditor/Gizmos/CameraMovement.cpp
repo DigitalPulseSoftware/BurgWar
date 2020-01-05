@@ -22,9 +22,7 @@ namespace bw
 	{
 	}
 
-	CameraMovement::~CameraMovement()
-	{
-	}
+	CameraMovement::~CameraMovement() = default;
 
 	float CameraMovement::ComputeZoomFactor() const
 	{
