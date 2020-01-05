@@ -47,7 +47,7 @@ namespace bw
 			std::optional<SessionBridge::SessionInfo> m_lastSessionInfo;
 			std::shared_ptr<AbstractState> m_firstState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			Ndk::EntityHandle m_connectionLostEntity;
+			Ndk::EntityOwner m_connectionLostEntity;
 			Ndk::LabelWidget* m_downloadSpeedLabel;
 			Ndk::LabelWidget* m_pingLabel;
 			Ndk::LabelWidget* m_uploadSpeedLabel;

@@ -15,6 +15,9 @@ namespace bw
 	m_sessionManager(sessionManager),
 	m_isServer(isServer)
 	{
+		BurgApp& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
+		m_lastReceiveTime = app.GetAppTime();
+
 		m_sessionInfo.ping = 0;
 		m_sessionInfo.totalByteReceived = 0;
 		m_sessionInfo.totalByteSent = 0;

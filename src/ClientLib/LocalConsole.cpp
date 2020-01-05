@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalConsole.hpp>
-#include <sstream>
 
 namespace bw
 {

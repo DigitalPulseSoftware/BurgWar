@@ -4,7 +4,6 @@
 
 #include <ClientLib/Console.hpp>
 #include <NDK/Console.hpp>
-#include <sstream>
 
 namespace bw
 {
