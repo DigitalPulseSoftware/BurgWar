@@ -13,6 +13,7 @@
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <Nazara/Graphics/Model.hpp>
+#include <Nazara/Utility/Font.hpp>
 
 namespace bw
 {
@@ -33,6 +34,10 @@ namespace bw
 
 	ClientEditorApp::~ClientEditorApp()
 	{
+		Nz::FontLibrary::Clear();
+		Nz::MaterialLibrary::Clear();
+		Nz::SpriteLibrary::Clear();
+		Nz::TextureLibrary::Clear();
 	}
 
 	void ClientEditorApp::FillStores()
@@ -59,5 +64,23 @@ namespace bw
 		trailSprite->SetSize(64.f, 2.f);
 
 		Nz::SpriteLibrary::Register("Trail", std::move(trailSprite));
+
+		auto LoadFont = [&](const std::string& filename) -> Nz::FontRef
+		{
+			Nz::FontRef font = Nz::Font::OpenFromFile(gameResourceFolder + filename);
+			if (!font)
+			{
+				bwLog(GetLogger(), LogLevel::Warning, "Failed to open font file {}, reverting to default", filename);
+				return Nz::Font::GetDefault();
+			}
+
+			return font;
+		};
+
+		Nz::FontRef barthowheel = LoadFont("/fonts/Barthowheel Regular.ttf");
+		Nz::FontRef grandstander = LoadFont("/fonts/Grandstander-clean.otf");
+
+		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
+		Nz::FontLibrary::Register("BW_Names", grandstander);
 	}
 }

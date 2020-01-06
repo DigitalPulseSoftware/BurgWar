@@ -176,10 +176,13 @@ namespace bw
 
 	void LocalLayerEntity::InitializeName(const std::string& name)
 	{
+		Nz::FontRef nicknameFont = Nz::FontLibrary::Get("BW_Names");
+		assert(nicknameFont);
+
 		auto& nameData = m_name.emplace();
 
 		nameData.nameSprite = Nz::TextSprite::New();
-		nameData.nameSprite->Update(Nz::SimpleTextDrawer::Draw(name, 24, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
+		nameData.nameSprite->Update(Nz::SimpleTextDrawer::Draw(nicknameFont, name, 20, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
 
 		Nz::Boxf textBox = nameData.nameSprite->GetBoundingVolume().obb.localBox;
 

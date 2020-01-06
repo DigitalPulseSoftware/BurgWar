@@ -16,12 +16,16 @@ namespace bw
 	m_chatEnteringBox(nullptr),
 	m_logger(logger)
 	{
+		Nz::FontRef chatboxFont = Nz::FontLibrary::Get("BW_Chatbox");
+		assert(chatboxFont);
+
 		m_chatBox = canvas->Add<Ndk::RichTextAreaWidget>();
 		m_chatBox->EnableBackground(false);
 		m_chatBox->EnableLineWrap(true);
 		m_chatBox->SetBackgroundColor(Nz::Color(0, 0, 0, 50));
 		m_chatBox->SetCharacterSize(22);
 		m_chatBox->SetTextColor(Nz::Color::White);
+		m_chatBox->SetTextFont(chatboxFont);
 		m_chatBox->SetTextOutlineColor(Nz::Color::Black);
 		m_chatBox->SetTextOutlineThickness(1.f);
 		m_chatBox->SetReadOnly(true);
@@ -34,6 +38,7 @@ namespace bw
 		m_chatEnteringBox->EnableBackground(true);
 		m_chatEnteringBox->SetBackgroundColor(Nz::Color(255, 255, 255, 150));
 		m_chatEnteringBox->SetTextColor(Nz::Color::Black);
+		m_chatEnteringBox->SetTextFont(chatboxFont);
 		m_chatEnteringBox->Show(false);
 
 		// Connect every slot
