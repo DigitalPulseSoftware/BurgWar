@@ -132,7 +132,7 @@ namespace bw
 			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
 			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
 
-			Nz::ModelRef model = Nz::ModelManager::Get(modelPath);
+			Nz::ModelRef model = m_assetStore.GetModel(modelPath);
 			if (!model)
 				return;
 

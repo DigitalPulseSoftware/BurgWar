@@ -10,8 +10,20 @@ namespace bw
 	{
 		AssetStore::Clear();
 
+		m_models.clear();
 		m_soundBuffers.clear();
 		m_textures.clear();
+	}
+
+	const Nz::ModelRef& ClientAssetStore::GetModel(const std::string& modelPath) const
+	{
+		Nz::ModelParameters loaderParameters;
+		loaderParameters.material.shaderName = "Basic";
+		loaderParameters.mesh.animated = false;
+		loaderParameters.mesh.center = true;
+		loaderParameters.mesh.storage = Nz::DataStorage_Hardware;
+
+		return GetResource(modelPath, m_models, loaderParameters);
 	}
 
 	const Nz::SoundBufferRef& ClientAssetStore::GetSoundBuffer(const std::string& soundPath) const

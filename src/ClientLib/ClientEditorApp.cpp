@@ -29,19 +29,10 @@ namespace bw
 		Ndk::InitializeSystem<PostFrameCallbackSystem>();
 		Ndk::InitializeSystem<SoundSystem>();
 		Ndk::InitializeSystem<VisualInterpolationSystem>();
-
-		Nz::ModelParameters modelParameters;
-		modelParameters.material.shaderName = "Basic";
-		modelParameters.mesh.animated = false;
-		modelParameters.mesh.center = true;
-		modelParameters.mesh.storage = Nz::DataStorage_Hardware;
-
-		Nz::ModelManager::SetDefaultParameters(modelParameters);
 	}
 
 	ClientEditorApp::~ClientEditorApp()
 	{
-		Nz::ModelManager::Clear();
 	}
 
 	void ClientEditorApp::FillStores()

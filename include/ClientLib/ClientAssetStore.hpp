@@ -9,6 +9,7 @@
 
 #include <CoreLib/AssetStore.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
+#include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Renderer/Texture.hpp>
 
 namespace bw
@@ -21,10 +22,12 @@ namespace bw
 
 			void Clear() override;
 
+			const Nz::ModelRef& GetModel(const std::string& modelPath) const;
 			const Nz::SoundBufferRef& GetSoundBuffer(const std::string& soundPath) const;
 			const Nz::TextureRef& GetTexture(const std::string& texturePath) const;
 
 		protected:
+			mutable tsl::hopscotch_map<std::string, Nz::ModelRef> m_models;
 			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
 			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;
 	};
