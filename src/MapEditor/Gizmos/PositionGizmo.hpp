@@ -16,10 +16,12 @@
 
 namespace bw
 {
+	class Camera;
+
 	class PositionGizmo : public EditorGizmo
 	{
 		public:
-			PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity);
+			PositionGizmo(Camera& camera, Ndk::Entity* entity);
 			~PositionGizmo();
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
@@ -41,9 +43,9 @@ namespace bw
 			std::array<Nz::Color, 3> m_spriteDefaultColors;
 			std::array<Nz::SpriteRef, 3> m_sprites;
 			std::array<Nz::Vector2f, 3> m_allowedMovements;
+			Camera& m_camera;
 			MovementType m_hoveredAction;
 			MovementType m_movementType;
-			Ndk::EntityHandle m_cameraEntity;
 			Ndk::EntityOwner m_arrowEntity;
 			Nz::Vector2f m_originalPosition;
 			Nz::Vector2f m_movementStartPos;

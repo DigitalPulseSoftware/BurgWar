@@ -3,9 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Gizmos/CameraMovement.hpp>
+#include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
-#include <NDK/Components/CameraComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 constexpr float zoomLevel = 10.f;
@@ -14,9 +13,9 @@ constexpr float minZoomLevel = -zoomLevel;
 
 namespace bw
 {
-	CameraMovement::CameraMovement(Nz::CursorController& cursorController, Ndk::Entity* camera) :
+	CameraMovement::CameraMovement(Nz::CursorController& cursorController, Camera& camera) :
 	m_cursorController(cursorController),
-	m_cameraEntity(camera),
+	m_camera(camera),
 	m_isActive(false),
 	m_zoomLevel(0.f)
 	{
@@ -40,9 +39,7 @@ namespace bw
 		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Move));
 		m_isActive = true;
 
-		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		m_originalWorldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f)));
-
+		m_originalWorldPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 		return true;
 	}
 
@@ -62,11 +59,9 @@ namespace bw
 		if (!m_isActive)
 			return false;
 
-		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		auto& cameraNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
-		Nz::Vector3f worldPosition = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
+		Nz::Vector3f worldPosition = m_camera.Unproject({ float(mouseMoved.x), float(mouseMoved.y) });
 
-		cameraNode.Move(-Nz::Vector2f(worldPosition - m_originalWorldPos), Nz::CoordSys_Global);
+		m_camera.MoveBy(-Nz::Vector2f(worldPosition - m_originalWorldPos));
 		OnCameraMoved(this);
 
 		return true;
@@ -76,10 +71,7 @@ namespace bw
 	{
 		m_zoomLevel = Nz::Clamp(m_zoomLevel - mouseWheel.delta, minZoomLevel, maxZoomLevel);
 
-		auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		Nz::Vector2f viewportSize = Nz::Vector2f(cameraComponent.GetTarget()->GetSize());
-
-		cameraComponent.SetSize(ComputeZoomFactor() * viewportSize);
+		m_camera.SetZoomFactor(ComputeZoomFactor());
 		OnCameraZoomUpdated(this);
 
 		return true;

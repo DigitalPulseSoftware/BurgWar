@@ -97,7 +97,7 @@ namespace bw
 		if (!entity)
 			return;
 
-		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCameraEntity(), entity);
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), entity);
 		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
 		{
 			OnEntityPositionUpdated(this, entityId, newPosition);

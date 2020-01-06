@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
+#include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
-#include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/DebugComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -12,11 +12,11 @@
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Ndk::Entity* camera, Ndk::Entity* entity) :
+	PositionGizmo::PositionGizmo(Camera& camera, Ndk::Entity* entity) :
 	EditorGizmo(entity),
+	m_camera(camera),
 	m_hoveredAction(MovementType::None),
-	m_movementType(MovementType::None),
-	m_cameraEntity(camera)
+	m_movementType(MovementType::None)
 	{
 		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red;
 		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue;
@@ -71,9 +71,8 @@ namespace bw
 
 		if (m_arrowEntity->IsEnabled())
 		{
-			auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
-			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
+			Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
+			Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
 
 			auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
 
@@ -94,7 +93,7 @@ namespace bw
 			{
 				auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
 				m_originalPosition = Nz::Vector2f(node.GetPosition());
-				m_movementStartPos = Nz::Vector2f(start);
+				m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 
 				return true;
 			}
@@ -122,12 +121,11 @@ namespace bw
 	{
 		if (m_arrowEntity->IsEnabled())
 		{
-			auto& cameraComponent = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
+			Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
 
 			if (m_movementType == MovementType::None)
 			{
-				Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 1.f));
+				Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 1.f));
 
 				auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
 
@@ -167,7 +165,8 @@ namespace bw
 			}
 			else
 			{
-				Nz::Vector2f delta = Nz::Vector2f(start) - m_movementStartPos;
+				Nz::Vector2f pos = m_camera.Unproject({ float(mouseMoved.x), float(mouseMoved.y) });
+				Nz::Vector2f delta = pos - m_movementStartPos;
 
 				Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
 

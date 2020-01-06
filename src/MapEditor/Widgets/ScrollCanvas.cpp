@@ -53,9 +53,14 @@ namespace bw
 		m_canvas->EnableCameraControl(enable);
 	}
 
-	const Ndk::EntityHandle& ScrollCanvas::GetCameraEntity()
+	Camera& ScrollCanvas::GetCamera()
 	{
-		return m_canvas->GetCameraEntity();
+		return m_canvas->GetCamera();
+	}
+
+	const Camera& ScrollCanvas::GetCamera() const
+	{
+		return m_canvas->GetCamera();
 	}
 
 	Ndk::World& ScrollCanvas::GetWorld()
@@ -90,16 +95,16 @@ namespace bw
 		int visibleWidth = canvasSize.width();
 		int visibleHeight = canvasSize.height();
 
-		auto& cameraNode = canvas->GetCameraEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& camera = canvas->GetCamera();
 
 		// Clamp camera within tile map
 		float maximumPosX = m_contentSize.x - visibleWidth;
 		float maximumPosY = m_contentSize.y - visibleHeight;
 
-		Nz::Vector2f cameraPos = Nz::Vector2f(cameraNode.GetPosition());
+		Nz::Vector2f cameraPos = camera.GetPosition();
 		cameraPos.x = std::clamp(cameraPos.x, 0.f, maximumPosX);
 		cameraPos.y = std::clamp(cameraPos.y, 0.f, maximumPosY);
-		cameraNode.SetPosition(cameraPos);
+		camera.MoveToPosition(cameraPos);
 
 		m_listenToScrollbarEvents = false;
 
@@ -114,18 +119,18 @@ namespace bw
 		if (!m_listenToScrollbarEvents)
 			return;
 
-		auto& cameraNode = m_canvas->GetCameraEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& camera = m_canvas->GetCamera();
 
 		QSize canvasSize = m_canvas->size();
 
 		switch (orientation)
 		{
 			case Qt::Horizontal:
-				cameraNode.SetPosition(valuePct * (m_contentSize.x - canvasSize.width()), cameraNode.GetPosition().y);
+				camera.MoveToPosition({ valuePct * (m_contentSize.x - canvasSize.width()), camera.GetPosition().y });
 				break;
 
 			case Qt::Vertical:
-				cameraNode.SetPosition(cameraNode.GetPosition().x, valuePct * (m_contentSize.y - canvasSize.height()));
+				camera.MoveToPosition({ camera.GetPosition().x, valuePct * (m_contentSize.y - canvasSize.height()) });
 				break;
 
 			default:

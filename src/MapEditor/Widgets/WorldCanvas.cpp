@@ -14,18 +14,11 @@ namespace bw
 {
 	WorldCanvas::WorldCanvas(QWidget* parent) :
 	NazaraCanvas(parent),
+	m_camera(m_world, this, true),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
 		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
-
-		m_cameraEntity = m_world.CreateEntity();
-		m_cameraEntity->AddComponent<Ndk::NodeComponent>();
-
-		Ndk::CameraComponent& viewer = m_cameraEntity->AddComponent<Ndk::CameraComponent>();
-		viewer.SetProjectionType(Nz::ProjectionType_Orthogonal);
-		viewer.SetTarget(this);
-		viewer.SetZFar(1000.f);
 
 		Nz::EventHandler& eventHandler = GetEventHandler();
 
@@ -68,7 +61,6 @@ namespace bw
 		{
 			OnMouseWheelMoved(mouseWheel);
 		});
-
 	}
 
 	void WorldCanvas::EnableCameraControl(bool enable)
@@ -78,7 +70,7 @@ namespace bw
 
 		if (enable)
 		{
-			m_cameraMovement.emplace(GetCursorController(), GetCameraEntity());
+			m_cameraMovement.emplace(GetCursorController(), GetCamera());
 			m_cameraMovement->OnCameraMoved.Connect([this](CameraMovement*)
 			{
 				OnCameraMoved(this);

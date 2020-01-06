@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_WORLDCANVAS_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_WORLDCANVAS_HPP
 
+#include <ClientLib/Camera.hpp>
 #include <MapEditor/Gizmos/CameraMovement.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <NDK/World.hpp>
@@ -24,8 +25,8 @@ namespace bw
 			void EnablePhysicsDebugDraw(bool enable);
 
 			inline const CameraMovement& GetCameraController() const;
-			inline const Ndk::EntityHandle& GetCameraEntity();
-			inline const Ndk::EntityHandle& GetCameraEntity() const;
+			inline Camera& GetCamera();
+			inline const Camera& GetCamera() const;
 			inline Ndk::World& GetWorld();
 			inline const Ndk::World& GetWorld() const;
 
@@ -47,8 +48,8 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			std::optional<CameraMovement> m_cameraMovement;
-			Ndk::EntityHandle m_cameraEntity;
 			Ndk::World m_world;
+			Camera m_camera;
 			bool m_isPhysicsDebugDrawEnabled;
 	};
 }

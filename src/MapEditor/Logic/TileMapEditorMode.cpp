@@ -325,8 +325,7 @@ namespace bw
 	{
 		const MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
 
-		auto& cameraComponent = canvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
-		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(mouseX, mouseY, 0.f)));
+		Nz::Vector2f worldPos = canvas->GetCamera().Unproject(Nz::Vector2f(mouseX, mouseY));
 
 		Nz::Rectf tilemapRect(m_tilemapData.origin.x, m_tilemapData.origin.y, m_tilemapData.mapSize.x * m_tilemapData.tileSize.x, m_tilemapData.mapSize.y * m_tilemapData.tileSize.y);
 		if (tilemapRect.Contains(worldPos))

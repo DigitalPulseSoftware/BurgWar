@@ -8,7 +8,6 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/EventHandler.hpp>
-#include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtWidgets/QHBoxLayout>
@@ -257,8 +256,8 @@ namespace bw
 	std::size_t TileSelectionWidget::GetHoveredTile(int x, int y)
 	{
 		WorldCanvas* worldCanvas = m_tileSelectionCanvas->GetWorldCanvas();
-		auto& cameraComponent = worldCanvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
-		Nz::Vector2f worldPos = Nz::Vector2f(cameraComponent.Unproject(Nz::Vector3f(x, y, 0.f)));
+		auto& camera = worldCanvas->GetCamera();
+		Nz::Vector2f worldPos = camera.Unproject({ float(x), float(y) });
 
 		assert(m_activeGroup < m_groups.size());
 		auto& currentGroup = m_groups[m_activeGroup];

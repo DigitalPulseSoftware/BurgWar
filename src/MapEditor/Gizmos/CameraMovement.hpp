@@ -14,10 +14,12 @@
 
 namespace bw
 {
+	class Camera;
+
 	class CameraMovement
 	{
 		public:
-			CameraMovement(Nz::CursorController& cursorController, Ndk::Entity* camera);
+			CameraMovement(Nz::CursorController& cursorController, Camera& camera);
 			~CameraMovement();
 
 			float ComputeZoomFactor() const;
@@ -35,7 +37,7 @@ namespace bw
 		private:
 			Nz::CursorController& m_cursorController;
 			Nz::Vector2f m_originalWorldPos;
-			Ndk::EntityHandle m_cameraEntity;
+			Camera& m_camera;
 			bool m_isActive;
 			float m_zoomLevel;
 	};

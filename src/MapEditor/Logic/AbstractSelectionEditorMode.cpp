@@ -18,9 +18,9 @@ namespace bw
 			EditorWindow& editorWindow = GetEditorWindow();
 			MapCanvas* canvas = editorWindow.GetMapCanvas();
 
-			auto& cameraComponent = canvas->GetCameraEntity()->GetComponent<Ndk::CameraComponent>();
-			Nz::Vector3f start = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 0.f));
-			Nz::Vector3f end = cameraComponent.Unproject(Nz::Vector3f(mouseButton.x, mouseButton.y, 1.f));
+			const Camera& camera = canvas->GetCamera();
+			Nz::Vector3f start = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 0.f });
+			Nz::Vector3f end = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 1.f });
 
 			Nz::Rayf ray(start, end - start);
 			

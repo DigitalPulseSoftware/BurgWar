@@ -22,7 +22,6 @@
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/MapInfoDialog.hpp>
 #include <MapEditor/Widgets/PlayWindow.hpp>
-#include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
 #include <QtCore/QStringBuilder>
@@ -592,6 +591,12 @@ namespace bw
 
 		toolBar->addSeparator();
 
+		m_perspectiveAction = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/camcorder-48.png").c_str())), tr("Switch perspective/orthogonal view"));
+		m_perspectiveAction->setCheckable(true);
+		connect(m_perspectiveAction, &QAction::toggled, this, &EditorWindow::OnPerspectiveSwitch);
+
+		toolBar->addSeparator();
+
 		m_playMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/start-48.png").c_str())), tr("Play map"));
 		connect(m_playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
 
@@ -738,14 +743,13 @@ namespace bw
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
 
-		const Ndk::EntityHandle& cameraEntity = m_canvas->GetCameraEntity();
+		const Camera& camera = m_canvas->GetCamera();
 
 		// Create entity at camera center
-		Ndk::CameraComponent& cameraComponent = cameraEntity->GetComponent<Ndk::CameraComponent>();
-		const Nz::Recti& viewport = cameraComponent.GetViewport();
+		const Nz::Recti& viewport = camera.GetViewport();
 
 		EntityInfo entityInfo;
-		entityInfo.position = Nz::Vector2f(cameraComponent.Unproject({ viewport.width / 2.f, viewport.height / 2.f, 0.f }));
+		entityInfo.position = camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f });
 
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
@@ -1157,6 +1161,11 @@ namespace bw
 		QAction* action = qobject_cast<QAction*>(sender());
 		if (action)
 			OpenMap(action->data().toString());
+	}
+
+	void EditorWindow::OnPerspectiveSwitch(bool enable)
+	{
+		m_canvas->GetCamera().EnablePerspective(enable);
 	}
 
 	void EditorWindow::OnPlayMap()

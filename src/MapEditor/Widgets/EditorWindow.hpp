@@ -91,6 +91,7 @@ namespace bw
 			void OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer);
 			void OnOpenMap();
 			void OnOpenRecentMap();
+			void OnPerspectiveSwitch(bool enable);
 			void OnPlayMap();
 			void OnSaveMap();
 
@@ -132,6 +133,7 @@ namespace bw
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
 			QAction* m_createEntityActionToolbar;
+			QAction* m_perspectiveAction;
 			QAction* m_playMap;
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;

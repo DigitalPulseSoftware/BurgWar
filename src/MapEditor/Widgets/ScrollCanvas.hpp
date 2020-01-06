@@ -18,6 +18,7 @@ class QWidget;
 
 namespace bw
 {
+	class Camera;
 	class WorldCanvas;
 
 	class ScrollCanvas : public QDialog
@@ -28,7 +29,8 @@ namespace bw
 
 			void EnableCameraControl(bool enable);
 
-			const Ndk::EntityHandle& GetCameraEntity();
+			Camera& GetCamera();
+			const Camera& GetCamera() const;
 			Ndk::World& GetWorld();
 			const Ndk::World& GetWorld() const;
 			inline WorldCanvas* GetWorldCanvas();
