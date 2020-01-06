@@ -11,13 +11,13 @@
 
 namespace bw
 {
-	class AssetStore;
+	class ClientAssetStore;
 	class Logger;
 
 	class ClientEntityLibrary : public SharedEntityLibrary
 	{
 		public:
-			inline ClientEntityLibrary(const Logger& logger, AssetStore& assetStore);
+			inline ClientEntityLibrary(const Logger& logger, ClientAssetStore& assetStore);
 			~ClientEntityLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
@@ -28,7 +28,7 @@ namespace bw
 		private:
 			void RegisterClientLibrary(sol::table& elementMetatable);
 
-			AssetStore& m_assetStore;
+			ClientAssetStore& m_assetStore;
 	};
 }
 

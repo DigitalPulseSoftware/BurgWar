@@ -11,14 +11,14 @@
 
 namespace bw
 {
-	class AssetStore;
+	class ClientAssetStore;
 	class LocalLayer;
 	class LocalLayerEntity;
 
 	class ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
-			inline ClientWeaponStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
+			inline ClientWeaponStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
 			std::optional<LocalLayerEntity> InstantiateWeapon(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, Nz::Int64 uniqueId, const EntityProperties& properties, const Ndk::EntityHandle& parent);
@@ -27,7 +27,7 @@ namespace bw
 			void InitializeElementTable(sol::table& elementTable) override;
 			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
 
-			AssetStore& m_assetStore;
+			ClientAssetStore& m_assetStore;
 	};
 }
 

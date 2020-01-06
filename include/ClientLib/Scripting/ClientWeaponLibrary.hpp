@@ -11,12 +11,12 @@
 
 namespace bw
 {
-	class AssetStore;
+	class ClientAssetStore;
 
 	class ClientWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
-			inline ClientWeaponLibrary(const Logger& logger, AssetStore& assetStore);
+			inline ClientWeaponLibrary(const Logger& logger, ClientAssetStore& assetStore);
 			~ClientWeaponLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
@@ -24,7 +24,7 @@ namespace bw
 		private:
 			void RegisterClientLibrary(sol::table& elementMetatable);
 
-			AssetStore& m_assetStore;
+			ClientAssetStore& m_assetStore;
 	};
 }
 

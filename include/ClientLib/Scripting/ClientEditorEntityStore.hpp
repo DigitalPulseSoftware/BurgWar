@@ -15,13 +15,13 @@
 
 namespace bw
 {
-	class AssetStore;
+	class ClientAssetStore;
 	class LocalLayer;
 
 	class ClientEditorEntityStore : public SharedEntityStore
 	{
 		public:
-			inline ClientEditorEntityStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
+			inline ClientEditorEntityStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			ClientEditorEntityStore(ClientEditorEntityStore&&) = delete;
 			~ClientEditorEntityStore() = default;
 
@@ -33,7 +33,7 @@ namespace bw
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
 			using SharedEntityStore::InitializeEntity;
 
-			AssetStore& m_assetStore;
+			ClientAssetStore& m_assetStore;
 	};
 }
 

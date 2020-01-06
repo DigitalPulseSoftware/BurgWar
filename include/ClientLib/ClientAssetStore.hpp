@@ -1,0 +1,35 @@
+// Copyright (C) 2019 Jérôme Leclercq
+// This file is part of the "Burgwar" project
+// For conditions of distribution and use, see copyright notice in LICENSE
+
+#pragma once
+
+#ifndef BURGWAR_CLIENTLIB_CLIENTASSETSTORE_HPP
+#define BURGWAR_CLIENTLIB_CLIENTASSETSTORE_HPP
+
+#include <CoreLib/AssetStore.hpp>
+#include <Nazara/Audio/SoundBuffer.hpp>
+#include <Nazara/Renderer/Texture.hpp>
+
+namespace bw
+{
+	class ClientAssetStore : public AssetStore
+	{
+		public:
+			using AssetStore::AssetStore;
+			~ClientAssetStore() = default;
+
+			void Clear() override;
+
+			const Nz::SoundBufferRef& GetSoundBuffer(const std::string& soundPath) const;
+			const Nz::TextureRef& GetTexture(const std::string& texturePath) const;
+
+		protected:
+			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
+			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;
+	};
+}
+
+#include <ClientLib/ClientAssetStore.inl>
+
+#endif

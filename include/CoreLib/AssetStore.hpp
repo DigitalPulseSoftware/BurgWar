@@ -8,8 +8,7 @@
 #define BURGWAR_CORELIB_ASSETSTORE_HPP
 
 #include <CoreLib/Utility/VirtualDirectory.hpp>
-#include <Nazara/Audio/SoundBuffer.hpp>
-#include <Nazara/Renderer/Texture.hpp>
+#include <Nazara/Core/ObjectRef.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 
 namespace bw
@@ -20,20 +19,19 @@ namespace bw
 	{
 		public:
 			inline AssetStore(const Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory);
-			~AssetStore() = default;
+			virtual ~AssetStore();
 
-			inline void Clear();
-
-			const Nz::SoundBufferRef& GetSoundBuffer(const std::string& soundPath) const;
-			const Nz::TextureRef& GetTexture(const std::string& texturePath) const;
+			virtual void Clear();
 
 			inline void UpdateAssetDirectory(std::shared_ptr<VirtualDirectory> assetDirectory);
 
+		protected:
+			template<typename ResourceType, typename ParameterType> const Nz::ObjectRef<ResourceType>& GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, Nz::ObjectRef<ResourceType>>& cache, const ParameterType& params) const;
+
+			const Logger& m_logger;
+
 		private:
 			mutable std::shared_ptr<VirtualDirectory> m_assetDirectory;
-			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
-			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;
-			const Logger& m_logger;
 	};
 }
 

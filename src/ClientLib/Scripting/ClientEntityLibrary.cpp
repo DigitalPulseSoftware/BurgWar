@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientEntityLibrary.hpp>
-#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>

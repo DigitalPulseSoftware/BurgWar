@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	crashHandler.Install();
 
 	Nz::Initializer<Nz::Network> network;
-	bw::ClientApp app(argc, argv);
+	bw::ClientApp app(argc, argv); 
 	app.EnableFPSCounter(true);
 
 	Nz::Audio::SetGlobalVolume(70.f);

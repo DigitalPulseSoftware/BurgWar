@@ -27,7 +27,7 @@ namespace bw
 		return m_animationManager;
 	}
 
-	inline AssetStore& LocalMatch::GetAssetStore()
+	inline ClientAssetStore& LocalMatch::GetAssetStore()
 	{
 		assert(m_assetStore.has_value());
 		return *m_assetStore;

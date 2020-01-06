@@ -3,13 +3,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
-#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 
 namespace bw
 {
-	ClientEditorScriptingLibrary::ClientEditorScriptingLibrary(const Logger& logger, AssetStore& assetStore) :
+	ClientEditorScriptingLibrary::ClientEditorScriptingLibrary(const Logger& logger, ClientAssetStore& assetStore) :
 	AbstractScriptingLibrary(logger),
 	m_assetStore(assetStore)
 	{

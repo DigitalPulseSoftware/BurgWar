@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ClientEntityLibrary::ClientEntityLibrary(const Logger& logger, AssetStore& assetStore) :
+	inline ClientEntityLibrary::ClientEntityLibrary(const Logger& logger, ClientAssetStore& assetStore) :
 	SharedEntityLibrary(logger),
 	m_assetStore(assetStore)
 	{

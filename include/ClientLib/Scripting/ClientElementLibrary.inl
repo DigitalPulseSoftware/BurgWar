@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ClientElementLibrary::ClientElementLibrary(const Logger& logger, AssetStore& assetStore) :
+	inline ClientElementLibrary::ClientElementLibrary(const Logger& logger, ClientAssetStore& assetStore) :
 	SharedElementLibrary(logger),
 	m_assetStore(assetStore)
 	{

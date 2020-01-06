@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
-#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>

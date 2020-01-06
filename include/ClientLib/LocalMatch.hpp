@@ -8,7 +8,6 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/AnimationManager.hpp>
-#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/SharedLayer.hpp>
@@ -17,6 +16,7 @@
 #include <CoreLib/Utility/AverageValues.hpp>
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/Chatbox.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/VisualEntity.hpp>
@@ -63,7 +63,7 @@ namespace bw
 
 			inline Nz::UInt16 GetActiveLayer();
 			inline AnimationManager& GetAnimationManager();
-			inline AssetStore& GetAssetStore();
+			inline ClientAssetStore& GetAssetStore();
 			inline BurgApp& GetApplication();
 			inline Camera& GetCamera();
 			inline const Camera& GetCamera() const;
@@ -196,7 +196,7 @@ namespace bw
 			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
 			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
 
-			std::optional<AssetStore> m_assetStore;
+			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
 			std::optional<Camera> m_camera;

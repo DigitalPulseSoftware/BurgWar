@@ -8,9 +8,9 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
 #include <NDK/Prerequisites.hpp>
-#include <CoreLib/AssetStore.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
@@ -117,7 +117,7 @@ namespace bw
 			};
 
 			std::filesystem::path m_workingMapPath;
-			std::optional<AssetStore> m_assetStore;
+			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<std::size_t> m_currentLayer;
 			PlayWindow* m_playWindow;

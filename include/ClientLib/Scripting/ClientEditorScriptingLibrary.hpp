@@ -11,13 +11,13 @@
 
 namespace bw
 {
-	class AssetStore;
+	class ClientAssetStore;
 	class Logger;
 
 	class ClientEditorScriptingLibrary : public AbstractScriptingLibrary
 	{
 		public:
-			ClientEditorScriptingLibrary(const Logger& logger, AssetStore& assetStore);
+			ClientEditorScriptingLibrary(const Logger& logger, ClientAssetStore& assetStore);
 			~ClientEditorScriptingLibrary() = default;
 
 			void RegisterLibrary(ScriptingContext& context) override;
@@ -26,7 +26,7 @@ namespace bw
 			void RegisterAssets(ScriptingContext& context);
 			void RegisterTextureClass(ScriptingContext& context);
 
-			AssetStore& m_assetStore;
+			ClientAssetStore& m_assetStore;
 	};
 }
 

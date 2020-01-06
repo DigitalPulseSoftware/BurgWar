@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ClientEditorEntityStore::ClientEditorEntityStore(AssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context) :
+	inline ClientEditorEntityStore::ClientEditorEntityStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context) :
 	SharedEntityStore(logger, std::move(context), false),
 	m_assetStore(assetStore)
 	{

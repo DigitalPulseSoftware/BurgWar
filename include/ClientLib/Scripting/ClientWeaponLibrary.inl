@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline ClientWeaponLibrary::ClientWeaponLibrary(const Logger& logger, AssetStore& assetStore) :
+	inline ClientWeaponLibrary::ClientWeaponLibrary(const Logger& logger, ClientAssetStore& assetStore) :
 	SharedWeaponLibrary(logger),
 	m_assetStore(assetStore)
 	{
