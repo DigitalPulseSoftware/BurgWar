@@ -11,6 +11,11 @@
 
 namespace bw
 {
+	void SelectionEditorMode::OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity)
+	{
+		OnOpenMenu(this, pos, hoveredEntity);
+	}
+
 	void SelectionEditorMode::OnEntitySelected(Ndk::Entity* bestEntity)
 	{
 		if (bestEntity)

@@ -8,6 +8,16 @@
 
 namespace bw
 {
+	void BasicEditorMode::OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity)
+	{
+		EditorWindow& editorWindow = GetEditorWindow();
+		std::optional<std::size_t> entityIndex;
+		if (hoveredEntity)
+			entityIndex = editorWindow.GetEntityIndex(hoveredEntity->GetId());
+
+		editorWindow.OpenEntityContextMenu(entityIndex, pos);
+	}
+
 	void BasicEditorMode::OnEntitySelected(Ndk::Entity* selectedEntity)
 	{
 		EditorWindow& editorWindow = GetEditorWindow();

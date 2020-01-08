@@ -13,7 +13,7 @@ namespace bw
 {
 	void AbstractSelectionEditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button == Nz::Mouse::Left)
+		if (mouseButton.button == Nz::Mouse::Left || mouseButton.button == Nz::Mouse::Right)
 		{
 			EditorWindow& editorWindow = GetEditorWindow();
 			MapCanvas* canvas = editorWindow.GetMapCanvas();
@@ -47,6 +47,8 @@ namespace bw
 			}
 
 			OnEntitySelected(bestEntity);
+			if (mouseButton.button == Nz::Mouse::Right)
+				OnEntityMenu(canvas->mapToGlobal(QPoint(mouseButton.x, mouseButton.y)), bestEntity);
 		}
 	}
 }

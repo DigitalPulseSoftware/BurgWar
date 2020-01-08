@@ -3,9 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/EditorWindow.hpp>
+#include <cassert>
 
 namespace bw
 {
+	inline std::size_t EditorWindow::GetEntityIndex(Ndk::EntityId entityId) const
+	{
+		auto it = m_entityIndexes.find(entityId);
+		assert(it != m_entityIndexes.end());
+
+		return it.value();
+	}
+
 	inline const EditorEntityStore& EditorWindow::GetEntityStore() const
 	{
 		return *m_entityStore;

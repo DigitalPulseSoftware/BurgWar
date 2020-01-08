@@ -196,14 +196,84 @@ namespace bw
 		UpdateWorkingMap(Map());
 	}
 
+	void EditorWindow::OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent)
+	{
+		if (!m_workingMap.IsValid())
+			return;
+
+		QMenu contextMenu(parent);
+
+		if (entityIndexOpt)
+		{
+			std::size_t entityIndex = *entityIndexOpt;
+
+			QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
+			connect(editEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnEditEntity(entityIndex);
+			});
+
+			QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
+			connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnCloneEntity(entityIndex);
+			});
+
+			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
+			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
+			{
+				OnDeleteEntity(entityIndex);
+			});
+
+			std::size_t layerCount = m_workingMap.GetLayerCount();
+			if (layerCount > 1)
+			{
+				contextMenu.addSeparator();
+
+				QMenu* cloneEntityMenu = contextMenu.addMenu(tr("Clone entity to layer"));
+				QMenu* moveEntityMenu = contextMenu.addMenu(tr("Move entity to layer"));
+
+				assert(m_currentLayer);
+				std::size_t currentLayer = m_currentLayer.value();
+
+				for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
+				{
+					if (i == currentLayer)
+						continue;
+
+					auto& layer = m_workingMap.GetLayer(i);
+
+					QString layerName = QString::fromStdString(layer.name);
+
+					QAction* cloneAction = cloneEntityMenu->addAction(layerName);
+					connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					{
+						OnCloneEntity(entityIndex, layerIndex);
+					});
+
+					QAction* moveAction = moveEntityMenu->addAction(layerName);
+					connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					{
+						OnMoveEntity(entityIndex, layerIndex);
+					});
+				}
+			}
+		}
+		else
+		{
+			QAction* createEntity = contextMenu.addAction(tr("Create entity..."));
+			connect(createEntity, &QAction::triggered, [this](bool)
+			{
+				OnCreateEntity();
+			});
+		}
+
+		contextMenu.exec(pos);
+	}
+
 	void EditorWindow::SelectEntity(Ndk::EntityId entityId)
 	{
-		auto it = m_entityIndexes.find(entityId);
-		assert(it != m_entityIndexes.end());
-
-		std::size_t entityIndex = it.value();
-
-		m_entityList.listWidget->setCurrentRow(int(entityIndex));
+		m_entityList.listWidget->setCurrentRow(int(GetEntityIndex(entityId)));
 	}
 
 	void EditorWindow::SwitchToMode(std::shared_ptr<EditorMode> editorMode)
@@ -330,81 +400,22 @@ namespace bw
 		m_entityList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 		connect(m_entityList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
 		{
-			if (!m_workingMap.IsValid())
-				return;
-
-			QMenu contextMenu(m_entityList.listWidget);
+			std::optional<std::size_t> entityIndex;
 
 			QListWidgetItem* item = m_entityList.listWidget->itemAt(pos);
 			if (item)
-			{
-				std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+				entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
-				QAction* editEntity = contextMenu.addAction(tr("Edit entity"));
-				connect(editEntity, &QAction::triggered, [this, item](bool)
-				{
-					OnEditEntity(item);
-				});
-
-				QAction* cloneEntity = contextMenu.addAction(tr("Clone entity"));
-				connect(cloneEntity, &QAction::triggered, [this, entityIndex](bool)
-				{
-					OnCloneEntity(entityIndex);
-				});
-
-				QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
-				connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
-				{
-					OnDeleteEntity(entityIndex);
-				});
-
-				std::size_t layerCount = m_workingMap.GetLayerCount();
-				if (layerCount > 1)
-				{
-					contextMenu.addSeparator();
-
-					QMenu* cloneEntityMenu = contextMenu.addMenu(tr("Clone entity to layer"));
-					QMenu* moveEntityMenu = contextMenu.addMenu(tr("Move entity to layer"));
-
-					assert(m_currentLayer);
-					std::size_t currentLayer = m_currentLayer.value();
-
-					for (std::size_t i = 0; i < m_workingMap.GetLayerCount(); ++i)
-					{
-						if (i == currentLayer)
-							continue;
-
-						auto& layer = m_workingMap.GetLayer(i);
-
-						QString layerName = QString::fromStdString(layer.name);
-
-						QAction* cloneAction = cloneEntityMenu->addAction(layerName);
-						connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
-						{
-							OnCloneEntity(entityIndex, layerIndex);
-						});
-
-						QAction* moveAction = moveEntityMenu->addAction(layerName);
-						connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
-						{
-							OnMoveEntity(entityIndex, layerIndex);
-						});
-					}
-				}
-			}
-			else
-			{
-				QAction* createEntity = contextMenu.addAction(tr("Create entity..."));
-				connect(createEntity, &QAction::triggered, [this](bool)
-				{
-					OnCreateEntity();
-				});
-			}
-
-			contextMenu.exec(m_entityList.listWidget->mapToGlobal(pos));
+			OpenEntityContextMenu(entityIndex, m_entityList.listWidget->mapToGlobal(pos), m_entityList.listWidget);
 		});
 
-		connect(m_entityList.listWidget, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditEntity);
+		connect(m_entityList.listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item)
+		{
+			std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			OnEditEntity(entityIndex);
+		});
+
 		connect(m_entityList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		m_entityList.upArrowButton = new QPushButton;
@@ -452,9 +463,9 @@ namespace bw
 				std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 
 				QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
-				connect(editLayer, &QAction::triggered, [this, item](bool)
+				connect(editLayer, &QAction::triggered, [this, layerIndex](bool)
 				{
-					OnEditLayer(item);
+					OnEditLayer(layerIndex);
 				});
 
 				QAction* cloneLayer = contextMenu.addAction(tr("Clone layer"));
@@ -482,7 +493,12 @@ namespace bw
 		});
 
 		connect(m_layerList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
-		connect(m_layerList.listWidget, &QListWidget::itemDoubleClicked, this, &EditorWindow::OnEditLayer);
+		connect(m_layerList.listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item)
+		{
+			std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+
+			OnEditLayer(layerIndex);
+		});
 
 		m_layerList.upArrowButton = new QPushButton;
 		m_layerList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
@@ -869,12 +885,12 @@ namespace bw
 		}
 	}
 
-	void EditorWindow::OnEditEntity(QListWidgetItem* item)
+	void EditorWindow::OnEditEntity(std::size_t entityIndex)
 	{
+		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
 		if (!item)
 			return;
 
-		std::size_t entityIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
 
@@ -960,9 +976,11 @@ namespace bw
 		editEntityDialog->exec();
 	}
 	
-	void EditorWindow::OnEditLayer(QListWidgetItem* item)
+	void EditorWindow::OnEditLayer(std::size_t layerIndex)
 	{
-		LayerIndex layerIndex = static_cast<LayerIndex>(item->data(Qt::UserRole).value<qulonglong>());
+		QListWidgetItem* item = m_layerList.listWidget->item(int(layerIndex));
+		if (!item)
+			return;
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -970,7 +988,7 @@ namespace bw
 		layerInfo.backgroundColor = layer.backgroundColor;
 		layerInfo.name = layer.name;
 
-		LayerEditDialog* layerInfoDialog = new LayerEditDialog(layerIndex, layerInfo, m_workingMap, this);
+		LayerEditDialog* layerInfoDialog = new LayerEditDialog(LayerIndex(layerIndex), layerInfo, m_workingMap, this);
 		connect(layerInfoDialog, &QDialog::accepted, [this, layerInfoDialog, layerIndex, item]()
 		{
 			LayerInfo layerInfo = layerInfoDialog->GetLayerInfo();

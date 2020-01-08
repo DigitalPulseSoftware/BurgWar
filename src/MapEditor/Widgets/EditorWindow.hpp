@@ -43,10 +43,13 @@ namespace bw
 			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
+			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
 			inline const EditorEntityStore& GetEntityStore() const;
 
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;
+
+			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
 
 			void SelectEntity(Ndk::EntityId entityId);
 
@@ -80,8 +83,8 @@ namespace bw
 			bool OnDeleteEntity();
 			bool OnDeleteEntity(std::size_t entityIndex);
 			void OnDeleteLayer(std::size_t layerIndex);
-			void OnEditEntity(QListWidgetItem* item);
-			void OnEditLayer(QListWidgetItem* item);
+			void OnEditEntity(std::size_t entityIndex);
+			void OnEditLayer(std::size_t layerIndex);
 			void OnEntityMovedUp();
 			void OnEntityMovedDown();
 			void OnEntitySelectionUpdate(int entityIndex);

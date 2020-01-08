@@ -18,6 +18,7 @@ namespace bw
 			~BasicEditorMode() = default;
 
 		private:
+			void OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity) override;
 			void OnEntitySelected(Ndk::Entity* selectedEntity) override;
 	};
 }
