@@ -13,7 +13,7 @@ namespace bw
 	m_isPerspective(!perspective), // To enable it after
 	m_zoomFactor(1.f)
 	{
-		constexpr float fov = 70.f;
+		constexpr float fov = 30.f;
 
 		m_cameraEntity = world.CreateEntity();
 
