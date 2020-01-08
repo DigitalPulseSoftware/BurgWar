@@ -394,8 +394,8 @@ namespace bw
 			}
 			else
 			{
-				QAction* editEntity = contextMenu.addAction(tr("Create entity..."));
-				connect(editEntity, &QAction::triggered, [this](bool)
+				QAction* createEntity = contextMenu.addAction(tr("Create entity..."));
+				connect(createEntity, &QAction::triggered, [this](bool)
 				{
 					OnCreateEntity();
 				});
@@ -523,6 +523,8 @@ namespace bw
 			connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
 			QMenu* recentMaps = fileMenu->addMenu(tr("Open recent..."));
+			recentMaps->setToolTipsVisible(true);
+
 			for (QAction* action : m_recentMapActions)
 				recentMaps->addAction(action);
 
@@ -654,12 +656,14 @@ namespace bw
 		std::size_t fileCount = std::min<std::size_t>(m_recentMapActions.size(), recentFileList.size());
 		for (std::size_t i = 0; i < fileCount; ++i)
 		{
-			QString strippedName = QFileInfo(recentFileList[int(i)]).fileName();
+			QString fullPath = recentFileList[int(i)];
+			QString filename = QFileInfo(fullPath).fileName();
 
 			QAction* recentMap = m_recentMapActions[int(i)];
 			recentMap->setData(recentFileList[int(i)]);
-			recentMap->setText(tr("&%1 %2").arg(int(i + 1)).arg(strippedName));
+			recentMap->setText(tr("&%1 %2").arg(int(i + 1)).arg(filename));
 			recentMap->setVisible(true);
+			recentMap->setToolTip(fullPath);
 		}
 
 		for (std::size_t i = fileCount; i < m_recentMapActions.size(); ++i)
