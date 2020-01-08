@@ -591,7 +591,7 @@ namespace bw
 
 		toolBar->addSeparator();
 
-		m_perspectiveAction = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/camcorder-48.png").c_str())), tr("Switch perspective/orthogonal view"));
+		m_perspectiveAction = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/perspective-48.png").c_str())), tr("Switch between perspective/orthogonal view"));
 		m_perspectiveAction->setCheckable(true);
 		connect(m_perspectiveAction, &QAction::toggled, this, &EditorWindow::OnPerspectiveSwitch);
 
