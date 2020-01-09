@@ -33,7 +33,7 @@ namespace bw
 
 	bool CameraMovement::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button != Nz::Mouse::Right)
+		if (mouseButton.button != Nz::Mouse::Middle)
 			return false;
 
 		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Move));
@@ -45,7 +45,7 @@ namespace bw
 
 	bool CameraMovement::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (!m_isActive || mouseButton.button != Nz::Mouse::Right)
+		if (!m_isActive || mouseButton.button != Nz::Mouse::Middle)
 			return false;
 
 		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Default));
