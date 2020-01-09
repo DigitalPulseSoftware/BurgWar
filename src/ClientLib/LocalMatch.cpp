@@ -599,7 +599,7 @@ namespace bw
 		}
 
 		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnFrame");
+			m_gamemode->ExecuteCallback("OnFrame", elapsedTime);
 
 		for (auto& layer : m_layers)
 		{

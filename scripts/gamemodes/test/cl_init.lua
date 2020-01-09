@@ -1,9 +1,20 @@
-function GM:OnFrame()
+GM.ShakeData = nil
+
+function GM:OnFrame(elapsedTime)
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
 		local cameraCenter = Vec2(-640, -320) + playerPosition
 		--cameraCenter.x = math.clamp(cameraCenter.x, 0, 30000)
 		--cameraCenter.y = math.clamp(cameraCenter.y, -1000, 2000 - engine_GetCameraViewport().y)
+
+		local shakeData = self.ShakeData
+		if (shakeData) then
+			cameraCenter = cameraCenter + Vec2(math.random(-1, 1), math.random(-1, 1)) * shakeData.Strength
+			shakeData.Strength = shakeData.Strength - shakeData.StrengthDecrease * elapsedTime
+			if (shakeData.Strength < 0) then
+				self.ShakeData = nil
+			end
+		end
 
 		engine_SetCameraPosition(cameraCenter)
 	end
@@ -29,4 +40,11 @@ function GM:OnChangeLayer(oldLayer, newLayer)
 			ent:OnEnterLayer(newLayer)
 		end
 	end
+end
+
+function GM:ShakeCamera(duration, strength)
+	self.ShakeData = {
+		Strength = strength,
+		StrengthDecrease = strength / duration
+	}
 end

@@ -50,6 +50,16 @@ function ENTITY:Explode()
 
 	if (CLIENT) then
 		self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
+
+		local playerPosition = engine_GetPlayerPosition(0)
+		if (playerPosition) then
+			local distance = (self:GetPosition() - playerPosition):Length()
+			local minDistance = 1000
+			local strength = math.min(50, 250 / math.max(1, distance - minDistance))
+			if (strength > 0.1) then
+				GM:ShakeCamera(1, strength)
+			end
+		end
 	else
 		local pos = self:GetPosition()
 		local maxs = Vec2(256, 256)
