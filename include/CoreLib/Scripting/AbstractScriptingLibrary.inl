@@ -233,7 +233,7 @@ namespace sol
 	template<typename T>
 	int sol_lua_push(sol::types<Nz::Vector3<T>>, lua_State* L, const Nz::Vector3<T>& v)
 	{
-		lua_createtable(L, 0, 2);
+		lua_createtable(L, 0, 3);
 		luaL_setmetatable(L, "vec3");
 		sol::stack_table vec(L);
 		vec["x"] = v.x;

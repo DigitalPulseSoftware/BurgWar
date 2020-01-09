@@ -1532,7 +1532,7 @@ namespace bw
 				case PropertyType::IntegerPosition:
 				case PropertyType::IntegerSize:
 				{
-					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
+					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::IntegerPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
 					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
 					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
 						spinbox->setValue(std::get<Nz::Vector2i64>(propertyValue->get()));
