@@ -102,7 +102,7 @@ namespace bw
 			if (isAttachedToEntity)
 				localLayerSound.emplace(layer, entityNode);
 			else
-				localLayerSound.emplace(layer);
+				localLayerSound.emplace(layer, Nz::Vector2f(entityNode.GetPosition()));
 
 			auto& layerSound = layer.RegisterSound(std::move(localLayerSound.value()));
 

@@ -29,7 +29,7 @@ namespace bw
 		friend SoundEntity;
 
 		public:
-			inline LocalLayerSound(LocalLayer& layer);
+			LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position);
 			inline LocalLayerSound(LocalLayer& layer, const Nz::Node& parentNode);
 			LocalLayerSound(const LocalLayerSound&) = delete;
 			LocalLayerSound(LocalLayerSound&& entity);
@@ -49,6 +49,8 @@ namespace bw
 			LocalLayerSound& operator=(LocalLayerSound&&) = delete;
 
 		private:
+			inline LocalLayerSound(LocalLayer& layer);
+
 			void NotifyAudibleSoundMoved(SoundEntity* oldPointer, SoundEntity* newPointer);
 			void RegisterAudibleSound(SoundEntity* AudibleSound);
 			void UnregisterAudibleSound(SoundEntity* AudibleSound);

@@ -8,6 +8,12 @@
 
 namespace bw
 {
+	LocalLayerSound::LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position) :
+	LocalLayerSound(layer)
+	{
+		m_node.SetPosition(position);
+	}
+
 	LocalLayerSound::LocalLayerSound(LocalLayerSound&& entity) :
 	m_playingSounds(std::move(entity.m_playingSounds)),
 	m_soundEntities(std::move(entity.m_soundEntities)),
