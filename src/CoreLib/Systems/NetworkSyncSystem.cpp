@@ -189,7 +189,7 @@ namespace bw
 		{
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			movementEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
+			movementEvent.rotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local)); //< Erk
 		}
 
 		if (entity->HasComponent<PlayerMovementComponent>())
