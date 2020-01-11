@@ -183,6 +183,7 @@ namespace bw
 
 			movementEvent.physicsProperties.emplace();
 			movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
+			movementEvent.physicsProperties->isSleeping = entityPhys.IsSleeping();
 			movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
 		}
 		else

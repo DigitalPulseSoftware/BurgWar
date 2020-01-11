@@ -62,6 +62,7 @@ namespace bw
 			{
 				Nz::RadianAnglef angularVelocity;
 				Nz::Vector2f linearVelocity;
+				bool isSleeping;
 			};
 
 			struct EntityPlayAnimation
