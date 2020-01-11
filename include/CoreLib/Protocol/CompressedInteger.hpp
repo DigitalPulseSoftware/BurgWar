@@ -25,6 +25,11 @@ namespace bw
 
 			CompressedSigned& operator=(T value);
 
+			CompressedSigned& operator++();
+			CompressedSigned operator++(int);
+			CompressedSigned& operator--();
+			CompressedSigned operator--(int);
+
 		private:
 			T m_value;
 	};
@@ -41,6 +46,11 @@ namespace bw
 			operator T() const;
 
 			CompressedUnsigned& operator=(T value);
+
+			CompressedUnsigned& operator++();
+			CompressedUnsigned operator++(int);
+			CompressedUnsigned& operator--();
+			CompressedUnsigned operator--(int);
 
 		private:
 			T m_value;

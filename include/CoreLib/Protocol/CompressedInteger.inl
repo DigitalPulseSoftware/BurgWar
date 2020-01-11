@@ -25,6 +25,36 @@ namespace bw
 		return *this;
 	}
 
+	template<typename T>
+	CompressedSigned<T>& CompressedSigned<T>::operator++()
+	{
+		m_value++;
+		return *this;
+	}
+
+	template<typename T>
+	CompressedSigned<T> CompressedSigned<T>::operator++(int)
+	{
+		CompressedSigned copy(*this);
+		m_value++;
+		return copy;
+	}
+
+	template<typename T>
+	CompressedSigned<T>& CompressedSigned<T>::operator--()
+	{
+		m_value--;
+		return *this;
+	}
+
+	template<typename T>
+	CompressedSigned<T> CompressedSigned<T>::operator--(int)
+	{
+		CompressedSigned copy(*this);
+		m_value--;
+		return copy;
+	}
+
 
 	template<typename T>
 	CompressedUnsigned<T>::CompressedUnsigned(T value) :
@@ -43,6 +73,36 @@ namespace bw
 	{
 		m_value = value;
 		return *this;
+	}
+
+	template<typename T>
+	CompressedUnsigned<T>& CompressedUnsigned<T>::operator++()
+	{
+		m_value++;
+		return *this;
+	}
+
+	template<typename T>
+	CompressedUnsigned<T> CompressedUnsigned<T>::operator++(int)
+	{
+		CompressedUnsigned copy(*this);
+		m_value++;
+		return copy;
+	}
+
+	template<typename T>
+	CompressedUnsigned<T>& CompressedUnsigned<T>::operator--()
+	{
+		m_value--;
+		return *this;
+	}
+
+	template<typename T>
+	CompressedUnsigned<T> CompressedUnsigned<T>::operator--(int)
+	{
+		CompressedUnsigned copy(*this);
+		m_value--;
+		return copy;
 	}
 }
 
