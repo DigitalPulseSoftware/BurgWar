@@ -373,6 +373,12 @@ namespace bw
 					if (hasPhysicsProps)
 						entity.physicsProperties.emplace();
 				}
+
+				if (entity.playerMovement)
+				{
+					auto& playerMovementData = entity.playerMovement.value();
+					serializer &= playerMovementData.isFacingRight;
+				}
 			}
 
 			for (auto& entity : data.entities)
@@ -380,12 +386,6 @@ namespace bw
 				serializer &= entity.id;
 				serializer &= entity.position;
 				serializer &= entity.rotation;
-
-				if (entity.playerMovement)
-				{
-					auto& playerMovementData = entity.playerMovement.value();
-					serializer &= playerMovementData.isFacingRight;
-				}
 
 				if (entity.physicsProperties)
 				{
