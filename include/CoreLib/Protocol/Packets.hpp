@@ -466,6 +466,9 @@ namespace bw
 
 #undef DeclarePacket
 
+		// Compute size
+		std::size_t EstimateSize(const MatchState& matchState);
+
 		// Packets serializer
 		void Serialize(PacketSerializer& serializer, Auth& data);
 		void Serialize(PacketSerializer& serializer, AuthFailure& data);

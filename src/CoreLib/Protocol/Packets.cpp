@@ -12,6 +12,38 @@ namespace bw
 {
 	namespace Packets
 	{
+		std::size_t EstimateSize(const MatchState& matchState)
+		{
+			std::size_t size = 0;
+			
+			size += sizeof(MatchState::stateTick);
+
+			size += sizeof(Nz::UInt8); // layer count
+			size += (sizeof(MatchState::Layer::layerIndex) + sizeof(MatchState::Layer::entityCount)) * matchState.layers.size();
+
+			// entity property bit size (2 bits per entity), rounded up
+			size += (matchState.entities.size() * 2 + 7) / 8;
+
+			size += (sizeof(MatchState::Entity::id) + sizeof(MatchState::Entity::position) + sizeof(MatchState::Entity::rotation)) * matchState.entities.size();
+
+			std::size_t playerEntity = 0;
+			std::size_t physicalEntity = 0;
+
+			for (auto& entity : matchState.entities)
+			{
+				if (entity.playerMovement)
+					playerEntity++;
+
+				if (entity.physicsProperties)
+					physicalEntity++;
+			}
+
+			size += (playerEntity + 7) / 8; // one bit per player entity, rounded up
+			size += (sizeof(MatchState::PhysicsProperties::angularVelocity) + sizeof(MatchState::PhysicsProperties::linearVelocity)) * physicalEntity;
+
+			return size;
+		}
+
 		void Serialize(PacketSerializer& serializer, Auth& data)
 		{
 			serializer.SerializeArraySize(data.players);
@@ -334,6 +366,8 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, MatchState& data)
 		{
+			// Don't forget to update EstimateSize(const MatchState&)
+
 			serializer &= data.stateTick;
 
 			Nz::UInt32 entityCount = 0;
