@@ -26,7 +26,7 @@ namespace bw
 
 		m_invFovTan = 1.f / std::tan(Nz::DegreeToRadian(fov * 0.5f));
 
-		UpdateProjection();
+		EnablePerspective(perspective);
 
 		m_onTargetSizeChanged.Connect(renderTarget->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*) { UpdateZoomFactor(); });
 	}
