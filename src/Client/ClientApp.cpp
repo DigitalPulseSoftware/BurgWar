@@ -51,6 +51,8 @@ namespace bw
 			else
 				chosenVideoMode = Nz::VideoMode(desktopMode.width * 2 / 3, desktopMode.height * 2 / 3);
 		}
+		else
+			chosenVideoMode = Nz::VideoMode(width, height);
 
 		m_mainWindow = &AddWindow<Nz::RenderWindow>(chosenVideoMode, "Burg'war", (fullscreen) ? Nz::WindowStyle_Fullscreen : Nz::WindowStyle_Default, Nz::RenderTargetParameters(aaLevel));
 
