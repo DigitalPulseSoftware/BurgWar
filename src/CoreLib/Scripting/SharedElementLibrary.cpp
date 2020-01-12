@@ -6,6 +6,7 @@
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
+#include <NDK/Components/LifetimeComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <sol3/sol.hpp>
 
@@ -72,6 +73,12 @@ namespace bw
 		{
 			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
+		};
+
+		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
+		{
+			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
+			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
 		};
 
 		elementMetatable["ToLocalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& globalPosition)

@@ -6,9 +6,12 @@
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Scripting/ParticleGroup.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
+#include <Nazara/Graphics/ParticleFunctionRenderer.hpp>
+#include <NDK/Components/ParticleGroupComponent.hpp>
 
 namespace bw
 {
@@ -21,37 +24,18 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterLibrary(context);
 
+		sol::state& luaState = context.GetLuaState();
+
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
+		RegisterParticleGroupClass(context);
 		RegisterSoundClass(context);
 		RegisterSpriteClass(context);
 
+		sol::table particleTable = luaState.create_named_table("particle");
+		RegisterParticleLibrary(context, particleTable);
+
 		context.Load("autorun");
-	}
-
-	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
-	{
-#define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
-		[](DummyInputController& input) { return input.GetInputs(). name ; }, \
-		[](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; })
-
-		sol::state& state = context.GetLuaState();
-		state.new_usertype<InputController>("InputController");
-
-		state.new_usertype<DummyInputController>("DummyInputController",
-			sol::base_classes, sol::bases<InputController>(),
-			"new", sol::factories(&std::make_shared<DummyInputController>),
-
-			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
-			BW_INPUT_PROPERTY(isAttacking, bool),
-			BW_INPUT_PROPERTY(isCrouching, bool),
-			BW_INPUT_PROPERTY(isLookingRight, bool),
-			BW_INPUT_PROPERTY(isJumping, bool),
-			BW_INPUT_PROPERTY(isMovingLeft, bool),
-			BW_INPUT_PROPERTY(isMovingRight, bool)
-		);
-
-#undef BW_INPUT_PROPERTY
 	}
 
 	void ClientScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
@@ -152,6 +136,30 @@ namespace bw
 		};
 	}
 
+	void ClientScriptingLibrary::RegisterParticleLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["CreateGroup"] = [&](unsigned int maxParticleCount, const std::string& particleType)
+		{
+			LocalMatch& match = GetMatch();
+
+			const ParticleRegistry& registry = match.GetParticleRegistry();
+			const auto& layout = registry.GetLayout(particleType);
+			if (!layout)
+				throw std::runtime_error("Invalid particle type \"" + particleType + "\"");
+
+			Ndk::World& world = match.GetRenderWorld();
+			const Ndk::EntityHandle& particleGroupEntity = world.CreateEntity();
+			auto& particleGroup = particleGroupEntity->AddComponent<Ndk::ParticleGroupComponent>(maxParticleCount, layout);
+
+			particleGroup.SetRenderer(Nz::ParticleFunctionRenderer::New([](const Nz::ParticleGroup& /*group*/, const Nz::ParticleMapper& /*mapper*/, unsigned int /*startId*/, unsigned int /*endId*/, Nz::AbstractRenderQueue* /*renderQueue*/)
+			{
+				// Do nothing
+			}));
+
+			return ParticleGroup(registry, particleGroupEntity);
+		};
+	}
+
 	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
@@ -160,6 +168,59 @@ namespace bw
 		{
 			throw std::runtime_error("Only the server can reload scripts");
 		};
+	}
+	
+	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
+	{
+#define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
+		[](DummyInputController& input) { return input.GetInputs(). name ; }, \
+		[](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; })
+
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<InputController>("InputController");
+
+		state.new_usertype<DummyInputController>("DummyInputController",
+			sol::base_classes, sol::bases<InputController>(),
+			"new", sol::factories(&std::make_shared<DummyInputController>),
+
+			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
+			BW_INPUT_PROPERTY(isAttacking, bool),
+			BW_INPUT_PROPERTY(isCrouching, bool),
+			BW_INPUT_PROPERTY(isLookingRight, bool),
+			BW_INPUT_PROPERTY(isJumping, bool),
+			BW_INPUT_PROPERTY(isMovingLeft, bool),
+			BW_INPUT_PROPERTY(isMovingRight, bool)
+		);
+#undef BW_INPUT_PROPERTY
+	}
+
+	void ClientScriptingLibrary::RegisterParticleGroupClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		sol::table emptyTable = state.create_table();
+
+		state.new_usertype<ParticleGroup>("ParticleGroup",
+			"new", sol::no_constructor,
+
+			"AddController", sol::overload(
+				[=](ParticleGroup& group, const std::string& name) { group.AddController(name, emptyTable); },
+				&ParticleGroup::AddController),
+
+			"AddGenerator", sol::overload(
+				[=](ParticleGroup& group, const std::string& name) { group.AddGenerator(name, emptyTable); },
+				&ParticleGroup::AddGenerator),
+
+			"GenerateParticles", &ParticleGroup::GenerateParticles,
+
+			"GetParticleCount", &ParticleGroup::GetParticleCount,
+
+			"Kill", &ParticleGroup::Kill,
+
+			"SetRenderer", sol::overload(
+				[=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); },
+				&ParticleGroup::SetRenderer)
+		);
 	}
 
 	void ClientScriptingLibrary::RegisterSoundClass(ScriptingContext& context)

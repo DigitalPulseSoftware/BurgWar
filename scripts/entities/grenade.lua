@@ -49,7 +49,7 @@ function ENTITY:Explode()
 	self.Exploded = true
 
 	if (CLIENT) then
-		self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
+		--self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 
 		local playerPosition = engine_GetPlayerPosition(0)
 		if (playerPosition) then
@@ -60,6 +60,13 @@ function ENTITY:Explode()
 				GM:ShakeCamera(1, strength)
 			end
 		end
+
+		match.CreateEntity({
+			Type = "entity_effect_smoke",
+			LayerIndex = self:GetLayerIndex(),
+			Position = self:GetPosition(),
+			Properties = {}
+		})
 	else
 		local pos = self:GetPosition()
 		local maxs = Vec2(256, 256)
