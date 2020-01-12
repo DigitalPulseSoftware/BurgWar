@@ -6,12 +6,12 @@
 
 namespace bw
 {
-	inline float bw::Camera::GetZoomFactor() const
+	inline float Camera::GetZoomFactor() const
 	{
 		return m_zoomFactor;
 	}
 
-	inline bool bw::Camera::IsPerspective() const
+	inline bool Camera::IsPerspective() const
 	{
 		return m_isPerspective;
 	}
