@@ -799,6 +799,9 @@ namespace bw
 		// Ensure prediction is enabled on all player-controlled layers
 		for (auto& playerData : m_playerData)
 		{
+			if (!playerData.controlledEntity)
+				continue;
+
 			LayerIndex layerIndex = playerData.controlledEntity->GetLayerIndex();
 			m_layers[layerIndex]->EnablePrediction();
 		}
