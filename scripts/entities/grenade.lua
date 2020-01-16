@@ -60,6 +60,15 @@ function ENTITY:Explode()
 				GM:ShakeCamera(1, strength)
 			end
 		end
+
+		match.CreateEntity({
+			Type = "entity_effect_smoke",
+			LayerIndex = self:GetLayerIndex(),
+			Position = self:GetPosition(),
+			Properties = {
+				lifetime = math.random(2, 3)
+			}
+		})
 	else
 		local pos = self:GetPosition()
 		local maxs = Vec2(256, 256)

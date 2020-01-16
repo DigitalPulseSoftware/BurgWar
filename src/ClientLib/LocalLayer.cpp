@@ -12,6 +12,7 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Systems/LifetimeSystem.hpp>
 
 namespace bw
 {
@@ -92,6 +93,7 @@ namespace bw
 			system.Enable(false);
 		});
 
+		world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
 		world.GetSystem<FrameCallbackSystem>().Enable(true);
 
 		world.Update(elapsedTime);
@@ -215,6 +217,7 @@ namespace bw
 			system.Enable(true);
 		});
 
+		world.GetSystem<Ndk::LifetimeSystem>().Enable(false);
 		world.GetSystem<FrameCallbackSystem>().Enable(false);
 		world.GetSystem<VisualInterpolationSystem>().Enable(false);
 

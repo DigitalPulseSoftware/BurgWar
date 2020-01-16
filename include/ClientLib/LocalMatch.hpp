@@ -22,6 +22,7 @@
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
+#include <ClientLib/Scripting/ParticleRegistry.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
@@ -73,6 +74,8 @@ namespace bw
 			LocalLayer& GetLayer(LayerIndex layerIndex) override;
 			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
+			inline ParticleRegistry& GetParticleRegistry();
+			inline const ParticleRegistry& GetParticleRegistry() const;
 			inline Ndk::World& GetRenderWorld();
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
@@ -203,6 +206,7 @@ namespace bw
 			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
 			std::optional<LocalConsole> m_localConsole;
+			std::optional<ParticleRegistry> m_particleRegistry;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;

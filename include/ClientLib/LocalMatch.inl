@@ -52,7 +52,19 @@ namespace bw
 	{
 		return m_session;
 	}
-	
+
+	inline ParticleRegistry& LocalMatch::GetParticleRegistry()
+	{
+		assert(m_particleRegistry);
+		return *m_particleRegistry;
+	}
+
+	inline const ParticleRegistry& LocalMatch::GetParticleRegistry() const
+	{
+		assert(m_particleRegistry);
+		return *m_particleRegistry;
+	}
+
 	inline Ndk::World& LocalMatch::GetRenderWorld()
 	{
 		return m_renderWorld;

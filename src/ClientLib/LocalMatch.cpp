@@ -276,7 +276,10 @@ namespace bw
 	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
 	{
 		if (!m_assetStore)
+		{
 			m_assetStore.emplace(GetLogger(), std::move(assetDir));
+			m_particleRegistry.emplace(m_assetStore.value());
+		}
 		else
 		{
 			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
