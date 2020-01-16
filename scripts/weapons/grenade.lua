@@ -16,7 +16,7 @@ if (SERVER) then
 			Owner = self:GetOwner(),
 			Position = self:GetPosition() + self:GetDirection() * 32,
 			Properties = {
-				lifetime = math.random(2, 4)
+				lifetime = math.random(1, 2)
 			}
 		})
 
