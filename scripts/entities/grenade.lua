@@ -49,7 +49,7 @@ function ENTITY:Explode()
 	self.Exploded = true
 
 	if (CLIENT) then
-		--self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
+		self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 
 		local playerPosition = engine_GetPlayerPosition(0)
 		if (playerPosition) then
@@ -65,7 +65,9 @@ function ENTITY:Explode()
 			Type = "entity_effect_smoke",
 			LayerIndex = self:GetLayerIndex(),
 			Position = self:GetPosition(),
-			Properties = {}
+			Properties = {
+				lifetime = math.random(2, 3)
+			}
 		})
 	else
 		local pos = self:GetPosition()
