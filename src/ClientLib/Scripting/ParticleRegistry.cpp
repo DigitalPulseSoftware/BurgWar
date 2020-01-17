@@ -308,14 +308,15 @@ namespace bw
 					auto velPtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Velocity);
 
 					auto& gen = GetRandomGenerator();
-					std::uniform_real_distribution<float> disXY(-1.f, 1.f);
+					std::uniform_real_distribution<float> disAngle(-float(M_PI), float(M_PI));
 					std::uniform_real_distribution<float> disLength(minSpeed, maxSpeed);
 
 					for (unsigned int i = startId; i <= endId; ++i)
 					{
-						Nz::Vector2f velocity(disXY(gen), disXY(gen));
-						velocity.Normalize();
+						Nz::RadianAnglef angle(disAngle(gen));
+						auto sincos = angle.GetSinCos();
 
+						Nz::Vector2f velocity(sincos.first, sincos.second);
 						velPtr[i] = velocity * disLength(gen);
 					}
 				}
