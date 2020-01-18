@@ -71,6 +71,8 @@ namespace bw
 
 		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
+		m_connectionButton->Resize(m_connectionButton->GetPreferredSize());
+
 		m_connectionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
 		{
 			OnConnectionPressed();
@@ -78,6 +80,8 @@ namespace bw
 
 		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
 		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server", 24));
+		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
+		
 		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
 		{
 			OnStartServerPressed();
@@ -85,6 +89,8 @@ namespace bw
 
 		m_quitButton = CreateWidget<Ndk::ButtonWidget>();
 		m_quitButton->UpdateText(Nz::SimpleTextDrawer::Draw("Quit", 24));
+		m_quitButton->Resize(m_quitButton->GetPreferredSize());
+		
 		m_quitButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
 		{
 			OnQuitPressed();
