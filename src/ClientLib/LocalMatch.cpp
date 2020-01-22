@@ -120,7 +120,7 @@ namespace bw
 				}
 
 				Packets::PlayerSelectWeapon selectPacket;
-				selectPacket.playerIndex = i;
+				selectPacket.localIndex = i;
 				selectPacket.newWeaponIndex = static_cast<Nz::UInt8>((playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon);
 
 				m_session.SendPacket(selectPacket);
@@ -130,7 +130,7 @@ namespace bw
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
 			Packets::PlayerChat chatPacket;
-			chatPacket.playerIndex = 0;
+			chatPacket.localIndex = 0;
 			chatPacket.message = message;
 
 			m_session.SendPacket(chatPacket);
@@ -367,7 +367,7 @@ namespace bw
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::object callbackObject)
 		{
-			const Ndk::EntityHandle& entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -395,7 +395,7 @@ namespace bw
 
 		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::object callbackObject)
 		{
-			const Ndk::EntityHandle& entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -421,9 +421,9 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 playerIndex) -> sol::object
+		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> sol::object
 		{
-			if (playerIndex >= m_playerData.size())
+			if (localIndex >= m_playerData.size())
 				throw std::runtime_error("Invalid player index");
 
 			auto& playerData = m_playerData[playerIndex];
@@ -448,15 +448,15 @@ namespace bw
 			m_camera->MoveToPosition(position);
 		};
 
-		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 playerIndex, std::shared_ptr<InputController> inputController)
+		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
 		{
-			if (playerIndex >= m_playerData.size())
+			if (localIndex >= m_playerData.size())
 				throw std::runtime_error("Invalid player index");
 
 			if (!inputController)
 				throw std::runtime_error("Invalid input controller");
 
-			m_playerData[playerIndex].inputController = std::move(inputController);
+			m_playerData[localIndex].inputController = std::move(inputController);
 		};
 
 		ForEachEntity([this](const Ndk::EntityHandle& entity)
@@ -788,16 +788,16 @@ namespace bw
 
 		LocalLayerEntity& layerEntity = layerEntityOpt.value();
 
-		if (m_playerData[packet.playerIndex].controlledEntity)
+		if (m_playerData[packet.localIndex].controlledEntity)
 		{
-			auto& controlledEntity = m_playerData[packet.playerIndex].controlledEntity;
+			auto& controlledEntity = m_playerData[packet.localIndex].controlledEntity;
 			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
 
 			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
 		}
 
-		m_playerData[packet.playerIndex].controlledEntity = layerEntity.CreateHandle();
-		m_playerData[packet.playerIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+		m_playerData[packet.localIndex].controlledEntity = layerEntity.CreateHandle();
+		m_playerData[packet.localIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
 
 		// Ensure prediction is enabled on all player-controlled layers
 		for (auto& playerData : m_playerData)
@@ -989,7 +989,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::PlayerLayer&& packet)
 	{
-		m_playerData[packet.playerIndex].layerIndex = packet.layerIndex;
+		m_playerData[packet.localIndex].layerIndex = packet.layerIndex;
 
 		m_gamemode->ExecuteCallback("OnChangeLayer", m_activeLayerIndex, static_cast<LayerIndex>(packet.layerIndex));
 		m_activeLayerIndex = packet.layerIndex;
@@ -1004,7 +1004,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)
 	{
-		auto& playerData = m_playerData[packet.playerIndex];
+		auto& playerData = m_playerData[packet.localIndex];
 		playerData.weapons.clear();
 
 		assert(packet.layerIndex < m_layers.size());
@@ -1022,7 +1022,7 @@ namespace bw
 			playerData.weapons.emplace_back(layerEntity.GetEntity());
 
 			auto& scriptComponent = layerEntity.GetEntity()->GetComponent<ScriptComponent>();
-			bwLog(GetLogger(), LogLevel::Info, "Local player #{0} has weapon {1}", +packet.playerIndex, scriptComponent.GetElement()->fullName);
+			bwLog(GetLogger(), LogLevel::Info, "Local player #{0} has weapon {1}", +packet.localIndex, scriptComponent.GetElement()->fullName);
 		}
 
 		playerData.selectedWeapon = playerData.weapons.size();
@@ -1058,7 +1058,7 @@ namespace bw
 		{
 			Packets::PlayerConsoleCommand commandPacket;
 			commandPacket.command = command;
-			commandPacket.playerIndex = 0;
+			commandPacket.localIndex = 0;
 
 			m_session.SendPacket(commandPacket);
 

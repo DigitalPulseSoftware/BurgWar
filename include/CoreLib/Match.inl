@@ -9,12 +9,13 @@ namespace bw
 {
 	inline Nz::Int64 Match::AllocateUniqueId()
 	{
-		return m_freeUniqueId++;
+		return m_nextUniqueId++;
 	}
 
 	template<typename T>
 	void Match::BuildClientAssetListPacket(T& clientAsset) const
 	{
+		//FIXME
 		clientAsset.fastDownloadUrls.emplace_back("https://burgwar.digitalpulsesoftware.net/resources");
 
 		for (const auto& pair : m_assets)
@@ -50,10 +51,10 @@ namespace bw
 	template<typename F>
 	void Match::ForEachPlayer(F&& func)
 	{
-		for (Player* player : m_players)
+		for (auto& playerPtr : m_players)
 		{
-			if (player)
-				func(player);
+			if (playerPtr)
+				func(playerPtr.get());
 		}
 	}
 

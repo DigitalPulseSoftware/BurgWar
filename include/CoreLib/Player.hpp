@@ -32,16 +32,17 @@ namespace bw
 		friend Match;
 
 		public:
-			Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string name);
+			Player(Match& match, MatchClientSession& session, std::size_t playerIndex, Nz::UInt8 localIndex, std::string name);
 			Player(const Player&) = delete;
 			Player(Player&&) noexcept = default;
 			~Player();
 
 			inline const Ndk::EntityHandle& GetControlledEntity() const;
 			inline LayerIndex GetLayerIndex() const;
-			inline Match* GetMatch() const;
+			inline Match& GetMatch() const;
 			inline const std::string& GetName() const;
-			inline Nz::UInt8 GetPlayerIndex() const;
+			inline Nz::UInt8 GetLocalIndex() const;
+			inline std::size_t GetPlayerIndex() const;
 			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
 			inline std::size_t GetWeaponCount() const;
@@ -53,7 +54,6 @@ namespace bw
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
 			inline bool IsAdmin() const;
-			inline bool IsInMatch() const;
 			inline bool IsReady() const;
 
 			void MoveToLayer(LayerIndex layerIndex);
@@ -88,23 +88,22 @@ namespace bw
 			void OnDeath(const Ndk::EntityHandle& attacker);
 			void OnReady();
 
-			void UpdateMatch(Match* match);
-
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
 			NazaraSlot(HealthComponent, OnDied, m_onPlayerEntityDied);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			LayerIndex m_layerIndex;
+			std::size_t m_activeWeaponIndex;
 			std::size_t m_inputIndex;
-			std::size_t m_activeWeaponIndex = NoWeapon;
+			std::size_t m_playerIndex;
 			std::string m_name;
 			std::vector<Ndk::EntityOwner> m_weapons;
 			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
 			Ndk::EntityOwner m_playerEntity;
 			Nz::Bitset<Nz::UInt64> m_visibleLayers;
-			Nz::MovablePtr<Match> m_match;
-			Nz::UInt8 m_playerIndex;
+			Nz::UInt8 m_localIndex;
+			Match& m_match;
 			MatchClientSession& m_session;
 			bool m_isAdmin;
 			bool m_isReady;

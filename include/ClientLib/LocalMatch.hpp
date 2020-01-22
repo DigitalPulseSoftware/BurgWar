@@ -146,8 +146,8 @@ namespace bw
 
 			struct PlayerData
 			{
-				PlayerData(Nz::UInt8 playerIndex) :
-				playerIndex(playerIndex)
+				PlayerData(Nz::UInt8 localIndex) :
+				localIndex(localIndex)
 				{
 				}
 
@@ -155,7 +155,7 @@ namespace bw
 				std::shared_ptr<InputController> inputController;
 				std::vector<Ndk::EntityHandle> weapons;
 				LocalLayerEntityHandle controlledEntity;
-				Nz::UInt8 playerIndex;
+				Nz::UInt8 localIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;
 				PlayerInputData lastInputData;
 			};

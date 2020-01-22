@@ -62,7 +62,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, ChatMessage& data)
 		{
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.playerName;
 			serializer &= data.content;
 		}
@@ -104,7 +104,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, ConsoleAnswer& data)
 		{
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.response;
 			serializer &= data.color;
 		}
@@ -139,7 +139,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, ControlEntity& data)
 		{
 			serializer &= data.stateTick;
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.layerIndex;
 			serializer &= data.entityId;
 		}
@@ -441,20 +441,20 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, PlayerChat& data)
 		{
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.message;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data)
 		{
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.command;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayerLayer& data)
 		{
 			serializer &= data.stateTick;
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.layerIndex;
 		}
 
@@ -487,14 +487,14 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data)
 		{
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.newWeaponIndex;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data)
 		{
 			serializer &= data.stateTick;
-			serializer &= data.playerIndex;
+			serializer &= data.localIndex;
 			serializer &= data.layerIndex;
 			serializer.Serialize(data.weaponEntities);
 		}

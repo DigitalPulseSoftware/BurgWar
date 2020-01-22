@@ -30,7 +30,7 @@ namespace bw
 	m_gamemodePath(std::move(gamemodeFolder)),
 	m_maxPlayerCount(maxPlayerCount),
 	m_sessions(*this),
-	m_freeUniqueId(map.GetFreeUniqueId()),
+	m_nextUniqueId(map.GetFreeUniqueId()),
 	m_app(app),
 	m_map(std::move(map))
 	{
@@ -64,6 +64,28 @@ namespace bw
 		m_scriptingLibrary.reset();
 	}
 
+	Player* Match::CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name)
+	{
+		if (m_players.size() >= m_maxPlayerCount)
+			return nullptr;
+
+		std::size_t playerIndex = m_freePlayerId.FindFirst();
+		if (playerIndex == m_freePlayerId.npos)
+		{
+			playerIndex = m_freePlayerId.GetSize();
+			m_freePlayerId.Resize(playerIndex + 1, false);
+		}
+
+		auto playerPtr = std::make_unique<Player>(*this, session, playerIndex, localIndex, std::move(name));
+		Player* player = playerPtr.get();
+
+		m_players.emplace_back(std::move(playerPtr));
+
+		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
+
+		return player;
+	}
+
 	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
 		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
@@ -72,28 +94,6 @@ namespace bw
 			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
 		}
-	}
-
-	void Match::Leave(Player* player)
-	{
-		assert(player->GetMatch() == this);
-
-		auto it = std::find(m_players.begin(), m_players.end(), player);
-		assert(it != m_players.end());
-
-		m_players.erase(it);
-
-		player->MoveToLayer(Player::NoLayer);
-		player->UpdateMatch(nullptr);
-
-		Packets::ChatMessage chatPacket;
-		chatPacket.content = player->GetName() + " has left.";
-
-		//FIXME: Should be for each session
-		ForEachPlayer([&](Player* player)
-		{
-			player->SendPacket(chatPacket);
-		});
 	}
 
 	bool Match::GetClientScript(const std::string& filePath, const ClientScript** clientScriptData)
@@ -153,21 +153,6 @@ namespace bw
 			bwLog(GetLogger(), LogLevel::Error, "Failed to create debug socket");
 			m_debug.reset();
 		}
-	}
-
-	bool Match::Join(Player* player)
-	{
-		assert(!player->IsInMatch());
-
-		if (m_players.size() >= m_maxPlayerCount)
-			return false;
-
-		m_players.emplace_back(player);
-		player->UpdateMatch(this);
-
-		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
-
-		return true;
 	}
 
 	void Match::RegisterAsset(const std::filesystem::path& assetPath)
@@ -399,7 +384,46 @@ namespace bw
 					m_networkStringStore.RegisterString(propertyName);
 			}
 		});
+	}
 
+	void Match::RemovePlayer(Player* player, DisconnectionReason disconnectionReason)
+	{
+		assert(&player->GetMatch() == this);
+
+		auto it = std::find_if(m_players.begin(), m_players.end(), [player](const auto& playerPtr) { return playerPtr.get() == player; });
+		assert(it != m_players.end());
+
+		Packets::ChatMessage chatPacket;
+		chatPacket.content = player->GetName() + " has left";
+
+		switch (disconnectionReason)
+		{
+			case DisconnectionReason::Kicked:
+				chatPacket.content += " (kicked).";
+				break;
+
+			case DisconnectionReason::PlayerLeft :
+				chatPacket.content += '.';
+				break;
+
+			case DisconnectionReason::TimedOut:
+				chatPacket.content += " (timed out).";
+				break;
+
+			default:
+				chatPacket.content += " (unhandled case).";
+				break;
+		}
+
+		it->reset();
+		m_freePlayerId.Set(std::distance(m_players.begin(), it), true);
+
+		ForEachPlayer([&](Player* player)
+		{
+			chatPacket.localIndex = player->GetLocalIndex();
+
+			player->SendPacket(chatPacket);
+		});
 	}
 
 	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const
@@ -533,7 +557,7 @@ namespace bw
 
 		ForEachPlayer([&](Player* player)
 		{
-			chatPacket.playerIndex = player->GetPlayerIndex();
+			chatPacket.localIndex = player->GetLocalIndex();
 
 			player->SendPacket(chatPacket);
 		});
@@ -543,8 +567,8 @@ namespace bw
 	{
 		float elapsedTime = GetTickDuration();
 
-		for (Player* player : m_players)
-			player->OnTick(lastTick);
+		for (auto& playerPtr : m_players)
+			playerPtr->OnTick(lastTick);
 
 		m_gamemode->ExecuteCallback("OnTick");
 

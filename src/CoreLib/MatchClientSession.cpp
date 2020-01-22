@@ -28,7 +28,13 @@ namespace bw
 		});
 	}
 
-	MatchClientSession::~MatchClientSession() = default;
+	MatchClientSession::~MatchClientSession()
+	{
+		ForEachPlayer([this](Player* player)
+		{
+			m_match.RemovePlayer(player, DisconnectionReason::PlayerLeft);
+		});
+	}
 
 	void MatchClientSession::Disconnect()
 	{
@@ -58,18 +64,22 @@ namespace bw
 			return;
 		}
 
-		std::vector<std::unique_ptr<Player>> players;
+		std::vector<PlayerHandle> players;
 		for (std::size_t i = 0; i < packet.players.size(); ++i)
 		{
-			std::unique_ptr<Player> player = std::make_unique<Player>(*this, static_cast<Nz::UInt8>(i), packet.players[i].nickname);
-			if (!m_match.Join(player.get()))
+			Player* player = m_match.CreatePlayer(*this, static_cast<Nz::UInt8>(i), packet.players[i].nickname);
+			if (!player)
 			{
+				// FIXME
+				for (Player* previousPlayerPleaseFixMe : players)
+					m_match.RemovePlayer(previousPlayerPleaseFixMe, DisconnectionReason::Kicked);
+
 				SendPacket(Packets::AuthFailure());
 				Disconnect();
 				return;
 			}
 
-			players.emplace_back(std::move(player));
+			players.emplace_back(player);
 		}
 
 		m_players = std::move(players);
@@ -98,10 +108,10 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(Packets::PlayerChat&& packet)
 	{
-		if (packet.playerIndex >= m_players.size())
+		if (packet.localIndex >= m_players.size())
 			return;
 
-		if (auto contentOpt = m_match.GetGamemode()->ExecuteCallback("OnPlayerChat", m_players[packet.playerIndex]->CreateHandle(), packet.message))
+		if (auto contentOpt = m_match.GetGamemode()->ExecuteCallback("OnPlayerChat", m_players[packet.localIndex]->CreateHandle(), packet.message))
 		{
 			sol::object& content = *contentOpt;
 			if (content.is<sol::nil_t>())
@@ -114,12 +124,12 @@ namespace bw
 			}
 
 			Packets::ChatMessage chatPacket;
-			chatPacket.playerName = m_players[packet.playerIndex]->GetName();
+			chatPacket.playerName = m_players[packet.localIndex]->GetName();
 			chatPacket.content = content.as<std::string>();
 
 			m_match.ForEachPlayer([&](Player* player)
 			{
-				chatPacket.playerIndex = player->GetPlayerIndex();
+				chatPacket.localIndex = player->GetLocalIndex();
 
 				player->SendPacket(chatPacket);
 			});
@@ -128,10 +138,10 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerConsoleCommand& packet)
 	{
-		if (packet.playerIndex >= m_players.size())
+		if (packet.localIndex >= m_players.size())
 			return;
 
-		m_players[packet.playerIndex]->HandleConsoleCommand(packet.command);
+		m_players[packet.localIndex]->HandleConsoleCommand(packet.command);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayersInput& packet)
@@ -182,10 +192,10 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerSelectWeapon& packet)
 	{
-		if (packet.playerIndex >= m_players.size())
+		if (packet.localIndex >= m_players.size())
 			return;
 
-		Player* player = m_players[packet.playerIndex].get();
+		Player* player = m_players[packet.localIndex];
 
 		if (packet.newWeaponIndex != packet.NoWeapon && packet.newWeaponIndex >= player->GetWeaponCount())
 			return;

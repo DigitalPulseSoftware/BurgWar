@@ -7,15 +7,16 @@
 #ifndef BURGWAR_CORELIB_MATCH_HPP
 #define BURGWAR_CORELIB_MATCH_HPP
 
+#include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/AssetStore.hpp>
-#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/TerrainLayer.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
@@ -36,6 +37,13 @@ namespace bw
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
+	enum class DisconnectionReason
+	{
+		Kicked,
+		PlayerLeft,
+		TimedOut
+	};
+
 	class Match : public SharedMatch
 	{
 		friend class MatchClientSession;
@@ -53,6 +61,8 @@ namespace bw
 
 			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;
 			template<typename T> void BuildClientScriptListPacket(T& clientScript) const;
+
+			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
@@ -80,9 +90,6 @@ namespace bw
 
 			void InitDebugGhosts();
 
-			void Leave(Player* player);
-			bool Join(Player* player);
-
 			void RegisterAsset(const std::filesystem::path& assetPath);
 			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
@@ -90,6 +97,8 @@ namespace bw
 
 			void ReloadAssets();
 			void ReloadScripts();
+
+			void RemovePlayer(Player* player, DisconnectionReason disconnection);
 
 			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
 			Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
@@ -141,12 +150,13 @@ namespace bw
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
-			std::vector<PlayerHandle> m_players;
+			std::vector<std::unique_ptr<Player>> m_players;
 			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			tsl::hopscotch_map<Nz::Int64, Entity> m_entitiesByUniqueId;
-			Nz::Int64 m_freeUniqueId;
+			Nz::Bitset<> m_freePlayerId;
+			Nz::Int64 m_nextUniqueId;
 			BurgApp& m_app;
 			Map m_map;
 			MatchSessions m_sessions;

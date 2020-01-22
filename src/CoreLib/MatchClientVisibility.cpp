@@ -141,7 +141,7 @@ namespace bw
 				Packets::PlayerLayer layerPacket;
 				layerPacket.stateTick = networkTick;
 				layerPacket.layerIndex = layerUpdate.layerIndex;
-				layerPacket.playerIndex = layerUpdate.playerIndex;
+				layerPacket.localIndex = layerUpdate.localPlayerIndex;
 
 				m_session.SendPacket(layerPacket);
 			}

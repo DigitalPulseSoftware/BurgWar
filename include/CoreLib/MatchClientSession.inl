@@ -10,10 +10,10 @@ namespace bw
 	template<typename F>
 	void MatchClientSession::ForEachPlayer(F&& func)
 	{
-		for (auto& playerPtr : m_players)
+		for (Player* player : m_players)
 		{
-			assert(playerPtr);
-			func(playerPtr.get());
+			assert(player);
+			func(player);
 		}
 	}
 

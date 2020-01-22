@@ -64,7 +64,7 @@ namespace bw
 
 			template<typename T> void PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet);
 			template<typename T> void PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
-			inline void PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex);
+			inline void PushLayerUpdate(Nz::UInt8 localPlayerIndex, LayerIndex layerIndex);
 
 			inline void SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled);
 
@@ -84,7 +84,7 @@ namespace bw
 
 			struct PendingLayerUpdate
 			{
-				Nz::UInt8 playerIndex;
+				Nz::UInt8 localPlayerIndex;
 				LayerIndex layerIndex;
 			};
 

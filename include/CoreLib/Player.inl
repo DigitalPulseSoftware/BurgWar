@@ -16,7 +16,7 @@ namespace bw
 		return m_layerIndex;
 	}
 
-	inline Match* Player::GetMatch() const
+	inline Match& Player::GetMatch() const
 	{
 		return m_match;
 	}
@@ -26,7 +26,12 @@ namespace bw
 		return m_name;
 	}
 
-	inline Nz::UInt8 Player::GetPlayerIndex() const
+	inline Nz::UInt8 Player::GetLocalIndex() const
+	{
+		return m_localIndex;
+	}
+
+	inline std::size_t Player::GetPlayerIndex() const
 	{
 		return m_playerIndex;
 	}
@@ -54,11 +59,6 @@ namespace bw
 	inline bool Player::IsAdmin() const
 	{
 		return m_isAdmin;
-	}
-
-	inline bool Player::IsInMatch() const
-	{
-		return m_match != nullptr;
 	}
 
 	inline bool Player::IsReady() const

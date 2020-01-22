@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SERVER_CLIENTSESSION_HPP
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
+#include <Nazara/Core/ObjectHandle.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
@@ -19,6 +20,8 @@ namespace bw
 	class MatchClientVisibility;
 	class Player;
 	class PlayerCommandStore;
+
+	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	// Match client session
 	class MatchClientSession final
@@ -62,7 +65,7 @@ namespace bw
 			std::size_t m_sessionId;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
-			std::vector<std::unique_ptr<Player>> m_players;
+			std::vector<PlayerHandle> m_players;
 	};
 }
 

@@ -150,7 +150,7 @@ namespace bw
 
 		DeclarePacket(ChatMessage)
 		{
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			std::string playerName; //< Temporary
 			std::string content;
 		};
@@ -181,7 +181,7 @@ namespace bw
 
 		DeclarePacket(ConsoleAnswer)
 		{
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			std::string response;
 			Nz::Color color;
 		};
@@ -189,7 +189,7 @@ namespace bw
 		DeclarePacket(ControlEntity)
 		{
 			Nz::UInt16 stateTick;
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			CompressedUnsigned<LayerIndex> layerIndex;
 			CompressedUnsigned<Nz::UInt32> entityId;
 		};
@@ -421,20 +421,20 @@ namespace bw
 
 		DeclarePacket(PlayerChat)
 		{
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			std::string message;
 		};
 
 		DeclarePacket(PlayerConsoleCommand)
 		{
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			std::string command;
 		};
 
 		DeclarePacket(PlayerLayer)
 		{
 			Nz::UInt16 stateTick;
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			CompressedUnsigned<LayerIndex> layerIndex;
 		};
 
@@ -446,7 +446,7 @@ namespace bw
 
 		DeclarePacket(PlayerSelectWeapon)
 		{
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			Nz::UInt8 newWeaponIndex;
 
 			static constexpr std::size_t NoWeapon = 0xFF;
@@ -455,7 +455,7 @@ namespace bw
 		DeclarePacket(PlayerWeapons)
 		{
 			Nz::UInt16 stateTick;
-			Nz::UInt8 playerIndex;
+			Nz::UInt8 localIndex;
 			CompressedUnsigned<LayerIndex> layerIndex;
 			std::vector<CompressedUnsigned<Nz::UInt32>> weaponEntities;
 		};

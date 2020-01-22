@@ -30,11 +30,14 @@
 
 namespace bw
 {
-	Player::Player(MatchClientSession& session, Nz::UInt8 playerIndex, std::string playerName) :
+	Player::Player(Match& match, MatchClientSession& session, std::size_t playerIndex, Nz::UInt8 localIndex, std::string playerName) :
 	m_layerIndex(NoLayer),
+	m_activeWeaponIndex(NoWeapon),
 	m_inputIndex(0),
-	m_name(std::move(playerName)),
 	m_playerIndex(playerIndex),
+	m_name(std::move(playerName)),
+	m_localIndex(localIndex),
+	m_match(match),
 	m_session(session),
 	m_isAdmin(false),
 	m_isReady(false),
@@ -44,9 +47,6 @@ namespace bw
 
 	Player::~Player()
 	{
-		if (m_match)
-			m_match->Leave(this);
-
 		MatchClientVisibility& visibility = GetSession().GetVisibility();
 		for (std::size_t layerIndex = m_visibleLayers.FindFirst(); layerIndex != m_visibleLayers.npos; layerIndex = m_visibleLayers.FindNext(layerIndex))
 			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
@@ -54,9 +54,6 @@ namespace bw
 
 	bool Player::GiveWeapon(std::string weaponClass)
 	{
-		if (!m_match)
-			return false;
-
 		if (m_layerIndex == NoLayer)
 			return false;
 
@@ -66,20 +63,20 @@ namespace bw
 		if (HasWeapon(weaponClass))
 			return false;
 
-		Terrain& terrain = m_match->GetTerrain();
+		Terrain& terrain = m_match.GetTerrain();
 
-		ServerWeaponStore& weaponStore = m_match->GetWeaponStore();
+		ServerWeaponStore& weaponStore = m_match.GetWeaponStore();
 
 		// Create weapon
 		if (std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); weaponEntityIndex != ServerEntityStore::InvalidIndex)
 		{
-			Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+			Nz::Int64 uniqueId = m_match.AllocateUniqueId();
 
 			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, uniqueId, {}, m_playerEntity);
 			if (!weapon)
 				return false;
 
-			m_match->RegisterEntity(uniqueId, weapon);
+			m_match.RegisterEntity(uniqueId, weapon);
 
 			weapon->AddComponent<OwnerComponent>(CreateHandle());
 
@@ -100,9 +97,9 @@ namespace bw
 
 		if (!m_scriptingEnvironment)
 		{
-			const std::string& scriptFolder = m_match->GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
+			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
 
-			m_scriptingEnvironment.emplace(m_match->GetLogger(), m_match->GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
+			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
 			{
 				if (!ply)
@@ -110,7 +107,7 @@ namespace bw
 
 				Packets::ConsoleAnswer answer;
 				answer.color = color;
-				answer.playerIndex = ply->GetPlayerIndex();
+				answer.localIndex = ply->GetLocalIndex();
 				answer.response = text;
 
 				ply->SendPacket(std::move(answer));
@@ -124,7 +121,7 @@ namespace bw
 	{
 		if (m_layerIndex != layerIndex)
 		{
-			m_match->GetGamemode()->ExecuteCallback("OnPlayerChangeLayer", CreateHandle(), layerIndex);
+			m_match.GetGamemode()->ExecuteCallback("OnPlayerChangeLayer", CreateHandle(), layerIndex);
 
 			if (m_layerIndex != NoLayer)
 				UpdateLayerVisibility(m_layerIndex, false);
@@ -133,7 +130,7 @@ namespace bw
 			{
 				if (m_playerEntity)
 				{
-					Terrain& terrain = m_match->GetTerrain();
+					Terrain& terrain = m_match.GetTerrain();
 					Ndk::World& world = terrain.GetLayer(layerIndex).GetWorld();
 
 					const Ndk::EntityHandle& newPlayerEntity = world.CloneEntity(m_playerEntity);
@@ -147,25 +144,25 @@ namespace bw
 
 					newPlayerEntity->AddComponent(m_playerEntity->GetComponent<Ndk::PhysicsComponent2D>().Clone());*/
 
-					Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+					Nz::Int64 uniqueId = m_match.AllocateUniqueId();
 
-					newPlayerEntity->AddComponent<MatchComponent>(*m_match, layerIndex, uniqueId);
+					newPlayerEntity->AddComponent<MatchComponent>(m_match, layerIndex, uniqueId);
 
-					m_match->RegisterEntity(uniqueId, newPlayerEntity);
+					m_match.RegisterEntity(uniqueId, newPlayerEntity);
 
 					UpdateControlledEntity(newPlayerEntity);
 
 					for (auto& weaponEntity : m_weapons)
 					{
-						Nz::Int64 weaponUniqueId = m_match->AllocateUniqueId();
+						Nz::Int64 weaponUniqueId = m_match.AllocateUniqueId();
 
 						weaponEntity = world.CloneEntity(weaponEntity);
-						weaponEntity->AddComponent<MatchComponent>(*m_match, layerIndex, weaponUniqueId);
+						weaponEntity->AddComponent<MatchComponent>(m_match, layerIndex, weaponUniqueId);
 						weaponEntity->GetComponent<Ndk::NodeComponent>().SetParent(newPlayerEntity);
 						weaponEntity->GetComponent<NetworkSyncComponent>().UpdateParent(newPlayerEntity);
 						weaponEntity->GetComponent<WeaponComponent>().UpdateOwner(newPlayerEntity);
 
-						m_match->RegisterEntity(weaponUniqueId, weaponEntity);
+						m_match.RegisterEntity(weaponUniqueId, weaponEntity);
 					}
 
 					m_shouldSendWeapons = true;
@@ -183,7 +180,7 @@ namespace bw
 			m_layerIndex = layerIndex;
 
 			MatchClientVisibility& visibility = GetSession().GetVisibility();
-			visibility.PushLayerUpdate(m_playerIndex, m_layerIndex);
+			visibility.PushLayerUpdate(m_localIndex, m_layerIndex);
 
 			if (m_layerIndex != NoLayer)
 				UpdateLayerVisibility(m_layerIndex, true);
@@ -194,7 +191,7 @@ namespace bw
 	{
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = std::move(message);
-		chatPacket.playerIndex = m_playerIndex;
+		chatPacket.localIndex = m_localIndex;
 
 		SendPacket(chatPacket);
 	}
@@ -204,7 +201,7 @@ namespace bw
 		if (lastTick && m_shouldSendWeapons)
 		{
 			Packets::PlayerWeapons weaponPacket;
-			weaponPacket.playerIndex = m_playerIndex;
+			weaponPacket.localIndex = m_localIndex;
 			weaponPacket.layerIndex = m_layerIndex;
 
 			Nz::Bitset<Nz::UInt64> weaponIds;
@@ -233,9 +230,6 @@ namespace bw
 
 	void Player::RemoveWeapon(const std::string& weaponClass)
 	{
-		if (!m_match)
-			return;
-
 		if (m_layerIndex == NoLayer)
 			return;
 
@@ -296,7 +290,7 @@ namespace bw
 		if (weaponPacket.weaponEntityId != 0xFFFFFFFF)
 			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
 
-		m_match->ForEachPlayer([&](Player* ply)
+		m_match.ForEachPlayer([&](Player* ply)
 		{
 			MatchClientSession& session = ply->GetSession();
 			session.GetVisibility().PushEntitiesPacket(m_layerIndex, entityIds, weaponPacket);
@@ -310,31 +304,28 @@ namespace bw
 	
 	void Player::Spawn()
 	{
-		if (!m_match)
-			return;
-
 		if (m_layerIndex == NoLayer)
 			return;
 
-		Terrain& terrain = m_match->GetTerrain();
+		Terrain& terrain = m_match.GetTerrain();
 
-		ServerEntityStore& entityStore = m_match->GetEntityStore();
+		ServerEntityStore& entityStore = m_match.GetEntityStore();
 		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
 		{
-			auto spawnPositionOpt = m_match->GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition");
+			auto spawnPositionOpt = m_match.GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition");
 			if (!spawnPositionOpt)
 				return;
 
-			Nz::Int64 uniqueId = m_match->AllocateUniqueId();
+			Nz::Int64 uniqueId = m_match.AllocateUniqueId();
 
 			Nz::Vector2f spawnPosition = spawnPositionOpt->as<Nz::Vector2f>();
 			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, uniqueId, spawnPosition, 0.f, {});
 			if (!playerEntity)
 				return;
 
-			m_match->RegisterEntity(uniqueId, playerEntity);
+			m_match.RegisterEntity(uniqueId, playerEntity);
 
-			bwLog(m_match->GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
+			bwLog(m_match.GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
 
 			playerEntity->AddComponent<InputComponent>();
 			playerEntity->AddComponent<OwnerComponent>(CreateHandle());
@@ -342,7 +333,7 @@ namespace bw
 
 			UpdateControlledEntity(playerEntity);
 
-			m_match->GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
+			m_match.GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
 		}
 	}
 
@@ -391,7 +382,7 @@ namespace bw
 		if (sendPacket)
 		{
 			Packets::ControlEntity controlEntity;
-			controlEntity.playerIndex = m_playerIndex;
+			controlEntity.localIndex = m_localIndex;
 			if (m_playerEntity)
 			{
 				auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
@@ -464,12 +455,12 @@ namespace bw
 		else
 			chatPacket.content = GetName() + " suicided";
 
-		m_match->ForEachPlayer([&](Player* otherPlayer)
+		m_match.ForEachPlayer([&](Player* otherPlayer)
 		{
 			otherPlayer->SendPacket(chatPacket);
 		});
 
-		m_match->GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attacker);
+		m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attacker);
 
 		m_weapons.clear();
 		m_weaponByName.clear();
@@ -480,10 +471,5 @@ namespace bw
 	{
 		assert(!m_isReady);
 		m_isReady = true;
-	}
-
-	void Player::UpdateMatch(Match* match)
-	{
-		m_match = match;
 	}
 }

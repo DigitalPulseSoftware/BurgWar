@@ -64,9 +64,9 @@ namespace bw
 		return m_layers.find(layerIndex) != m_layers.end();
 	}
 
-	inline void MatchClientVisibility::PushLayerUpdate(Nz::UInt8 playerIndex, LayerIndex layerIndex)
+	inline void MatchClientVisibility::PushLayerUpdate(Nz::UInt8 localPlayerIndex, LayerIndex layerIndex)
 	{
-		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ playerIndex, layerIndex });
+		m_pendingLayerUpdates.emplace_back(PendingLayerUpdate{ localPlayerIndex, layerIndex });
 	}
 
 	inline void MatchClientVisibility::SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled)
