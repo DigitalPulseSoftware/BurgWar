@@ -426,7 +426,7 @@ namespace bw
 			if (localIndex >= m_playerData.size())
 				throw std::runtime_error("Invalid player index");
 
-			auto& playerData = m_playerData[playerIndex];
+			auto& playerData = m_playerData[localIndex];
 			if (playerData.controlledEntity)
 				return sol::make_object(lua, playerData.controlledEntity->GetPosition());
 			else
