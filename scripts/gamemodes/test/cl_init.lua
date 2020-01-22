@@ -48,3 +48,9 @@ function GM:ShakeCamera(duration, strength)
 		StrengthDecrease = strength / duration
 	}
 end
+
+function GM:OnInitScoreboard(scoreboard)
+	scoreboard:AddColumn("kill")
+	scoreboard:AddColumn("death")
+	scoreboard:AddColumn("ping")
+end

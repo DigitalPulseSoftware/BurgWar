@@ -7,6 +7,7 @@
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/InputController.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
+#include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
@@ -55,6 +56,7 @@ namespace bw
 	m_application(burgApp),
 	m_chatBox(GetLogger(), window, canvas),
 	m_session(session),
+	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
@@ -172,10 +174,47 @@ namespace bw
 					m_chatBox.Open(!m_chatBox.IsOpen());
 					break;
 
+				case Nz::Keyboard::Tab:
+				{
+					if (!m_scoreboard)
+						InitializeScoreboard();
+					else
+						m_scoreboard->Show(true);
+
+					break;
+				}
+
 				default:
 					break;
 			}
 		});
+
+		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Tab:
+					if (m_scoreboard)
+						m_scoreboard->Show(false);
+
+					break;
+
+				default:
+					break;
+			};
+		});
+
+		m_onRenderTargetSizeChange.Connect(window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
+		{
+			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
+
+			if (m_scoreboard)
+			{
+				m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
+				m_scoreboard->Center();
+			}
+		});
+
 		BindPackets();
 	}
 
@@ -426,7 +465,7 @@ namespace bw
 			if (localIndex >= m_playerData.size())
 				throw std::runtime_error("Invalid player index");
 
-			auto& playerData = m_playerData[playerIndex];
+			auto& playerData = m_playerData[localIndex];
 			if (playerData.controlledEntity)
 				return sol::make_object(lua, playerData.controlledEntity->GetPosition());
 			else
@@ -1064,6 +1103,17 @@ namespace bw
 
 			return true;
 		});
+	}
+
+	void LocalMatch::InitializeScoreboard()
+	{
+		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
+		m_gamemode->ExecuteCallback("OnInitScoreboard", ScoreboardHandle{});
+
+		Nz::Vector2f size = Nz::Vector2f(m_window->GetSize());
+
+		m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
+		m_scoreboard->Center();
 	}
 
 	void LocalMatch::OnTick(bool lastTick)

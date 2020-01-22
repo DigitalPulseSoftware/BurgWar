@@ -6,6 +6,7 @@
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -29,6 +30,7 @@ namespace bw
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
 		RegisterParticleGroupClass(context);
+		RegisterScoreboardClass(context);
 		RegisterSoundClass(context);
 		RegisterSpriteClass(context);
 
@@ -220,6 +222,18 @@ namespace bw
 			"SetRenderer", sol::overload(
 				[=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); },
 				&ParticleGroup::SetRenderer)
+		);
+	}
+
+	void ClientScriptingLibrary::RegisterScoreboardClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Scoreboard>("Scoreboard",
+			"new", sol::no_constructor,
+
+			"AddColumn", &Scoreboard::AddColumn,
+			"AddTeam", &Scoreboard::AddTeam
 		);
 	}
 
