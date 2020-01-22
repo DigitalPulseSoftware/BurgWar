@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <Nazara/Core/Color.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Rect.hpp>
@@ -42,6 +43,9 @@ namespace sol
 	struct lua_size<bw::PlayerInputData> : std::integral_constant<int, 1> {};
 
 	template<>
+	struct lua_size<Nz::Color> : std::integral_constant<int, 1> {};
+
+	template<>
 	struct lua_size<Nz::DegreeAnglef> : std::integral_constant<int, 1> {};
 
 	template<typename T>
@@ -52,6 +56,9 @@ namespace sol
 
 	template<typename T>
 	struct lua_size<Nz::Vector3<T>> : std::integral_constant<int, 1> {};
+
+	template<>
+	struct lua_type_of<Nz::Color> : std::integral_constant<sol::type, sol::type::table> {};
 
 	template<>
 	struct lua_type_of<Nz::DegreeAnglef> : std::integral_constant<sol::type, sol::type::number> {};
@@ -127,6 +134,21 @@ namespace sol
 		tracking.use(1);
 
 		return success;
+	}
+
+	inline Nz::Color sol_lua_get(sol::types<Nz::Color>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+
+		sol::table colorTable = sol::stack::get<sol::table>(L, absoluteIndex);
+		Nz::UInt8 r = colorTable["r"];
+		Nz::UInt8 g = colorTable["g"];
+		Nz::UInt8 b = colorTable["b"];
+		Nz::UInt8 a = colorTable.get_or("a", Nz::UInt8(255));
+
+		tracking.use(1);
+
+		return Nz::Color(r, g, b, a);
 	}
 
 	inline Nz::DegreeAnglef sol_lua_get(sol::types<Nz::DegreeAnglef>, lua_State* L, int index, sol::stack::record& tracking)
