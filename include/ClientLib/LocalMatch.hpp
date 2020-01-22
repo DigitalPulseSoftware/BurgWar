@@ -42,6 +42,7 @@ namespace bw
 	class ClientGamemode;
 	class ClientSession;
 	class InputController;
+	class Scoreboard;
 	class VirtualDirectory;
 
 	class LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
@@ -140,6 +141,7 @@ namespace bw
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);
 			void HandleTickError(Nz::UInt16 serverTick, Nz::Int32 tickError);
 			void InitializeRemoteConsole();
+			void InitializeScoreboard();
 			void OnTick(bool lastTick) override;
 			void PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet);
 			bool SendInputs(Nz::UInt16 serverTick, bool force);
@@ -193,9 +195,11 @@ namespace bw
 				TickPacketContent content;
 			};
 
+			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onRenderTargetSizeChange);
 			NazaraSlot(Nz::EventHandler, OnGainedFocus, m_onGainedFocus);
 			NazaraSlot(Nz::EventHandler, OnLostFocus, m_onLostFocus);
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
+			NazaraSlot(Ndk::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
 			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
 			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
 
@@ -228,6 +232,7 @@ namespace bw
 			BurgApp& m_application;
 			Chatbox m_chatBox;
 			ClientSession& m_session;
+			Scoreboard* m_scoreboard;
 			Packets::PlayersInput m_inputPacket;
 			bool m_hasFocus;
 			float m_errorCorrectionTimer;

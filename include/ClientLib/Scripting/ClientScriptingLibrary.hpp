@@ -30,6 +30,7 @@ namespace bw
 
 			void RegisterDummyInputControllerClass(ScriptingContext& context);
 			void RegisterParticleGroupClass(ScriptingContext& context);
+			void RegisterScoreboardClass(ScriptingContext& context);
 			void RegisterSoundClass(ScriptingContext& context);
 			void RegisterSpriteClass(ScriptingContext& context);
 

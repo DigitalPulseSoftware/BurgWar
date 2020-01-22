@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_CHATBOX_HPP
 
 #include <Nazara/Core/Signal.hpp>
-#include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Entity.hpp>
 #include <NDK/EntityOwner.hpp>
@@ -36,7 +36,7 @@ namespace bw
 
 			using Item = std::variant<ColorItem, TextItem>;
 
-			Chatbox(const Logger& logger, Nz::RenderWindow* window, Ndk::Canvas* canvas);
+			Chatbox(const Logger& logger, Nz::RenderTarget* rt, Ndk::Canvas* canvas);
 			Chatbox(const Chatbox&) = delete;
 			Chatbox(Chatbox&&) = delete;
 			~Chatbox();

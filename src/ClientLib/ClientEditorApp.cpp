@@ -82,5 +82,6 @@ namespace bw
 
 		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
 		Nz::FontLibrary::Register("BW_Names", grandstander);
+		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());
 	}
 }
