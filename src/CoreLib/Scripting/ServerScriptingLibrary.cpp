@@ -153,7 +153,7 @@ namespace bw
 				}
 			}
 
-			std::reference_wrapper<const Ndk::EntityHandle> parentEntity = Ndk::EntityHandle::InvalidHandle;
+			Ndk::EntityHandle parentEntity;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
@@ -194,100 +194,34 @@ namespace bw
 	void ServerScriptingLibrary::RegisterPlayerClass(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
-		state.new_usertype<PlayerHandle>("Player", 
+		state.new_usertype<Player>("Player", 
 			"new", sol::no_constructor,
-			"GetControlledEntity", [](const PlayerHandle& player) -> sol::object
+			"GetControlledEntity", [](const Player& player) -> sol::object
 			{
-				if (!player)
-					return sol::nil;
-
-				const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+				const Ndk::EntityHandle& controlledEntity = player.GetControlledEntity();
 				if (!controlledEntity)
 					return sol::nil;
 
 				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
 				return scriptComponent.GetTable();
 			},
-			"GetLayerIndex", [](const PlayerHandle& player) -> LayerIndex
+			"GetLayerIndex", &Player::GetLayerIndex,
+			"GetName", &Player::GetName,
+			"GiveWeapon", &Player::GiveWeapon,
+			"HasWeapon", &Player::HasWeapon,
+			"IsAdmin", &Player::IsAdmin,
+			"MoveToLayer", [](Player& player, std::optional<LayerIndex> layerIndex)
 			{
-				if (!player)
-					return 0;
-
-				return player->GetLayerIndex();
-			},
-			"GetName", [](const PlayerHandle& player) -> std::string
-			{
-				if (!player)
-					return "<Disconnected>";
-
-				return player->GetName();
-			},
-			"GiveWeapon", [](const PlayerHandle& player, std::string weaponName)
-			{
-				if (!player)
-					return false;
-
-				return player->GiveWeapon(std::move(weaponName));
-			},
-			"HasWeapon", [](const PlayerHandle& player, const std::string& weaponName)
-			{
-				if (!player)
-					return false;
-
-				return player->HasWeapon(weaponName);
-			},
-			"IsAdmin", [](const PlayerHandle& player)
-			{
-				if (!player)
-					return false;
-
-				return player->IsAdmin();
-			},
-			"MoveToLayer", [](const PlayerHandle& player, sol::object layerIndex)
-			{
-				if (!player)
-					return;
-			
-				if (layerIndex != sol::nil)
-					player->MoveToLayer(layerIndex.as<LayerIndex>());
+				if (layerIndex)
+					player.MoveToLayer(layerIndex.value());
 				else
-					player->MoveToLayer(Player::NoLayer);
+					player.MoveToLayer(Player::NoLayer);
 			},
-			"PrintChatMessage", [](const PlayerHandle& player, std::string message)
-			{
-				if (!player)
-					return;
-
-				player->PrintChatMessage(std::move(message));
-			},
-			"RemoveWeapon", [](const PlayerHandle& player, const std::string& weaponName)
-			{
-				if (!player)
-					return;
-
-				return player->RemoveWeapon(weaponName);
-			},
-			"Spawn", [](const PlayerHandle& player)
-			{
-				if (!player)
-					return;
-
-				return player->Spawn();
-			},
-			"SetAdmin", [](const PlayerHandle& player, bool isAdmin)
-			{
-				if (!player)
-					return;
-
-				return player->SetAdmin(isAdmin);
-			},
-			"UpdateLayerVisibility", [](const PlayerHandle& player, LayerIndex layerIndex, bool visible)
-			{
-				if (!player)
-					return;
-
-				player->UpdateLayerVisibility(layerIndex, visible);
-			}
+			"PrintChatMessage", &Player::PrintChatMessage,
+			"RemoveWeapon", &Player::RemoveWeapon,
+			"Spawn", &Player::Spawn,
+			"SetAdmin", &Player::SetAdmin,
+			"UpdateLayerVisibility", &Player::UpdateLayerVisibility
 		);
 	}
 

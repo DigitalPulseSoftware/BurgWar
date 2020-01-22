@@ -23,7 +23,7 @@ namespace bw
 	{
 		elementMetatable["DeleteOnRemove"] = [](const sol::table& entityTable, const sol::table& targetEntityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
 
 			if (!entity->HasComponent<EntityOwnerComponent>())
@@ -34,7 +34,7 @@ namespace bw
 
 		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
@@ -47,7 +47,7 @@ namespace bw
 
 		elementMetatable["GetPosition"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
@@ -55,7 +55,7 @@ namespace bw
 
 		elementMetatable["GetRotation"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
@@ -63,7 +63,7 @@ namespace bw
 
 		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetScale().x > 0.f;
@@ -71,19 +71,19 @@ namespace bw
 
 		elementMetatable["IsValid"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
 		};
 
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
 		{
-			const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
 			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
 		};
 
 		elementMetatable["ToLocalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
@@ -91,7 +91,7 @@ namespace bw
 
 		elementMetatable["ToGlobalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& localPosition)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));

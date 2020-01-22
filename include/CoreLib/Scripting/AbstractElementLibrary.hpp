@@ -25,8 +25,8 @@ namespace bw
 
 			virtual void RegisterLibrary(sol::table& elementMetatable) = 0;
 
-			static const Ndk::EntityHandle& AssertScriptEntity(const sol::table& entityTable);
-			static const Ndk::EntityHandle& RetrieveScriptEntity(const sol::table& entityTable);
+			static Ndk::EntityHandle AssertScriptEntity(const sol::table& entityTable);
+			static Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
 
 		private:
 			const Logger& m_logger;

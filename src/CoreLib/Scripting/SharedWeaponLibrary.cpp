@@ -23,7 +23,7 @@ namespace bw
 	{
 		elementMetatable["GetOwnerEntity"] = [](const sol::table& weaponTable) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
 
 			const Ndk::EntityHandle& ownerEntity = entity->GetComponent<WeaponComponent>().GetOwner();
 			if (!ownerEntity)
@@ -34,7 +34,7 @@ namespace bw
 
 		elementMetatable["SetNextTriggerTime"] = [](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
 			
 			entity->GetComponent<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
 		};

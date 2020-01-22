@@ -29,7 +29,7 @@ namespace bw
 	{
 		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -51,14 +51,14 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<MatchComponent>().GetLayerIndex();
 		};
 
 		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -87,7 +87,7 @@ namespace bw
 
 		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
 
 			if (!entity->HasComponent<OwnerComponent>())
 				return sol::nil;
@@ -97,7 +97,7 @@ namespace bw
 
 		elementTable["SetParent"] = [](const sol::table& entityTable, const sol::table& parentTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			const Ndk::EntityHandle& parent = AssertScriptEntity(parentTable);
 
 			entity->GetComponent<Ndk::NodeComponent>().SetParent(parent, true);

@@ -32,7 +32,7 @@ namespace bw
 			if (Nz::NumberEquals(pushbackForce, 0.f))
 				return;
 
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -51,14 +51,14 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
 		};
 		
 		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -87,7 +87,7 @@ namespace bw
 
 		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<LocalMatchComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);

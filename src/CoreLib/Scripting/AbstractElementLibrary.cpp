@@ -10,16 +10,16 @@ namespace bw
 {
 	AbstractElementLibrary::~AbstractElementLibrary() = default;
 
-	const Ndk::EntityHandle& AbstractElementLibrary::AssertScriptEntity(const sol::table& entityTable)
+	Ndk::EntityHandle AbstractElementLibrary::AssertScriptEntity(const sol::table& entityTable)
 	{
-		const Ndk::EntityHandle& entity = RetrieveScriptEntity(entityTable);
+		Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
 		if (!entity || !entity->HasComponent<ScriptComponent>())
 			throw std::runtime_error("Invalid entity");
 
 		return entity;
 	}
 
-	const Ndk::EntityHandle& AbstractElementLibrary::RetrieveScriptEntity(const sol::table& entityTable)
+	Ndk::EntityHandle AbstractElementLibrary::RetrieveScriptEntity(const sol::table& entityTable)
 	{
 		sol::object entityObject = entityTable["_Entity"];
 		if (!entityObject)

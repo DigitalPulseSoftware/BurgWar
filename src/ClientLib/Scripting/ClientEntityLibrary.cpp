@@ -44,7 +44,7 @@ namespace bw
 	{
 		elementMetatable["AddLayer"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
 
@@ -62,7 +62,7 @@ namespace bw
 
 		elementMetatable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -124,7 +124,7 @@ namespace bw
 
 		elementMetatable["AddModel"] = [this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			std::string modelPath = parameters["ModelPath"];
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -149,7 +149,7 @@ namespace bw
 
 		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -220,7 +220,7 @@ namespace bw
 
 		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<VisibleLayerComponent>())
 				entity->GetComponent<VisibleLayerComponent>().Clear();

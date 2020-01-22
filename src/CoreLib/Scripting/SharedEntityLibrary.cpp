@@ -107,7 +107,7 @@ namespace bw
 	{
 		elementMetatable["ApplyImpulse"] = [this](const sol::table& entityTable, const Nz::Vector2f& force)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{
@@ -118,7 +118,7 @@ namespace bw
 
 		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
@@ -128,7 +128,7 @@ namespace bw
 
 		elementMetatable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<Ndk::CollisionComponent2D>())
 				throw std::runtime_error("Entity has no colliders");
 
@@ -143,7 +143,7 @@ namespace bw
 
 		elementMetatable["ForceSleep"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{
@@ -154,7 +154,7 @@ namespace bw
 
 		elementMetatable["GetHealth"] = [](const sol::table& entityTable) -> Nz::UInt16
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return 0;
 
@@ -164,7 +164,7 @@ namespace bw
 
 		elementMetatable["GetMass"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{
@@ -177,7 +177,7 @@ namespace bw
 
 		elementMetatable["GetMomentOfInertia"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			{
@@ -190,7 +190,7 @@ namespace bw
 
 		elementMetatable["GetPlayerMovementController"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");
@@ -200,7 +200,7 @@ namespace bw
 
 		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
@@ -210,7 +210,7 @@ namespace bw
 
 		elementMetatable["IsFullHealth"] = [](const sol::table& entityTable) -> bool
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return false;
 
@@ -220,14 +220,14 @@ namespace bw
 
 		elementMetatable["InitRigidBody"] = [this](const sol::table& entityTable, float mass)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			this->InitRigidBody(entity, mass);
 		};
 
 		elementMetatable["IsPlayerOnGround"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");
@@ -237,7 +237,7 @@ namespace bw
 
 		elementMetatable["IsSleeping"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 				return entity->GetComponent<Ndk::PhysicsComponent2D>().IsSleeping();
 			else
@@ -246,7 +246,7 @@ namespace bw
 
 		elementMetatable["Kill"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (entity->HasComponent<HealthComponent>())
 			{
 				auto& entityHealth = entity->GetComponent<HealthComponent>();
@@ -258,13 +258,13 @@ namespace bw
 
 		elementMetatable["Remove"] = [](const sol::table& entityTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			entity->Kill();
 		};
 
 		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			Nz::Collider2DRef collider;
 			std::size_t colliderCount = colliderTable.size();
@@ -299,7 +299,7 @@ namespace bw
 
 		elementMetatable["SetMass"] = [](const sol::table& entityTable, float mass)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
@@ -312,7 +312,7 @@ namespace bw
 
 		elementMetatable["SetMomentOfInertia"] = [](const sol::table& entityTable, float momentum)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
@@ -328,7 +328,7 @@ namespace bw
 
 		elementMetatable["SetPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& position)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
@@ -344,7 +344,7 @@ namespace bw
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity || !entity->HasComponent<Ndk::PhysicsComponent2D>())
 				return;
 
@@ -354,7 +354,7 @@ namespace bw
 
 		elementMetatable["UpdatePlayerMovementController"] = [](const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");

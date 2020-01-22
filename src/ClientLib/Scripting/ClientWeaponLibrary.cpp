@@ -29,7 +29,7 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			const Ndk::EntityHandle& entity = AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
