@@ -11,10 +11,19 @@
 
 namespace bw
 {
+	void AbstractSelectionEditorMode::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+	{
+		if (mouseButton.button == Nz::Mouse::Right)
+			m_rightClickBegin.emplace(mouseButton.x, mouseButton.y);
+	}
+
 	void AbstractSelectionEditorMode::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
 		if (mouseButton.button == Nz::Mouse::Left || mouseButton.button == Nz::Mouse::Right)
 		{
+			if (mouseButton.button == Nz::Mouse::Right && (!m_rightClickBegin || m_rightClickBegin.value() != Nz::Vector2i(mouseButton.x, mouseButton.y)))
+				return;
+
 			EditorWindow& editorWindow = GetEditorWindow();
 			MapCanvas* canvas = editorWindow.GetMapCanvas();
 

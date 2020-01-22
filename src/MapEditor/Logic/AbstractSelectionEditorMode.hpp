@@ -10,6 +10,7 @@
 #include <MapEditor/Logic/EditorMode.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <QtCore/QPoint>
+#include <optional>
 
 namespace Ndk
 {
@@ -24,11 +25,15 @@ namespace bw
 			using EditorMode::EditorMode;
 			~AbstractSelectionEditorMode() = default;
 
+			void OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 
 		protected:
 			virtual void OnEntityMenu(const QPoint& /*pos*/, Ndk::Entity* /*hoveredEntity*/) = 0;
 			virtual void OnEntitySelected(Ndk::Entity* /*selectedEntity*/) = 0;
+
+		private:
+			std::optional<Nz::Vector2i> m_rightClickBegin;
 	};
 }
 
