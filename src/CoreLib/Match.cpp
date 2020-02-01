@@ -567,8 +567,10 @@ namespace bw
 	{
 		float elapsedTime = GetTickDuration();
 
-		for (auto& playerPtr : m_players)
-			playerPtr->OnTick(lastTick);
+		ForEachPlayer([&](Player* player)
+		{
+			player->OnTick(lastTick);
+		});
 
 		m_gamemode->ExecuteCallback("OnTick");
 
