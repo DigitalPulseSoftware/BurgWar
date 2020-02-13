@@ -29,6 +29,7 @@ namespace bw
 
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
+		RegisterLocalPlayerClass(context);
 		RegisterParticleGroupClass(context);
 		RegisterScoreboardClass(context);
 		RegisterSoundClass(context);
@@ -127,6 +128,23 @@ namespace bw
 			return scriptComponent.GetTable();
 		};
 
+		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
+		{
+			sol::state_view lua(L);
+
+			LocalMatch& match = GetMatch();
+
+			sol::table playerTable = lua.create_table();
+
+			std::size_t index = 1;
+			match.ForEachPlayer([&](LocalPlayer& localPlayer)
+			{
+				playerTable[index++] = localPlayer.CreateHandle();
+			});
+
+			return playerTable;
+		};
+
 		library["GetLocalTick"] = [&]()
 		{
 			return GetMatch().GetCurrentTick();
@@ -196,6 +214,27 @@ namespace bw
 #undef BW_INPUT_PROPERTY
 	}
 
+	void ClientScriptingLibrary::RegisterLocalPlayerClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<LocalPlayer>("LocalPlayer",
+			"new", sol::no_constructor,
+
+			"GetName", &LocalPlayer::GetName,
+
+			"GetPing", [](sol::this_state L, LocalPlayer& localPlayer) -> sol::object
+			{
+				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
+					return sol::make_object(L, ping);
+				else
+					return sol::nil;
+			},
+
+			"GetPlayerIndex", &LocalPlayer::GetPlayerIndex
+		);
+	}
+
 	void ClientScriptingLibrary::RegisterParticleGroupClass(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
@@ -233,7 +272,11 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"AddColumn", &Scoreboard::AddColumn,
-			"AddTeam", &Scoreboard::AddTeam
+			"AddTeam", &Scoreboard::AddTeam,
+
+			"RegisterPlayer", &Scoreboard::RegisterPlayer,
+
+			"UnregisterPlayer", &Scoreboard::UnregisterPlayer
 		);
 	}
 

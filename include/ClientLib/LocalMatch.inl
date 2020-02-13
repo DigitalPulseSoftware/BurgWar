@@ -12,6 +12,18 @@ namespace bw
 		return tick - 3;
 	}
 
+	template<typename F>
+	void LocalMatch::ForEachPlayer(F&& func)
+	{
+		for (auto& playerOpt : m_matchPlayers)
+		{
+			if (!playerOpt)
+				continue;
+
+			func(playerOpt.value());
+		}
+	}
+
 	inline Nz::Int64 bw::LocalMatch::AllocateClientUniqueId()
 	{
 		return m_freeClientId--;

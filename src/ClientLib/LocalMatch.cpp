@@ -99,16 +99,16 @@ namespace bw
 		for (auto& input : m_inputPacket.inputs)
 			input.emplace();
 
-		m_playerData.reserve(playerCount);
+		m_localPlayers.reserve(playerCount);
 		assert(playerCount != 0xFF);
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 		{
-			auto& playerData = m_playerData.emplace_back(i);
+			auto& playerData = m_localPlayers.emplace_back(i);
 			playerData.inputController = std::make_shared<KeyboardAndMouseController>(*window, i);
 			
 			playerData.inputController->OnSwitchWeapon.Connect([this, i](InputController* /*emitter*/, bool direction)
 			{
-				auto& playerData = m_playerData[i];
+				auto& playerData = m_localPlayers[i];
 
 				if (direction)
 				{
@@ -462,10 +462,10 @@ namespace bw
 
 		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> sol::object
 		{
-			if (localIndex >= m_playerData.size())
+			if (localIndex >= m_localPlayers.size())
 				throw std::runtime_error("Invalid player index");
 
-			auto& playerData = m_playerData[localIndex];
+			auto& playerData = m_localPlayers[localIndex];
 			if (playerData.controlledEntity)
 				return sol::make_object(lua, playerData.controlledEntity->GetPosition());
 			else
@@ -489,13 +489,13 @@ namespace bw
 
 		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
 		{
-			if (localIndex >= m_playerData.size())
+			if (localIndex >= m_localPlayers.size())
 				throw std::runtime_error("Invalid player index");
 
 			if (!inputController)
 				throw std::runtime_error("Invalid input controller");
 
-			m_playerData[localIndex].inputController = std::move(inputController);
+			m_localPlayers[localIndex].inputController = std::move(inputController);
 		};
 
 		ForEachEntity([this](const Ndk::EntityHandle& entity)
@@ -767,6 +767,21 @@ namespace bw
 		{
 			PushTickPacket(layerUpdate.stateTick, layerUpdate);
 		});
+		
+		m_session.OnPlayerJoined.Connect([this](ClientSession* /*session*/, const Packets::PlayerJoined& playerJoined)
+		{
+			HandlePlayerJoined(playerJoined);
+		});
+		
+		m_session.OnPlayerLeaving.Connect([this](ClientSession* /*session*/, const Packets::PlayerLeaving& playerLeaving)
+		{
+			HandlePlayerLeaving(playerLeaving);
+		});
+		
+		m_session.OnPlayerPingUpdate.Connect([this](ClientSession* /*session*/, const Packets::PlayerPingUpdate& playerPingUpdate)
+		{
+			HandlePlayerPingUpdate(playerPingUpdate);
+		});
 
 		m_session.OnPlayerWeapons.Connect([this](ClientSession* /*session*/, const Packets::PlayerWeapons& weapons)
 		{
@@ -808,6 +823,41 @@ namespace bw
 			m_remoteConsole->Print(packet.response, packet.color);
 	}
 
+	void LocalMatch::HandlePlayerJoined(const Packets::PlayerJoined& packet)
+	{
+		if (packet.playerIndex >= m_matchPlayers.size())
+			m_matchPlayers.resize(packet.playerIndex + 1);
+
+		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName);
+
+		m_gamemode->ExecuteCallback("OnPlayerJoined", newPlayer.CreateHandle());
+	}
+
+	void LocalMatch::HandlePlayerLeaving(const Packets::PlayerLeaving& packet)
+	{
+		if (packet.playerIndex >= m_matchPlayers.size())
+			return;
+
+		auto& playerOpt = m_matchPlayers[packet.playerIndex];
+
+		m_gamemode->ExecuteCallback("OnPlayerLeave", playerOpt->CreateHandle());
+
+		playerOpt.reset();
+	}
+
+	void LocalMatch::HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet)
+	{
+		for (const auto& playerData : packet.players)
+		{
+			if (playerData.playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerData.playerIndex].has_value())
+				continue;
+
+			m_matchPlayers[playerData.playerIndex]->UpdatePing(playerData.ping);
+		}
+
+		m_gamemode->ExecuteCallback("OnPlayerPingUpdate");
+	}
+
 	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)
 	{
 		std::visit([this](auto&& packet)
@@ -827,19 +877,19 @@ namespace bw
 
 		LocalLayerEntity& layerEntity = layerEntityOpt.value();
 
-		if (m_playerData[packet.localIndex].controlledEntity)
+		if (m_localPlayers[packet.localIndex].controlledEntity)
 		{
-			auto& controlledEntity = m_playerData[packet.localIndex].controlledEntity;
+			auto& controlledEntity = m_localPlayers[packet.localIndex].controlledEntity;
 			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
 
 			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
 		}
 
-		m_playerData[packet.localIndex].controlledEntity = layerEntity.CreateHandle();
-		m_playerData[packet.localIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+		m_localPlayers[packet.localIndex].controlledEntity = layerEntity.CreateHandle();
+		m_localPlayers[packet.localIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
 
 		// Ensure prediction is enabled on all player-controlled layers
-		for (auto& playerData : m_playerData)
+		for (auto& playerData : m_localPlayers)
 		{
 			if (!playerData.controlledEntity)
 				continue;
@@ -991,9 +1041,9 @@ namespace bw
 		// Reconciliate server and clients
 		for (const PredictedInput& input : m_predictedInputs)
 		{
-			for (std::size_t i = 0; i < m_playerData.size(); ++i)
+			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
 			{
-				auto& controllerData = m_playerData[i];
+				auto& controllerData = m_localPlayers[i];
 				if (controllerData.controlledEntity)
 				{
 					auto& controlledEntity = controllerData.controlledEntity->GetEntity();
@@ -1028,7 +1078,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::PlayerLayer&& packet)
 	{
-		m_playerData[packet.localIndex].layerIndex = packet.layerIndex;
+		m_localPlayers[packet.localIndex].layerIndex = packet.layerIndex;
 
 		m_gamemode->ExecuteCallback("OnChangeLayer", m_activeLayerIndex, static_cast<LayerIndex>(packet.layerIndex));
 		m_activeLayerIndex = packet.layerIndex;
@@ -1043,7 +1093,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)
 	{
-		auto& playerData = m_playerData[packet.localIndex];
+		auto& playerData = m_localPlayers[packet.localIndex];
 		playerData.weapons.clear();
 
 		assert(packet.layerIndex < m_layers.size());
@@ -1108,7 +1158,7 @@ namespace bw
 	void LocalMatch::InitializeScoreboard()
 	{
 		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
-		m_gamemode->ExecuteCallback("OnInitScoreboard", ScoreboardHandle{});
+		m_gamemode->ExecuteCallback("OnInitScoreboard", m_scoreboard->CreateHandle());
 
 		Nz::Vector2f size = Nz::Vector2f(m_window->GetSize());
 
@@ -1146,10 +1196,10 @@ namespace bw
 			PredictedInput& predictedInputs = m_predictedInputs.emplace_back();
 			predictedInputs.serverTick = estimatedServerTick;
 
-			predictedInputs.inputs.resize(m_playerData.size());
-			for (std::size_t i = 0; i < m_playerData.size(); ++i)
+			predictedInputs.inputs.resize(m_localPlayers.size());
+			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
 			{
-				auto& controllerData = m_playerData[i];
+				auto& controllerData = m_localPlayers[i];
 
 				auto& playerData = predictedInputs.inputs[i];
 				playerData.input = controllerData.lastInputData;
@@ -1206,7 +1256,7 @@ namespace bw
 
 	bool LocalMatch::SendInputs(Nz::UInt16 serverTick, bool force)
 	{
-		assert(m_playerData.size() == m_inputPacket.inputs.size());
+		assert(m_localPlayers.size() == m_inputPacket.inputs.size());
 
 		m_inputPacket.estimatedServerTick = serverTick;
 		
@@ -1216,9 +1266,9 @@ namespace bw
 		                  (!m_remoteConsole || !m_remoteConsole->IsVisible());
 
 		bool hasInputData = false;
-		for (std::size_t i = 0; i < m_playerData.size(); ++i)
+		for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
 		{
-			auto& controllerData = m_playerData[i];
+			auto& controllerData = m_localPlayers[i];
 			PlayerInputData input;
 
 			if (checkInputs)

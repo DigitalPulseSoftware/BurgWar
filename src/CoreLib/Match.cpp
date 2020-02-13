@@ -31,6 +31,7 @@ namespace bw
 	m_maxPlayerCount(maxPlayerCount),
 	m_sessions(*this),
 	m_nextUniqueId(map.GetFreeUniqueId()),
+	m_lastPingUpdate(0),
 	m_app(app),
 	m_map(std::move(map))
 	{
@@ -415,6 +416,14 @@ namespace bw
 				break;
 		}
 
+		if (player->IsReady())
+		{
+			Packets::PlayerLeaving leavingPacket;
+			leavingPacket.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
+
+			BroadcastPacket(leavingPacket);
+		}
+
 		it->reset();
 		m_freePlayerId.Set(std::distance(m_players.begin(), it), true);
 
@@ -450,7 +459,15 @@ namespace bw
 
 		SharedMatch::Update(elapsedTime);
 
-		if (m_debug && m_app.GetAppTime() - m_debug->lastBroadcastTime > 1000 / 60)
+		Nz::UInt64 appTime = m_app.GetAppTime();
+		if (appTime - m_lastPingUpdate > 1000)
+		{
+			SendPingUpdate();
+			m_lastPingUpdate = appTime;
+		}
+
+
+		if (m_debug && appTime - m_debug->lastBroadcastTime > 1000 / 60)
 		{
 			m_debug->lastBroadcastTime = m_app.GetAppTime();
 
@@ -545,18 +562,33 @@ namespace bw
 		BuildClientScriptListPacket(m_matchData);
 	}
 
-	void Match::OnPlayerReady(Player* player)
+	void Match::OnPlayerReady(Player* newPlayer)
 	{
-		if (player->IsReady())
+		if (newPlayer->IsReady())
 			return;
 
-		m_gamemode->ExecuteCallback("OnPlayerJoin", player->CreateHandle());
+		// Send a PlayerJoined packet to everyone
+		Packets::PlayerJoined joinedPacket;
+		joinedPacket.playerIndex = static_cast<Nz::UInt16>(newPlayer->GetPlayerIndex());
+		joinedPacket.playerName = newPlayer->GetName();
+		BroadcastPacket(joinedPacket);
+
+		newPlayer->SetReady();
+
+		m_gamemode->ExecuteCallback("OnPlayerJoin", newPlayer->CreateHandle());
 
 		Packets::ChatMessage chatPacket;
-		chatPacket.content = player->GetName() + " has joined.";
+		chatPacket.content = newPlayer->GetName() + " has joined.";
 
 		ForEachPlayer([&](Player* player)
 		{
+			// Send a PlayerJoined packet to the new player, with everyone
+			Packets::PlayerJoined joinedPacket;
+			joinedPacket.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
+			joinedPacket.playerName = player->GetName();
+
+			newPlayer->SendPacket(joinedPacket);
+
 			chatPacket.localIndex = player->GetLocalIndex();
 
 			player->SendPacket(chatPacket);
@@ -583,5 +615,22 @@ namespace bw
 				session->Update(elapsedTime);
 			});
 		}
+	}
+	
+	void Match::SendPingUpdate()
+	{
+		Packets::PlayerPingUpdate pingUpdate;
+
+		ForEachPlayer([&](Player* player)
+		{
+			if (!player->IsReady())
+			{
+				auto& playerData = pingUpdate.players.emplace_back();
+				playerData.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
+				playerData.ping = 42; //< TODO
+			}
+		});
+
+		BroadcastPacket(pingUpdate);
 	}
 }

@@ -467,7 +467,7 @@ namespace bw
 		m_activeWeaponIndex = NoWeapon;
 	}
 
-	void Player::OnReady()
+	void Player::SetReady()
 	{
 		assert(!m_isReady);
 		m_isReady = true;

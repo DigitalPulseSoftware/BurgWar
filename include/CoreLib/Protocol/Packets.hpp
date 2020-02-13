@@ -53,7 +53,10 @@ namespace bw
 		NetworkStrings,
 		PlayerChat,
 		PlayerConsoleCommand,
+		PlayerJoined,
 		PlayerLayer,
+		PlayerLeaving,
+		PlayerPingUpdate,
 		PlayersInput,
 		PlayerSelectWeapon,
 		PlayerWeapons,
@@ -431,11 +434,33 @@ namespace bw
 			std::string command;
 		};
 
+		DeclarePacket(PlayerJoined)
+		{
+			CompressedUnsigned<Nz::UInt16> playerIndex;
+			std::string playerName;
+		};
+
 		DeclarePacket(PlayerLayer)
 		{
 			Nz::UInt16 stateTick;
 			Nz::UInt8 localIndex;
 			CompressedUnsigned<LayerIndex> layerIndex;
+		};
+
+		DeclarePacket(PlayerLeaving)
+		{
+			CompressedUnsigned<Nz::UInt16> playerIndex;
+		};
+
+		DeclarePacket(PlayerPingUpdate)
+		{
+			struct PlayerData
+			{
+				CompressedUnsigned<Nz::UInt16> playerIndex;
+				Nz::UInt16 ping;
+			};
+
+			std::vector<PlayerData> players;
 		};
 
 		DeclarePacket(PlayersInput)
@@ -496,6 +521,9 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
 		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
+		void Serialize(PacketSerializer& serializer, PlayerLeaving& data);
+		void Serialize(PacketSerializer& serializer, PlayerJoined& data);
+		void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);

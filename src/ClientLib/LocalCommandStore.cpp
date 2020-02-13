@@ -40,6 +40,9 @@ namespace bw
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
 		IncomingCommand(PlayerLayer);
+		IncomingCommand(PlayerLeaving);
+		IncomingCommand(PlayerJoined);
+		IncomingCommand(PlayerPingUpdate);
 		IncomingCommand(PlayerWeapons);
 
 		// Outgoing commands

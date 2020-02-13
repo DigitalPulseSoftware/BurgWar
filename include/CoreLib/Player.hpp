@@ -64,9 +64,8 @@ namespace bw
 
 			void RemoveWeapon(const std::string& weaponClass);
 
-			template<typename T> void SendPacket(const T& packet);
-
 			void SelectWeapon(std::size_t weaponIndex);
+			template<typename T> void SendPacket(const T& packet);
 			void SetAdmin(bool isAdmin);
 
 			void Spawn();
@@ -86,7 +85,7 @@ namespace bw
 
 		private:
 			void OnDeath(const Ndk::EntityHandle& attacker);
-			void OnReady();
+			void SetReady();
 
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
 			NazaraSlot(HealthComponent, OnDied, m_onPlayerEntityDied);

@@ -59,6 +59,8 @@ namespace bw
 
 			inline Nz::Int64 AllocateUniqueId();
 
+			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true);
+
 			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;
 			template<typename T> void BuildClientScriptListPacket(T& clientScript) const;
 
@@ -125,6 +127,7 @@ namespace bw
 			void BuildMatchData();
 			void OnPlayerReady(Player* player);
 			void OnTick(bool lastTick) override;
+			void SendPingUpdate();
 
 			struct Debug
 			{
@@ -157,6 +160,7 @@ namespace bw
 			tsl::hopscotch_map<Nz::Int64, Entity> m_entitiesByUniqueId;
 			Nz::Bitset<> m_freePlayerId;
 			Nz::Int64 m_nextUniqueId;
+			Nz::UInt64 m_lastPingUpdate;
 			BurgApp& m_app;
 			Map m_map;
 			MatchSessions m_sessions;

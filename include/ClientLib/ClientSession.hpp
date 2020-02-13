@@ -72,7 +72,10 @@ namespace bw
 			NazaraSignal(OnMatchData,                    ClientSession* /*session*/, const Packets::MatchData&                    /*data*/);
 			NazaraSignal(OnMatchState,                   ClientSession* /*session*/, const Packets::MatchState&                   /*data*/);
 			NazaraSignal(OnNetworkStrings,               ClientSession* /*session*/, const Packets::NetworkStrings&               /*data*/);
+			NazaraSignal(OnPlayerJoined,                 ClientSession* /*session*/, const Packets::PlayerJoined&                 /*data*/);
 			NazaraSignal(OnPlayerLayer,                  ClientSession* /*session*/, const Packets::PlayerLayer&                  /*data*/);
+			NazaraSignal(OnPlayerLeaving,                ClientSession* /*session*/, const Packets::PlayerLeaving&                /*data*/);
+			NazaraSignal(OnPlayerPingUpdate,             ClientSession* /*session*/, const Packets::PlayerPingUpdate&             /*data*/);
 			NazaraSignal(OnPlayerWeapons,                ClientSession* /*session*/, const Packets::PlayerWeapons&                /*data*/);
 
 		private:
