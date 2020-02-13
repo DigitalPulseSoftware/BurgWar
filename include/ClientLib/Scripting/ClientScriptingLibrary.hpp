@@ -29,6 +29,7 @@ namespace bw
 			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;
 
 			void RegisterDummyInputControllerClass(ScriptingContext& context);
+			void RegisterLocalPlayerClass(ScriptingContext& context);
 			void RegisterParticleGroupClass(ScriptingContext& context);
 			void RegisterScoreboardClass(ScriptingContext& context);
 			void RegisterSoundClass(ScriptingContext& context);

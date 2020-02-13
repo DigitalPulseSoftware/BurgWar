@@ -5,6 +5,7 @@
 #include <ClientLib/Scoreboard.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <Nazara/Core/StackArray.hpp>
 #include <Nazara/Utility/Font.hpp>
 #include <NDK/Widgets.hpp>
 
@@ -14,9 +15,6 @@ namespace bw
 	BaseWidget(parent),
 	m_logger(logger)
 	{
-		Nz::FontRef chatboxFont = Nz::FontLibrary::Get("BW_ScoreMenu");
-		assert(chatboxFont);
-
 		m_backgroundWidget = Add<Ndk::BaseWidget>();
 		m_backgroundWidget->EnableBackground(true);
 		m_backgroundWidget->SetBackgroundColor(Nz::Color(43, 68, 63, 200));
@@ -32,12 +30,15 @@ namespace bw
 
 	std::size_t Scoreboard::AddColumn(std::string name)
 	{
+		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		assert(scoreMenuFont);
+
 		std::size_t columnIndex = m_columns.size();
 
 		auto& columnData = m_columns.emplace_back();
 		columnData.name = std::move(name);
 		columnData.widget = Add<Ndk::LabelWidget>();
-		columnData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(columnData.name, 24, Nz::TextStyle_Bold));
+		columnData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.name, 24, 0));
 
 		Layout();
 
@@ -46,6 +47,9 @@ namespace bw
 
 	std::size_t Scoreboard::AddTeam(std::string name, Nz::Color color)
 	{
+		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		assert(scoreMenuFont);
+
 		std::size_t teamIndex = m_teams.size();
 
 		auto& teamData = m_teams.emplace_back();
@@ -54,11 +58,33 @@ namespace bw
 
 		teamData.background = Add<Ndk::BaseWidget>();
 		teamData.widget = Add<Ndk::LabelWidget>();
-		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(teamData.name, 36, Nz::TextStyle_Bold));
+		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, teamData.name, 36, Nz::TextStyle_Bold));
 
 		Layout();
 
 		return teamIndex;
+	}
+
+	void Scoreboard::RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values)
+	{
+		if (m_players.size() <= playerIndex)
+			m_players.resize(playerIndex + 1);
+
+		auto& playerData = m_players[playerIndex].emplace();
+		playerData.teamId = teamId;
+
+		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		assert(scoreMenuFont);
+
+		for (std::string& value : values)
+		{
+			auto& columnData = playerData.values.emplace_back();
+			columnData.value = std::move(value);
+			columnData.label = Add<Ndk::LabelWidget>();
+			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0));
+		}
+
+		Layout();
 	}
 
 	Nz::String Scoreboard::ToString() const
@@ -66,10 +92,57 @@ namespace bw
 		return "Scoreboard";
 	}
 
+	void Scoreboard::UnregisterPlayer(std::size_t playerIndex)
+	{
+		if (playerIndex >= m_players.size())
+			return;
+
+		m_players[playerIndex].reset();
+
+		Layout();
+	}
+
 	void Scoreboard::Layout()
 	{
 		Nz::Vector2f size = GetSize();
 		m_backgroundWidget->Resize(size);
 		m_scrollArea->Resize(size);
+
+		Nz::StackArray<float> columnOffsets = NazaraStackArrayNoInit(float, m_columns.size());
+
+		float cursor = 0.f;
+		float height = 0.f;
+
+		for (std::size_t i = 0; i < m_columns.size(); ++i)
+		{
+			auto& columnData = m_columns[i];
+			columnOffsets[i] = cursor;
+
+			columnData.widget->SetPosition(cursor, 0.f);
+			cursor += columnData.widget->GetWidth() + 50.f;
+
+			height = std::max(height, columnData.widget->GetHeight());
+		}
+
+		cursor = height;
+		for (auto& playerOpt : m_players)
+		{
+			if (!playerOpt)
+				continue;
+
+			height = 0.f;
+
+			auto& playerData = playerOpt.value();
+			for (std::size_t i = 0; i < playerData.values.size(); ++i)
+			{
+				auto& columnData = playerData.values[i];
+				float offset = columnOffsets[i];
+				columnData.label->SetPosition(offset, cursor);
+
+				height = std::max(height, columnData.label->GetHeight());
+			}
+
+			cursor += height;
+		}
 	}
 }

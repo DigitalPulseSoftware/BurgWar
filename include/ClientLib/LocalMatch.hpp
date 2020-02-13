@@ -19,6 +19,7 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/LocalPlayer.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -62,6 +63,7 @@ namespace bw
 			Nz::UInt64 EstimateServerTick() const;
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+			template<typename F> void ForEachPlayer(F&& func);
 
 			inline Nz::UInt16 GetActiveLayer();
 			inline AnimationManager& GetAnimationManager();
@@ -125,6 +127,9 @@ namespace bw
 			void BindPackets();
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
+			void HandlePlayerJoined(const Packets::PlayerJoined& packet);
+			void HandlePlayerLeaving(const Packets::PlayerLeaving& packet);
+			void HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);
@@ -146,9 +151,9 @@ namespace bw
 			void PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet);
 			bool SendInputs(Nz::UInt16 serverTick, bool force);
 
-			struct PlayerData
+			struct LocalPlayerData
 			{
-				PlayerData(Nz::UInt8 localIndex) :
+				LocalPlayerData(Nz::UInt8 localIndex) :
 				localIndex(localIndex)
 				{
 				}
@@ -215,7 +220,8 @@ namespace bw
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodePath;
 			std::vector<std::unique_ptr<LocalLayer>> m_layers;
-			std::vector<PlayerData> m_playerData;
+			std::vector<LocalPlayerData> m_localPlayers;
+			std::vector<std::optional<LocalPlayer>> m_matchPlayers;
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;

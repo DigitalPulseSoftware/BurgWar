@@ -458,6 +458,29 @@ namespace bw
 			serializer &= data.layerIndex;
 		}
 
+		void Serialize(PacketSerializer& serializer, PlayerLeaving& data)
+		{
+			serializer &= data.playerIndex;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerJoined& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.playerName;
+		}
+
+		void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data)
+		{
+			serializer.SerializeArraySize(data.players);
+
+			for (auto& playerData : data.players)
+			{
+				serializer &= playerData.playerIndex;
+				serializer &= playerData.ping;
+			}
+		}
+
+
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
 			serializer &= data.estimatedServerTick;

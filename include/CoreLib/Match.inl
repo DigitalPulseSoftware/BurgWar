@@ -13,6 +13,16 @@ namespace bw
 	}
 
 	template<typename T>
+	void Match::BroadcastPacket(const T& packet, bool onlyReady)
+	{
+		ForEachPlayer([&packet](Player* player)
+		{
+			if (!onlyReady || player->IsReady())
+				player->SendPacket(packet);
+		});
+	}
+
+	template<typename T>
 	void Match::BuildClientAssetListPacket(T& clientAsset) const
 	{
 		//FIXME

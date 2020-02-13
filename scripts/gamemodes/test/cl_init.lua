@@ -50,7 +50,42 @@ function GM:ShakeCamera(duration, strength)
 end
 
 function GM:OnInitScoreboard(scoreboard)
+	self.Scoreboard = scoreboard
+
+	scoreboard:AddColumn("name")
 	scoreboard:AddColumn("kill")
 	scoreboard:AddColumn("death")
 	scoreboard:AddColumn("ping")
+
+	for _, player in pairs(match.GetPlayers()) do
+		scoreboard:RegisterPlayer(player:GetPlayerIndex(), 0, {
+			player:GetName(),
+			"50000",
+			"-1",
+			player:GetPing() or ""
+		})
+	end
+end
+
+function GM:OnPlayerJoined(player)
+	local scoreboard = self.Scoreboard
+	if (not scoreboard) then
+		return
+	end
+
+	scoreboard:RegisterPlayer(player:GetPlayerIndex(), 0, {
+		player:GetName(),
+		"50000",
+		"-1",
+		player:GetPing() or ""
+	})
+end
+
+function GM:OnPlayerLeave(player)
+	local scoreboard = self.Scoreboard
+	if (not scoreboard) then
+		return
+	end
+
+	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
 end

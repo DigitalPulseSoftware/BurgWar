@@ -30,13 +30,12 @@ namespace bw
 			std::size_t AddColumn(std::string name);
 			std::size_t AddTeam(std::string name, Nz::Color color);
 
-			void RegisterPlayer(std::size_t playerIndex, std::string name, std::size_t teamId, std::vector<std::string> values);
+			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values);
 
 			Nz::String ToString() const;
 
 			void UnregisterPlayer(std::size_t playerIndex);
 
-			void UpdatePlayerName(std::size_t playerIndex, std::string name);
 			void UpdatePlayerTeam(std::size_t playerIndex, std::size_t teamId);
 			void UpdatePlayerValue(std::size_t playerIndex, std::size_t valueIndex, std::string values);
 			void UpdatePlayerValues(std::size_t playerIndex, std::vector<std::string> values);
@@ -52,13 +51,11 @@ namespace bw
 				struct ColumnData
 				{
 					std::string value;
-					Ndk::LabelWidget* valueLabel;
+					Ndk::LabelWidget* label;
 				};
 
-				std::string name;
 				std::size_t teamId;
-				std::vector<std::string> values;
-				Ndk::LabelWidget* nameLabel;
+				std::vector<ColumnData> values;
 			};
 
 			struct ColumnData
