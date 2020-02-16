@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SERVER_CLIENTSESSION_HPP
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
+#include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
@@ -21,10 +22,11 @@ namespace bw
 	class Player;
 	class PlayerCommandStore;
 
+	using MatchClientSessionHandle = Nz::ObjectHandle<MatchClientSession>;
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	// Match client session
-	class MatchClientSession final
+	class MatchClientSession final : public Nz::HandledObject<MatchClientSession>
 	{
 		friend PlayerCommandStore;
 
@@ -38,6 +40,7 @@ namespace bw
 
 			template<typename F> void ForEachPlayer(F&& func);
 
+			inline Nz::UInt32 GetPing() const;
 			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;
@@ -59,6 +62,8 @@ namespace bw
 			void HandleIncomingPacket(const Packets::PlayersInput& packet);
 			void HandleIncomingPacket(const Packets::PlayerSelectWeapon& packet);
 			void HandleIncomingPacket(const Packets::Ready& packet);
+			void HandleIncomingPacket(const Packets::ScriptPacket& packet);
+			void UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo);
 
 			Match& m_match;
 			PlayerCommandStore& m_commandStore;
@@ -66,6 +71,8 @@ namespace bw
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
 			std::vector<PlayerHandle> m_players;
+			Nz::UInt32 m_ping;
+			float m_peerInfoUpdateCounter;
 	};
 }
 

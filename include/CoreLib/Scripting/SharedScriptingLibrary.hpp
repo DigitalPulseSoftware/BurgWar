@@ -26,8 +26,10 @@ namespace bw
 			inline SharedMatch& GetSharedMatch();
 
 			void RegisterConstraintClass(ScriptingContext& context);
+			void RegisterNetworkPacketClasses(ScriptingContext& context);
 			void RegisterPlayerMovementControllerClass(ScriptingContext& context);
 			virtual void RegisterMatchLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterNetworkLibrary(ScriptingContext& context, sol::table& library);
 			virtual void RegisterPhysicsLibrary(ScriptingContext& context, sol::table& library);
 			virtual void RegisterScriptLibrary(ScriptingContext& context, sol::table& library);
 			virtual void RegisterTimerLibrary(ScriptingContext& context, sol::table& library);

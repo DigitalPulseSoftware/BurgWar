@@ -3,6 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalMatch.hpp>
+#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/CooldownComponent.hpp>
+#include <CoreLib/Components/InputComponent.hpp>
+#include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
+#include <CoreLib/Scripting/NetworkPacket.hpp>
+#include <CoreLib/Systems/AnimationSystem.hpp>
+#include <CoreLib/Systems/PlayerMovementSystem.hpp>
+#include <CoreLib/Systems/TickCallbackSystem.hpp>
+#include <CoreLib/Systems/WeaponSystem.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/InputController.hpp>
@@ -18,17 +30,6 @@
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
-#include <CoreLib/BurgApp.hpp>
-#include <CoreLib/Components/AnimationComponent.hpp>
-#include <CoreLib/Components/CooldownComponent.hpp>
-#include <CoreLib/Components/InputComponent.hpp>
-#include <CoreLib/Components/PlayerMovementComponent.hpp>
-#include <CoreLib/Components/ScriptComponent.hpp>
-#include <CoreLib/Components/WeaponComponent.hpp>
-#include <CoreLib/Systems/AnimationSystem.hpp>
-#include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <CoreLib/Systems/TickCallbackSystem.hpp>
-#include <CoreLib/Systems/WeaponSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
@@ -221,6 +222,7 @@ namespace bw
 	LocalMatch::~LocalMatch()
 	{
 		// Clear timer manager before scripting context gets deleted
+		GetScriptPacketHandlerRegistry().Clear();
 		GetTimerManager().Clear();
 
 		m_layers.clear();
@@ -267,6 +269,11 @@ namespace bw
 	LayerIndex LocalMatch::GetLayerCount() const
 	{
 		return LayerIndex(m_layers.size());
+	}
+
+	const NetworkStringStore& LocalMatch::GetNetworkStringStore() const
+	{
+		return m_session.GetNetworkStringStore();
 	}
 
 	ClientWeaponStore& LocalMatch::GetWeaponStore()
@@ -787,6 +794,11 @@ namespace bw
 		{
 			PushTickPacket(weapons.stateTick, weapons);
 		});
+
+		m_session.OnScriptPacket.Connect([this](ClientSession* /*session*/, const Packets::ScriptPacket& scriptPacket)
+		{
+			HandleScriptPacket(scriptPacket);
+		});
 	}
 
 	Nz::UInt64 LocalMatch::EstimateServerTick() const
@@ -856,6 +868,16 @@ namespace bw
 		}
 
 		m_gamemode->ExecuteCallback("OnPlayerPingUpdate");
+	}
+
+	void LocalMatch::HandleScriptPacket(const Packets::ScriptPacket& packet)
+	{
+		const ScriptHandlerRegistry& registry = GetScriptPacketHandlerRegistry();
+		const NetworkStringStore& stringStore = GetNetworkStringStore();
+
+		const std::string& packetName = stringStore.GetString(packet.nameIndex);
+
+		registry.Call(packetName, IncomingNetworkPacket(stringStore, packet));
 	}
 
 	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)

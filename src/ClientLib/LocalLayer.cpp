@@ -234,7 +234,7 @@ namespace bw
 		LocalMatch& localMatch = GetLocalMatch();
 		ClientEntityStore& entityStore = localMatch.GetEntityStore();
 		ClientWeaponStore& weaponStore = localMatch.GetWeaponStore();
-		const NetworkStringStore& networkStringStore = localMatch.GetClientSession().GetNetworkStringStore();
+		const NetworkStringStore& networkStringStore = localMatch.GetNetworkStringStore();
 
 		const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
 

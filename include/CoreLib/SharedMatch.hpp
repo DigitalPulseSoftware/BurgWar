@@ -8,8 +8,10 @@
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
 #include <CoreLib/SharedLayer.hpp>
-#include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/TimerManager.hpp>
+#include <CoreLib/LogSystem/MatchLogger.hpp>
+#include <CoreLib/Protocol/NetworkStringStore.hpp>
+#include <CoreLib/Scripting/ScriptHandlerRegistry.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
@@ -39,8 +41,11 @@ namespace bw
 			virtual const SharedLayer& GetLayer(LayerIndex layerIndex) const = 0;
 			virtual LayerIndex GetLayerCount() const = 0;
 			inline const std::string& GetName() const;
+			virtual const NetworkStringStore& GetNetworkStringStore() const = 0;
 			inline Nz::UInt16 GetNetworkTick() const;
 			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
+			inline ScriptHandlerRegistry& GetScriptPacketHandlerRegistry();
+			inline const ScriptHandlerRegistry& GetScriptPacketHandlerRegistry() const;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 			virtual SharedWeaponStore& GetWeaponStore() = 0;
@@ -60,6 +65,7 @@ namespace bw
 		private:
 			std::string m_name;
 			MatchLogger m_logger;
+			ScriptHandlerRegistry m_scriptPacketHandler;
 			TimerManager m_timerManager;
 			Nz::UInt64 m_currentTick;
 			Nz::UInt64 m_currentTime;

@@ -61,6 +61,7 @@ namespace bw
 		PlayerSelectWeapon,
 		PlayerWeapons,
 		Ready,
+		ScriptPacket
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -489,6 +490,12 @@ namespace bw
 		{
 		};
 
+		DeclarePacket(ScriptPacket)
+		{
+			CompressedUnsigned<Nz::UInt32> nameIndex;
+			std::vector<Nz::UInt8> content;
+		};
+
 #undef DeclarePacket
 
 		// Compute size
@@ -528,6 +535,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
+		void Serialize(PacketSerializer& serializer, ScriptPacket& data);
 
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);

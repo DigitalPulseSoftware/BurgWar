@@ -15,7 +15,7 @@ namespace bw
 	template<typename T>
 	void Match::BroadcastPacket(const T& packet, bool onlyReady)
 	{
-		ForEachPlayer([&packet](Player* player)
+		ForEachPlayer([&packet, onlyReady](Player* player)
 		{
 			if (!onlyReady || player->IsReady())
 				player->SendPacket(packet);
@@ -98,11 +98,6 @@ namespace bw
 	{
 		m_matchData.currentTick = GetNetworkTick();
 		return m_matchData;
-	}
-
-	inline const NetworkStringStore& Match::GetNetworkStringStore() const
-	{
-		return m_networkStringStore;
 	}
 
 	inline MatchSessions& Match::GetSessions()

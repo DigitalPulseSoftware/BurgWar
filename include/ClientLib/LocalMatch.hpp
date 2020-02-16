@@ -77,6 +77,7 @@ namespace bw
 			LocalLayer& GetLayer(LayerIndex layerIndex) override;
 			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
+			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
 			inline Ndk::World& GetRenderWorld();
@@ -130,6 +131,7 @@ namespace bw
 			void HandlePlayerJoined(const Packets::PlayerJoined& packet);
 			void HandlePlayerLeaving(const Packets::PlayerLeaving& packet);
 			void HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet);
+			void HandleScriptPacket(const Packets::ScriptPacket& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
 			void HandleTickPacket(Packets::ControlEntity&& packet);
 			void HandleTickPacket(Packets::CreateEntities&& packet);

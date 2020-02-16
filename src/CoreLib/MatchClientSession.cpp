@@ -9,6 +9,7 @@
 #include <CoreLib/Player.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <cassert>
@@ -19,7 +20,9 @@ namespace bw
 	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
-	m_bridge(std::move(bridge))
+	m_bridge(std::move(bridge)),
+	m_ping(0),
+	m_peerInfoUpdateCounter(0.f)
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
 		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
@@ -46,9 +49,23 @@ namespace bw
 		m_commandStore.UnserializePacket(*this, packet);
 	}
 
-	void MatchClientSession::Update(float /*elapsedTime*/)
+	void MatchClientSession::Update(float elapsedTime)
 	{
 		m_visibility->Update();
+
+		m_peerInfoUpdateCounter += elapsedTime;
+		if (m_peerInfoUpdateCounter >= 1.f)
+		{
+			m_peerInfoUpdateCounter = 0.f;
+
+			m_bridge->QueryInfo([clientSession = CreateHandle()](const SessionBridge::SessionInfo& info)
+			{
+				if (!clientSession)
+					return; // Session has been destroyed
+
+				clientSession->UpdatePeerInfo(info);
+			});
+		}
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Auth& packet)
@@ -209,5 +226,20 @@ namespace bw
 		{
 			m_match.OnPlayerReady(player);
 		});
+	}
+
+	void MatchClientSession::HandleIncomingPacket(const Packets::ScriptPacket& packet)
+	{
+		const ScriptHandlerRegistry& registry = m_match.GetScriptPacketHandlerRegistry();
+		const NetworkStringStore& stringStore = m_match.GetNetworkStringStore();
+
+		const std::string& packetName = stringStore.GetString(packet.nameIndex);
+
+		registry.Call(packetName, IncomingNetworkPacket(stringStore, packet));
+	}
+	
+	void MatchClientSession::UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo)
+	{
+		m_ping = sessionInfo.ping;
 	}
 }

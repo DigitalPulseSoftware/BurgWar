@@ -77,6 +77,7 @@ namespace bw
 			NazaraSignal(OnPlayerLeaving,                ClientSession* /*session*/, const Packets::PlayerLeaving&                /*data*/);
 			NazaraSignal(OnPlayerPingUpdate,             ClientSession* /*session*/, const Packets::PlayerPingUpdate&             /*data*/);
 			NazaraSignal(OnPlayerWeapons,                ClientSession* /*session*/, const Packets::PlayerWeapons&                /*data*/);
+			NazaraSignal(OnScriptPacket,                 ClientSession* /*session*/, const Packets::ScriptPacket&                 /*data*/);
 
 		private:
 			void OnSessionConnected();
