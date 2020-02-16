@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2020 Jérôme Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -64,6 +64,7 @@ namespace bw
 			static constexpr std::size_t InvalidPeerId = std::numeric_limits<std::size_t>::max();
 	
 		private:
+			void EnsureProperDisconnection(const moodycamel::ProducerToken& producterToken, moodycamel::ConsumerToken& token);
 			void HandleConnectionRequests(moodycamel::ConsumerToken& token);
 			void ReceivePackets(const moodycamel::ProducerToken& producterToken);
 			void SendPackets(const moodycamel::ProducerToken& producterToken, moodycamel::ConsumerToken& token);

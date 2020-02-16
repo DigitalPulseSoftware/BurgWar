@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2020 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar Map Editor" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -33,7 +33,7 @@ namespace bw
 
 	bool CameraMovement::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button != Nz::Mouse::Middle)
+		if (mouseButton.button != Nz::Mouse::Middle && mouseButton.button != Nz::Mouse::Right)
 			return false;
 
 		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Move));
@@ -45,7 +45,7 @@ namespace bw
 
 	bool CameraMovement::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (!m_isActive || mouseButton.button != Nz::Mouse::Middle)
+		if (mouseButton.button != Nz::Mouse::Middle && mouseButton.button != Nz::Mouse::Right)
 			return false;
 
 		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Default));

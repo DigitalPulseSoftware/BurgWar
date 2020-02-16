@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2020 Jérôme Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -126,6 +126,64 @@ namespace bw
 
 			// Handle connection requests last to treat disconnection request before connection requests
 			HandleConnectionRequests(connectionToken);
+		}
+
+		EnsureProperDisconnection(incomingToken, outgoingToken);
+	}
+
+	void NetworkReactor::EnsureProperDisconnection(const moodycamel::ProducerToken& producterToken, moodycamel::ConsumerToken& token)
+	{
+		// Prevent someone connecting from now
+		m_host.AllowsIncomingConnections(false);
+
+		// Send every pending packet and handle disconnection requests
+		SendPackets(producterToken, token);
+
+		// Then, force a disconnection for every remaining peer
+		for (Nz::ENetPeer* peer : m_clients)
+		{
+			if (peer)
+			{
+				switch (peer->GetState())
+				{
+					case Nz::ENetPeerState::AcknowledgingDisconnect:
+					case Nz::ENetPeerState::Disconnected:
+					case Nz::ENetPeerState::Disconnecting:
+					case Nz::ENetPeerState::Zombie:
+							break;
+
+					default:
+						peer->Disconnect(0); //< FIXME: DisconnectLater doesn't seem to work here
+						break;
+				}
+			}
+		}
+
+		// Use a timeout to prevent hanging on silent peers
+		Nz::Clock c;
+		while (c.GetMilliseconds() < 1000)
+		{
+			Nz::ENetEvent event;
+			if (m_host.Service(&event, 1) > 0)
+			{
+				switch (event.type)
+				{
+					case Nz::ENetEventType::Disconnect:
+					{
+						Nz::UInt16 peerId = event.peer->GetPeerId();
+						m_clients[peerId] = nullptr;
+						break;
+					}
+
+					default:
+						// Ignore everything else
+						break;
+				}
+			}
+
+			// Exit when every client has properly disconnected
+			if (std::all_of(m_clients.begin(), m_clients.end(), [](Nz::ENetPeer* peer) { return peer == nullptr; }))
+				break;
 		}
 	}
 

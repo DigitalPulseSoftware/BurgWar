@@ -1,11 +1,11 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2020 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_SERVERCOMMANDSTORE_HPP
-#define BURGWAR_CLIENTLIB_SERVERCOMMANDSTORE_HPP
+#ifndef BURGWAR_CLIENTLIB_LOCALCOMMANDSTORE_HPP
+#define BURGWAR_CLIENTLIB_LOCALCOMMANDSTORE_HPP
 
 #include <CoreLib/CommandStore.hpp>
 
