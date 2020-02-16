@@ -134,7 +134,8 @@ namespace bw
 	void NetworkReactor::EnsureProperDisconnection(const moodycamel::ProducerToken& producterToken, moodycamel::ConsumerToken& token)
 	{
 		// Prevent someone connecting from now
-		m_host.AllowsIncomingConnections(false);
+		if (Nz::IpAddress listenAddress = m_host.GetBoundAddress(); listenAddress.IsValid() && !listenAddress.IsLoopback())
+			m_host.AllowsIncomingConnections(false);
 
 		// Send every pending packet and handle disconnection requests
 		SendPackets(producterToken, token);

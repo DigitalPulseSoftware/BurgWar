@@ -460,7 +460,13 @@ namespace bw
 			otherPlayer->SendPacket(chatPacket);
 		});
 
-		m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attacker);
+		if (attacker && attacker->HasComponent<ScriptComponent>())
+		{
+			auto& attackerScript = attacker->GetComponent<ScriptComponent>();
+			m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attackerScript.GetTable());
+		}
+		else
+			m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), sol::nil);
 
 		m_weapons.clear();
 		m_weaponByName.clear();

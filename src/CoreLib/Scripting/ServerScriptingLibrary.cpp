@@ -7,6 +7,7 @@
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
+#include <CoreLib/Scripting/NetworkPacket.hpp>
 
 namespace bw
 {
@@ -106,6 +107,14 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
+		library["BroadcastPacket"] = [&](const OutgoingNetworkPacket& outgoingPacket)
+		{
+			Match& match = GetMatch();
+
+			const NetworkStringStore& networkStringStore = match.GetNetworkStringStore();
+			match.BroadcastPacket(outgoingPacket.ToPacket(networkStringStore));
+		};
+
 		library["CreateEntity"] = [&](const sol::table& parameters)
 		{
 			Match& match = GetMatch();
@@ -191,6 +200,16 @@ namespace bw
 		};
 	}
 
+	void ServerScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& context, sol::table& library)
+	{
+		SharedScriptingLibrary::RegisterNetworkLibrary(context, library);
+
+		library["RegisterPacket"] = [&](std::string packetName)
+		{
+			GetMatch().RegisterNetworkString(std::move(packetName));
+		};
+	}
+
 	void ServerScriptingLibrary::RegisterPlayerClass(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
@@ -206,6 +225,7 @@ namespace bw
 				return scriptComponent.GetTable();
 			},
 			"GetLayerIndex", &Player::GetLayerIndex,
+			"GetPlayerIndex", &Player::GetPlayerIndex,
 			"GetName", &Player::GetName,
 			"GiveWeapon", &Player::GiveWeapon,
 			"HasWeapon", &Player::HasWeapon,
@@ -219,8 +239,13 @@ namespace bw
 			},
 			"PrintChatMessage", &Player::PrintChatMessage,
 			"RemoveWeapon", &Player::RemoveWeapon,
-			"Spawn", &Player::Spawn,
+			"SendPacket", [this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
+			{
+				const NetworkStringStore& networkStringStore = GetSharedMatch().GetNetworkStringStore();
+				player.SendPacket(outgoingPacket.ToPacket(networkStringStore));
+			},
 			"SetAdmin", &Player::SetAdmin,
+			"Spawn", &Player::Spawn,
 			"UpdateLayerVisibility", &Player::UpdateLayerVisibility
 		);
 	}

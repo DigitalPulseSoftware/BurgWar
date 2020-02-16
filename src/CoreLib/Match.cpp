@@ -56,6 +56,7 @@ namespace bw
 		m_sessions.Clear();
 
 		// Clear timer manager before scripting context gets deleted
+		GetScriptPacketHandlerRegistry().Clear();
 		GetTimerManager().Clear();
 
 		// Release scripts classes before scripting context
@@ -132,6 +133,11 @@ namespace bw
 	LayerIndex Match::GetLayerCount() const
 	{
 		return m_terrain->GetLayerCount();
+	}
+
+	const NetworkStringStore& Match::GetNetworkStringStore() const
+	{
+		return m_networkStringStore;
 	}
 
 	ServerWeaponStore& Match::GetWeaponStore()
@@ -242,6 +248,17 @@ namespace bw
 		{
 			m_entitiesByUniqueId.erase(uniqueId);
 		});
+	}
+
+	void Match::RegisterNetworkString(std::string string)
+	{
+		if (m_networkStringStore.GetStringIndex(string) == m_networkStringStore.InvalidIndex)
+		{
+			Nz::UInt32 newStringId = m_networkStringStore.RegisterString(std::move(string));
+
+			// Send the new string to all players, if any
+			BroadcastPacket(m_networkStringStore.BuildPacket(newStringId), false);
+		}
 	}
 
 	void Match::ReloadAssets()
@@ -623,11 +640,11 @@ namespace bw
 
 		ForEachPlayer([&](Player* player)
 		{
-			if (!player->IsReady())
+			if (player->IsReady())
 			{
 				auto& playerData = pingUpdate.players.emplace_back();
 				playerData.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
-				playerData.ping = 42; //< TODO
+				playerData.ping = static_cast<Nz::UInt16>(player->GetSession().GetPing());
 			}
 		});
 

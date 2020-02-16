@@ -81,7 +81,7 @@ namespace bw
 			LayerIndex GetLayerCount() const override;
 			inline sol::state& GetLuaState();
 			inline const Packets::MatchData& GetMatchData() const;
-			inline const NetworkStringStore& GetNetworkStringStore() const;
+			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
@@ -96,6 +96,7 @@ namespace bw
 			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
 			void RegisterEntity(Nz::Int64 uniqueId, Ndk::EntityHandle entity);
+			void RegisterNetworkString(std::string string);
 
 			void ReloadAssets();
 			void ReloadScripts();

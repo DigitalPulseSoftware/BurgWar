@@ -17,6 +17,11 @@ namespace bw
 		}
 	}
 
+	inline Nz::UInt32 MatchClientSession::GetPing() const
+	{
+		return m_ping;
+	}
+
 	inline std::size_t MatchClientSession::GetSessionId() const
 	{
 		return m_sessionId;

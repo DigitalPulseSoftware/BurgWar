@@ -8,6 +8,7 @@
 #include <CoreLib/NoclipPlayerMovementController.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/Constraint.hpp>
+#include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
@@ -31,6 +32,7 @@ namespace bw
 		luaState.open_libraries();
 
 		sol::table matchTable = luaState.create_named_table("match");
+		sol::table networkTable = luaState.create_named_table("network");
 		sol::table physicsTable = luaState.create_named_table("physics");
 		sol::table scriptsTable = luaState.create_named_table("scripts");
 		sol::table timerTable = luaState.create_named_table("timer");
@@ -39,6 +41,8 @@ namespace bw
 		RegisterGlobalLibrary(context);
 		RegisterMatchLibrary(context, matchTable);
 		RegisterMetatableLibrary(context);
+		RegisterNetworkLibrary(context, networkTable);
+		RegisterNetworkPacketClasses(context);
 		RegisterPhysicsLibrary(context, physicsTable);
 		RegisterPlayerMovementControllerClass(context);
 		RegisterScriptLibrary(context, scriptsTable);
@@ -94,6 +98,24 @@ namespace bw
 			"SetMinAngle", &RotaryLimitConstraint::SetMinAngle,
 
 			sol::base_classes, sol::bases<Constraint>()
+		);
+	}
+
+	void SharedScriptingLibrary::RegisterNetworkPacketClasses(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<IncomingNetworkPacket>("IncomingNetworkPacket",
+			"new", sol::no_constructor,
+
+			"ReadCompressedUnsigned", &IncomingNetworkPacket::ReadCompressedUnsigned,
+			"ReadString", &IncomingNetworkPacket::ReadString
+		);
+
+		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
+			"new", sol::no_constructor,
+
+			"WriteCompressedUnsigned", &OutgoingNetworkPacket::WriteCompressedUnsigned,
+			"WriteString", &OutgoingNetworkPacket::WriteString
 		);
 	}
 
@@ -158,6 +180,28 @@ namespace bw
 		library["GetTickDuration"] = [&]()
 		{
 			return m_match.GetTickDuration();
+		};
+	}
+
+	void SharedScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["NewPacket"] = [this](std::string name) -> OutgoingNetworkPacket
+		{
+			const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
+			if (networkStringStore.GetStringIndex(name) == networkStringStore.InvalidIndex)
+				throw std::runtime_error("Packet name \"" + name + "\" has not been registered");
+
+			return OutgoingNetworkPacket(std::move(name));
+		};
+
+		library["SetHandler"] = [this](std::string name, sol::protected_function handler)
+		{
+			ScriptHandlerRegistry& packetHandlerRegistry = GetSharedMatch().GetScriptPacketHandlerRegistry();
+
+			if (handler)
+				packetHandlerRegistry.Register(std::move(name), std::move(handler));
+			else
+				packetHandlerRegistry.Unregister(name);
 		};
 	}
 

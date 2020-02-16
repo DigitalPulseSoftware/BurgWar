@@ -526,6 +526,17 @@ namespace bw
 		{
 		}
 
+		void Serialize(PacketSerializer& serializer, ScriptPacket& data)
+		{
+			serializer &= data.nameIndex;
+			
+			serializer.SerializeArraySize(data.content);
+			if (serializer.IsWriting())
+				serializer.Write(data.content.data(), data.content.size());
+			else
+				serializer.Read(data.content.data(), data.content.size());
+		}
+
 		void Serialize(PacketSerializer& serializer, PlayerInputData& input)
 		{
 			serializer &= input.isAttacking;

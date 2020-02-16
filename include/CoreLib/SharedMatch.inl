@@ -37,6 +37,16 @@ namespace bw
 		return static_cast<Nz::UInt16>(tick % (0xFFFFU + 1));
 	}
 
+	inline ScriptHandlerRegistry& SharedMatch::GetScriptPacketHandlerRegistry()
+	{
+		return m_scriptPacketHandler;
+	}
+
+	inline const ScriptHandlerRegistry& SharedMatch::GetScriptPacketHandlerRegistry() const
+	{
+		return m_scriptPacketHandler;
+	}
+
 	inline float SharedMatch::GetTickDuration() const
 	{
 		return m_tickDuration;
