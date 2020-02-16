@@ -1,10 +1,23 @@
 function GM:OnPlayerDeath(player, attacker)
+	self:IncreasePlayerDeath(player)
+	if (attacker) then
+		local attackerPlayer = attacker:GetOwner()
+		if (attackerPlayer:GetPlayerIndex() ~= player:GetPlayerIndex()) then
+			self:IncreasePlayerKill(attackerPlayer)
+		end
+	end
+
 	print(player:GetName() .. " died")
 	timer.Sleep(2000)
 	player:Spawn()
 end
 
+local previousOnJoin = GM.OnPlayerJoin
 function GM:OnPlayerJoin(player)
+	if (previousOnJoin) then
+		previousOnJoin(self, player)
+	end
+
 	print(player:GetName() .. " joined")
 	player:MoveToLayer(0)
 	player:Spawn()
@@ -70,7 +83,12 @@ function GM:OnPlayerChat(player, message)
 	end
 end
 
+local previousOnTick = GM.OnTick
 function GM:OnTick()
+	if (previousOnTick) then
+		previousOnTick(self)
+	end
+
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 10000) then
