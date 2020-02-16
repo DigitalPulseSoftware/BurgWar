@@ -8,6 +8,7 @@
 #include <Nazara/Core/StackArray.hpp>
 #include <Nazara/Utility/Font.hpp>
 #include <NDK/Widgets.hpp>
+#include "..\..\include\ClientLib\Scoreboard.hpp"
 
 namespace bw
 {
@@ -97,7 +98,30 @@ namespace bw
 		if (playerIndex >= m_players.size())
 			return;
 
+		auto& playerData = m_players[playerIndex];
+		for (auto& columnData : playerData->values)
+			columnData.label->Destroy();
+
 		m_players[playerIndex].reset();
+
+		Layout();
+	}
+
+	void Scoreboard::UpdatePlayerValue(std::size_t playerIndex, std::size_t valueIndex, std::string value)
+	{
+		if (playerIndex >= m_players.size() || !m_players[playerIndex].has_value())
+			return;
+
+		auto& playerData = m_players[playerIndex];
+		if (valueIndex >= playerData->values.size())
+			return;
+
+		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		assert(scoreMenuFont);
+
+		auto& columnData = playerData->values[valueIndex];
+		columnData.value = std::move(value);
+		columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0));
 
 		Layout();
 	}

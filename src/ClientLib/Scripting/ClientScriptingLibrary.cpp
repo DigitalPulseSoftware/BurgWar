@@ -276,7 +276,9 @@ namespace bw
 
 			"RegisterPlayer", &Scoreboard::RegisterPlayer,
 
-			"UnregisterPlayer", &Scoreboard::UnregisterPlayer
+			"UnregisterPlayer", &Scoreboard::UnregisterPlayer,
+
+			"UpdatePlayerValue", &Scoreboard::UpdatePlayerValue
 		);
 	}
 

@@ -37,8 +37,7 @@ namespace bw
 			void UnregisterPlayer(std::size_t playerIndex);
 
 			void UpdatePlayerTeam(std::size_t playerIndex, std::size_t teamId);
-			void UpdatePlayerValue(std::size_t playerIndex, std::size_t valueIndex, std::string values);
-			void UpdatePlayerValues(std::size_t playerIndex, std::vector<std::string> values);
+			void UpdatePlayerValue(std::size_t playerIndex, std::size_t valueIndex, std::string value);
 
 			Scoreboard& operator=(const Scoreboard&) = delete;
 			Scoreboard& operator=(Scoreboard&&) = delete;
