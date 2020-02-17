@@ -10,6 +10,14 @@ local function luaDefines()
 	end
 end
 
+local function qtDebugLib(libname)
+	if (os.istarget("windows")) then
+		return libname .. "d"
+	else
+		return libname
+	end
+end
+
 WorkspaceName = "Burgwar"
 Projects = {
 	{
@@ -139,7 +147,7 @@ Projects = {
 		LinkStaticDebug = {"ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d"},
 		LinkStaticRelease = {"ClientLib", "CoreLib", "lua", "libfmt"},
 		Libs = {},
-		LibsDebug = {"Qt5Cored", "Qt5Guid", "Qt5Widgetsd", "NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
+		LibsDebug = {qtDebugLib("Qt5Core"), qtDebugLib("Qt5Gui"), qtDebugLib("Qt5Widgets"), "NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"Qt5Core", "Qt5Gui", "Qt5Widgets", "NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
 		AdditionalDependencies = {"Newton", "libsndfile-1", "soft_oal"}
 	}
@@ -288,8 +296,6 @@ workspace("Burgwar")
 				defines(projectData.Defines)
 				files(projectData.Files)
 
-				links(projectData.Libs)
-
 				if (not projectData.DisableWarnings) then
 					warnings("Extra")
 				end
@@ -297,12 +303,14 @@ workspace("Burgwar")
 				filter("configurations:Debug")
 					defines({"DEBUG"})
 					links(projectData.LinkStaticDebug)
+					links(projectData.Libs)
 					links(projectData.LibsDebug)
 					symbols("On")
 
 				filter("configurations:Release*")
 					defines({ "NDEBUG"})
 					links(projectData.LinkStaticRelease)
+					links(projectData.Libs)
 					links(projectData.LibsRelease)
 
 				filter "action:gmake*"
