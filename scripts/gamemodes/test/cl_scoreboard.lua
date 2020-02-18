@@ -3,6 +3,7 @@ function GM:OnInitScoreboard(scoreboard)
 	self.ScoreboardColumns = {}
 
 	local columns = { "Name", "Kill", "Death", "Ping" }
+
 	for _, columnName in pairs(columns) do
 		self.ScoreboardColumns[columnName] = scoreboard:AddColumn(columnName)
 	end
@@ -25,12 +26,21 @@ function GM:RegisterScoreboardPlayer(player)
 	local scoreboard = assert(self.Scoreboard)
 
 	local playerIndex = player:GetPlayerIndex()
+	local isLocalPlayer = false
+	local localPlayerCount = engine_GetLocalPlayerCount()
+	for i = 1, localPlayerCount do
+		if (engine_GetLocalPlayer_PlayerIndex(i - 1) == playerIndex) then
+			isLocalPlayer = true
+			break
+		end
+	end
+
 	scoreboard:RegisterPlayer(playerIndex, 0, {
 		player:GetName(),
 		tostring(self:GetPlayerKills(player)),
 		tostring(self:GetPlayerDeaths(player)),
-		tostring(player:GetPing() or "")
-	})
+		tostring(player:GetPing() or ""),
+	}, isLocalPlayer)
 end
 
 function GM:OnPlayerLeave(player)

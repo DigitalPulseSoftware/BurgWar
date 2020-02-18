@@ -19,7 +19,7 @@ namespace bw
 	class AssetDownloadState final : public StatusState
 	{
 		public:
-			AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::MatchData matchData);
+			AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData);
 			~AssetDownloadState() = default;
 
 		private:
@@ -29,6 +29,7 @@ namespace bw
 			std::optional<HttpDownloadManager> m_httpDownloadManager;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
+			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;
 			float m_nextStateDelay;
 	};

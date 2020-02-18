@@ -22,16 +22,26 @@ namespace bw
 			m_nextStateDelay = 3.f;
 		});
 
-		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& /*data*/)
+		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& data)
 		{
 			UpdateStatus("Authentication succeeded, waiting for match data...", Nz::Color::White);
+			m_authSuccessPacket = data;
 		});
 
 		m_onMatchDataSlot.Connect(m_clientSession->OnMatchData, [this](ClientSession*, const Packets::MatchData& data)
 		{
+			if (!m_authSuccessPacket)
+			{
+				UpdateStatus("Protocol error", Nz::Color::Red);
+
+				m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
+				m_nextStateDelay = 3.f;
+				return;
+			}
+
 			UpdateStatus("Received match data", Nz::Color::White);
 
-			m_nextState = std::make_shared<AssetDownloadState>(GetStateDataPtr(), m_clientSession, data);
+			m_nextState = std::make_shared<AssetDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data);
 			m_nextStateDelay = 0.5f;
 		});
 	}

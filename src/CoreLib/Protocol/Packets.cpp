@@ -56,8 +56,12 @@ namespace bw
 		{
 		}
 
-		void Serialize(PacketSerializer& /*serializer*/, AuthSuccess& /*data*/)
+		void Serialize(PacketSerializer& serializer, AuthSuccess& data)
 		{
+			serializer.SerializeArraySize(data.players);
+
+			for (auto& player : data.players)
+				serializer &= player.playerIndex;
 		}
 
 		void Serialize(PacketSerializer& serializer, ChatMessage& data)

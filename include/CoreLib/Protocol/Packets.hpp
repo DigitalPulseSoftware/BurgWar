@@ -150,6 +150,12 @@ namespace bw
 
 		DeclarePacket(AuthSuccess)
 		{
+			struct Player
+			{
+				Nz::UInt16 playerIndex;
+			};
+
+			std::vector<Player> players;
 		};
 
 		DeclarePacket(ChatMessage)
