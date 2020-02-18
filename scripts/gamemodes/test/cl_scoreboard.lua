@@ -27,8 +27,8 @@ function GM:RegisterScoreboardPlayer(player)
 	local playerIndex = player:GetPlayerIndex()
 	scoreboard:RegisterPlayer(playerIndex, 0, {
 		player:GetName(),
-		tostring(self:GetPlayerDeaths(player)),
 		tostring(self:GetPlayerKills(player)),
+		tostring(self:GetPlayerDeaths(player)),
 		tostring(player:GetPing() or "")
 	})
 end

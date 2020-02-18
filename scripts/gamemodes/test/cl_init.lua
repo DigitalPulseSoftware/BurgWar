@@ -25,12 +25,8 @@ end
 function GM:OnInit()
 end
 
-local previousOnTick = GM.OnTick
-function GM:OnTick()
-	if (previousOnTick) then
-		previousOnTick(self)
-	end
-end
+GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
+end)
 
 function GM:OnChangeLayer(oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
