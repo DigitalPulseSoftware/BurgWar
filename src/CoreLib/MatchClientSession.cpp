@@ -81,6 +81,8 @@ namespace bw
 			return;
 		}
 
+		Packets::AuthSuccess authSuccessPacket;
+
 		std::vector<PlayerHandle> players;
 		for (std::size_t i = 0; i < packet.players.size(); ++i)
 		{
@@ -97,11 +99,14 @@ namespace bw
 			}
 
 			players.emplace_back(player);
+			
+			auto& packetPlayer = authSuccessPacket.players.emplace_back();
+			packetPlayer.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
 		}
 
 		m_players = std::move(players);
 
-		SendPacket(Packets::AuthSuccess());
+		SendPacket(authSuccessPacket);
 		SendPacket(m_match.GetNetworkStringStore().BuildPacket());
 
 		SendPacket(m_match.GetMatchData());

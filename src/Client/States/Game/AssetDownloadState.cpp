@@ -10,9 +10,10 @@
 
 namespace bw
 {
-	AssetDownloadState::AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::MatchData matchData) :
+	AssetDownloadState::AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData) :
 	StatusState(std::move(stateData)),
 	m_clientSession(std::move(clientSession)),
+	m_authSuccess(std::move(authSuccess)),
 	m_matchData(std::move(matchData))
 	{
 		ClientApp* app = GetStateData().app;
@@ -43,7 +44,7 @@ namespace bw
 		{
 			UpdateStatus("Assets download finished", Nz::Color::White);
 
-			m_nextState = std::make_shared<ScriptDownloadState>(GetStateDataPtr(), m_clientSession, std::move(m_matchData), std::move(targetResourceDirectory));
+			m_nextState = std::make_shared<ScriptDownloadState>(GetStateDataPtr(), m_clientSession, std::move(m_authSuccess), std::move(m_matchData), std::move(targetResourceDirectory));
 			m_nextStateDelay = 0.5f;
 		});
 

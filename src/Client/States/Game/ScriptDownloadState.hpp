@@ -20,7 +20,7 @@ namespace bw
 	class ScriptDownloadState final : public StatusState
 	{
 		public:
-			ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory);
+			ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory);
 			~ScriptDownloadState() = default;
 
 		private:
@@ -30,6 +30,7 @@ namespace bw
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
+			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;
 			float m_nextStateDelay;
 	};

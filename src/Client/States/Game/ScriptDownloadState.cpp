@@ -11,9 +11,10 @@
 
 namespace bw
 {
-	ScriptDownloadState::ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory) :
+	ScriptDownloadState::ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory) :
 	StatusState(std::move(stateData)),
 	m_clientSession(std::move(clientSession)),
+	m_authSuccess(std::move(authSuccess)),
 	m_matchData(std::move(matchData))
 	{
 		ClientApp* app = GetStateData().app;
@@ -41,7 +42,7 @@ namespace bw
 			bwLog(app->GetLogger(), LogLevel::Info, "Creating match...");
 			UpdateStatus("Entering match...", Nz::Color::White);
 
-			m_nextState = std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_matchData, std::move(assetDirectory), std::move(scriptDirectory));
+			m_nextState = std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(assetDirectory), std::move(scriptDirectory));
 			m_nextStateDelay = 0.5f;
 		});
 

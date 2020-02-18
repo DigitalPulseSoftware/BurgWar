@@ -30,7 +30,7 @@ namespace bw
 			std::size_t AddColumn(std::string name);
 			std::size_t AddTeam(std::string name, Nz::Color color);
 
-			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values);
+			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, bool isLocalPlayer = false);
 
 			Nz::String ToString() const;
 
@@ -53,6 +53,7 @@ namespace bw
 					Ndk::LabelWidget* label;
 				};
 
+				Ndk::BaseWidget* background;
 				std::size_t teamId;
 				std::vector<ColumnData> values;
 			};
@@ -75,6 +76,8 @@ namespace bw
 			std::vector<std::optional<PlayerData>> m_players;
 			std::vector<TeamData> m_teams;
 			Ndk::BaseWidget* m_backgroundWidget;
+			Ndk::BaseWidget* m_columnBackgroundWidget;
+			Ndk::BaseWidget* m_contentWidget;
 			Ndk::ScrollAreaWidget* m_scrollArea;
 			const Logger& m_logger;
 	};

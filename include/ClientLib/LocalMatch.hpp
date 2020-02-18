@@ -51,7 +51,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData);
+			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch();
@@ -166,6 +166,7 @@ namespace bw
 				LocalLayerEntityHandle controlledEntity;
 				Nz::UInt8 localIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;
+				Nz::UInt16 playerIndex;
 				PlayerInputData lastInputData;
 			};
 

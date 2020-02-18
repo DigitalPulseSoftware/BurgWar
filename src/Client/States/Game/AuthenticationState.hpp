@@ -7,9 +7,11 @@
 #ifndef BURGWAR_STATES_GAME_AUTHENTICATIONSTATE_HPP
 #define BURGWAR_STATES_GAME_AUTHENTICATIONSTATE_HPP
 
+#include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <Client/States/Game/StatusState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
+#include <optional>
 
 namespace bw
 {
@@ -23,6 +25,7 @@ namespace bw
 			void Enter(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
+			std::optional<Packets::AuthSuccess> m_authSuccessPacket;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
 			std::string m_playerName;

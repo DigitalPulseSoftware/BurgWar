@@ -45,7 +45,7 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
@@ -94,7 +94,7 @@ namespace bw
 
 		InitializeRemoteConsole();
 
-		constexpr Nz::UInt8 playerCount = 1;
+		std::size_t playerCount = authSuccess.players.size();
 
 		m_inputPacket.inputs.resize(playerCount);
 		for (auto& input : m_inputPacket.inputs)
@@ -106,7 +106,7 @@ namespace bw
 		{
 			auto& playerData = m_localPlayers.emplace_back(i);
 			playerData.inputController = std::make_shared<KeyboardAndMouseController>(*window, i);
-			
+			playerData.playerIndex = authSuccess.players[i].playerIndex;
 			playerData.inputController->OnSwitchWeapon.Connect([this, i](InputController* /*emitter*/, bool direction)
 			{
 				auto& playerData = m_localPlayers[i];
@@ -465,6 +465,16 @@ namespace bw
 				}
 			});
 			return 0;
+		};
+
+		state["engine_GetLocalPlayer_PlayerIndex"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> Nz::UInt16
+		{
+			return m_localPlayers[localIndex].playerIndex;
+		};
+
+		state["engine_GetLocalPlayerCount"] = [&](sol::this_state lua) -> std::size_t
+		{
+			return m_localPlayers.size();
 		};
 
 		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> sol::object
