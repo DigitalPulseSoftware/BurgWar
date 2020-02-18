@@ -1,4 +1,4 @@
-RegisterClientScript("timer.lua")
+RegisterClientScript()
 
 function timer.Sleep(ms)
 	local co, main = coroutine.running()

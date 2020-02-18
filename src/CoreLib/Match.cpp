@@ -411,6 +411,8 @@ namespace bw
 		auto it = std::find_if(m_players.begin(), m_players.end(), [player](const auto& playerPtr) { return playerPtr.get() == player; });
 		assert(it != m_players.end());
 
+		m_gamemode->ExecuteCallback("OnPlayerLeave", player->CreateHandle());
+
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = player->GetName() + " has left";
 

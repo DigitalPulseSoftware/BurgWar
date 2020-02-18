@@ -9,11 +9,19 @@ function GM:GetPlayerKills(player)
 	return self.ScoreKills[player:GetPlayerIndex()] or 0
 end
 
+GM.OnPlayerLeave = utils.OverrideFunction(GM.OnPlayerLeave, function (self, player)
+	local playerIndex = player:GetPlayerIndex()
+	self.ScoreDeaths[playerIndex] = nil
+	self.ScoreKills[playerIndex] = nil
+end)
+
 if (SERVER) then
 	local function BuildScorePacket()
 		local packet = network.NewPacket("ScoreUpdate")
+
 		packet:WriteCompressedUnsigned(table.count(GM.ScoreDeaths))
 		packet:WriteCompressedUnsigned(table.count(GM.ScoreKills))
+
 		for playerIndex, death in pairs(GM.ScoreDeaths) do
 			packet:WriteCompressedUnsigned(playerIndex)
 			packet:WriteCompressedUnsigned(death)
@@ -29,14 +37,9 @@ if (SERVER) then
 
 	GM.ScoreUpdated = false
 
-	local previousOnJoin = GM.OnPlayerJoin
-	function GM:OnPlayerJoin(player)
-		if (previousOnJoin) then
-			previousOnJoin(self, player)
-		end
-
+	GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player)
 		player:SendPacket(BuildScorePacket())
-	end
+	end)
 
 	function GM:IncreasePlayerDeath(player, deathCount)
 		local playerIndex = player:GetPlayerIndex()
@@ -60,28 +63,14 @@ if (SERVER) then
 		self.ScoreUpdated = false
 	end
 
-	function table.count(tab)
-		local size = 0
-		for _, _ in pairs(tab) do
-			size = size + 1
-		end
-
-		return size
-	end
-
-	local previousOnTick = GM.OnTick
-	function GM:OnTick()
-		if (previousOnTick) then
-			previousOnTick(self)
-		end
-
+	GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 		if (not self.ScoreUpdated) then
 			-- Send score to players
 			match.BroadcastPacket(BuildScorePacket())
 
 			self.ScoreUpdated = true
 		end
-	end
+	end)
 
 	network.RegisterPacket("ScoreUpdate")
 else

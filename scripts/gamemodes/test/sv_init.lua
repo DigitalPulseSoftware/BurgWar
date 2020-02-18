@@ -12,16 +12,11 @@ function GM:OnPlayerDeath(player, attacker)
 	player:Spawn()
 end
 
-local previousOnJoin = GM.OnPlayerJoin
-function GM:OnPlayerJoin(player)
-	if (previousOnJoin) then
-		previousOnJoin(self, player)
-	end
-
+GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player)
 	print(player:GetName() .. " joined")
 	player:MoveToLayer(0)
 	player:Spawn()
-end
+end)
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
@@ -83,19 +78,14 @@ function GM:OnPlayerChat(player, message)
 	end
 end
 
-local previousOnTick = GM.OnTick
-function GM:OnTick()
-	if (previousOnTick) then
-		previousOnTick(self)
-	end
-
+GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 10000) then
 			burger:Kill()
 		end
 	end
-end
+end)
 
 function GM:OnInit()
 	--[[for i = 0, 20 do
