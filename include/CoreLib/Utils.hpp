@@ -39,6 +39,8 @@ namespace bw
 		}
 	};
 
+	template<typename... Args> constexpr OverloadResolver<Args...> Overload = {};
+
 	// std::is_same but for containers
 	template<template<typename...> typename T, typename U>
 	struct IsSameTpl
@@ -58,8 +60,6 @@ namespace bw
 
 	template<template<typename...> typename T, typename U>
 	inline constexpr bool IsSameTpl_v = IsSameTpl<T, U>::value;
-
-	template<typename... Args> constexpr OverloadResolver<Args...> Overload = {};
 
 	inline Nz::RadianAnglef AngleFromQuaternion(const Nz::Quaternionf& quat);
 	std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
