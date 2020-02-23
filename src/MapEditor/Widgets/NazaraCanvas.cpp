@@ -124,6 +124,9 @@ namespace bw
 			switch (key)
 			{
 				case Qt::Key_Delete: return Nz::Keyboard::Key::Delete;
+				case Qt::Key_Escape: return Nz::Keyboard::Key::Escape;
+				case Qt::Key_Return: return Nz::Keyboard::Key::Return;
+				case Qt::Key_Tab:    return Nz::Keyboard::Key::Tab;
 
 				default:
 					return std::nullopt;
@@ -286,9 +289,5 @@ namespace bw
 				break;
 		}
 		return QWidget::event(e);
-	}
-
-	void NazaraCanvas::keyPressEvent(QKeyEvent* /*key*/)
-	{
 	}
 }
