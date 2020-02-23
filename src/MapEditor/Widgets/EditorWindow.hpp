@@ -57,7 +57,7 @@ namespace bw
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 		private:
-			virtual bool event(QEvent* e) override;
+			bool event(QEvent* e) override;
 
 			void AddToRecentFileList(const QString& mapFolder);
 

@@ -1206,9 +1206,9 @@ namespace bw
 		//m_centralTab->addTab(m_playWindow, tr("In-game test"));
 
 		connect(m_playWindow, &QObject::destroyed, [this]()
-			{
-				m_playWindow = nullptr;
-			});
+		{
+			m_playWindow = nullptr;
+		});
 	}
 
 	void EditorWindow::OnSaveMap()
@@ -1224,7 +1224,7 @@ namespace bw
 				if (path.isEmpty())
 					return;
 
-				mapFolder = path;
+				mapFolder.setPath(path);
 				if (!mapFolder.isEmpty())
 				{
 					QMessageBox::critical(this, tr("Folder not empty"), tr("Map folder must be empty"), QMessageBox::Ok);

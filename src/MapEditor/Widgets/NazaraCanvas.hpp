@@ -21,15 +21,14 @@ namespace bw
 
 			Nz::Vector2ui GetSize() const override;
 
-			virtual QSize minimumSizeHint() const override;
-			virtual QSize sizeHint() const override;
+			QSize minimumSizeHint() const override;
+			QSize sizeHint() const override;
 
 		protected:
 			virtual void OnHide();
 			virtual void OnShow();
 			virtual void OnUpdate(float elapsedTime);
 
-		private:
 			void closeEvent(QCloseEvent *event) override;
 			void hideEvent(QHideEvent *event) override;
 			void paintEvent(QPaintEvent*) override;
@@ -37,9 +36,9 @@ namespace bw
 			void resizeEvent(QResizeEvent*) override;
 			void showEvent(QShowEvent*) override;
 
-			virtual bool event(QEvent* e) override;
-			virtual void keyPressEvent(QKeyEvent* key) override;
+			bool event(QEvent* e) override;
 
+		private:
 			QTimer m_updateTimer;
 	};
 }
