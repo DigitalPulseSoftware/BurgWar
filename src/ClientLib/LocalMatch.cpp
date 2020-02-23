@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalMatch.hpp>
-#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
@@ -15,6 +14,7 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
+#include <ClientLib/ClientEditorApp.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/InputController.hpp>
@@ -45,7 +45,7 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
@@ -54,11 +54,13 @@ namespace bw
 	m_freeClientId(-1),
 	m_window(window),
 	m_activeLayerIndex(0xFFFF),
-	m_application(burgApp),
 	m_chatBox(GetLogger(), window, canvas),
+	m_application(burgApp),
+	m_escapeMenu(window, canvas),
 	m_session(session),
 	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
+	m_isLeavingMatch(false),
 	m_errorCorrectionTimer(0.f),
 	m_playerEntitiesTimer(0.f),
 	m_playerInputTimer(0.f)
@@ -153,6 +155,12 @@ namespace bw
 		{
 			switch (event.code)
 			{
+				case Nz::Keyboard::Escape:
+				{
+					m_escapeMenu.Show(!m_escapeMenu.IsVisible());
+					break;
+				}
+
 				case Nz::Keyboard::F9:
 					if (m_remoteConsole)
 						m_remoteConsole->Hide();
@@ -216,6 +224,7 @@ namespace bw
 			}
 		});
 
+		BindEscapeMenu();
 		BindPackets();
 	}
 
@@ -564,8 +573,11 @@ namespace bw
 		m_entitiesByUniqueId.erase(it);
 	}
 
-	void LocalMatch::Update(float elapsedTime)
+	bool LocalMatch::Update(float elapsedTime)
 	{
+		if (m_isLeavingMatch)
+			return false;
+
 		if (m_scriptingContext)
 			m_scriptingContext->Update();
 
@@ -705,8 +717,23 @@ namespace bw
 		};
 
 		m_layers[0]->GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+
+		return true;
 	}
 	
+	void LocalMatch::BindEscapeMenu()
+	{
+		m_escapeMenu.OnLeaveMatch.Connect([this](EscapeMenu*)
+		{
+			Quit();
+		});
+
+		m_escapeMenu.OnQuitApp.Connect([this](EscapeMenu*)
+		{
+			m_application.Quit();
+		});
+	}
+
 	void LocalMatch::BindPackets()
 	{
 		//TODO: Use slots

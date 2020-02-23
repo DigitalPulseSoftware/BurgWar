@@ -16,7 +16,7 @@ namespace bw
 	m_window(window),
 	m_localPlayerIndex(localPlayerIndex)
 	{
-		m_window.GetEventHandler().OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		m_onMouseWheelMovedSlot.Connect(m_window.GetEventHandler().OnMouseWheelMoved, [this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
 		{
 			OnSwitchWeapon(this, event.delta > 0.f);
 		});

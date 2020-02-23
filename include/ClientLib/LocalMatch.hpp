@@ -17,6 +17,7 @@
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/Chatbox.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
+#include <ClientLib/EscapeMenu.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/LocalPlayer.hpp>
@@ -38,7 +39,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class ClientEditorApp;
 	class Camera;
 	class ClientGamemode;
 	class ClientSession;
@@ -51,7 +52,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			LocalMatch(BurgApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch();
@@ -68,7 +69,7 @@ namespace bw
 			inline Nz::UInt16 GetActiveLayer();
 			inline AnimationManager& GetAnimationManager();
 			inline ClientAssetStore& GetAssetStore();
-			inline BurgApp& GetApplication();
+			inline ClientEditorApp& GetApplication();
 			inline Camera& GetCamera();
 			inline const Camera& GetCamera() const;
 			inline ClientSession& GetClientSession();
@@ -89,6 +90,8 @@ namespace bw
 			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
 			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
 
+			inline void Quit();
+
 			void RegisterEntity(Nz::Int64 uniqueId, LocalLayerEntityHandle entity);
 			
 			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
@@ -96,7 +99,7 @@ namespace bw
 
 			void UnregisterEntity(Nz::Int64 uniqueId);
 
-			void Update(float elapsedTime);
+			bool Update(float elapsedTime);
 
 			LocalMatch& operator=(const LocalMatch&) = delete;
 			LocalMatch& operator=(LocalMatch&&) = delete;
@@ -125,6 +128,7 @@ namespace bw
 				Packets::PlayerWeapons
 			>;
 
+			void BindEscapeMenu();
 			void BindPackets();
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
@@ -238,12 +242,14 @@ namespace bw
 			tsl::hopscotch_map<Nz::Int64, LocalLayerEntityHandle> m_entitiesByUniqueId;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
-			BurgApp& m_application;
 			Chatbox m_chatBox;
+			ClientEditorApp& m_application;
 			ClientSession& m_session;
+			EscapeMenu m_escapeMenu;
 			Scoreboard* m_scoreboard;
 			Packets::PlayersInput m_inputPacket;
 			bool m_hasFocus;
+			bool m_isLeavingMatch;
 			float m_errorCorrectionTimer;
 			float m_playerEntitiesTimer;
 			float m_playerInputTimer;

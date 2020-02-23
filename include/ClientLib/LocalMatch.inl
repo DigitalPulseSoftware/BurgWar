@@ -45,7 +45,7 @@ namespace bw
 		return *m_assetStore;
 	}
 
-	inline BurgApp& LocalMatch::GetApplication()
+	inline ClientEditorApp& LocalMatch::GetApplication()
 	{
 		return m_application;
 	}
@@ -80,5 +80,10 @@ namespace bw
 	inline Ndk::World& LocalMatch::GetRenderWorld()
 	{
 		return m_renderWorld;
+	}
+
+	inline void LocalMatch::Quit()
+	{
+		m_isLeavingMatch = true;
 	}
 }

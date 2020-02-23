@@ -3,8 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/GameState.hpp>
-#include <Client/ClientApp.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <Client/ClientApp.hpp>
+#include <Client/States/BackgroundState.hpp>
+#include <Client/States/LoginState.hpp>
 
 namespace bw
 {
@@ -38,7 +40,12 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		m_match->Update(elapsedTime);
+		if (!m_match->Update(elapsedTime))
+		{
+			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
+			fsm.PushState(std::make_shared<LoginState>(GetStateDataPtr()));
+			return true;
+		}
 
 		return true;
 	}
