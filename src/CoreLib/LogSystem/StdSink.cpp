@@ -127,7 +127,8 @@ namespace bw
 			std::vector<wchar_t> heapBuffer;
 			wchar_t* bufferPtr;
 
-			if (bufferLength >= 16 * 1024)
+			// Use a stack buffer if possible (not too many characters)
+			if (bufferLength < 16 * 1024)
 			{
 				stackBuffer = NazaraStackArrayNoInit(wchar_t, bufferLength);
 				bufferPtr = stackBuffer.data();
