@@ -7,6 +7,7 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/ClientApp.hpp>
+#include <Client/States/BackgroundState.hpp>
 #include <Client/States/LoginState.hpp>
 #include <Client/States/Game/AuthenticationState.hpp>
 #include <Client/States/Game/ConnectedState.hpp>
@@ -15,7 +16,8 @@
 namespace bw
 {
 	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName) :
-	StatusState(std::move(stateData))
+	StatusState(std::move(stateData)),
+	m_failed(false)
 	{
 		ClientApp* app = GetStateData().app;
 		auto& networkManager = app->GetReactorManager();
@@ -36,6 +38,7 @@ namespace bw
 		{
 			UpdateStatus("Failed to connect to server", Nz::Color::Red);
 
+			m_failed = true;
 			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
 			m_nextStateDelay = 3.f;
 		});
@@ -67,6 +70,9 @@ namespace bw
 		{
 			if ((m_nextStateDelay -= elapsedTime) < 0.f)
 			{
+				if (m_failed)
+					fsm.PushState(std::make_shared<BackgroundState>(GetStateDataPtr()));
+
 				fsm.ChangeState(m_nextState);
 				return true;
 			}

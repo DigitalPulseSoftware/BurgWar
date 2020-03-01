@@ -28,6 +28,7 @@ namespace bw
 
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
+			bool m_failed;
 			float m_nextStateDelay;
 
 			NazaraSlot(ClientSession, OnConnected, m_clientSessionConnectedSlot);
