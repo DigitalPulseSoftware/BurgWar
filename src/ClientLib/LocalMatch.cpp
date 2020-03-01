@@ -89,6 +89,7 @@ namespace bw
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
 		m_camera.emplace(m_renderWorld, m_window, true);
+		m_camera->SetZoomFactor(1.25f);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer->AddComponent<Ndk::NodeComponent>();
