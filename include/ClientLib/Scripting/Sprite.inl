@@ -29,6 +29,11 @@ namespace bw
 		return Show(false);
 	}
 
+	inline bool Sprite::IsValid() const
+	{
+		return m_entity;
+	}
+
 	inline void Sprite::SetOffset(const Nz::Vector2f& newOffset)
 	{
 		m_transformMatrix.SetTranslation(newOffset);

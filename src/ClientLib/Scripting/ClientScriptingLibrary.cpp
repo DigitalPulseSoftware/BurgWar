@@ -305,6 +305,10 @@ namespace bw
 
 			"Hide", &Sprite::Hide,
 
+			"IsValid", &Sprite::IsValid,
+
+			"SetCornerColor", &Sprite::SetCornerColor,
+			"SetCornerColors", &Sprite::SetCornerColors,
 			"SetOffset", &Sprite::SetOffset,
 			"SetRotation", &Sprite::SetRotation,
 			"SetSize", &Sprite::SetSize,

@@ -12,6 +12,7 @@
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Entity.hpp>
+#include <sol3/forward.hpp>
 
 namespace bw
 {
@@ -28,8 +29,11 @@ namespace bw
 
 			inline void Hide();
 
+			inline bool IsValid() const;
 			//bool IsVisible() const;
 
+			void SetCornerColor(const std::string_view& corner, Nz::Color cornerColor);
+			void SetCornerColors(const sol::table& cornerTable);
 			inline void SetOffset(const Nz::Vector2f& newOffset);
 			inline void SetRotation(const Nz::DegreeAnglef& newRotation);
 			inline void SetSize(const Nz::Vector2f& newSize);

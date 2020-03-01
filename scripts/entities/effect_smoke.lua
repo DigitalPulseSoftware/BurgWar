@@ -18,6 +18,7 @@ function ENTITY:Initialize()
 	self.ParticleGroup:AddGenerator("color", { min = { r = 0.4, g = 0.4, b = 0.4 }, max = { r = 0.4, g = 0.4, b = 0.4 } })
 	self.ParticleGroup:AddGenerator("life", { min = 0, max = lifetime })
 	self.ParticleGroup:AddGenerator("position", { origin = self:GetPosition(), maxDist = 10 })
+	self.ParticleGroup:AddGenerator("rotation", { min = -180, max = 180 })
 	self.ParticleGroup:AddGenerator("size", { min = Vec2(50, 50), max = Vec2(75, 75) })
 	self.ParticleGroup:AddGenerator("velocity_unit_random", { minSpeed = 200, maxSpeed = 300 })
 	self.ParticleGroup:SetRenderer("billboard", {

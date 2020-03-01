@@ -4,8 +4,10 @@
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
+#include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp> // For sol metainfo
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp> // For sol metainfo
 #include <Nazara/Core/CallOnExit.hpp>
@@ -99,8 +101,12 @@ namespace bw
 
 	void SharedEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass)
 	{
+		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 		auto& entityPhys = entity->AddComponent<Ndk::PhysicsComponent2D>();
 		entityPhys.SetMass(mass);
+
+		// Temp fix because Nazara
+		entityPhys.SetRotation(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global)));
 	}
 
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
@@ -254,6 +260,41 @@ namespace bw
 			}
 			else
 				entity->Kill();
+		};
+
+		elementMetatable["OverrideMovementController"] = [this](const sol::table& entityTable, sol::protected_function fn)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				Ndk::PhysicsComponent2D& hitEntityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				if (fn)
+				{
+					hitEntityPhys.SetVelocityFunction([entity, fn = std::move(fn)](Nz::RigidBody2D& body2D, const Nz::Vector2f& gravity, float damping, float deltaTime)
+					{
+						auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+						Nz::Vector2f overridedGravity = gravity;
+						float overridedDamping = damping;
+
+						auto result = fn(gravity, damping, deltaTime);
+						if (result)
+							sol::tie(overridedGravity, overridedDamping) = result;
+						else
+						{
+							sol::error err = result;
+							bwLog(entityScript.GetLogger(), LogLevel::Error, "Movement controller callback failed: {0}", err.what());
+						}
+
+						body2D.UpdateVelocity(overridedGravity, overridedDamping, deltaTime);
+					});
+				}
+				else
+				{
+					hitEntityPhys.SetVelocityFunction(nullptr);
+				}
+			}
 		};
 
 		elementMetatable["Remove"] = [](const sol::table& entityTable)

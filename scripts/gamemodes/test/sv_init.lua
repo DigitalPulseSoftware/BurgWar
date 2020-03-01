@@ -20,6 +20,7 @@ end)
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
+	player:GiveWeapon("weapon_patator")
 end
 
 local noclipController = NoclipPlayerMovementController.new()

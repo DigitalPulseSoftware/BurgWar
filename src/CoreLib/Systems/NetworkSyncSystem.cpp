@@ -21,6 +21,7 @@ namespace bw
 	{
 		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
 		SetMaximumUpdateRate(30.f);
+		SetUpdateOrder(100); //< Execute after every other system
 	}
 
 	void NetworkSyncSystem::CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const

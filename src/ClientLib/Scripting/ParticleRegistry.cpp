@@ -252,7 +252,6 @@ namespace bw
 				[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId) mutable
 				{
 					auto positionPtr = mapper.GetComponentPtr<Nz::Vector3f>(Nz::ParticleComponent_Position);
-					auto rotationPtr = mapper.GetComponentPtr<float>(Nz::ParticleComponent_Rotation); //< FIXME
 
 					auto& gen = GetRandomGenerator();
 					std::uniform_real_distribution<float> dis(minDist, maxDist);
@@ -262,12 +261,36 @@ namespace bw
 					{
 						Nz::Vector2f offset(xy(gen), xy(gen));
 						positionPtr[i] = origin + offset * dis(gen);
-						rotationPtr[i] = 0.f;
 					}
 				}
 			);
 		});
 		
+		RegisterGenerator("rotation", [](const sol::table& parameters) -> Nz::ParticleGeneratorRef
+		{
+			float max = parameters.get_or("max", 0.f);
+			float min = parameters.get_or("min", 0.f);
+
+			if (min > max)
+				std::swap(min, max);
+
+			return Nz::ParticleFunctionGenerator::New(
+				[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId) mutable
+				{
+					auto rotPtr = mapper.GetComponentPtr<float>(Nz::ParticleComponent_Rotation);
+
+					auto& gen = GetRandomGenerator();
+					std::uniform_real_distribution<float> dis(min, max);
+
+					for (unsigned int i = startId; i <= endId; ++i)
+					{
+						float& rotationValue = rotPtr[i];
+						rotationValue = dis(gen);
+					}
+				}
+			);
+		});
+
 		RegisterGenerator("size", [](const sol::table& parameters) -> Nz::ParticleGeneratorRef
 		{
 			Nz::Vector2f maxSize = parameters["max"];
@@ -297,7 +320,7 @@ namespace bw
 		RegisterGenerator("velocity_unit_random", [](const sol::table& parameters) -> Nz::ParticleGeneratorRef
 		{
 			float minSpeed = parameters["minSpeed"];
-			float maxSpeed = parameters["minSpeed"];
+			float maxSpeed = parameters["maxSpeed"];
 
 			if (minSpeed > maxSpeed)
 				std::swap(minSpeed, maxSpeed);

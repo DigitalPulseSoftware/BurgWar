@@ -1,5 +1,5 @@
 RegisterClientScript()
-RegisterClientAssets("grenade.png")
+RegisterClientAssets("placeholder/potato.png")
 
 ENTITY.IsNetworked = true
 ENTITY.PlayerControlled = false
@@ -13,8 +13,8 @@ function ENTITY:Initialize()
 
 	if (CLIENT) then
 		self:AddSprite({
-			Scale = Vec2(0.3, 0.3),
-			TexturePath = "grenade.png"
+			Scale = Vec2(0.1, 0.1),
+			TexturePath = "placeholder/potato.png"
 		})
 	end
 end
