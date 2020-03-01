@@ -18,21 +18,12 @@ namespace bw
 
 	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
-		element.initializeFunction = elementTable["Initialize"];
 	}
 
 	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
 	{
-		if (entityClass.initializeFunction)
-		{
-			auto result = entityClass.initializeFunction(entity->GetComponent<ScriptComponent>().GetTable());
-			if (!result.valid())
-			{
-				sol::error err = result;
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create entity \"{0}\", Initialize() failed: {1}", entityClass.name, err.what());
-				return false;
-			}
-		}
+		if (!ScriptStore::InitializeEntity(entityClass, entity))
+			return false;
 
 		if (entity->HasComponent<InputComponent>())
 		{

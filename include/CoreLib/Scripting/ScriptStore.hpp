@@ -55,6 +55,7 @@ namespace bw
 			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const;
 			virtual void InitializeElementTable(sol::table& elementTable);
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
+			bool InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const;
 
 			sol::state& GetLuaState();
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;

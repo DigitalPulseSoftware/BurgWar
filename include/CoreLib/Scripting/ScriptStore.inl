@@ -149,6 +149,7 @@ namespace bw
 		element->fullName = std::move(fullName);
 		element->elementTable = std::move(elementTable);
 		element->frameFunction = element->elementTable["OnFrame"];
+		element->initializeFunction = element->elementTable["Initialize"];
 		element->postFrameFunction = element->elementTable["OnPostFrame"];
 		element->tickFunction = element->elementTable["OnTick"];
 
@@ -285,6 +286,22 @@ namespace bw
 	{
 	}
 
+	template<typename Element>
+	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
+	{
+		if (entityClass.initializeFunction)
+		{
+			auto result = entityClass.initializeFunction(entity->GetComponent<ScriptComponent>().GetTable());
+			if (!result.valid())
+			{
+				sol::error err = result;
+				bwLog(GetLogger(), LogLevel::Error, "Failed to create element \"{0}\", Initialize() failed: {1}", entityClass.fullName, err.what());
+				return false;
+			}
+		}
+
+		return true;
+	}
 	template<typename Element>
 	sol::state& ScriptStore<Element>::GetLuaState()
 	{

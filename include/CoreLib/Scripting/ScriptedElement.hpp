@@ -30,6 +30,7 @@ namespace bw
 
 		sol::table elementTable;
 		sol::protected_function frameFunction;
+		sol::protected_function initializeFunction;
 		sol::protected_function postFrameFunction;
 		sol::protected_function tickFunction;
 		std::string name;
