@@ -67,6 +67,8 @@ namespace bw
 	template<typename T> bool IsMoreRecent(T a, T b);
 	template<typename F> bool SplitString(const std::string_view& str, const std::string_view& token, F&& func);
 	template<typename F> bool SplitStringAny(const std::string_view& str, const std::string_view& token, F&& func);
+
+	template<typename E> auto UnderlyingCast(E value) -> std::underlying_type_t<E>;
 }
 
 #include <CoreLib/Utils.inl>

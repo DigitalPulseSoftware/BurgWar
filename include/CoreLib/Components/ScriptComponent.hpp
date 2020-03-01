@@ -30,6 +30,7 @@ namespace bw
 
 			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
+			inline const EntityLogger& GetLogger() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
 			inline const EntityProperties& GetProperties() const;
 			inline sol::table& GetTable();

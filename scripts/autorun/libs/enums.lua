@@ -46,3 +46,8 @@ PropertyType = enums.Create({
 	String            = 15,
 	Texture           = 16
 })
+
+WeaponAttackType = enums.Create({
+	SingleShot = 0,
+	SingleShotRepeat = 1
+})

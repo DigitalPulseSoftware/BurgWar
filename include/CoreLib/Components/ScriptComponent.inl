@@ -38,6 +38,11 @@ namespace bw
 		return m_element;
 	}
 
+	inline const EntityLogger& ScriptComponent::GetLogger() const
+	{
+		return m_logger;
+	}
+
 	inline std::optional<std::reference_wrapper<const EntityProperty>> ScriptComponent::GetProperty(const std::string& keyName) const
 	{
 		// Check specific value

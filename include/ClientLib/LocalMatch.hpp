@@ -185,10 +185,18 @@ namespace bw
 					float friction;
 				};
 
+				struct WeaponData
+				{
+					Ndk::EntityHandle entity;
+					bool isAttacking;
+				};
+
 				struct PlayerData
 				{
 					PlayerInputData input;
+					PlayerInputData previousInput;
 					std::optional<MovementData> movement;
+					std::vector<WeaponData> weapons;
 				};
 
 				Nz::UInt16 serverTick;

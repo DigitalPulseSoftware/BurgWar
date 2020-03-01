@@ -6,25 +6,45 @@
 
 namespace bw
 {
-	inline InputComponent::InputComponent(const PlayerInputData& inputData) :
-	m_inputData(inputData)
-	{
-	}
-
-	inline InputComponent::InputComponent(const InputComponent& inputComponent) :
-	m_inputData(inputComponent.m_inputData)
+	inline InputComponent::InputComponent() :
+	m_inputIndex(0)
 	{
 	}
 
 	inline const PlayerInputData& InputComponent::GetInputs() const
 	{
-		return m_inputData;
+		return m_inputData[m_inputIndex];
+	}
+
+	inline const PlayerInputData& InputComponent::GetPreviousInputs() const
+	{
+		std::size_t previousInputIndex = m_inputIndex;
+		if (previousInputIndex > 0)
+			previousInputIndex--;
+		else
+			previousInputIndex = m_inputData.size() - 1;
+
+		return m_inputData[previousInputIndex];
 	}
 
 	inline void InputComponent::UpdateInputs(const PlayerInputData& inputData)
 	{
-		m_inputData = std::move(inputData);
+		if (++m_inputIndex >= m_inputData.size())
+			m_inputIndex = 0;
+
+		m_inputData[m_inputIndex] = std::move(inputData);
 
 		OnInputUpdate(this);
+	}
+
+	inline void InputComponent::UpdatePreviousInputs(const PlayerInputData& inputData)
+	{
+		std::size_t previousInputIndex = m_inputIndex;
+		if (previousInputIndex > 0)
+			previousInputIndex--;
+		else
+			previousInputIndex = m_inputData.size() - 1;
+
+		m_inputData[previousInputIndex] = inputData;
 	}
 }

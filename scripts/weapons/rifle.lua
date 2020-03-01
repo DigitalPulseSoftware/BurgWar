@@ -5,6 +5,7 @@ WEAPON.Sprite = "rifle-30349_640.png"
 WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
 WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
 WEAPON.Cooldown = 0.1
+WEAPON.AttackMode = WeaponAttackType.SingleShotRepeat
 
 RegisterClientAssets(WEAPON.Sprite)
 

@@ -67,4 +67,9 @@ namespace bw
 
 		return func(str.substr(previousPos));
 	}
+
+	template<typename E> auto UnderlyingCast(E value) -> std::underlying_type_t<E>
+	{
+		return static_cast<std::underlying_type_t<E>>(value);
+	}
 }

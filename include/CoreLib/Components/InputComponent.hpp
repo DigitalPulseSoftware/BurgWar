@@ -10,26 +10,28 @@
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Components.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <array>
 
 namespace bw
 {
 	class InputComponent : public Ndk::Component<InputComponent>
 	{
 		public:
-			InputComponent() = default;
-			inline InputComponent(const PlayerInputData& inputData);
-			inline InputComponent(const InputComponent& inputComponent);
+			inline InputComponent();
 
 			inline const PlayerInputData& GetInputs() const;
+			inline const PlayerInputData& GetPreviousInputs() const;
 
 			inline void UpdateInputs(const PlayerInputData& inputData);
+			inline void UpdatePreviousInputs(const PlayerInputData& inputData);
 
 			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnInputUpdate, InputComponent* /*input*/);
 
 		private:
-			PlayerInputData m_inputData;
+			std::array<PlayerInputData, 2> m_inputData;
+			std::size_t m_inputIndex;
 	};
 }
 

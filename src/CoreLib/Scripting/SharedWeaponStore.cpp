@@ -24,6 +24,13 @@ namespace bw
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
 	{
+		weapon.attackMode = static_cast<WeaponAttackMode>(elementTable.get_or("AttackMode", UnderlyingCast(WeaponAttackMode::SingleShot)));
+		if (UnderlyingCast(weapon.attackMode) > UnderlyingCast(WeaponAttackMode::Max))
+		{
+			bwLog(GetLogger(), LogLevel::Error, "Weapon {0} has invalid attack mode ({1})", weapon.fullName, UnderlyingCast(weapon.attackMode));
+			weapon.attackMode = WeaponAttackMode::SingleShot;
+		}
+
 		weapon.cooldown = static_cast<Nz::UInt32>(elementTable.get_or("Cooldown", 0.f) * 1000);
 		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 

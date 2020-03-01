@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDWEAPON_HPP
 
 #include <CoreLib/AnimationStore.hpp>
+#include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <memory>
@@ -16,6 +17,7 @@ namespace bw
 {
 	struct ScriptedWeapon : ScriptedElement
 	{
+		WeaponAttackMode attackMode;
 		Nz::UInt32 cooldown;
 		Nz::Vector2f spriteOrigin;
 		Nz::Vector2f weaponOrigin;

@@ -34,6 +34,7 @@ namespace bw
 				Ndk::NodeComponent& weaponNode = weapon->GetComponent<Ndk::NodeComponent>();
 
 				const auto& inputs = ownerInputs.GetInputs();
+				const auto& previousInputs = ownerInputs.GetPreviousInputs();
 
 				Nz::RadianAnglef angle(std::atan2(inputs.aimDirection.y, inputs.aimDirection.x));
 				if (std::signbit(ownerNode.GetScale(Nz::CoordSys_Global).x) != std::signbit(weaponNode.GetScale(Nz::CoordSys_Global).x))
@@ -44,14 +45,36 @@ namespace bw
 
 				weaponNode.SetRotation(angle);
 
-				if (inputs.isAttacking)
+				bool isAttacking = false;
+				switch (weaponComponent.GetAttackMode())
+				{
+					case WeaponAttackMode::SingleShot:
+						isAttacking = inputs.isAttacking && !previousInputs.isAttacking;
+						break;
+
+					case WeaponAttackMode::SingleShotRepeat:
+						isAttacking = inputs.isAttacking;
+						break;
+				}
+
+				if (isAttacking)
 				{
 					auto& weaponCooldown = weapon->GetComponent<CooldownComponent>();
 					if (weaponCooldown.Trigger(m_match.GetCurrentTime()))
 					{
 						auto& weaponScript = weapon->GetComponent<ScriptComponent>();
 						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+
+						weaponComponent.SetAttacking(true);
+						bwLog(m_match.GetLogger(), LogLevel::Debug, "Set weapon attacking");
 					}
+				}
+				else if (!inputs.isAttacking && weaponComponent.IsAttacking())
+				{
+					auto& weaponScript = weapon->GetComponent<ScriptComponent>();
+					weaponScript.ExecuteCallback("OnAttackFinish", weaponScript.GetTable());
+
+					weaponComponent.SetAttacking(false);
 				}
 			}
 		}

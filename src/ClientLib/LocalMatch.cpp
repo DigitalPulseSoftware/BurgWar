@@ -1110,6 +1110,7 @@ namespace bw
 					InputComponent& entityInputs = controlledEntity->GetComponent<InputComponent>();
 					const auto& playerInputData = input.inputs[i];
 					entityInputs.UpdateInputs(playerInputData.input);
+					entityInputs.UpdatePreviousInputs(playerInputData.previousInput);
 
 					if (playerInputData.movement)
 					{
@@ -1122,15 +1123,21 @@ namespace bw
 						playerPhysics.SetFriction(0, playerInputData.movement->friction);
 						playerPhysics.SetSurfaceVelocity(0, playerInputData.movement->surfaceVelocity);
 					}
+
+					for (auto&& weaponData : playerInputData.weapons)
+					{
+						if (!weaponData.entity)
+							continue;
+
+						weaponData.entity->GetComponent<WeaponComponent>().SetAttacking(weaponData.isAttacking);
+					}
 				}
 			}
 
 			for (auto& layer : m_layers)
 			{
 				if (layer->IsEnabled() && layer->IsPredictionEnabled())
-				{
 					layer->TickUpdate(GetTickDuration());
-				}
 			}
 		}
 	}
@@ -1161,7 +1168,11 @@ namespace bw
 		for (auto weaponEntityIndex : packet.weaponEntities)
 		{
 			auto entityOpt = layer->GetEntity(weaponEntityIndex);
-			assert(entityOpt);
+			if (!entityOpt)
+			{
+				bwLog(GetLogger(), LogLevel::Warning, "Local player #{0} weapon entity {1} doesn't exist", +packet.localIndex, weaponEntityIndex);
+				continue;
+			}
 
 			LocalLayerEntity& layerEntity = entityOpt.value();
 
@@ -1243,6 +1254,32 @@ namespace bw
 		{
 			SendInputs(estimatedServerTick, true);
 
+			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
+			{
+				auto& controllerData = m_localPlayers[i];
+				if (controllerData.controlledEntity)
+				{
+					auto& entity = controllerData.controlledEntity->GetEntity();
+					if (entity->HasComponent<InputComponent>())
+					{
+						auto& entityInputs = entity->GetComponent<InputComponent>();
+						entityInputs.UpdateInputs(controllerData.lastInputData);
+					}
+				}
+			}
+		}
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
+
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->TickUpdate(GetTickDuration());
+		}
+
+		if (lastTick)
+		{
 			// Remember predicted ticks for improving over time
 			if (m_tickPredictions.size() >= static_cast<std::size_t>(std::ceil(2 / GetTickDuration()))) //< Remember at most 2s of inputs
 				m_tickPredictions.erase(m_tickPredictions.begin());
@@ -1283,19 +1320,21 @@ namespace bw
 					if (entity->HasComponent<InputComponent>())
 					{
 						auto& entityInputs = entity->GetComponent<InputComponent>();
-						entityInputs.UpdateInputs(controllerData.lastInputData);
+						entityInputs.UpdateInputs(playerData.input);
+						playerData.previousInput = entityInputs.GetPreviousInputs();
 					}
 				}
+
+				for (auto&& weaponEntity : controllerData.weapons)
+				{
+					if (!weaponEntity || !weaponEntity->HasComponent<WeaponComponent>())
+						continue;
+
+					auto& weaponData = playerData.weapons.emplace_back();
+					weaponData.entity = weaponEntity;
+					weaponData.isAttacking = weaponEntity->GetComponent<WeaponComponent>().IsAttacking();
+				}
 			}
-		}
-
-		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
-
-		for (auto& layer : m_layers)
-		{
-			if (layer->IsEnabled())
-				layer->TickUpdate(GetTickDuration());
 		}
 	}
 

@@ -6,10 +6,17 @@
 
 namespace bw
 {
-	inline WeaponComponent::WeaponComponent(Ndk::EntityHandle owner) :
+	inline WeaponComponent::WeaponComponent(Ndk::EntityHandle owner, WeaponAttackMode attackMode) :
 	m_owner(std::move(owner)),
-	m_isActive(false)
+	m_attackMode(attackMode),
+	m_isActive(false),
+	m_isAttacking(false)
 	{
+	}
+
+	inline WeaponAttackMode WeaponComponent::GetAttackMode() const
+	{
+		return m_attackMode;
 	}
 
 	inline const Ndk::EntityHandle& WeaponComponent::GetOwner() const
@@ -22,9 +29,21 @@ namespace bw
 		return m_isActive;
 	}
 
+	inline bool WeaponComponent::IsAttacking() const
+	{
+		return m_isAttacking;
+	}
+
 	inline void WeaponComponent::SetActive(bool isActive)
 	{
 		m_isActive = isActive;
+		if (!isActive)
+			m_isAttacking = false;
+	}
+
+	inline void WeaponComponent::SetAttacking(bool isAttacking)
+	{
+		m_isAttacking = isAttacking;
 	}
 
 	inline void WeaponComponent::UpdateOwner(Ndk::EntityHandle owner)
