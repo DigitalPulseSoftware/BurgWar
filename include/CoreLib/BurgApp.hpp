@@ -8,16 +8,17 @@
 #define BURGWAR_CORELIB_BURGAPP_HPP
 
 #include <Nazara/Prerequisites.hpp>
-#include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
+	class ConfigFile;
+
 	class BurgApp
 	{
 		public:
-			BurgApp(LogSide side);
+			BurgApp(LogSide side, const ConfigFile& config);
 			~BurgApp() = default;
 
 			inline Nz::UInt64 GetAppTime() const;
@@ -30,10 +31,7 @@ namespace bw
 			Logger m_logger;
 
 		protected:
-			ConfigFile m_config;
-
-		private:
-			void RegisterBaseConfig();
+			const ConfigFile& m_config;
 
 			Nz::UInt64 m_appTime;
 			Nz::UInt64 m_lastTime;

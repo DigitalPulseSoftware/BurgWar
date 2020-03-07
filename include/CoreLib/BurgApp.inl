@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	inline Nz::UInt64 bw::BurgApp::GetAppTime() const
+	inline Nz::UInt64 BurgApp::GetAppTime() const
 	{
 		return m_appTime;
 	}

@@ -9,6 +9,7 @@
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Components.hpp>
 #include <CoreLib/BurgApp.hpp>
+#include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>

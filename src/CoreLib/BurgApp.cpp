@@ -25,9 +25,9 @@
 
 namespace bw
 {
-	BurgApp::BurgApp(LogSide side) :
+	BurgApp::BurgApp(LogSide side, const ConfigFile& config) :
 	m_logger(*this, side),
-	m_config(*this),
+	m_config(config),
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
@@ -51,8 +51,6 @@ namespace bw
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();
 		Ndk::InitializeSystem<WeaponSystem>();
-
-		RegisterBaseConfig();
 	}
 
 	void BurgApp::Update()
@@ -61,13 +59,5 @@ namespace bw
 		Nz::UInt64 elapsedTime = now - m_lastTime;
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
-	}
-
-	void BurgApp::RegisterBaseConfig()
-	{
-		m_config.RegisterStringOption("Assets.ResourceFolder");
-		m_config.RegisterStringOption("Assets.ScriptFolder");
-		m_config.RegisterBoolOption("Debug.SendServerState");
-		m_config.RegisterFloatOption("GameSettings.TickRate");
 	}
 }

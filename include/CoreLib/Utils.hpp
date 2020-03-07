@@ -65,6 +65,7 @@ namespace bw
 	std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);
 	template<typename T> bool IsMoreRecent(T a, T b);
+	inline std::string ReplaceStr(std::string str, const std::string_view& from, const std::string_view& to);
 	template<typename F> bool SplitString(const std::string_view& str, const std::string_view& token, F&& func);
 	template<typename F> bool SplitStringAny(const std::string_view& str, const std::string_view& token, F&& func);
 

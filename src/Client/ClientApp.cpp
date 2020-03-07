@@ -17,13 +17,12 @@
 namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
-	ClientEditorApp(argc, argv, LogSide::Client),
+	ClientEditorApp(argc, argv, LogSide::Client, m_configFile),
+	m_configFile(*this),
 	m_stateMachine(nullptr),
 	m_networkReactors(GetLogger())
 	{
-		RegisterClientConfig();
-
-		if (!m_config.LoadFromFile("clientconfig.lua"))
+		if (!m_configFile.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
 		FillStores();
@@ -103,18 +102,5 @@ namespace bw
 		}
 
 		return 0;
-	}
-
-	void ClientApp::RegisterClientConfig()
-	{
-		m_config.RegisterStringOption("Debug.ShowConnectionData");
-		m_config.RegisterBoolOption("Debug.ShowServerGhosts");
-		m_config.RegisterStringOption("GameSettings.MapFile");
-		m_config.RegisterIntegerOption("WindowSettings.AntialiasingLevel", 0, 16);
-		m_config.RegisterBoolOption("WindowSettings.Fullscreen");
-		m_config.RegisterBoolOption("WindowSettings.VSync");
-		m_config.RegisterIntegerOption("WindowSettings.FPSLimit", 0, 1000);
-		m_config.RegisterIntegerOption("WindowSettings.Height", 0, 0xFFFFFFFF);
-		m_config.RegisterIntegerOption("WindowSettings.Width", 0, 0xFFFFFFFF);
 	}
 }

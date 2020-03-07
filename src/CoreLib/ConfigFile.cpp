@@ -6,39 +6,48 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Utils.hpp>
 #include <sol3/sol.hpp>
+#include <fstream>
 
 namespace bw
 {
 	namespace
 	{
-		template<typename F>
-		bool ForEachSubVar(const std::string_view& varName, F func)
+		template<typename SectionFunc, typename VarFunc>
+		bool ForEachSection(const std::string_view& varName, SectionFunc&& sectionCB, VarFunc&& varCB)
 		{
 			std::size_t pos = 0;
 			std::size_t previousPos = 0;
 			while ((pos = varName.find('.', previousPos)) != std::string::npos)
 			{
-				if (!func(varName.substr(previousPos, pos - previousPos)))
+				if (!sectionCB(varName.substr(previousPos, pos - previousPos)))
 					return false;
 
 				previousPos = pos + 1;
 			}
 
-			return func(varName.substr(previousPos));
+			return varCB(varName.substr(previousPos));
+		}
+
+		template<typename F>
+		bool ForEachSection(const std::string_view& varName, F&& func)
+		{
+			return ForEachSection(varName, func, func);
 		}
 	}
 
-	bool ConfigFile::LoadFromFile(const std::string& fileName)
+	bool ConfigFile::LoadFromFile(const std::filesystem::path& filePath)
 	{
 		sol::state lua;
 		lua.open_libraries();
 
+		std::string path = filePath.generic_u8string();
+
 		try
 		{
-			if (auto result = lua.safe_script_file(fileName); !result.valid())
+			if (auto result = lua.safe_script_file(path); !result.valid())
 			{
 				sol::error err = result;
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to execute {0}: {1}", fileName, err.what());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load config {0}: {1}", path, err.what());
 				return false;
 			}
 
@@ -48,7 +57,7 @@ namespace bw
 			{
 				lua_getglobal(L, "_G");
 
-				return ForEachSubVar(optionName, [L](std::string_view variable)
+				return ForEachSection(optionName, [L](std::string_view variable)
 				{
 					lua_getfield(L, -1, std::string(variable).data());
 					lua_remove(L, -2);
@@ -57,14 +66,20 @@ namespace bw
 				});
 			};
 
-			for (auto& pair : m_options)
+			// TODO use sections
+			for (ConfigOption& option : m_options)
 			{
-				const std::string& optionName = pair.first;
-				ConfigOption& optionValue = pair.second;
-
-				if (!PushLuaVariable(optionName))
+				if (!PushLuaVariable(option.name))
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Missing config option \"{0}\"", optionName);
+					bool hasDefaultDefault = std::visit([](auto&& arg)
+					{
+						return arg.defaultValue.has_value();
+					}, option.data);
+
+					if (hasDefaultDefault)
+						continue;
+
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Missing config option \"{0}\"", option.name);
 					return false;
 				}
 
@@ -115,15 +130,15 @@ namespace bw
 								throw std::runtime_error("option value is over bounds (" + std::to_string(arg.value) + " > " + std::to_string(arg.maxBounds) + ')');
 						}
 
-						}, optionValue);
+						}, option.data);
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", optionName, e.what());
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", option.name, e.what());
 				}
 				catch (...)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", optionName, lua_tostring(L, -1));
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", option.name, lua_tostring(L, -1));
 					lua_pop(L, lua_gettop(L));
 				}
 
@@ -132,10 +147,125 @@ namespace bw
 		}
 		catch (const sol::error& e)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to parse \"{0}\": {1}", fileName, e.what());
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to parse config \"{0}\": {1}", path, e.what());
 			return false;
 		}
 
 		return true;
+	}
+
+	bool ConfigFile::SaveToFile(const std::filesystem::path& filePath)
+	{
+		std::fstream file(filePath, std::ios::out | std::ios::trunc);
+		if (!file.is_open())
+		{
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to open config file {0}: {1}", filePath.generic_u8string());
+			return false;
+		}
+
+		for (auto&& [sectionName, section] : m_subsections)
+		{
+			if (!sectionName.empty())
+			{
+				file << sectionName << " = {\n";
+				SaveSectionToFile(file, section, 1);
+				file << "}\n";
+			}
+			else
+				SaveSectionToFile(file, section, 0);
+		}
+
+		return file.good();
+	}
+
+	void ConfigFile::RegisterConfig(std::string optionName, ConfigData data)
+	{
+		NazaraAssert(m_optionByName.find(optionName) == m_optionByName.end(), "Option already exists");
+
+		std::size_t optionIndex = m_options.size();
+		auto& option = m_options.emplace_back();
+		option.name = optionName;
+		option.data = std::move(data);
+
+		m_optionByName.emplace(std::move(optionName), optionIndex);
+
+		ConfigSection* section = nullptr;
+
+		ForEachSection(option.name, [&](std::string_view sectionName)
+		{
+			std::string name(sectionName);
+
+			auto& subsections = (section) ? section->subsections : m_subsections;
+
+			auto it = subsections.find(name);
+			if (it == subsections.end())
+			{
+				ConfigSection newSection;
+				newSection.sectionName = name;
+
+				it = subsections.emplace(std::move(name), std::move(newSection)).first;
+			}
+
+			section = &it->second;
+			return true;
+		}, 
+		[&](std::string_view varName)
+		{
+			if (!section)
+			{
+				auto it = m_subsections.emplace(std::string(), ConfigSection{}).first;
+				section = &it->second;
+			}
+
+			section->options.emplace(std::string(varName), optionIndex);
+			return true;
+		});
+	}
+	
+	void ConfigFile::SaveSectionToFile(std::fstream& file, const ConfigSection& section, std::size_t indentCount)
+	{
+		std::string indent(indentCount, '\t');
+
+		for (auto&& [optionName, optionIndex] : section.options)
+		{
+			file << indent << optionName << " = ";
+
+			auto& option = m_options[optionIndex];
+
+			std::visit([&](auto&& option)
+			{
+				using T = std::decay_t<decltype(option)>;
+
+				if constexpr (std::is_same_v<T, BoolOption>)
+				{
+					file << (option.value) ? "true" : "false";
+				}
+				else if constexpr (std::is_same_v<T, FloatOption> || 
+				                   std::is_same_v<T, IntegerOption>)
+				{
+					file << option.value;
+				}
+				else if constexpr (std::is_same_v<T, StringOption>)
+				{
+					// Sanitize
+					file << "\"" << ReplaceStr(option.value, R"(")", R"(\")") << "\"";
+				}
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+			}, option.data);
+
+			if (!section.sectionName.empty())
+				file << ",\n";
+			else
+				file << "\n";
+		}
+
+		for (auto&& [sectionName, sectionData] : section.subsections)
+		{
+			file << indent << sectionName << " = {\n";
+			SaveSectionToFile(file, sectionData, indentCount + 1);
+			file << indent << "},\n";
+		}
 	}
 }

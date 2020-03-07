@@ -5,6 +5,7 @@
 #include <CoreLib/Match.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <CoreLib/BurgApp.hpp>
+#include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>

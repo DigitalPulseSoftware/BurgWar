@@ -34,6 +34,21 @@ namespace bw
 		return false;
 	}
 
+	std::string ReplaceStr(std::string str, const std::string_view& from, const std::string_view& to)
+	{
+		if (str.empty())
+			return str;
+
+		std::size_t startPos = 0;
+		while ((startPos = str.find(from, startPos)) != std::string::npos)
+		{
+			str.replace(startPos, from.length(), to);
+			startPos += to.length();
+		}
+
+		return str;
+	}
+
 	template<typename F> 
 	bool SplitString(const std::string_view& str, const std::string_view& token, F&& func)
 	{

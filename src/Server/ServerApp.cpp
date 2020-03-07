@@ -10,11 +10,10 @@ namespace bw
 {
 	ServerApp::ServerApp(int argc, char* argv[]) :
 	Application(argc, argv),
-	BurgApp(LogSide::Server)
+	BurgApp(LogSide::Server, m_configFile),
+	m_configFile(*this)
 	{
-		RegisterServerConfig();
-
-		if (!m_config.LoadFromFile("serverconfig.lua"))
+		if (!m_configFile.LoadFromFile("serverconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
 		Map map = Map::LoadFromBinary(GetConfig().GetStringOption("GameSettings.MapFile"));
@@ -37,10 +36,5 @@ namespace bw
 		}
 
 		return 0;
-	}
-
-	void ServerApp::RegisterServerConfig()
-	{
-		m_config.RegisterStringOption("GameSettings.MapFile");
 	}
 }

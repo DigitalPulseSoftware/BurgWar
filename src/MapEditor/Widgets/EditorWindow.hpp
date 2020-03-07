@@ -12,6 +12,7 @@
 #include <CoreLib/Map.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
+#include <MapEditor/EditorConfigFile.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
 #include <Thirdparty/tsl/hopscotch_map.h>
@@ -105,7 +106,6 @@ namespace bw
 			void RefreshRecentFileListMenu();
 			void RefreshRecentFileListMenu(const QStringList& recentFileList);
 
-			void RegisterEditorConfig();
 			void RegisterEntity(std::size_t entityIndex);
 
 			void ReloadScripts();
@@ -143,6 +143,7 @@ namespace bw
 			QMenu* m_mapMenu;
 			QTabWidget* m_centralTab;
 			EntityInfoDialog* m_entityInfoDialog;
+			EditorConfigFile m_configFile;
 			Map m_workingMap;
 			MapCanvas* m_canvas;
 	};

@@ -50,14 +50,13 @@ namespace bw
 	}
 
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
-	ClientEditorApp(argc, argv, LogSide::Editor),
+	ClientEditorApp(argc, argv, LogSide::Editor, m_configFile),
 	m_entityInfoDialog(nullptr),
 	m_playWindow(nullptr),
-	m_canvas(nullptr)
+	m_canvas(nullptr),
+	m_configFile(*this)
 	{
-		RegisterEditorConfig();
-
-		if (!m_config.LoadFromFile("editorconfig.lua"))
+		if (!m_configFile.LoadFromFile("editorconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
 		FillStores();
@@ -1276,11 +1275,6 @@ namespace bw
 		UpdateWorkingMap(std::move(map), std::move(workingMapPath));
 
 		AddToRecentFileList(mapFolder);
-	}
-
-	void EditorWindow::RegisterEditorConfig()
-	{
-		m_config.RegisterStringOption("Assets.EditorFolder");
 	}
 
 	void EditorWindow::RegisterEntity(std::size_t entityIndex)

@@ -16,19 +16,23 @@ namespace bw
 
 	inline bool ConfigFile::GetBoolOption(const std::string& optionName) const
 	{
-		return std::get<BoolOption>(m_options.at(optionName)).value;
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<BoolOption>(m_options[optionIndex].data).value;
 	}
 
 	template<typename T>
 	T ConfigFile::GetFloatOption(const std::string& optionName) const
 	{
-		return static_cast<T>(std::get<FloatOption>(m_options.at(optionName)).value);
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return static_cast<T>(std::get<FloatOption>(m_options[optionIndex].data).value);
 	}
 
 	template<typename T>
 	T ConfigFile::GetIntegerOption(const std::string& optionName) const
 	{
-		long long value = std::get<IntegerOption>(m_options.at(optionName)).value;
+		std::size_t optionIndex = GetOptionIndex(optionName);
+
+		long long value = std::get<IntegerOption>(m_options[optionIndex].data).value;
 		if constexpr (std::is_unsigned_v<T>)
 		{
 			if (value < 0)
@@ -52,85 +56,100 @@ namespace bw
 		}
 	}
 
+	template<typename T>
+	void ConfigFile::RegisterOption(std::string optionName, T&& optionData)
+	{
+		if (optionData.defaultValue.has_value())
+			optionData.value = optionData.defaultValue.value();
+
+		RegisterConfig(std::move(optionName), std::move(optionData));
+	}
+
+	inline std::size_t ConfigFile::GetOptionIndex(const std::string& optionName) const
+	{
+		auto it = m_optionByName.find(optionName);
+		NazaraAssert(it != m_optionByName.end(), "Options does not exist");
+
+		return it->second;
+	}
+
 	inline const std::string& ConfigFile::GetStringOption(const std::string& optionName) const
 	{
-		return std::get<StringOption>(m_options.at(optionName)).value;
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<StringOption>(m_options[optionIndex].data).value;
 	}
 
-	inline void ConfigFile::RegisterBoolOption(std::string optionName)
+	inline void ConfigFile::RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue)
 	{
-		RegisterOption(std::move(optionName), BoolOption{});
+		BoolOption boolOption;
+		boolOption.defaultValue = std::move(defaultValue);
+
+		RegisterOption(std::move(optionName), std::move(boolOption));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, std::optional<double> defaultValue)
 	{
-		RegisterFloatOption(std::move(optionName), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+		RegisterFloatOption(std::move(optionName), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::move(defaultValue));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue)
 	{
 		FloatOption floatOption;
+		floatOption.defaultValue = std::move(defaultValue);
 		floatOption.maxBounds = maxBounds;
 		floatOption.minBounds = minBounds;
 
 		RegisterOption(std::move(optionName), std::move(floatOption));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue)
 	{
-		RegisterIntegerOption(std::move(optionName), std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max());
+		RegisterIntegerOption(std::move(optionName), std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max(), std::move(defaultValue));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue)
 	{
 		IntegerOption intOption;
+		intOption.defaultValue = std::move(defaultValue);
 		intOption.maxBounds = maxBounds;
 		intOption.minBounds = minBounds;
 
 		RegisterOption(std::move(optionName), std::move(intOption));
 	}
 
-	inline void ConfigFile::RegisterStringOption(std::string optionName)
+	inline void ConfigFile::RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue)
 	{
-		RegisterOption(std::move(optionName), StringOption{});
+		StringOption strOption;
+		strOption.defaultValue = std::move(defaultValue);
+
+		RegisterOption(std::move(optionName), std::move(strOption));
 	}
 
 	inline void ConfigFile::SetBoolOption(const std::string& optionName, bool value)
 	{
-		auto it = m_options.find(optionName);
-		NazaraAssert(it != m_options.end(), "Options does not exist");
+		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<BoolOption>(it->second).value = value;
+		std::get<BoolOption>(m_options[optionIndex].data).value = value;
 	}
 
-	inline void ConfigFile::SetFloatOption(const std::string & optionName, double value)
+	inline void ConfigFile::SetFloatOption(const std::string& optionName, double value)
 	{
-		auto it = m_options.find(optionName);
-		NazaraAssert(it != m_options.end(), "Options does not exist");
+		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<FloatOption>(it->second).value = value;
+		std::get<FloatOption>(m_options[optionIndex].data).value = value;
 	}
 
-	inline void ConfigFile::SetIntegerOption(const std::string & optionName, long long value)
+	inline void ConfigFile::SetIntegerOption(const std::string& optionName, long long value)
 	{
-		auto it = m_options.find(optionName);
-		NazaraAssert(it != m_options.end(), "Options does not exist");
+		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<IntegerOption>(it->second).value = value;
+		std::get<IntegerOption>(m_options[optionIndex].data).value = value;
 	}
 
-	inline void ConfigFile::SetStringOption(const std::string & optionName, std::string value)
+	inline void ConfigFile::SetStringOption(const std::string& optionName, std::string value)
 	{
-		auto it = m_options.find(optionName);
-		NazaraAssert(it != m_options.end(), "Options does not exist");
+		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<StringOption>(it->second).value = value;
-	}
-
-	inline void ConfigFile::RegisterOption(std::string optionName, ConfigOption option)
-	{
-		NazaraAssert(m_options.find(optionName) == m_options.end(), "Option already exists");
-
-		m_options.emplace(std::move(optionName), std::move(option));
+		std::get<StringOption>(m_options[optionIndex].data).value = value;
 	}
 }
