@@ -6,4 +6,13 @@
 
 namespace bw
 {
+	inline ConfigFile& ClientEditorApp::GetPlayerSettings()
+	{
+		return m_playerSettings;
+	}
+
+	inline const ConfigFile& ClientEditorApp::GetPlayerSettings() const
+	{
+		return m_playerSettings;
+	}
 }

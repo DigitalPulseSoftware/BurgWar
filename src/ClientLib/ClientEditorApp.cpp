@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientEditorApp.hpp>
+#include <CoreLib/SharedConfigFile.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
@@ -17,10 +18,22 @@
 
 namespace bw
 {
-	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side) :
-	Application(argc, argv),
-	BurgApp(side)
+	namespace
 	{
+		static constexpr char* PlayerSettingsFile = "playerconfig.lua";
+	}
+
+	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedConfigFile& configFile) :
+	Application(argc, argv),
+	BurgApp(side, configFile),
+	m_playerSettings(*this)
+	{
+		if (!m_playerSettings.LoadFromFile(PlayerSettingsFile))
+		{
+			bwLog(GetLogger(), LogLevel::Warning, "Failed to load player config, it will be reset");
+			m_playerSettings.SaveToFile(PlayerSettingsFile);
+		}
+
 		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
@@ -83,5 +96,11 @@ namespace bw
 		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
 		Nz::FontLibrary::Register("BW_Names", grandstander);
 		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());
+	}
+
+	void ClientEditorApp::SavePlayerConfig()
+	{
+		if (!m_playerSettings.SaveToFile(PlayerSettingsFile))
+			bwLog(GetLogger(), LogLevel::Warning, "Failed to save player config");
 	}
 }

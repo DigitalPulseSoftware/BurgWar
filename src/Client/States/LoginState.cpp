@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/LoginState.hpp>
+#include <CoreLib/ConfigFile.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
@@ -25,6 +26,8 @@ namespace bw
 	{
 		AbstractState::Enter(fsm);
 
+		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Show(false);
 
@@ -39,7 +42,7 @@ namespace bw
 		m_serverAddressArea->Resize({ 250.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
 		m_serverAddressArea->SetTextColor(Nz::Color::Black);
-		m_serverAddressArea->SetText("malcolm.digitalpulsesoftware.net");
+		m_serverAddressArea->SetText(playerConfig.GetStringOption("Server.Address"));
 
 		m_serverPortArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
 		m_serverPortArea->EnableBackground(true);
@@ -47,7 +50,7 @@ namespace bw
 		m_serverPortArea->Resize({ 50.f, 36.f });
 		m_serverPortArea->SetMaximumWidth(100.f);
 		m_serverPortArea->SetTextColor(Nz::Color::Black);
-		m_serverPortArea->SetText("14768");
+		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerOption<Nz::UInt16>("Server.Port")));
 		m_serverPortArea->SetCharacterFilter([](Nz::UInt32 character) 
 		{
 			if (character < U'0' || character > U'9')
@@ -67,7 +70,7 @@ namespace bw
 		m_loginArea->SetBackgroundColor(Nz::Color::White);
 		m_loginArea->Resize({ 200.f, 36.f });
 		m_loginArea->SetTextColor(Nz::Color::Black);
-		m_loginArea->SetText("mingebag");
+		m_loginArea->SetText(playerConfig.GetStringOption("Player.Name"));
 
 		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
@@ -147,12 +150,19 @@ namespace bw
 		}
 
 		Nz::ResolveError resolveError;
-		std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_IPv4, serverHostname, Nz::String::Number(rawPort), &resolveError);
+		std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, serverHostname, Nz::String::Number(rawPort), &resolveError);
 		if (serverAddresses.empty())
 		{
 			UpdateStatus(std::string("Failed to resolve server address: ") + Nz::ErrorToString(resolveError), Nz::Color::Red);
 			return;
 		}
+
+		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		playerConfig.SetStringOption("Player.Name", login.ToStdString());
+		playerConfig.SetStringOption("Server.Address", serverHostname.ToStdString());
+		playerConfig.SetIntegerOption("Server.Port", rawPort);
+
+		GetStateData().app->SavePlayerConfig();
 
 		m_nextState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address, login.ToStdString());
 	}
@@ -185,6 +195,12 @@ namespace bw
 			UpdateStatus("Error: " + serverPort.ToStdString() + " is not a valid port", Nz::Color::Red);
 			return;
 		}
+
+		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		playerConfig.SetStringOption("Player.Name", login.ToStdString());
+		playerConfig.SetIntegerOption("Server.Port", rawPort);
+
+		GetStateData().app->SavePlayerConfig();
 
 		try
 		{
