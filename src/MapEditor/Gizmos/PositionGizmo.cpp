@@ -69,34 +69,34 @@ namespace bw
 		if (mouseButton.button != Nz::Mouse::Left)
 			return false;
 
-		if (m_arrowEntity->IsEnabled())
+		if (!m_arrowEntity->IsEnabled())
+			return false;
+
+		Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
+		Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
+
+		auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
+
+		Nz::Rayf ray(start, end - start);
+
+		m_movementType = MovementType::None;
+		for (std::size_t i = 0; i < 3; ++i)
 		{
-			Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
-			Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
-
-			auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
-
-			Nz::Rayf ray(start, end - start);
-
-			m_movementType = MovementType::None;
-			for (std::size_t i = 0; i < 3; ++i)
+			const Nz::BoundingVolumef& boundingVolume = graphicsComponent.GetBoundingVolume(i);
+			if (ray.Intersect(boundingVolume.aabb))
 			{
-				const Nz::BoundingVolumef& boundingVolume = graphicsComponent.GetBoundingVolume(i);
-				if (ray.Intersect(boundingVolume.aabb))
-				{
-					m_movementType = static_cast<MovementType>(i);
-					break;
-				}
+				m_movementType = static_cast<MovementType>(i);
+				break;
 			}
+		}
 
-			if (m_movementType != MovementType::None)
-			{
-				auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-				m_originalPosition = Nz::Vector2f(node.GetPosition());
-				m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
+		if (m_movementType != MovementType::None)
+		{
+			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
+			m_originalPosition = Nz::Vector2f(node.GetPosition());
+			m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -104,79 +104,74 @@ namespace bw
 
 	bool PositionGizmo::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button == Nz::Mouse::Left && m_movementType != MovementType::None)
-		{
-			m_movementType = MovementType::None;
-
-			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-			OnPositionUpdated(this, Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global)));
-
-			return true;
-		}
-		else
+		if (mouseButton.button != Nz::Mouse::Left || m_movementType != MovementType::None)
 			return false;
+		
+		m_movementType = MovementType::None;
+
+		auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
+		OnPositionUpdated(this, Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global)));
+		
+		return true;
 	}
 
 	bool PositionGizmo::OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 	{
-		if (m_arrowEntity->IsEnabled())
+		if (!m_arrowEntity->IsEnabled())
+			return false;
+
+		if (m_movementType == MovementType::None)
 		{
 			Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 0.f));
+			Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 1.f));
 
-			if (m_movementType == MovementType::None)
+			auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
+
+			Nz::Rayf ray(start, end - start);
+
+			MovementType hoveredAction = MovementType::None;
+			for (std::size_t i = 0; i < 3; ++i)
 			{
-				Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseMoved.x), float(mouseMoved.y), 1.f));
-
-				auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
-
-				Nz::Rayf ray(start, end - start);
-
-				MovementType hoveredAction = MovementType::None;
-				for (std::size_t i = 0; i < 3; ++i)
+				const Nz::BoundingVolumef& boundingVolume = graphicsComponent.GetBoundingVolume(i);
+				if (ray.Intersect(boundingVolume.aabb))
 				{
-					const Nz::BoundingVolumef& boundingVolume = graphicsComponent.GetBoundingVolume(i);
-					if (ray.Intersect(boundingVolume.aabb))
-					{
-						hoveredAction = static_cast<MovementType>(i);
-						break;
-					}
+					hoveredAction = static_cast<MovementType>(i);
+					break;
+				}
+			}
+
+			if (hoveredAction != m_hoveredAction)
+			{
+				if (m_hoveredAction != MovementType::None)
+				{
+					// Reset color
+					std::size_t index = static_cast<std::size_t>(m_hoveredAction);
+					m_sprites[index]->SetColor(m_spriteDefaultColors[index]);
 				}
 
-				if (hoveredAction != m_hoveredAction)
+				m_hoveredAction = hoveredAction;
+
+				if (m_hoveredAction != MovementType::None)
 				{
-					if (m_hoveredAction != MovementType::None)
-					{
-						// Reset color
-						std::size_t index = static_cast<std::size_t>(m_hoveredAction);
-						m_sprites[index]->SetColor(m_spriteDefaultColors[index]);
-					}
-
-					m_hoveredAction = hoveredAction;
-
-					if (m_hoveredAction != MovementType::None)
-					{
-						// Set color
-						std::size_t index = static_cast<std::size_t>(m_hoveredAction);
-						m_sprites[index]->SetColor(m_spriteDefaultColors[index] * Nz::Color(128));
-					}
+					// Set color
+					std::size_t index = static_cast<std::size_t>(m_hoveredAction);
+					m_sprites[index]->SetColor(m_spriteDefaultColors[index] * Nz::Color(128));
 				}
-
-				return false;
 			}
-			else
-			{
-				Nz::Vector2f pos = m_camera.Unproject({ float(mouseMoved.x), float(mouseMoved.y) });
-				Nz::Vector2f delta = pos - m_movementStartPos;
 
-				Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
-
-				auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-				node.SetPosition(m_originalPosition + allowedMovement * delta, Nz::CoordSys_Global);
-
-				return true;
-			}
+			return false;
 		}
 		else
-			return false;
+		{
+			Nz::Vector2f pos = m_camera.Unproject({ float(mouseMoved.x), float(mouseMoved.y) });
+			Nz::Vector2f delta = pos - m_movementStartPos;
+
+			Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
+
+			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
+			node.SetPosition(m_originalPosition + allowedMovement * delta, Nz::CoordSys_Global);
+
+			return true;
+		}
 	}
 }
