@@ -20,7 +20,7 @@ namespace bw
 
 		bwLog(app->GetLogger(), LogLevel::Info, "Downloading assets...");
 
-		auto resourceDirectory = std::make_shared<VirtualDirectory>(app->GetConfig().GetStringOption("Assets.ResourceFolder"));
+		auto resourceDirectory = std::make_shared<VirtualDirectory>(app->GetConfig().GetStringValue("Assets.ResourceFolder"));
 		auto targetResourceDirectory = std::make_shared<VirtualDirectory>();
 
 		m_httpDownloadManager.emplace(app->GetLogger(), ".assetCache", std::move(m_matchData.fastDownloadUrls), resourceDirectory);

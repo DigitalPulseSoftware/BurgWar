@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::string playerName) :
+	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote) :
 	StatusState(std::move(stateData)),
 	m_failed(false)
 	{
@@ -24,11 +24,11 @@ namespace bw
 
 		m_clientSession = std::make_shared<ClientSession>(*app);
 
-		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this, playerName] (ClientSession*)
+		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this] (ClientSession*)
 		{
 			UpdateStatus("Connected, authenticating...", Nz::Color::White);
 
-			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, playerName);
+			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession);
 
 			m_nextState = std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState));
 			m_nextStateDelay = 0.5f;

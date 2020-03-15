@@ -18,7 +18,7 @@ namespace bw
 	class AuthenticationState final : public StatusState
 	{
 		public:
-			AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, std::string playerName);
+			AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession);
 			~AuthenticationState() = default;
 
 		private:
@@ -28,7 +28,6 @@ namespace bw
 			std::optional<Packets::AuthSuccess> m_authSuccessPacket;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			std::string m_playerName;
 			float m_nextStateDelay;
 
 			NazaraSlot(ClientSession, OnAuthFailure, m_onAuthFailedSlot);

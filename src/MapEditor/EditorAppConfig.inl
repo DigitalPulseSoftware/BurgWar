@@ -2,17 +2,8 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Console.hpp>
+#include <MapEditor/EditorAppConfig.hpp>
 
 namespace bw
 {
-	inline void Console::Hide()
-	{
-		return Show(false);
-	}
-
-	inline bool Console::IsVisible() const
-	{
-		return m_widget->IsVisible();
-	}
 }

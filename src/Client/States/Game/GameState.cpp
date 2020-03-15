@@ -20,16 +20,23 @@ namespace bw
 		m_match->LoadAssets(std::move(assetDirectory));
 		m_match->LoadScripts(std::move(scriptDirectory));
 
-		if (stateData.app->GetConfig().GetBoolOption("Debug.ShowServerGhosts"))
+		if (stateData.app->GetConfig().GetBoolValue("Debug.ShowServerGhosts"))
 			m_match->InitDebugGhosts();
 
-		const std::string& resourceFolder = stateData.app->GetConfig().GetStringOption("Assets.ResourceFolder");
+		const std::string& resourceFolder = stateData.app->GetConfig().GetStringValue("Assets.ResourceFolder");
 
 		if (m_music.OpenFromFile(resourceFolder + "/Music/mushroomdance_0.ogg"))
 		{
 			m_music.EnableLooping(true);
 			m_music.Play();
-			m_music.SetVolume(50.f);
+
+			auto& playerSettings = stateData.app->GetPlayerSettings();
+
+			m_music.SetVolume(playerSettings.GetIntegerValue<Nz::UInt8>("Sound.MusicVolume"));
+			m_musicVolumeUpdateSlot.Connect(playerSettings.GetIntegerUpdateSignal("Sound.MusicVolume"), [this](long long newValue)
+			{
+				m_music.SetVolume(float(newValue));
+			});
 		}
 
 		m_clientSession->SendPacket(Packets::Ready{});

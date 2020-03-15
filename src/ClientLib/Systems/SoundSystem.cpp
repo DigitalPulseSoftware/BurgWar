@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Systems/SoundSystem.hpp>
+#include <CoreLib/ConfigFile.hpp>
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -11,12 +12,18 @@
 
 namespace bw
 {
-	SoundSystem::SoundSystem() :
+	SoundSystem::SoundSystem(ConfigFile& playerSettings) :
 	m_maxSoundInPool(32),
 	m_soundOffset(0.f, 0.f, 50.f),
 	m_nextSoundId(1)
 	{
 		Requires<SoundEmitterComponent>();
+
+		m_volume = float(playerSettings.GetIntegerValue<Nz::UInt8>("Sound.EffectVolume"));
+		m_effectVolumeUpdateSlot.Connect(playerSettings.GetIntegerUpdateSignal("Sound.EffectVolume"), [this](long long newValue)
+		{
+			UpdateVolume(float(newValue));
+		});
 	}
 
 	Nz::UInt32 SoundSystem::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
@@ -59,6 +66,7 @@ namespace bw
 			entryIndex = m_soundPool.size();
 			auto& newSound = m_soundPool.emplace_back();
 			newSound.sound.SetMinDistance(200);
+			newSound.sound.SetVolume(m_volume);
 		}
 
 		auto& entry = m_soundPool[entryIndex];
@@ -85,6 +93,13 @@ namespace bw
 		soundEntry.sound.Stop();
 
 		m_playingSounds.erase(it);
+	}
+
+	void SoundSystem::UpdateVolume(float newVolume)
+	{
+		m_volume = newVolume;
+		for (SoundData& soundData : m_soundPool)
+			soundData.sound.SetVolume(newVolume);
 	}
 
 	void SoundSystem::OnEntityRemoved(Ndk::Entity* entity)

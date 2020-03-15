@@ -10,7 +10,7 @@ namespace bw
 	Console::Console(Nz::RenderWindow* window, Ndk::Canvas* canvas)
 	{
 		m_widget = canvas->Add<Ndk::Console>();
-		m_widget->Show(false);
+		m_widget->Hide();
 
 		m_widget->OnCommand.Connect([this](Ndk::Console*, const Nz::String& command)
 		{
@@ -49,7 +49,7 @@ namespace bw
 				m_widget->SetFocus();
 			}
 			else
-				m_widget->Show(false);
+				m_widget->Hide();
 		}
 	}
 

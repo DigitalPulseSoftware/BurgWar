@@ -98,7 +98,7 @@ namespace bw
 
 		if (!m_scriptingEnvironment)
 		{
-			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
+			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringValue("Assets.ScriptFolder");
 
 			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)

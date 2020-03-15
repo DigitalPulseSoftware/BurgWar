@@ -69,13 +69,13 @@ namespace bw
 			// TODO use sections
 			for (ConfigOption& option : m_options)
 			{
+				bool hasDefaultDefault = std::visit([](auto&& arg)
+				{
+					return arg.defaultValue.has_value();
+				}, option.data);
+
 				if (!PushLuaVariable(option.name))
 				{
-					bool hasDefaultDefault = std::visit([](auto&& arg)
-					{
-						return arg.defaultValue.has_value();
-					}, option.data);
-
 					if (hasDefaultDefault)
 						continue;
 
@@ -88,6 +88,9 @@ namespace bw
 					std::visit([&](auto&& arg)
 					{
 						using T = std::decay_t<decltype(arg)>;
+						using ArgType = std::decay_t<decltype(arg.value)>;
+
+						ArgType value;
 
 						// Get value
 						if constexpr (std::is_same_v<T, BoolOption>)
@@ -95,28 +98,28 @@ namespace bw
 							if (!lua_isboolean(L, -1))
 								throw std::runtime_error("Boolean expected");
 
-							arg.value = lua_toboolean(L, -1);
+							value = lua_toboolean(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, FloatOption>)
 						{
 							if (!lua_isnumber(L, -1))
 								throw std::runtime_error("Float expected");
 
-							arg.value = luaL_checknumber(L, -1);
+							value = luaL_checknumber(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, IntegerOption>)
 						{
 							if (!lua_isnumber(L, -1))
 								throw std::runtime_error("Integer expected");
 
-							arg.value = luaL_checkinteger(L, -1);
+							value = luaL_checkinteger(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, StringOption>)
 						{
 							if (!lua_isstring(L, -1))
 								throw std::runtime_error("string expected");
 
-							arg.value = luaL_checkstring(L, -1);
+							value = luaL_checkstring(L, -1);
 						}
 						else
 							static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -124,22 +127,30 @@ namespace bw
 						// Check bounds
 						if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
 						{
-							if (arg.value < arg.minBounds)
-								throw std::runtime_error("option value is under bounds (" + std::to_string(arg.value) + " < " + std::to_string(arg.minBounds) + ')');
-							else if (arg.value > arg.maxBounds)
-								throw std::runtime_error("option value is over bounds (" + std::to_string(arg.value) + " > " + std::to_string(arg.maxBounds) + ')');
+							if (value < arg.minBounds)
+								throw std::runtime_error("option value is under bounds (" + std::to_string(value) + " < " + std::to_string(arg.minBounds) + ')');
+							else if (value > arg.maxBounds)
+								throw std::runtime_error("option value is over bounds (" + std::to_string(value) + " > " + std::to_string(arg.maxBounds) + ')');
 						}
 
-						}, option.data);
+						arg.value = std::move(value);
+
+					}, option.data);
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", option.name, e.what());
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load \"{0}\": {1}", option.name, e.what());
+
+					if (!hasDefaultDefault)
+						return false;
 				}
 				catch (...)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to get \"{0}\": {1}", option.name, lua_tostring(L, -1));
+					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load \"{0}\": {1}", option.name, lua_tostring(L, -1));
 					lua_pop(L, lua_gettop(L));
+
+					if (!hasDefaultDefault)
+						return false;
 				}
 
 				lua_pop(L, 1);
@@ -238,7 +249,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, BoolOption>)
 				{
-					file << (option.value) ? "true" : "false";
+					file << ((option.value) ? "true" : "false");
 				}
 				else if constexpr (std::is_same_v<T, FloatOption> || 
 				                   std::is_same_v<T, IntegerOption>)
@@ -267,5 +278,57 @@ namespace bw
 			SaveSectionToFile(file, sectionData, indentCount + 1);
 			file << indent << "},\n";
 		}
+	}
+
+	bool ConfigFile::SetFloatValue(const std::string& optionName, double value)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+
+		FloatOption& option = std::get<FloatOption>(m_options[optionIndex].data);
+		if (value > option.maxBounds)
+		{
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
+			return false;
+		}
+
+		if (value < option.minBounds)
+		{
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
+			return false;
+		}
+
+		if (option.value != value)
+		{
+			option.OnValueUpdate(value);
+			option.value = value;
+		}
+
+		return true;
+	}
+
+	bool ConfigFile::SetIntegerValue(const std::string& optionName, long long value)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+
+		IntegerOption& option = std::get<IntegerOption>(m_options[optionIndex].data);
+		if (value > option.maxBounds)
+		{
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
+			return false;
+		}
+
+		if (value < option.minBounds)
+		{
+			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
+			return false;
+		}
+
+		if (option.value != value)
+		{
+			option.OnValueUpdate(value);
+			option.value = value;
+		}
+
+		return true;
 	}
 }

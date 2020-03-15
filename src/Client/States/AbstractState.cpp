@@ -41,6 +41,8 @@ namespace bw
 			else
 				it = m_entities.erase(it);
 		}
+
+		LayoutWidgets();
 	}
 
 	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
@@ -49,7 +51,7 @@ namespace bw
 		m_onTargetChangeSizeSlot.Disconnect();
 
 		for (Ndk::BaseWidget* widget : m_widgets)
-			widget->Show(false);
+			widget->Hide();
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{

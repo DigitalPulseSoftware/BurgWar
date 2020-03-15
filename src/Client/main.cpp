@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
 	bw::ClientApp app(argc, argv); 
 	app.EnableFPSCounter(true);
 
-	Nz::Audio::SetGlobalVolume(70.f);
 	Nz::Audio::SetSpeedOfSound(343.3f * 100.f);
 
 	Nz::SoundBufferParams params;

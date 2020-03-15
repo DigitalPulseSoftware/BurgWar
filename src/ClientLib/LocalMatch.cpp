@@ -56,7 +56,7 @@ namespace bw
 	m_activeLayerIndex(0xFFFF),
 	m_chatBox(GetLogger(), window, canvas),
 	m_application(burgApp),
-	m_escapeMenu(window, canvas),
+	m_escapeMenu(burgApp, canvas),
 	m_session(session),
 	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
@@ -75,12 +75,14 @@ namespace bw
 		for (auto&& layerData : matchData.layers)
 			m_layers.emplace_back(std::make_unique<LocalLayer>(*this, layerIndex++, layerData.backgroundColor));
 
+		auto& playerSettings = burgApp.GetPlayerSettings();
+
 		m_renderWorld.AddSystem<Ndk::DebugSystem>();
 		m_renderWorld.AddSystem<Ndk::ListenerSystem>();
 		m_renderWorld.AddSystem<Ndk::ParticleSystem>();
 		m_renderWorld.AddSystem<Ndk::RenderSystem>();
 		m_renderWorld.AddSystem<AnimationSystem>(*this);
-		m_renderWorld.AddSystem<SoundSystem>();
+		m_renderWorld.AddSystem<SoundSystem>(playerSettings);
 
 		m_colorBackground = Nz::ColorBackground::New(Nz::Color::Black);
 
@@ -205,7 +207,7 @@ namespace bw
 			{
 				case Nz::Keyboard::Tab:
 					if (m_scoreboard)
-						m_scoreboard->Show(false);
+						m_scoreboard->Hide();
 
 					break;
 

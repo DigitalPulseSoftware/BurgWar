@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_SHAREDCONFIGFILE_HPP
-#define BURGWAR_CORELIB_SHAREDCONFIGFILE_HPP
+#ifndef BURGWAR_CORELIB_SHAREDAPPCONFIG_HPP
+#define BURGWAR_CORELIB_SHAREDAPPCONFIG_HPP
 
 #include <CoreLib/ConfigFile.hpp>
 
@@ -13,14 +13,14 @@ namespace bw
 {
 	class BurgApp;
 
-	class SharedConfigFile : public ConfigFile
+	class SharedAppConfig : public ConfigFile
 	{
 		public:
-			SharedConfigFile(BurgApp& app);
-			~SharedConfigFile() = default;
+			SharedAppConfig(BurgApp& app);
+			~SharedAppConfig() = default;
 	};
 }
 
-#include <CoreLib/SharedConfigFile.inl>
+#include <CoreLib/SharedAppConfig.inl>
 
 #endif

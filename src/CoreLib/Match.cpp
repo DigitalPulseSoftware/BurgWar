@@ -170,7 +170,7 @@ namespace bw
 		if (m_assets.find(relativePath) != m_assets.end())
 			return;
 
-		const std::string& resourceFolder = m_app.GetConfig().GetStringOption("Assets.ResourceFolder");
+		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Assets.ResourceFolder");
 
 		std::string filePath = resourceFolder + "/" + relativePath;
 		if (!std::filesystem::is_regular_file(filePath))
@@ -214,7 +214,7 @@ namespace bw
 		if (m_clientScripts.find(relativePath) != m_clientScripts.end())
 			return;
 
-		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
 
 		std::string filePath = scriptFolder + "/" + relativePath;
 		if (!std::filesystem::is_regular_file(filePath))
@@ -264,7 +264,7 @@ namespace bw
 
 	void Match::ReloadAssets()
 	{
-		const std::string& resourceFolder = m_app.GetConfig().GetStringOption("Assets.ResourceFolder");
+		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Assets.ResourceFolder");
 
 		std::shared_ptr<VirtualDirectory> assetDir = std::make_shared<VirtualDirectory>(resourceFolder);
 
@@ -288,7 +288,7 @@ namespace bw
 
 	void Match::ReloadScripts()
 	{
-		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
 
 		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
 

@@ -66,7 +66,6 @@ namespace bw
 						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
 
 						weaponComponent.SetAttacking(true);
-						bwLog(m_match.GetLogger(), LogLevel::Debug, "Set weapon attacking");
 					}
 				}
 				else if (!inputs.isAttacking && weaponComponent.IsAttacking())

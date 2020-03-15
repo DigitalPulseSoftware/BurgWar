@@ -9,7 +9,7 @@
 
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Match.hpp>
-#include <Server/ServerConfigFile.hpp>
+#include <Server/ServerAppConfig.hpp>
 #include <NDK/Application.hpp>
 #include <memory>
 
@@ -24,7 +24,7 @@ namespace bw
 			int Run();
 
 		private:
-			ServerConfigFile m_configFile;
+			ServerAppConfig m_configFile;
 			std::unique_ptr<Match> m_match;
 	};
 }
