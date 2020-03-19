@@ -5,7 +5,7 @@
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Utils.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <fstream>
 
 namespace bw

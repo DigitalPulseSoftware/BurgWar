@@ -8,7 +8,7 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_EDITORSCRIPTEDENTITY_HPP
 
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <vector>
 
 namespace bw

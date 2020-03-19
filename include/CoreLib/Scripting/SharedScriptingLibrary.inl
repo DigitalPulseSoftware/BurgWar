@@ -6,7 +6,7 @@
 #include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <sol3/forward.hpp>
+#include <Thirdparty/sol3/forward.hpp>
 #include <cassert>
 
 namespace bw

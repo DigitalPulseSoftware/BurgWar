@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTPACKETREGISTRY_HPP
 
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <tsl/hopscotch_map.h>
 #include <optional>
 

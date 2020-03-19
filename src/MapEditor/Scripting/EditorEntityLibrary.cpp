@@ -4,7 +4,7 @@
 
 #include <MapEditor/Scripting/EditorEntityLibrary.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
 {
