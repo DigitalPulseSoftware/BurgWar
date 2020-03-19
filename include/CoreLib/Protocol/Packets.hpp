@@ -56,12 +56,14 @@ namespace bw
 		PlayerJoined,
 		PlayerLayer,
 		PlayerLeaving,
+		PlayerNameUpdate,
 		PlayerPingUpdate,
 		PlayersInput,
 		PlayerSelectWeapon,
 		PlayerWeapons,
 		Ready,
-		ScriptPacket
+		ScriptPacket,
+		UpdatePlayerName
 	};
 
 	template<PacketType PT> struct PacketTag
@@ -161,8 +163,10 @@ namespace bw
 		DeclarePacket(ChatMessage)
 		{
 			Nz::UInt8 localIndex;
-			std::string playerName; //< Temporary
+			CompressedUnsigned<Nz::UInt16> playerIndex = CompressedUnsigned<Nz::UInt16>(InvalidPlayer);
 			std::string content;
+
+			static constexpr Nz::UInt16 InvalidPlayer = 0xFFFF;
 		};
 		
 		DeclarePacket(ClientAssetList)
@@ -459,6 +463,12 @@ namespace bw
 			CompressedUnsigned<Nz::UInt16> playerIndex;
 		};
 
+		DeclarePacket(PlayerNameUpdate)
+		{
+			CompressedUnsigned<Nz::UInt16> playerIndex;
+			std::string newName;
+		};
+
 		DeclarePacket(PlayerPingUpdate)
 		{
 			struct PlayerData
@@ -502,6 +512,12 @@ namespace bw
 			std::vector<Nz::UInt8> content;
 		};
 
+		DeclarePacket(UpdatePlayerName)
+		{
+			Nz::UInt8 localIndex;
+			std::string newName;
+		};
+
 #undef DeclarePacket
 
 		// Compute size
@@ -533,15 +549,17 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
+		void Serialize(PacketSerializer& serializer, PlayerJoined& data);
 		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
 		void Serialize(PacketSerializer& serializer, PlayerLeaving& data);
-		void Serialize(PacketSerializer& serializer, PlayerJoined& data);
+		void Serialize(PacketSerializer& serializer, PlayerNameUpdate& data);
 		void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data);
 		void Serialize(PacketSerializer& serializer, PlayersInput& data);
 		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
 		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
 		void Serialize(PacketSerializer& serializer, Ready& data);
 		void Serialize(PacketSerializer& serializer, ScriptPacket& data);
+		void Serialize(PacketSerializer& serializer, UpdatePlayerName& data);
 
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);

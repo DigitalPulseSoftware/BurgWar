@@ -11,8 +11,8 @@ namespace bw
 	OptionWidget::OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig) :
 	BaseWidget(parent),
 	m_activeSection(nullptr),
-	m_parent(parent),
-	m_playerConfig(playerConfig)
+	m_playerConfig(playerConfig),
+	m_ignoreWidgetUpdate(false)
 	{
 		AddSection("Player");
 		{
@@ -25,6 +25,24 @@ namespace bw
 			AddIntegerOption("Sound.MusicVolume",  "Music volume");
 			AddIntegerOption("Sound.EffectVolume", "Effect volume");
 		}
+
+		LoadConfigValues();
+
+		m_applyButton = Add<Ndk::ButtonWidget>();
+		m_applyButton->UpdateText(Nz::SimpleTextDrawer::Draw("Apply", 24));
+		m_applyButton->Resize(m_applyButton->GetPreferredSize());
+		m_applyButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		{
+			OnApply();
+		});
+		
+		m_resetButton = Add<Ndk::ButtonWidget>();
+		m_resetButton->UpdateText(Nz::SimpleTextDrawer::Draw("Reset", 24));
+		m_resetButton->Resize(m_resetButton->GetPreferredSize());
+		m_resetButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		{
+			OnReset();
+		});
 
 		LayoutOptions();
 	}
@@ -60,12 +78,9 @@ namespace bw
 		option.optionWidget = Add<Ndk::CheckboxWidget>();
 		option.optionWidget->Resize(option.optionWidget->GetPreferredSize());
 
-		if (m_playerConfig.GetBoolValue(option.keyName))
-			option.optionWidget->SetState(Ndk::CheckboxState_Checked);
-
 		option.onStateChangeSlot.Connect(option.optionWidget->OnStateChanged, [this, keyName = option.keyName](const Ndk::CheckboxWidget* checkbox)
 		{
-			m_playerConfig.SetBoolValue(keyName, checkbox->GetState() == Ndk::CheckboxState_Checked);
+			m_updatedValues[keyName] = checkbox->GetState() == Ndk::CheckboxState_Checked;
 		});
 
 		m_activeSection->options.emplace_back(std::move(option));
@@ -78,8 +93,6 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
-
-		option.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetFloatValue<double>(option.keyName)));
 		option.optionWidget->SetTextColor(Nz::Color::Black);
 
 		option.optionWidget->SetCharacterFilter([](char32_t character)
@@ -87,18 +100,20 @@ namespace bw
 			return (character >= U'0' && character <= U'9') || (character == U'.') || (character == U'-');
 		});
 
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget, ignoreEvent = false](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text) mutable
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
 		{
-			if (ignoreEvent)
+			if (m_ignoreWidgetUpdate)
 				return;
 
 			double value;
-			if (!text.ToDouble(&value) || !m_playerConfig.SetFloatValue(keyName, value))
+			if (text.ToDouble(&value))
+				m_updatedValues[keyName] = value;
+			else
 			{
 				// Revert to config value
-				ignoreEvent = true;
+				m_ignoreWidgetUpdate = true;
 				textArea->SetText(Nz::String::Number(m_playerConfig.GetFloatValue<double>(keyName)));
-				ignoreEvent = false;
+				m_ignoreWidgetUpdate = false;
 			}
 		});
 
@@ -112,8 +127,6 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
-
-		option.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(option.keyName)));
 		option.optionWidget->SetTextColor(Nz::Color::Black);
 		
 		option.optionWidget->SetCharacterFilter([](char32_t character)
@@ -121,18 +134,20 @@ namespace bw
 			return (character >= U'0' && character <= U'9') || (character == U'-');
 		});
 
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget, ignoreEvent = false](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text) mutable
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
 		{
-			if (ignoreEvent)
+			if (m_ignoreWidgetUpdate)
 				return;
 
 			long long value;
-			if (!text.ToInteger(&value) || !m_playerConfig.SetIntegerValue(keyName, value))
+			if (text.ToInteger(&value))
+				m_updatedValues[keyName] = value;
+			else
 			{
 				// Revert to config value
-				ignoreEvent = true;
+				m_ignoreWidgetUpdate = true;
 				textArea->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(keyName)));
-				ignoreEvent = false;
+				m_ignoreWidgetUpdate = false;
 			}
 		});
 
@@ -146,22 +161,14 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 200.f, option.optionWidget->GetPreferredHeight() });
-
-		option.optionWidget->SetText(m_playerConfig.GetStringValue(option.keyName));
 		option.optionWidget->SetTextColor(Nz::Color::Black);
 		
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget, ignoreEvent = false](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text) mutable
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
 		{
-			if (ignoreEvent)
+			if (m_ignoreWidgetUpdate)
 				return;
 
-			if (!m_playerConfig.SetStringValue(keyName, text.ToStdString()))
-			{
-				// Revert to config value
-				ignoreEvent = true;
-				textArea->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(keyName)));
-				ignoreEvent = false;
-			}
+			m_updatedValues[keyName] = text.ToStdString();
 		});
 
 		m_activeSection->options.emplace_back(std::move(option));
@@ -174,6 +181,38 @@ namespace bw
 		option.label = Add<Ndk::LabelWidget>();
 		option.label->UpdateText(Nz::SimpleTextDrawer::Draw(std::string(label), 24)); //< FIXME: Nazara-next
 		option.label->Resize(option.label->GetPreferredSize());
+	}
+
+	void OptionWidget::OnApply()
+	{
+		for (auto&& [optionName, optionValue] : m_updatedValues)
+		{
+			std::visit([&](auto&& arg)
+			{
+				using T = std::decay_t<decltype(arg)>;
+
+				if constexpr (std::is_same_v<T, bool>)
+					m_playerConfig.SetBoolValue(optionName, arg);
+				else if constexpr (std::is_same_v<T, double>)
+					m_playerConfig.SetFloatValue(optionName, arg);
+				else if constexpr (std::is_same_v<T, long long>)
+					m_playerConfig.SetIntegerValue(optionName, arg);
+				else if constexpr (std::is_same_v<T, std::string>)
+					m_playerConfig.SetStringValue(optionName, arg);
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+			}, optionValue);
+		}
+		m_updatedValues.clear();
+
+		// Reload config values in case some where invalid
+		LoadConfigValues();
+	}
+
+	void OptionWidget::OnReset()
+	{
+		LoadConfigValues();
 	}
 
 	void OptionWidget::LayoutOptions()
@@ -225,14 +264,50 @@ namespace bw
 			optionHeight += cursor - optionPadding;
 		}
 
-		minSize.y = std::max(minSize.y, optionHeight);
+		minSize.y = std::max(minSize.y, optionHeight) + std::max(m_applyButton->GetHeight(), m_resetButton->GetHeight());
+
+		m_resetButton->SetPosition(minSize - m_resetButton->GetSize());
+		m_applyButton->SetPosition(minSize.x - m_applyButton->GetWidth() - m_resetButton->GetWidth() - 10, minSize.y - m_applyButton->GetHeight());
 
 		SetMinimumSize(minSize);
 		SetPreferredSize(minSize);
 	}
 
+	void OptionWidget::LoadConfigValues()
+	{
+		m_ignoreWidgetUpdate = true;
+
+		for (auto&& [_, section] : m_sections)
+		{
+			for (OptionType& option : section.options)
+			{
+				std::visit([&](auto&& arg)
+				{
+					using T = std::decay_t<decltype(arg)>;
+
+					if constexpr (std::is_same_v<T, BoolOption>)
+						arg.optionWidget->SetState((m_playerConfig.GetBoolValue(arg.keyName)) ? Ndk::CheckboxState_Checked : Ndk::CheckboxState_Unchecked);
+					else if constexpr (std::is_same_v<T, FloatOption>)
+						arg.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetFloatValue<double>(arg.keyName)));
+					else if constexpr (std::is_same_v<T, IntegerOption>)
+						arg.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(arg.keyName)));
+					else if constexpr (std::is_same_v<T, StringOption>)
+						arg.optionWidget->SetText(m_playerConfig.GetStringValue(arg.keyName));
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+				}, option);
+			}
+		}
+
+		m_ignoreWidgetUpdate = false;
+	}
+
 	void OptionWidget::ShowChildren(bool show)
 	{
+		m_applyButton->Show(show);
+		m_resetButton->Show(show);
+
 		for (auto&& [sectionName, sectionData] : m_sections)
 			sectionData.button->Show(show);
 

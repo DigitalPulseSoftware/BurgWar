@@ -437,6 +437,18 @@ namespace bw
 		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
 	}
 
+	void Player::UpdateName(std::string newName)
+	{
+		m_match.GetGamemode()->ExecuteCallback("OnPlayerNameUpdate", CreateHandle(), newName);
+		m_name = std::move(newName);
+
+		Packets::PlayerNameUpdate nameUpdatePacket;
+		nameUpdatePacket.newName = m_name;
+		nameUpdatePacket.playerIndex = Nz::UInt16(m_playerIndex);
+
+		m_match.BroadcastPacket(nameUpdatePacket);
+	}
+
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)
 	{
 		assert(m_playerEntity);

@@ -26,6 +26,7 @@ namespace bw
 		IncomingCommand(PlayerSelectWeapon);
 		IncomingCommand(Ready);
 		IncomingCommand(ScriptPacket);
+		IncomingCommand(UpdatePlayerName);
 
 		// Outgoing commands
 		OutgoingCommand(AuthFailure,                  Nz::ENetPacketFlag_Reliable,    0);
@@ -49,9 +50,10 @@ namespace bw
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(MatchState,                   0,                              1);
 		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(PlayerJoined,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerLayer,                  Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerLeaving,                Nz::ENetPacketFlag_Reliable,    1);
-		OutgoingCommand(PlayerJoined,                 Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(PlayerNameUpdate,             Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerPingUpdate,             Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(PlayerWeapons,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(ScriptPacket,                 Nz::ENetPacketFlag_Reliable,    1);

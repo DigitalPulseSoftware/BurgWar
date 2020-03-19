@@ -41,7 +41,11 @@ namespace bw
 
 			void InitOption(Option& option, std::string keyName, const std::string_view& label);
 
+			void OnApply();
+			void OnReset();
+
 			void LayoutOptions();
+			void LoadConfigValues();
 
 			void ShowChildren(bool show) override;
 
@@ -82,6 +86,7 @@ namespace bw
 			};
 
 			using OptionType = std::variant<BoolOption, FloatOption, IntegerOption, StringOption>;
+			using OptionValue = std::variant<bool, double, long long, std::string>;
 
 			struct Section
 			{
@@ -92,9 +97,12 @@ namespace bw
 			};
 
 			std::unordered_map<std::string /*section*/, Section> m_sections;
+			std::unordered_map<std::string /*optionName*/, OptionValue> m_updatedValues;
 			Section* m_activeSection;
-			Ndk::BaseWidget* m_parent;
+			Ndk::ButtonWidget* m_applyButton;
+			Ndk::ButtonWidget* m_resetButton;
 			ConfigFile& m_playerConfig;
+			bool m_ignoreWidgetUpdate;
 	};
 }
 

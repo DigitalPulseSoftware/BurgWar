@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2019 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -27,6 +27,7 @@ namespace bw
 			inline Nz::UInt16 GetPing() const;
 			inline Nz::UInt16 GetPlayerIndex() const;
 
+			inline void UpdateName(std::string name);
 			inline void UpdatePing(Nz::UInt16 ping);
 
 			static constexpr Nz::UInt16 InvalidPing = std::numeric_limits<Nz::UInt16>::max();

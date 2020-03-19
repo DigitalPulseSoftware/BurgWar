@@ -63,6 +63,7 @@ namespace bw
 			void HandleIncomingPacket(const Packets::PlayerSelectWeapon& packet);
 			void HandleIncomingPacket(const Packets::Ready& packet);
 			void HandleIncomingPacket(const Packets::ScriptPacket& packet);
+			void HandleIncomingPacket(Packets::UpdatePlayerName&& packet);
 			void UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo);
 
 			Match& m_match;
