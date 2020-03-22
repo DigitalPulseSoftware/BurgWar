@@ -54,7 +54,7 @@ namespace bw
 
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
-			sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
+			//sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
 			Nz::SpriteRef sprite = Nz::Sprite::New();
 			sprite->SetColor(color);

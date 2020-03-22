@@ -45,18 +45,19 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_renderWorld(false),
 	m_freeClientId(-1),
+	m_renderTarget(renderTarget),
 	m_window(window),
 	m_activeLayerIndex(0xFFFF),
-	m_chatBox(GetLogger(), window, canvas),
+	m_chatBox(GetLogger(), renderTarget, canvas),
 	m_application(burgApp),
-	m_escapeMenu(window, canvas),
+	m_escapeMenu(renderTarget, canvas),
 	m_session(session),
 	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
@@ -88,8 +89,8 @@ namespace bw
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
-		m_camera.emplace(m_renderWorld, m_window, true);
-		m_camera->SetZoomFactor(1.25f);
+		m_camera.emplace(m_renderWorld, renderTarget, false);
+		m_camera->SetZoomFactor(1.33f);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer->AddComponent<Ndk::NodeComponent>();
@@ -214,7 +215,7 @@ namespace bw
 			};
 		});
 
-		m_onRenderTargetSizeChange.Connect(window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
+		m_onRenderTargetSizeChange.Connect(renderTarget->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
 		{
 			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
 
@@ -356,7 +357,7 @@ namespace bw
 			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 
 			if (!m_localConsole)
-				m_localConsole.emplace(GetLogger(), m_window, m_canvas, scriptingLibrary, scriptDir);
+				m_localConsole.emplace(GetLogger(), m_renderTarget, m_canvas, scriptingLibrary, scriptDir);
 		}
 		else
 		{
@@ -506,7 +507,7 @@ namespace bw
 
 		state["engine_GetCameraViewport"] = [&]()
 		{
-			return m_window->GetSize();
+			return m_renderTarget->GetSize();
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
@@ -1213,7 +1214,7 @@ namespace bw
 
 	void LocalMatch::InitializeRemoteConsole()
 	{
-		m_remoteConsole.emplace(m_window, m_canvas);
+		m_remoteConsole.emplace(m_renderTarget, m_canvas);
 		m_remoteConsole->SetExecuteCallback([this](const std::string& command) -> bool
 		{
 			Packets::PlayerConsoleCommand commandPacket;
@@ -1231,7 +1232,7 @@ namespace bw
 		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
 		m_gamemode->ExecuteCallback("OnInitScoreboard", m_scoreboard->CreateHandle());
 
-		Nz::Vector2f size = Nz::Vector2f(m_window->GetSize());
+		Nz::Vector2f size = Nz::Vector2f(m_renderTarget->GetSize());
 
 		m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
 		m_scoreboard->Center();
@@ -1313,7 +1314,7 @@ namespace bw
 						movementData.isOnGround = playerMovement.IsOnGround();
 						movementData.jumpTime = playerMovement.GetJumpTime();
 						movementData.wasJumping = playerMovement.WasJumping();
-
+						
 						movementData.friction = playerPhysics.GetFriction(0);
 						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
 					}

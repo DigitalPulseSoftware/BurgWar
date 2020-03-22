@@ -79,8 +79,8 @@ namespace bw
 
 	void Camera::MoveToPosition(Nz::Vector2f position)
 	{
-		position.x = std::floor(position.x);
-		position.y = std::floor(position.y);
+		//position.x = std::round(position.x / m_zoomFactor) * m_zoomFactor;
+		//position.y = std::round(position.y / m_zoomFactor) * m_zoomFactor;
 
 		OnCameraMove(this, position);
 
@@ -153,6 +153,8 @@ namespace bw
 		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
 
 		Nz::Vector2f viewportSize = m_zoomFactor * Nz::Vector2f(entityCamera.GetTarget()->GetSize());
+		//viewportSize.x = std::round(viewportSize.x);
+		//viewportSize.y = std::round(viewportSize.y);
 
 		if (m_isPerspective)
 		{
@@ -164,7 +166,11 @@ namespace bw
 		}
 		else
 		{
-			entityNode.SetInitialPosition(-viewportSize * (m_zoomFactor - 1.f) / 2.f);
+			Nz::Vector2f initialPosition = -viewportSize * (m_zoomFactor - 1.f) / 2.f;
+			//initialPosition.x += 0.5f * m_zoomFactor;
+			//initialPosition.y += 0.5f * m_zoomFactor;
+
+			entityNode.SetInitialPosition(initialPosition);
 			entityCamera.SetSize(viewportSize);
 		}
 	}

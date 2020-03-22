@@ -52,7 +52,7 @@ namespace bw
 		{
 			assert(authSuccessPacket && authSuccessPacket->has_value());
 
-			m_localMatch.emplace(app, this, &m_canvas, *session, authSuccessPacket->value(), matchData);
+			m_localMatch.emplace(app, this, this, &m_canvas, *session, authSuccessPacket->value(), matchData);
 			m_localMatch->LoadAssets(assetFolder);
 			m_localMatch->LoadScripts(scriptFolder);
 
