@@ -8,6 +8,7 @@
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
+#include <CoreLib/Scripting/ServerTexture.hpp>
 
 namespace bw
 {
@@ -19,8 +20,9 @@ namespace bw
 		};
 	}
 
-	ServerScriptingLibrary::ServerScriptingLibrary(Match& match) :
-	SharedScriptingLibrary(match)
+	ServerScriptingLibrary::ServerScriptingLibrary(Match& match, AssetStore& assetStore) :
+	SharedScriptingLibrary(match),
+	m_assetStore(assetStore)
 	{
 	}
 
@@ -28,9 +30,26 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterLibrary(context);
 
+		sol::state& luaState = context.GetLuaState();
+		sol::table assetTable = luaState.create_named_table("assets");
+
+		RegisterAssetLibrary(context, assetTable);
 		RegisterPlayerClass(context);
+		RegisterServerTextureClass(context);
 
 		context.Load("autorun");
+	}
+
+	void ServerScriptingLibrary::RegisterAssetLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["GetTexture"] = [this](const std::string& texturePath) -> std::optional<ServerTexture>
+		{
+			const Nz::ImageRef& image = m_assetStore.GetImage(texturePath);
+			if (image)
+				return ServerTexture(image);
+			else
+				return {};
+		};
 	}
 
 	void ServerScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
@@ -259,6 +278,17 @@ namespace bw
 			Match& match = GetMatch();
 			match.ReloadScripts();
 		};
+	}
+
+	void ServerScriptingLibrary::RegisterServerTextureClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<ServerTexture>("Texture",
+			"new", sol::no_constructor,
+
+			"GetSize", &ServerTexture::GetSize
+		);
 	}
 
 	Match& ServerScriptingLibrary::GetMatch()

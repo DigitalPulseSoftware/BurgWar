@@ -17,16 +17,16 @@ namespace bw
 
 	void ClientEditorScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
-		RegisterAssets(context);
+		sol::state& luaState = context.GetLuaState();
+		sol::table assetTable = luaState.create_named_table("assets");
+
+		RegisterAssetLibrary(context, assetTable);
 		RegisterTextureClass(context);
 	}
 
-	void ClientEditorScriptingLibrary::RegisterAssets(ScriptingContext& context)
+	void ClientEditorScriptingLibrary::RegisterAssetLibrary(ScriptingContext& context, sol::table& library)
 	{
-		sol::state& state = context.GetLuaState();
-		sol::table script = state.create_table();
-
-		script["GetTexture"] = [this](const std::string& texturePath) -> std::optional<Texture>
+		library["GetTexture"] = [this](const std::string& texturePath) -> std::optional<Texture>
 		{
 			const Nz::TextureRef& texture = m_assetStore.GetTexture(texturePath);
 			if (texture)
@@ -34,8 +34,6 @@ namespace bw
 			else
 				return {};
 		};
-
-		state["assets"] = script;
 	}
 
 	void ClientEditorScriptingLibrary::RegisterTextureClass(ScriptingContext& context)
