@@ -52,7 +52,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			LocalMatch(const LocalMatch&) = delete;
 			LocalMatch(LocalMatch&&) = delete;
 			~LocalMatch();
@@ -249,6 +249,7 @@ namespace bw
 			Ndk::World m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;
 			Nz::Int64 m_freeClientId;
+			Nz::RenderTarget* m_renderTarget;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			tsl::hopscotch_map<Nz::Int64, LocalLayerEntityHandle> m_entitiesByUniqueId;

@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_DUMMYINPUTCONTROLLER_HPP
 
 #include <ClientLib/InputController.hpp>
-#include <sol3/forward.hpp>
+#include <Thirdparty/sol3/forward.hpp>
 
 namespace bw
 {

@@ -8,13 +8,14 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp> // For sol metainfo
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp> // For sol metainfo
 #include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/Components/CollisionComponent2D.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
 {
@@ -212,6 +213,14 @@ namespace bw
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 			entityHealth.Heal(value);
+		};
+
+		elementMetatable["InitWeaponWielder"] = [](const sol::table& entityTable, const sol::table& wielderData)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			auto& wielderComponent = entity->AddComponent<WeaponWielderComponent>();
+			wielderComponent.SetWeaponOffset(wielderData["WeaponOffset"]);
 		};
 
 		elementMetatable["IsFullHealth"] = [](const sol::table& entityTable) -> bool

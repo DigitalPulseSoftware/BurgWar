@@ -15,7 +15,7 @@
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
 {
@@ -54,7 +54,7 @@ namespace bw
 
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
-			sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
+			//sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
 			Nz::SpriteRef sprite = Nz::Sprite::New();
 			sprite->SetColor(color);

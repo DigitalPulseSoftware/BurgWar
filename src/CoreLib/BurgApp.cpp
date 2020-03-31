@@ -16,6 +16,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/LogSystem/StdSink.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
@@ -46,6 +47,7 @@ namespace bw
 		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
 		Ndk::InitializeComponent<ScriptComponent>("Script");
 		Ndk::InitializeComponent<WeaponComponent>("Weapon");
+		Ndk::InitializeComponent<WeaponWielderComponent>("WepnWiel");
 		Ndk::InitializeSystem<AnimationSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();

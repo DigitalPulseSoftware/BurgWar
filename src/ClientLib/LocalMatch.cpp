@@ -45,16 +45,17 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodePath(matchData.gamemodePath),
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_renderWorld(false),
 	m_freeClientId(-1),
+	m_renderTarget(renderTarget),
 	m_window(window),
 	m_activeLayerIndex(0xFFFF),
-	m_chatBox(GetLogger(), window, canvas),
+	m_chatBox(GetLogger(), renderTarget, canvas),
 	m_application(burgApp),
 	m_escapeMenu(burgApp, canvas),
 	m_session(session),
@@ -90,7 +91,7 @@ namespace bw
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
-		m_camera.emplace(m_renderWorld, m_window, true);
+		m_camera.emplace(m_renderWorld, renderTarget, true);
 		m_camera->SetZoomFactor(1.25f);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
@@ -134,6 +135,98 @@ namespace bw
 				m_session.SendPacket(selectPacket);
 			});
 		}
+
+		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
+		{
+			Packets::PlayerChat chatPacket;
+			chatPacket.localIndex = 0;
+			chatPacket.message = message;
+
+			m_session.SendPacket(chatPacket);
+		});
+
+		m_onGainedFocus.Connect(window->GetEventHandler().OnGainedFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = true;
+		});
+
+		m_onLostFocus.Connect(window->GetEventHandler().OnLostFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = false;
+		});
+
+		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Escape:
+				{
+					m_escapeMenu.Show(!m_escapeMenu.IsVisible());
+					break;
+				}
+
+				case Nz::Keyboard::F9:
+					if (m_remoteConsole)
+						m_remoteConsole->Hide();
+
+					if (m_localConsole)
+						m_localConsole->Show(!m_localConsole->IsVisible());
+
+					break;
+
+				case Nz::Keyboard::F10:
+					if (m_localConsole)
+						m_localConsole->Hide();
+
+					if (m_remoteConsole)
+						m_remoteConsole->Show(!m_remoteConsole->IsVisible());
+
+					break;
+
+				case Nz::Keyboard::Return:
+					m_chatBox.Open(!m_chatBox.IsOpen());
+					break;
+
+				case Nz::Keyboard::Tab:
+				{
+					if (!m_scoreboard)
+						InitializeScoreboard();
+					else
+						m_scoreboard->Show(true);
+
+					break;
+				}
+
+				default:
+					break;
+			}
+		});
+
+		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Tab:
+					if (m_scoreboard)
+						m_scoreboard->Show(false);
+
+					break;
+
+				default:
+					break;
+			};
+		});
+
+		m_onRenderTargetSizeChange.Connect(renderTarget->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
+		{
+			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
+
+			if (m_scoreboard)
+			{
+				m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
+				m_scoreboard->Center();
+			}
+		});
 
 		BindEscapeMenu();
 		BindPackets();
@@ -267,7 +360,7 @@ namespace bw
 			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 
 			if (!m_localConsole)
-				m_localConsole.emplace(GetLogger(), m_window, m_canvas, scriptingLibrary, scriptDir);
+				m_localConsole.emplace(GetLogger(), m_renderTarget, m_canvas, scriptingLibrary, scriptDir);
 		}
 		else
 		{
@@ -417,7 +510,7 @@ namespace bw
 
 		state["engine_GetCameraViewport"] = [&]()
 		{
-			return m_window->GetSize();
+			return m_renderTarget->GetSize();
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
@@ -1256,7 +1349,7 @@ namespace bw
 
 	void LocalMatch::InitializeRemoteConsole()
 	{
-		m_remoteConsole.emplace(m_window, m_canvas);
+		m_remoteConsole.emplace(m_renderTarget, m_canvas);
 		m_remoteConsole->SetExecuteCallback([this](const std::string& command) -> bool
 		{
 			Packets::PlayerConsoleCommand commandPacket;
@@ -1274,7 +1367,7 @@ namespace bw
 		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
 		m_gamemode->ExecuteCallback("OnInitScoreboard", m_scoreboard->CreateHandle());
 
-		Nz::Vector2f size = Nz::Vector2f(m_window->GetSize());
+		Nz::Vector2f size = Nz::Vector2f(m_renderTarget->GetSize());
 
 		m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
 		m_scoreboard->Center();
@@ -1356,7 +1449,7 @@ namespace bw
 						movementData.isOnGround = playerMovement.IsOnGround();
 						movementData.jumpTime = playerMovement.GetJumpTime();
 						movementData.wasJumping = playerMovement.WasJumping();
-
+						
 						movementData.friction = playerPhysics.GetFriction(0);
 						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
 					}

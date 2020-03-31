@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	Console::Console(Nz::RenderWindow* window, Ndk::Canvas* canvas)
+	Console::Console(Nz::RenderTarget* window, Ndk::Canvas* canvas)
 	{
 		m_widget = canvas->Add<Ndk::Console>();
 		m_widget->Hide();

@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_CONSOLE_HPP
 
 #include <Nazara/Core/Signal.hpp>
-#include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Console.hpp>
 #include <functional>
@@ -21,7 +21,7 @@ namespace bw
 		public:
 			using ExecuteCallback = std::function<bool(const std::string& command)>;
 
-			Console(Nz::RenderWindow* window, Ndk::Canvas* canvas);
+			Console(Nz::RenderTarget* window, Ndk::Canvas* canvas);
 			Console(const Console&) = delete;
 			Console(Console&&) = delete;
 			~Console() = default;

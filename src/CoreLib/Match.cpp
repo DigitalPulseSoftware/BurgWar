@@ -36,8 +36,6 @@ namespace bw
 	m_app(app),
 	m_map(std::move(map))
 	{
-		m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this);
-
 		ReloadAssets();
 		ReloadScripts();
 
@@ -288,7 +286,9 @@ namespace bw
 
 	void Match::ReloadScripts()
 	{
-		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
+		assert(m_assetStore);
+
+		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
 
 		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
 
@@ -296,6 +296,9 @@ namespace bw
 
 		if (!m_scriptingContext)
 		{
+			if (!m_scriptingLibrary)
+				m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this, *m_assetStore);
+
 			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
 			m_scriptingContext->LoadLibrary(m_scriptingLibrary);
 		}

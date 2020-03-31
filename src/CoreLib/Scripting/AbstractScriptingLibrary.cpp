@@ -3,9 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <CoreLib/Scripting/RandomEngine.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 
 namespace bw
@@ -82,5 +84,19 @@ namespace bw
 
 			return tableRef;
 		};
+	}
+
+	sol::usertype<RandomEngine> AbstractScriptingLibrary::RegisterRandomEngineClass(ScriptingContext& context)
+	{
+		sol::state& lua = context.GetLuaState();
+		return lua.new_usertype<RandomEngine>("RandomEngine",
+			sol::constructors<RandomEngine(), RandomEngine(std::uint_fast64_t)>(),
+
+			"Generate", sol::overload(
+				[](RandomEngine& engine) { return engine.Generate(); },
+				[](RandomEngine& engine, Nz::Int64 a, Nz::Int64 b) { return engine.Generate(a, b); }),
+
+			"Seed", &RandomEngine::Seed
+		);
 	}
 }

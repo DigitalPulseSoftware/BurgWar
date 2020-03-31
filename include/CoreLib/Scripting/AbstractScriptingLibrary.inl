@@ -11,12 +11,13 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/PlayerInputData.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <cassert>
 
 namespace bw
 {
 	class Player;
+	class RandomEngine;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
@@ -38,6 +39,12 @@ namespace sol
 
 	template <>
 	struct is_automagical<bw::PlayerHandle> : std::false_type {};
+
+	template <>
+	struct is_automagical<bw::RandomEngine> : std::false_type {};
+
+	template <>
+	struct is_to_stringable<bw::RandomEngine> : std::false_type{};
 
 	template<>
 	struct lua_size<bw::PlayerInputData> : std::integral_constant<int, 1> {};

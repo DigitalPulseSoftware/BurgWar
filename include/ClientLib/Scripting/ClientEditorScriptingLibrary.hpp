@@ -23,7 +23,7 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void RegisterAssets(ScriptingContext& context);
+			void RegisterAssetLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterTextureClass(ScriptingContext& context);
 
 			ClientAssetStore& m_assetStore;

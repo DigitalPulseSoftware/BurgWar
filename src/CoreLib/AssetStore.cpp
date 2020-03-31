@@ -10,5 +10,13 @@ namespace bw
 
 	void AssetStore::Clear()
 	{
+		m_images.clear();
+	}
+
+	const Nz::ImageRef& AssetStore::GetImage(const std::string& imagePath) const
+	{
+		Nz::ImageParams loaderParameters;
+
+		return GetResource(imagePath, m_images, loaderParameters);
 	}
 }

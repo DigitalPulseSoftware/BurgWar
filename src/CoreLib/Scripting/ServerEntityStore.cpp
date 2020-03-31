@@ -21,6 +21,7 @@ namespace bw
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
+		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
 		const Ndk::EntityHandle& entity = CreateEntity(layer.GetWorld(), entityClass, properties);
@@ -71,6 +72,9 @@ namespace bw
 
 		if (playerControlled)
 			entity->AddComponent<PlayerMovementComponent>();
+
+		if (hasInputs)
+			entity->AddComponent<InputComponent>();
 
 		if (!InitializeEntity(*entityClass, entity))
 			entity->Kill();

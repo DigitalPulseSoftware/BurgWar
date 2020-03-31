@@ -1,3 +1,9 @@
+GM.PlayerEntity = "entity_burger"
+
+GM.PlayerSeeds = {}
+
+math.randomseed(os.time())
+
 function GM:OnPlayerDeath(player, attacker)
 	self:IncreasePlayerDeath(player)
 	if (attacker) then
@@ -9,18 +15,45 @@ function GM:OnPlayerDeath(player, attacker)
 
 	print(player:GetName() .. " died")
 	timer.Sleep(2000)
-	player:Spawn()
+	self:SpawnPlayer(player)
 end
 
 GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player)
+	self.PlayerSeeds[player:GetPlayerIndex()] = math.random(0, math.maxinteger)
+
 	print(player:GetName() .. " joined")
-	player:MoveToLayer(0)
-	player:Spawn()
+
+	self:SpawnPlayer(player)
+end)
+
+GM.OnPlayerLeave = utils.OverrideFunction(GM.OnPlayerLeave, function (self, player)
+	self.PlayerSeeds[player:GetPlayerIndex()] = nil
 end)
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
 	player:GiveWeapon("weapon_patator")
+	player:GiveWeapon("weapon_graspain")
+end
+
+function GM:GeneratePlayerEntityProperties(player)
+	return {
+		seed = self.PlayerSeeds[player:GetPlayerIndex()]
+	}
+end
+
+function GM:SpawnPlayer(player)
+	local spawnPosition, layerIndex = self:ChoosePlayerSpawnPosition(player)
+	local properties = self:GeneratePlayerEntityProperties(player)
+	local entity = match.CreateEntity({
+		Type = self.PlayerEntity,
+		LayerIndex = layerIndex,
+		Position = spawnPosition,
+		Properties = properties
+	})
+	player:UpdateControlledEntity(entity)
+
+	self:OnPlayerSpawn(player)
 end
 
 local noclipController = NoclipPlayerMovementController.new()
@@ -98,15 +131,15 @@ end
 
 function GM:ChoosePlayerSpawnPosition()
 	local spawnpoints = match.GetEntitiesByClass("entity_spawnpoint")
-	local spawnpointIndex = math.random(1, #spawnpoints)
-
-	return spawnpoints[spawnpointIndex]:GetPosition()
+	local spawnpointEntity = spawnpoints[math.random(1, #spawnpoints)]
+	return spawnpointEntity:GetPosition(), spawnpointEntity:GetLayerIndex()
 end
 
 function GM:OnPlayerChangeLayer(player, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
 
 	local oldLayer = player:GetLayerIndex()
+	print("Player " .. player:GetName() .. " change layer (", oldLayer .. " => " ..  newLayer .. ")")
 	if (oldLayer ~= NoLayer) then
 		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", oldLayer)) do
 			ent:OnPlayerLeaveLayer(player, oldLayer)

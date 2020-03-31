@@ -26,7 +26,7 @@ namespace bw
 			const Nz::SoundBufferRef& GetSoundBuffer(const std::string& soundPath) const;
 			const Nz::TextureRef& GetTexture(const std::string& texturePath) const;
 
-		protected:
+		private:
 			mutable tsl::hopscotch_map<std::string, Nz::ModelRef> m_models;
 			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
 			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;

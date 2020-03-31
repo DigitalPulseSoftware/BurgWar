@@ -8,6 +8,7 @@
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -32,7 +33,6 @@ namespace bw
 		}
 
 		weapon.cooldown = static_cast<Nz::UInt32>(elementTable.get_or("Cooldown", 0.f) * 1000);
-		weapon.weaponOffset = elementTable.get_or("WeaponOffset", Nz::Vector2f::Zero());
 
 		sol::object animations = elementTable["Animations"];
 		if (animations)
@@ -66,9 +66,16 @@ namespace bw
 
 		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
 		weaponNode.SetParent(parent);
-		weaponNode.SetPosition(weaponClass.weaponOffset);
 		weaponNode.SetInheritRotation(false);
 		weaponNode.SetInheritScale(false);
+
+		if (parent->HasComponent<WeaponWielderComponent>())
+		{
+			auto& wielderComponent = parent->GetComponent<WeaponWielderComponent>();
+			weaponNode.SetPosition(wielderComponent.GetWeaponOffset());
+		}
+		else
+			bwLog(GetLogger(), LogLevel::Warning, "Weapon owner (Entity #{0}) has not been initialized as a wielder", parent->GetId());
 
 		if (weaponClass.animations)
 		{

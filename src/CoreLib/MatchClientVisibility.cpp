@@ -15,6 +15,8 @@ namespace bw
 {
 	void MatchClientVisibility::ShowLayer(LayerIndex layerIndex)
 	{
+		m_newlyHiddenLayers.UnboundedReset(layerIndex);
+
 		if (auto it = m_layers.find(layerIndex); it != m_layers.end())
 		{
 			Layer& layer = *(it.value());
@@ -103,7 +105,6 @@ namespace bw
 				}
 			});
 
-			m_newlyHiddenLayers.UnboundedReset(layerIndex);
 			m_newlyVisibleLayers.UnboundedSet(layerIndex);
 		}
 	}

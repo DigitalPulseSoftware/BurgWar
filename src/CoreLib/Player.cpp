@@ -151,7 +151,7 @@ namespace bw
 
 					m_match.RegisterEntity(uniqueId, newPlayerEntity);
 
-					UpdateControlledEntity(newPlayerEntity);
+					UpdateControlledEntity(newPlayerEntity, true, true);
 
 					for (auto& weaponEntity : m_weapons)
 					{
@@ -303,59 +303,36 @@ namespace bw
 		m_isAdmin = isAdmin;
 	}
 	
-	void Player::Spawn()
-	{
-		if (m_layerIndex == NoLayer)
-			return;
-
-		Terrain& terrain = m_match.GetTerrain();
-
-		ServerEntityStore& entityStore = m_match.GetEntityStore();
-		if (std::size_t entityIndex = entityStore.GetElementIndex("entity_burger"); entityIndex != ServerEntityStore::InvalidIndex)
-		{
-			auto spawnPositionOpt = m_match.GetGamemode()->ExecuteCallback("ChoosePlayerSpawnPosition");
-			if (!spawnPositionOpt)
-				return;
-
-			Nz::Int64 uniqueId = m_match.AllocateUniqueId();
-
-			Nz::Vector2f spawnPosition = spawnPositionOpt->as<Nz::Vector2f>();
-			const Ndk::EntityHandle& playerEntity = entityStore.InstantiateEntity(terrain.GetLayer(m_layerIndex), entityIndex, uniqueId, spawnPosition, 0.f, {});
-			if (!playerEntity)
-				return;
-
-			m_match.RegisterEntity(uniqueId, playerEntity);
-
-			bwLog(m_match.GetLogger(), LogLevel::Info, "Creating player entity #{0}", playerEntity->GetId());
-
-			playerEntity->AddComponent<InputComponent>();
-			playerEntity->AddComponent<OwnerComponent>(CreateHandle());
-			playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
-
-			UpdateControlledEntity(playerEntity);
-
-			m_match.GetGamemode()->ExecuteCallback("OnPlayerSpawn", CreateHandle());
-		}
-	}
-
 	std::string Player::ToString() const
 	{
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket)
+	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket, bool ignoreLayerUpdate)
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
 		if (m_playerEntity)
 		{
+			m_playerEntity->RemoveComponent<OwnerComponent>();
+			m_playerEntity->RemoveComponent<PlayerControlledComponent>();
+
 			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
 			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), false);
 		}
 
-		m_playerEntity = entity;
-		if (m_playerEntity)
+		m_playerEntity = Ndk::EntityHandle::InvalidHandle;
+		if (entity)
 		{
+			auto& matchComponent = entity->GetComponent<MatchComponent>();
+			if (!ignoreLayerUpdate)
+				MoveToLayer(matchComponent.GetLayerIndex());
+
+			m_playerEntity = entity; //< FIXME (deferred because of MoveToLayer)
+
+			m_playerEntity->AddComponent<OwnerComponent>(CreateHandle());
+			m_playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
+
 			if (m_playerEntity->HasComponent<HealthComponent>())
 			{
 				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
@@ -371,7 +348,6 @@ namespace bw
 				OnDeath(Ndk::EntityHandle::InvalidHandle);
 			});
 
-			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
 			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
 		}
 		else
@@ -405,10 +381,8 @@ namespace bw
 
 	void Player::UpdateInputs(const PlayerInputData& inputData)
 	{
-		if (m_playerEntity)
+		if (m_playerEntity && m_playerEntity->HasComponent<InputComponent>())
 		{
-			assert(m_playerEntity->HasComponent<InputComponent>());
-
 			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
 			inputComponent.UpdateInputs(inputData);
 		}
@@ -424,9 +398,6 @@ namespace bw
 
 	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
 	{
-		if (isVisible == m_visibleLayers.UnboundedTest(layerIndex))
-			return;
-
 		MatchClientVisibility& visibility = GetSession().GetVisibility();
 
 		if (isVisible)

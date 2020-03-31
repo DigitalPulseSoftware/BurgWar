@@ -9,6 +9,7 @@
 
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Nazara/Core/ObjectRef.hpp>
+#include <Nazara/Utility/Image.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 
 namespace bw
@@ -23,6 +24,8 @@ namespace bw
 
 			virtual void Clear();
 
+			const Nz::ImageRef& GetImage(const std::string& imagePath) const;
+
 			inline void UpdateAssetDirectory(std::shared_ptr<VirtualDirectory> assetDirectory);
 
 		protected:
@@ -31,6 +34,7 @@ namespace bw
 			const Logger& m_logger;
 
 		private:
+			mutable tsl::hopscotch_map<std::string, Nz::ImageRef> m_images;
 			mutable std::shared_ptr<VirtualDirectory> m_assetDirectory;
 	};
 }

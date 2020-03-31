@@ -8,12 +8,13 @@
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
 
 #include <NDK/Entity.hpp>
-#include <sol3/forward.hpp>
+#include <Thirdparty/sol3/forward.hpp>
 #include <memory>
 
 namespace bw
 {
 	class Logger;
+	class RandomEngine;
 	class ScriptingContext;
 
 	class AbstractScriptingLibrary
@@ -29,6 +30,7 @@ namespace bw
 		protected:
 			virtual void RegisterGlobalLibrary(ScriptingContext& context);
 			virtual void RegisterMetatableLibrary(ScriptingContext& context);
+			virtual sol::usertype<RandomEngine> RegisterRandomEngineClass(ScriptingContext& context);
 
 			const Logger& m_logger;
 	};

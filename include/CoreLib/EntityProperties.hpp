@@ -12,7 +12,7 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <Nazara/Math/Vector4.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <optional>
 #include <memory>

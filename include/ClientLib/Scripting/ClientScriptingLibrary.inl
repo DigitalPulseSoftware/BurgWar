@@ -6,7 +6,7 @@
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <Nazara/Graphics/Material.hpp>
-#include <sol3/sol.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <cassert>
 #include <type_traits>
 #include <vector>

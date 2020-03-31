@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTELEMENTLIBRARY_HPP
 
 #include <NDK/Entity.hpp>
-#include <sol3/forward.hpp>
+#include <Thirdparty/sol3/forward.hpp>
 #include <memory>
 
 namespace bw

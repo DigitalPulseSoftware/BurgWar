@@ -5,18 +5,55 @@ local oldInit = ENTITY.Initialize
 function ENTITY:Initialize()
 	oldInit(self)
 
-	local mainSprite = self:AddSprite({
-		Origin = Vec2(0.5, 1),
-		Scale = Vec2(self.Scale, self.Scale),
-		TexturePath = self.Sprite
-	})
+	local cursor = 0
+	local maxWidth = 0
+	local defaultOrigin = Vec2(0.5, 1)
+	local renderOrder = 0
+	local faceOffset
+	self:ForEachElement(function (elementData, randomSprite)
+		local elementOffsetScale = elementData.OffsetScale or 1
+		local elementOrigin = elementData.Origin or defaultOrigin
 
-	local faceOrigin = mainSprite:GetSize() * Vec2(0.65, 0.31) - mainSprite:GetOrigin() * mainSprite:GetSize()
+		local faceOrigin, origin, offsetScale, texturePath
+		if (type(randomSprite) == "table") then
+			faceOrigin = randomSprite.FaceOrigin or elementData.FaceOrigin
+			origin = randomSprite.Origin or elementOrigin
+			offsetScale = randomSprite.OffsetScale or elementOffsetScale
+			texturePath = randomSprite.Path
+		else
+			assert(type(randomSprite) == "string")
+
+			faceOrigin = elementData.FaceOrigin
+			origin = defaultOrigin
+			offsetScale = elementOffsetScale
+			texturePath = randomSprite
+		end
+
+		local offset = Vec2(0, cursor)
+
+		local sprite = self:AddSprite({
+			Offset = offset,
+			Origin = origin,
+			RenderOrder = renderOrder,
+			Scale = Vec2(self.Scale, self.Scale),
+			TexturePath = texturePath
+		})
+
+		local spriteSize = sprite:GetSize()
+
+		if (faceOrigin) then
+			faceOffset = offset - origin * spriteSize + faceOrigin * spriteSize
+		end
+
+		maxWidth = math.max(maxWidth, spriteSize.x)
+		cursor = cursor - spriteSize.y * offsetScale
+		renderOrder = renderOrder + 1
+	end)
 
 	for name, texture in pairs(self.Faces) do
 		local face = self:AddSprite({
-			Offset = faceOrigin,
-			RenderOrder = 1,
+			Offset = faceOffset,
+			RenderOrder = renderOrder,
 			Scale = Vec2(self.Scale, self.Scale),
 			TexturePath = texture
 		})
