@@ -151,7 +151,7 @@ namespace bw
 
 					m_match.RegisterEntity(uniqueId, newPlayerEntity);
 
-					UpdateControlledEntity(newPlayerEntity);
+					UpdateControlledEntity(newPlayerEntity, true, true);
 
 					for (auto& weaponEntity : m_weapons)
 					{
@@ -343,7 +343,7 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket)
+	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket, bool ignoreLayerUpdate)
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
@@ -356,6 +356,10 @@ namespace bw
 		m_playerEntity = entity;
 		if (m_playerEntity)
 		{
+			auto& matchComponent = entity->GetComponent<MatchComponent>();
+			if (!ignoreLayerUpdate)
+				MoveToLayer(matchComponent.GetLayerIndex());
+
 			if (m_playerEntity->HasComponent<HealthComponent>())
 			{
 				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
@@ -424,9 +428,6 @@ namespace bw
 
 	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
 	{
-		if (isVisible == m_visibleLayers.UnboundedTest(layerIndex))
-			return;
-
 		MatchClientVisibility& visibility = GetSession().GetVisibility();
 
 		if (isVisible)
