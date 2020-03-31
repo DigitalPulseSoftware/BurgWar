@@ -9,6 +9,7 @@
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/ServerTexture.hpp>
+#include <CoreLib/Scripting/SharedElementLibrary.hpp>
 
 namespace bw
 {
@@ -264,7 +265,17 @@ namespace bw
 				player.SendPacket(outgoingPacket.ToPacket(networkStringStore));
 			},
 			"SetAdmin", &Player::SetAdmin,
-			"Spawn", &Player::Spawn,
+			"UpdateControlledEntity", [](Player& player, sol::optional<sol::table> entityTable)
+			{
+				if (entityTable)
+				{
+					const Ndk::EntityHandle& entity = SharedElementLibrary::AssertScriptEntity(entityTable.value());
+
+					player.UpdateControlledEntity(entity);
+				}
+				else
+					player.UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle);
+			},
 			"UpdateLayerVisibility", &Player::UpdateLayerVisibility
 		);
 	}

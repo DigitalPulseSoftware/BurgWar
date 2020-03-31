@@ -21,7 +21,6 @@ namespace bw
 		Nz::UInt32 cooldown;
 		Nz::Vector2f spriteOrigin;
 		Nz::Vector2f weaponOrigin;
-		Nz::Vector2f weaponOffset;
 		std::shared_ptr<AnimationStore> animations;
 		std::string spriteName;
 		float scale;

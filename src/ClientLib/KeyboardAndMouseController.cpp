@@ -4,6 +4,7 @@
 
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
@@ -59,11 +60,10 @@ namespace bw
 			Nz::Vector2f originPosition = controlledEntity->GetPosition();
 			float lookSwitch = originPosition.x;
 
-			if (const auto& weaponEntity = controlledEntity->GetWeaponEntity())
+			if (entity->HasComponent<WeaponWielderComponent>())
 			{
-				auto& weaponScript = weaponEntity->GetEntity()->GetComponent<ScriptComponent>();
-				const auto& weaponElement = static_cast<const ScriptedWeapon&>(*weaponScript.GetElement());
-				Nz::Vector2f weaponOffset = weaponElement.weaponOffset;
+				auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
+				Nz::Vector2f weaponOffset = wielderComponent.GetWeaponOffset();
 
 				if (!controlledEntity->IsFacingRight())
 					weaponOffset.x = -weaponOffset.x;
