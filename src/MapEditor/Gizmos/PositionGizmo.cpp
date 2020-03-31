@@ -104,7 +104,7 @@ namespace bw
 
 	bool PositionGizmo::OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 	{
-		if (mouseButton.button != Nz::Mouse::Left || m_movementType != MovementType::None)
+		if (mouseButton.button != Nz::Mouse::Left || m_movementType == MovementType::None)
 			return false;
 		
 		m_movementType = MovementType::None;
