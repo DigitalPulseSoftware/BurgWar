@@ -34,7 +34,7 @@ namespace bw
 		GetStateData().app->SavePlayerConfig();
 	}
 
-	bool OptionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool OptionState::Update(Ndk::StateMachine& fsm, float /*elapsedTime*/)
 	{
 		if (m_nextState)
 			fsm.ChangeState(std::move(m_nextState));

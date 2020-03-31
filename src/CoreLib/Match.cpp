@@ -288,7 +288,7 @@ namespace bw
 	{
 		assert(m_assetStore);
 
-		const std::string& scriptFolder = m_app.GetConfig().GetStringOption("Assets.ScriptFolder");
+		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
 
 		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
 
