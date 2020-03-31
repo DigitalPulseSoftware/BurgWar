@@ -31,7 +31,7 @@ namespace bw
 			if (!playerMovement.WasJumping() && playerMovement.IsOnGround())
 			{
 				constexpr float jumpHeight = 80.f;
-				constexpr float jumpBoostHeight = 55.f;
+				constexpr float jumpBoostHeight = 80.f;
 
 				jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 128.f);
 
