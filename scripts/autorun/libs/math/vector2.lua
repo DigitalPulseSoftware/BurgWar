@@ -27,13 +27,19 @@ function vec2meta:__add(other)
 	end
 end
 
-function vec2meta:__mul(other)
-	if (getmetatable(other) == vec2meta) then
-		return Vec2(self.x * other.x, self.y * other.y)
-	elseif (type(other) == "number") then
-		return Vec2(self.x * other, self.y * other)
+function vec2meta.__mul(lhs, rhs)
+	if (getmetatable(lhs) == vec2meta) then
+		if (getmetatable(rhs) == vec2meta) then
+			return Vec2(lhs.x * rhs.x, lhs.y * rhs.y)
+		elseif (type(rhs) == "number") then
+			return Vec2(lhs.x * rhs, lhs.y * rhs)
+		end
+	elseif (type(lhs) == "number") then
+		assert(getmetatable(rhs) == vec2meta)
+
+		return Vec2(lhs * rhs.x, lhs * rhs.y)
 	else
-		error("Factor must be a vector2 or a number")
+		error("Factors must be a vector2 or a number")
 	end
 end
 

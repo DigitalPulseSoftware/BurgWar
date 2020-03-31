@@ -3,6 +3,35 @@ RegisterClientScript()
 local rectmeta = RegisterMetatable("rect")
 rectmeta.__index = rectmeta
 
+function rectmeta:ComputeArea()
+	return self.width * self.height
+end
+
+function rectmeta:ComputeIntersection(rect)
+	AssertMetatable(rect, "rect")
+
+	local left = math.max(self.x, rect.x)
+	local right = math.min(self.x + self.width, rect.x + rect.width)
+	if (left >= right) then
+		return nil
+	end
+
+	local top = math.max(self.y, rect.y)
+	local bottom = math.min(self.y + self.height, rect.y + rect.height)
+	if (top >= bottom) then
+		return nil
+	end
+
+	return Rect(Vec2(left, top), Vec2(right, bottom))
+end
+
+function rectmeta:Contains(pos)
+	AssertMetatable(pos, "vec2")
+
+	return pos.x >= self.x and pos.y >= self.y and
+	       pos.x < self.x + self.width and pos.y < self.y + self.height
+end
+
 function rectmeta:GetCorner(maxX, maxY)
 	local x = self.x
 	if (maxX) then
@@ -15,6 +44,24 @@ function rectmeta:GetCorner(maxX, maxY)
 	end
 
 	return Vec2(x, y)
+end
+
+function rectmeta:Intersect(rect)
+	AssertMetatable(rect, "rect")
+
+	local left = math.max(self.x, rect.x)
+	local right = math.min(self.x + self.width, rect.x + rect.width)
+	if (left >= right) then
+		return false
+	end
+
+	local top = math.max(self.y, rect.y)
+	local bottom = math.min(self.y + self.height, rect.y + rect.height)
+	if (top >= bottom) then
+		return false
+	end
+
+	return true
 end
 
 function rectmeta:__tostring()

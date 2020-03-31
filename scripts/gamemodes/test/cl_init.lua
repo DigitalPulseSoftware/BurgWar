@@ -5,27 +5,89 @@ GM.ShakeData = nil
 function GM:OnFrame(elapsedTime)
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
-		local cameraCenter = Vec2(-640, -320) + playerPosition
-		--cameraCenter.x = math.clamp(cameraCenter.x, 0, 30000)
-		--cameraCenter.y = math.clamp(cameraCenter.y, -1000, 2000 - engine_GetCameraViewport().y)
+		local viewport = engine_GetCameraViewport()
+		local cameraOrigin = playerPosition - viewport / 2
 
 		local shakeData = self.ShakeData
 		if (shakeData) then
-			cameraCenter = cameraCenter + Vec2(math.random(-1, 1), math.random(-1, 1)) * shakeData.Strength
+			cameraOrigin = cameraOrigin + Vec2(math.random(-1, 1), math.random(-1, 1)) * shakeData.Strength
 			shakeData.Strength = shakeData.Strength - shakeData.StrengthDecrease * elapsedTime
 			if (shakeData.Strength < 0) then
 				self.ShakeData = nil
 			end
 		end
 
-		engine_SetCameraPosition(cameraCenter)
+		local clampedOrigin
+		if (self.CameraRect) then
+			local currentRect = self.CameraRect:GetRect()
+			local mins = currentRect:GetCorner(false, false)
+			local maxs = currentRect:GetCorner(true, true) - viewport
+
+			clampedOrigin = Vec2()
+			clampedOrigin.x = math.clamp(cameraOrigin.x, mins.x, maxs.x)
+			clampedOrigin.y = math.clamp(cameraOrigin.y, mins.y, maxs.y)
+
+			if (self.NextCameraRect) then
+				local targetRect = self.NextCameraRect.rect:GetRect()
+
+				local nextMins = targetRect:GetCorner(false, false)
+				local nextMaxs = targetRect:GetCorner(true, true) - viewport
+
+				local elapsedTime = match.GetSeconds() - self.NextCameraRect.time
+				local lerpFactor = elapsedTime * 2
+
+				local nextClampedOrigin = Vec2()
+				nextClampedOrigin.x = math.clamp(cameraOrigin.x, nextMins.x, nextMaxs.x)
+				nextClampedOrigin.y = math.clamp(cameraOrigin.y, nextMins.y, nextMaxs.y)
+	
+				if (lerpFactor >= 1) then
+					clampedOrigin = nextClampedOrigin
+					self.CameraRect = self.NextCameraRect.rect
+					self.NextCameraRect = nil
+				else
+					clampedOrigin = math.lerp(clampedOrigin, nextClampedOrigin, lerpFactor)
+				end
+			end
+		end
+
+		engine_SetCameraPosition(clampedOrigin or cameraOrigin)
 	end
 end
 
 function GM:OnInit()
+	self.CameraRect = nil
+end
+
+function GM:RefreshCameraRect()
+	local playerPosition = engine_GetPlayerPosition(0)
+	if (playerPosition) then
+		local cameraRects = match.GetEntitiesByClass("entity_camera_rect", engine_GetActiveLayer())
+
+		-- Find most suitable camera rect
+		local mostSuitableCameraRect
+
+		for _, cameraRectEntity in pairs(cameraRects) do
+			local rect = cameraRectEntity:GetRect()
+			if (rect:Contains(playerPosition)) then
+				mostSuitableCameraRect = cameraRectEntity
+				break
+			end
+		end
+
+		if (self.CameraRect ~= mostSuitableCameraRect) then
+			--if (self.CameraRect and mostSuitableCameraRect) then
+			--	if (not self.NextCameraRect or self.NextCameraRect.rect ~= mostSuitableCameraRect) then
+			--		self.NextCameraRect = { rect = mostSuitableCameraRect, time = match.GetSeconds() }
+			--	end
+			--else
+				self.CameraRect = mostSuitableCameraRect
+			--end
+		end
+	end
 end
 
 GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
+	self:RefreshCameraRect()
 end)
 
 function GM:OnChangeLayer(oldLayer, newLayer)

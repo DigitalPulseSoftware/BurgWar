@@ -127,15 +127,11 @@ namespace bw
 	void Camera::UpdateProjection()
 	{
 		auto& entityCamera = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
 
 		if (m_isPerspective)
 		{
-			const Nz::RenderTarget* renderTarget = entityCamera.GetTarget();
-
 			entityCamera.SetProjectionScale({ 1.f, -1.f, 1.f });
 			entityCamera.SetProjectionType(Nz::ProjectionType_Perspective);
-			entityNode.SetInitialPosition(renderTarget->GetSize().x * 0.5f, renderTarget->GetSize().y * 0.5f, 0.f);
 		}
 		else
 		{
@@ -143,7 +139,6 @@ namespace bw
 
 			entityCamera.SetProjectionScale(Nz::Vector3f::Unit());
 			entityCamera.SetProjectionType(Nz::ProjectionType_Orthogonal);
-			entityNode.SetInitialPosition(0.f, 0.f, 0.f);
 		}
 
 		UpdateZoomFactor();
@@ -160,20 +155,15 @@ namespace bw
 
 		if (m_isPerspective)
 		{
-			Nz::Vector3f initialPosition = entityNode.GetInitialPosition();
+			Nz::Vector3f initialPosition;
+			initialPosition.x = viewportSize.x * 0.5f;
+			initialPosition.y = viewportSize.y * 0.5f;
 			initialPosition.z = viewportSize.y * 0.5f * m_invFovTan;
 			entityNode.SetInitialPosition(initialPosition);
 
 			m_projectedDepth = entityCamera.Project({ 0.f, 0.f, 0.f }).z;
 		}
 		else
-		{
-			Nz::Vector2f initialPosition = -viewportSize * (m_zoomFactor - 1.f) / 2.f;
-			//initialPosition.x += 0.5f * m_zoomFactor;
-			//initialPosition.y += 0.5f * m_zoomFactor;
-
-			entityNode.SetInitialPosition(initialPosition);
 			entityCamera.SetSize(viewportSize);
-		}
 	}
 }

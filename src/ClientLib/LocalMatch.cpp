@@ -507,7 +507,7 @@ namespace bw
 
 		state["engine_GetCameraViewport"] = [&]()
 		{
-			return m_renderTarget->GetSize();
+			return Nz::Vector2f(m_renderTarget->GetSize()) * m_camera->GetZoomFactor();
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
