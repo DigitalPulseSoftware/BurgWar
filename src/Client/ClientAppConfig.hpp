@@ -7,20 +7,20 @@
 #ifndef BURGWAR_CLIENTCONFIGFILE_HPP
 #define BURGWAR_CLIENTCONFIGFILE_HPP
 
-#include <CoreLib/SharedConfigFile.hpp>
+#include <CoreLib/SharedAppConfig.hpp>
 
 namespace bw
 {
 	class ClientApp;
 
-	class ClientConfigFile : public SharedConfigFile
+	class ClientAppConfig : public SharedAppConfig
 	{
 		public:
-			ClientConfigFile(ClientApp& app);
-			~ClientConfigFile() = default;
+			ClientAppConfig(ClientApp& app);
+			~ClientAppConfig() = default;
 	};
 }
 
-#include <Client/ClientConfigFile.inl>
+#include <Client/ClientAppConfig.inl>
 
 #endif

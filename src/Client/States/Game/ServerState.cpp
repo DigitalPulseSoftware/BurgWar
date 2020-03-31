@@ -10,15 +10,14 @@
 
 namespace bw
 {
-	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, std::string name) :
-	AbstractState(std::move(stateDataPtr)),
-	m_name(std::move(name))
+	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort) :
+	AbstractState(std::move(stateDataPtr))
 	{
 		ClientApp& app = *GetStateData().app;
 		const ConfigFile& config = app.GetConfig();
 
-		Map map = Map::LoadFromBinary(config.GetStringOption("GameSettings.MapFile"));
-		float tickRate = config.GetFloatOption<float>("GameSettings.TickRate");
+		Map map = Map::LoadFromBinary(config.GetStringValue("GameSettings.MapFile"));
+		float tickRate = config.GetFloatValue<float>("GameSettings.TickRate");
 
 		m_match.emplace(app, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate);
 
@@ -29,17 +28,17 @@ namespace bw
 		else
 			m_networkSessionManager = nullptr;
 
-		if (config.GetBoolOption("Debug.SendServerState"))
+		if (config.GetBoolValue("Debug.SendServerState"))
 			m_match->InitDebugGhosts();
 	}
 
 	void ServerState::Enter(Ndk::StateMachine& fsm)
 	{
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager, std::move(m_name)));
+		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager));
 		/*Nz::IpAddress serverAddress = Nz::IpAddress::LoopbackIpV4;
 		serverAddress.SetPort(14768);
 
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress, std::move(m_name)));*/
+		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress));*/
 	}
 
 	bool ServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)

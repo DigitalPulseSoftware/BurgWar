@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/ClientConfigFile.hpp>
+#include <Client/ClientAppConfig.hpp>
 #include <Client/ClientApp.hpp>
 
 namespace bw
 {
-	ClientConfigFile::ClientConfigFile(ClientApp& app) :
-	SharedConfigFile(app)
+	ClientAppConfig::ClientAppConfig(ClientApp& app) :
+	SharedAppConfig(app)
 	{
 		RegisterStringOption("Debug.ShowConnectionData");
 		RegisterBoolOption("Debug.ShowServerGhosts");

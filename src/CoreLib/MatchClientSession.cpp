@@ -146,7 +146,7 @@ namespace bw
 			}
 
 			Packets::ChatMessage chatPacket;
-			chatPacket.playerName = m_players[packet.localIndex]->GetName();
+			chatPacket.playerIndex = m_players[packet.localIndex]->GetPlayerIndex();
 			chatPacket.content = content.as<std::string>();
 
 			m_match.ForEachPlayer([&](Player* player)
@@ -241,6 +241,17 @@ namespace bw
 		const std::string& packetName = stringStore.GetString(packet.nameIndex);
 
 		registry.Call(packetName, IncomingNetworkPacket(stringStore, packet));
+	}
+
+	void MatchClientSession::HandleIncomingPacket(Packets::UpdatePlayerName&& packet)
+	{
+		if (packet.newName.empty() || packet.newName.size() > 20)
+			return;
+
+		if (packet.localIndex >= m_players.size() || !m_players[packet.localIndex])
+			return;
+
+		m_players[packet.localIndex]->UpdateName(std::move(packet.newName));
 	}
 	
 	void MatchClientSession::UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo)

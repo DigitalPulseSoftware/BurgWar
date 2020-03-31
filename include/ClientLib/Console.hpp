@@ -28,9 +28,9 @@ namespace bw
 
 			void Clear();
 
-			inline bool IsVisible() const;
-
 			inline void Hide();
+
+			inline bool IsVisible() const;
 
 			void Print(const std::string& str, Nz::Color color = Nz::Color::White);
 

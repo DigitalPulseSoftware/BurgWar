@@ -16,8 +16,8 @@ namespace bw
 		if (!m_configFile.LoadFromFile("serverconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
 
-		Map map = Map::LoadFromBinary(GetConfig().GetStringOption("GameSettings.MapFile"));
-		float tickRate = GetConfig().GetFloatOption<float>("GameSettings.TickRate");
+		Map map = Map::LoadFromBinary(GetConfig().GetStringValue("GameSettings.MapFile"));
+		float tickRate = GetConfig().GetFloatValue<float>("GameSettings.TickRate");
 
 		m_match = std::make_unique<Match>(*this, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate);
 		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(Nz::UInt16(14768), 64);

@@ -8,17 +8,17 @@
 #define BURGWAR_CLIENTLIB_CLIENTEDITORAPP_HPP
 
 #include <CoreLib/BurgApp.hpp>
-#include <ClientLib/PlayerConfigFile.hpp>
+#include <ClientLib/PlayerConfig.hpp>
 #include <NDK/Application.hpp>
 
 namespace bw
 {
-	class SharedConfigFile;
+	class SharedAppConfig;
 
 	class ClientEditorApp : public Ndk::Application, public BurgApp
 	{
 		public:
-			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedConfigFile& configFile);
+			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);
 			~ClientEditorApp();
 
 			inline ConfigFile& GetPlayerSettings();
@@ -30,7 +30,7 @@ namespace bw
 			void FillStores();
 
 		private:
-			PlayerConfigFile m_playerSettings;
+			PlayerConfig m_playerSettings;
 	};
 }
 

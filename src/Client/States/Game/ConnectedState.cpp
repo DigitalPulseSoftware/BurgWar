@@ -75,7 +75,7 @@ namespace bw
 	{
 		if (!m_connectionLostSprite)
 		{
-			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringOption("Assets.ResourceFolder");
+			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringValue("Assets.ResourceFolder");
 
 			Nz::MaterialRef connectionLostMat = Nz::Material::New("Translucent2D");
 			connectionLostMat->SetDiffuseMap(assetsFolder + "/gui/connection.png");
@@ -147,7 +147,7 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		const std::string& enabledConnectionData = stateData.app->GetConfig().GetStringOption("Debug.ShowConnectionData");
+		const std::string& enabledConnectionData = stateData.app->GetConfig().GetStringValue("Debug.ShowConnectionData");
 		SplitStringAny(enabledConnectionData, "+| ", [&](std::string_view option)
 		{
 			if (option == "ping")

@@ -98,7 +98,7 @@ namespace bw
 
 		if (!m_scriptingEnvironment)
 		{
-			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringOption("Assets.ScriptFolder");
+			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringValue("Assets.ScriptFolder");
 
 			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
@@ -406,6 +406,18 @@ namespace bw
 			visibility.HideLayer(layerIndex);
 
 		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
+	}
+
+	void Player::UpdateName(std::string newName)
+	{
+		m_match.GetGamemode()->ExecuteCallback("OnPlayerNameUpdate", CreateHandle(), newName);
+		m_name = std::move(newName);
+
+		Packets::PlayerNameUpdate nameUpdatePacket;
+		nameUpdatePacket.newName = m_name;
+		nameUpdatePacket.playerIndex = Nz::UInt16(m_playerIndex);
+
+		m_match.BroadcastPacket(nameUpdatePacket);
 	}
 
 	void Player::OnDeath(const Ndk::EntityHandle& attacker)

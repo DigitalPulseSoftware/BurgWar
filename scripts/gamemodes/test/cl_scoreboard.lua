@@ -52,6 +52,19 @@ function GM:OnPlayerLeave(player)
 	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
 end
 
+function GM:OnPlayerNameUpdate(player, newName)
+	print(player:GetName() .. " has changed name to " .. newName)
+
+	local scoreboard = self.Scoreboard
+	if (not scoreboard) then
+		return
+	end
+
+	for _, player in pairs(match.GetPlayers()) do
+		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
+	end
+end
+
 function GM:OnPlayerPingUpdate()
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then

@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientEditorApp.hpp>
-#include <CoreLib/SharedConfigFile.hpp>
+#include <CoreLib/SharedAppConfig.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
@@ -13,6 +13,7 @@
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
+#include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Utility/Font.hpp>
 
@@ -23,7 +24,7 @@ namespace bw
 		static constexpr char* PlayerSettingsFile = "playerconfig.lua";
 	}
 
-	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedConfigFile& configFile) :
+	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
 	Application(argc, argv),
 	BurgApp(side, configFile),
 	m_playerSettings(*this)
@@ -33,6 +34,12 @@ namespace bw
 			bwLog(GetLogger(), LogLevel::Warning, "Failed to load player config, it will be reset");
 			m_playerSettings.SaveToFile(PlayerSettingsFile);
 		}
+
+		Nz::Audio::SetGlobalVolume(m_playerSettings.GetIntegerValue<Nz::UInt8>("Sound.GlobalVolume"));
+		m_playerSettings.GetIntegerUpdateSignal("Sound.GlobalVolume").Connect([](long long newValue)
+		{
+			Nz::Audio::SetGlobalVolume(float(newValue));
+		});
 
 		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
@@ -55,7 +62,7 @@ namespace bw
 
 	void ClientEditorApp::FillStores()
 	{
-		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
+		const std::string& gameResourceFolder = m_config.GetStringValue("Assets.ResourceFolder");
 
 		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
 		spriteNoDepthMat->EnableDepthBuffer(false);

@@ -9,7 +9,7 @@
 
 #include <ClientLib/ClientEditorApp.hpp>
 #include <ClientLib/NetworkReactorManager.hpp>
-#include <Client/ClientConfigFile.hpp>
+#include <Client/ClientAppConfig.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <NDK/Application.hpp>
 #include <NDK/StateMachine.hpp>
@@ -33,7 +33,7 @@ namespace bw
 			std::shared_ptr<StateData> m_stateData;
 			Ndk::StateMachine m_stateMachine;
 			Nz::RenderWindow* m_mainWindow;
-			ClientConfigFile m_configFile;
+			ClientAppConfig m_configFile;
 			NetworkReactorManager m_networkReactors;
 	};
 }

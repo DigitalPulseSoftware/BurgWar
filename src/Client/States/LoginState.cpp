@@ -5,6 +5,7 @@
 #include <Client/States/LoginState.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <Client/ClientApp.hpp>
+#include <Client/States/OptionState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
 #include <Nazara/Core/String.hpp>
@@ -22,14 +23,11 @@
 
 namespace bw
 {
-	void LoginState::Enter(Ndk::StateMachine& fsm)
+	LoginState::LoginState(std::shared_ptr<StateData> stateData) :
+	AbstractState(std::move(stateData))
 	{
-		AbstractState::Enter(fsm);
-
-		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
-		m_statusLabel->Show(false);
+		m_statusLabel->Hide();
 
 		m_serverLabel = CreateWidget<Ndk::LabelWidget>();
 		m_serverLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Server: ", 24));
@@ -42,7 +40,6 @@ namespace bw
 		m_serverAddressArea->Resize({ 250.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
 		m_serverAddressArea->SetTextColor(Nz::Color::Black);
-		m_serverAddressArea->SetText(playerConfig.GetStringOption("Server.Address"));
 
 		m_serverPortArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
 		m_serverPortArea->EnableBackground(true);
@@ -50,7 +47,6 @@ namespace bw
 		m_serverPortArea->Resize({ 50.f, 36.f });
 		m_serverPortArea->SetMaximumWidth(100.f);
 		m_serverPortArea->SetTextColor(Nz::Color::Black);
-		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerOption<Nz::UInt16>("Server.Port")));
 		m_serverPortArea->SetCharacterFilter([](Nz::UInt32 character) 
 		{
 			if (character < U'0' || character > U'9')
@@ -59,18 +55,6 @@ namespace bw
 			return true;
 		});
 
-		m_serverAddressLayout->Resize({ 500.f, 36.f });
-
-
-		m_loginLabel = CreateWidget<Ndk::LabelWidget>();
-		m_loginLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Login: ", 24));
-
-		m_loginArea = CreateWidget<Ndk::TextAreaWidget>();
-		m_loginArea->EnableBackground(true);
-		m_loginArea->SetBackgroundColor(Nz::Color::White);
-		m_loginArea->Resize({ 200.f, 36.f });
-		m_loginArea->SetTextColor(Nz::Color::Black);
-		m_loginArea->SetText(playerConfig.GetStringOption("Player.Name"));
 
 		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
@@ -80,14 +64,14 @@ namespace bw
 		{
 			OnConnectionPressed();
 		});
-
-		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
-		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server", 24));
-		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
 		
-		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_optionButton = CreateWidget<Ndk::ButtonWidget>();
+		m_optionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Option", 24));
+		m_optionButton->Resize(m_optionButton->GetPreferredSize());
+		
+		m_optionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
 		{
-			OnStartServerPressed();
+			OnOptionPressed();
 		});
 
 		m_quitButton = CreateWidget<Ndk::ButtonWidget>();
@@ -99,7 +83,24 @@ namespace bw
 			OnQuitPressed();
 		});
 
-		LayoutWidgets();
+		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
+		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server", 24));
+		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
+		
+		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		{
+			OnStartServerPressed();
+		});
+	}
+
+	void LoginState::Enter(Ndk::StateMachine& fsm)
+	{
+		AbstractState::Enter(fsm);
+
+		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+
+		m_serverAddressArea->SetText(playerConfig.GetStringValue("Server.Address"));
+		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("Server.Port")));
 	}
 
 	bool LoginState::Update(Ndk::StateMachine& fsm, float elapsedTime)
@@ -107,8 +108,10 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		if (m_nextState)
-			fsm.ResetState(m_nextState);
+		if (m_nextGameState)
+			fsm.ResetState(std::move(m_nextGameState));
+		else if (m_nextState)
+			fsm.ChangeState(std::move(m_nextState));
 
 		return true;
 	}
@@ -136,19 +139,6 @@ namespace bw
 			return;
 		}
 
-		Nz::String login = m_loginArea->GetText();
-		if (login.IsEmpty())
-		{
-			UpdateStatus("Error: blank login", Nz::Color::Red);
-			return;
-		}
-
-		if (login.GetSize() > 20)
-		{
-			UpdateStatus("Error: login is too long", Nz::Color::Red);
-			return;
-		}
-
 		Nz::ResolveError resolveError;
 		std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, serverHostname, Nz::String::Number(rawPort), &resolveError);
 		if (serverAddresses.empty())
@@ -158,30 +148,21 @@ namespace bw
 		}
 
 		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetStringOption("Player.Name", login.ToStdString());
-		playerConfig.SetStringOption("Server.Address", serverHostname.ToStdString());
-		playerConfig.SetIntegerOption("Server.Port", rawPort);
+		playerConfig.SetStringValue("Server.Address", serverHostname.ToStdString());
+		playerConfig.SetIntegerValue("Server.Port", rawPort);
 
 		GetStateData().app->SavePlayerConfig();
 
-		m_nextState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address, login.ToStdString());
+		m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address);
+	}
+
+	void LoginState::OnOptionPressed()
+	{
+		m_nextState = std::make_shared<OptionState>(GetStateDataPtr(), shared_from_this());
 	}
 
 	void LoginState::OnStartServerPressed()
 	{
-		Nz::String login = m_loginArea->GetText();
-		if (login.IsEmpty())
-		{
-			UpdateStatus("Error: blank login", Nz::Color::Red);
-			return;
-		}
-
-		if (login.GetSize() > 20)
-		{
-			UpdateStatus("Error: login is too long", Nz::Color::Red);
-			return;
-		}
-
 		Nz::String serverPort = m_serverPortArea->GetText();
 		if (serverPort.IsEmpty())
 		{
@@ -197,14 +178,13 @@ namespace bw
 		}
 
 		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetStringOption("Player.Name", login.ToStdString());
-		playerConfig.SetIntegerOption("Server.Port", rawPort);
+		playerConfig.SetIntegerValue("Server.Port", rawPort);
 
 		GetStateData().app->SavePlayerConfig();
 
 		try
 		{
-			m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), login.ToStdString());
+			m_nextGameState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort));
 		}
 		catch (const std::exception& e)
 		{
@@ -224,9 +204,8 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 4> widgets = {
+		std::array<Ndk::BaseWidget*, 3> widgets = {
 			m_statusLabel,
-			m_loginArea,
 			m_serverAddressLayout,
 			m_connectionButton
 		};
@@ -242,11 +221,7 @@ namespace bw
 		m_statusLabel->CenterHorizontal();
 		cursor.y += m_statusLabel->GetSize().y + padding;
 
-		m_loginArea->SetPosition({ 0.f, cursor.y, 0.f });
-		m_loginArea->CenterHorizontal();
-		cursor.y += m_loginArea->GetSize().y + padding;
-
-		m_loginLabel->SetPosition(m_loginArea->GetPosition() - Nz::Vector2f(m_loginLabel->GetSize().x, 0.f));
+		m_serverAddressLayout->Resize({ 500.f, 36.f }); //< Force box layout (FIXME)
 
 		m_serverAddressLayout->SetPosition({ 0.f, cursor.y, 0.f });
 		m_serverAddressLayout->CenterHorizontal();
@@ -262,6 +237,7 @@ namespace bw
 		m_startServerButton->CenterHorizontal();
 		cursor.y += m_startServerButton->GetSize().y + padding;
 
+		m_optionButton->SetPosition(10.f, canvasSize.y - m_optionButton->GetSize().y - 10.f);
 		m_quitButton->SetPosition(canvasSize.x - m_quitButton->GetSize().x - 10.f, canvasSize.y - m_quitButton->GetSize().y - 10.f);
 	}
 

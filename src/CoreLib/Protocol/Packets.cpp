@@ -67,7 +67,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, ChatMessage& data)
 		{
 			serializer &= data.localIndex;
-			serializer &= data.playerName;
+			serializer &= data.playerIndex;
 			serializer &= data.content;
 		}
 
@@ -467,6 +467,12 @@ namespace bw
 			serializer &= data.playerIndex;
 		}
 
+		void Serialize(PacketSerializer& serializer, PlayerNameUpdate& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.newName;
+		}
+
 		void Serialize(PacketSerializer& serializer, PlayerJoined& data)
 		{
 			serializer &= data.playerIndex;
@@ -539,6 +545,12 @@ namespace bw
 				serializer.Write(data.content.data(), data.content.size());
 			else
 				serializer.Read(data.content.data(), data.content.size());
+		}
+
+		void Serialize(PacketSerializer& serializer, UpdatePlayerName& data)
+		{
+			serializer &= data.localIndex;
+			serializer &= data.newName;
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayerInputData& input)

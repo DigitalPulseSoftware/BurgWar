@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_PLAYERCONFIGFILE_HPP
-#define BURGWAR_CLIENTLIB_PLAYERCONFIGFILE_HPP
+#ifndef BURGWAR_CLIENTLIB_PLAYERCONFIG_HPP
+#define BURGWAR_CLIENTLIB_PLAYERCONFIG_HPP
 
 #include <CoreLib/ConfigFile.hpp>
 
@@ -13,14 +13,14 @@ namespace bw
 {
 	class BurgApp;
 
-	class PlayerConfigFile : public ConfigFile
+	class PlayerConfig : public ConfigFile
 	{
 		public:
-			PlayerConfigFile(BurgApp& app);
-			~PlayerConfigFile() = default;
+			PlayerConfig(BurgApp& app);
+			~PlayerConfig() = default;
 	};
 }
 
-#include <ClientLib/PlayerConfigFile.inl>
+#include <ClientLib/PlayerConfig.inl>
 
 #endif

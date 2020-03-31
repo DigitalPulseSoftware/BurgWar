@@ -61,9 +61,9 @@ namespace bw
 
 		FillStores();
 
-		const std::string& editorAssetsFolder = m_config.GetStringOption("Assets.EditorFolder");
-		const std::string& gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
-		const std::string& scriptFolder = m_config.GetStringOption("Assets.ScriptFolder");
+		const std::string& editorAssetsFolder = m_config.GetStringValue("Assets.EditorFolder");
+		const std::string& gameResourceFolder = m_config.GetStringValue("Assets.ResourceFolder");
+		const std::string& scriptFolder = m_config.GetStringValue("Assets.ScriptFolder");
 
 		m_assetFolder = std::make_shared<VirtualDirectory>(gameResourceFolder);
 		m_scriptFolder = std::make_shared<VirtualDirectory>(scriptFolder);
@@ -361,7 +361,7 @@ namespace bw
 			}
 		});
 
-		std::filesystem::path gameResourceFolder = m_config.GetStringOption("Assets.ResourceFolder");
+		std::filesystem::path gameResourceFolder = m_config.GetStringValue("Assets.ResourceFolder");
 
 		std::vector<Map::Asset>& assets = m_workingMap.GetAssets();
 		assets.clear();
@@ -1193,7 +1193,7 @@ namespace bw
 	{
 		const ConfigFile& config = GetConfig();
 
-		float tickRate = config.GetFloatOption<float>("GameSettings.TickRate");
+		float tickRate = config.GetFloatValue<float>("GameSettings.TickRate");
 
 		if (m_playWindow)
 			m_playWindow->deleteLater();
