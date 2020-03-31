@@ -79,8 +79,10 @@ namespace bw
 
 	void Camera::MoveToPosition(Nz::Vector2f position)
 	{
-		//position.x = std::round(position.x / m_zoomFactor) * m_zoomFactor;
-		//position.y = std::round(position.y / m_zoomFactor) * m_zoomFactor;
+		//position.x = std::round(position.x / m_zoomFactor) * m_zoomFactor + 0.5f;
+		//position.y = std::round(position.y / m_zoomFactor) * m_zoomFactor + 0.5f;
+		position.x = std::floor(position.x);
+		position.y = std::floor(position.y);
 
 		OnCameraMove(this, position);
 
