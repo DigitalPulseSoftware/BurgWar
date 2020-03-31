@@ -14,6 +14,7 @@
 namespace bw
 {
 	class Logger;
+	class RandomEngine;
 	class ScriptingContext;
 
 	class AbstractScriptingLibrary
@@ -29,6 +30,7 @@ namespace bw
 		protected:
 			virtual void RegisterGlobalLibrary(ScriptingContext& context);
 			virtual void RegisterMetatableLibrary(ScriptingContext& context);
+			virtual sol::usertype<RandomEngine> RegisterRandomEngineClass(ScriptingContext& context);
 
 			const Logger& m_logger;
 	};

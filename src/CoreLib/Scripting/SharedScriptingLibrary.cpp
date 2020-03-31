@@ -43,6 +43,7 @@ namespace bw
 		RegisterMetatableLibrary(context);
 		RegisterNetworkLibrary(context, networkTable);
 		RegisterNetworkPacketClasses(context);
+		RegisterRandomEngineClass(context);
 		RegisterPhysicsLibrary(context, physicsTable);
 		RegisterPlayerMovementControllerClass(context);
 		RegisterScriptLibrary(context, scriptsTable);

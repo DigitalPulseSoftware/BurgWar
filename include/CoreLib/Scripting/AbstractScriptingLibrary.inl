@@ -17,6 +17,7 @@
 namespace bw
 {
 	class Player;
+	class RandomEngine;
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
@@ -38,6 +39,12 @@ namespace sol
 
 	template <>
 	struct is_automagical<bw::PlayerHandle> : std::false_type {};
+
+	template <>
+	struct is_automagical<bw::RandomEngine> : std::false_type {};
+
+	template <>
+	struct is_to_stringable<bw::RandomEngine> : std::false_type{};
 
 	template<>
 	struct lua_size<bw::PlayerInputData> : std::integral_constant<int, 1> {};
