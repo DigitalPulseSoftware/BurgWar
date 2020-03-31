@@ -68,11 +68,9 @@ namespace bw
 			template<typename T> void SendPacket(const T& packet);
 			void SetAdmin(bool isAdmin);
 
-			void Spawn();
-
 			std::string ToString() const;
 
-			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true);
+			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
