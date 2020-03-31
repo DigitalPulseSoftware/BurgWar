@@ -39,7 +39,7 @@ namespace bw
 		m_chatEnteringBox->SetBackgroundColor(Nz::Color(255, 255, 255, 150));
 		m_chatEnteringBox->SetTextColor(Nz::Color::Black);
 		m_chatEnteringBox->SetTextFont(chatboxFont);
-		m_chatEnteringBox->Show(false);
+		m_chatEnteringBox->Hide();
 
 		// Connect every slot
 		m_onTargetChangeSizeSlot.Connect(rt->OnRenderTargetSizeChange, this, &Chatbox::OnRenderTargetSizeChange);
@@ -78,7 +78,7 @@ namespace bw
 				m_chatBox->EnableBackground(false);
 				m_chatboxScrollArea->EnableScrollbar(false);
 				m_chatEnteringBox->Clear();
-				m_chatEnteringBox->Show(false);
+				m_chatEnteringBox->Hide();
 
 				if (!text.IsEmpty())
 					OnChatMessage(text.ToStdString());

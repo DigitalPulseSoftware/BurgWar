@@ -57,7 +57,7 @@ namespace bw
 	m_activeLayerIndex(0xFFFF),
 	m_chatBox(GetLogger(), renderTarget, canvas),
 	m_application(burgApp),
-	m_escapeMenu(renderTarget, canvas),
+	m_escapeMenu(burgApp, canvas),
 	m_session(session),
 	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
@@ -76,12 +76,14 @@ namespace bw
 		for (auto&& layerData : matchData.layers)
 			m_layers.emplace_back(std::make_unique<LocalLayer>(*this, layerIndex++, layerData.backgroundColor));
 
+		auto& playerSettings = burgApp.GetPlayerSettings();
+
 		m_renderWorld.AddSystem<Ndk::DebugSystem>();
 		m_renderWorld.AddSystem<Ndk::ListenerSystem>();
 		m_renderWorld.AddSystem<Ndk::ParticleSystem>();
 		m_renderWorld.AddSystem<Ndk::RenderSystem>();
 		m_renderWorld.AddSystem<AnimationSystem>(*this);
-		m_renderWorld.AddSystem<SoundSystem>();
+		m_renderWorld.AddSystem<SoundSystem>(playerSettings);
 
 		m_colorBackground = Nz::ColorBackground::New(Nz::Color::Black);
 
@@ -228,6 +230,7 @@ namespace bw
 
 		BindEscapeMenu();
 		BindPackets();
+		BindSignals(burgApp, window, canvas);
 	}
 
 	LocalMatch::~LocalMatch()
@@ -824,6 +827,11 @@ namespace bw
 			HandlePlayerLeaving(playerLeaving);
 		});
 		
+		m_session.OnPlayerNameUpdate.Connect([this](ClientSession* /*session*/, const Packets::PlayerNameUpdate& playerNameUpdate)
+		{
+			HandlePlayerNameUpdate(playerNameUpdate);
+		});
+
 		m_session.OnPlayerPingUpdate.Connect([this](ClientSession* /*session*/, const Packets::PlayerPingUpdate& playerPingUpdate)
 		{
 			HandlePlayerPingUpdate(playerPingUpdate);
@@ -840,6 +848,110 @@ namespace bw
 		});
 	}
 
+	void LocalMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas)
+	{
+		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
+		{
+			Packets::PlayerChat chatPacket;
+			chatPacket.localIndex = 0;
+			chatPacket.message = message;
+
+			m_session.SendPacket(chatPacket);
+		});
+
+		m_onGainedFocus.Connect(window->GetEventHandler().OnGainedFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = true;
+		});
+
+		m_onLostFocus.Connect(window->GetEventHandler().OnLostFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		{
+			m_hasFocus = false;
+		});
+
+		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Escape:
+				{
+					m_escapeMenu.Show(!m_escapeMenu.IsVisible());
+					break;
+				}
+
+				case Nz::Keyboard::F9:
+					if (m_remoteConsole)
+						m_remoteConsole->Hide();
+
+					if (m_localConsole)
+						m_localConsole->Show(!m_localConsole->IsVisible());
+
+					break;
+
+				case Nz::Keyboard::F10:
+					if (m_localConsole)
+						m_localConsole->Hide();
+
+					if (m_remoteConsole)
+						m_remoteConsole->Show(!m_remoteConsole->IsVisible());
+
+					break;
+
+				case Nz::Keyboard::Return:
+					m_chatBox.Open(!m_chatBox.IsOpen());
+					break;
+
+				case Nz::Keyboard::Tab:
+				{
+					if (!m_scoreboard)
+						InitializeScoreboard();
+					else
+						m_scoreboard->Show(true);
+
+					break;
+				}
+
+				default:
+					break;
+			}
+		});
+
+		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.code)
+			{
+				case Nz::Keyboard::Tab:
+					if (m_scoreboard)
+						m_scoreboard->Hide();
+
+					break;
+
+				default:
+					break;
+			};
+		});
+
+		m_onRenderTargetSizeChange.Connect(window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
+		{
+			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
+
+			if (m_scoreboard)
+			{
+				m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
+				m_scoreboard->Center();
+			}
+		});
+
+		m_nicknameUpdateSlot.Connect(burgApp.GetPlayerSettings().GetStringUpdateSignal("Player.Name"), [this](const std::string& newValue)
+		{
+			Packets::UpdatePlayerName nameUpdate;
+			nameUpdate.newName = newValue;
+			nameUpdate.localIndex = 0; //< FIXME
+
+			m_session.SendPacket(nameUpdate);
+		});
+	}
+
 	Nz::UInt64 LocalMatch::EstimateServerTick() const
 	{
 		return GetCurrentTick() - m_averageTickError.GetAverageValue();
@@ -847,9 +959,8 @@ namespace bw
 
 	void LocalMatch::HandleChatMessage(const Packets::ChatMessage& packet)
 	{
-		//TODO: Implement local players
-		//TODO: Use gamemode callback
-		if (packet.playerName.empty())
+		//TODO: Implement this in gamemode callback
+		if (packet.playerIndex == Packets::ChatMessage::InvalidPlayer)
 		{
 			m_chatBox.PrintMessage({ 
 				Chatbox::ColorItem { Nz::Color(173, 216, 230) }, // light blue
@@ -858,9 +969,18 @@ namespace bw
 		}
 		else
 		{
+			if (packet.playerIndex >= m_matchPlayers.size())
+				return;
+
+			std::string playerName;
+			if (auto& playerOpt = m_matchPlayers[packet.playerIndex])
+				playerName = playerOpt->GetName();
+			else
+				playerName = "<disconnected>";
+
 			m_chatBox.PrintMessage({ 
 				Chatbox::ColorItem { Nz::Color::Yellow },
-				Chatbox::TextItem { packet.playerName },
+				Chatbox::TextItem { std::move(playerName) },
 				Chatbox::ColorItem { Nz::Color::White },
 				Chatbox::TextItem { ": " },
 				Chatbox::TextItem { packet.content }
@@ -890,17 +1010,32 @@ namespace bw
 			return;
 
 		auto& playerOpt = m_matchPlayers[packet.playerIndex];
+		if (!playerOpt)
+			return;
 
 		m_gamemode->ExecuteCallback("OnPlayerLeave", playerOpt->CreateHandle());
 
 		playerOpt.reset();
 	}
 
+	void LocalMatch::HandlePlayerNameUpdate(const Packets::PlayerNameUpdate& packet)
+	{
+		if (packet.playerIndex >= m_matchPlayers.size())
+			return;
+
+		auto& playerOpt = m_matchPlayers[packet.playerIndex];
+		if (!playerOpt)
+			return;
+
+		m_gamemode->ExecuteCallback("OnPlayerNameUpdate", playerOpt->CreateHandle(), packet.newName);
+		playerOpt->UpdateName(packet.newName);
+	}
+
 	void LocalMatch::HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet)
 	{
 		for (const auto& playerData : packet.players)
 		{
-			if (playerData.playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerData.playerIndex].has_value())
+			if (playerData.playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerData.playerIndex])
 				continue;
 
 			m_matchPlayers[playerData.playerIndex]->UpdatePing(playerData.ping);

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_CONFIGFILE_HPP
 #define BURGWAR_CORELIB_CONFIGFILE_HPP
 
+#include <Nazara/Core/Signal.hpp>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -24,19 +25,24 @@ namespace bw
 			ConfigFile(BurgApp& app);
 			~ConfigFile() = default;
 
-			inline bool GetBoolOption(const std::string& optionName) const;
-			template<typename T> T GetFloatOption(const std::string& optionName) const;
-			template<typename T> T GetIntegerOption(const std::string& optionName) const;
+			inline bool GetBoolValue(const std::string& optionName) const;
+			template<typename T> T GetFloatValue(const std::string& optionName) const;
+			template<typename T> T GetIntegerValue(const std::string& optionName) const;
 			inline std::size_t GetOptionIndex(const std::string& optionName) const;
-			inline const std::string& GetStringOption(const std::string& optionName) const;
+			inline const std::string& GetStringValue(const std::string& optionName) const;
+
+			inline Nz::Signal<bool>& GetBoolUpdateSignal(const std::string& optionName);
+			inline Nz::Signal<double>& GetFloatUpdateSignal(const std::string& optionName);
+			inline Nz::Signal<long long>& GetIntegerUpdateSignal(const std::string& optionName);
+			inline Nz::Signal<const std::string&>& GetStringUpdateSignal(const std::string& optionName);
 
 			bool LoadFromFile(const std::filesystem::path& filePath);
 			bool SaveToFile(const std::filesystem::path& filePath);
 
-			inline void SetBoolOption(const std::string& optionName, bool value);
-			inline void SetFloatOption(const std::string& optionName, double value);
-			inline void SetIntegerOption(const std::string& optionName, long long value);
-			inline void SetStringOption(const std::string& optionName, std::string value);
+			inline bool SetBoolValue(const std::string& optionName, bool value);
+			bool SetFloatValue(const std::string& optionName, double value);
+			bool SetIntegerValue(const std::string& optionName, long long value);
+			inline bool SetStringValue(const std::string& optionName, std::string value);
 
 		protected:
 			inline void RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue = std::nullopt);
@@ -51,6 +57,8 @@ namespace bw
 			{
 				bool value;
 				std::optional<bool> defaultValue;
+
+				NazaraSignal(OnValueUpdate, bool /*newValue*/);
 			};
 
 			struct FloatOption
@@ -59,6 +67,8 @@ namespace bw
 				double minBounds;
 				double value;
 				std::optional<double> defaultValue;
+
+				NazaraSignal(OnValueUpdate, double /*newValue*/);
 			};
 
 			struct IntegerOption
@@ -67,12 +77,16 @@ namespace bw
 				long long minBounds;
 				long long value;
 				std::optional<long long> defaultValue;
+
+				NazaraSignal(OnValueUpdate, long long /*newValue*/);
 			};
 
 			struct StringOption
 			{
 				std::string value;
 				std::optional<std::string> defaultValue;
+
+				NazaraSignal(OnValueUpdate, const std::string& /*newValue*/);
 			};
 
 			using ConfigData = std::variant<BoolOption, FloatOption, IntegerOption, StringOption>;

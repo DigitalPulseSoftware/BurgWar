@@ -9,10 +9,9 @@
 
 namespace bw
 {
-	AuthenticationState::AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, std::string playerName) :
+	AuthenticationState::AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession) :
 	StatusState(std::move(stateData)),
-	m_clientSession(std::move(clientSession)),
-	m_playerName(std::move(playerName))
+	m_clientSession(std::move(clientSession))
 	{
 		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
@@ -50,8 +49,10 @@ namespace bw
 	{
 		StatusState::Enter(fsm);
 
+		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+
 		Packets::Auth authPacket;
-		authPacket.players.emplace_back().nickname = std::move(m_playerName);
+		authPacket.players.emplace_back().nickname = playerConfig.GetStringValue("Player.Name");
 
 		m_clientSession->SendPacket(std::move(authPacket));
 	}

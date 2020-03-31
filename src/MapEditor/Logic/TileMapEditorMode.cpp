@@ -31,7 +31,7 @@ namespace bw
 
 		// Compute tilemap and load materials
 
-		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.ResourceFolder");
+		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Assets.ResourceFolder");
 
 		tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> matPathToIndex;
 
@@ -137,7 +137,7 @@ namespace bw
 			// Warning: "this" is potentially destroyed at this point
 		});
 
-		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringOption("Assets.EditorFolder");
+		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Assets.EditorFolder");
 
 		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tilesetGroups);
 		tileWidget->OnClearMode.Connect([this](TileSelectionWidget* /*tileSelection*/)

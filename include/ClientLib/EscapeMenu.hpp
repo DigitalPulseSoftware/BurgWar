@@ -16,10 +16,13 @@
 
 namespace bw
 {
+	class ClientEditorApp;
+	class OptionWidget;
+
 	class EscapeMenu
 	{
 		public:
-			EscapeMenu(Nz::RenderTarget* rt, Ndk::Canvas* canvas);
+			EscapeMenu(ClientEditorApp& clientEditorApp, Ndk::Canvas* canvas);
 			EscapeMenu(const EscapeMenu&) = delete;
 			EscapeMenu(EscapeMenu&&) = delete;
 			~EscapeMenu();
@@ -37,14 +40,19 @@ namespace bw
 			NazaraSignal(OnQuitApp, EscapeMenu* /*emitter*/);
 
 		private:
-			void OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget);
+			void OnBackButtonPressed();
+			void OnOptionButtonPressed();
 
-			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
+			void Layout();
 
+			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_closeMenuButton;
 			Ndk::ButtonWidget* m_leaveMatchButton;
+			Ndk::ButtonWidget* m_optionsButton;
 			Ndk::ButtonWidget* m_quitAppButton;
 			Ndk::BaseWidget* m_backgroundWidget;
+			ClientEditorApp& m_app;
+			OptionWidget* m_optionWidget;
 	};
 }
 

@@ -2,11 +2,11 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/PlayerConfigFile.hpp>
+#include <ClientLib/PlayerConfig.hpp>
 
 namespace bw
 {
-	PlayerConfigFile::PlayerConfigFile(BurgApp& app) :
+	PlayerConfig::PlayerConfig(BurgApp& app) :
 	ConfigFile(app)
 	{
 		RegisterStringOption("Player.Name", "mingebag");

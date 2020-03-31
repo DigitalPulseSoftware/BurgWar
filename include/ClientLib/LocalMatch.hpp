@@ -130,10 +130,12 @@ namespace bw
 
 			void BindEscapeMenu();
 			void BindPackets();
+			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
 			void HandlePlayerJoined(const Packets::PlayerJoined& packet);
 			void HandlePlayerLeaving(const Packets::PlayerLeaving& packet);
+			void HandlePlayerNameUpdate(const Packets::PlayerNameUpdate& packet);
 			void HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet);
 			void HandleScriptPacket(const Packets::ScriptPacket& packet);
 			void HandleTickPacket(TickPacketContent&& packet);
@@ -222,6 +224,8 @@ namespace bw
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
 			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
 			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
+
+			typename Nz::Signal<const std::string&>::ConnectionGuard m_nicknameUpdateSlot;
 
 			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;

@@ -27,12 +27,12 @@ namespace bw
 
 		FillStores();
 
-		Nz::UInt8 aaLevel = m_config.GetIntegerOption<Nz::UInt8>("WindowSettings.AntialiasingLevel");
-		bool fullscreen = m_config.GetBoolOption("WindowSettings.Fullscreen");
-		bool vsync = m_config.GetBoolOption("WindowSettings.VSync");
-		unsigned int fpsLimit = m_config.GetIntegerOption<unsigned int>("WindowSettings.FPSLimit");
-		unsigned int height = m_config.GetIntegerOption<unsigned int>("WindowSettings.Height");
-		unsigned int width = m_config.GetIntegerOption<unsigned int>("WindowSettings.Width");
+		Nz::UInt8 aaLevel = m_config.GetIntegerValue<Nz::UInt8>("WindowSettings.AntialiasingLevel");
+		bool fullscreen = m_config.GetBoolValue("WindowSettings.Fullscreen");
+		bool vsync = m_config.GetBoolValue("WindowSettings.VSync");
+		unsigned int fpsLimit = m_config.GetIntegerValue<unsigned int>("WindowSettings.FPSLimit");
+		unsigned int height = m_config.GetIntegerValue<unsigned int>("WindowSettings.Height");
+		unsigned int width = m_config.GetIntegerValue<unsigned int>("WindowSettings.Width");
 
 		Nz::VideoMode desktopMode = Nz::VideoMode::GetDesktopMode();
 

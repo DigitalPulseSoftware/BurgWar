@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Jérôme Leclercq
+// Copyright (C) 2019 JÃ©rÃ´me Leclercq
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -28,6 +28,11 @@ namespace bw
 		return m_playerIndex;
 	}
 	
+	inline void LocalPlayer::UpdateName(std::string name)
+	{
+		m_name = std::move(name);
+	}
+
 	inline void LocalPlayer::UpdatePing(Nz::UInt16 ping)
 	{
 		m_ping = ping;

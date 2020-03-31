@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/ConfigFile.hpp>
-#include <Nazara/Core/Error.hpp>
+#include <cassert>
 #include <limits>
 #include <stdexcept>
 
@@ -14,21 +14,21 @@ namespace bw
 	{
 	}
 
-	inline bool ConfigFile::GetBoolOption(const std::string& optionName) const
+	inline bool ConfigFile::GetBoolValue(const std::string& optionName) const
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 		return std::get<BoolOption>(m_options[optionIndex].data).value;
 	}
 
 	template<typename T>
-	T ConfigFile::GetFloatOption(const std::string& optionName) const
+	T ConfigFile::GetFloatValue(const std::string& optionName) const
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 		return static_cast<T>(std::get<FloatOption>(m_options[optionIndex].data).value);
 	}
 
 	template<typename T>
-	T ConfigFile::GetIntegerOption(const std::string& optionName) const
+	T ConfigFile::GetIntegerValue(const std::string& optionName) const
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 
@@ -68,15 +68,39 @@ namespace bw
 	inline std::size_t ConfigFile::GetOptionIndex(const std::string& optionName) const
 	{
 		auto it = m_optionByName.find(optionName);
-		NazaraAssert(it != m_optionByName.end(), "Options does not exist");
+		assert(it != m_optionByName.end());
 
 		return it->second;
 	}
 
-	inline const std::string& ConfigFile::GetStringOption(const std::string& optionName) const
+	inline const std::string& ConfigFile::GetStringValue(const std::string& optionName) const
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 		return std::get<StringOption>(m_options[optionIndex].data).value;
+	}
+
+	inline Nz::Signal<bool>& ConfigFile::GetBoolUpdateSignal(const std::string& optionName)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<BoolOption>(m_options[optionIndex].data).OnValueUpdate;
+	}
+
+	inline Nz::Signal<double>& ConfigFile::GetFloatUpdateSignal(const std::string& optionName)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<FloatOption>(m_options[optionIndex].data).OnValueUpdate;
+	}
+
+	inline Nz::Signal<long long>& ConfigFile::GetIntegerUpdateSignal(const std::string& optionName)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<IntegerOption>(m_options[optionIndex].data).OnValueUpdate;
+	}
+
+	inline Nz::Signal<const std::string&>& ConfigFile::GetStringUpdateSignal(const std::string& optionName)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+		return std::get<StringOption>(m_options[optionIndex].data).OnValueUpdate;
 	}
 
 	inline void ConfigFile::RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue)
@@ -125,31 +149,31 @@ namespace bw
 		RegisterOption(std::move(optionName), std::move(strOption));
 	}
 
-	inline void ConfigFile::SetBoolOption(const std::string& optionName, bool value)
+	inline bool ConfigFile::SetBoolValue(const std::string& optionName, bool value)
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<BoolOption>(m_options[optionIndex].data).value = value;
+		BoolOption& option = std::get<BoolOption>(m_options[optionIndex].data);
+		if (option.value != value)
+		{
+			option.OnValueUpdate(value);
+			option.value = value;
+		}
+
+		return true;
 	}
 
-	inline void ConfigFile::SetFloatOption(const std::string& optionName, double value)
+	inline bool ConfigFile::SetStringValue(const std::string& optionName, std::string value)
 	{
 		std::size_t optionIndex = GetOptionIndex(optionName);
 
-		std::get<FloatOption>(m_options[optionIndex].data).value = value;
-	}
+		StringOption& option = std::get<StringOption>(m_options[optionIndex].data);
+		if (option.value != value)
+		{
+			option.OnValueUpdate(value);
+			option.value = value;
+		}
 
-	inline void ConfigFile::SetIntegerOption(const std::string& optionName, long long value)
-	{
-		std::size_t optionIndex = GetOptionIndex(optionName);
-
-		std::get<IntegerOption>(m_options[optionIndex].data).value = value;
-	}
-
-	inline void ConfigFile::SetStringOption(const std::string& optionName, std::string value)
-	{
-		std::size_t optionIndex = GetOptionIndex(optionName);
-
-		std::get<StringOption>(m_options[optionIndex].data).value = value;
+		return true;
 	}
 }
