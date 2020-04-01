@@ -78,7 +78,6 @@ function ENTITY:Retract()
 		local elapsedTime = match.GetSeconds() - self.startTime
 		if (elapsedTime > 0) then 
 			self.retractTime = math.min(elapsedTime, self:GetProperty("duration"))
-			print("Retract time", self.retractTime)
 
 			self.isRetracting = true
 			self.startTime = match.GetSeconds()

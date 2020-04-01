@@ -43,11 +43,17 @@ function vec2meta.__mul(lhs, rhs)
 	end
 end
 
-function vec2meta:__div(divider)
-	if (getmetatable(divider) == vec2meta) then
-		return Vec2(self.x / divider.x, self.y / divider.y)
-	elseif (type(divider) == "number") then
-		return Vec2(self.x / divider, self.y / divider)
+function vec2meta.__div(lhs, rhs)
+	if (getmetatable(lhs) == vec2meta) then
+		if (getmetatable(rhs) == vec2meta) then
+			return Vec2(lhs.x / rhs.x, lhs.y / rhs.y)
+		elseif (type(rhs) == "number") then
+			return Vec2(lhs.x / rhs, lhs.y / rhs)
+		end
+	elseif (type(lhs) == "number") then
+		assert(getmetatable(rhs) == vec2meta)
+
+		return Vec2(lhs / rhs.x, lhs / rhs.y)
 	else
 		error("Divider must be a vector2 or a number")
 	end

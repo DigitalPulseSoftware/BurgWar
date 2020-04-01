@@ -4,6 +4,7 @@ ENTITY.IsNetworked = true
 
 ENTITY.Properties = {
 	{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
+	{ Name = "transition_time", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true }
 }
 
 function ENTITY:Initialize()
@@ -20,7 +21,7 @@ function ENTITY:Initialize()
 			RenderOrder = 2000,
 			Size = Vec2(rect.width, lineWidth),
 		})
-		
+
 		-- Right
 		self:AddSprite({
 			Color = color,
@@ -54,4 +55,8 @@ function ENTITY:GetRect()
 	local size = self:GetProperty("size")
 
 	return Rect(position, position + size)
+end
+
+function ENTITY:GetTransitionTime()
+	return self:GetProperty("transition_time")
 end
