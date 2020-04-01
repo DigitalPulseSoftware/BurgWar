@@ -38,13 +38,14 @@ namespace bw
 
 			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 			{
+				Nz::CallOnExit resetOnExit([this, currentFile = std::move(m_currentFile), currentFolder = std::move(m_currentFolder)] () mutable
+				{
+					m_currentFile = std::move(currentFile);
+					m_currentFolder = std::move(currentFolder);
+				});
+
 				m_currentFile = folderOrFile;
 				m_currentFolder = folderOrFile.parent_path();
-				Nz::CallOnExit resetOnExit([&]
-				{
-					m_currentFile.clear();
-					m_currentFolder.clear();
-				});
 
 				sol::state& state = GetLuaState();
 				sol::protected_function_result result;
