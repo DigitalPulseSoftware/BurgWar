@@ -8,6 +8,12 @@
 
 namespace bw
 {
+	namespace
+	{
+		constexpr float optionPadding = 5.f;
+		constexpr float optionSpace = 10.f;
+	}
+
 	OptionWidget::OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig) :
 	BaseWidget(parent),
 	m_activeSection(nullptr),
@@ -36,6 +42,14 @@ namespace bw
 			OnApply();
 		});
 		
+		m_backButton = Add<Ndk::ButtonWidget>();
+		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
+		m_backButton->Resize(m_backButton->GetPreferredSize());
+		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		{
+			OnBack();
+		});
+		
 		m_resetButton = Add<Ndk::ButtonWidget>();
 		m_resetButton->UpdateText(Nz::SimpleTextDrawer::Draw("Reset", 24));
 		m_resetButton->Resize(m_resetButton->GetPreferredSize());
@@ -44,7 +58,7 @@ namespace bw
 			OnReset();
 		});
 
-		LayoutOptions();
+		PostInit();
 	}
 	
 	void OptionWidget::AddSection(std::string sectionName)
@@ -173,17 +187,8 @@ namespace bw
 
 		m_activeSection->options.emplace_back(std::move(option));
 	}
-	
-	void OptionWidget::InitOption(Option& option, std::string keyName, const std::string_view& label)
-	{
-		option.keyName = std::move(keyName);
 
-		option.label = Add<Ndk::LabelWidget>();
-		option.label->UpdateText(Nz::SimpleTextDrawer::Draw(std::string(label), 24)); //< FIXME: Nazara-next
-		option.label->Resize(option.label->GetPreferredSize());
-	}
-
-	void OptionWidget::OnApply()
+	void OptionWidget::ApplyOptions()
 	{
 		for (auto&& [optionName, optionValue] : m_updatedValues)
 		{
@@ -205,9 +210,59 @@ namespace bw
 			}, optionValue);
 		}
 		m_updatedValues.clear();
+	}
+	
+	void OptionWidget::InitOption(Option& option, std::string keyName, const std::string_view& label)
+	{
+		option.keyName = std::move(keyName);
+
+		option.label = Add<Ndk::LabelWidget>();
+		option.label->UpdateText(Nz::SimpleTextDrawer::Draw(std::string(label), 24)); //< FIXME: Nazara-next
+		option.label->Resize(option.label->GetPreferredSize());
+	}
+
+	void OptionWidget::Layout()
+	{
+		BaseWidget::Layout();
+
+		Nz::Vector2f size = GetSize();
+
+		for (auto&& [_, section] : m_sections)
+		{
+			float cursor = 0.f;
+			for (OptionType& option : section.options)
+			{
+				std::visit([&](auto&& arg)
+				{
+					arg.label->SetPosition(size.x - arg.label->GetWidth() - arg.optionWidget->GetWidth() - optionSpace, cursor);
+					arg.optionWidget->SetPosition(size.x - arg.optionWidget->GetWidth(), cursor);
+					
+					cursor += std::max(arg.label->GetHeight(), arg.optionWidget->GetHeight()) + optionPadding;
+				}, option);
+			}
+		}
+
+		float cursor = size.x;
+		for (Ndk::ButtonWidget* button : { m_applyButton, m_resetButton, m_backButton })
+		{
+			button->SetPosition(cursor - button->GetWidth(), size.y - button->GetHeight());
+			cursor -= button->GetWidth() + 10.f;
+		}
+	}
+
+	void OptionWidget::OnApply()
+	{
+		ApplyOptions();
 
 		// Reload config values in case some where invalid
 		LoadConfigValues();
+	}
+
+	void OptionWidget::OnBack()
+	{
+		ApplyOptions();
+
+		OnBackButtonTriggered(this);
 	}
 
 	void OptionWidget::OnReset()
@@ -215,7 +270,7 @@ namespace bw
 		LoadConfigValues();
 	}
 
-	void OptionWidget::LayoutOptions()
+	void OptionWidget::PostInit()
 	{
 		Nz::Vector2f minSize = Nz::Vector2f::Zero();
 
@@ -246,17 +301,11 @@ namespace bw
 
 		for (auto&& [_, section] : m_sections)
 		{
-			constexpr float optionPadding = 5.f;
-			constexpr float optionSpace = 10.f;
-
 			float cursor = 0.f;
 			for (OptionType& option : section.options)
 			{
 				std::visit([&](auto&& arg)
 				{
-					arg.label->SetPosition(minSize.x - arg.label->GetWidth() - arg.optionWidget->GetWidth() - optionSpace, cursor);
-					arg.optionWidget->SetPosition(minSize.x - arg.optionWidget->GetWidth(), cursor);
-
 					cursor += std::max(arg.label->GetHeight(), arg.optionWidget->GetHeight()) + optionPadding;
 				}, option);
 			}
@@ -266,11 +315,9 @@ namespace bw
 
 		minSize.y = std::max(minSize.y, optionHeight) + std::max(m_applyButton->GetHeight(), m_resetButton->GetHeight());
 
-		m_resetButton->SetPosition(minSize - m_resetButton->GetSize());
-		m_applyButton->SetPosition(minSize.x - m_applyButton->GetWidth() - m_resetButton->GetWidth() - 10, minSize.y - m_applyButton->GetHeight());
-
 		SetMinimumSize(minSize);
 		SetPreferredSize(minSize);
+		SetMaximumSize(minSize * Nz::Vector2f(1.5f, 2.f));
 	}
 
 	void OptionWidget::LoadConfigValues()
@@ -306,6 +353,7 @@ namespace bw
 	void OptionWidget::ShowChildren(bool show)
 	{
 		m_applyButton->Show(show);
+		m_backButton->Show(show);
 		m_resetButton->Show(show);
 
 		for (auto&& [sectionName, sectionData] : m_sections)

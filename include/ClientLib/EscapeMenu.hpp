@@ -45,7 +45,6 @@ namespace bw
 
 			void Layout();
 
-			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_closeMenuButton;
 			Ndk::ButtonWidget* m_leaveMatchButton;
 			Ndk::ButtonWidget* m_optionsButton;

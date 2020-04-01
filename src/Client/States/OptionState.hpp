@@ -32,7 +32,6 @@ namespace bw
 
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextState;
-			Ndk::ButtonWidget* m_backButton;
 			OptionWidget* m_optionWidget;
 	};
 }

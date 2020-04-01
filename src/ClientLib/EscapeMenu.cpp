@@ -49,14 +49,9 @@ namespace bw
 		m_optionWidget->SetPosition(10.f, 10.f);
 		m_optionWidget->Hide();
 		
-		m_backButton = m_backgroundWidget->Add<Ndk::ButtonWidget>();
-		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 30));
-		m_backButton->Resize(m_backButton->GetPreferredSize());
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*) {
+		m_optionWidget->OnBackButtonTriggered.Connect([this](OptionWidget*) {
 			OnBackButtonPressed();
 		});
-		m_backButton->SetPosition(10.f, m_optionWidget->GetHeight() + 10.f);
-		m_backButton->Hide();
 
 		Layout();
 
@@ -74,7 +69,6 @@ namespace bw
 		{
 			m_backgroundWidget->Show(shouldOpen);
 
-			m_backButton->Hide();
 			m_optionWidget->Hide();
 
 			Layout();
@@ -85,7 +79,6 @@ namespace bw
 	{
 		m_app.SavePlayerConfig();
 
-		m_backButton->Hide();
 		m_optionWidget->Hide();
 
 		m_closeMenuButton->Show();
@@ -98,7 +91,6 @@ namespace bw
 
 	void EscapeMenu::OnOptionButtonPressed()
 	{
-		m_backButton->Show();
 		m_optionWidget->Show();
 
 		m_closeMenuButton->Hide();
@@ -143,7 +135,6 @@ namespace bw
 		{
 			Nz::Vector2f backgroundSize = m_optionWidget->GetSize();
 			backgroundSize += Nz::Vector2f(20.f);
-			backgroundSize.y += m_backButton->GetHeight() + 10.f;
 
 			m_backgroundWidget->Resize(backgroundSize);
 		}

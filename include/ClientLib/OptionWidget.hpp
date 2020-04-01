@@ -30,6 +30,8 @@ namespace bw
 			OptionWidget& operator=(const OptionWidget&) = delete;
 			OptionWidget& operator=(OptionWidget&&) = delete;
 
+			NazaraSignal(OnBackButtonTriggered, OptionWidget* /*optionWidget*/);
+
 		private:
 			struct Option;
 
@@ -39,13 +41,17 @@ namespace bw
 			void AddIntegerOption(std::string keyName, const std::string_view& label);
 			void AddStringOption(std::string keyName, const std::string_view& label);
 
+			void ApplyOptions();
+
 			void InitOption(Option& option, std::string keyName, const std::string_view& label);
+			void Layout() override;
+
+			void PostInit();
+			void LoadConfigValues();
 
 			void OnApply();
+			void OnBack();
 			void OnReset();
-
-			void LayoutOptions();
-			void LoadConfigValues();
 
 			void ShowChildren(bool show) override;
 
@@ -100,6 +106,7 @@ namespace bw
 			std::unordered_map<std::string /*optionName*/, OptionValue> m_updatedValues;
 			Section* m_activeSection;
 			Ndk::ButtonWidget* m_applyButton;
+			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_resetButton;
 			ConfigFile& m_playerConfig;
 			bool m_ignoreWidgetUpdate;

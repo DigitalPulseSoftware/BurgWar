@@ -17,11 +17,7 @@ namespace bw
 		m_optionWidget->EnableBackground(true);
 		m_optionWidget->SetBackgroundColor(Nz::Color(0, 0, 0, 80));
 
-		m_backButton = CreateWidget<Ndk::ButtonWidget>();
-		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
-		m_backButton->Resize(m_backButton->GetPreferredSize());
-		
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_optionWidget->OnBackButtonTriggered.Connect([this](OptionWidget*)
 		{
 			OnBackPressed();
 		});
@@ -46,10 +42,8 @@ namespace bw
 	{
 		Nz::Vector2f canvasSize = GetStateData().canvas->GetSize();
 
-		m_optionWidget->Resize(canvasSize * 0.75f);
+		m_optionWidget->Resize(canvasSize * 0.5f);
 		m_optionWidget->Center();
-
-		m_backButton->SetPosition(canvasSize.x - 10.f - m_backButton->GetWidth(), canvasSize.y - 10.f - m_backButton->GetHeight());
 	}
 	
 	void OptionState::OnBackPressed()
