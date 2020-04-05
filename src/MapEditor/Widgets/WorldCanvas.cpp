@@ -14,6 +14,7 @@ namespace bw
 {
 	WorldCanvas::WorldCanvas(QWidget* parent) :
 	NazaraCanvas(parent),
+	m_backgroundColor(Nz::Color::Black),
 	m_camera(m_world, this, true),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
@@ -87,6 +88,8 @@ namespace bw
 
 	void WorldCanvas::UpdateBackgroundColor(Nz::Color color)
 	{
+		OnBackgroundColorUpdate(this, color);
+		m_backgroundColor = color;
 		m_world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(color));
 	}
 

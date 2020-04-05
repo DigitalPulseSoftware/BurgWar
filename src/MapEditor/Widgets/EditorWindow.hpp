@@ -149,6 +149,9 @@ namespace bw
 			QAction* m_playMap;
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;
+			QAction* m_showBackgroundColor;
+			QAction* m_showColliders;
+			QAction* m_showGrid;
 			QMenu* m_layerMenu;
 			QMenu* m_mapMenu;
 			QTabWidget* m_centralTab;

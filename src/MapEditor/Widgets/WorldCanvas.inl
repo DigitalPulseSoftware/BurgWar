@@ -6,6 +6,11 @@
 
 namespace bw
 {
+	inline const Nz::Color& WorldCanvas::GetBackgroundColor() const
+	{
+		return m_backgroundColor;
+	}
+
 	inline const CameraMovement& WorldCanvas::GetCameraController() const
 	{
 		return *m_cameraMovement;

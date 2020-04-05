@@ -48,6 +48,10 @@ namespace bw
 	namespace
 	{
 		constexpr std::size_t MaxRecentFiles = 4;
+		const char* settings_recentFiles = "recentFiles";
+		const char* settings_showBackgroundColor = "showLayerBackgroundColor";
+		const char* settings_showColliders = "showColliders";
+		const char* settings_showGrid = "showGrid";
 	}
 
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
@@ -171,6 +175,12 @@ namespace bw
 
 		m_currentMode = std::make_shared<BasicEditorMode>(*this);
 		m_currentMode->OnEnter();
+
+		// Apply settings
+		QSettings settings;
+		m_showBackgroundColor->setChecked(settings.value(settings_showBackgroundColor, false).toBool());
+		m_showColliders->setChecked(settings.value(settings_showColliders, false).toBool());
+		m_showGrid->setChecked(settings.value(settings_showGrid, true).toBool());
 
 		statusBar()->showMessage(tr("Ready"), 0);
 	}
@@ -336,14 +346,14 @@ namespace bw
 	void EditorWindow::AddToRecentFileList(const QString& mapFolder)
 	{
 		QSettings settings;
-		QStringList recentlyOpenedMaps = settings.value("recentFiles").toStringList();
+		QStringList recentlyOpenedMaps = settings.value(settings_recentFiles).toStringList();
 
 		recentlyOpenedMaps.removeAll(mapFolder);
 		recentlyOpenedMaps.prepend(mapFolder);
 		while (recentlyOpenedMaps.size() > int(MaxRecentFiles))
 			recentlyOpenedMaps.removeLast();
 
-		settings.setValue("recentFiles", recentlyOpenedMaps);
+		settings.setValue(settings_recentFiles, recentlyOpenedMaps);
 
 		RefreshRecentFileListMenu(recentlyOpenedMaps);
 	}
@@ -607,11 +617,40 @@ namespace bw
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
 		{
-			QAction* showCollider = showMenu->addAction("Show colliders");
-			showCollider->setCheckable(true);
-			connect(showCollider, &QAction::toggled, [this](bool checked)
+			m_showColliders = showMenu->addAction(tr("Show colliders"));
+			m_showColliders->setCheckable(true);
+
+			connect(m_showColliders, &QAction::toggled, [this](bool checked)
 			{
 				m_canvas->EnablePhysicsDebugDraw(checked);
+
+				QSettings().setValue(settings_showColliders, checked);
+			});
+
+			m_showGrid = showMenu->addAction(tr("Show grid"));
+			m_showGrid->setCheckable(true);
+
+			connect(m_showGrid, &QAction::toggled, [this](bool checked)
+			{
+				m_canvas->ShowGrid(checked);
+				
+				QSettings().setValue(settings_showGrid, checked);
+			});
+
+			m_showBackgroundColor = showMenu->addAction(tr("Show background"));
+			m_showBackgroundColor->setCheckable(true);
+
+			connect(m_showBackgroundColor, &QAction::toggled, [this](bool checked)
+			{
+				if (checked)
+				{
+					if (m_currentLayer)
+						m_canvas->UpdateBackgroundColor(m_workingMap.GetLayer(*m_currentLayer).backgroundColor);
+				}
+				else
+					m_canvas->UpdateBackgroundColor(Nz::Color::Black);
+
+				QSettings().setValue(settings_showBackgroundColor, checked);
 			});
 		}
 
@@ -695,7 +734,7 @@ namespace bw
 	void EditorWindow::RefreshRecentFileListMenu()
 	{
 		QSettings settings;
-		QStringList recentMaps = settings.value("recentFiles").toStringList();
+		QStringList recentMaps = settings.value(settings_recentFiles).toStringList();
 
 		RefreshRecentFileListMenu(recentMaps);
 	}
@@ -726,7 +765,7 @@ namespace bw
 
 		const auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
 
-		QString warningText = tr("You are about to align all entities from layer #%1 %2, are you sure?").arg(QString::number(currentLayerIndex + 1)).arg(QString::fromStdString(layerData.name));
+		QString warningText = tr("You are about to align all entities from layer %1, are you sure?").arg(QString::fromStdString(layerData.name));
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 			AlignLayerEntities(currentLayerIndex);
@@ -1038,7 +1077,8 @@ namespace bw
 			auto& layer = m_workingMap.GetLayer(layerIndex);
 
 			layer.backgroundColor = layerInfo.backgroundColor;
-			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
+			if (m_showBackgroundColor->isChecked())
+				m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
 			bool resetItemName = false;
 			if (layer.name != layerInfo.name)
@@ -1140,7 +1180,8 @@ namespace bw
 		assert(layerIdx < m_workingMap.GetLayerCount());
 		auto& layer = m_workingMap.GetLayer(layerIdx);
 
-		m_canvas->UpdateBackgroundColor(layer.backgroundColor);
+		if (m_showBackgroundColor->isChecked())
+			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
 		m_canvas->ClearEntities();
 		m_entityIndexes.clear();
