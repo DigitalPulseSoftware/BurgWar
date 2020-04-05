@@ -92,7 +92,7 @@ namespace bw
 		renderSystem.SetDefaultBackground(m_colorBackground);
 
 		m_camera.emplace(m_renderWorld, renderTarget, true);
-		m_camera->SetZoomFactor(1.25f);
+		m_camera->SetZoomFactor(0.8f);
 
 		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer->AddComponent<Ndk::NodeComponent>();
@@ -418,7 +418,7 @@ namespace bw
 
 		state["engine_GetCameraViewport"] = [&]()
 		{
-			return Nz::Vector2f(m_renderTarget->GetSize()) * m_camera->GetZoomFactor();
+			return Nz::Vector2f(m_renderTarget->GetSize()) / m_camera->GetZoomFactor();
 		};
 
 		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)

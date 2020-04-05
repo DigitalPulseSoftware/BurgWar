@@ -20,7 +20,7 @@ namespace bw
 		auto& camera = m_cameraEntity->AddComponent<Ndk::CameraComponent>();
 		camera.SetFOV(fov);
 		camera.SetTarget(renderTarget);
-		camera.SetZFar(10000.f);
+		camera.SetZFar(20000.f);
 
 		m_cameraEntity->AddComponent<Ndk::NodeComponent>();
 
@@ -149,7 +149,7 @@ namespace bw
 		auto& entityCamera = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
 		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
 
-		Nz::Vector2f viewportSize = m_zoomFactor * Nz::Vector2f(entityCamera.GetTarget()->GetSize());
+		Nz::Vector2f viewportSize = Nz::Vector2f(entityCamera.GetTarget()->GetSize()) / m_zoomFactor;
 		//viewportSize.x = std::round(viewportSize.x);
 		//viewportSize.y = std::round(viewportSize.y);
 

@@ -8,8 +8,8 @@
 #include <NDK/World.hpp>
 
 constexpr float zoomLevel = 10.f;
-constexpr float maxZoomLevel = zoomLevel - 1.f;
-constexpr float minZoomLevel = -zoomLevel;
+constexpr float maxZoomLevel = zoomLevel;
+constexpr float minZoomLevel = -zoomLevel + 1;
 
 namespace bw
 {
@@ -26,9 +26,8 @@ namespace bw
 	float CameraMovement::ComputeZoomFactor() const
 	{
 		constexpr float minZoomFactor = 1.f / zoomLevel;
-		constexpr float halfZoomLevel = zoomLevel / 2.f;
 
-		return minZoomFactor + (zoomLevel + m_zoomLevel) * minZoomFactor;
+		return minZoomFactor + (zoomLevel - m_zoomLevel) * minZoomFactor;
 	}
 
 	bool CameraMovement::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
