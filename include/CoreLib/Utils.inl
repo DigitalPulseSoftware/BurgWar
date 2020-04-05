@@ -4,6 +4,7 @@
 
 #include <CoreLib/Utils.hpp>
 #include <cassert>
+#include <cmath>
 
 namespace bw
 {
@@ -13,6 +14,18 @@ namespace bw
 		float cosy_cosp = 1.f - 2.f * (quat.y * quat.y + quat.z * quat.z);
 
 		return std::atan2(siny_cosp, cosy_cosp); //<FIXME: not very efficient
+	}
+
+	template<typename T> 
+	Nz::Vector2<T> AlignPosition(Nz::Vector2<T> position, const Nz::Vector2<T>& alignment)
+	{
+		assert(alignment.x > T(0));
+		assert(alignment.y > T(0));
+
+		position.x = std::round(position.x / alignment.x) * alignment.x;
+		position.y = std::round(position.y / alignment.y) * alignment.y;
+
+		return position;
 	}
 
 	template<typename T>

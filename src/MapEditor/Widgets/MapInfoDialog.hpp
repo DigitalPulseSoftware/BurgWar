@@ -9,7 +9,6 @@
 
 #include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
-#include <filesystem>
 
 class QLineEdit;
 class QTextEdit;

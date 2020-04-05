@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_UTILS_HPP
 
 #include <Nazara/Math/Quaternion.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <string>
 #include <type_traits>
@@ -62,6 +63,7 @@ namespace bw
 	inline constexpr bool IsSameTpl_v = IsSameTpl<T, U>::value;
 
 	inline Nz::RadianAnglef AngleFromQuaternion(const Nz::Quaternionf& quat);
+	template<typename T> Nz::Vector2<T> AlignPosition(Nz::Vector2<T> position, const Nz::Vector2<T>& alignment);
 	std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
 	Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);
 	template<typename T> bool IsMoreRecent(T a, T b);

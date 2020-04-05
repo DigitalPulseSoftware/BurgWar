@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
+#include <CoreLib/Utils.hpp>
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/DebugComponent.hpp>
@@ -12,11 +13,12 @@
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Camera& camera, Ndk::Entity* entity) :
+	PositionGizmo::PositionGizmo(Camera& camera, Ndk::Entity* entity, const Nz::Vector2f& positionAlignment) :
 	EditorGizmo(entity),
 	m_camera(camera),
 	m_hoveredAction(MovementType::None),
-	m_movementType(MovementType::None)
+	m_movementType(MovementType::None),
+	m_positionAlignment(positionAlignment)
 	{
 		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red;
 		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue;
@@ -168,8 +170,10 @@ namespace bw
 
 			Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
 
+			Nz::Vector2f newPosition = AlignPosition(m_originalPosition + allowedMovement * delta, m_positionAlignment);
+
 			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-			node.SetPosition(m_originalPosition + allowedMovement * delta, Nz::CoordSys_Global);
+			node.SetPosition(newPosition, Nz::CoordSys_Global);
 
 			return true;
 		}

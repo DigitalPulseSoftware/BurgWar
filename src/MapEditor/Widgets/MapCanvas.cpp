@@ -38,13 +38,13 @@ namespace bw
 
 		m_mapEntities.Clear();
 
-		m_onGizmoEntityDestroyed.Disconnect(); //< Force disconnection because entity destruction does not occur until the world next update
-		m_entityGizmo.reset();
+		ClearEntitySelection(); //< Force disconnection because entity destruction does not occur until the world next update
 	}
 
 	void MapCanvas::ClearEntitySelection()
 	{
 		m_onGizmoEntityDestroyed.Disconnect();
+		m_onLayerAlignmentUpdate.Disconnect(); //< Used by position gizmo
 		m_entityGizmo.reset();
 	}
 
@@ -97,10 +97,25 @@ namespace bw
 		if (!entity)
 			return;
 
-		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), entity);
+		const Map& mapData = m_editor.GetWorkingMap();
+		const auto& currentLayerOpt = m_editor.GetCurrentLayer();
+		assert(currentLayerOpt);
+
+		const Map::Layer& layerData = mapData.GetLayer(*currentLayerOpt);
+
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), entity, layerData.positionAlignment);
 		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
 		{
 			OnEntityPositionUpdated(this, entityId, newPosition);
+		});
+
+		m_onLayerAlignmentUpdate.Connect(m_editor.OnLayerAlignmentUpdate, [this, gizmo = positionGizmo.get()](EditorWindow* /*editor*/, std::size_t layerIndex, const Nz::Vector2f& newAlignment)
+		{
+			auto currentLayerOpt = m_editor.GetCurrentLayer();
+			if (!currentLayerOpt || *currentLayerOpt != layerIndex)
+				return;
+
+			gizmo->UpdatePositionAlignment(newAlignment);
 		});
 
 		m_entityGizmo = std::move(positionGizmo);
@@ -109,7 +124,7 @@ namespace bw
 			assert(m_entityGizmo->GetTargetEntity() == entity);
 			NazaraUnused(entity);
 
-			m_entityGizmo.reset();
+			ClearEntitySelection();
 		});
 	}
 

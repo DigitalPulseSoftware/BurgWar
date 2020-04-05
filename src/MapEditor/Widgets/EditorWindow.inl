@@ -7,6 +7,11 @@
 
 namespace bw
 {
+	inline const std::optional<std::size_t>& EditorWindow::GetCurrentLayer() const
+	{
+		return m_currentLayer;
+	}
+
 	inline std::size_t EditorWindow::GetEntityIndex(Ndk::EntityId entityId) const
 	{
 		auto it = m_entityIndexes.find(entityId);
@@ -28,6 +33,11 @@ namespace bw
 	inline const MapCanvas* EditorWindow::GetMapCanvas() const
 	{
 		return m_canvas;
+	}
+
+	inline const Map& EditorWindow::GetWorkingMap() const
+	{
+		return m_workingMap;
 	}
 
 	template<typename T>

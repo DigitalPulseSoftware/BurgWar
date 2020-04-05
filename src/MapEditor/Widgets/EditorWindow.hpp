@@ -44,11 +44,15 @@ namespace bw
 			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
+			inline const std::optional<std::size_t>& GetCurrentLayer() const;
+
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
 			inline const EditorEntityStore& GetEntityStore() const;
 
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;
+
+			inline const Map& GetWorkingMap() const;
 
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
 
@@ -57,10 +61,13 @@ namespace bw
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
+			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, std::size_t /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);
+
 		private:
 			bool event(QEvent* e) override;
 
 			void AddToRecentFileList(const QString& mapFolder);
+			void AlignLayerEntities(std::size_t layerIndex);
 
 			void BuildAssetList();
 			void BuildEntityList(const std::string& editorAssetsFolder);
@@ -74,6 +81,7 @@ namespace bw
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
+			void OnAlignEntities();
 			void OnCloneEntity(std::size_t entityIndex);
 			void OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex);
 			void OnCloneLayer(std::size_t layerIndex);
@@ -86,18 +94,19 @@ namespace bw
 			void OnDeleteLayer(std::size_t layerIndex);
 			void OnEditEntity(std::size_t entityIndex);
 			void OnEditLayer(std::size_t layerIndex);
-			void OnEntityMovedUp();
 			void OnEntityMovedDown();
+			void OnEntityMovedUp();
 			void OnEntitySelectionUpdate(int entityIndex);
 			void OnLayerChanged(int layerIndex);
-			void OnLayerMovedUp();
 			void OnLayerMovedDown();
+			void OnLayerMovedUp();
 			void OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer);
 			void OnOpenMap();
 			void OnOpenRecentMap();
 			void OnPerspectiveSwitch(bool enable);
 			void OnPlayMap();
 			void OnSaveMap();
+			void OnSetAlignment();
 
 			void OpenMap(const QString& mapFolder);
 
@@ -140,6 +149,7 @@ namespace bw
 			QAction* m_playMap;
 			QAction* m_saveMap;
 			QAction* m_saveMapToolbar;
+			QMenu* m_layerMenu;
 			QMenu* m_mapMenu;
 			QTabWidget* m_centralTab;
 			EntityInfoDialog* m_entityInfoDialog;

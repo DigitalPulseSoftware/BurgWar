@@ -21,12 +21,14 @@ namespace bw
 	class PositionGizmo : public EditorGizmo
 	{
 		public:
-			PositionGizmo(Camera& camera, Ndk::Entity* entity);
+			PositionGizmo(Camera& camera, Ndk::Entity* entity, const Nz::Vector2f& positionAlignment);
 			~PositionGizmo();
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
+
+			inline void UpdatePositionAlignment(const Nz::Vector2f& positionAlignment);
 
 			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*newPosition*/);
 
@@ -47,8 +49,9 @@ namespace bw
 			MovementType m_hoveredAction;
 			MovementType m_movementType;
 			Ndk::EntityOwner m_arrowEntity;
-			Nz::Vector2f m_originalPosition;
 			Nz::Vector2f m_movementStartPos;
+			Nz::Vector2f m_originalPosition;
+			Nz::Vector2f m_positionAlignment;
 	};
 }
 

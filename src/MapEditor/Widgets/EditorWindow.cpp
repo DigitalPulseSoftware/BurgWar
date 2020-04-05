@@ -17,6 +17,7 @@
 #include <MapEditor/Scripting/EditorEntityLibrary.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
+#include <MapEditor/Widgets/AlignmentDialog.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <MapEditor/Widgets/LayerEditDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
@@ -305,6 +306,9 @@ namespace bw
 		m_saveMap->setEnabled(enableMapActions);
 		m_saveMapToolbar->setEnabled(enableMapActions);
 
+		if (!enableMapActions)
+			m_layerMenu->setEnabled(false);
+
 		RefreshLayerList();
 
 		if (m_layerList.listWidget->count() > 0)
@@ -342,6 +346,27 @@ namespace bw
 		settings.setValue("recentFiles", recentlyOpenedMaps);
 
 		RefreshRecentFileListMenu(recentlyOpenedMaps);
+	}
+
+	void EditorWindow::AlignLayerEntities(std::size_t layerIndex)
+	{
+		auto& layer = m_workingMap.GetLayer(layerIndex);
+		for (auto& layerEntity : layer.entities)
+			layerEntity.position = AlignPosition(layerEntity.position, layer.positionAlignment);
+
+		if (m_currentLayer && *m_currentLayer == layerIndex)
+		{
+			for (std::size_t i = 0; i < layer.entities.size(); ++i)
+			{
+				const auto& layerEntity = layer.entities[i];
+
+				QListWidgetItem* item = m_entityList.listWidget->item(int(i));
+				assert(item);
+				Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+				m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
+			}
+		}
 	}
 
 	void EditorWindow::BuildAssetList()
@@ -419,12 +444,12 @@ namespace bw
 
 		m_entityList.upArrowButton = new QPushButton;
 		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
-		m_entityList.upArrowButton->setDisabled(true);
+		m_entityList.upArrowButton->setEnabled(false);
 		connect(m_entityList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedUp);
 
 		m_entityList.downArrowButton = new QPushButton;
 		m_entityList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
-		m_entityList.downArrowButton->setDisabled(true);
+		m_entityList.downArrowButton->setEnabled(false);
 		connect(m_entityList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedDown);
 
 		QVBoxLayout* arrowLayout = new QVBoxLayout;
@@ -501,12 +526,12 @@ namespace bw
 
 		m_layerList.upArrowButton = new QPushButton;
 		m_layerList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
-		m_layerList.upArrowButton->setDisabled(true);
+		m_layerList.upArrowButton->setEnabled(false);
 		connect(m_layerList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedUp);
 
 		m_layerList.downArrowButton = new QPushButton;
 		m_layerList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
-		m_layerList.downArrowButton->setDisabled(true);
+		m_layerList.downArrowButton->setEnabled(false);
 		connect(m_layerList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedDown);
 
 		QVBoxLayout* arrowLayout = new QVBoxLayout;
@@ -569,6 +594,15 @@ namespace bw
 
 			QAction* playMap = m_mapMenu->addAction(tr("Play map"));
 			connect(playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
+		}
+
+		m_layerMenu = menuBar()->addMenu(tr("&Layer"));
+		{
+			QAction* alignEntities = m_layerMenu->addAction(tr("Align layers entities"));
+			connect(alignEntities, &QAction::triggered, this, &EditorWindow::OnAlignEntities);
+
+			QAction* setAlignment = m_layerMenu->addAction(tr("Set position alignment..."));
+			connect(setAlignment, &QAction::triggered, this, &EditorWindow::OnSetAlignment);
 		}
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
@@ -685,6 +719,19 @@ namespace bw
 			m_recentMapActions[int(i)]->setVisible(false);
 	}
 
+	void EditorWindow::OnAlignEntities()
+	{
+		assert(m_currentLayer);
+		std::size_t currentLayerIndex = *m_currentLayer;
+
+		const auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
+
+		QString warningText = tr("You are about to align all entities from layer #%1 %2, are you sure?").arg(QString::number(currentLayerIndex + 1)).arg(QString::fromStdString(layerData.name));
+		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
+		if (response == QMessageBox::Yes)
+			AlignLayerEntities(currentLayerIndex);
+	}
+
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex)
 	{
 		assert(m_currentLayer);
@@ -784,8 +831,6 @@ namespace bw
 
 			m_entityList.listWidget->setCurrentRow(int(entityIndex));
 		});
-
-		createEntityDialog->exec();
 	}
 
 	void EditorWindow::OnCreateMap()
@@ -971,8 +1016,6 @@ namespace bw
 				m_entityList.listWidget->setCurrentRow(int(entityIndex));
 			}
 		});
-
-		editEntityDialog->exec();
 	}
 	
 	void EditorWindow::OnEditLayer(std::size_t layerIndex)
@@ -1011,23 +1054,6 @@ namespace bw
 		layerInfoDialog->exec();
 	}
 
-	void EditorWindow::OnEntityMovedUp()
-	{
-		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
-		if (!selectedItem)
-			return;
-
-		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
-		if (entityIndex == 0)
-			return;
-
-		std::size_t newEntityIndex = entityIndex - 1;
-		SwapEntities(entityIndex, newEntityIndex);
-
-		m_layerList.downArrowButton->setDisabled(false);
-		m_layerList.upArrowButton->setDisabled(newEntityIndex == 0);
-	}
-
 	void EditorWindow::OnEntityMovedDown()
 	{
 		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
@@ -1041,8 +1067,25 @@ namespace bw
 		std::size_t newEntityIndex = entityIndex + 1;
 		SwapEntities(entityIndex, newEntityIndex);
 
-		m_entityList.downArrowButton->setDisabled(int(newEntityIndex + 1) >= m_entityList.listWidget->count());
-		m_entityList.upArrowButton->setDisabled(false);
+		m_entityList.downArrowButton->setEnabled(int(newEntityIndex + 1) < m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setEnabled(true);
+	}
+
+	void EditorWindow::OnEntityMovedUp()
+	{
+		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
+		if (!selectedItem)
+			return;
+
+		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
+		if (entityIndex == 0)
+			return;
+
+		std::size_t newEntityIndex = entityIndex - 1;
+		SwapEntities(entityIndex, newEntityIndex);
+
+		m_layerList.downArrowButton->setEnabled(true);
+		m_layerList.upArrowButton->setEnabled(newEntityIndex != 0);
 	}
 
 	void EditorWindow::OnEntitySelectionUpdate(int entityIndex)
@@ -1051,8 +1094,8 @@ namespace bw
 		{
 			m_canvas->ClearEntitySelection();
 
-			m_entityList.downArrowButton->setDisabled(true);
-			m_entityList.upArrowButton->setDisabled(true);
+			m_entityList.downArrowButton->setEnabled(false);
+			m_entityList.upArrowButton->setEnabled(false);
 			return;
 		}
 
@@ -1061,8 +1104,8 @@ namespace bw
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		m_canvas->EditEntityPosition(canvasId);
 
-		m_entityList.downArrowButton->setDisabled(int(entityIndex + 1) >= m_entityList.listWidget->count());
-		m_entityList.upArrowButton->setDisabled(entityIndex <= 0);
+		m_entityList.downArrowButton->setEnabled(int(entityIndex + 1) < m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setEnabled(entityIndex > 0);
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)
@@ -1074,8 +1117,10 @@ namespace bw
 			m_canvas->ClearEntities();
 			m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
-			m_layerList.downArrowButton->setDisabled(true);
-			m_layerList.upArrowButton->setDisabled(true);
+			m_layerMenu->setEnabled(false);
+
+			m_layerList.downArrowButton->setEnabled(false);
+			m_layerList.upArrowButton->setEnabled(false);
 			return;
 		}
 
@@ -1087,8 +1132,10 @@ namespace bw
 
 		m_currentLayer = layerIdx;
 
-		m_layerList.upArrowButton->setDisabled(layerIdx == 0);
-		m_layerList.downArrowButton->setDisabled(layerIdx + 1 >= m_layerList.listWidget->count());
+		m_layerMenu->setEnabled(true);
+
+		m_layerList.upArrowButton->setEnabled(layerIdx != 0);
+		m_layerList.downArrowButton->setEnabled(layerIdx + 1 < m_layerList.listWidget->count());
 
 		assert(layerIdx < m_workingMap.GetLayerCount());
 		auto& layer = m_workingMap.GetLayer(layerIdx);
@@ -1101,25 +1148,6 @@ namespace bw
 
 		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
 			RegisterEntity(entityIndex);
-	}
-
-	void EditorWindow::OnLayerMovedUp()
-	{
-		if (!m_currentLayer)
-			return;
-
-		std::size_t oldPosition = m_currentLayer.value();
-		if (oldPosition == 0)
-			return;
-
-		std::size_t newPosition = oldPosition - 1;
-
-		m_currentLayer = newPosition;
-
-		SwapLayers(oldPosition, newPosition);
-
-		m_layerList.downArrowButton->setDisabled(false);
-		m_layerList.upArrowButton->setDisabled(newPosition == 0);
 	}
 
 	void EditorWindow::OnLayerMovedDown()
@@ -1137,8 +1165,27 @@ namespace bw
 
 		SwapLayers(oldPosition, newPosition);
 
-		m_layerList.downArrowButton->setDisabled(newPosition + 1 >= m_layerList.listWidget->count());
-		m_layerList.upArrowButton->setDisabled(false);
+		m_layerList.downArrowButton->setEnabled(newPosition + 1 < m_layerList.listWidget->count());
+		m_layerList.upArrowButton->setEnabled(true);
+	}
+
+	void EditorWindow::OnLayerMovedUp()
+	{
+		if (!m_currentLayer)
+			return;
+
+		std::size_t oldPosition = m_currentLayer.value();
+		if (oldPosition == 0)
+			return;
+
+		std::size_t newPosition = oldPosition - 1;
+
+		m_currentLayer = newPosition;
+
+		SwapLayers(oldPosition, newPosition);
+
+		m_layerList.downArrowButton->setEnabled(true);
+		m_layerList.upArrowButton->setEnabled(newPosition != 0);
 	}
 
 	void EditorWindow::OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer)
@@ -1254,6 +1301,28 @@ namespace bw
 			QMessageBox::warning(this, tr("Failed to save map"), tr("Failed to save map (is map folder read-only?)"), QMessageBox::Ok);
 			statusBar()->showMessage(tr("Failed to save map"), 5000);
 		}
+	}
+
+	void EditorWindow::OnSetAlignment()
+	{
+		assert(m_currentLayer);
+		std::size_t currentLayerIndex = *m_currentLayer;
+
+		const auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
+
+		AlignmentDialog* dialog = new AlignmentDialog(layerData.positionAlignment, this);
+		dialog->setAttribute(Qt::WA_DeleteOnClose, true);
+
+		connect(dialog, &QDialog::accepted, [=]()
+		{
+			Nz::Vector2f newAlignment = dialog->GetAlignment();
+			OnLayerAlignmentUpdate(this, currentLayerIndex, newAlignment);
+
+			auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
+			layerData.positionAlignment = newAlignment;
+		});
+
+		dialog->show();
 	}
 
 	void EditorWindow::OpenMap(const QString& mapFolder)

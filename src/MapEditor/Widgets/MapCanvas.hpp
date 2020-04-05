@@ -9,14 +9,13 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <MapEditor/Gizmos/EditorGizmo.hpp>
+#include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/WorldCanvas.hpp>
 #include <NDK/World.hpp>
 #include <memory>
 
 namespace bw
 {
-	class EditorWindow;
-
 	class MapCanvas : public WorldCanvas
 	{
 		public:
@@ -55,6 +54,7 @@ namespace bw
 			void OnMouseLeft() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
 
+			NazaraSlot(EditorWindow, OnLayerAlignmentUpdate, m_onLayerAlignmentUpdate);
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onGizmoEntityDestroyed);
 
 			std::unique_ptr<EditorGizmo> m_entityGizmo;
