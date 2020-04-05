@@ -34,6 +34,8 @@ namespace bw
 
 			void EditEntityPosition(Ndk::EntityId entityId);
 
+			void ShowGrid(bool show);
+
 			void UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation);
 
 			NazaraSignal(OnCameraZoomFactorUpdated, MapCanvas* /*emitter*/, float /*zoomFactor*/);
@@ -53,12 +55,16 @@ namespace bw
 			void OnMouseEntered() override;
 			void OnMouseLeft() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
+			void UpdateGrid();
+
+			void resizeEvent(QResizeEvent* event) override;
 
 			NazaraSlot(EditorWindow, OnLayerAlignmentUpdate, m_onLayerAlignmentUpdate);
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onGizmoEntityDestroyed);
 
 			std::unique_ptr<EditorGizmo> m_entityGizmo;
 			EditorWindow& m_editor;
+			Ndk::EntityOwner m_gridEntity;
 			Ndk::EntityList m_mapEntities;
 	};
 }

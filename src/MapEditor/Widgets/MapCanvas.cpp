@@ -10,6 +10,7 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/CameraComponent.hpp>
+#include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/Systems/DebugSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -25,9 +26,16 @@ namespace bw
 
 		EnableCameraControl(true);
 
-		GetCameraController().OnCameraZoomUpdated.Connect([this](CameraMovement* controller)
+		const CameraMovement& cameraController = GetCameraController();
+		cameraController.OnCameraMoved.Connect([this](CameraMovement* /*controller*/)
+		{
+			UpdateGrid();
+		});
+
+		cameraController.OnCameraZoomUpdated.Connect([this](CameraMovement* controller)
 		{
 			OnCameraZoomFactorUpdated(this, controller->ComputeZoomFactor());
+			UpdateGrid();
 		});
 	}
 
@@ -128,6 +136,23 @@ namespace bw
 		});
 	}
 
+	void MapCanvas::ShowGrid(bool show)
+	{
+		if (show)
+		{
+			if (!m_gridEntity)
+			{
+				m_gridEntity = GetWorld().CreateEntity();
+				m_gridEntity->AddComponent<Ndk::GraphicsComponent>();
+				m_gridEntity->AddComponent<Ndk::NodeComponent>();
+
+				UpdateGrid();
+			}
+		}
+		else
+			m_gridEntity.Reset();
+	}
+
 	void MapCanvas::UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
 	{
 		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
@@ -206,5 +231,111 @@ namespace bw
 		}
 
 		OnCanvasMouseMoved(this, mouseMoved);
+	}
+	
+	void MapCanvas::UpdateGrid()
+	{
+		if (!m_gridEntity)
+			return;
+
+		const Camera& camera = GetCamera();
+
+		Nz::Vector2f camPos = camera.GetPosition();
+		float zoomFactor = camera.GetZoomFactor();
+		Nz::Vector2f size(width() / zoomFactor, height() / zoomFactor);
+
+		auto& gfxComponent = m_gridEntity->GetComponent<Ndk::GraphicsComponent>();
+		gfxComponent.Clear();
+
+		auto& nodeComponent = m_gridEntity->GetComponent<Ndk::NodeComponent>();
+		nodeComponent.SetPosition(camPos);
+
+		auto AddGrid = [&](float lineWidth, float gridSize, Nz::Color color, int renderOrder)
+		{
+			Nz::Vector2f gridOffset;
+			gridOffset.x = std::fmod(camPos.x, gridSize);
+			if (camPos.x < 0.f)
+				gridOffset.x += gridSize;
+
+			gridOffset.y = std::fmod(camPos.y, gridSize);
+			if (camPos.y < 0.f)
+				gridOffset.y += gridSize;
+
+			auto AddLine = [&](const Nz::Vector2f& origin, const Nz::Vector2f& size)
+			{
+				Nz::SpriteRef lineSprite = Nz::Sprite::New();
+				lineSprite->SetColor(color);
+				lineSprite->SetSize(size);
+
+				gfxComponent.Attach(lineSprite, Nz::Matrix4f::Translate(origin - gridOffset), renderOrder);
+			};
+
+			std::size_t gridCountX = static_cast<std::size_t>(std::ceil(size.x / gridSize)) + 1;
+			std::size_t gridCountY = static_cast<std::size_t>(std::ceil(size.y / gridSize)) + 1;
+
+			lineWidth = lineWidth / zoomFactor;
+
+			for (std::size_t x = 0; x < gridCountX; ++x)
+				AddLine({ x * gridSize, 0.f }, { lineWidth, size.y + gridOffset.y });
+
+			for (std::size_t y = 0; y < gridCountY; ++y)
+				AddLine({ 0.f, y * gridSize }, { size.x + gridOffset.x, lineWidth });
+		};
+
+		struct GridZoom
+		{
+			float gridSize;
+			float lineWidth;
+			Nz::Color color;
+		};
+
+		std::array<GridZoom, 6> gridZooms = {
+			{
+				{
+					512.f,
+					1.f,
+					Nz::Color(255, 140, 0, 200)
+				},
+				{
+					256.f,
+					1.f,
+					Nz::Color(0, 139, 139, 200)
+				},
+				{
+					128.f,
+					1.f,
+					Nz::Color(255, 255, 255, 200)
+				},
+				{
+					64.f,
+					1.f,
+					Nz::Color(255, 255, 255, 180)
+				},
+				{
+					32.f,
+					1.f,
+					Nz::Color(255, 255, 255, 127)
+				},
+				{
+					16.f,
+					1.f,
+					Nz::Color(127, 127, 127, 80)
+				}
+			}
+		};
+
+		for (std::size_t i = 0; i < gridZooms.size(); ++i)
+		{
+			float screenSize = gridZooms[i].gridSize * zoomFactor;
+			if (screenSize >= 32.f)
+				AddGrid(gridZooms[i].lineWidth, gridZooms[i].gridSize, gridZooms[i].color, int(std::numeric_limits<int>::lowest() + i * 2));
+		}
+	}
+	
+	void MapCanvas::resizeEvent(QResizeEvent* event)
+	{
+		WorldCanvas::resizeEvent(event);
+
+		UpdateGrid();
 	}
 }
