@@ -59,6 +59,7 @@ namespace bw
 		});
 
 		PostInit();
+		UpdateSection("Player"); //< Default to first section
 	}
 	
 	void OptionWidget::AddSection(std::string sectionName)
