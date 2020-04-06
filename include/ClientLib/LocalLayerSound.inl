@@ -6,11 +6,26 @@
 
 namespace bw
 {
+	inline LocalLayerSound::LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position) :
+	LocalLayerSound(layer)
+	{
+		m_node.SetPosition(position);
+	}
+
 	inline LocalLayerSound::LocalLayerSound(LocalLayer& layer) :
 	m_layer(layer)
 	{
 	}
 	
+	inline LocalLayerSound::LocalLayerSound(LocalLayerSound&& sound) noexcept :
+	HandledObject(std::move(sound)),
+	m_playingSounds(std::move(sound.m_playingSounds)),
+	m_soundEntities(std::move(sound.m_soundEntities)),
+	m_layer(sound.m_layer),
+	m_node(sound.m_node)
+	{
+	}
+
 	inline LocalLayerSound::LocalLayerSound(LocalLayer& layer, const Nz::Node& node) :
 	LocalLayerSound(layer)
 	{

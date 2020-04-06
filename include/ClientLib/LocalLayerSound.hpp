@@ -29,10 +29,10 @@ namespace bw
 		friend SoundEntity;
 
 		public:
-			LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position);
+			inline LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position);
 			inline LocalLayerSound(LocalLayer& layer, const Nz::Node& parentNode);
 			LocalLayerSound(const LocalLayerSound&) = delete;
-			LocalLayerSound(LocalLayerSound&& entity);
+			inline LocalLayerSound(LocalLayerSound&& entity) noexcept;
 			~LocalLayerSound() = default;
 
 			LayerIndex GetLayerIndex() const;
