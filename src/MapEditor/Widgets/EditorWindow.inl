@@ -35,6 +35,14 @@ namespace bw
 		return m_canvas;
 	}
 
+	inline Map& EditorWindow::GetWorkingMapMut()
+	{
+		assert(m_workingMap.IsValid());
+
+		InvalidateMap();
+		return m_workingMap;
+	}
+
 	inline const Map& EditorWindow::GetWorkingMap() const
 	{
 		return m_workingMap;
@@ -62,5 +70,10 @@ namespace bw
 			else
 				bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
 		});
+	}
+
+	inline void EditorWindow::InvalidateMap()
+	{
+		m_mapDirtyFlag = true;
 	}
 }

@@ -52,6 +52,7 @@ namespace bw
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;
 
+			inline Map& GetWorkingMapMut();
 			inline const Map& GetWorkingMap() const;
 
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
@@ -64,6 +65,7 @@ namespace bw
 			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, std::size_t /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);
 
 		private:
+			void closeEvent(QCloseEvent* event) override;
 			bool event(QEvent* e) override;
 
 			void AddToRecentFileList(const QString& mapFolder);
@@ -75,16 +77,21 @@ namespace bw
 			void BuildMenu();
 			void BuildToolbar(const std::string& editorAssetsFolder);
 
+			bool CanCloseMap();
+
 			void DeleteEntity(std::size_t entityIndex);
 
 			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
+			inline void InvalidateMap();
+
 			void OnAlignEntities();
 			void OnCloneEntity(std::size_t entityIndex);
 			void OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex);
 			void OnCloneLayer(std::size_t layerIndex);
+			void OnCloseMap();
 			void OnCompileMap();
 			void OnCreateEntity();
 			void OnCreateMap();
@@ -119,6 +126,8 @@ namespace bw
 
 			void ReloadScripts();
 
+			bool SaveMap();
+
 			void SwapEntities(std::size_t oldPosition, std::size_t newPosition);
 			void SwapLayers(std::size_t oldPosition, std::size_t newPosition);
 
@@ -142,6 +151,7 @@ namespace bw
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			List m_entityList;
 			List m_layerList;
+			QAction* m_closeMap;
 			QAction* m_compileMap;
 			QAction* m_createEntityAction;
 			QAction* m_createEntityActionToolbar;
@@ -159,6 +169,7 @@ namespace bw
 			EditorAppConfig m_configFile;
 			Map m_workingMap;
 			MapCanvas* m_canvas;
+			bool m_mapDirtyFlag;
 	};
 }
 

@@ -59,7 +59,8 @@ namespace bw
 	m_entityInfoDialog(nullptr),
 	m_playWindow(nullptr),
 	m_canvas(nullptr),
-	m_configFile(*this)
+	m_configFile(*this),
+	m_mapDirtyFlag(false)
 	{
 		if (!m_configFile.LoadFromFile("editorconfig.lua"))
 			throw std::runtime_error("Failed to load config file");
@@ -129,7 +130,7 @@ namespace bw
 
 			std::size_t entityIndex = it.value();
 
-			auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+			auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
 
 			auto& layerEntity = layer.entities[entityIndex];
 			layerEntity.position = newPosition;
@@ -297,6 +298,7 @@ namespace bw
 	{
 		m_workingMap = std::move(map);
 		m_workingMapPath = std::move(mapPath);
+		m_mapDirtyFlag = false;
 
 		// Reset entity info dialog (as it depends on the map)
 		if (m_entityInfoDialog)
@@ -307,22 +309,33 @@ namespace bw
 
 		setWindowFilePath(QString::fromStdString(mapPath.generic_u8string()));
 
-		bool enableMapActions = m_workingMap.IsValid();
+		bool hasWorkingMap = m_workingMap.IsValid();
 
-		m_compileMap->setEnabled(enableMapActions);
-		m_createEntityActionToolbar->setEnabled(enableMapActions);
-		m_mapMenu->setEnabled(enableMapActions);
-		m_playMap->setEnabled(enableMapActions);
-		m_saveMap->setEnabled(enableMapActions);
-		m_saveMapToolbar->setEnabled(enableMapActions);
+		m_closeMap->setEnabled(hasWorkingMap);
+		m_compileMap->setEnabled(hasWorkingMap);
+		m_createEntityActionToolbar->setEnabled(hasWorkingMap);
+		m_mapMenu->setEnabled(hasWorkingMap);
+		m_playMap->setEnabled(hasWorkingMap);
+		m_saveMap->setEnabled(hasWorkingMap);
+		m_saveMapToolbar->setEnabled(hasWorkingMap);
 
-		if (!enableMapActions)
+		if (!hasWorkingMap)
 			m_layerMenu->setEnabled(false);
+
+		m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
 		RefreshLayerList();
 
 		if (m_layerList.listWidget->count() > 0)
 			m_layerList.listWidget->setCurrentRow(0);
+	}
+
+	void EditorWindow::closeEvent(QCloseEvent* event)
+	{
+		if (CanCloseMap())
+			event->accept();
+		else
+			event->ignore();
 	}
 
 	bool EditorWindow::event(QEvent* e)
@@ -360,7 +373,7 @@ namespace bw
 
 	void EditorWindow::AlignLayerEntities(std::size_t layerIndex)
 	{
-		auto& layer = m_workingMap.GetLayer(layerIndex);
+		auto& layer = GetWorkingMapMut().GetLayer(layerIndex);
 		for (auto& layerEntity : layer.entities)
 			layerEntity.position = AlignPosition(layerEntity.position, layer.positionAlignment);
 
@@ -572,7 +585,7 @@ namespace bw
 			createMap->setShortcut(QKeySequence::Open);
 			connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
-			QMenu* recentMaps = fileMenu->addMenu(tr("Open recent..."));
+			QMenu* recentMaps = fileMenu->addMenu(tr("Open recent"));
 			recentMaps->setToolTipsVisible(true);
 
 			for (QAction* action : m_recentMapActions)
@@ -580,9 +593,13 @@ namespace bw
 
 			RefreshRecentFileListMenu();
 
-			m_saveMap = fileMenu->addAction(tr("Save map..."));
+			m_saveMap = fileMenu->addAction(tr("Save map"));
 			m_saveMap->setShortcut(QKeySequence::Save);
 			connect(m_saveMap, &QAction::triggered, this, &EditorWindow::OnSaveMap);
+
+			m_closeMap = fileMenu->addAction(tr("Close map"));
+			m_closeMap->setShortcut(QKeySequence::Close);
+			connect(m_closeMap, &QAction::triggered, this, &EditorWindow::OnCloseMap);
 
 			fileMenu->addSeparator();
 
@@ -696,10 +713,30 @@ namespace bw
 		addDockWidget(Qt::TopDockWidgetArea, toolbarDock);
 	}
 
+	bool EditorWindow::CanCloseMap()
+	{
+		if (!m_mapDirtyFlag)
+			return true;
+
+		QString warningText = tr("Your changes to this map have not been saved, do you want to save before closing it?");
+		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Quit without saving?"), warningText, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (response == QMessageBox::Cancel)
+			return false;
+
+		if (response == QMessageBox::Yes)
+		{
+			// Save before exit
+			if (!SaveMap())
+				return false; //< Save failed, do not close
+		}
+
+		return true;
+	}
+
 	void EditorWindow::DeleteEntity(std::size_t entityIndex)
 	{
 		assert(m_currentLayer);
-		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+		auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
 
 		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
@@ -776,7 +813,7 @@ namespace bw
 		assert(m_currentLayer);
 
 		std::size_t cloneEntityIndex = entityIndex + 1;
-		auto& cloneEntity = m_workingMap.EmplaceEntity(*m_currentLayer, entityIndex, m_workingMap.GetEntity(*m_currentLayer, entityIndex));
+		auto& cloneEntity = GetWorkingMapMut().EmplaceEntity(*m_currentLayer, entityIndex, m_workingMap.GetEntity(*m_currentLayer, entityIndex));
 		cloneEntity.name += " (Clone)";
 
 		RegisterEntity(cloneEntityIndex);
@@ -790,7 +827,7 @@ namespace bw
 			return OnCloneEntity(entityIndex);
 
 		assert(m_currentLayer);
-		auto& cloneEntity = m_workingMap.AddEntity(layerIndex, m_workingMap.GetEntity(m_currentLayer.value(), entityIndex));
+		auto& cloneEntity = GetWorkingMapMut().AddEntity(layerIndex, m_workingMap.GetEntity(m_currentLayer.value(), entityIndex));
 		cloneEntity.name += " (Clone)";
 	}
 
@@ -798,7 +835,7 @@ namespace bw
 	{
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 		std::size_t cloneLayerIndex = layerIndex + 1;
-		auto& newLayer = m_workingMap.EmplaceLayer(cloneLayerIndex, layer);
+		auto& newLayer = GetWorkingMapMut().EmplaceLayer(cloneLayerIndex, layer);
 		newLayer.name += " (Clone)";
 
 		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
@@ -821,6 +858,12 @@ namespace bw
 		});
 
 		RefreshLayerList();
+	}
+
+	void EditorWindow::OnCloseMap()
+	{
+		if (CanCloseMap())
+			ClearWorkingMap();
 	}
 
 	void EditorWindow::OnCompileMap()
@@ -858,8 +901,10 @@ namespace bw
 
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
-			std::size_t entityIndex = m_workingMap.GetEntityCount(layerIndex);
-			auto& layerEntity = m_workingMap.AddEntity(layerIndex);
+			Map& map = GetWorkingMapMut();
+
+			std::size_t entityIndex = map.GetEntityCount(layerIndex);
+			auto& layerEntity = map.AddEntity(layerIndex);
 			layerEntity.entityType = std::move(entityInfo.entityClass);
 			layerEntity.name = std::move(entityInfo.entityName);
 			layerEntity.position = entityInfo.position;
@@ -889,7 +934,7 @@ namespace bw
 		if (!m_workingMap.IsValid())
 			return;
 
-		auto& layer = m_workingMap.AddLayer();
+		auto& layer = GetWorkingMapMut().AddLayer();
 		layer.name = "Layer #" + std::to_string(m_workingMap.GetLayerCount());
 
 		RefreshLayerList();
@@ -937,7 +982,7 @@ namespace bw
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			m_workingMap.DropLayer(layerIndex);
+			GetWorkingMapMut().DropLayer(layerIndex);
 
 			auto UpdateLayerIndex = [deletedIndex = layerIndex](Nz::Int64& layerIndex)
 			{
@@ -993,7 +1038,7 @@ namespace bw
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
 		editEntityDialog->Open(std::move(entityInfo), entity, [this, entityIndex, layerIndex](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
-			auto& layer = m_workingMap.GetLayer(layerIndex);
+			auto& layer = GetWorkingMapMut().GetLayer(layerIndex);
 			auto& layerEntity = layer.entities[entityIndex];
 
 			bool resetItemName = false;
@@ -1234,7 +1279,7 @@ namespace bw
 		assert(m_currentLayer);
 		assert(targetLayer != *m_currentLayer);
 
-		m_workingMap.MoveEntity(*m_currentLayer, entityIndex, targetLayer);
+		GetWorkingMapMut().MoveEntity(*m_currentLayer, entityIndex, targetLayer);
 
 		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
@@ -1300,48 +1345,7 @@ namespace bw
 
 	void EditorWindow::OnSaveMap()
 	{
-		if (m_workingMapPath.empty())
-		{
-			QDir mapFolder;
-			QString workingPath;
-
-			for (;;)
-			{
-				QString path = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
-				if (path.isEmpty())
-					return;
-
-				mapFolder.setPath(path);
-				if (!mapFolder.isEmpty())
-				{
-					QMessageBox::critical(this, tr("Folder not empty"), tr("Map folder must be empty"), QMessageBox::Ok);
-					continue;
-				}
-
-				workingPath = mapFolder.path();
-				break;
-			}
-
-			if (!mapFolder.mkdir("assets"))
-				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create assets subdirectory (is map folder read-only?)"), QMessageBox::Ok);
-
-			if (!mapFolder.mkdir("scripts"))
-				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create scripts subdirectory (is map folder read-only?)"), QMessageBox::Ok);
-
-			m_workingMapPath = workingPath.toStdString();
-
-			AddToRecentFileList(workingPath);
-		}
-
-		RebuildUniqueIds();
-
-		if (m_workingMap.Save(m_workingMapPath))
-			statusBar()->showMessage(tr("Map saved"), 3000);
-		else
-		{
-			QMessageBox::warning(this, tr("Failed to save map"), tr("Failed to save map (is map folder read-only?)"), QMessageBox::Ok);
-			statusBar()->showMessage(tr("Failed to save map"), 5000);
-		}
+		SaveMap();
 	}
 
 	void EditorWindow::OnSetAlignment()
@@ -1359,7 +1363,7 @@ namespace bw
 			Nz::Vector2f newAlignment = dialog->GetAlignment();
 			OnLayerAlignmentUpdate(this, currentLayerIndex, newAlignment);
 
-			auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
+			auto& layerData = GetWorkingMapMut().GetLayer(currentLayerIndex);
 			layerData.positionAlignment = newAlignment;
 		});
 
@@ -1481,6 +1485,59 @@ namespace bw
 		}
 	}
 
+	bool EditorWindow::SaveMap()
+	{
+		if (m_workingMapPath.empty())
+		{
+			QDir mapFolder;
+			QString workingPath;
+
+			for (;;)
+			{
+				QString path = QFileDialog::getExistingDirectory(this, QString(), QString(), QFileDialog::ShowDirsOnly);
+				if (path.isEmpty())
+					return true;
+
+				mapFolder.setPath(path);
+				if (!mapFolder.isEmpty())
+				{
+					QMessageBox::critical(this, tr("Folder not empty"), tr("Map folder must be empty"), QMessageBox::Ok);
+					continue;
+				}
+
+				workingPath = mapFolder.path();
+				break;
+			}
+
+			if (!mapFolder.mkdir("assets"))
+				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create assets subdirectory (is map folder read-only?)"), QMessageBox::Ok);
+
+			if (!mapFolder.mkdir("scripts"))
+				QMessageBox::warning(this, tr("Failed to create folder"), tr("Failed to create scripts subdirectory (is map folder read-only?)"), QMessageBox::Ok);
+
+			m_workingMapPath = workingPath.toStdString();
+
+			AddToRecentFileList(workingPath);
+		}
+
+		RebuildUniqueIds();
+
+		if (m_workingMap.Save(m_workingMapPath))
+		{
+			m_mapDirtyFlag = false;
+			statusBar()->showMessage(tr("Map saved"), 3000);
+
+			return true;
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Failed to save map"), tr("Failed to save map (is map folder read-only?)"), QMessageBox::Ok);
+			statusBar()->showMessage(tr("Failed to save map"), 5000);
+
+			return false;
+		}
+	}
+
 	void EditorWindow::RebuildUniqueIds()
 	{
 		// Since we have no guarantee on current unique ids, use a secure hashmap
@@ -1553,7 +1610,7 @@ namespace bw
 		if (!m_currentLayer)
 			return;
 
-		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
+		auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
 
 		assert(oldPosition < layer.entities.size());
 		assert(newPosition < layer.entities.size());
@@ -1577,7 +1634,8 @@ namespace bw
 
 	void EditorWindow::SwapLayers(std::size_t oldPosition, std::size_t newPosition)
 	{
-		std::swap(m_workingMap.GetLayer(oldPosition), m_workingMap.GetLayer(newPosition));
+		Map& map = GetWorkingMapMut();
+		std::swap(map.GetLayer(oldPosition), map.GetLayer(newPosition));
 
 		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
 		{
