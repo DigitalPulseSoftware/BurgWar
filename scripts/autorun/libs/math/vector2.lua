@@ -3,6 +3,10 @@ RegisterClientScript()
 local vec2meta = RegisterMetatable("vec2")
 vec2meta.__index = vec2meta
 
+function vec2meta:Distance(vec)
+	return (self - vec):Length()
+end
+
 function vec2meta:Length()
 	return math.sqrt(self:SquaredLength())
 end
@@ -17,6 +21,10 @@ end
 
 function vec2meta:SquaredLength()
 	return self.x * self.x + self.y * self.y
+end
+
+function vec2meta:SquaredDistance(vec)
+	return (self - vec):SquaredLength()
 end
 
 function vec2meta:__add(other)

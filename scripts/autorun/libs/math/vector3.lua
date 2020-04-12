@@ -3,6 +3,10 @@ RegisterClientScript()
 local vec3meta = RegisterMetatable("vec3")
 vec3meta.__index = vec3meta
 
+function vec3meta:Distance(vec)
+	return (self - vec):Length()
+end
+
 function vec3meta:Length()
 	return math.sqrt(self:SquaredLength())
 end
@@ -18,6 +22,10 @@ end
 
 function vec3meta:SquaredLength()
 	return self.x * self.x + self.y * self.y + self.z * self.z
+end
+
+function vec3meta:SquaredDistance(vec)
+	return (self - vec):SquaredLength()
 end
 
 function vec3meta:__add(other)
