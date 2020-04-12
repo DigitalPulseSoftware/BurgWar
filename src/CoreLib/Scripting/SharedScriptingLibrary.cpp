@@ -264,6 +264,31 @@ namespace bw
 			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		};
 
+		library["RegionQuery"] = [this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)
+		{
+			if (layer >= m_match.GetLayerCount())
+				throw std::runtime_error("Invalid layer index");
+
+			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
+
+			sol::state_view state(L);
+			auto resultCallback = [&](const Ndk::EntityHandle& hitEntity)
+			{
+				if (hitEntity->HasComponent<ScriptComponent>())
+				{
+					auto callbackResult = callback(hitEntity->GetComponent<ScriptComponent>().GetTable());
+					if (!callbackResult.valid())
+					{
+						sol::error err = callbackResult;
+						bwLog(m_match.GetLogger(), LogLevel::Error, "physics.RegionQuery callback failed: {}", err.what());
+					}
+				}
+			};
+
+			physSystem.RegionQuery(rect, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
+		};
+
 		library["Trace"] = [this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
 		{
 			if (layer >= m_match.GetLayerCount())
@@ -311,7 +336,12 @@ namespace bw
 				if (hitEntity->HasComponent<ScriptComponent>())
 					result["hitEntity"] = hitEntity->GetComponent<ScriptComponent>().GetTable();
 
-				callback(result);
+				auto callbackResult = callback(result);
+				if (!callbackResult.valid())
+				{
+					sol::error err = callbackResult;
+					bwLog(m_match.GetLogger(), LogLevel::Error, "physics.RegionQuery callback failed: {}", err.what());
+				}
 			};
 
 			physSystem.RaycastQuery(startPos, endPos, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
