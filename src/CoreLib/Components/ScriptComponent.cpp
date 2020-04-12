@@ -11,7 +11,8 @@ namespace bw
 	m_context(std::move(context)),
 	m_entityTable(std::move(entityTable)),
 	m_logger(Ndk::EntityHandle::InvalidHandle, logger),
-	m_properties(std::move(properties))
+	m_properties(std::move(properties)),
+	m_timeBeforeTick(0.f)
 	{
 	}
 

@@ -33,7 +33,6 @@ namespace bw
 			void RegisterParticleGroupClass(ScriptingContext& context);
 			void RegisterScoreboardClass(ScriptingContext& context);
 			void RegisterSoundClass(ScriptingContext& context);
-			void RegisterSpriteClass(ScriptingContext& context);
 
 			LocalMatch& GetMatch();
 	};

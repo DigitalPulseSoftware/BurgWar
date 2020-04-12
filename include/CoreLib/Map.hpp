@@ -70,7 +70,9 @@ namespace bw
 
 			struct Asset
 			{
-				std::array<Nz::UInt8, 20> sha1Checksum;
+				static constexpr std::size_t ChecksumSize = 20;
+
+				std::array<Nz::UInt8, ChecksumSize> sha1Checksum;
 				std::string filepath;
 				Nz::UInt64 size;
 			};

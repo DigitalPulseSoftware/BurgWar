@@ -102,7 +102,7 @@ namespace bw
 			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
-			//FIXME
+			//FIXME (FIXME)
 			if (entity->HasComponent<LayerEntityComponent>())
 			{
 				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();

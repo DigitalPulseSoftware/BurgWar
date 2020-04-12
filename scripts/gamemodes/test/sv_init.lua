@@ -8,7 +8,7 @@ function GM:OnPlayerDeath(player, attacker)
 	self:IncreasePlayerDeath(player)
 	if (attacker) then
 		local attackerPlayer = attacker:GetOwner()
-		if (attackerPlayer:GetPlayerIndex() ~= player:GetPlayerIndex()) then
+		if (attackerPlayer and attackerPlayer:GetPlayerIndex() ~= player:GetPlayerIndex()) then
 			self:IncreasePlayerKill(attackerPlayer)
 		end
 	end

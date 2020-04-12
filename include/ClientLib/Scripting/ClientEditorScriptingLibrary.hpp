@@ -24,6 +24,7 @@ namespace bw
 
 		private:
 			void RegisterAssetLibrary(ScriptingContext& context, sol::table& library);
+			void RegisterSpriteClass(ScriptingContext& context);
 			void RegisterTextureClass(ScriptingContext& context);
 
 			ClientAssetStore& m_assetStore;
