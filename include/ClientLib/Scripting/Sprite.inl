@@ -34,6 +34,11 @@ namespace bw
 		return m_entity;
 	}
 
+	inline bool Sprite::IsVisible() const
+	{
+		return m_isVisible;
+	}
+
 	inline void Sprite::SetOffset(const Nz::Vector2f& newOffset)
 	{
 		m_transformMatrix.SetTranslation(newOffset);

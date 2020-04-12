@@ -30,7 +30,7 @@ namespace bw
 			inline void Hide();
 
 			inline bool IsValid() const;
-			//bool IsVisible() const;
+			inline bool IsVisible() const;
 
 			void SetCornerColor(const std::string_view& corner, Nz::Color cornerColor);
 			void SetCornerColors(const sol::table& cornerTable);
@@ -49,6 +49,7 @@ namespace bw
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SpriteRef m_sprite;
 			int m_renderOrder;
+			bool m_isVisible;
 	};
 }
 

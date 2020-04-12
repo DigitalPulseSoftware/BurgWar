@@ -83,10 +83,15 @@ namespace bw
 		if (!m_entity)
 			throw std::runtime_error("Invalid sprite");
 
+		if (show == m_isVisible)
+			return;
+
 		if (show)
 			m_entity->AttachRenderable(m_sprite, m_transformMatrix, m_renderOrder);
 		else
 			m_entity->DetachRenderable(m_sprite);
+
+		m_isVisible = show;
 	}
 	
 	void Sprite::UpdateTransformMatrix()
