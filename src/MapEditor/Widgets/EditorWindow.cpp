@@ -887,7 +887,12 @@ namespace bw
 
 	void EditorWindow::OnCreateEntity()
 	{
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
+		auto currentLayerOpt = GetCurrentLayer();
+		if (!currentLayerOpt)
+			return;
+
+		std::size_t layerIndex = *currentLayerOpt;
+		const auto& layer = m_workingMap.GetLayer(layerIndex);
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
 
@@ -897,7 +902,7 @@ namespace bw
 		const Nz::Recti& viewport = camera.GetViewport();
 
 		EntityInfo entityInfo;
-		entityInfo.position = camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f });
+		entityInfo.position = AlignPosition(camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f }), layer.positionAlignment);
 
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
