@@ -21,6 +21,8 @@ namespace bw
 {
 	class ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
+		friend class TickCallbackSystem;
+
 		public:
 			ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
 			~ScriptComponent();
@@ -33,6 +35,7 @@ namespace bw
 			inline const EntityLogger& GetLogger() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
 			inline const EntityProperties& GetProperties() const;
+			inline void SetNextTick(float seconds);
 			inline sol::table& GetTable();
 
 			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
@@ -41,6 +44,7 @@ namespace bw
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
+			inline bool CanTriggerTick(float elapsedTime);
 			void OnAttached() override;
 
 			std::shared_ptr<const ScriptedElement> m_element;
@@ -48,6 +52,7 @@ namespace bw
 			sol::table m_entityTable;
 			EntityLogger m_logger;
 			EntityProperties m_properties;
+			float m_timeBeforeTick;
 	};
 }
 

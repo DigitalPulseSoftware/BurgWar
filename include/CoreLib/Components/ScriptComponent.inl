@@ -62,6 +62,11 @@ namespace bw
 		return m_properties;
 	}
 
+	inline void ScriptComponent::SetNextTick(float seconds)
+	{
+		m_timeBeforeTick = seconds;
+	}
+
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;
@@ -70,5 +75,11 @@ namespace bw
 	inline void ScriptComponent::UpdateElement(std::shared_ptr<const ScriptedElement> element)
 	{
 		m_element = std::move(element);
+	}
+
+	inline bool ScriptComponent::CanTriggerTick(float elapsedTime)
+	{
+		m_timeBeforeTick -= elapsedTime;
+		return m_timeBeforeTick < 0.f;
 	}
 }

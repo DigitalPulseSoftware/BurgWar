@@ -32,18 +32,26 @@ namespace bw
 			m_tickableEntities.Remove(entity);
 	}
 
-	void TickCallbackSystem::OnUpdate(float /*elapsedTime*/)
+	void TickCallbackSystem::OnUpdate(float elapsedTime)
 	{
 		for (const Ndk::EntityHandle& entity : m_tickableEntities)
 		{
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			if (!scriptComponent.CanTriggerTick(elapsedTime)) //<FIXME: Due to reconciliation, this is not right
+				continue;
 
 			const auto& element = scriptComponent.GetElement();
 
 			assert(element->tickFunction);
 
 			auto result = element->tickFunction(scriptComponent.GetTable());
-			if (!result.valid())
+			if (result.valid())
+			{
+				sol::object retObj = result;
+				if (retObj.is<float>())
+					scriptComponent.SetNextTick(retObj.as<float>());
+			}
+			else
 			{
 				sol::error err = result;
 				bwLog(m_match.GetLogger(), LogLevel::Error, "OnTick failed: {0}", err.what());
