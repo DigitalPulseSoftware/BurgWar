@@ -9,7 +9,6 @@
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
-#include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 #include <Nazara/Graphics/ParticleFunctionRenderer.hpp>
 #include <NDK/Components/ParticleGroupComponent.hpp>
@@ -33,7 +32,6 @@ namespace bw
 		RegisterParticleGroupClass(context);
 		RegisterScoreboardClass(context);
 		RegisterSoundClass(context);
-		RegisterSpriteClass(context);
 
 		sol::table particleTable = luaState.create_named_table("particle");
 		RegisterParticleLibrary(context, particleTable);
@@ -290,30 +288,6 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"Stop", &Sound::Stop
-		);
-	}
-
-	void ClientScriptingLibrary::RegisterSpriteClass(ScriptingContext& context)
-	{
-		sol::state& state = context.GetLuaState();
-
-		state.new_usertype<Sprite>("Sprite",
-			"new", sol::no_constructor,
-
-			"GetOrigin", &Sprite::GetOrigin,
-			"GetSize", &Sprite::GetSize,
-
-			"Hide", &Sprite::Hide,
-
-			"IsValid", &Sprite::IsValid,
-
-			"SetCornerColor", &Sprite::SetCornerColor,
-			"SetCornerColors", &Sprite::SetCornerColors,
-			"SetOffset", &Sprite::SetOffset,
-			"SetRotation", &Sprite::SetRotation,
-			"SetSize", &Sprite::SetSize,
-
-			"Show", sol::overload(&Sprite::Show, [](Sprite* sprite) { return sprite->Show(); })
 		);
 	}
 

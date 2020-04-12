@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
+#include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 
 namespace bw
@@ -21,6 +22,7 @@ namespace bw
 		sol::table assetTable = luaState.create_named_table("assets");
 
 		RegisterAssetLibrary(context, assetTable);
+		RegisterSpriteClass(context);
 		RegisterTextureClass(context);
 	}
 
@@ -34,6 +36,31 @@ namespace bw
 			else
 				return {};
 		};
+	}
+
+	void ClientEditorScriptingLibrary::RegisterSpriteClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Sprite>("Sprite",
+			"new", sol::no_constructor,
+
+			"GetOrigin", &Sprite::GetOrigin,
+			"GetSize", &Sprite::GetSize,
+
+			"Hide", &Sprite::Hide,
+
+			"IsValid", &Sprite::IsValid,
+			"IsVisible", &Sprite::IsVisible,
+
+			"SetCornerColor", &Sprite::SetCornerColor,
+			"SetCornerColors", &Sprite::SetCornerColors,
+			"SetOffset", &Sprite::SetOffset,
+			"SetRotation", &Sprite::SetRotation,
+			"SetSize", &Sprite::SetSize,
+
+			"Show", sol::overload(&Sprite::Show, [](Sprite* sprite) { return sprite->Show(); })
+			);
 	}
 
 	void ClientEditorScriptingLibrary::RegisterTextureClass(ScriptingContext& context)
