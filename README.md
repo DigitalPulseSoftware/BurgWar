@@ -2,7 +2,9 @@
 
 ![Iconic Burgwar burger](.github/images/burger.png)
 
-*For now, no english readme exists*
+*Burg'war is a sandbox 2D multiplayer platform/combat game written in C++17/Lua with my own game engine: Nazara Engine.*
+
+The readme is available in two languages: [french](README_fr.md) and [english](README_en.md).
 
 Choose your language by clicking on a flag!
 
