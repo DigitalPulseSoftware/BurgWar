@@ -1,6 +1,6 @@
 # BurgWar
 
-![Iconic Burgwar burger](https://files.digitalpulsesoftware.net/burger.png)
+![Iconic Burgwar burger](.github/images/burger.png)
 
 *For now, no english readme exists*
 
