@@ -1,6 +1,6 @@
 # Burg'war
 
-![Le burger iconique de Burgwar](https://files.digitalpulsesoftware.net/burger.png)
+![Le burger iconique de Burgwar](.github/images/burger.png)
 
 Burg'war est un jeu de plateforme multijoueur 2D orienté sur la thématique de la nourriture, où vous incarnez un hamburger se battant contre d'autres hamburgers à l'aide d'armes comme l'Emmentalibur, la Tomace, le lance-patate, et bien d'autres !
 
