@@ -10,3 +10,5 @@ Choose your language by clicking on a flag!
 
 [![France flag](.github/images/franceflag.png)](README_fr.md)
 [![GB flag](.github/images/greatbritainflag.png)](README_en.md)
+
+*SirLynixVanFrietjes*
