@@ -14,6 +14,7 @@
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
+#include <MapEditor/Scripting/EditorElementLibrary.hpp>
 #include <MapEditor/Scripting/EditorEntityLibrary.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
 #include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
@@ -1451,7 +1452,7 @@ namespace bw
 		if (!m_entityStore)
 		{
 			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
-			m_entityStore->LoadLibrary(std::make_shared<ClientElementLibrary>(GetLogger(), *m_assetStore));
+			m_entityStore->LoadLibrary(std::make_shared<EditorElementLibrary>(GetLogger(), *m_assetStore));
 			m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(GetLogger(), *m_assetStore));
 		}
 		else
