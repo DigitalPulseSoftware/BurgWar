@@ -52,6 +52,6 @@ Dans le cas où une dépendance ne serait pas renseignée, les projets qui en d�
 Une fois ce fichier rempli, vous n'avez qu'à exécuter `premake5.exe` (`premake5-linux64` sous Linux) suivi d'un espacement et de la cible que vous souhaitez générer, communément `vs2019` pour Visual Studio 2019, `gmake` pour un makefile, etc. (Appelez premake sans argument pour obtenir la liste des cibles supportées).
 
 À partir de là, compilez le projet selon la cible générée, et vous devriez obtenir des exécutables pour le Client (Burgwar), le Serveur (BWServer) et l'Éditeur de map (BWMapEditor).
-Chacun de ces projet utilise un fichier .lua pour sa configuration, veillez bien à ce qu'il soit présent (et bien configuré) dans le répertoire courant de l'exécutable avant de le démarrer.
+Chacun de ces projets utilise un fichier .lua pour sa configuration, veillez bien à ce qu'il soit présent (et bien configuré) dans le répertoire courant de l'exécutable avant de le démarrer.
 
 Il ne vous manquera que les assets (images/sons/etc.) nécessaires, que vous pouvez trouver en téléchargeant les releases GitHub.
