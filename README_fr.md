@@ -1,4 +1,4 @@
-# Burg'war
+# Burg'war [![France flag](.github/images/franceflag.png)](README_fr.md)
 
 ![Le burger iconique de Burgwar](.github/images/burger.png)
 
@@ -15,14 +15,14 @@ Téléchargez la dernière [release](https://github.com/DigitalPulseSoftware/Bur
 
 Burg'war utilise trois bibliothèques :
 
-- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - utilisé par l'entireté du projet (téléchargez les nightlies ou compilez vous-même).
-- [cURL](https://curl.haxx.se/) - requis par le client ([binaires pour Windows](https://curl.haxx.se/windows/)).
-- [Qt](https://www.qt.io) - requis par l'éditeur de map
+- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - utilisé par l'entireté du projet (téléchargez les nightlies ou compilez vous-même) ;
+- [cURL](https://curl.haxx.se/) - requis par le client ([binaires pour Windows](https://curl.haxx.se/windows/)) ;
+- [Qt](https://www.qt.io) - requis par l'éditeur de map.
 
 Une fois les binaires de ces bibliothèques installées sur votre système, copiez-le fichier `build/config.default.lua` vers `build/config.lua` et remplissez-le pour indiquer où se trouvent vos dépendances.
 
 Ce fichier est utilisé par le générateur ([Premake](https://premake.github.io)) pour savoir où se trouvent les binaires des bibliothèques (bin) et les headers pour l'inclusion (include).
-Sous Windows, il faut également renseigner l'endroit où se trouve les .lib d'inclusion (lib)
+Sous Windows, il faut également renseigner l'endroit où se trouve les .lib d'inclusion (lib).
 
 Le format est le suivant :
 ```lua
@@ -37,7 +37,7 @@ NomDependance = {
 }
 ```
 
-Si la dépendance est installée sur votre système (comme souvent sur Linux), vous pouvez l'indiquer avec 
+Si la dépendance est installée sur votre système (comme souvent sur Linux), vous pouvez l'indiquer avec :
 ```lua
 NomDependance = {
   PackageFolder = ":system",
