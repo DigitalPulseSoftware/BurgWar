@@ -6,11 +6,6 @@
 
 namespace bw
 {
-	inline EditorGizmo::EditorGizmo(Ndk::Entity* entity) :
-	m_targetEntity(entity)
-	{
-	}
-
 	inline const Ndk::EntityHandle& EditorGizmo::GetTargetEntity() const
 	{
 		return m_targetEntity;

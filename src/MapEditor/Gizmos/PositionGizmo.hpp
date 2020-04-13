@@ -11,7 +11,6 @@
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/EntityOwner.hpp>
 #include <array>
 
 namespace bw
@@ -22,7 +21,7 @@ namespace bw
 	{
 		public:
 			PositionGizmo(Camera& camera, Ndk::Entity* entity, const Nz::Vector2f& positionAlignment);
-			~PositionGizmo();
+			~PositionGizmo() = default;
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 			bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;

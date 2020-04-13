@@ -8,14 +8,16 @@
 #define BURGWAR_MAPEDITOR_EDITORGIZMO_HPP
 
 #include <Nazara/Platform/Event.hpp>
+#include <Nazara/Graphics/Model.hpp>
 #include <NDK/Entity.hpp>
+#include <NDK/EntityOwner.hpp>
 
 namespace bw
 {
 	class EditorGizmo
 	{
 		public:
-			inline EditorGizmo(Ndk::Entity* entity);
+			EditorGizmo(Ndk::Entity* entity);
 			virtual ~EditorGizmo();
 
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
@@ -25,6 +27,9 @@ namespace bw
 			virtual bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) = 0;
 
 		private:
+			static Nz::ModelRef GenerateBoxModel();
+
+			Ndk::EntityOwner m_selectionOverlayEntity;
 			Ndk::EntityHandle m_targetEntity;
 	};
 }

@@ -6,7 +6,6 @@
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
-#include <NDK/Components/DebugComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
@@ -46,24 +45,16 @@ namespace bw
 		m_allowedMovements[MovementType::XYAxis].Set(1.f, 1.f);
 
 		m_arrowEntity = entity->GetWorld()->CreateEntity();
-		m_arrowEntity->AddComponent<Ndk::NodeComponent>();
 
 		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
 		gfx.Attach(m_sprites[MovementType::XYAxis], 2);
 		gfx.Attach(m_sprites[MovementType::XAxis], 1);
 		gfx.Attach(m_sprites[MovementType::YAxis], Nz::Matrix4f::Rotate(Nz::DegreeAnglef(-90.f)), 1);
 
-		auto& node = m_arrowEntity->GetComponent<Ndk::NodeComponent>();
+		auto& node = m_arrowEntity->AddComponent<Ndk::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
 		node.SetParent(GetTargetEntity());
-
-		GetTargetEntity()->AddComponent<Ndk::DebugComponent>(Ndk::DebugDraw::GraphicsAABB);
-	}
-
-	PositionGizmo::~PositionGizmo()
-	{
-		GetTargetEntity()->RemoveComponent<Ndk::DebugComponent>();
 	}
 
 	bool PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)

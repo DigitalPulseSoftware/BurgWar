@@ -12,7 +12,6 @@
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
-#include <NDK/Systems/DebugSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 
@@ -22,8 +21,6 @@ namespace bw
 	WorldCanvas(parent),
 	m_editor(editor)
 	{
-		GetWorld().GetSystem<Ndk::DebugSystem>().EnableDepthBuffer(false);
-
 		EnableCameraControl(true);
 
 		const CameraMovement& cameraController = GetCameraController();
