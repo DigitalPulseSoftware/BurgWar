@@ -1,4 +1,4 @@
-# BurgWar
+# Burg'war
 
 ![Iconic Burgwar burger](.github/images/burger.png)
 
