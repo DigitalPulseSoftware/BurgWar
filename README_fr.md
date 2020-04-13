@@ -41,7 +41,8 @@ Si la dépendance est installée sur votre système (comme souvent sur Linux), v
 ```lua
 NomDependance = {
   PackageFolder = ":system",
-}```
+}
+```
 
 Les trois dépendances sont `cURL`, `Nazara` et `Qt`. 
 À noter que `Qt` demande aussi l'option `MocPath`, chemin vers l'utilitaire moc.exe (normalement trouvé dans le dossier bin), ce n'est pas obligatoire mais recommandé si vous souhaitez effectuer des changements au projet.
