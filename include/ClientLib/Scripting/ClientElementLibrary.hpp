@@ -21,9 +21,10 @@ namespace bw
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
-		private:
-			void RegisterClientLibrary(sol::table& elementTable);
+		protected:
+			virtual void RegisterClientLibrary(sol::table& elementTable);
 
+		private:
 			ClientAssetStore& m_assetStore;
 	};
 }

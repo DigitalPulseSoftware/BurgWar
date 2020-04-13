@@ -36,6 +36,11 @@ namespace bw
 		}
 	}
 
+	void EditorEntityStore::BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
+	{
+		// Don't bind any callback in the editor
+	}
+
 	std::shared_ptr<ScriptedEntity> EditorEntityStore::CreateElement() const
 	{
 		return std::make_shared<EditorScriptedEntity>();

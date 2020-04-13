@@ -21,6 +21,7 @@ namespace bw
 			~SharedEntityStore() = default;
 
 		protected:
+			virtual void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override = 0;
 			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
 	};

@@ -16,15 +16,8 @@ namespace bw
 		SetTableName("ENTITY");
 	}
 
-	void SharedEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
+	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& entity) const
 	{
-	}
-
-	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
-	{
-		if (!ScriptStore::InitializeEntity(entityClass, entity))
-			return false;
-
 		if (entity->HasComponent<InputComponent>())
 		{
 			InputComponent& entityInputs = entity->GetComponent<InputComponent>();
@@ -43,6 +36,18 @@ namespace bw
 
 			entityScript.ExecuteCallback("OnKilled");
 		});
+	}
+
+	void SharedEntityStore::InitializeElement(sol::table& /*elementTable*/, ScriptedEntity& /*element*/)
+	{
+	}
+
+	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
+	{
+		if (!ScriptStore::InitializeEntity(entityClass, entity))
+			return false;
+
+		BindCallbacks(entityClass, entity);
 
 		return true;
 	}

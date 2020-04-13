@@ -20,6 +20,8 @@ namespace bw
 			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const override;
 
 		private:
+			void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const override;
+
 			std::shared_ptr<ScriptedEntity> CreateElement() const override;
 			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
 	};
