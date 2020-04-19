@@ -27,7 +27,7 @@ namespace bw
 	m_curlMulti(nullptr),
 	m_logger(logger)
 	{
-		assert(m_baseDownloadUrls.size() > 0);
+		assert(!m_baseDownloadUrls.empty());
 		for (std::string& downloadUrl : m_baseDownloadUrls)
 		{
 			if (downloadUrl.back() == '/')
