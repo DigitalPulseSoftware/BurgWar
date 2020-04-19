@@ -361,6 +361,24 @@ namespace bw
 			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
 		};
 
+		elementMetatable["SetDirection"] = [](const sol::table& entityTable, const Nz::Vector2f& upVector)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + float(M_PI) / 2.f);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetRotation(angle);
+			}
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			nodeComponent.SetRotation(angle);
+		};
+
 		auto SetMass = [](const sol::table& entityTable, float mass, bool recomputeMomentOfInertia = false)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -408,6 +426,22 @@ namespace bw
 			
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			nodeComponent.SetPosition(position);
+		};
+
+		elementMetatable["SetRotation"] = [](const sol::table& entityTable, const Nz::DegreeAnglef& rotation)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity)
+				return;
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physComponent.SetRotation(rotation);
+			}
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			nodeComponent.SetRotation(rotation);
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)
