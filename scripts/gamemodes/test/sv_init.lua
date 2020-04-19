@@ -112,6 +112,8 @@ function GM:OnPlayerChat(player, message)
 	end
 end
 
+GM.NextSpawnTime = 0
+
 GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
@@ -119,14 +121,22 @@ GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 			burger:Kill()
 		end
 	end
+
+	if (match.GetMilliseconds() > GM.NextSpawnTime) then
+		match.CreateEntity({
+			Type = "entity_clove_mine",
+			LayerIndex = 0,
+			Position = Vec2(math.random(200, 10000), -700),
+			Properties = {
+				free = true
+			}
+		})
+
+		GM.NextSpawnTime = match.GetMilliseconds() + math.random(5000, 20000)
+	end
 end)
 
 function GM:OnInit()
-	--[[for i = 0, 20 do
-		self:CreateEntity("entity_box", Vec2(math.random(0, 10000), -200), {
-			size = math.random(10, 20) / 10.0
-		})
-	end]]
 end
 
 function GM:ChoosePlayerSpawnPosition()

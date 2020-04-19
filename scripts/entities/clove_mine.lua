@@ -13,7 +13,10 @@ RegisterClientAssets(ENTITY.ExplosionSounds)
 ENTITY.IsNetworked = true
 ENTITY.MaxHealth = 1
 
-ENTITY.Properties = {}
+ENTITY.Properties = {
+	{ Name = "free", Type = PropertyType.Boolean, Default = true, Shared = true }
+}
+ENTITY.Status = "free"
 
 function ENTITY:Initialize()
 	local centerOffset = -Vec2(96, 96) / 2
@@ -23,7 +26,16 @@ function ENTITY:Initialize()
 	}
 
 	self:SetCollider(colliders)
-	self:InitRigidBody(0, 10)
+	if (self:GetProperty("free")) then
+		self:InitRigidBody(10, 10)
+	else
+		self:InitRigidBody(0, 10)
+		self.Status = "digged"
+	end
+
+	if (SERVER) then
+		self:EnableCollisionCallbacks(true)
+	end
 
 	if (CLIENT) then
 		self:AddSprite({
@@ -66,8 +78,10 @@ function ENTITY:OnTick()
 	local closestPlayerDist = closestPlayerDistSq and math.sqrt(closestPlayerDistSq) or nil
 
 	if (SERVER) then
-		if (closestPlayerDist and closestPlayerDist < 256) then
+		if (self.ExplosionTime and match.GetMilliseconds() >= self.ExplosionTime) then
 			self:Explode()
+		elseif (closestPlayerDist and closestPlayerDist < 256) then
+			self:Undig()
 		end
 	else
 		if (closestPlayerDist) then
@@ -86,27 +100,85 @@ function ENTITY:OnTick()
 end
 
 if (SERVER) then
-	function ENTITY:Explode()
-		if (self.HasExploded) then
+	function ENTITY:OnCollisionStart(other)
+		if (other.Name == self.Name) then
+			return false
+		end
+
+		if (other:GetMass() == 0) then
+			self:Dig()
+		else
+			self:Explode()
+		end
+
+		return true
+	end
+
+	function ENTITY:Dig()
+		if (self.Status ~= "free") then
 			return
 		end
+
+		local closestResult
+		local closestEntityDist = math.huge
+
+		physics.TraceMultiple(self:GetLayerIndex(), self:GetPosition() + self:GetUpVector() * -48, self:GetPosition() + self:GetUpVector() * 100, function (result)
+			if (result.hitEntity == self or result.hitEntity:GetMass() > 0) then
+				return
+			end
+
+			if (result.fraction < closestEntityDist) then
+				closestResult = result
+				closestEntityDist = result.fraction
+			end
+		end)
+
+		if (closestResult) then
+			self.Status = "digging"
+			local digHeight = 36
+			local time = 500
+
+			self:SetMass(0)
+			self:SetDirection(closestResult.hitNormal)
+			self:SetPosition(closestResult.hitPos - closestResult.hitNormal * digHeight)
+			self:SetVelocity(self:GetUpVector() * -digHeight / time * 1000)
+			coroutine.wrap(function()
+				timer.Sleep(time)
+				self.Status = "digged"
+			end)()
+		end
+	end
+
+	function ENTITY:Explode()
+		if (self.Status ~= "free" and self.Status ~= "undigged") then
+			return
+		end
+
+		local pos = self:GetPosition()
+		local maxs = Vec2(256, 256)
+		local mins = Vec2(-256, -256)
+
+		self:DealDamage(self:GetPosition(), math.random(500, 1000), Rect(pos + mins, pos + maxs), 100000)
+		
+		self:Kill()
+	end
+
+	function ENTITY:Undig()
+		if (self.Status ~= "digged") then
+			return
+		end
+
+		self.Status = "undigging"
 
 		local height = 64
 		local time = 200
 
-		self.HasExploded = true
 		self:SetVelocity(self:GetUpVector() * -height / time * 1000)
 		coroutine.wrap(function()
 			timer.Sleep(time)
 			self:SetMass(10, true)
-			timer.Sleep(500)
-			local pos = self:GetPosition()
-			local maxs = Vec2(256, 256)
-			local mins = Vec2(-256, -256)
-
-			self:DealDamage(self:GetPosition(), math.random(500, 1000), Rect(pos + mins, pos + maxs), 100000)
-			
-			self:Kill()
+			self.ExplosionTime = match.GetMilliseconds() + 500
+			self.Status = "undigged"
 		end)()
 	end
 end
