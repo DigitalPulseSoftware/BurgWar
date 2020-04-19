@@ -143,7 +143,14 @@ namespace bw
 
 			// FIXME: For now, collision changes are only taken in account on SetGeom
 			Nz::Collider2DRef geom = collisionComponent.GetGeom();
-			geom->SetCollisionId((enable) ? 1 : 0);
+			if (geom->GetType() == Nz::ColliderType2D_Compound)
+			{
+				Nz::CompoundCollider2D* compoundGeom = static_cast<Nz::CompoundCollider2D*>(geom.Get());
+				for (Nz::Collider2D* subGeom : compoundGeom->GetGeoms())
+					subGeom->SetCollisionId((enable) ? 1 : 0);
+			}
+			else
+				geom->SetCollisionId((enable) ? 1 : 0);
 
 			collisionComponent.SetGeom(std::move(geom));
 		};
