@@ -19,7 +19,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState["include"] = [&](const std::string& scriptName)
 		{
-			std::filesystem::path scriptPath = context.GetCurrentFolder() / scriptName;
+			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
 
 			if (!context.Load(scriptPath.generic_u8string()))
 				throw std::runtime_error("TODO");

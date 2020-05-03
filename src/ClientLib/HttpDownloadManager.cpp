@@ -119,7 +119,7 @@ namespace bw
 		}
 
 		// Try to find file in cache
-		std::filesystem::path cachePath = m_targetFolder / filePath;
+		std::filesystem::path cachePath = m_targetFolder / std::filesystem::u8path(filePath);
 		cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
 
 		if (shouldDownload)

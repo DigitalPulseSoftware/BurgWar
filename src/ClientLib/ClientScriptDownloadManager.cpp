@@ -14,7 +14,7 @@ namespace bw
 
 		std::string hexChecksum = nzchecksum.ToHex().ToStdString();
 
-		std::filesystem::path clientFilePath = m_clientFileCache / filePath;
+		std::filesystem::path clientFilePath = m_clientFileCache / std::filesystem::u8path(filePath);
 		clientFilePath.concat("." + hexChecksum);
 
 		bool shouldDownload = false;
