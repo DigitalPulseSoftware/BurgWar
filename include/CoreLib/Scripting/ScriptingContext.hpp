@@ -30,6 +30,7 @@ namespace bw
 			inline const std::filesystem::path& GetCurrentFolder() const;
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
+			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 
 			bool Load(const std::filesystem::path& folderOrFile);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);

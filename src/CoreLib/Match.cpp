@@ -340,29 +340,11 @@ namespace bw
 			m_weaponStore->ReloadLibraries();
 		}
 
-		VirtualDirectory::Entry entry;
+		m_entityStore->LoadDirectory("entities");
+		m_entityStore->Resolve();
 
-		if (scriptDir->GetEntry("entities", &entry))
-		{
-			std::filesystem::path path = "entities";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
-
-		if (scriptDir->GetEntry("weapons", &entry))
-		{
-			std::filesystem::path path = "weapons";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_weaponStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
+		m_weaponStore->LoadDirectory("weapons");
+		m_weaponStore->Resolve();
 
 		if (!m_gamemode)
 			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodePath);

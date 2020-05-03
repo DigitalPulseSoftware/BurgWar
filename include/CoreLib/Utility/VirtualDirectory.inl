@@ -21,7 +21,7 @@ namespace bw
 	}
 
 	template<typename F>
-	inline void VirtualDirectory::Foreach(F&& cb, bool includeDots)
+	void VirtualDirectory::Foreach(F&& cb, bool includeDots)
 	{
 		if (includeDots)
 			EnsureDots();

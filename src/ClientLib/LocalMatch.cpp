@@ -308,29 +308,8 @@ namespace bw
 			m_weaponStore->ReloadLibraries();
 		}
 
-		VirtualDirectory::Entry entry;
-
-		if (scriptDir->GetEntry("entities", &entry))
-		{
-			std::filesystem::path path = "entities";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
-
-		if (scriptDir->GetEntry("weapons", &entry))
-		{
-			std::filesystem::path path = "weapons";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_weaponStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
+		m_entityStore->LoadDirectory("entities");
+		m_weaponStore->LoadDirectory("weapons");
 
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::object callbackObject)

@@ -29,7 +29,7 @@ namespace bw
 		static_assert(std::is_base_of_v<ScriptedElement, Element>);
 
 		public:
-			inline ScriptStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);
+			ScriptStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);
 			virtual ~ScriptStore() = default;
 
 			void ClearElements();
@@ -41,10 +41,13 @@ namespace bw
 			sol::table& GetElementMetatable();
 			const Logger& GetLogger() const;
 
+			void LoadDirectory(const std::filesystem::path& directoryPath);
 			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
 			void LoadLibrary(std::shared_ptr<AbstractElementLibrary> library);
 
 			void ReloadLibraries();
+
+			void Resolve();
 			
 			void UpdateEntityElement(const Ndk::EntityHandle& entity);
 
@@ -64,6 +67,8 @@ namespace bw
 			void SetTableName(std::string tableName);
 
 		private:
+			bool RegisterElement(std::shared_ptr<Element> element);
+
 			sol::table m_elementMetatable;
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_elementTypeName;
@@ -71,6 +76,7 @@ namespace bw
 			std::vector<std::shared_ptr<AbstractElementLibrary>> m_libraries;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
+			tsl::hopscotch_map<std::string /*dependency*/, std::vector<std::shared_ptr<Element>>> m_pendingElements;
 			const Logger& m_logger;
 			bool m_isServer;
 	};

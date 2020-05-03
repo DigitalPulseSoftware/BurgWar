@@ -43,6 +43,11 @@ namespace bw
 	{
 		return m_luaState;
 	}
+
+	inline const std::shared_ptr<VirtualDirectory>& ScriptingContext::GetScriptDirectory() const
+	{
+		return m_scriptDirectory;
+	}
 	
 	inline void ScriptingContext::UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir)
 	{

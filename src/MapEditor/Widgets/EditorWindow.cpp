@@ -1467,18 +1467,7 @@ namespace bw
 			m_entityStore->ReloadLibraries();
 		}
 
-		VirtualDirectory::Entry entry;
-		
-		if (m_scriptFolder->GetEntry("entities", &entry))
-		{
-			std::filesystem::path path = "entities";
-
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
-			{
-				m_entityStore->LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), path / entryName);
-			});
-		}
+		m_entityStore->LoadDirectory("entities");
 
 		if (m_canvas)
 		{

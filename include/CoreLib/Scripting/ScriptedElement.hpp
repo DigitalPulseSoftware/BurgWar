@@ -33,6 +33,7 @@ namespace bw
 		sol::protected_function initializeFunction;
 		sol::protected_function postFrameFunction;
 		sol::protected_function tickFunction;
+		std::string base;
 		std::string name;
 		std::string fullName;
 		tsl::hopscotch_map<std::string /*key*/, Property> properties;

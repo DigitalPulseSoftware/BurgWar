@@ -87,6 +87,22 @@ namespace bw
 	}
 
 	template<typename Element>
+	void ScriptStore<Element>::LoadDirectory(const std::filesystem::path& directoryPath)
+	{
+		const auto& scriptDir = m_context->GetScriptDirectory();
+
+		VirtualDirectory::Entry entry;
+		if (scriptDir->GetEntry(directoryPath.generic_u8string(), &entry) && std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry))
+		{
+			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			{
+				LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), directoryPath / entryName);
+			});
+		}
+	}
+
+	template<typename Element>
 	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
 		sol::state& state = GetLuaState();
@@ -148,69 +164,19 @@ namespace bw
 		element->name = std::move(elementName);
 		element->fullName = std::move(fullName);
 		element->elementTable = std::move(elementTable);
-		element->frameFunction = element->elementTable["OnFrame"];
-		element->initializeFunction = element->elementTable["Initialize"];
-		element->postFrameFunction = element->elementTable["OnPostFrame"];
-		element->tickFunction = element->elementTable["OnTick"];
+		element->base = element->elementTable.get_or("Base", std::string());
 
-		sol::object properties = element->elementTable["Properties"];
-		if (properties)
+		// If no base element (or element already loaded), initialize it now
+		if (element->base.empty() || m_elementsByName.find(element->base) != m_elementsByName.end())
+			return RegisterElement(std::move(element));
+		else
 		{
-			sol::table elementProperties = properties.as<sol::table>();
+			// Else, add it in a pending list
+			auto& pendingElements = m_pendingElements[element->base];
+			pendingElements.emplace_back(std::move(element));
 
-			std::size_t propertyIndex = 0;
-			for (const auto& kv : elementProperties)
-			{
-				sol::table propertyTable = kv.second;
-
-				std::string propertyName = propertyTable["Name"];
-
-				try
-				{
-					ScriptedElement::Property property;
-					property.index = propertyIndex;
-					property.type = propertyTable["Type"];
-					
-					sol::object propertyShared = propertyTable["Shared"];
-					if (propertyShared)
-						property.shared = propertyShared.as<bool>();
-
-					sol::object propertyArray = propertyTable["Array"];
-					if (propertyArray)
-						property.isArray = propertyArray.as<bool>();
-
-					sol::object propertyDefault = propertyTable["Default"];
-					if (!propertyDefault.is<sol::nil_t>())
-						property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
-
-					auto it = element->properties.find(propertyName);
-					if (it == element->properties.end())
-						element->properties.emplace(std::move(propertyName), std::move(property));
-					else
-						throw std::runtime_error("Property " + propertyName + " found twice");
-				}
-				catch (const std::exception& e)
-				{
-					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
-				}
-
-				propertyIndex++;
-			}
+			return true;
 		}
-
-		try
-		{
-			InitializeElement(element->elementTable, *element);
-		}
-		catch (const std::exception& e)
-		{
-			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: {2}", m_elementTypeName, elementName, e.what());
-		}
-
-		m_elementsByName[element->fullName] = m_elements.size();
-		m_elements.emplace_back(std::move(element));
-
-		return true;
 	}
 
 	template<typename Element>
@@ -235,6 +201,45 @@ namespace bw
 		// Link new metatables
 		for (const auto& elementPtr : m_elements)
 			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::Resolve()
+	{
+		bool continueResolving;
+
+		do 
+		{
+			continueResolving = false;
+
+			// Cries in topology sort
+			for (auto it = m_pendingElements.begin(); it != m_pendingElements.end();)
+			{
+				const auto& dependency = it.key();
+				if (m_elementsByName.find(dependency) != m_elementsByName.end())
+				{
+					auto& elements = it.value();
+
+					for (auto&& element : elements)
+					{
+						if (RegisterElement(std::move(element)))
+							continueResolving = true;
+					}
+
+					it = m_pendingElements.erase(it);
+				}
+				else
+					++it;
+			}
+		}
+		while (continueResolving);
+
+		for (const auto& [dependency, elements] : m_pendingElements)
+		{
+			for (auto&& element : elements)
+				bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: dependency {2} does not exist", m_elementTypeName, element->name, dependency);
+		}
+		m_pendingElements.clear();
 	}
 
 	template<typename Element>
@@ -284,6 +289,100 @@ namespace bw
 	template<typename Element>
 	void ScriptStore<Element>::InitializeElementTable(sol::table& /*elementTable*/)
 	{
+	}
+
+	template<typename Element>
+	bool ScriptStore<Element>::RegisterElement(std::shared_ptr<Element> element)
+	{
+		std::shared_ptr<Element> baseElement;
+		if (!element->base.empty())
+		{
+			auto it = m_elementsByName.find(element->base);
+			assert(it != m_elementsByName.end());
+
+			baseElement = m_elements[it->second];
+		}
+
+		if (baseElement)
+		{
+			element->elementTable["__index"] = [baseElement](const sol::table& /*table*/, const std::string_view& key)
+			{
+				return baseElement->elementTable[key];
+			};
+		}
+
+		element->frameFunction = element->elementTable["OnFrame"];
+		element->initializeFunction = element->elementTable["Initialize"];
+		element->postFrameFunction = element->elementTable["OnPostFrame"];
+		element->tickFunction = element->elementTable["OnTick"];
+
+		std::size_t propertyIndex = 0;
+		auto HandleProperties = [&](const sol::table& elementTable)
+		{
+			sol::object properties = elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
+			if (properties)
+			{
+				sol::table elementProperties = properties.as<sol::table>();
+
+				for (const auto& kv : elementProperties)
+				{
+					sol::table propertyTable = kv.second;
+
+					std::string propertyName = propertyTable["Name"];
+
+					try
+					{
+						ScriptedElement::Property property;
+						property.index = propertyIndex;
+						property.type = propertyTable["Type"];
+
+						sol::object propertyShared = propertyTable["Shared"];
+						if (propertyShared)
+							property.shared = propertyShared.as<bool>();
+
+						sol::object propertyArray = propertyTable["Array"];
+						if (propertyArray)
+							property.isArray = propertyArray.as<bool>();
+
+						sol::object propertyDefault = propertyTable["Default"];
+						if (!propertyDefault.is<sol::nil_t>())
+							property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
+
+						auto it = element->properties.find(propertyName);
+						if (it == element->properties.end())
+							element->properties.emplace(std::move(propertyName), std::move(property));
+						else
+							throw std::runtime_error("Property " + propertyName + " already exists");
+					}
+					catch (const std::exception& e)
+					{
+						bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
+					}
+
+					propertyIndex++;
+				}
+			}
+		};
+
+		if (baseElement)
+			HandleProperties(baseElement->elementTable);
+
+		HandleProperties(element->elementTable);
+
+		try
+		{
+			InitializeElement(element->elementTable, *element);
+		}
+		catch (const std::exception& e)
+		{
+			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: {2}", m_elementTypeName, element->name, e.what());
+			return false;
+		}
+
+		m_elementsByName[element->fullName] = m_elements.size();
+		m_elements.emplace_back(std::move(element));
+
+		return true;
 	}
 
 	template<typename Element>
