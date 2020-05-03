@@ -26,8 +26,12 @@ namespace bw
 		assert(IsValid());
 		assert(layerIndex < m_layers.size());
 		auto& layer = m_layers[layerIndex];
+
+		std::size_t entityIndex = layer.entities.size();
 		auto& newEntity = layer.entities.emplace_back(std::forward<Args>(args)...);
 		newEntity.uniqueId = m_freeUniqueId++;
+
+		RegisterEntity(newEntity.uniqueId, layerIndex, entityIndex);
 
 		return newEntity;
 	}
@@ -35,16 +39,64 @@ namespace bw
 	template<typename... Args> 
 	auto Map::AddLayer(Args&&... args) -> Layer&
 	{
+		std::size_t layerIndex = m_layers.size();
 		Layer& layer = m_layers.emplace_back(std::forward<Args>(args)...);
+
+		std::size_t entityIndex = 0;
 		for (auto& entity : layer.entities)
+		{
 			entity.uniqueId = m_freeUniqueId++;
 
+			RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
+			entityIndex++;
+		}
+
 		return layer;
+	}
+
+	inline auto Map::DropEntity(std::size_t layerIndex, std::size_t entityIndex) -> Entity
+	{
+		Layer& layer = GetLayer(layerIndex);
+
+		assert(entityIndex < layer.entities.size());
+		Entity entityData = std::move(layer.entities[entityIndex]);
+		layer.entities.erase(layer.entities.begin() + entityIndex);
+
+		UnregisterEntity(entityData.uniqueId);
+
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex == layerIndex)
+			{
+				assert(entityIndices.entityIndex != entityIndex);
+				if (entityIndices.entityIndex > entityIndex)
+					entityIndices.entityIndex--;
+			}
+		}
+
+		return entityData;
 	}
 
 	inline auto Map::DropLayer(std::size_t layerIndex) -> Layer
 	{
 		Layer layer = std::move(GetLayer(layerIndex));
+
+		std::size_t entityIndex = 0;
+		for (auto& entity : layer.entities)
+		{
+			UnregisterEntity(entity.uniqueId);
+			entityIndex++;
+		}
+
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			assert(entityIndices.layerIndex != layerIndex);
+			if (entityIndices.layerIndex > layerIndex)
+				entityIndices.layerIndex--;
+		}
+
 		m_layers.erase(m_layers.begin() + layerIndex);
 		//TODO: Should the map fix entity properties?
 
@@ -56,17 +108,43 @@ namespace bw
 	{
 		auto& layer = GetLayer(layerIndex);
 		auto& entity = *layer.entities.emplace(layer.entities.begin() + entityIndex, std::forward<Args>(args)...);
-		entity.uniqueId = m_freeUniqueId++;
+
+		// If unique id is still in use, set a new one
+		if (m_entitiesByUniqueId.find(entity.uniqueId) != m_entitiesByUniqueId.end())
+			entity.uniqueId = m_freeUniqueId++;
+
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex == layerIndex && entityIndices.entityIndex >= entityIndex)
+				entityIndices.entityIndex++;
+		}
+
+		RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
 
 		return entity;
 	}
 
 	template<typename... Args> 
-	auto Map::EmplaceLayer(std::size_t index, Args&&... args) -> Layer&
+	auto Map::EmplaceLayer(std::size_t layerIndex, Args&&... args) -> Layer&
 	{
-		Layer& layer = *m_layers.emplace(m_layers.begin() + index, std::forward<Args>(args)...);
+		Layer& layer = *m_layers.emplace(m_layers.begin() + layerIndex, std::forward<Args>(args)...);
+
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex >= layerIndex)
+				entityIndices.layerIndex++;
+		}
+
+		std::size_t entityIndex = 0;
 		for (auto& entity : layer.entities)
+		{
 			entity.uniqueId = m_freeUniqueId++;
+			RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
+
+			entityIndex++;
+		}
 
 		return layer;
 	}
@@ -103,6 +181,26 @@ namespace bw
 		auto& layer = GetLayer(layerIndex);
 		assert(entityIndex < layer.entities.size());
 		return layer.entities[entityIndex];
+	}
+
+	inline auto Map::GetEntity(Nz::Int64 uniqueId) -> Entity&
+	{
+		const EntityIndices& indices = GetEntityIndices(uniqueId);
+		return GetEntity(indices.layerIndex, indices.entityIndex);
+	}
+
+	inline auto Map::GetEntity(Nz::Int64 uniqueId) const -> const Entity&
+	{
+		const EntityIndices& indices = GetEntityIndices(uniqueId);
+		return GetEntity(indices.layerIndex, indices.entityIndex);
+	}
+
+	inline auto Map::GetEntityIndices(Nz::Int64 uniqueId) const -> const EntityIndices&
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		assert(it != m_entitiesByUniqueId.end());
+
+		return it->second;
 	}
 
 	inline std::size_t Map::GetEntityCount(std::size_t layerIndex) const
@@ -148,8 +246,26 @@ namespace bw
 		auto& sourceLayer = GetLayer(sourceLayerIndex);
 		assert(sourceEntityIndex < sourceLayer.entities.size());
 		auto& targetLayer = GetLayer(targetLayerIndex);
-		targetLayer.entities.emplace_back(std::move(sourceLayer.entities[sourceEntityIndex]));
+
+		Entity& targetentity = sourceLayer.entities[sourceEntityIndex];
+
+		auto movedIt = m_entitiesByUniqueId.find(targetentity.uniqueId);
+		assert(movedIt != m_entitiesByUniqueId.end());
+		movedIt.value() = EntityIndices{ targetLayerIndex, targetLayer.entities.size() };
+
+		targetLayer.entities.emplace_back(std::move(targetentity));
 		sourceLayer.entities.erase(sourceLayer.entities.begin() + sourceEntityIndex);
+
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex == sourceLayerIndex)
+			{
+				assert(entityIndices.entityIndex != sourceEntityIndex);
+				if (entityIndices.entityIndex > sourceEntityIndex)
+					entityIndices.layerIndex--;
+			}
+		}
 
 		return targetLayer.entities.back();
 	}
@@ -168,5 +284,17 @@ namespace bw
 		map.LoadFromTextInternal(folder);
 
 		return map;
+	}
+
+	inline void Map::RegisterEntity(Nz::Int64 uniqueId, std::size_t layerIndex, std::size_t entityIndex)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId[uniqueId] = EntityIndices{ layerIndex, entityIndex };
+	}
+
+	inline void Map::UnregisterEntity(Nz::Int64 uniqueId)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) != m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.erase(uniqueId);
 	}
 }
