@@ -85,7 +85,7 @@ namespace bw
 
 			EntityInfoDialog* GetEntityInfoDialog();
 
-			inline void InvalidateMap();
+			void InvalidateMap();
 
 			void OnAlignEntities();
 			void OnCloneEntity(std::size_t entityIndex);

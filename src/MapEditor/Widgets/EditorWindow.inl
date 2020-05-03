@@ -71,9 +71,4 @@ namespace bw
 				bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
 		});
 	}
-
-	inline void EditorWindow::InvalidateMap()
-	{
-		m_mapDirtyFlag = true;
-	}
 }

@@ -318,7 +318,7 @@ namespace bw
 		m_mapMenu->setEnabled(hasWorkingMap);
 		m_playMap->setEnabled(hasWorkingMap);
 		m_saveMap->setEnabled(hasWorkingMap);
-		m_saveMapToolbar->setEnabled(hasWorkingMap);
+		m_saveMapToolbar->setEnabled(false); //< Always disabled after loading
 
 		if (!hasWorkingMap)
 			m_layerMenu->setEnabled(false);
@@ -767,6 +767,12 @@ namespace bw
 			m_entityInfoDialog = new EntityInfoDialog(GetLogger(), m_workingMap, *m_entityStore, *m_scriptingContext, this);
 
 		return m_entityInfoDialog;
+	}
+
+	void EditorWindow::InvalidateMap()
+	{
+		m_mapDirtyFlag = true;
+		m_saveMapToolbar->setEnabled(true);
 	}
 
 	void EditorWindow::RefreshRecentFileListMenu()
@@ -1531,6 +1537,8 @@ namespace bw
 		if (m_workingMap.Save(m_workingMapPath))
 		{
 			m_mapDirtyFlag = false;
+			m_saveMapToolbar->setEnabled(false);
+
 			statusBar()->showMessage(tr("Map saved"), 3000);
 
 			return true;
