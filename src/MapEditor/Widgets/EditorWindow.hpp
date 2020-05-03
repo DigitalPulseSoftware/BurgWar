@@ -15,6 +15,7 @@
 #include <MapEditor/EditorAppConfig.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QUndoStack>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
@@ -44,6 +45,9 @@ namespace bw
 			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
+			Map::Entity& CreateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData);
+			Map::Entity DeleteEntity(std::size_t layerIndex, std::size_t entityIndex);
+
 			inline const std::optional<std::size_t>& GetCurrentLayer() const;
 
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
@@ -56,6 +60,10 @@ namespace bw
 			inline const Map& GetWorkingMap() const;
 
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
+
+			void PushCommand(QUndoCommand* command);
+			template<typename T, typename... Args> void PushCommand(Args&&... args);
+			void RefreshEntityPositionAndRotation(std::size_t layerIndex, std::size_t entityIndex);
 
 			void SelectEntity(Ndk::EntityId entityId);
 
@@ -78,8 +86,6 @@ namespace bw
 			void BuildToolbar(const std::string& editorAssetsFolder);
 
 			bool CanCloseMap();
-
-			void DeleteEntity(std::size_t entityIndex);
 
 			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
 
@@ -165,6 +171,7 @@ namespace bw
 			QMenu* m_layerMenu;
 			QMenu* m_mapMenu;
 			QTabWidget* m_centralTab;
+			QUndoStack m_undoStack;
 			EntityInfoDialog* m_entityInfoDialog;
 			EditorAppConfig m_configFile;
 			Map m_workingMap;

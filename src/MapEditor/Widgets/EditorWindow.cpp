@@ -12,6 +12,7 @@
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <MapEditor/Commands/EntityCommands.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Scripting/EditorElementLibrary.hpp>
@@ -131,10 +132,9 @@ namespace bw
 
 			std::size_t entityIndex = it.value();
 
-			auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
-
-			auto& layerEntity = layer.entities[entityIndex];
-			layerEntity.position = newPosition;
+			const Map& map = GetWorkingMap();
+			const auto& entity = map.GetEntity(m_currentLayer.value(), entityIndex);
+			PushCommand<Commands::PositionUpdate>(*this, entity.uniqueId, newPosition - entity.position);
 		});
 
 		m_canvas->OnCanvasMouseButtonPressed.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -206,6 +206,47 @@ namespace bw
 	void EditorWindow::ClearWorkingMap()
 	{
 		UpdateWorkingMap(Map());
+	}
+
+	Map::Entity& EditorWindow::CreateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData)
+	{
+		if (m_currentLayer && *m_currentLayer == layerIndex)
+		{
+			auto& cloneEntity = GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
+			RegisterEntity(entityIndex);
+
+			return cloneEntity;
+		}
+		else
+			return GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
+	}
+
+	Map::Entity EditorWindow::DeleteEntity(std::size_t layerIndex, std::size_t entityIndex)
+	{
+		if (m_currentLayer && *m_currentLayer == layerIndex)
+		{
+			QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+			delete item;
+
+			m_canvas->DeleteEntity(canvasId);
+
+			m_entityIndexes.erase(canvasId);
+
+			// FIXME...
+			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+			{
+				if (it->second >= entityIndex)
+				{
+					std::size_t newEntityIndex = --it.value();
+					m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+				}
+			}
+		}
+
+		Map& map = GetWorkingMapMut();
+		return map.DropEntity(layerIndex, entityIndex);
 	}
 
 	void EditorWindow::OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent)
@@ -283,6 +324,26 @@ namespace bw
 		contextMenu.exec(pos);
 	}
 
+	void EditorWindow::PushCommand(QUndoCommand* command)
+	{
+		m_undoStack.push(command);
+	}
+
+	void EditorWindow::RefreshEntityPositionAndRotation(std::size_t layerIndex, std::size_t entityIndex)
+	{
+		if (!m_currentLayer.has_value() || *m_currentLayer != layerIndex)
+			return;
+
+		const Map& map = GetWorkingMap();
+		const auto& entity = map.GetEntity(layerIndex, entityIndex);
+
+		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
+		assert(item);
+		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+		m_canvas->UpdateEntityPositionAndRotation(canvasId, entity.position, entity.rotation);
+	}
+
 	void EditorWindow::SelectEntity(Ndk::EntityId entityId)
 	{
 		m_entityList.listWidget->setCurrentRow(int(GetEntityIndex(entityId)));
@@ -322,6 +383,8 @@ namespace bw
 
 		if (!hasWorkingMap)
 			m_layerMenu->setEnabled(false);
+
+		m_undoStack.clear();
 
 		m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
@@ -608,6 +671,17 @@ namespace bw
 			connect(m_compileMap, &QAction::triggered, this, &EditorWindow::OnCompileMap);
 		}
 
+		QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
+		{
+			QAction* undoAction = m_undoStack.createUndoAction(this, tr("&Undo"));
+			undoAction->setShortcut(QKeySequence::Undo);
+			editMenu->addAction(undoAction);
+
+			QAction* redoAction = m_undoStack.createRedoAction(this, tr("&Redo"));
+			redoAction->setShortcut(QKeySequence::Redo);
+			editMenu->addAction(redoAction);
+		}
+
 		QMenu* editorMenu = menuBar()->addMenu(tr("&Editor"));
 		{
 			QAction* reloadScripts = editorMenu->addAction(tr("Reload scripts"));
@@ -732,33 +806,6 @@ namespace bw
 		}
 
 		return true;
-	}
-
-	void EditorWindow::DeleteEntity(std::size_t entityIndex)
-	{
-		assert(m_currentLayer);
-		auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
-
-		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-
-		delete item;
-
-		m_canvas->DeleteEntity(canvasId);
-
-		m_entityIndexes.erase(canvasId);
-
-		layer.entities.erase(layer.entities.begin() + entityIndex);
-
-		// FIXME...
-		for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
-		{
-			if (it->second >= entityIndex)
-			{
-				std::size_t newEntityIndex = --it.value();
-				m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
-			}
-		}
 	}
 
 	EntityInfoDialog* EditorWindow::GetEntityInfoDialog()
@@ -972,7 +1019,7 @@ namespace bw
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			DeleteEntity(entityIndex);
+			PushCommand<Commands::EntityDelete>(*this, layerEntity.uniqueId);
 
 			return true;
 		}
