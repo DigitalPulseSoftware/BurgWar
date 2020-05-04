@@ -159,6 +159,11 @@ namespace bw
 		}
 	}
 
+	inline Nz::Int64 Map::GenerateUniqueId()
+	{
+		return m_freeUniqueId++;
+	}
+
 	inline auto Map::GetAssets() -> std::vector<Asset>&
 	{
 		return m_assets;

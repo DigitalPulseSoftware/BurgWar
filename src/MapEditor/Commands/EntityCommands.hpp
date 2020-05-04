@@ -28,14 +28,16 @@ namespace bw
 				Nz::Int64 m_entityUniqueId;
 		};
 
-		class EntityDelete : public EntityCommands
+		class EntityCreationDelete : public EntityCommands
 		{
 			public:
-				EntityDelete(EditorWindow& editor, Nz::Int64 entityUniqueId);
-				~EntityDelete() = default;
+				using EntityCommands::EntityCommands;
+				EntityCreationDelete(EditorWindow& editor, const QString& label, Map::EntityIndices entityIndices, Map::Entity entity);
+				~EntityCreationDelete() = default;
 
-				void redo() override;
-				void undo() override;
+			protected:
+				void Create();
+				void Delete();
 
 			private:
 				struct EntityData
@@ -47,7 +49,27 @@ namespace bw
 				std::optional<EntityData> m_entityData;
 		};
 
-		class PositionUpdate : public EntityCommands
+		class EntityCreate final : public EntityCreationDelete
+		{
+			public:
+				EntityCreate(EditorWindow& editor, Map::EntityIndices entityIndices, Map::Entity entity);
+				~EntityCreate() = default;
+
+				void redo() override;
+				void undo() override;
+		};
+
+		class EntityDelete final : public EntityCreationDelete
+		{
+			public:
+				EntityDelete(EditorWindow& editor, Nz::Int64 entityUniqueId);
+				~EntityDelete() = default;
+
+				void redo() override;
+				void undo() override;
+		};
+
+		class PositionUpdate final : public EntityCommands
 		{
 			public:
 				PositionUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, const Nz::Vector2f& offset);

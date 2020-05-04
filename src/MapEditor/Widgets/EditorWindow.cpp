@@ -955,16 +955,18 @@ namespace bw
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			Map& map = GetWorkingMapMut();
-
 			std::size_t entityIndex = map.GetEntityCount(layerIndex);
-			auto& layerEntity = map.AddEntity(layerIndex);
-			layerEntity.entityType = std::move(entityInfo.entityClass);
-			layerEntity.name = std::move(entityInfo.entityName);
-			layerEntity.position = entityInfo.position;
-			layerEntity.properties = std::move(entityInfo.properties);
-			layerEntity.rotation = entityInfo.rotation;
 
-			RegisterEntity(entityIndex);
+			Map::EntityIndices indices{ layerIndex, entityIndex };
+			Map::Entity entityData;
+			entityData.entityType = std::move(entityInfo.entityClass);
+			entityData.name = std::move(entityInfo.entityName);
+			entityData.position = entityInfo.position;
+			entityData.properties = std::move(entityInfo.properties);
+			entityData.rotation = entityInfo.rotation;
+			entityData.uniqueId = map.GenerateUniqueId();
+
+			PushCommand<Commands::EntityCreate>(*this,  std::move(indices), std::move(entityData));
 
 			m_entityList.listWidget->setCurrentRow(int(entityIndex));
 		});

@@ -53,6 +53,8 @@ namespace bw
 
 			template<typename F> void ForeachEntity(F&& func);
 
+			inline Nz::Int64 GenerateUniqueId();
+
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
 			inline Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex);
