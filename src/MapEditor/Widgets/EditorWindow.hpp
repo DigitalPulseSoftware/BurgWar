@@ -13,6 +13,7 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/EditorAppConfig.hpp>
+#include <MapEditor/Enums.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QUndoStack>
@@ -68,6 +69,8 @@ namespace bw
 			void SelectEntity(Ndk::EntityId entityId);
 
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
+
+			void UpdateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, std::size_t /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);

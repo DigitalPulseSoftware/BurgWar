@@ -51,7 +51,7 @@ namespace bw
 	template<typename T, typename... Args> 
 	void EditorWindow::PushCommand(Args&&... args)
 	{
-		return PushCommand(new T(std::forward<Args>(args)...));
+		return PushCommand(new T(*this, std::forward<Args>(args)...));
 	}
 
 	template<typename T>
@@ -76,6 +76,7 @@ namespace bw
 			else
 				bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
 		});
+		InvalidateMap();
 	}
 
 	inline void EditorWindow::InvalidateMap()

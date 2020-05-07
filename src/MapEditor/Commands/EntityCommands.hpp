@@ -8,6 +8,7 @@
 #define BURGWAR_MAPEDITOR_COMMANDS_ENTITY_HPP
 
 #include <CoreLib/Map.hpp>
+#include <MapEditor/Enums.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <QtWidgets/QUndoCommand>
 
@@ -67,6 +68,21 @@ namespace bw
 
 				void redo() override;
 				void undo() override;
+		};
+
+		class EntityUpdate final : public EntityCommands
+		{
+			public:
+				EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags);
+				~EntityUpdate() = default;
+
+				void redo() override;
+				void undo() override;
+
+			private:
+				EntityInfoUpdateFlags m_updateFlags;
+				Map::Entity m_previousState;
+				Map::Entity m_newState;
 		};
 
 		class PositionUpdate final : public EntityCommands

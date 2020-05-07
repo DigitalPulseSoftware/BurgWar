@@ -36,7 +36,7 @@ namespace bw::Commands
 
 	void EntityCreationDelete::Delete()
 	{
-		Map& map = m_editor.GetWorkingMapMut();
+		const Map& map = m_editor.GetWorkingMap();
 		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
 
 		EntityData& entityData = m_entityData.emplace();
@@ -74,6 +74,33 @@ namespace bw::Commands
 	void EntityDelete::undo()
 	{
 		Create();
+	}
+
+
+	EntityUpdate::EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags) :
+	EntityCommands(editor, entityUniqueId, "update entity"),
+	m_updateFlags(updateFlags),
+	m_newState(std::move(update))
+	{
+		assert(m_newState.uniqueId == entityUniqueId);
+
+		m_previousState = m_editor.GetWorkingMap().GetEntity(entityUniqueId);
+	}
+
+	void EntityUpdate::redo()
+	{
+		const Map& map = m_editor.GetWorkingMap();
+		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+
+		m_editor.UpdateEntity(indices.layerIndex, indices.entityIndex, m_newState, m_updateFlags);
+	}
+
+	void EntityUpdate::undo()
+	{
+		const Map& map = m_editor.GetWorkingMap();
+		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+
+		m_editor.UpdateEntity(indices.layerIndex, indices.entityIndex, m_previousState, m_updateFlags);
 	}
 
 

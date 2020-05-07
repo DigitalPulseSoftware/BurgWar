@@ -11,6 +11,7 @@
 #include <NDK/Entity.hpp>
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/Map.hpp>
+#include <MapEditor/Enums.hpp>
 #include <QtWidgets/QDialog>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
@@ -30,30 +31,6 @@ class QWidget;
 
 namespace bw
 {
-	enum class EntityInfoUpdate
-	{
-		EntityClass,
-		EntityName,
-		PositionRotation,
-		Properties,
-
-		Max = Properties
-	};
-}
-
-namespace Nz
-{
-	template<>
-	struct EnumAsFlags<bw::EntityInfoUpdate>
-	{
-		static constexpr bw::EntityInfoUpdate max = bw::EntityInfoUpdate::Max;
-	};
-}
-
-namespace bw
-{
-	using EntityInfoUpdateFlags = Nz::Flags<bw::EntityInfoUpdate>;
-
 	class EditorEntityStore;
 	class ScriptingContext;
 	class Float2SpinBox;
