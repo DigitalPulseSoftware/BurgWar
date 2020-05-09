@@ -25,6 +25,7 @@ namespace bw
 
 		AbstractScriptingLibrary::RegisterGlobalLibrary(context);
 		AbstractScriptingLibrary::RegisterMetatableLibrary(context);
+		AbstractScriptingLibrary::RegisterRandomEngineClass(context);
 
 		context.Load("autorun");
 

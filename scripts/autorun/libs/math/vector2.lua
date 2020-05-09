@@ -7,6 +7,12 @@ function vec2meta:Distance(vec)
 	return (self - vec):Length()
 end
 
+function vec2meta:GetNormalized()
+	local length = self:Length()
+	local normal = Vec2(self.x / length, self.y / length)
+	return normal, length
+end
+
 function vec2meta:Length()
 	return math.sqrt(self:SquaredLength())
 end
@@ -16,7 +22,7 @@ function vec2meta:Normalize()
 	self.x = self.x / length
 	self.y = self.y / length
 
-	return self, length
+	return length
 end
 
 function vec2meta:SquaredLength()

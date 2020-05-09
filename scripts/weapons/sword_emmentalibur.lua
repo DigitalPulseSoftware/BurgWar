@@ -8,6 +8,7 @@ WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
 WEAPON.Animations = {
 	{"attack", 0.3}
 }
+WEAPON.AttackMode = WeaponAttackType.SingleShotRepeat
 
 RegisterClientAssets(WEAPON.Sprite)
 
@@ -23,7 +24,7 @@ if (SERVER) then
 		end
 
 		self:PlayAnim("attack")
-		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 50000)
+		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 20000)
 	end
 end
 

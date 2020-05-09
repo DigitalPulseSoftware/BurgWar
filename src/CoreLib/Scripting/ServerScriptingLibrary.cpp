@@ -4,8 +4,11 @@
 
 #include <CoreLib/Scripting/ServerScriptingLibrary.hpp>
 #include <CoreLib/Match.hpp>
+#include <CoreLib/MatchClientVisibility.hpp>
 #include <CoreLib/Player.hpp>
+#include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
+#include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/ServerTexture.hpp>
@@ -207,6 +210,74 @@ namespace bw
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();
+		};
+
+		library["CreateWeapon"] = [&](const sol::table& parameters)
+		{
+			Match& match = GetMatch();
+			auto& weaponStore = match.GetWeaponStore();
+
+			sol::object entityTypeObj = parameters["Type"];
+			if (!entityTypeObj.is<std::string>())
+				throw std::runtime_error("Missing or invalid value for LayerIndex");
+
+			std::string entityType = entityTypeObj.as<std::string>();
+
+			std::size_t elementIndex = weaponStore.GetElementIndex(entityType);
+			if (elementIndex == ServerEntityStore::InvalidIndex)
+				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+
+			EntityProperties entityProperties;
+			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
+			{
+				sol::table& propertyTable = propertyTableOpt.value();
+
+				const auto& entityPtr = weaponStore.GetElement(elementIndex);
+				for (auto&& [propertyName, propertyData] : entityPtr->properties)
+				{
+					sol::object propertyValue = propertyTable[propertyName];
+					if (propertyValue)
+						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
+				}
+			}
+
+			Ndk::EntityHandle owner = AbstractElementLibrary::AssertScriptEntity(parameters["Owner"]);
+			auto& ownerMatchComponent = owner->GetComponent<MatchComponent>();
+
+			std::size_t layerIndex = ownerMatchComponent.GetLayerIndex();
+			auto& layer = match.GetTerrain().GetLayer(layerIndex);
+
+			// Create weapon
+			Nz::Int64 uniqueId = match.AllocateUniqueId();
+
+			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
+			if (!weapon)
+				return false;
+
+			weapon->GetComponent<WeaponComponent>().SetActive(true);
+
+			match.RegisterEntity(uniqueId, weapon);
+
+			if (owner->HasComponent<OwnerComponent>())
+				weapon->AddComponent<OwnerComponent>(owner->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
+
+			// HAX
+			Packets::EntityWeapon weaponPacket;
+			weaponPacket.layerIndex = layerIndex;
+			weaponPacket.entityId = owner->GetId();
+			weaponPacket.weaponEntityId = weapon->GetId();
+
+			Nz::Bitset<Nz::UInt64> entityIds;
+			entityIds.UnboundedSet(weaponPacket.entityId);
+			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
+
+			match.ForEachPlayer([&](Player* ply)
+			{
+				MatchClientSession& session = ply->GetSession();
+				session.GetVisibility().PushEntitiesPacket(layerIndex, entityIds, weaponPacket);
+			});
+
+			return true;
 		};
 
 		library["GetLocalTick"] = [&]()

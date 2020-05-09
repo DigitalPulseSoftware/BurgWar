@@ -5,6 +5,15 @@ local oldInit = ENTITY.Initialize
 function ENTITY:Initialize()
 	oldInit(self)
 
+	if (EDITOR) then
+		self:AddSprite({
+			RenderOrder = 0,
+			Scale = Vec2(0.33, 0.33),
+			TexturePath = "burger2.png"
+		})
+		return
+	end
+
 	local cursor = 0
 	local maxWidth = 0
 	local defaultOrigin = Vec2(0.5, 1)

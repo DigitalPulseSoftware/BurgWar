@@ -36,7 +36,7 @@ namespace bw
 		}
 	}
 
-	void EditorEntityStore::BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
+	void EditorEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& /*entity*/) const
 	{
 		// Don't bind any callback in the editor
 	}

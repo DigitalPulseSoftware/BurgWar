@@ -119,7 +119,7 @@ else
 	end
 
 	function ENTITY:UpdateSprite()
-		local direction, length = (self.endPos - self.startPos):Normalize()
+		local direction, length = (self.endPos - self.startPos):GetNormalized()
 		local rotation = math.atan(direction.y, direction.x) * 180 / math.pi
 
 		local elapsedTime = match.GetSeconds() - self.startTime

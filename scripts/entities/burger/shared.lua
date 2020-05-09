@@ -106,7 +106,7 @@ for _, texturePath in pairs(ENTITY.Faces) do
 	RegisterClientAssets(texturePath)
 end
 
-local controller = BasicPlayerMovementController.new()
+local controller = BasicPlayerMovementController and BasicPlayerMovementController.new() or nil
 
 function ENTITY:ForEachElement(callback)
 	local randomEngine = RandomEngine.new(self:GetProperty("seed"))
@@ -209,7 +209,10 @@ function ENTITY:Initialize()
 		}
 	}
 
-	self:UpdatePlayerMovementController(controller)
+	if (controller) then
+		self:UpdatePlayerMovementController(controller)
+	end
+
 	self:SetCollider(colliders)
 	self:InitRigidBody(50, 1, false)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation

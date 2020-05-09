@@ -6,6 +6,7 @@
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
@@ -452,6 +453,16 @@ namespace bw
 
 			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			physComponent.SetVelocity(velocity);
+		};
+
+		elementMetatable["UpdateInputs"] = [](const sol::table& entityTable, const PlayerInputData& inputs)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity || !entity->HasComponent<InputComponent>())
+				return;
+
+			auto& entityInputs = entity->GetComponent<InputComponent>();
+			entityInputs.UpdateInputs(inputs);
 		};
 
 		elementMetatable["UpdatePlayerMovementController"] = [](const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)

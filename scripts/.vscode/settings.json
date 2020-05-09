@@ -30,5 +30,6 @@
         "TileMapEditorMode",
         "timer",
         "WEAPON",
+        "DummyInputController"
     ]
 }

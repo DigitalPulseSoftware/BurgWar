@@ -223,6 +223,26 @@ namespace sol
 		return Nz::Vector3<T>(x, y, z);
 	}
 
+	inline bw::PlayerInputData sol_lua_get(sol::types<bw::PlayerInputData>, lua_State* L, int index, sol::stack::record& tracking)
+	{
+		int absoluteIndex = lua_absindex(L, index);
+
+		sol::table inputs = sol::stack::get<sol::table>(L, absoluteIndex);
+
+		bw::PlayerInputData playerInputs;
+		playerInputs.aimDirection = inputs.get_or("aimDirection", playerInputs.aimDirection);
+		playerInputs.isAttacking = inputs.get_or("isAttacking", playerInputs.isAttacking);
+		playerInputs.isCrouching = inputs.get_or("isCrouching", playerInputs.isCrouching);
+		playerInputs.isJumping = inputs.get_or("isJumping", playerInputs.isJumping);
+		playerInputs.isLookingRight = inputs.get_or("isLookingRight", playerInputs.isLookingRight);
+		playerInputs.isMovingLeft = inputs.get_or("isMovingLeft", playerInputs.isMovingLeft);
+		playerInputs.isMovingRight = inputs.get_or("isMovingRight", playerInputs.isMovingRight);
+
+		tracking.use(1);
+
+		return playerInputs;
+	}
+
 	inline int sol_lua_push(sol::types<bw::PlayerInputData>, lua_State* L, const bw::PlayerInputData& inputs)
 	{
 		lua_createtable(L, 0, 6);

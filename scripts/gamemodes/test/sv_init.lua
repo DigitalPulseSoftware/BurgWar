@@ -136,8 +136,53 @@ GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 	end
 end)
 
-function GM:OnInit()
-end
+GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
+	if (not self.Bot or not self.Bot:IsValid()) then
+		self.Bot = match.CreateEntity({
+			Type = "entity_burger",
+			LayerIndex = 0,
+			Position = Vec2(2331, 1116),
+			Properties = {
+				seed = 42
+			}
+		})
+
+		match.CreateWeapon({
+			Type = "weapon_sword_emmentalibur",
+			Owner = self.Bot
+		})
+	end	
+
+	if (not self.Target or not self.Target:IsValid()) then
+		for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
+			if (burger ~= self.Bot) then
+				self.Target = burger
+				break
+			end
+		end
+
+		if (not self.Target or not self.Target:IsValid()) then
+			return
+		end
+	end
+
+	local inputs = {}
+
+	local delta = self.Target:GetPosition() - self.Bot:GetPosition()
+	local distance = delta:Normalize()
+
+	inputs.aimDirection = delta
+	inputs.isAttacking = (distance < 200)
+
+	if (delta.x < 0) then
+		inputs.isMovingLeft = true
+		inputs.isLookingRight = false
+	else
+		inputs.isMovingRight = true
+	end
+
+	self.Bot:UpdateInputs(inputs)
+end)
 
 function GM:ChoosePlayerSpawnPosition()
 	local spawnpoints = match.GetEntitiesByClass("entity_spawnpoint")
