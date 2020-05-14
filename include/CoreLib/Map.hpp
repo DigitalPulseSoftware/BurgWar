@@ -32,6 +32,7 @@ namespace bw
 		public:
 			struct Asset;
 			struct Entity;
+			struct EntityIndices;
 			struct Layer;
 
 			inline Map();
@@ -44,6 +45,7 @@ namespace bw
 
 			bool Compile(const std::filesystem::path& outputPath);
 
+			inline Entity DropEntity(std::size_t layerIndex, std::size_t entityIndex);
 			inline Layer DropLayer(std::size_t layerIndex);
 
 			template<typename... Args> Entity& EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args);
@@ -51,10 +53,15 @@ namespace bw
 
 			template<typename F> void ForeachEntity(F&& func);
 
+			inline Nz::Int64 GenerateUniqueId();
+
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
 			inline Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex);
 			inline const Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex) const;
+			inline Entity& GetEntity(Nz::Int64 uniqueId);
+			inline const Entity& GetEntity(Nz::Int64 uniqueId) const;
+			inline const EntityIndices& GetEntityIndices(Nz::Int64 uniqueId) const;
 			inline std::size_t GetEntityCount(std::size_t layerIndex) const;
 			inline Nz::Int64 GetFreeUniqueId() const;
 			inline Layer& GetLayer(std::size_t layerIndex);
@@ -64,9 +71,12 @@ namespace bw
 
 			inline bool IsValid() const;
 
-			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex);
+			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex, std::size_t targetEntityIndex);
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
+
+			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapLayers(std::size_t firstLayerIndex, std::size_t secondLayerIndex);
 
 			struct Asset
 			{
@@ -87,6 +97,12 @@ namespace bw
 				EntityProperties properties;
 			};
 
+			struct EntityIndices
+			{
+				std::size_t layerIndex;
+				std::size_t entityIndex;
+			};
+
 			struct Layer
 			{
 				Nz::Color backgroundColor = Nz::Color::Black;
@@ -101,12 +117,15 @@ namespace bw
 		private:
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
+			inline void RegisterEntity(Nz::Int64 uniqueId, std::size_t layerIndex, std::size_t entityIndex);
 			void Sanitize();
 			void SetupDefault();
+			inline void UnregisterEntity(Nz::Int64 uniqueId);
 
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;
 			Nz::Int64 m_freeUniqueId;
+			tsl::hopscotch_map<Nz::Int64 /*unique id*/, EntityIndices> m_entitiesByUniqueId;
 			MapInfo m_mapInfo;
 			bool m_isValid;
 	};

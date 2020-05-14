@@ -13,8 +13,10 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/EditorAppConfig.hpp>
+#include <MapEditor/Enums.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QUndoStack>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
@@ -44,6 +46,11 @@ namespace bw
 			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
+			Map::Entity& CreateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData);
+			Map::Layer& CreateLayer(LayerIndex layerIndex, Map::Layer layerData);
+			Map::Entity DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			Map::Layer DeleteLayer(LayerIndex layerIndex);
+
 			inline const std::optional<std::size_t>& GetCurrentLayer() const;
 
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
@@ -55,11 +62,21 @@ namespace bw
 			inline Map& GetWorkingMapMut();
 			inline const Map& GetWorkingMap() const;
 
+			void MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex);
+
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
+
+			void PushCommand(QUndoCommand* command);
+			template<typename T, typename... Args> void PushCommand(Args&&... args);
+			void RefreshEntityPositionAndRotation(std::size_t layerIndex, std::size_t entityIndex);
 
 			void SelectEntity(Ndk::EntityId entityId);
 
+			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
+
+			void UpdateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
 			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, std::size_t /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);
@@ -78,8 +95,6 @@ namespace bw
 			void BuildToolbar(const std::string& editorAssetsFolder);
 
 			bool CanCloseMap();
-
-			void DeleteEntity(std::size_t entityIndex);
 
 			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
 
@@ -128,9 +143,6 @@ namespace bw
 
 			bool SaveMap();
 
-			void SwapEntities(std::size_t oldPosition, std::size_t newPosition);
-			void SwapLayers(std::size_t oldPosition, std::size_t newPosition);
-
 			struct List
 			{
 				QListWidget* listWidget;
@@ -165,6 +177,7 @@ namespace bw
 			QMenu* m_layerMenu;
 			QMenu* m_mapMenu;
 			QTabWidget* m_centralTab;
+			QUndoStack m_undoStack;
 			EntityInfoDialog* m_entityInfoDialog;
 			EditorAppConfig m_configFile;
 			Map m_workingMap;

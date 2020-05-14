@@ -48,6 +48,12 @@ namespace bw
 		return m_workingMap;
 	}
 
+	template<typename T, typename... Args> 
+	void EditorWindow::PushCommand(Args&&... args)
+	{
+		return PushCommand(new T(*this, std::forward<Args>(args)...));
+	}
+
 	template<typename T>
 	void EditorWindow::ForeachEntityProperty(PropertyType type, T&& func)
 	{
@@ -70,5 +76,6 @@ namespace bw
 			else
 				bwLog(GetLogger(), LogLevel::Error, "Unknown entity type: {0}", entity.entityType);
 		});
+		InvalidateMap();
 	}
 }
