@@ -246,19 +246,21 @@ namespace bw
 		return m_isValid;
 	}
 
-	inline auto Map::MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex) -> Entity&
+	inline auto Map::MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex, std::size_t targetEntityIndex) -> Entity&
 	{
+		assert(sourceLayerIndex != targetLayerIndex);
+
 		auto& sourceLayer = GetLayer(sourceLayerIndex);
 		assert(sourceEntityIndex < sourceLayer.entities.size());
 		auto& targetLayer = GetLayer(targetLayerIndex);
+		assert(targetEntityIndex <= targetLayer.entities.size());
 
-		Entity& targetentity = sourceLayer.entities[sourceEntityIndex];
+		Entity& sourceEntity = sourceLayer.entities[sourceEntityIndex];
 
-		auto movedIt = m_entitiesByUniqueId.find(targetentity.uniqueId);
+		auto movedIt = m_entitiesByUniqueId.find(sourceEntity.uniqueId);
 		assert(movedIt != m_entitiesByUniqueId.end());
-		movedIt.value() = EntityIndices{ targetLayerIndex, targetLayer.entities.size() };
 
-		targetLayer.entities.emplace_back(std::move(targetentity));
+		targetLayer.entities.emplace(targetLayer.entities.begin() + targetEntityIndex, std::move(sourceEntity));
 		sourceLayer.entities.erase(sourceLayer.entities.begin() + sourceEntityIndex);
 
 		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
@@ -266,13 +268,64 @@ namespace bw
 			EntityIndices& entityIndices = it.value();
 			if (entityIndices.layerIndex == sourceLayerIndex)
 			{
-				assert(entityIndices.entityIndex != sourceEntityIndex);
 				if (entityIndices.entityIndex > sourceEntityIndex)
-					entityIndices.layerIndex--;
+					entityIndices.entityIndex--;
+			}
+			else if (entityIndices.layerIndex == targetLayerIndex)
+			{
+				if (entityIndices.entityIndex >= targetEntityIndex)
+					entityIndices.entityIndex++;
 			}
 		}
 
-		return targetLayer.entities.back();
+		movedIt.value() = EntityIndices{ targetLayerIndex, targetEntityIndex };
+
+		return targetLayer.entities[targetEntityIndex];
+	}
+
+	inline void Map::SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
+	{
+		if (firstEntityIndex == secondEntityIndex)
+			return;
+
+		Entity& firstEntity = GetEntity(layerIndex, firstEntityIndex);
+		Entity& secondEntity = GetEntity(layerIndex, secondEntityIndex);
+
+		std::swap(firstEntity, secondEntity);
+
+		// Fix uniqueId
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex == layerIndex)
+			{
+				if (entityIndices.entityIndex == firstEntityIndex)
+					entityIndices.entityIndex = secondEntityIndex;
+				else if (entityIndices.entityIndex == secondEntityIndex)
+					entityIndices.entityIndex = firstEntityIndex;
+			}
+		}
+	}
+
+	inline void Map::SwapLayers(std::size_t firstLayerIndex, std::size_t secondLayerIndex)
+	{
+		Layer& firstLayer = GetLayer(firstLayerIndex);
+		Layer& secondLayer = GetLayer(secondLayerIndex);
+
+		if (firstLayerIndex == secondLayerIndex)
+			return;
+
+		std::swap(firstLayer, secondLayer);
+
+		// Fix uniqueId
+		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
+		{
+			EntityIndices& entityIndices = it.value();
+			if (entityIndices.layerIndex == firstLayerIndex)
+				entityIndices.layerIndex = secondLayerIndex;
+			else if (entityIndices.layerIndex == secondLayerIndex)
+				entityIndices.layerIndex = firstLayerIndex;
+		}
 	}
 
 	inline Map Map::LoadFromBinary(const std::filesystem::path& mapFile)

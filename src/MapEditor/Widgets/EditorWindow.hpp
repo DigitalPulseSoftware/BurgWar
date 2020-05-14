@@ -46,8 +46,10 @@ namespace bw
 			void ClearSelectedEntity();
 			void ClearWorkingMap();
 
-			Map::Entity& CreateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData);
-			Map::Entity DeleteEntity(std::size_t layerIndex, std::size_t entityIndex);
+			Map::Entity& CreateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData);
+			Map::Layer& CreateLayer(LayerIndex layerIndex, Map::Layer layerData);
+			Map::Entity DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			Map::Layer DeleteLayer(LayerIndex layerIndex);
 
 			inline const std::optional<std::size_t>& GetCurrentLayer() const;
 
@@ -60,6 +62,8 @@ namespace bw
 			inline Map& GetWorkingMapMut();
 			inline const Map& GetWorkingMap() const;
 
+			void MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex);
+
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
 
 			void PushCommand(QUndoCommand* command);
@@ -68,6 +72,8 @@ namespace bw
 
 			void SelectEntity(Ndk::EntityId entityId);
 
+			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
 
 			void UpdateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
@@ -136,9 +142,6 @@ namespace bw
 			void ReloadScripts();
 
 			bool SaveMap();
-
-			void SwapEntities(std::size_t oldPosition, std::size_t newPosition);
-			void SwapLayers(std::size_t oldPosition, std::size_t newPosition);
 
 			struct List
 			{

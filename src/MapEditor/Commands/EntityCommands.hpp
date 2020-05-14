@@ -18,21 +18,21 @@ namespace bw
 
 	namespace Commands
 	{
-		class EntityCommands : public QUndoCommand
+		class EntityCommand : public QUndoCommand
 		{
 			public:
-				EntityCommands(EditorWindow& editor, Nz::Int64 entityUniqueId, const QString& label);
-				~EntityCommands() = default;
+				EntityCommand(EditorWindow& editor, Nz::Int64 entityUniqueId, const QString& label);
+				~EntityCommand() = default;
 
 			protected:
 				EditorWindow& m_editor;
 				Nz::Int64 m_entityUniqueId;
 		};
 
-		class EntityCreationDelete : public EntityCommands
+		class EntityCreationDelete : public EntityCommand
 		{
 			public:
-				using EntityCommands::EntityCommands;
+				using EntityCommand::EntityCommand;
 				EntityCreationDelete(EditorWindow& editor, const QString& label, Map::EntityIndices entityIndices, Map::Entity entity);
 				~EntityCreationDelete() = default;
 
@@ -48,6 +48,19 @@ namespace bw
 				};
 
 				std::optional<EntityData> m_entityData;
+		};
+		
+		class EntityClone final : public EntityCreationDelete
+		{
+			public:
+				EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, Map::EntityIndices targetEntityIndices);
+				~EntityClone() = default;
+
+				void redo() override;
+				void undo() override;
+
+			private:
+				static Map::Entity BuildClone(EditorWindow& editor, const Map::EntityIndices& entityIndices);
 		};
 
 		class EntityCreate final : public EntityCreationDelete
@@ -70,7 +83,21 @@ namespace bw
 				void undo() override;
 		};
 
-		class EntityUpdate final : public EntityCommands
+		class EntityLayerUpdate final : public EntityCommand
+		{
+			public:
+				EntityLayerUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, LayerIndex newLayerIndex);
+				~EntityLayerUpdate() = default;
+
+				void redo() override;
+				void undo() override;
+
+			private:
+				Map::EntityIndices m_originalPosition;
+				LayerIndex m_newLayerIndex;
+		};
+
+		class EntityUpdate final : public EntityCommand
 		{
 			public:
 				EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags);
@@ -85,7 +112,7 @@ namespace bw
 				Map::Entity m_newState;
 		};
 
-		class PositionUpdate final : public EntityCommands
+		class PositionUpdate final : public EntityCommand
 		{
 			public:
 				PositionUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, const Nz::Vector2f& offset);

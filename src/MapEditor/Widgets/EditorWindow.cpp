@@ -13,6 +13,7 @@
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <MapEditor/Commands/EntityCommands.hpp>
+#include <MapEditor/Commands/MapCommands.hpp>
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Scripting/EditorElementLibrary.hpp>
@@ -208,20 +209,45 @@ namespace bw
 		UpdateWorkingMap(Map());
 	}
 
-	Map::Entity& EditorWindow::CreateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData)
+	Map::Entity& EditorWindow::CreateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData)
 	{
+		auto& newEntity = GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
+
 		if (m_currentLayer && *m_currentLayer == layerIndex)
-		{
-			auto& cloneEntity = GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
 			RegisterEntity(entityIndex);
 
-			return cloneEntity;
-		}
-		else
-			return GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
+		return newEntity;
 	}
 
-	Map::Entity EditorWindow::DeleteEntity(std::size_t layerIndex, std::size_t entityIndex)
+	Map::Layer& EditorWindow::CreateLayer(LayerIndex layerIndex, Map::Layer layerData)
+	{
+		auto UpdateLayerIndex = [=](Nz::Int64& currentLayerIndex)
+		{
+			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
+			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
+				currentLayerIndex++;
+		};
+
+		// Update entities pointing to this layer
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		{
+			if (propertyData.isArray)
+			{
+				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+					UpdateLayerIndex(layerIndex);
+			}
+			else
+				UpdateLayerIndex(std::get<Nz::Int64>(value));
+		});
+
+		auto& layer = GetWorkingMapMut().EmplaceLayer(layerIndex, std::move(layerData));
+
+		RefreshLayerList();
+
+		return layer;
+	}
+
+	Map::Entity EditorWindow::DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex)
 	{
 		if (m_currentLayer && *m_currentLayer == layerIndex)
 		{
@@ -247,6 +273,49 @@ namespace bw
 
 		Map& map = GetWorkingMapMut();
 		return map.DropEntity(layerIndex, entityIndex);
+	}
+
+	Map::Layer EditorWindow::DeleteLayer(LayerIndex layerIndex)
+	{
+		if (m_currentLayer && *m_currentLayer == layerIndex)
+			m_layerList.listWidget->setCurrentRow(-1);
+
+		auto layer = GetWorkingMapMut().DropLayer(layerIndex);
+		RefreshLayerList();
+
+		return layer;
+	}
+
+	void EditorWindow::MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex)
+	{
+		GetWorkingMapMut().MoveEntity(layerIndex, entityIndex, targetLayer, targetEntityIndex);
+
+		if (m_currentLayer)
+		{
+			if (*m_currentLayer == layerIndex)
+			{
+				QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
+				Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+
+				delete item;
+
+				m_canvas->DeleteEntity(canvasId);
+
+				m_entityIndexes.erase(canvasId);
+
+				// FIXME...
+				for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+				{
+					if (it->second >= entityIndex)
+					{
+						std::size_t newEntityIndex = --it.value();
+						m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
+					}
+				}
+			}
+			else if (*m_currentLayer == targetLayer)
+				RegisterEntity(targetEntityIndex);
+		}
 	}
 
 	void EditorWindow::OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent)
@@ -347,6 +416,83 @@ namespace bw
 	void EditorWindow::SelectEntity(Ndk::EntityId entityId)
 	{
 		m_entityList.listWidget->setCurrentRow(int(GetEntityIndex(entityId)));
+	}
+
+	void EditorWindow::SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
+	{
+		auto& map = GetWorkingMapMut();
+		map.SwapEntities(layerIndex, firstEntityIndex, secondEntityIndex);
+
+		if (!m_currentLayer || *m_currentLayer != layerIndex)
+			return;
+
+		QListWidgetItem* oldItem = m_entityList.listWidget->item(int(firstEntityIndex));
+		QListWidgetItem* newItem = m_entityList.listWidget->item(int(secondEntityIndex));
+
+		Ndk::EntityId oldCanvasId = oldItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		QString oldItemText = oldItem->text();
+
+		oldItem->setData(Qt::UserRole + 1, newItem->data(Qt::UserRole + 1).value<Ndk::EntityId>());
+		oldItem->setText(newItem->text());
+		newItem->setData(Qt::UserRole + 1, oldCanvasId);
+		newItem->setText(oldItemText);
+
+		if (m_entityList.listWidget->currentRow() == firstEntityIndex)
+			m_entityList.listWidget->setCurrentRow(int(secondEntityIndex));
+		else if (m_entityList.listWidget->currentRow() == secondEntityIndex)
+			m_entityList.listWidget->setCurrentRow(int(firstEntityIndex));
+	}
+
+
+	void EditorWindow::SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex)
+	{
+		Map& map = GetWorkingMapMut();
+		map.SwapLayers(firstLayerIndex, secondLayerIndex);
+
+		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
+		{
+			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
+
+			if (static_cast<LayerIndex>(layerIndex) == firstLayerIndex)
+				layerIndex = secondLayerIndex;
+			else if (static_cast<LayerIndex>(layerIndex) == secondLayerIndex)
+				layerIndex = firstLayerIndex;
+		};
+
+		// Update entities pointing to this layer
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		{
+			if (propertyData.isArray)
+			{
+				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+					UpdateLayerIndex(layerIndex);
+			}
+			else
+				UpdateLayerIndex(std::get<Nz::Int64>(value));
+		});
+
+		// Swap items text
+		QListWidgetItem* oldItem = m_layerList.listWidget->item(int(firstLayerIndex));
+		QListWidgetItem* newItem = m_layerList.listWidget->item(int(secondLayerIndex));
+
+		QString oldItemText = oldItem->text();
+
+		oldItem->setText(newItem->text());
+		newItem->setText(oldItemText);
+
+		// Update current layer before selecting the new row, to prevent a layer refresh
+		if (m_currentLayer)
+		{
+			if (*m_currentLayer == firstLayerIndex)
+				m_currentLayer = secondLayerIndex;
+			else if (*m_currentLayer == secondLayerIndex)
+				m_currentLayer = firstLayerIndex;
+		}
+
+		if (m_layerList.listWidget->currentRow() == int(firstLayerIndex))
+			m_layerList.listWidget->setCurrentRow(int(secondLayerIndex));
+		else if (m_layerList.listWidget->currentRow() == int(secondLayerIndex))
+			m_layerList.listWidget->setCurrentRow(int(firstLayerIndex));
 	}
 
 	void EditorWindow::SwitchToMode(std::shared_ptr<EditorMode> editorMode)
@@ -922,53 +1068,24 @@ namespace bw
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex)
 	{
 		assert(m_currentLayer);
+		LayerIndex currentLayer = *m_currentLayer;
 
-		std::size_t cloneEntityIndex = entityIndex + 1;
-		auto& cloneEntity = GetWorkingMapMut().EmplaceEntity(*m_currentLayer, entityIndex, m_workingMap.GetEntity(*m_currentLayer, entityIndex));
-		cloneEntity.name += " (Clone)";
-
-		RegisterEntity(cloneEntityIndex);
-
-		m_entityList.listWidget->setCurrentRow(int(cloneEntityIndex));
+		std::size_t entityCount = GetWorkingMap().GetEntityCount(currentLayer);
+		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ currentLayer, entityCount });
 	}
 
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex)
 	{
-		if (layerIndex == m_layerList.listWidget->currentRow())
-			return OnCloneEntity(entityIndex);
-
 		assert(m_currentLayer);
-		auto& cloneEntity = GetWorkingMapMut().AddEntity(layerIndex, m_workingMap.GetEntity(m_currentLayer.value(), entityIndex));
-		cloneEntity.name += " (Clone)";
+		LayerIndex currentLayer = *m_currentLayer;
+
+		std::size_t entityCount = GetWorkingMap().GetEntityCount(layerIndex);
+		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ layerIndex, entityCount });
 	}
 
 	void EditorWindow::OnCloneLayer(std::size_t layerIndex)
 	{
-		auto& layer = m_workingMap.GetLayer(layerIndex);
-		std::size_t cloneLayerIndex = layerIndex + 1;
-		auto& newLayer = GetWorkingMapMut().EmplaceLayer(cloneLayerIndex, layer);
-		newLayer.name += " (Clone)";
-
-		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
-		{
-			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
-			if (static_cast<LayerIndex>(layerIndex) >= cloneLayerIndex)
-				layerIndex++;
-		};
-
-		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
-		{
-			if (propertyData.isArray)
-			{
-				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
-					UpdateLayerIndex(layerIndex);
-			}
-			else
-				UpdateLayerIndex(std::get<Nz::Int64>(value));
-		});
-
-		RefreshLayerList();
+		PushCommand<Commands::LayerClone>(layerIndex, GetWorkingMap().GetLayerCount());
 	}
 
 	void EditorWindow::OnCloseMap()
@@ -1052,10 +1169,12 @@ namespace bw
 		if (!m_workingMap.IsValid())
 			return;
 
-		auto& layer = GetWorkingMapMut().AddLayer();
-		layer.name = "Layer #" + std::to_string(m_workingMap.GetLayerCount());
+		const Map& map = GetWorkingMap();
 
-		RefreshLayerList();
+		Map::Layer newLayer;
+		newLayer.name = "Layer #" + std::to_string(map.GetLayerCount());
+
+		PushCommand<Commands::LayerCreate>(map.GetLayerCount(), std::move(newLayer));
 	}
 
 	bool EditorWindow::OnDeleteEntity()
@@ -1099,36 +1218,7 @@ namespace bw
 		QString warningText = tr("You are about to delete layer %1, are you sure you want to do that?").arg(QString::fromStdString(layer.name));
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
-		{
-			GetWorkingMapMut().DropLayer(layerIndex);
-
-			auto UpdateLayerIndex = [deletedIndex = layerIndex](Nz::Int64& layerIndex)
-			{
-				assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
-
-				if (static_cast<LayerIndex>(layerIndex) == deletedIndex)
-					layerIndex = NoLayer;
-				else if (static_cast<LayerIndex>(layerIndex) > deletedIndex)
-					layerIndex--;
-			};
-
-			// Update entities pointing to this layer
-			ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
-			{
-				if (propertyData.isArray)
-				{
-					for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
-						UpdateLayerIndex(layerIndex);
-				}
-				else
-					UpdateLayerIndex(std::get<Nz::Int64>(value));
-			});
-
-			if (m_currentLayer == layerIndex)
-				m_layerList.listWidget->setCurrentRow(-1);
-
-			RefreshLayerList();
-		}
+			PushCommand<Commands::LayerDelete>(layerIndex);
 	}
 
 	void EditorWindow::OnEditEntity(std::size_t entityIndex)
@@ -1216,7 +1306,9 @@ namespace bw
 			return;
 
 		std::size_t newEntityIndex = entityIndex + 1;
-		SwapEntities(entityIndex, newEntityIndex);
+
+		assert(m_currentLayer);
+		PushCommand<Commands::EntitySwap>(*m_currentLayer, entityIndex, newEntityIndex);
 
 		m_entityList.downArrowButton->setEnabled(int(newEntityIndex + 1) < m_entityList.listWidget->count());
 		m_entityList.upArrowButton->setEnabled(true);
@@ -1233,7 +1325,9 @@ namespace bw
 			return;
 
 		std::size_t newEntityIndex = entityIndex - 1;
-		SwapEntities(entityIndex, newEntityIndex);
+
+		assert(m_currentLayer);
+		PushCommand<Commands::EntitySwap>(*m_currentLayer, entityIndex, newEntityIndex);
 
 		m_layerList.downArrowButton->setEnabled(true);
 		m_layerList.upArrowButton->setEnabled(newEntityIndex != 0);
@@ -1312,10 +1406,7 @@ namespace bw
 			return;
 
 		std::size_t newPosition = oldPosition + 1;
-
-		m_currentLayer = newPosition;
-
-		SwapLayers(oldPosition, newPosition);
+		PushCommand<Commands::LayerSwap>(oldPosition, newPosition);
 
 		m_layerList.downArrowButton->setEnabled(newPosition + 1 < m_layerList.listWidget->count());
 		m_layerList.upArrowButton->setEnabled(true);
@@ -1331,10 +1422,7 @@ namespace bw
 			return;
 
 		std::size_t newPosition = oldPosition - 1;
-
-		m_currentLayer = newPosition;
-
-		SwapLayers(oldPosition, newPosition);
+		PushCommand<Commands::LayerSwap>(oldPosition, newPosition);
 
 		m_layerList.downArrowButton->setEnabled(true);
 		m_layerList.upArrowButton->setEnabled(newPosition != 0);
@@ -1343,28 +1431,7 @@ namespace bw
 	void EditorWindow::OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer)
 	{
 		assert(m_currentLayer);
-		assert(targetLayer != *m_currentLayer);
-
-		GetWorkingMapMut().MoveEntity(*m_currentLayer, entityIndex, targetLayer);
-
-		QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-
-		delete item;
-
-		m_canvas->DeleteEntity(canvasId);
-
-		m_entityIndexes.erase(canvasId);
-
-		// FIXME...
-		for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
-		{
-			if (it->second >= entityIndex)
-			{
-				std::size_t newEntityIndex = --it.value();
-				m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
-			}
-		}
+		PushCommand<Commands::EntityLayerUpdate>(GetWorkingMap().GetEntity(*m_currentLayer, entityIndex).uniqueId, targetLayer);
 	}
 
 	void EditorWindow::OnOpenMap()
@@ -1669,72 +1736,5 @@ namespace bw
 			m_layerList.listWidget->setCurrentRow(currentRow);
 		else
 			OnLayerChanged(-1);
-	}
-	
-	void EditorWindow::SwapEntities(std::size_t oldPosition, std::size_t newPosition)
-	{
-		if (!m_currentLayer)
-			return;
-
-		auto& layer = GetWorkingMapMut().GetLayer(m_currentLayer.value());
-
-		assert(oldPosition < layer.entities.size());
-		assert(newPosition < layer.entities.size());
-
-		std::swap(layer.entities[oldPosition], layer.entities[newPosition]); //< FIXME: this breaks map ID
-
-		QListWidgetItem* oldItem = m_entityList.listWidget->item(int(oldPosition));
-		QListWidgetItem* newItem = m_entityList.listWidget->item(int(newPosition));
-
-		Ndk::EntityId oldCanvasId = oldItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		QString oldItemText = oldItem->text();
-
-		oldItem->setData(Qt::UserRole + 1, newItem->data(Qt::UserRole + 1).value<Ndk::EntityId>());
-		oldItem->setText(newItem->text());
-		newItem->setData(Qt::UserRole + 1, oldCanvasId);
-		newItem->setText(oldItemText);
-
-		if (m_entityList.listWidget->currentRow() == oldPosition)
-			m_entityList.listWidget->setCurrentRow(int(newPosition));
-	}
-
-	void EditorWindow::SwapLayers(std::size_t oldPosition, std::size_t newPosition)
-	{
-		Map& map = GetWorkingMapMut();
-		std::swap(map.GetLayer(oldPosition), map.GetLayer(newPosition)); //< FIXME: this breaks map ID
-
-		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
-		{
-			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
-
-			if (static_cast<LayerIndex>(layerIndex) == oldPosition)
-				layerIndex = newPosition;
-			else if (static_cast<LayerIndex>(layerIndex) == newPosition)
-				layerIndex = oldPosition;
-		};
-
-		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
-		{
-			if (propertyData.isArray)
-			{
-				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
-					UpdateLayerIndex(layerIndex);
-			}
-			else
-				UpdateLayerIndex(std::get<Nz::Int64>(value));
-		});
-
-		// Swap items text
-		QListWidgetItem* oldItem = m_layerList.listWidget->item(int(oldPosition));
-		QListWidgetItem* newItem = m_layerList.listWidget->item(int(newPosition));
-
-		QString oldItemText = oldItem->text();
-
-		oldItem->setText(newItem->text());
-		newItem->setText(oldItemText);
-
-		if (m_layerList.listWidget->currentRow() == int(oldPosition))
-			m_layerList.listWidget->setCurrentRow(int(newPosition));
 	}
 }

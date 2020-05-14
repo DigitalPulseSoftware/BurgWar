@@ -71,9 +71,12 @@ namespace bw
 
 			inline bool IsValid() const;
 
-			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex);
+			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex, std::size_t targetEntityIndex);
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
+
+			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapLayers(std::size_t firstLayerIndex, std::size_t secondLayerIndex);
 
 			struct Asset
 			{
