@@ -17,6 +17,8 @@ namespace bw
 
 	class TerrainLayer : public SharedLayer
 	{
+		friend class Terrain;
+
 		public:
 			TerrainLayer(Match& match, LayerIndex layerIndex, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
@@ -27,6 +29,9 @@ namespace bw
 
 			TerrainLayer& operator=(const TerrainLayer&) = delete;
 			TerrainLayer& operator=(TerrainLayer&&) noexcept = default;
+
+		private:
+			void InitializeEntities();
 	};
 }
 

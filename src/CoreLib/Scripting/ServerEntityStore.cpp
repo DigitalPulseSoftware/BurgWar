@@ -17,14 +17,14 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
 		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
-		const Ndk::EntityHandle& entity = CreateEntity(layer.GetWorld(), entityClass, properties);
+		const Ndk::EntityHandle& entity = SharedEntityStore::CreateEntity(layer.GetWorld(), entityClass, properties);
 		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
 
 		auto& node = entity->AddComponent<Ndk::NodeComponent>();
@@ -76,10 +76,28 @@ namespace bw
 		if (hasInputs)
 			entity->AddComponent<InputComponent>();
 
-		if (!InitializeEntity(*entityClass, entity))
-			entity->Kill();
-
 		bwLog(GetLogger(), LogLevel::Debug, "Created entity {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
+
+		return entity;
+	}
+
+	bool ServerEntityStore::InitializeEntity(const Ndk::EntityHandle& entity) const
+	{
+		const auto& entityScript = entity->GetComponent<ScriptComponent>();
+		return SharedEntityStore::InitializeEntity(static_cast<const ScriptedEntity&>(*entityScript.GetElement()), entity);
+	}
+
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
+	{
+		const Ndk::EntityHandle& entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
+		if (!entity)
+			return Ndk::EntityHandle::InvalidHandle;
+
+		if (!InitializeEntity(entity))
+		{
+			entity->Kill();
+			return Ndk::EntityHandle::InvalidHandle;
+		}
 
 		return entity;
 	}
@@ -87,15 +105,13 @@ namespace bw
 	void ServerEntityStore::InitializeElementTable(sol::table& elementTable)
 	{
 		SharedEntityStore::InitializeElementTable(elementTable);
-
-		elementTable["IsNetworked"] = false;
 	}
 
 	void ServerEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
 	{
 		SharedEntityStore::InitializeElement(elementTable, element);
 
-		element.isNetworked = elementTable["IsNetworked"];
+		element.isNetworked = elementTable.get_or("IsNetworked", false);
 		element.maxHealth = elementTable.get_or("MaxHealth", Nz::UInt16(0));
 	}
 }

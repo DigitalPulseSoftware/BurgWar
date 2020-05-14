@@ -22,6 +22,8 @@ namespace bw
 			inline ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerEntityStore() = default;
 
+			const Ndk::EntityHandle& CreateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
+			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
 			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 
 		private:

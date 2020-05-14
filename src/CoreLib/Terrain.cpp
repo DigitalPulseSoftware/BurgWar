@@ -17,6 +17,9 @@ namespace bw
 		m_layers.reserve(m_map.GetLayerCount());
 		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
 			m_layers.emplace_back(match, LayerIndex(layerIndex), m_map.GetLayer(layerIndex));
+
+		for (TerrainLayer& layer : m_layers)
+			layer.InitializeEntities();
 	}
 
 	void Terrain::Update(float elapsedTime)
