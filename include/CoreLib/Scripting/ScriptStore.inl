@@ -305,10 +305,8 @@ namespace bw
 
 		if (baseElement)
 		{
-			element->elementTable["__index"] = [baseElement](const sol::table& /*table*/, const std::string_view& key)
-			{
-				return baseElement->elementTable[key];
-			};
+			element->elementTable["Base"] = baseElement->elementTable;
+			element->elementTable[sol::metatable_key] = baseElement->elementTable;
 		}
 
 		element->frameFunction = element->elementTable["OnFrame"];
