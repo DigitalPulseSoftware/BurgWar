@@ -14,6 +14,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
+#include <CoreLib/Player.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
@@ -30,7 +31,6 @@
 namespace bw
 {
 	class BurgApp;
-	class Player;
 	class ServerGamemode;
 	class ServerScriptingLibrary;
 	class Terrain;

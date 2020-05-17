@@ -7,7 +7,6 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
-#include <CoreLib/Player.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
@@ -30,11 +29,11 @@ namespace bw
 	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
 	m_gamemodePath(std::move(gamemodeFolder)),
 	m_maxPlayerCount(maxPlayerCount),
-	m_sessions(*this),
 	m_nextUniqueId(map.GetFreeUniqueId()),
 	m_lastPingUpdate(0),
 	m_app(app),
-	m_map(std::move(map))
+	m_map(std::move(map)),
+	m_sessions(*this)
 	{
 		ReloadAssets();
 		ReloadScripts();
