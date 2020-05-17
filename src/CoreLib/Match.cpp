@@ -33,7 +33,8 @@ namespace bw
 	m_lastPingUpdate(0),
 	m_app(app),
 	m_map(std::move(map)),
-	m_sessions(*this)
+	m_sessions(*this),
+	m_disableWhenEmpty(true)
 	{
 		ReloadAssets();
 		ReloadScripts();
@@ -462,6 +463,10 @@ namespace bw
 	void Match::Update(float elapsedTime)
 	{
 		m_sessions.Poll();
+
+		if (m_disableWhenEmpty && m_freePlayerId.TestAll())
+			return;
+
 		m_scriptingContext->Update();
 
 		SharedMatch::Update(elapsedTime);

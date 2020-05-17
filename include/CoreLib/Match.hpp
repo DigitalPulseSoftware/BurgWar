@@ -35,8 +35,6 @@ namespace bw
 	class ServerScriptingLibrary;
 	class Terrain;
 
-	using PlayerHandle = Nz::ObjectHandle<Player>;
-
 	enum class DisconnectionReason
 	{
 		Kicked,
@@ -166,6 +164,7 @@ namespace bw
 			Map m_map;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
+			bool m_disableWhenEmpty;
 	};
 }
 
