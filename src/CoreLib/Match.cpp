@@ -74,12 +74,15 @@ namespace bw
 		{
 			playerIndex = m_freePlayerId.GetSize();
 			m_freePlayerId.Resize(playerIndex + 1, false);
+			m_players.resize(playerIndex + 1);
 		}
+		else
+			m_freePlayerId.Set(playerIndex, false);
 
 		auto playerPtr = std::make_unique<Player>(*this, session, playerIndex, localIndex, std::move(name));
 		Player* player = playerPtr.get();
 
-		m_players.emplace_back(std::move(playerPtr));
+		m_players[playerIndex] = std::move(playerPtr);
 
 		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
 
