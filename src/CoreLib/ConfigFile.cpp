@@ -179,11 +179,11 @@ namespace bw
 			if (!sectionName.empty())
 			{
 				file << sectionName << " = {\n";
-				SaveSectionToFile(file, section, 1);
+				SaveSectionToFile(file, *section, 1);
 				file << "}\n";
 			}
 			else
-				SaveSectionToFile(file, section, 0);
+				SaveSectionToFile(file, *section, 0);
 		}
 
 		return file.good();
@@ -211,21 +211,21 @@ namespace bw
 			auto it = subsections.find(name);
 			if (it == subsections.end())
 			{
-				ConfigSection newSection;
-				newSection.sectionName = name;
+				auto newSection = std::make_unique<ConfigSection>();
+				newSection->sectionName = name;
 
 				it = subsections.emplace(std::move(name), std::move(newSection)).first;
 			}
 
-			section = &it->second;
+			section = it->second.get();
 			return true;
 		}, 
 		[&](std::string_view varName)
 		{
 			if (!section)
 			{
-				auto it = m_subsections.emplace(std::string(), ConfigSection{}).first;
-				section = &it->second;
+				auto it = m_subsections.emplace(std::string(), std::make_unique<ConfigSection>()).first;
+				section = it->second.get();
 			}
 
 			section->options.emplace(std::string(varName), optionIndex);
@@ -275,7 +275,7 @@ namespace bw
 		for (auto&& [sectionName, sectionData] : section.subsections)
 		{
 			file << indent << sectionName << " = {\n";
-			SaveSectionToFile(file, sectionData, indentCount + 1);
+			SaveSectionToFile(file, *sectionData, indentCount + 1);
 			file << indent << "},\n";
 		}
 	}

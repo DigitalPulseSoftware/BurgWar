@@ -101,7 +101,7 @@ namespace bw
 			{
 				std::string sectionName;
 				std::unordered_map<std::string, std::size_t> options;
-				std::unordered_map<std::string, ConfigSection> subsections;
+				std::unordered_map<std::string, std::unique_ptr<ConfigSection>> subsections;
 			};
 
 			template<typename T> void RegisterOption(std::string optionName, T&& optionData);
@@ -110,7 +110,7 @@ namespace bw
 			void SaveSectionToFile(std::fstream& file, const ConfigSection& section, std::size_t indentCount);
 
 			std::vector<ConfigOption> m_options;
-			std::unordered_map<std::string, ConfigSection> m_subsections;
+			std::unordered_map<std::string, std::unique_ptr<ConfigSection>> m_subsections;
 			std::unordered_map<std::string, std::size_t> m_optionByName;
 			BurgApp& m_app;
 	};
