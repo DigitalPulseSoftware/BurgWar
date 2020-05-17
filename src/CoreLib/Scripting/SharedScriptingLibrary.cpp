@@ -272,9 +272,16 @@ namespace bw
 			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
+			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
+
 			sol::state_view state(L);
 			auto resultCallback = [&](const Ndk::EntityHandle& hitEntity)
 			{
+				if (hitEntities.Has(hitEntity))
+					return;
+
+				hitEntities.Insert(hitEntity);
+
 				if (hitEntity->HasComponent<ScriptComponent>())
 				{
 					auto callbackResult = callback(hitEntity->GetComponent<ScriptComponent>().GetTable());
@@ -324,15 +331,22 @@ namespace bw
 			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
+			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
+
 			sol::state_view state(L);
 			auto resultCallback = [&](const Ndk::PhysicsSystem2D::RaycastHit& hitInfo)
 			{
+				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				if (hitEntities.Has(hitEntity))
+					return;
+
+				hitEntities.Insert(hitEntity);
+
 				sol::table result = state.create_table();
 				result["fraction"] = hitInfo.fraction;
 				result["hitPos"] = hitInfo.hitPos;
 				result["hitNormal"] = hitInfo.hitNormal;
 
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
 				if (hitEntity->HasComponent<ScriptComponent>())
 					result["hitEntity"] = hitEntity->GetComponent<ScriptComponent>().GetTable();
 

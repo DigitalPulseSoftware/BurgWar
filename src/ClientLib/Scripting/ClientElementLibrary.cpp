@@ -155,8 +155,15 @@ namespace bw
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
+			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
+
 			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
 			{
+				if (hitEntities.Has(hitEntity))
+					return;
+
+				hitEntities.Insert(hitEntity);
+
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
 					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
