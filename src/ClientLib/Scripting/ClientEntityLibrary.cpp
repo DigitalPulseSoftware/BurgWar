@@ -60,7 +60,7 @@ namespace bw
 			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		};
 
-		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles)
+		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
@@ -125,10 +125,10 @@ namespace bw
 			if (entity->HasComponent<LayerEntityComponent>())
 			{
 				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-				layerEntityComponent.GetLayerEntity()->AttachRenderable(tileMap, Nz::Matrix4f::Identity(), 0);
+				layerEntityComponent.GetLayerEntity()->AttachRenderable(tileMap, Nz::Matrix4f::Identity(), renderOrder);
 			}
 			else
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), 0);
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), renderOrder);
 		};
 
 		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable)
