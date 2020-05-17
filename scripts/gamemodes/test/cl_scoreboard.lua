@@ -60,9 +60,7 @@ function GM:OnPlayerNameUpdate(player, newName)
 		return
 	end
 
-	for _, player in pairs(match.GetPlayers()) do
-		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
-	end
+	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
 end
 
 function GM:OnPlayerPingUpdate()
