@@ -12,18 +12,22 @@ ENTITY.Properties = {
 	{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { defaultTextureCell }, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
 	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
-	{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true }
+	{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
+	{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true }
 }
 
 local function GenerateTiles(textures, textureCells)
 	local tiles = {}
 	for i = 1, #textures do
+		local texture = textures[i]
+		local textureSize = assets.GetTexture(texture):GetSize()
+		local onePixelOffset = 1 / textureSize
 		local cellCount = textureCells[i] or defaultTextureCell
 		for y = 1, cellCount.y do
 			for x = 1, cellCount.x do
 				table.insert(tiles, {
 					materialPath = textures[i],
-					texCoords = Rect(Vec2((x - 1) / cellCount.x, (y - 1) / cellCount.y), Vec2(x / cellCount.x, y / cellCount.y))
+					texCoords = Rect(Vec2((x - 1) / cellCount.x, (y - 1) / cellCount.y) + onePixelOffset, Vec2(x / cellCount.x, y / cellCount.y) - onePixelOffset)
 				})
 			end
 		end
@@ -135,7 +139,8 @@ function ENTITY:Initialize()
 		local textures = self:GetProperty("textures")
 		local textureCells = self:GetProperty("textureCells")
 		local tiles = GenerateTiles(textures, textureCells)
+		local renderOrder = self:GetProperty("renderOrder")
 
-		self:AddTilemap(mapSize, cellSize, content, tiles)
+		self:AddTilemap(mapSize, cellSize, content, tiles, renderOrder)
 	end
 end
