@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/OptionWidget.hpp>
+#include <CoreLib/Utils.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 
