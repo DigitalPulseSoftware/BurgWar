@@ -284,6 +284,23 @@ namespace bw
 		{
 			return GetMatch().GetCurrentTick();
 		};
+		
+		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
+		{
+			sol::state_view lua(L);
+
+			Match& match = GetMatch();
+
+			sol::table playerTable = lua.create_table();
+
+			std::size_t index = 1;
+			match.ForEachPlayer([&](Player* player)
+			{
+				playerTable[index++] = player->CreateHandle();
+			});
+
+			return playerTable;
+		};
 
 		library["GetTick"] = [&]()
 		{

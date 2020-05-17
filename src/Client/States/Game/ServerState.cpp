@@ -34,11 +34,11 @@ namespace bw
 
 	void ServerState::Enter(Ndk::StateMachine& fsm)
 	{
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager));
-		/*Nz::IpAddress serverAddress = Nz::IpAddress::LoopbackIpV4;
+		//fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager));
+		Nz::IpAddress serverAddress = Nz::IpAddress::LoopbackIpV4;
 		serverAddress.SetPort(14768);
 
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress));*/
+		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress));
 	}
 
 	bool ServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
