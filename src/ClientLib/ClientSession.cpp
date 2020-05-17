@@ -13,7 +13,10 @@
 
 namespace bw
 {
-	ClientSession::~ClientSession() = default;
+	ClientSession::~ClientSession()
+	{
+		Disconnect();
+	}
 
 	bool ClientSession::Connect(std::shared_ptr<SessionBridge> sessionBridge)
 	{
