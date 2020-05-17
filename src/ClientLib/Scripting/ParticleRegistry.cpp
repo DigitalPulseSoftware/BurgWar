@@ -4,7 +4,7 @@
 
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
-#include <clientLib/ClientAssetStore.hpp>
+#include <ClientLib/ClientAssetStore.hpp>
 #include <Nazara/Core/OffsetOf.hpp>
 #include <Nazara/Graphics/Material.hpp>
 #include <Nazara/Graphics/ParticleFunctionController.hpp>
