@@ -588,7 +588,7 @@ namespace bw
 		m_mapMenu->setEnabled(hasWorkingMap);
 		m_playMap->setEnabled(hasWorkingMap);
 		m_saveMap->setEnabled(hasWorkingMap);
-		m_saveMapToolbar->setEnabled(false); //< Always disabled after loading
+		m_saveMapToolbar->setEnabled(mapPath.empty()); //< Enabled for new maps/disabled for opened maps
 
 		if (!hasWorkingMap)
 			m_layerMenu->setEnabled(false);
