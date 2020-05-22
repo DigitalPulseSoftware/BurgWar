@@ -97,7 +97,7 @@ namespace bw
 			}
 		};
 
-		state["RegisterClientScript"] = [&](sol::this_state L, const std::optional<std::string_view>& path) -> std::pair<bool, sol::object>
+		state["RegisterClientScript"] = [&](sol::this_state L, const sol::optional<std::string_view>& path) -> std::pair<bool, sol::object>
 		{
 			try
 			{
