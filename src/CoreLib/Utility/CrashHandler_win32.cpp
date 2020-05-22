@@ -22,6 +22,9 @@ namespace bw
 
 		LONG CALLBACK Dump(EXCEPTION_POINTERS* e)
 		{
+			if (IsDebuggerPresent())
+				return EXCEPTION_CONTINUE_SEARCH;
+
 			const wchar_t* executableFilename;
 			std::array<wchar_t, MAX_PATH> executablePath;
 			auto FallbackToDefaultFilename = [&]()
