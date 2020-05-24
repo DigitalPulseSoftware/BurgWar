@@ -204,6 +204,7 @@ namespace bw
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		assert(it != m_entitiesByUniqueId.end());
+		assert(GetEntity(it->second.layerIndex, it->second.entityIndex).uniqueId == uniqueId);
 
 		return it->second;
 	}
