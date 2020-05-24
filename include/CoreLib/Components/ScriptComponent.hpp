@@ -35,8 +35,9 @@ namespace bw
 			inline const EntityLogger& GetLogger() const;
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
 			inline const EntityProperties& GetProperties() const;
-			inline void SetNextTick(float seconds);
 			inline sol::table& GetTable();
+
+			inline void SetNextTick(float seconds);
 
 			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
 			void UpdateEntity(const Ndk::EntityHandle& entity);

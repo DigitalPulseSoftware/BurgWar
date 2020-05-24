@@ -62,14 +62,14 @@ namespace bw
 		return m_properties;
 	}
 
-	inline void ScriptComponent::SetNextTick(float seconds)
-	{
-		m_timeBeforeTick = seconds;
-	}
-
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;
+	}
+
+	inline void ScriptComponent::SetNextTick(float seconds)
+	{
+		m_timeBeforeTick = seconds;
 	}
 
 	inline void ScriptComponent::UpdateElement(std::shared_ptr<const ScriptedElement> element)
