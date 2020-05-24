@@ -426,16 +426,22 @@ namespace bw
 		if (!m_currentLayer || *m_currentLayer != layerIndex)
 			return;
 
-		QListWidgetItem* oldItem = m_entityList.listWidget->item(int(firstEntityIndex));
-		QListWidgetItem* newItem = m_entityList.listWidget->item(int(secondEntityIndex));
+		QListWidgetItem* firstItem = m_entityList.listWidget->item(int(firstEntityIndex));
+		QListWidgetItem* secondItem = m_entityList.listWidget->item(int(secondEntityIndex));
 
-		Ndk::EntityId oldCanvasId = oldItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		QString oldItemText = oldItem->text();
+		Ndk::EntityId firstCanvasId = firstItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		QString firstItemText = firstItem->text();
 
-		oldItem->setData(Qt::UserRole + 1, newItem->data(Qt::UserRole + 1).value<Ndk::EntityId>());
-		oldItem->setText(newItem->text());
-		newItem->setData(Qt::UserRole + 1, oldCanvasId);
-		newItem->setText(oldItemText);
+		Ndk::EntityId secondCanvasId = secondItem->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+		QString secondItemText = secondItem->text();
+
+		firstItem->setData(Qt::UserRole + 1, secondItem->data(Qt::UserRole + 1).value<Ndk::EntityId>());
+		firstItem->setText(secondItemText);
+		secondItem->setData(Qt::UserRole + 1, firstCanvasId);
+		secondItem->setText(firstItemText);
+
+		m_entityIndexes[firstCanvasId] = secondEntityIndex;
+		m_entityIndexes[secondCanvasId] = firstEntityIndex;
 
 		if (m_entityList.listWidget->currentRow() == firstEntityIndex)
 			m_entityList.listWidget->setCurrentRow(int(secondEntityIndex));
