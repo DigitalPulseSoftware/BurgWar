@@ -33,7 +33,8 @@ namespace bw
 	m_layerEntity(std::move(entity.m_layerEntity)),
 	m_baseRenderOrder(entity.m_baseRenderOrder)
 	{
-		m_layerEntity->NotifyVisualEntityMoved(&entity, this);
+		if (m_layerEntity)
+			m_layerEntity->NotifyVisualEntityMoved(&entity, this);
 	}
 
 	VisualEntity::~VisualEntity()
