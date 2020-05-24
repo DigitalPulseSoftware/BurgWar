@@ -8,4 +8,3 @@ namespace bw
 {
 	Ndk::ComponentIndex PlayerControlledComponent::componentIndex;
 }
-

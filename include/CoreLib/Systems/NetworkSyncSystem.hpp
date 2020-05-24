@@ -12,6 +12,7 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -80,6 +81,7 @@ namespace bw
 				Nz::Vector2f position;
 				std::optional<std::string> name;
 				std::optional<Ndk::EntityId> parent;
+				std::optional<Ndk::EntityId> weapon;
 				std::optional<HealthProperties> healthProperties;
 				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
@@ -111,6 +113,12 @@ namespace bw
 				PlayerInputData inputs;
 			};
 
+			struct EntityWeapon
+			{
+				Ndk::EntityId entityId;
+				std::optional<Ndk::EntityId> weaponId;
+			};
+
 			struct EntityMovement
 			{
 				Ndk::EntityId entityId;
@@ -127,12 +135,13 @@ namespace bw
 			NazaraSignal(OnEntityInvalidated, NetworkSyncSystem* /*emitter*/, const EntityMovement& /*event*/);
 			NazaraSignal(OnEntitiesInputUpdate, NetworkSyncSystem* /*emitter*/, const EntityInputs* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
+			NazaraSignal(OnEntitiesWeaponUpdate, NetworkSyncSystem* /*emitter*/, const EntityWeapon* /*events*/, std::size_t /*entityCount*/);
 
 		private:
 			void BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const;
 			void BuildEvent(EntityDeath& deathEvent, Ndk::Entity* entity) const;
 			void BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const;
-			void BuildEvent(EntityMovement &movementEvent, Ndk::Entity* entity) const;
+			void BuildEvent(EntityMovement& movementEvent, Ndk::Entity* entity) const;
 
 			void OnEntityAdded(Ndk::Entity* entity) override;
 			void OnEntityRemoved(Ndk::Entity* entity) override;
@@ -145,19 +154,22 @@ namespace bw
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
 				NazaraSlot(InputComponent, OnInputUpdate, onInputUpdate);
 				NazaraSlot(NetworkSyncComponent, OnInvalidated, onInvalidated);
+				NazaraSlot(WeaponWielderComponent, OnNewWeaponSelection, onNewWeaponSelection);
 			};
 
 			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
 
 			Ndk::EntityList m_inputUpdateEntities;
+			Ndk::EntityList m_invalidatedEntities;
 			Ndk::EntityList m_healthUpdateEntities;
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_staticEntities;
-			Ndk::EntityList m_invalidatedEntities;
+			Ndk::EntityList m_weaponUpdateEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<EntityHealth> m_healthEvents;
 			std::vector<EntityInputs> m_inputEvents;
+			std::vector<EntityWeapon> m_weaponEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;
 			TerrainLayer& m_layer;
 	};

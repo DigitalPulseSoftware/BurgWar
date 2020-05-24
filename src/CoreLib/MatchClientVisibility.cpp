@@ -105,6 +105,21 @@ namespace bw
 				}
 			});
 
+			layer.onEntitiesWeaponUpdate.Connect(syncSystem.OnEntitiesWeaponUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityWeapon* events, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+						continue;
+
+					layer.weaponEvents[events[i].entityId] = events[i];
+					m_pendingEvents.Set(VisibilityEventType::WeaponUpdate);
+				}
+			});
+
 			m_newlyVisibleLayers.UnboundedSet(layerIndex);
 		}
 	}
@@ -207,6 +222,16 @@ namespace bw
 
 					if (eventData->parent)
 						HandleDependentEntity(static_cast<Nz::UInt32>(eventData->parent.value()));
+
+					if (eventData->weapon)
+					{
+						NetworkSyncSystem::EntityWeapon weaponEvent;
+						weaponEvent.entityId = eventData->entityId;
+						weaponEvent.weaponId = eventData->weapon.value();
+
+						layer.weaponEvents[weaponEvent.entityId] = weaponEvent;
+						m_pendingEvents.Set(VisibilityEventType::WeaponUpdate);
+					}
 
 					for (auto&& [layerIndex, entityIndex] : eventData->dependentIds)
 						HandleDependentEntity(static_cast<Nz::UInt32>(entityIndex));
@@ -326,6 +351,16 @@ namespace bw
 
 					if (eventData->parent)
 						HandleDependentEntity(static_cast<Nz::UInt32>(eventData->parent.value()));
+
+					if (eventData->weapon)
+					{
+						NetworkSyncSystem::EntityWeapon weaponEvent;
+						weaponEvent.entityId = eventData->entityId;
+						weaponEvent.weaponId = eventData->weapon.value();
+
+						layer.weaponEvents[weaponEvent.entityId] = weaponEvent;
+						m_pendingEvents.Set(VisibilityEventType::WeaponUpdate);
+					}
 
 					for (auto&& [layerIndex, entityIndex] : eventData->dependentIds)
 						HandleDependentEntity(static_cast<Nz::UInt32>(entityIndex));
@@ -456,6 +491,35 @@ namespace bw
 			m_pendingEvents.Clear(VisibilityEventType::PlayAnimation);
 		}
 
+		if (m_pendingEvents.Test(VisibilityEventType::WeaponUpdate))
+		{
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+			{
+				auto& layer = *it.value();
+				if (layer.weaponEvents.empty())
+					continue;
+
+				LayerIndex layerIndex = it.key();
+
+				for (auto&& pair : layer.weaponEvents)
+				{
+					Packets::EntityWeapon weaponPacket;
+					weaponPacket.layerIndex = layerIndex;
+					weaponPacket.entityId = pair.first;
+					weaponPacket.stateTick = networkTick;
+
+					auto& weaponData = pair.second;
+					weaponPacket.weaponEntityId = (weaponData.weaponId.has_value()) ? weaponData.weaponId.value() : Packets::EntityWeapon::NoWeapon;
+
+					m_session.SendPacket(weaponPacket);
+				}
+
+				layer.weaponEvents.clear();
+			}
+
+			m_pendingEvents.Clear(VisibilityEventType::WeaponUpdate);
+		}
+
 		if (!m_layers.empty())
 			SendMatchState();
 
@@ -544,6 +608,7 @@ namespace bw
 		layer.healthUpdateEvents.erase(entityId);
 		layer.playAnimationEvents.erase(entityId);
 		layer.staticMovementUpdateEvents.erase(entityId);
+		layer.weaponEvents.erase(entityId);
 
 		layer.visibleEntities.UnboundedReset(entityId);
 	}

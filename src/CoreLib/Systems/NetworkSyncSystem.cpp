@@ -159,6 +159,14 @@ namespace bw
 				}
 			}
 		}
+
+		if (entity->HasComponent<WeaponWielderComponent>())
+		{
+			auto& entityWeaponWielder = entity->GetComponent<WeaponWielderComponent>();
+
+			if (const Ndk::EntityHandle& activeWeapon = entityWeaponWielder.GetActiveWeapon())
+				creationEvent.weapon = activeWeapon->GetId();
+		}
 	}
 
 	void NetworkSyncSystem::BuildEvent(EntityDeath& deathEvent, Ndk::Entity* entity) const
@@ -265,6 +273,16 @@ namespace bw
 				m_inputUpdateEntities.Insert(input->GetEntity());
 			});
 		}
+
+		if (entity->HasComponent<WeaponWielderComponent>())
+		{
+			auto& entityWeaponWielder = entity->GetComponent<WeaponWielderComponent>();
+
+			slots.onNewWeaponSelection.Connect(entityWeaponWielder.OnNewWeaponSelection, [&](WeaponWielderComponent* wielder, std::size_t /*newWeaponIndex*/)
+			{
+				m_weaponUpdateEntities.Insert(wielder->GetEntity());
+			});
+		}
 	}
 
 	void NetworkSyncSystem::OnEntityRemoved(Ndk::Entity* entity)
@@ -278,6 +296,7 @@ namespace bw
 		m_inputUpdateEntities.Remove(entity);
 		m_physicsEntities.Remove(entity);
 		m_staticEntities.Remove(entity);
+		m_weaponUpdateEntities.Remove(entity);
 
 		auto it = m_entitySlots.find(entity->GetId());
 		assert(it != m_entitySlots.end());
@@ -315,6 +334,28 @@ namespace bw
 			m_inputUpdateEntities.Clear();
 
 			OnEntitiesInputUpdate(this, m_inputEvents.data(), m_inputEvents.size());
+		}
+
+		if (!m_weaponUpdateEntities.empty())
+		{
+			m_weaponEvents.clear();
+
+			for (const auto& entity : m_weaponUpdateEntities)
+			{
+				auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
+
+				std::size_t selectedWeapon = weaponWielder.GetSelectedWeapon();
+
+				EntityWeapon& weaponEvent = m_weaponEvents.emplace_back();
+				weaponEvent.entityId = entity->GetId();
+
+				if (selectedWeapon != WeaponWielderComponent::NoWeapon)
+					weaponEvent.weaponId = weaponWielder.GetWeapon(selectedWeapon)->GetId();
+			}
+
+			m_weaponUpdateEntities.Clear();
+
+			OnEntitiesWeaponUpdate(this, m_weaponEvents.data(), m_weaponEvents.size());
 		}
 	}
 

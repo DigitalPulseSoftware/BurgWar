@@ -14,6 +14,7 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
@@ -45,13 +46,13 @@ namespace bw
 			inline std::size_t GetPlayerIndex() const;
 			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
-			inline std::size_t GetWeaponCount() const;
+			std::size_t GetWeaponCount() const;
 
 			bool GiveWeapon(std::string weaponClass);
 
 			void HandleConsoleCommand(const std::string& str);
 
-			inline bool HasWeapon(const std::string& weaponClass) const;
+			bool HasWeapon(const std::string& weaponClass) const;
 
 			inline bool IsAdmin() const;
 			inline bool IsReady() const;
@@ -80,7 +81,7 @@ namespace bw
 			Player& operator=(Player&&) = delete;
 
 			static constexpr LayerIndex NoLayer = std::numeric_limits<LayerIndex>::max();
-			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
+			static constexpr std::size_t NoWeapon = WeaponWielderComponent::NoWeapon;
 
 		private:
 			void OnDeath(const Ndk::EntityHandle& attacker);
@@ -88,16 +89,15 @@ namespace bw
 
 			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
 			NazaraSlot(HealthComponent, OnDied, m_onPlayerEntityDied);
+			NazaraSlot(WeaponWielderComponent, OnWeaponAdded, m_onWeaponAdded);
+			NazaraSlot(WeaponWielderComponent, OnWeaponRemove, m_onWeaponRemove);
 
 			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			LayerIndex m_layerIndex;
-			std::size_t m_activeWeaponIndex;
 			std::size_t m_inputIndex;
 			std::size_t m_playerIndex;
 			std::string m_name;
-			std::vector<Ndk::EntityOwner> m_weapons;
-			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
 			Ndk::EntityOwner m_playerEntity;
 			Nz::Bitset<Nz::UInt64> m_visibleLayers;
 			Nz::UInt8 m_localIndex;
