@@ -132,7 +132,7 @@ GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 			}
 		})
 
-		GM.NextSpawnTime = match.GetMilliseconds() + math.random(5000, 20000)
+		GM.NextSpawnTime = match.GetMilliseconds() + math.random(30, 60) * 1000
 	end
 end)
 
