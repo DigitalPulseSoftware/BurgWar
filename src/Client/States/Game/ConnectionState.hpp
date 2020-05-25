@@ -24,11 +24,11 @@ namespace bw
 			~ConnectionState() = default;
 
 		private:
+			void HandleConnectionFailure();
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
-			std::shared_ptr<AbstractState> m_nextState;
+			std::function<void(Ndk::StateMachine& fsm)> m_nextStateCallback;
 			std::shared_ptr<ClientSession> m_clientSession;
-			bool m_failed;
 			float m_nextStateDelay;
 
 			NazaraSlot(ClientSession, OnConnected, m_clientSessionConnectedSlot);

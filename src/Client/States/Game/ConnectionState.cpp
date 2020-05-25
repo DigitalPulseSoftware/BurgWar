@@ -16,8 +16,7 @@
 namespace bw
 {
 	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote) :
-	StatusState(std::move(stateData)),
-	m_failed(false)
+	StatusState(std::move(stateData))
 	{
 		ClientApp* app = GetStateData().app;
 		auto& networkManager = app->GetReactorManager();
@@ -30,17 +29,16 @@ namespace bw
 
 			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession);
 
-			m_nextState = std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState));
+			m_nextStateCallback = [this, authState = std::move(authState)](Ndk::StateMachine& fsm)
+			{
+				fsm.ChangeState(std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState)));
+			};
 			m_nextStateDelay = 0.5f;
 		});
 
 		m_clientSessionDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
 		{
-			UpdateStatus("Failed to connect to server", Nz::Color::Red);
-
-			m_failed = true;
-			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
-			m_nextStateDelay = 3.f;
+			HandleConnectionFailure();
 		});
 
 		std::visit([&](auto&& value)
@@ -49,8 +47,15 @@ namespace bw
 
 			if constexpr (std::is_same_v<T, Nz::IpAddress>)
 			{
-				m_clientSession->Connect(networkManager.ConnectToServer(value, 0));
-				UpdateStatus("Connecting to " + value.ToString().ToStdString() + "...", Nz::Color::White);
+				auto sessionBridge = networkManager.ConnectToServer(value, 0);
+				if (sessionBridge)
+				{
+					m_clientSession->Connect(std::move(sessionBridge));
+
+					UpdateStatus("Connecting to " + value.ToString().ToStdString() + "...", Nz::Color::White);
+				}
+				else
+					HandleConnectionFailure();
 			}
 			else if constexpr (std::is_same_v<T, LocalSessionManager*>)
 			{
@@ -61,19 +66,29 @@ namespace bw
 		}, remote);
 	}
 
+	void ConnectionState::HandleConnectionFailure()
+	{
+		UpdateStatus("Failed to connect to server", Nz::Color::Red);
+
+		m_nextStateCallback = [this](Ndk::StateMachine& fsm)
+		{
+			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
+			fsm.PushState(std::make_shared<LoginState>(GetStateDataPtr()));
+		};
+
+		m_nextStateDelay = 3.f;
+	}
+
 	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		if (m_nextState)
+		if (m_nextStateCallback)
 		{
 			if ((m_nextStateDelay -= elapsedTime) < 0.f)
 			{
-				if (m_failed)
-					fsm.PushState(std::make_shared<BackgroundState>(GetStateDataPtr()));
-
-				fsm.ChangeState(m_nextState);
+				m_nextStateCallback(fsm);
 				return true;
 			}
 		}

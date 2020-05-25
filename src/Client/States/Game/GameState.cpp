@@ -42,6 +42,12 @@ namespace bw
 		m_clientSession->SendPacket(Packets::Ready{});
 	}
 
+	void GameState::Leave(Ndk::StateMachine& /*fsm*/)
+	{
+		if (m_clientSession)
+			m_clientSession->Disconnect();
+	}
+
 	bool GameState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))

@@ -86,7 +86,13 @@ namespace bw
 		m_stateMachine.PushState(std::make_shared<LoginState>(m_stateData));
 	}
 
-	ClientApp::~ClientApp() = default;
+	ClientApp::~ClientApp()
+	{
+		m_stateMachine.ResetState(nullptr);
+		m_stateMachine.Update(0.f);
+
+		m_networkReactors.ClearReactors();
+	}
 
 	int ClientApp::Run()
 	{
