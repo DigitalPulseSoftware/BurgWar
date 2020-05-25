@@ -1,6 +1,9 @@
 # Build config
 build/config.lua
 
+# Qt-generated files
+*.moc
+
 # Game binaries
 Assets/*
 
