@@ -32,7 +32,6 @@ end)
 
 function GM:OnPlayerSpawn(player)
 	player:GiveWeapon("weapon_sword_emmentalibur")
-	player:GiveWeapon("weapon_patator")
 	player:GiveWeapon("weapon_graspain")
 end
 
