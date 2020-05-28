@@ -162,9 +162,9 @@ namespace bw
 
 	void MapCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& key)
 	{
-		switch (key.code)
+		switch (key.virtualKey)
 		{
-			case Nz::Keyboard::Key::Delete:
+			case Nz::Keyboard::VKey::Delete:
 			{
 				if (m_entityGizmo)
 					OnDeleteEntity(this, m_entityGizmo->GetTargetEntity()->GetId());

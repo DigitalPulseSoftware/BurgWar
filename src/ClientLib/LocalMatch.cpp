@@ -758,15 +758,15 @@ namespace bw
 
 		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
-			switch (event.code)
+			switch (event.virtualKey)
 			{
-				case Nz::Keyboard::Escape:
+				case Nz::Keyboard::VKey::Escape:
 				{
 					m_escapeMenu.Show(!m_escapeMenu.IsVisible());
 					break;
 				}
 
-				case Nz::Keyboard::F9:
+				case Nz::Keyboard::VKey::F9:
 					if (m_remoteConsole)
 						m_remoteConsole->Hide();
 
@@ -775,7 +775,7 @@ namespace bw
 
 					break;
 
-				case Nz::Keyboard::F10:
+				case Nz::Keyboard::VKey::F10:
 					if (m_localConsole)
 						m_localConsole->Hide();
 
@@ -784,11 +784,11 @@ namespace bw
 
 					break;
 
-				case Nz::Keyboard::Return:
+				case Nz::Keyboard::VKey::Return:
 					m_chatBox.Open(!m_chatBox.IsOpen());
 					break;
 
-				case Nz::Keyboard::Tab:
+				case Nz::Keyboard::VKey::Tab:
 				{
 					if (!m_scoreboard)
 						InitializeScoreboard();
@@ -805,9 +805,9 @@ namespace bw
 
 		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
-			switch (event.code)
+			switch (event.virtualKey)
 			{
-				case Nz::Keyboard::Tab:
+				case Nz::Keyboard::VKey::Tab:
 					if (m_scoreboard)
 						m_scoreboard->Hide();
 
@@ -1101,7 +1101,7 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
 	{
-		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::A))
+		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q))
 			return;
 
 		// Apply physics state to all layers

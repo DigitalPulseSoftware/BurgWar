@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
 	Nz::Audio::SetSpeedOfSound(343.3f * 100.f);
 
-	Nz::SoundBufferParams params;
+	Nz::SoundBufferParams params; 
 	params.forceMono = true;
 
 	Nz::SoundBufferManager::SetDefaultParameters(params);

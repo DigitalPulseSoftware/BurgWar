@@ -66,7 +66,7 @@ namespace bw
 			XFlush(QX11Info::display());
 			#endif
 
-			Nz::RenderWindow::Create(Nz::WindowHandle(winId()));
+			Nz::RenderWindow::Create(reinterpret_cast<void*>(winId()));
 		}
 
 		OnShow();
@@ -119,14 +119,14 @@ namespace bw
 
 	bool NazaraCanvas::event(QEvent* e)
 	{
-		auto TranslateKey = [](Qt::Key key) -> std::optional<Nz::Keyboard::Key>
+		auto TranslateKey = [](Qt::Key key) -> std::optional<Nz::Keyboard::VKey>
 		{
 			switch (key)
 			{
-				case Qt::Key_Delete: return Nz::Keyboard::Key::Delete;
-				case Qt::Key_Escape: return Nz::Keyboard::Key::Escape;
-				case Qt::Key_Return: return Nz::Keyboard::Key::Return;
-				case Qt::Key_Tab:    return Nz::Keyboard::Key::Tab;
+				case Qt::Key_Delete: return Nz::Keyboard::VKey::Delete;
+				case Qt::Key_Escape: return Nz::Keyboard::VKey::Escape;
+				case Qt::Key_Return: return Nz::Keyboard::VKey::Return;
+				case Qt::Key_Tab:    return Nz::Keyboard::VKey::Tab;
 
 				default:
 					return std::nullopt;
@@ -155,6 +155,7 @@ namespace bw
 				QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
 				auto key = TranslateKey(static_cast<Qt::Key>(keyEvent->key()));
 
+				bool ignoreEvent = false;
 				if (key)
 				{
 					Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
@@ -162,15 +163,32 @@ namespace bw
 					Nz::WindowEvent event;
 					event.type = Nz::WindowEventType_KeyPressed;
 					event.key.alt = modifiers & Qt::AltModifier;
-					event.key.code = key.value();
 					event.key.control = modifiers & Qt::ControlModifier;
 					event.key.repeated = keyEvent->isAutoRepeat();
 					event.key.shift = modifiers & Qt::ShiftModifier;
 					event.key.system = modifiers & Qt::MetaModifier;
+					event.key.virtualKey = key.value();
+					event.key.scancode = Nz::Keyboard::ToScanCode(event.key.virtualKey);
 
 					PushEvent(event);
-					return true;
+					ignoreEvent = true;
 				}
+
+				// This is a placeholder for a real event handling
+				std::u32string u32str = keyEvent->text().toStdU32String();
+				if (!u32str.empty())
+				{
+					Nz::WindowEvent event;
+					event.type = Nz::WindowEventType_TextEntered;
+					event.text.character = u32str[0];
+					event.text.repeated = keyEvent->isAutoRepeat();
+
+					PushEvent(event);
+				}
+
+				if (ignoreEvent)
+					return true;
+
 				break;
 			}
 
@@ -186,11 +204,12 @@ namespace bw
 					Nz::WindowEvent event;
 					event.type = Nz::WindowEventType_KeyReleased;
 					event.key.alt = modifiers & Qt::AltModifier;
-					event.key.code = key.value();
 					event.key.control = modifiers & Qt::ControlModifier;
 					event.key.repeated = keyEvent->isAutoRepeat();
 					event.key.shift = modifiers & Qt::ShiftModifier;
 					event.key.system = modifiers & Qt::MetaModifier;
+					event.key.virtualKey = key.value();
+					event.key.scancode = Nz::Keyboard::ToScanCode(event.key.virtualKey);
 
 					PushEvent(event);
 					return true;

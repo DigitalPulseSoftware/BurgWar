@@ -31,18 +31,18 @@ namespace bw
 		{
 			case 0:
 				inputData.isAttacking = Nz::Mouse::IsButtonPressed(Nz::Mouse::Left);
-				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::LControl);
-				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Space);
-				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Q);
-				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::D);
+				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LControl);
+				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Space);
+				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::A);
+				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::D);
 				break;
 
 			case 1:
 				inputData.isAttacking = Nz::Mouse::IsButtonPressed(Nz::Mouse::Right);
-				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Down);
-				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Up);
-				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Left);
-				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Right);
+				inputData.isCrouching = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Down);
+				inputData.isJumping = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Up);
+				inputData.isMovingLeft = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Left);
+				inputData.isMovingRight = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Right);
 				break;
 
 			default:
