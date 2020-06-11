@@ -309,7 +309,10 @@ namespace bw
 		}
 
 		m_entityStore->LoadDirectory("entities");
+		m_entityStore->Resolve();
+
 		m_weaponStore->LoadDirectory("weapons");
+		m_weaponStore->Resolve();
 
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::object callbackObject)
