@@ -289,8 +289,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)
 		{
-			serializer &= data.layerIndex;
-			serializer &= data.entityId;
+			Serialize(serializer, data.entityId);
 			serializer &= data.stateTick;
 			serializer &= data.weaponEntityId;
 		}
@@ -751,6 +750,12 @@ namespace bw
 						break;
 				}
 			}
+		}
+
+		void Serialize(PacketSerializer& serializer, Helper::EntityId& data)
+		{
+			serializer &= data.layerId;
+			serializer &= data.entityId;
 		}
 	}
 }

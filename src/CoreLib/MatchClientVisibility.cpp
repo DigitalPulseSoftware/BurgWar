@@ -504,8 +504,8 @@ namespace bw
 				for (auto&& pair : layer.weaponEvents)
 				{
 					Packets::EntityWeapon weaponPacket;
-					weaponPacket.layerIndex = layerIndex;
-					weaponPacket.entityId = pair.first;
+					weaponPacket.entityId.layerId = layerIndex;
+					weaponPacket.entityId.entityId = pair.first;
 					weaponPacket.stateTick = networkTick;
 
 					auto& weaponData = pair.second;

@@ -474,6 +474,28 @@ namespace bw
 		}
 	}
 
+	void LocalLayer::HandlePacket(const Packets::EntityWeapon& packet)
+	{
+		assert(packet.entityId.layerId == GetLayerIndex());
+
+		auto entityOpt = GetServerEntity(packet.entityId.entityId);
+		if (!entityOpt)
+			return;
+
+		LocalLayerEntity& localEntity = *entityOpt;
+		if (packet.weaponEntityId != Packets::EntityWeapon::NoWeapon)
+		{
+			auto newWeaponOpt = GetServerEntity(packet.weaponEntityId);
+			if (!newWeaponOpt)
+				return;
+
+			LocalLayerEntity& newWeapon = newWeaponOpt.value();
+			localEntity.UpdateWeaponEntity(newWeapon.CreateHandle());
+		}
+		else
+			localEntity.UpdateWeaponEntity({});
+	}
+
 	void LocalLayer::HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);

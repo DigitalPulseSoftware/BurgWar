@@ -333,8 +333,7 @@ namespace bw
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
-			CompressedUnsigned<LayerIndex> layerIndex;
-			CompressedUnsigned<Nz::UInt32> entityId;
+			Helper::EntityId entityId;
 			CompressedUnsigned<Nz::UInt32> weaponEntityId;
 
 			static constexpr Nz::UInt32 NoWeapon = 0xFFFFFFFF;
@@ -564,6 +563,7 @@ namespace bw
 		// Helpers
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
 		void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
+		void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
 	}
 }
 

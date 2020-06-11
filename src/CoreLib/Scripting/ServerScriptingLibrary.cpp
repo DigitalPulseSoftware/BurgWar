@@ -263,12 +263,12 @@ namespace bw
 
 			// HAX
 			Packets::EntityWeapon weaponPacket;
-			weaponPacket.layerIndex = layerIndex;
-			weaponPacket.entityId = owner->GetId();
+			weaponPacket.entityId.layerId = layerIndex;
+			weaponPacket.entityId.entityId = owner->GetId();
 			weaponPacket.weaponEntityId = weapon->GetId();
 
 			Nz::Bitset<Nz::UInt64> entityIds;
-			entityIds.UnboundedSet(weaponPacket.entityId);
+			entityIds.UnboundedSet(weaponPacket.entityId.entityId);
 			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
 
 			match.ForEachPlayer([&](Player* ply)

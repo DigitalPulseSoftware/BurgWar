@@ -1062,29 +1062,13 @@ namespace bw
 		}
 	}
 
+	{
+
 	void LocalMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
 	{
-		assert(packet.layerIndex < m_layers.size());
-		auto& layer = m_layers[packet.layerIndex];
-
-		auto entityOpt = layer->GetEntity(packet.entityId);
-		if (!entityOpt)
-			return;
-
-		LocalLayerEntity& entity = entityOpt.value();
-
-		if (packet.weaponEntityId != Packets::EntityWeapon::NoWeapon)
-		{
-			auto newWeaponOpt = layer->GetEntity(packet.weaponEntityId);
-			if (!newWeaponOpt)
-				return;
-
-			LocalLayerEntity& newWeapon = newWeaponOpt.value();
-
-			entity.UpdateWeaponEntity(newWeapon.CreateHandle());
-		}
-		else
-			entity.UpdateWeaponEntity({});
+		assert(packet.entityId.layerId < m_layers.size());
+		auto& layer = m_layers[packet.entityId.layerId];
+		layer->HandlePacket(packet);
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::HealthUpdate&& packet)
