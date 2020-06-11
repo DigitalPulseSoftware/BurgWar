@@ -19,6 +19,7 @@ function ENTITY:Initialize()
 	local defaultOrigin = Vec2(0.5, 1)
 	local renderOrder = 0
 	local faceOffset
+	self.Sprites = {}
 	self:ForEachElement(function (elementData, randomSprite)
 		local elementOffsetScale = elementData.OffsetScale or 1
 		local elementOrigin = elementData.Origin or defaultOrigin
@@ -57,6 +58,13 @@ function ENTITY:Initialize()
 		maxWidth = math.max(maxWidth, spriteSize.x)
 		cursor = cursor - spriteSize.y * offsetScale
 		renderOrder = renderOrder + 1
+
+		table.insert(self.Sprites, {
+			Offset = offset,
+			Origin = origin,
+			Size = spriteSize,
+			TexturePath = texturePath
+		})
 	end)
 
 	for name, texture in pairs(self.Faces) do
@@ -103,12 +111,41 @@ function ENTITY:OnTick()
 end
 
 function ENTITY:OnHealthUpdate(oldHealth, newHealth)
-	if (newHealth > oldHealth) then
-		-- Heal
-		self:UpdateFace(self.VictoryFace, 2)
-	elseif (newHealth < oldHealth) then
-		-- Damage
-		self:UpdateFace(self.DamageFace, 2)
+	if (newHealth > 0) then
+		if (newHealth > oldHealth) then
+			-- Heal
+			self:UpdateFace(self.VictoryFace, 2)
+		elseif (newHealth < oldHealth) then
+			-- Damage
+			self:UpdateFace(self.DamageFace, 2)
+		end
+	else
+		self:OnDeath()
+	end
+end
+
+function ENTITY:OnDeath()
+	local layerIndex = self:GetLayerIndex()
+	local pos = self:GetPosition()
+	local vel = self:GetVelocity()
+	local force = vel:Normalize()
+
+	for _, sprite in pairs(self.Sprites) do
+		local entity = match.CreateEntity({
+			Type = "entity_gibs",
+			Position = pos + sprite.Offset - sprite.Origin,
+			LayerIndex = layerIndex,
+			Properties = {
+				mass = 5,
+				physical = true,
+				size = sprite.Size,
+				texture = sprite.TexturePath
+			}
+		})
+
+		local randVel = vel * (math.random() + 0.5) + Vec2(math.random(), math.random()) * (force + 500)
+		entity:SetAngularVelocity(math.random(-180, 180) * math.random() * 10)
+		entity:SetVelocity(randVel)
 	end
 end
 
