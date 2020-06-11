@@ -510,7 +510,7 @@ namespace bw
 							auto& layer = m_layers[layerId];
 							if (layer->IsEnabled())
 							{
-								if (auto entityOpt = layer->GetEntity(entityId))
+								if (auto entityOpt = layer->GetServerEntity(entityId))
 								{
 									LocalLayerEntity& entity = entityOpt.value();
 									LocalLayerEntity* ghostEntity = entity.GetGhost();
@@ -954,7 +954,7 @@ namespace bw
 		assert(packet.layerIndex < m_layers.size());
 		auto& layerPtr = m_layers[packet.layerIndex];
 
-		auto layerEntityOpt = layerPtr->GetEntity(packet.entityId);
+		auto layerEntityOpt = layerPtr->GetServerEntity(packet.entityId);
 		if (!layerEntityOpt)
 			return;
 
@@ -1191,7 +1191,7 @@ namespace bw
 
 		for (auto weaponEntityIndex : packet.weaponEntities)
 		{
-			auto entityOpt = layer->GetEntity(weaponEntityIndex);
+			auto entityOpt = layer->GetServerEntity(weaponEntityIndex);
 			if (!entityOpt)
 			{
 				bwLog(GetLogger(), LogLevel::Warning, "Local player #{0} weapon entity {1} doesn't exist", +packet.localIndex, weaponEntityIndex);

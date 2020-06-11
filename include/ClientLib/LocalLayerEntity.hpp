@@ -42,9 +42,11 @@ namespace bw
 			inline void Disable();
 			void Enable(bool enable = true);
 
+			Nz::RadianAnglef GetAngularVelocity() const;
 			inline const Ndk::EntityHandle& GetEntity() const;
 			LocalLayerEntity* GetGhost();
 			LayerIndex GetLayerIndex() const;
+			Nz::Vector2f GetLinearVelocity() const;
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
@@ -56,7 +58,8 @@ namespace bw
 
 			void InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth);
 			void InitializeName(const std::string& name);
-
+			
+			inline bool IsClientside() const;
 			bool IsFacingRight() const;
 			bool IsPhysical() const;
 

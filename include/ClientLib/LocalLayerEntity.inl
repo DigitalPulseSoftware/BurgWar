@@ -30,7 +30,12 @@ namespace bw
 	{
 		return m_weaponEntity;
 	}
-	
+
+	inline bool LocalLayerEntity::IsClientside() const
+	{
+		return m_serverEntityId == ClientsideId;
+	}
+
 	inline bool LocalLayerEntity::HasHealth() const
 	{
 		return m_health.has_value();

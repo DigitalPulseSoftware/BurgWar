@@ -150,7 +150,7 @@ namespace bw
 		assert(entity);
 		assert(entity->GetWorld() == &GetWorld());
 
-		if (layerEntity.GetServerId() == LocalLayerEntity::ClientsideId)
+		if (layerEntity.IsClientside())
 		{
 			assert(m_clientEntities.find(entity->GetId()) == m_clientEntities.end());
 			auto it = m_clientEntities.emplace(entity->GetId(), std::move(layerEntity)).first;

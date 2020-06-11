@@ -40,7 +40,8 @@ namespace bw
 			template<typename F> void ForEachLayerSound(F&& func);
 
 			inline const Nz::Color& GetBackgroundColor() const;
-			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntity(Nz::UInt32 serverId);
+			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetClientEntity(Ndk::EntityId clientId);
+			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetServerEntity(Nz::UInt32 serverId);
 			LocalMatch& GetLocalMatch();
 
 			inline bool IsEnabled() const;

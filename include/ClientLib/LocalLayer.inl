@@ -45,7 +45,18 @@ namespace bw
 		return m_backgroundColor;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(Nz::UInt32 serverId)
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetClientEntity(Ndk::EntityId clientId)
+	{
+		assert(m_isEnabled);
+
+		auto it = m_clientEntities.find(clientId);
+		if (it == m_clientEntities.end())
+			return std::nullopt;
+
+		return it.value().layerEntity;
+	}
+
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetServerEntity(Nz::UInt32 serverId)
 	{
 		assert(m_isEnabled);
 

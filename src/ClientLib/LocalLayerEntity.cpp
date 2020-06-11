@@ -86,6 +86,14 @@ namespace bw
 			visualEntity->Enable(enable);
 	}
 
+	Nz::RadianAnglef LocalLayerEntity::GetAngularVelocity() const
+	{
+		assert(IsPhysical());
+
+		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+		return entityPhys.GetAngularVelocity();
+	}
+
 	LocalLayerEntity* LocalLayerEntity::GetGhost()
 	{
 		if (!m_ghostEntity)
@@ -123,6 +131,14 @@ namespace bw
 	LayerIndex LocalLayerEntity::GetLayerIndex() const
 	{
 		return m_layer.GetLayerIndex();
+	}
+
+	Nz::Vector2f LocalLayerEntity::GetLinearVelocity() const
+	{
+		assert(IsPhysical());
+
+		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+		return entityPhys.GetVelocity();
 	}
 
 	Nz::Vector2f LocalLayerEntity::GetPosition() const
