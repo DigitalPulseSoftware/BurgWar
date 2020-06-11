@@ -287,6 +287,15 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, EntityPhysics& data)
+		{
+			Serialize(serializer, data.entityId);
+			serializer &= data.stateTick;
+			serializer &= data.asleep;
+			serializer &= data.mass;
+			serializer &= data.momentOfInertia;
+		}
+
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)
 		{
 			Serialize(serializer, data.entityId);
@@ -643,6 +652,9 @@ namespace bw
 				auto& physicsProperties = data.physicsProperties.value();
 				serializer &= physicsProperties.angularVelocity;
 				serializer &= physicsProperties.linearVelocity;
+				serializer &= physicsProperties.isAsleep;
+				serializer &= physicsProperties.mass;
+				serializer &= physicsProperties.momentOfInertia;
 			}
 
 			serializer.SerializeArraySize(data.properties);

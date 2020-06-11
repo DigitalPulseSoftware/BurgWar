@@ -46,6 +46,8 @@ namespace bw
 			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
+			void NotifyPhysicsUpdate(const Ndk::EntityHandle& entity);
+
 			static Ndk::SystemIndex systemIndex;
 
 			struct HealthProperties
@@ -64,6 +66,8 @@ namespace bw
 				Nz::RadianAnglef angularVelocity;
 				Nz::Vector2f linearVelocity;
 				bool isSleeping;
+				float mass;
+				float momentOfInertia;
 			};
 
 			struct EntityPlayAnimation
@@ -113,6 +117,14 @@ namespace bw
 				PlayerInputData inputs;
 			};
 
+			struct EntityPhysics
+			{
+				Ndk::EntityId entityId;
+				bool isAsleep;
+				float mass;
+				float momentOfInertia;
+			};
+
 			struct EntityWeapon
 			{
 				Ndk::EntityId entityId;
@@ -135,6 +147,7 @@ namespace bw
 			NazaraSignal(OnEntityInvalidated, NetworkSyncSystem* /*emitter*/, const EntityMovement& /*event*/);
 			NazaraSignal(OnEntitiesInputUpdate, NetworkSyncSystem* /*emitter*/, const EntityInputs* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesHealthUpdate, NetworkSyncSystem* /*emitter*/, const EntityHealth* /*events*/, std::size_t /*entityCount*/);
+			NazaraSignal(OnEntitiesPhysicsUpdate, NetworkSyncSystem* /*emitter*/, const EntityPhysics* /*events*/, std::size_t /*entityCount*/);
 			NazaraSignal(OnEntitiesWeaponUpdate, NetworkSyncSystem* /*emitter*/, const EntityWeapon* /*events*/, std::size_t /*entityCount*/);
 
 		private:
@@ -163,12 +176,14 @@ namespace bw
 			Ndk::EntityList m_invalidatedEntities;
 			Ndk::EntityList m_healthUpdateEntities;
 			Ndk::EntityList m_physicsEntities;
+			Ndk::EntityList m_physicsUpdateEntities;
 			Ndk::EntityList m_staticEntities;
 			Ndk::EntityList m_weaponUpdateEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<EntityHealth> m_healthEvents;
 			std::vector<EntityInputs> m_inputEvents;
+			std::vector<EntityPhysics> m_physicsEvent;
 			std::vector<EntityWeapon> m_weaponEvents;
 			mutable std::vector<EntityMovement> m_movementEvents;
 			TerrainLayer& m_layer;

@@ -1,7 +1,6 @@
 RegisterClientScript()
 
 ENTITY.IsNetworked = true
-ENTITY.CollisionType = 2
 ENTITY.PlayerControlled = false
 ENTITY.MaxHealth = 0
 
@@ -51,7 +50,7 @@ function ENTITY:Initialize()
 	end
 
 	if (CLIENT) then
-		self:AddSprite({
+		self.Sprite = self:AddSprite({
 			RenderOrder = self:GetProperty("renderOrder"),
 			Scale = scale,
 			Size = size,

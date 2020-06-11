@@ -60,6 +60,12 @@ namespace bw
 		callback(m_movementEvents.data(), m_movementEvents.size());
 	}
 
+	void NetworkSyncSystem::NotifyPhysicsUpdate(const Ndk::EntityHandle& entity)
+	{
+		if (m_physicsEntities.Has(entity))
+			m_physicsUpdateEntities.Insert(entity);
+	}
+
 	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
 		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
@@ -101,7 +107,10 @@ namespace bw
 
 			creationEvent.physicsProperties.emplace();
 			creationEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
+			creationEvent.physicsProperties->isSleeping = entityPhys.IsSleeping();
 			creationEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
+			creationEvent.physicsProperties->mass = entityPhys.GetMass();
+			creationEvent.physicsProperties->momentOfInertia = entityPhys.GetMomentOfInertia();
 		}
 		else
 		{
@@ -194,6 +203,7 @@ namespace bw
 			movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
 			movementEvent.physicsProperties->isSleeping = entityPhys.IsSleeping();
 			movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
+			movementEvent.physicsProperties->mass = entityPhys.GetMass();
 		}
 		else
 		{
@@ -295,6 +305,7 @@ namespace bw
 		m_healthUpdateEntities.Remove(entity);
 		m_inputUpdateEntities.Remove(entity);
 		m_physicsEntities.Remove(entity);
+		m_physicsUpdateEntities.Remove(entity);
 		m_staticEntities.Remove(entity);
 		m_weaponUpdateEntities.Remove(entity);
 
@@ -334,6 +345,26 @@ namespace bw
 			m_inputUpdateEntities.Clear();
 
 			OnEntitiesInputUpdate(this, m_inputEvents.data(), m_inputEvents.size());
+		}
+
+		if (!m_physicsUpdateEntities.empty())
+		{
+			m_physicsEvent.clear();
+
+			for (const auto& entity : m_physicsUpdateEntities)
+			{
+				EntityPhysics& physicsEvent = m_physicsEvent.emplace_back();
+				physicsEvent.entityId = entity->GetId();
+
+				auto& entityPhysics = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				physicsEvent.isAsleep = entityPhysics.IsSleeping();
+				physicsEvent.mass = entityPhysics.GetMass();
+				physicsEvent.momentOfInertia = entityPhysics.GetMomentOfInertia();
+			}
+
+			m_physicsUpdateEntities.Clear();
+
+			OnEntitiesPhysicsUpdate(this, m_physicsEvent.data(), m_physicsEvent.size());
 		}
 
 		if (!m_weaponUpdateEntities.empty())

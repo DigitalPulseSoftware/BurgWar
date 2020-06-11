@@ -12,6 +12,7 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/LifetimeSystem.hpp>
 
 namespace bw
@@ -349,6 +350,25 @@ namespace bw
 		if (entityData.name)
 			layerEntity->InitializeName(entityData.name.value());
 
+		if (entityData.physicsProperties)
+		{
+			auto& physProperties = *entityData.physicsProperties;
+
+			if (layerEntity->GetEntity()->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				auto& entityPhys = layerEntity->GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+				entityPhys.SetMass(physProperties.mass, false);
+				entityPhys.SetMomentOfInertia(physProperties.momentOfInertia);
+				entityPhys.SetAngularVelocity(physProperties.angularVelocity);
+				entityPhys.SetVelocity(physProperties.linearVelocity);
+
+				if (physProperties.isAsleep)
+					entityPhys.ForceSleep();
+			}
+			else
+				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {0} has physical properties but is not physical client-side");
+		}
+
 		RegisterEntity(std::move(layerEntity.value()));
 	}
 
@@ -471,6 +491,26 @@ namespace bw
 
 			LocalLayerEntity& localEntity = it.value().layerEntity;
 			localEntity.UpdateInputs(inputs);
+		}
+	}
+
+	void LocalLayer::HandlePacket(const Packets::EntityPhysics& packet)
+	{
+		assert(packet.entityId.layerId == GetLayerIndex());
+
+		auto entityOpt = GetServerEntity(packet.entityId.entityId);
+		if (!entityOpt)
+			return;
+
+		LocalLayerEntity& localEntity = *entityOpt;
+		if (localEntity.IsPhysical())
+		{
+			auto& entityPhys = localEntity.GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+			entityPhys.SetMass(packet.mass, false);
+			entityPhys.SetMomentOfInertia(packet.momentOfInertia);
+
+			if (packet.asleep)
+				entityPhys.ForceSleep();
 		}
 	}
 

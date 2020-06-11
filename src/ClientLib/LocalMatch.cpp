@@ -1065,7 +1065,12 @@ namespace bw
 		}
 	}
 
+	void LocalMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
 	{
+		assert(packet.entityId.layerId < m_layers.size());
+		auto& layer = m_layers[packet.entityId.layerId];
+		layer->HandlePacket(packet);
+	}
 
 	void LocalMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
 	{

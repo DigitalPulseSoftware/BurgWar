@@ -44,6 +44,7 @@ namespace bw
 		OutgoingCommand(EntitiesAnimation,            Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(EntitiesDeath,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(EntitiesInputs,               Nz::ENetPacketFlag_Reliable,    1);
+		OutgoingCommand(EntityPhysics,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(EntityWeapon,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(InputTimingCorrection,        Nz::ENetPacketFlag_Unsequenced, 0);

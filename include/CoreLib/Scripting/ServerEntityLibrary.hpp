@@ -21,6 +21,9 @@ namespace bw
 
 		private:
 			void RegisterServerLibrary(sol::table& elementMetatable);
+
+			void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia) override;
+			void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia) override;
 	};
 }
 

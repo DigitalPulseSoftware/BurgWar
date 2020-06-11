@@ -33,6 +33,7 @@ namespace bw
 		IncomingCommand(EntitiesAnimation);
 		IncomingCommand(EntitiesDeath);
 		IncomingCommand(EntitiesInputs);
+		IncomingCommand(EntityPhysics);
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(InputTimingCorrection);

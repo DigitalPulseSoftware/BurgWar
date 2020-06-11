@@ -45,6 +45,7 @@ namespace bw
 		EntitiesAnimation,
 		EntitiesDeath,
 		EntitiesInputs,
+		EntityPhysics,
 		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
@@ -96,6 +97,9 @@ namespace bw
 			{
 				Nz::RadianAnglef angularVelocity;
 				Nz::Vector2f linearVelocity;
+				bool isAsleep;
+				float mass;
+				float momentOfInertia;
 			};
 
 			struct Properties
@@ -330,6 +334,15 @@ namespace bw
 			std::vector<Layer> layers;
 		};
 
+		DeclarePacket(EntityPhysics)
+		{
+			Nz::UInt16 stateTick;
+			Helper::EntityId entityId;
+			bool asleep;
+			float mass;
+			float momentOfInertia;
+		};
+
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
@@ -540,6 +553,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
 		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
+		void Serialize(PacketSerializer& serializer, EntityPhysics& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);

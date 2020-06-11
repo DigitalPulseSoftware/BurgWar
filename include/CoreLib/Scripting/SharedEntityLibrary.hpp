@@ -21,6 +21,8 @@ namespace bw
 
 		protected:
 			virtual void InitRigidBody(const Ndk::EntityHandle& entity, float mass);
+			virtual void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia);
+			virtual void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia);
 
 		private:
 			void RegisterSharedLibrary(sol::table& elementMetatable);

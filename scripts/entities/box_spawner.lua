@@ -35,10 +35,10 @@ if (SERVER) then
 				LayerIndex = self:GetLayerIndex(),
 				Position = self:GetPosition() + Vec2(0, -10),
 				Properties = {
-					asleep = true,
 					size = 2
 				}
 			})
+			self.SpawnedBox:ForceSleep()
 		end
 	end
 end

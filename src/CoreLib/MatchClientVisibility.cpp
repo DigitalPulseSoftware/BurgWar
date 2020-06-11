@@ -105,6 +105,21 @@ namespace bw
 				}
 			});
 
+			layer.onEntitiesPhysicsUpdate.Connect(syncSystem.OnEntitiesPhysicsUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityPhysics* events, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+						continue;
+
+					layer.physicsEvents[events[i].entityId] = events[i];
+					m_pendingEvents.Set(VisibilityEventType::PhysicsUpdate);
+				}
+			});
+
 			layer.onEntitiesWeaponUpdate.Connect(syncSystem.OnEntitiesWeaponUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityWeapon* events, std::size_t entityCount)
 			{
 				assert(m_layers.find(layerIndex) != m_layers.end());
@@ -491,6 +506,36 @@ namespace bw
 			m_pendingEvents.Clear(VisibilityEventType::PlayAnimation);
 		}
 
+		if (m_pendingEvents.Test(VisibilityEventType::PhysicsUpdate))
+		{
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+			{
+				auto& layer = *it.value();
+				if (layer.weaponEvents.empty())
+					continue;
+
+				LayerIndex layerIndex = it.key();
+
+				for (auto&& pair : layer.physicsEvents)
+				{
+					Packets::EntityPhysics physicsPacket;
+					physicsPacket.entityId.layerId = layerIndex;
+					physicsPacket.entityId.entityId = pair.first;
+					physicsPacket.stateTick = networkTick;
+
+					auto& physicsData = pair.second;
+					physicsPacket.asleep = physicsData.isAsleep;
+					physicsPacket.mass = physicsData.mass;
+
+					m_session.SendPacket(physicsPacket);
+				}
+
+				layer.weaponEvents.clear();
+			}
+
+			m_pendingEvents.Clear(VisibilityEventType::PhysicsUpdate);
+		}
+
 		if (m_pendingEvents.Test(VisibilityEventType::WeaponUpdate))
 		{
 			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
@@ -709,9 +754,14 @@ namespace bw
 
 		if (creationEvent.physicsProperties.has_value())
 		{
+			const auto& physicsProperties = *creationEvent.physicsProperties;
+
 			entityData.physicsProperties.emplace();
-			entityData.physicsProperties->angularVelocity = creationEvent.physicsProperties->angularVelocity;
-			entityData.physicsProperties->linearVelocity = creationEvent.physicsProperties->linearVelocity;
+			entityData.physicsProperties->angularVelocity = physicsProperties.angularVelocity;
+			entityData.physicsProperties->linearVelocity = physicsProperties.linearVelocity;
+			entityData.physicsProperties->isAsleep = physicsProperties.isSleeping;
+			entityData.physicsProperties->mass = physicsProperties.mass;
+			entityData.physicsProperties->momentOfInertia = physicsProperties.momentOfInertia;
 		}
 
 		for (auto&& [propertyName, propertyValue] : creationEvent.properties)

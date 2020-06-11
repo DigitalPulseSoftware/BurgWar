@@ -32,6 +32,7 @@ namespace bw
 		HealthUpdate,
 		InputUpdate,
 		PlayAnimation,
+		PhysicsUpdate,
 		WeaponUpdate,
 
 		Max = WeaponUpdate
@@ -106,18 +107,20 @@ namespace bw
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityHealth> healthUpdateEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityMovement> staticMovementUpdateEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> playAnimationEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPhysics> physicsEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityWeapon> weaponEvents;
 				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> deathEvents;
 				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> destructionEvents;
 
-				NazaraSlot(NetworkSyncSystem, OnEntityCreated,        onEntityCreatedSlot);
-				NazaraSlot(NetworkSyncSystem, OnEntityDeath,          onEntityDeath);
-				NazaraSlot(NetworkSyncSystem, OnEntityDeleted,        onEntityDeletedSlot);
-				NazaraSlot(NetworkSyncSystem, OnEntityInvalidated,    onEntityInvalidated);
-				NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation,  onEntityPlayAnimation);
-				NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate, onEntitiesHealthUpdate);
-				NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate,  onEntitiesInputUpdate);
-				NazaraSlot(NetworkSyncSystem, OnEntitiesWeaponUpdate, onEntitiesWeaponUpdate);
+				NazaraSlot(NetworkSyncSystem, OnEntityCreated,         onEntityCreatedSlot);
+				NazaraSlot(NetworkSyncSystem, OnEntityDeath,           onEntityDeath);
+				NazaraSlot(NetworkSyncSystem, OnEntityDeleted,         onEntityDeletedSlot);
+				NazaraSlot(NetworkSyncSystem, OnEntityInvalidated,     onEntityInvalidated);
+				NazaraSlot(NetworkSyncSystem, OnEntityPlayAnimation,   onEntityPlayAnimation);
+				NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate,  onEntitiesHealthUpdate);
+				NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate,   onEntitiesInputUpdate);
+				NazaraSlot(NetworkSyncSystem, OnEntitiesPhysicsUpdate, onEntitiesPhysicsUpdate);
+				NazaraSlot(NetworkSyncSystem, OnEntitiesWeaponUpdate,  onEntitiesWeaponUpdate);
 			};
 
 			Nz::Bitset<Nz::UInt64> m_tempBitset; //< For optimization purpose

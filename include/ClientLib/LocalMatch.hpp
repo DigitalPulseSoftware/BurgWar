@@ -121,6 +121,7 @@ namespace bw
 				Packets::EntitiesAnimation,
 				Packets::EntitiesDeath,
 				Packets::EntitiesInputs,
+				Packets::EntityPhysics,
 				Packets::EntityWeapon,
 				Packets::HealthUpdate,
 				Packets::MatchState,
@@ -147,6 +148,7 @@ namespace bw
 			void HandleTickPacket(Packets::EntitiesAnimation&& packet);
 			void HandleTickPacket(Packets::EntitiesDeath&& packet);
 			void HandleTickPacket(Packets::EntitiesInputs&& packet);
+			void HandleTickPacket(Packets::EntityPhysics&& packet);
 			void HandleTickPacket(Packets::EntityWeapon&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);

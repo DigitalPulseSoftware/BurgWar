@@ -111,6 +111,24 @@ namespace bw
 		entityPhys.SetRotation(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global)));
 	}
 
+	void SharedEntityLibrary::SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
+	{
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetMass(mass, recomputeMomentOfInertia);
+		}
+	}
+
+	void SharedEntityLibrary::SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia)
+	{
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetMomentOfInertia(momentOfInertia);
+		}
+	}
+
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
 		elementMetatable["ApplyImpulse"] = [this](const sol::table& entityTable, const Nz::Vector2f& force)
@@ -190,13 +208,6 @@ namespace bw
 				return 0.f;
 		};
 
-		elementMetatable["GetUpVector"] = [](const sol::table& entityTable)
-		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetUp());
-		};
-
 		elementMetatable["GetMomentOfInertia"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -218,6 +229,23 @@ namespace bw
 				throw std::runtime_error("Entity has no player movement");
 
 			return entity->GetComponent<PlayerMovementComponent>().GetController();
+		};
+
+		elementMetatable["GetUpVector"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			return Nz::Vector2f(nodeComponent.GetUp());
+		};
+
+		elementMetatable["GetVelocity"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity->HasComponent<Ndk::PhysicsComponent2D>())
+				return Nz::Vector2f::Zero();
+
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			return physComponent.GetVelocity();
 		};
 
 		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
@@ -327,6 +355,16 @@ namespace bw
 			entity->Kill();
 		};
 
+		elementMetatable["SetAngularVelocity"] = [](const sol::table& entityTable, const Nz::DegreeAnglef& velocity)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity->HasComponent<Ndk::PhysicsComponent2D>())
+				return;
+
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetAngularVelocity(velocity);
+		};
+
 		elementMetatable["SetCollider"] = [](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -380,37 +418,25 @@ namespace bw
 			nodeComponent.SetRotation(angle);
 		};
 
-		auto SetMass = [](const sol::table& entityTable, float mass, bool recomputeMomentOfInertia = false)
+		auto SetMass = [this](const sol::table& entityTable, float mass, bool recomputeMomentOfInertia = false)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-			if (!entity)
-				return;
 
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetMass(mass, recomputeMomentOfInertia);
-			}
+			this->SetMass(entity, mass, recomputeMomentOfInertia);
 		};
 
 		elementMetatable["SetMass"] = sol::overload(
-			[&](const sol::table& entityTable, float mass) { SetMass(entityTable, mass); },
+			[=](const sol::table& entityTable, float mass) { SetMass(entityTable, mass); },
 			SetMass);
 
-		elementMetatable["SetMomentOfInertia"] = [](const sol::table& entityTable, float momentum)
+		elementMetatable["SetMomentOfInertia"] = [this](const sol::table& entityTable, float momentum)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-			if (!entity)
-				return;
 
 			if (momentum < 0.f)
 				throw std::runtime_error("moment of inertia must be positive");
 
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetMomentOfInertia(momentum);
-			}
+			SetMomentOfInertia(entity, momentum);
 		};
 
 		elementMetatable["SetPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& position)
