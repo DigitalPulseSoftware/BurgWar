@@ -141,6 +141,22 @@ namespace bw
 		return entityPhys.GetVelocity();
 	}
 
+	Nz::Vector2f LocalLayerEntity::GetPhysicalPosition() const
+	{
+		assert(IsPhysical());
+		
+		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+		return entityPhys.GetPosition();
+	}
+
+	Nz::RadianAnglef LocalLayerEntity::GetPhysicalRotation() const
+	{
+		assert(IsPhysical());
+
+		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+		return entityPhys.GetRotation();
+	}
+
 	Nz::Vector2f LocalLayerEntity::GetPosition() const
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
@@ -304,24 +320,36 @@ namespace bw
 
 	void LocalLayerEntity::UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation)
 	{
-		//FIXME: Handle this in a better way? (what if server entity is physical but client entity is not?)
-		assert(!IsPhysical());
-
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		entityNode.SetPosition(position);
-		entityNode.SetRotation(rotation);
+		if (IsPhysical())
+		{
+			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			entityPhys.SetPosition(position);
+			entityPhys.SetRotation(rotation);
+		}
+		else
+		{
+			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			entityNode.SetPosition(position);
+			entityNode.SetRotation(rotation);
+		}
 	}
 
 	void LocalLayerEntity::UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel)
 	{
-		//FIXME: Handle this in a better way? (what if server entity is physical but client entity is not?)
-		assert(IsPhysical());
-
-		auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
-		entityPhys.SetAngularVelocity(angularVel);
-		entityPhys.SetPosition(position);
-		entityPhys.SetRotation(rotation);
-		entityPhys.SetVelocity(linearVel);
+		if (IsPhysical())
+		{
+			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			entityPhys.SetAngularVelocity(angularVel);
+			entityPhys.SetPosition(position);
+			entityPhys.SetRotation(rotation);
+			entityPhys.SetVelocity(linearVel);
+		}
+		else
+		{
+			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			entityNode.SetPosition(position);
+			entityNode.SetRotation(rotation);
+		}
 	}
 
 	void LocalLayerEntity::UpdateWeaponEntity(const LocalLayerEntityHandle& entity)

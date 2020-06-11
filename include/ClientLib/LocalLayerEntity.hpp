@@ -47,6 +47,8 @@ namespace bw
 			LocalLayerEntity* GetGhost();
 			LayerIndex GetLayerIndex() const;
 			Nz::Vector2f GetLinearVelocity() const;
+			Nz::Vector2f GetPhysicalPosition() const;
+			Nz::RadianAnglef GetPhysicalRotation() const;
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
