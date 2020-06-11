@@ -146,6 +146,7 @@ function ENTITY:OnDeath()
 		local randVel = vel * (math.random() + 0.5) + Vec2(math.random(), math.random()) * (force + 500)
 		entity:SetAngularVelocity(math.random(-180, 180) * math.random() * 10)
 		entity:SetVelocity(randVel)
+		--break
 	end
 end
 

@@ -1096,6 +1096,39 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q))
 			return;
 
+		/*auto inputIt = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
+		{
+			return input.serverTick == stateTick;
+		});
+		if (inputIt != m_predictedInputs.end())
+		{
+			for (const auto& layerData : inputIt->layers)
+			{
+				assert(layerData.layerIndex < m_layers.size());
+				auto& layer = m_layers[layerData.layerIndex];
+				if (!layer->IsEnabled())
+					continue;
+
+				for (const auto& entityData : layerData.entities)
+				{
+					auto entityRefOpt = (entityData.isLocal) ? layer->GetClientEntity(entityData.id) : layer->GetServerEntity(entityData.id);
+					if (!entityRefOpt)
+						continue;
+
+					//static std::fstream entityPosFile("db_moveback.csv", std::ios::out | std::ios::trunc);
+					//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << entityData.id << ";" << entityData.position.y << "\n";
+
+					bwLog(GetLogger(), LogLevel::Debug, "Position in memory (#{}): {}", entityData.id, entityData.position.y);
+
+					LocalLayerEntity& entity = *entityRefOpt;
+					if (entityData.isPhysical)
+						entity.UpdateState(entityData.position, entityData.rotation, entityData.linearVelocity, entityData.angularVelocity);
+					else
+						entity.UpdateState(entityData.position, entityData.rotation);
+				}
+			}
+		}*/
+
 		// Apply physics state to all layers
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1128,6 +1161,9 @@ namespace bw
 					auto entityRefOpt = (entityData.isLocal) ? layer->GetClientEntity(entityData.id) : layer->GetServerEntity(entityData.id);
 					if (!entityRefOpt)
 						continue;
+
+					//static std::fstream entityPosFile("db_moveback.csv", std::ios::out | std::ios::trunc);
+					//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << entityData.id << ";" << entityData.position.y << "\n";
 
 					LocalLayerEntity& entity = *entityRefOpt;
 					if (entityData.isPhysical)
@@ -1174,8 +1210,49 @@ namespace bw
 			for (auto& layer : m_layers)
 			{
 				if (layer->IsEnabled() && layer->IsPredictionEnabled())
+				{
+					/*layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					{
+						if (!layerEntity.IsClientside())
+							return;
+
+						bwLog(GetLogger(), LogLevel::Debug, "Position pre-update (#{}): {}", layerEntity.GetEntity()->GetId(), layerEntity.GetPhysicalPosition().y);
+
+						//static std::fstream entityPosFile("db_reconciliationpos.csv", std::ios::out | std::ios::trunc);
+						//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << layerEntity.GetEntity()->GetId() << ";" << layerEntity.GetPosition().y << "\n";
+					});*/
+
 					layer->TickUpdate(GetTickDuration());
+
+					/*layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					{
+						if (!layerEntity.IsClientside())
+							return;
+
+						bwLog(GetLogger(), LogLevel::Debug, "Position post-update (#{}): {}", layerEntity.GetEntity()->GetId(), layerEntity.GetPhysicalPosition().y);
+
+						//static std::fstream entityPosFile("db_reconciliationpos.csv", std::ios::out | std::ios::trunc);
+						//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << layerEntity.GetEntity()->GetId() << ";" << layerEntity.GetPosition().y << "\n";
+					});*/
+				}
 			}
+
+			/*for (auto& layer : m_layers)
+			{
+				if (layer->IsEnabled())
+				{
+					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					{
+						if (!layerEntity.IsClientside())
+							return;
+
+						bwLog(GetLogger(), LogLevel::Debug, "Position post-update (#{}): {}", layerEntity.GetEntity()->GetId(), layerEntity.GetPosition().y);
+
+						//static std::fstream entityPosFile("db_reconciliationpos.csv", std::ios::out | std::ios::trunc);
+						//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << layerEntity.GetEntity()->GetId() << ";" << layerEntity.GetPosition().y << "\n";
+					});
+				}
+			}*/
 		}
 	}
 
@@ -1382,6 +1459,9 @@ namespace bw
 
 					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 					{
+						if (!layerEntity.IsClientside())
+							return;
+
 						auto& entityData = layerData.entities.emplace_back();
 						entityData.isLocal  = layerEntity.IsClientside();
 						entityData.position = layerEntity.GetPosition();
