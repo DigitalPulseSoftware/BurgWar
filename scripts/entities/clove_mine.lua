@@ -184,8 +184,8 @@ if (SERVER) then
 end
 
 if (CLIENT) then
-	function ENTITY:OnKilled()
-		if (self:GetHealth() == 0) then
+	function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+		if (newHealth == 0) then
 			self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 	
 			local playerPosition = engine_GetPlayerPosition(0)
