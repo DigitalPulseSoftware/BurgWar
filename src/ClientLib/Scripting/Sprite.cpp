@@ -19,6 +19,14 @@ namespace bw
 		return true;
 	}*/
 	
+	void Sprite::SetColor(Nz::Color color)
+	{
+		if (!m_entity)
+			throw std::runtime_error("Invalid sprite");
+
+		m_sprite->SetColor(color);
+	}
+
 	void Sprite::SetCornerColor(const std::string_view& corner, Nz::Color cornerColor)
 	{
 		if (!m_entity)

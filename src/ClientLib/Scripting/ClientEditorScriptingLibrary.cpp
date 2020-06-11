@@ -53,7 +53,8 @@ namespace bw
 			"IsValid", &Sprite::IsValid,
 			"IsVisible", &Sprite::IsVisible,
 
-			"SetCornerColor", &Sprite::SetCornerColor,
+			"SetColor", &Sprite::SetColor,
+			"SetCornerColor", & Sprite::SetCornerColor,
 			"SetCornerColors", &Sprite::SetCornerColors,
 			"SetOffset", &Sprite::SetOffset,
 			"SetRotation", &Sprite::SetRotation,

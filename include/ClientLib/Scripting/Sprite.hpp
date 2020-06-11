@@ -32,6 +32,7 @@ namespace bw
 			inline bool IsValid() const;
 			inline bool IsVisible() const;
 
+			void SetColor(Nz::Color color);
 			void SetCornerColor(const std::string_view& corner, Nz::Color cornerColor);
 			void SetCornerColors(const sol::table& cornerTable);
 			inline void SetOffset(const Nz::Vector2f& newOffset);
