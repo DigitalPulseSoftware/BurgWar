@@ -14,7 +14,7 @@ function GM:OnPlayerDeath(player, attacker)
 	end
 
 	print(player:GetName() .. " died")
-	timer.Sleep(2000)
+	timer.Sleep(3000)
 	self:SpawnPlayer(player)
 end
 
