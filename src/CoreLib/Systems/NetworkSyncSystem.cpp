@@ -55,7 +55,13 @@ namespace bw
 		m_movementEvents.clear();
 
 		for (const Ndk::EntityHandle& entity : m_physicsEntities)
+		{
+			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			if (entityPhys.IsSleeping())
+				continue;
+
 			BuildEvent(m_movementEvents.emplace_back(), entity);
+		}
 
 		callback(m_movementEvents.data(), m_movementEvents.size());
 	}
