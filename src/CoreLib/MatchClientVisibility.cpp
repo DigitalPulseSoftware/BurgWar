@@ -48,7 +48,7 @@ namespace bw
 				assert(m_layers.find(layerIndex) != m_layers.end());
 				Layer& layer = *m_layers[layerIndex];
 
-				if (!layer.visibleEntities.UnboundedTest(entityMovement.entityId))
+				if (layer.visibleEntities.find(entityMovement.entityId) == layer.visibleEntities.end())
 					return;
 
 				layer.staticMovementUpdateEvents[entityMovement.entityId] = entityMovement;
@@ -59,7 +59,7 @@ namespace bw
 				assert(m_layers.find(layerIndex) != m_layers.end());
 				Layer& layer = *m_layers[layerIndex];
 
-				if (!layer.visibleEntities.UnboundedTest(entityPlayAnimation.entityId))
+				if (layer.visibleEntities.find(entityPlayAnimation.entityId) == layer.visibleEntities.end())
 					return;
 
 				layer.playAnimationEvents[entityPlayAnimation.entityId] = entityPlayAnimation;
@@ -78,7 +78,7 @@ namespace bw
 				
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
-					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+					if (layer.visibleEntities.find(events[i].entityId) == layer.visibleEntities.end())
 						continue;
 
 					layer.healthUpdateEvents[events[i].entityId] = events[i];
@@ -97,7 +97,7 @@ namespace bw
 					if (m_controlledEntities.find(entityKey) != m_controlledEntities.end())
 						continue;
 
-					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+					if (layer.visibleEntities.find(events[i].entityId) == layer.visibleEntities.end())
 						continue;
 
 					layer.inputUpdateEvents[events[i].entityId] = events[i];
@@ -112,7 +112,7 @@ namespace bw
 
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
-					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+					if (layer.visibleEntities.find(events[i].entityId) == layer.visibleEntities.end())
 						continue;
 
 					layer.physicsEvents[events[i].entityId] = events[i];
@@ -127,7 +127,7 @@ namespace bw
 
 				for (std::size_t i = 0; i < entityCount; ++i)
 				{
-					if (!layer.visibleEntities.UnboundedTest(events[i].entityId))
+					if (layer.visibleEntities.find(events[i].entityId) == layer.visibleEntities.end())
 						continue;
 
 					layer.weaponEvents[events[i].entityId] = events[i];
@@ -202,7 +202,7 @@ namespace bw
 				if (m_clientVisibleLayers.UnboundedTest(i))
 				{
 					for (const Ndk::EntityHandle& entity : syncSystem.GetEntities())
-						layer.visibleEntities.UnboundedSet(entity->GetId());
+						layer.visibleEntities.emplace(entity->GetId(), Layer::VisibleEntityData{});
 
 					continue;
 				}
@@ -211,7 +211,7 @@ namespace bw
 				{
 					for (std::size_t i = 0; i < entityCount; ++i)
 					{
-						if (!layer.visibleEntities.UnboundedTest(entitiesCreation[i].entityId))
+						if (layer.visibleEntities.find(entitiesCreation[i].entityId) == layer.visibleEntities.end())
 							pendingCreationMap[entitiesCreation[i].entityId] = entitiesCreation[i];
 					}
 				});
@@ -255,7 +255,7 @@ namespace bw
 					entityData.id = eventData->entityId;
 					FillEntityData(eventData.value(), entityData.data);
 
-					layer.visibleEntities.UnboundedSet(entityId);
+					layer.visibleEntities.emplace(entityId, Layer::VisibleEntityData{});
 
 					eventData.reset();
 				};
@@ -581,7 +581,7 @@ namespace bw
 			}
 			Layer& layer = *m_layers[layerId];
 
-			if (layer.visibleEntities.UnboundedTest(entityId))
+			if (layer.visibleEntities.find(entityId) != layer.visibleEntities.end())
 			{
 				auto& callbackVec = it.value();
 				for (auto&& func : callbackVec)
@@ -604,8 +604,17 @@ namespace bw
 
 			Layer& layer = *m_layers[it->layerIndex];
 
-			m_tempBitset.PerformsAND(layer.visibleEntities, it->entitiesId);
-			if (m_tempBitset == it->entitiesId)
+			bool allEntitiesVisible = true;
+			for (std::size_t i = it->entitiesId.FindFirst(); i != it->entitiesId.npos; i = it->entitiesId.FindNext(i))
+			{
+				if (layer.visibleEntities.find(Nz::UInt32(i)) == layer.visibleEntities.end())
+				{
+					allEntitiesVisible = false;
+					break;
+				}
+			}
+
+			if (allEntitiesVisible)
 			{
 				it->sendFunction();
 
@@ -621,7 +630,7 @@ namespace bw
 		assert(m_layers.find(layerIndex) != m_layers.end());
 		Layer& layer = *m_layers[layerIndex];
 		layer.creationEvents[eventData.entityId] = eventData;
-		layer.visibleEntities.UnboundedSet(eventData.entityId);
+		layer.visibleEntities.emplace(eventData.entityId, Layer::VisibleEntityData{});
 
 		m_pendingEvents.Set(VisibilityEventType::Creation);
 	}
@@ -653,28 +662,48 @@ namespace bw
 		layer.healthUpdateEvents.erase(entityId);
 		layer.playAnimationEvents.erase(entityId);
 		layer.staticMovementUpdateEvents.erase(entityId);
+		layer.visibleEntities.erase(entityId);
 		layer.weaponEvents.erase(entityId);
-
-		layer.visibleEntities.UnboundedReset(entityId);
 	}
 
 	void MatchClientVisibility::SendMatchState()
 	{
+		constexpr std::size_t MaxPacketSize = Nz::ENetConstants::ENetHost_DefaultMTU - sizeof(Nz::ENetProtocolHeader) - sizeof(Nz::ENetProtocolSendFragment);
+
+		auto HasExceededPacketSize = [&]() -> bool
+		{
+			std::size_t size = Packets::EstimateSize(m_matchStatePacket);
+			return size > MaxPacketSize;
+		};
+
 		Terrain& terrain = m_match.GetTerrain();
 
-		m_matchStatePacket.entities.clear();
-		m_matchStatePacket.layers.clear();
-		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
+		m_priorityMovementData.clear();
+		auto PushMovementData = [this](LayerIndex layerIndex, Nz::UInt8 priorityAccumulator, const NetworkSyncSystem::EntityMovement& movementData, bool isStatic)
+		{
+			m_priorityMovementData.push_back(PriorityMovementData{
+				priorityAccumulator,
+				layerIndex,
+				movementData,
+				isStatic
+			});
+		};
 
 		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 		{
 			LayerIndex layerIndex = it.key();
 			auto& layer = *it.value();
 
-			std::size_t oldEntityCount = m_matchStatePacket.entities.size();
-
 			for (auto&& pair : layer.staticMovementUpdateEvents)
-				BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), pair.second);
+			{
+				auto visibleIt = layer.visibleEntities.find(pair.first);
+				assert(visibleIt != layer.visibleEntities.end());
+
+				auto& visibleData = visibleIt.value();
+				visibleData.priorityAccumulator += 3; //< TODO use NetworkSyncComponent value
+
+				PushMovementData(layerIndex, visibleData.priorityAccumulator, pair.second, true);
+			}
 
 			layer.staticMovementUpdateEvents.clear();
 
@@ -684,17 +713,101 @@ namespace bw
 			syncSystem.MoveEntities([&](const NetworkSyncSystem::EntityMovement* entitiesMovement, std::size_t entityCount)
 			{
 				for (std::size_t i = 0; i < entityCount; ++i)
-					BuildMovementPacket(m_matchStatePacket.entities.emplace_back(), entitiesMovement[i]);
-			});
+				{
+					auto& movementData = entitiesMovement[i];
 
-			std::size_t entityCount = m_matchStatePacket.entities.size() - oldEntityCount;
-			if (entityCount > 0)
-			{
-				auto& layerData = m_matchStatePacket.layers.emplace_back();
-				layerData.layerIndex = layerIndex;
-				layerData.entityCount = static_cast<Nz::UInt32>(entityCount);
-			}
+					auto visibleIt = layer.visibleEntities.find(movementData.entityId);
+					if (visibleIt == layer.visibleEntities.end())
+						continue;
+
+					auto& visibleData = visibleIt.value();
+					Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | movementData.entityId;
+					if (m_controlledEntities.find(entityKey) != m_controlledEntities.end())
+					{
+						//FIXME
+						visibleData.priorityAccumulator = 0xFF;
+					}
+					else
+						visibleData.priorityAccumulator += 1; //< TODO use NetworkSyncComponent value
+
+					PushMovementData(layerIndex, visibleData.priorityAccumulator, movementData, false);
+				}
+			});
 		}
+
+		std::sort(m_priorityMovementData.begin(), m_priorityMovementData.end(), [](const PriorityMovementData& lhs, const PriorityMovementData& rhs)
+		{
+			return lhs.priorityAccumulator > rhs.priorityAccumulator;
+		});
+
+		m_matchStatePacket.entities.clear();
+		m_matchStatePacket.layers.clear();
+		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
+
+		for (PriorityMovementData& movementData : m_priorityMovementData)
+		{
+			std::size_t entityIndex = 0;
+
+			std::size_t layerIndex = 0;
+			std::size_t layerCount = m_matchStatePacket.layers.size();
+			for (; layerIndex < layerCount; ++layerIndex)
+			{
+				auto& layer = m_matchStatePacket.layers[layerIndex];
+				entityIndex += layer.entityCount;
+
+				if (layer.layerIndex == movementData.layerIndex)
+				{
+					layer.entityCount++;
+					break;
+				}
+			}
+
+			// Has layer been found?
+			if (layerIndex == layerCount)
+			{
+				// No, insert it as a new one
+				auto& layer = m_matchStatePacket.layers.emplace_back();
+				layer.entityCount = 1;
+				layer.layerIndex = movementData.layerIndex;
+			}
+
+			assert(entityIndex <= m_matchStatePacket.entities.size());
+			auto entityIt = m_matchStatePacket.entities.emplace(m_matchStatePacket.entities.begin() + entityIndex);
+			BuildMovementPacket(*entityIt, movementData.movementData);
+
+			if (HasExceededPacketSize())
+			{
+				// Remove last inserted entity
+				m_matchStatePacket.entities.erase(entityIt);
+
+				auto& layer = m_matchStatePacket.layers[layerIndex];
+				if (--layer.entityCount == 0)
+				{
+					assert(layerIndex == layerCount);
+					m_matchStatePacket.layers.pop_back();
+				}
+
+				break;
+			}
+
+			auto layerIt = m_layers.find(movementData.layerIndex);
+			assert(layerIt != m_layers.end());
+
+			auto& layerData = *layerIt.value();
+
+			Nz::UInt32 entityId = Nz::UInt32(movementData.movementData.entityId);
+
+			auto visibleIt = layerData.visibleEntities.find(entityId);
+			assert(visibleIt != layerData.visibleEntities.end());
+
+			auto& visibleData = visibleIt.value();
+			visibleData.priorityAccumulator = 0;
+
+			if (movementData.staticEntity)
+				layerData.staticMovementUpdateEvents.erase(entityId);
+		}
+
+		bwLog(m_match.GetLogger(), LogLevel::Debug, "Entity count: {0} (packet size: {1})", m_matchStatePacket.entities.size(), Packets::EstimateSize(m_matchStatePacket));
 
 		m_session.SendPacket(m_matchStatePacket);
 	}
