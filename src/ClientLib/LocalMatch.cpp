@@ -1116,6 +1116,27 @@ namespace bw
 		// Reconciliate server and clients
 		for (const PredictedInput& input : m_predictedInputs)
 		{
+			for (const auto& layerData : input.layers)
+			{
+				assert(layerData.layerIndex < m_layers.size());
+				auto& layer = m_layers[layerData.layerIndex];
+				if (!layer->IsEnabled())
+					continue;
+
+				for (const auto& entityData : layerData.entities)
+				{
+					auto entityRefOpt = (entityData.isLocal) ? layer->GetClientEntity(entityData.id) : layer->GetServerEntity(entityData.id);
+					if (!entityRefOpt)
+						continue;
+
+					LocalLayerEntity& entity = *entityRefOpt;
+					if (entityData.isPhysical)
+						entity.UpdateState(entityData.position, entityData.rotation, entityData.linearVelocity, entityData.angularVelocity);
+					else
+						entity.UpdateState(entityData.position, entityData.rotation);
+				}
+			}
+
 			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
 			{
 				auto& controllerData = m_localPlayers[i];
@@ -1349,6 +1370,34 @@ namespace bw
 					auto& weaponData = playerData.weapons.emplace_back();
 					weaponData.entity = weaponEntity;
 					weaponData.isAttacking = weaponEntity->GetComponent<WeaponComponent>().IsAttacking();
+				}
+			}
+
+			for (auto& layer : m_layers)
+			{
+				if (layer->IsEnabled())
+				{
+					auto& layerData = predictedInputs.layers.emplace_back();
+					layerData.layerIndex = layer->GetLayerIndex();
+
+					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					{
+						auto& entityData = layerData.entities.emplace_back();
+						entityData.isLocal  = layerEntity.IsClientside();
+						entityData.position = layerEntity.GetPosition();
+						entityData.rotation = layerEntity.GetRotation();
+
+						entityData.id = (!entityData.isLocal) ? layerEntity.GetServerId() : layerEntity.GetEntity()->GetId();
+
+						if (layerEntity.IsPhysical())
+						{
+							entityData.angularVelocity = layerEntity.GetAngularVelocity();
+							entityData.linearVelocity = layerEntity.GetLinearVelocity();
+						}
+
+						//static std::fstream entityPosFile("db_entitypos.csv", std::ios::out | std::ios::trunc);
+						//entityPosFile << GetCurrentTime() << ";" << GetNetworkTick() << ";" << entityData.id << ";" << entityData.position.y << "\n";
+					});
 				}
 			}
 		}

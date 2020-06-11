@@ -195,6 +195,23 @@ namespace bw
 					bool isAttacking;
 				};
 
+				struct EntityData
+				{
+					Nz::RadianAnglef angularVelocity;
+					Nz::RadianAnglef rotation;
+					Nz::UInt32 id;
+					Nz::Vector2f position;
+					Nz::Vector2f linearVelocity;
+					bool isLocal;
+					bool isPhysical;
+				};
+
+				struct LayerData
+				{
+					LayerIndex layerIndex;
+					std::vector<EntityData> entities;
+				};
+
 				struct PlayerData
 				{
 					PlayerInputData input;
@@ -205,6 +222,7 @@ namespace bw
 
 				Nz::UInt16 serverTick;
 				std::vector<PlayerData> inputs;
+				std::vector<LayerData> layers;
 			};
 
 			struct TickPrediction
