@@ -13,7 +13,13 @@ end
 
 function vec2meta:GetNormalized()
 	local length = self:Length()
-	local normal = Vec2(self.x / length, self.y / length)
+	local normal
+	if (length > 0) then
+		normal = Vec2(self.x / length, self.y / length)
+	else
+		normal = Vec2()
+	end
+
 	return normal, length
 end
 
@@ -23,8 +29,13 @@ end
 
 function vec2meta:Normalize()
 	local length = self:Length()
-	self.x = self.x / length
-	self.y = self.y / length
+	if (length > 0) then
+		self.x = self.x / length
+		self.y = self.y / length
+	else
+		self.x = 0.0
+		self.y = 0.0
+	end
 
 	return length
 end
