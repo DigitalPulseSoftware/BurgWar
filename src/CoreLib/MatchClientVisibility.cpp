@@ -660,6 +660,7 @@ namespace bw
 
 		layer.inputUpdateEvents.erase(entityId);
 		layer.healthUpdateEvents.erase(entityId);
+		layer.physicsEvents.erase(entityId);
 		layer.playAnimationEvents.erase(entityId);
 		layer.staticMovementUpdateEvents.erase(entityId);
 		layer.visibleEntities.erase(entityId);
