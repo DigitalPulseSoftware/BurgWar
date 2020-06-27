@@ -1,5 +1,4 @@
 #include <QtWidgets/QApplication>
-#include <CoreLib/Utility/CrashHandler.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <Nazara/Core/Initializer.hpp>
 #include <Nazara/Network/Network.hpp>

@@ -4,9 +4,7 @@
 
 #include <Nazara/Core/Initializer.hpp>
 #include <Nazara/Network/Network.hpp>
-#include <CoreLib/Utility/CrashHandler.hpp>
 #include <Server/ServerApp.hpp>
-#include <filesystem>
 #include <Main/Main.hpp>
 
 int BurgMain(int argc, char* argv[])

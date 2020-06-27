@@ -4,10 +4,7 @@
 
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
-#include <Nazara/Core/AbstractLogger.hpp>
-#include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/Network.hpp>
-#include <CoreLib/Utility/CrashHandler.hpp>
 #include <Client/ClientApp.hpp>
 #include <Main/Main.hpp>
 
