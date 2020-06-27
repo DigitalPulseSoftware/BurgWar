@@ -367,6 +367,12 @@ workspace("Burgwar")
 			if (usedFrameworks["Qt"]) then
 				local mocPath = usedFrameworks["Qt"].MocPath
 				if (mocPath and os.isfile(mocPath)) then
+					local absMocPath, err = os.realpath(mocPath)
+					if (not absMocPath) then
+						error(string.format("Failed to retrieve absolute moc path: %s", err))
+					end
+					mocPath = absMocPath
+
 					local headerFiles = {}
 					for _, filter in pairs(projectData.Files) do
 						if (filter:endswith(".hpp")) then
@@ -398,7 +404,7 @@ workspace("Burgwar")
 							local targetName = filePath:sub(1, -5) .. ".moc"
 
 							local targetStats = os.stat(targetName)
-							if (not targetStats or targetStats.mtime < sourceStats.mtime) then
+							if (not targetStats or targetStats.size == 0 or targetStats.mtime < sourceStats.mtime) then
 								local file, err = io.open(targetName, "w+")
 								if (not file) then
 									error(string.format("Failed to open output file %s: %s", targetName, err))
