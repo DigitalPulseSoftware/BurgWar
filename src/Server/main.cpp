@@ -7,12 +7,10 @@
 #include <CoreLib/Utility/CrashHandler.hpp>
 #include <Server/ServerApp.hpp>
 #include <filesystem>
+#include <Main/Main.hpp>
 
-int main(int argc, char* argv[])
+int BurgMain(int argc, char* argv[])
 {
-	bw::CrashHandler crashHandler;
-	crashHandler.Install();
-
 	Nz::Initializer<Nz::Network> network;
 	bw::ServerApp app(argc, argv);
 

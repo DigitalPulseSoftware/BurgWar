@@ -4,12 +4,10 @@
 #include <Nazara/Core/Initializer.hpp>
 #include <Nazara/Network/Network.hpp>
 #include <NDK/Application.hpp>
+#include <Main/Main.hpp>
 
-int main(int argc, char *argv[])
+int BurgMain(int argc, char* argv[])
 {
-	bw::CrashHandler crashHandler;
-	crashHandler.Install();
-
 	QApplication app(argc, argv);
 	app.setOrganizationName("DigitalPulseSoftware");
 	app.setApplicationName("Burgwar_mapeditor");

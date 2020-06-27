@@ -9,19 +9,17 @@
 #include <Nazara/Network/Network.hpp>
 #include <CoreLib/Utility/CrashHandler.hpp>
 #include <Client/ClientApp.hpp>
+#include <Main/Main.hpp>
 
-int main(int argc, char* argv[])
+int BurgMain(int argc, char* argv[])
 {
-	bw::CrashHandler crashHandler;
-	crashHandler.Install();
-
 	Nz::Initializer<Nz::Network> network;
-	bw::ClientApp app(argc, argv); 
+	bw::ClientApp app(argc, argv);
 	app.EnableFPSCounter(true);
 
 	Nz::Audio::SetSpeedOfSound(343.3f * 100.f);
 
-	Nz::SoundBufferParams params; 
+	Nz::SoundBufferParams params;
 	params.forceMono = true;
 
 	Nz::SoundBufferManager::SetDefaultParameters(params);
