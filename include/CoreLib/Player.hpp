@@ -72,9 +72,8 @@ namespace bw
 			std::string ToString() const;
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
-			void UpdateInputs(const PlayerInputData& inputData);
-			void UpdateInputs(std::size_t tickDelay, PlayerInputData inputData);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
+			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateName(std::string newName);
 
 			Player& operator=(const Player&) = delete;
@@ -92,10 +91,14 @@ namespace bw
 			NazaraSlot(WeaponWielderComponent, OnWeaponAdded, m_onWeaponAdded);
 			NazaraSlot(WeaponWielderComponent, OnWeaponRemove, m_onWeaponRemove);
 
-			std::array<std::optional<PlayerInputData>, 10> m_inputBuffer;
+			struct Input
+			{
+				PlayerInputData data;
+				Nz::UInt16 index;
+			};
+
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			LayerIndex m_layerIndex;
-			std::size_t m_inputIndex;
 			std::size_t m_playerIndex;
 			std::string m_name;
 			Ndk::EntityOwner m_playerEntity;

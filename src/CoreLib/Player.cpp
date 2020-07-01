@@ -33,7 +33,6 @@ namespace bw
 {
 	Player::Player(Match& match, MatchClientSession& session, std::size_t playerIndex, Nz::UInt8 localIndex, std::string playerName) :
 	m_layerIndex(NoLayer),
-	m_inputIndex(0),
 	m_playerIndex(playerIndex),
 	m_name(std::move(playerName)),
 	m_localIndex(localIndex),
@@ -234,15 +233,6 @@ namespace bw
 
 			m_shouldSendWeapons = false;
 		}
-
-		if (auto& inputOpt = m_inputBuffer[m_inputIndex])
-		{
-			UpdateInputs(inputOpt.value());
-			inputOpt.reset();
-		}
-
-		if (++m_inputIndex >= m_inputBuffer.size())
-			m_inputIndex = 0;
 	}
 
 	void Player::RemoveWeapon(const std::string& weaponClass)
@@ -360,23 +350,6 @@ namespace bw
 		}
 	}
 
-	void Player::UpdateInputs(const PlayerInputData& inputData)
-	{
-		if (m_playerEntity && m_playerEntity->HasComponent<InputComponent>())
-		{
-			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
-			inputComponent.UpdateInputs(inputData);
-		}
-	}
-
-	void Player::UpdateInputs(std::size_t tickDelay, PlayerInputData inputData)
-	{
-		assert(tickDelay < m_inputBuffer.size());
-		std::size_t index = (m_inputIndex + tickDelay) % m_inputBuffer.size();
-
-		m_inputBuffer[index] = std::move(inputData);
-	}
-
 	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
 	{
 		MatchClientVisibility& visibility = GetSession().GetVisibility();
@@ -387,6 +360,18 @@ namespace bw
 			visibility.HideLayer(layerIndex);
 
 		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
+	}
+
+	void Player::UpdateInputs(const PlayerInputData& inputData)
+	{
+		if (m_playerEntity && m_playerEntity->HasComponent<InputComponent>())
+		{
+			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
+			inputComponent.UpdateInputs(inputData);
+
+			if (inputData.isJumping)
+				bwLog(m_match.GetLogger(), LogLevel::Error, "Is jumping!");
+		}
 	}
 
 	void Player::UpdateName(std::string newName)

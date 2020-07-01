@@ -12,23 +12,13 @@ namespace bw
 {
 	void BasicPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const
 	{
-		Nz::Vector2f up = Nz::Vector2f::UnitY();
-
-		bool isOnGround = false;
-		rigidBody.ForEachArbiter([&](Nz::Arbiter2D& arbiter)
-		{
-			if (up.DotProduct(arbiter.GetNormal()) > 0.75f)
-				isOnGround = true;
-		});
-
-		playerMovement.UpdateGroundState(isOnGround);
-
+		bool isOnGround = playerMovement.IsOnGround();
 		bool disableGravity = false;
 		float jumpVelocity = 0.f;
 
 		if (inputs.isJumping)
 		{
-			if (!playerMovement.WasJumping() && playerMovement.IsOnGround())
+			if (!playerMovement.WasJumping() && isOnGround)
 			{
 				constexpr float jumpHeight = 80.f;
 				constexpr float jumpBoostHeight = 80.f;

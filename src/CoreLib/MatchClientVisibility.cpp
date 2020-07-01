@@ -744,6 +744,7 @@ namespace bw
 		m_matchStatePacket.entities.clear();
 		m_matchStatePacket.layers.clear();
 		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
+		m_matchStatePacket.lastInputTick = m_session.GetLastInputTick();
 
 		for (PriorityMovementData& movementData : m_priorityMovementData)
 		{
@@ -808,7 +809,7 @@ namespace bw
 				layerData.staticMovementUpdateEvents.erase(entityId);
 		}
 
-		bwLog(m_match.GetLogger(), LogLevel::Debug, "Entity count: {0} (packet size: {1})", m_matchStatePacket.entities.size(), Packets::EstimateSize(m_matchStatePacket));
+		//bwLog(m_match.GetLogger(), LogLevel::Debug, "Entity count: {0} (packet size: {1})", m_matchStatePacket.entities.size(), Packets::EstimateSize(m_matchStatePacket));
 
 		m_session.SendPacket(m_matchStatePacket);
 	}

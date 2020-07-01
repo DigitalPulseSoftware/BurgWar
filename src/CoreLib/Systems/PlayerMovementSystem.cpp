@@ -14,6 +14,7 @@ namespace bw
 	PlayerMovementSystem::PlayerMovementSystem()
 	{
 		Requires<InputComponent, PlayerMovementComponent, Ndk::PhysicsComponent2D>();
+		SetUpdateOrder(50); //< Execute after physics but before rendering
 	}
 	
 	void PlayerMovementSystem::OnEntityAdded(Ndk::Entity* entity)
@@ -53,14 +54,26 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : GetEntities())
 		{
 			auto& inputComponent = entity->GetComponent<InputComponent>();
-			auto& playerMovementComponent = entity->GetComponent<PlayerMovementComponent>();
+			auto& playerMovement = entity->GetComponent<PlayerMovementComponent>();
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
 			const auto& inputs = inputComponent.GetInputs();
+			
+			Nz::Vector2f up = Nz::Vector2f::UnitY();
 
-			playerMovementComponent.UpdateWasJumpingState(inputs.isJumping);
+			bool isOnGround = false;
+			entityPhys.ForEachArbiter([&](Nz::Arbiter2D& arbiter)
+			{
+				if (up.DotProduct(arbiter.GetNormal()) > 0.75f)
+					isOnGround = true;
+			});
 
-			if (playerMovementComponent.UpdateFacingRightState(inputs.isLookingRight))
+			playerMovement.UpdateGroundState(isOnGround);
+
+			playerMovement.UpdateWasJumpingState(inputs.isJumping);
+
+			if (playerMovement.UpdateFacingRightState(inputs.isLookingRight))
 				nodeComponent.Scale(-1.f, 1.f);
 		}
 	}

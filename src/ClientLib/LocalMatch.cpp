@@ -1096,9 +1096,9 @@ namespace bw
 		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q))
 			return;
 
-		/*auto inputIt = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
+		auto inputIt = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [lastInputTick = packet.lastInputTick](const PredictedInput& input)
 		{
-			return input.serverTick == stateTick;
+			return input.inputTick == lastInputTick;
 		});
 		if (inputIt != m_predictedInputs.end())
 		{
@@ -1118,7 +1118,7 @@ namespace bw
 					//static std::fstream entityPosFile("db_moveback.csv", std::ios::out | std::ios::trunc);
 					//entityPosFile << GetCurrentTime() << ";" << packet.stateTick << ";" << entityData.id << ";" << entityData.position.y << "\n";
 
-					bwLog(GetLogger(), LogLevel::Debug, "Position in memory (#{}): {}", entityData.id, entityData.position.y);
+					//bwLog(GetLogger(), LogLevel::Debug, "Position in memory (#{}): {}", entityData.id, entityData.position.y);
 
 					LocalLayerEntity& entity = *entityRefOpt;
 					if (entityData.isPhysical)
@@ -1127,7 +1127,7 @@ namespace bw
 						entity.UpdateState(entityData.position, entityData.rotation);
 				}
 			}
-		}*/
+		}
 
 		// Apply physics state to all layers
 		std::size_t offset = 0;
@@ -1140,16 +1140,16 @@ namespace bw
 		}
 
 		// Remove treated inputs
-		auto firstClientInput = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [stateTick = packet.stateTick](const PredictedInput& input)
+		auto firstClientInput = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [lastInputTick = packet.lastInputTick](const PredictedInput& input)
 		{
-			return input.serverTick > stateTick;
+			return IsMoreRecent(input.inputTick, lastInputTick);
 		});
 		m_predictedInputs.erase(m_predictedInputs.begin(), firstClientInput);
 
 		// Reconciliate server and clients
 		for (const PredictedInput& input : m_predictedInputs)
 		{
-			for (const auto& layerData : input.layers)
+			/*for (const auto& layerData : input.layers)
 			{
 				assert(layerData.layerIndex < m_layers.size());
 				auto& layer = m_layers[layerData.layerIndex];
@@ -1171,7 +1171,7 @@ namespace bw
 					else
 						entity.UpdateState(entityData.position, entityData.rotation);
 				}
-			}
+			}*/
 
 			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
 			{
@@ -1357,7 +1357,7 @@ namespace bw
 		Nz::UInt16 handledTick = AdjustServerTick(estimatedServerTick); //< To handle network jitter
 
 		auto it = m_tickedPackets.begin();
-		while (it != m_tickedPackets.end() && (it->tick == handledTick || IsMoreRecent(handledTick, it->tick)))
+		while (it != m_tickedPackets.end() && (it->serverTick == handledTick || IsMoreRecent(handledTick, it->serverTick)))
 		{
 			HandleTickPacket(std::move(it->content));
 			++it;
@@ -1383,15 +1383,6 @@ namespace bw
 			}
 		}
 
-		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
-
-		for (auto& layer : m_layers)
-		{
-			if (layer->IsEnabled())
-				layer->TickUpdate(GetTickDuration());
-		}
-
 		if (lastTick)
 		{
 			// Remember predicted ticks for improving over time
@@ -1404,7 +1395,7 @@ namespace bw
 
 			// Remember inputs for reconciliation
 			PredictedInput& predictedInputs = m_predictedInputs.emplace_back();
-			predictedInputs.serverTick = estimatedServerTick;
+			predictedInputs.inputTick = GetNetworkTick();
 
 			predictedInputs.inputs.resize(m_localPlayers.size());
 			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
@@ -1463,13 +1454,14 @@ namespace bw
 							return;
 
 						auto& entityData = layerData.entities.emplace_back();
-						entityData.isLocal  = layerEntity.IsClientside();
-						entityData.position = layerEntity.GetPosition();
-						entityData.rotation = layerEntity.GetRotation();
+						entityData.isLocal    = layerEntity.IsClientside();
+						entityData.isPhysical = layerEntity.IsPhysical();
+						entityData.position   = layerEntity.GetPosition();
+						entityData.rotation   = layerEntity.GetRotation();
 
 						entityData.id = (!entityData.isLocal) ? layerEntity.GetServerId() : layerEntity.GetEntity()->GetId();
 
-						if (layerEntity.IsPhysical())
+						if (entityData.isPhysical)
 						{
 							entityData.angularVelocity = layerEntity.GetAngularVelocity();
 							entityData.linearVelocity = layerEntity.GetLinearVelocity();
@@ -1481,17 +1473,26 @@ namespace bw
 				}
 			}
 		}
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
+
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->TickUpdate(GetTickDuration());
+		}
 	}
 
 	void LocalMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)
 	{
 		TickPacket newPacket;
-		newPacket.tick = tick;
+		newPacket.serverTick = tick;
 		newPacket.content = packet;
 
 		auto it = std::upper_bound(m_tickedPackets.begin(), m_tickedPackets.end(), newPacket, [](const TickPacket& a, const TickPacket& b)
 		{
-			return IsMoreRecent(b.tick, a.tick);
+			return IsMoreRecent(b.serverTick, a.serverTick);
 		});
 
 		m_tickedPackets.emplace(it, std::move(newPacket));
@@ -1502,7 +1503,7 @@ namespace bw
 		assert(m_localPlayers.size() == m_inputPacket.inputs.size());
 
 		m_inputPacket.estimatedServerTick = serverTick;
-		
+		m_inputPacket.inputTick = GetNetworkTick();
 		bool checkInputs = m_hasFocus &&
 		                   !m_chatBox.IsTyping() &&
 		                  (!m_localConsole || !m_localConsole->IsVisible()) &&

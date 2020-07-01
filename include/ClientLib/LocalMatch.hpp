@@ -220,7 +220,7 @@ namespace bw
 					std::vector<WeaponData> weapons;
 				};
 
-				Nz::UInt16 serverTick;
+				Nz::UInt16 inputTick;
 				std::vector<PlayerData> inputs;
 				std::vector<LayerData> layers;
 			};
@@ -233,7 +233,7 @@ namespace bw
 
 			struct TickPacket
 			{
-				Nz::UInt16 tick;
+				Nz::UInt16 serverTick;
 				TickPacketContent content;
 			};
 

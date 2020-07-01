@@ -12,6 +12,7 @@
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
+#include <CoreLib/Utility/CircularBuffer.hpp>
 #include <memory>
 #include <vector>
 
@@ -40,12 +41,15 @@ namespace bw
 
 			template<typename F> void ForEachPlayer(F&& func);
 
+			inline Nz::UInt16 GetLastInputTick() const;
 			inline Nz::UInt32 GetPing() const;
 			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;
 
 			void HandleIncomingPacket(Nz::NetPacket& packet);
+
+			void OnTick(float elapsedTime);
 
 			template<typename T> void SendPacket(const T& packet);
 
@@ -66,12 +70,20 @@ namespace bw
 			void HandleIncomingPacket(Packets::UpdatePlayerName&& packet);
 			void UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo);
 
+			struct Input
+			{
+				std::vector<std::optional<PlayerInputData>> inputs;
+				Nz::UInt16 inputTick;
+			};
+
+			CircularBuffer<Input> m_queuedInputs;
 			Match& m_match;
 			PlayerCommandStore& m_commandStore;
 			std::size_t m_sessionId;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
 			std::vector<PlayerHandle> m_players;
+			Nz::UInt16 m_lastInputTick;
 			Nz::UInt32 m_ping;
 			float m_peerInfoUpdateCounter;
 	};
