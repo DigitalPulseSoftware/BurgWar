@@ -434,6 +434,7 @@ namespace bw
 				CompressedUnsigned<Nz::UInt32> entityCount;
 			};
 
+			Nz::UInt16 lastInputTick;
 			Nz::UInt16 stateTick;
 			std::vector<Entity> entities;
 			std::vector<Layer> layers;
@@ -495,6 +496,7 @@ namespace bw
 		DeclarePacket(PlayersInput)
 		{
 			Nz::UInt16 estimatedServerTick;
+			Nz::UInt16 inputTick;
 			std::vector<std::optional<PlayerInputData>> inputs;
 		};
 

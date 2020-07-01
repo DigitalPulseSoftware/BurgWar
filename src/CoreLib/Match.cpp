@@ -526,8 +526,8 @@ namespace bw
 					}
 					else
 					{
-						entityPosition = Nz::Vector2f(entityNode.GetPosition());
-						entityRotation = AngleFromQuaternion(entityNode.GetRotation());
+						entityPosition = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
+						entityRotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global));
 					}
 
 					debugPacket << entityPosition << entityRotation;
@@ -611,6 +611,11 @@ namespace bw
 	{
 		float elapsedTime = GetTickDuration();
 
+		m_sessions.ForEachSession([&](MatchClientSession* session)
+		{
+			session->OnTick(elapsedTime);
+		});
+
 		ForEachPlayer([&](Player* player)
 		{
 			player->OnTick(lastTick);
@@ -620,13 +625,11 @@ namespace bw
 
 		m_terrain->Update(elapsedTime);
 
-		if (lastTick)
+		m_sessions.ForEachSession([&](MatchClientSession* session)
 		{
-			m_sessions.ForEachSession([&](MatchClientSession* session)
-			{
-				session->Update(elapsedTime);
-			});
-		}
+			session->Update(elapsedTime);
+		});
+
 	}
 	
 	void Match::SendPingUpdate()

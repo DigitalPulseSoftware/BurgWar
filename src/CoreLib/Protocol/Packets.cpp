@@ -16,6 +16,7 @@ namespace bw
 		{
 			std::size_t size = 0;
 			
+			size += sizeof(MatchState::lastInputTick);
 			size += sizeof(MatchState::stateTick);
 
 			size += sizeof(Nz::UInt8); // layer count
@@ -380,6 +381,7 @@ namespace bw
 		{
 			// Don't forget to update EstimateSize(const MatchState&)
 
+			serializer &= data.lastInputTick;
 			serializer &= data.stateTick;
 
 			Nz::UInt32 entityCount = 0;
@@ -502,6 +504,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayersInput& data)
 		{
 			serializer &= data.estimatedServerTick;
+			serializer &= data.inputTick;
 
 			serializer.SerializeArraySize(data.inputs);
 

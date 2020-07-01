@@ -17,6 +17,11 @@ namespace bw
 		}
 	}
 
+	inline Nz::UInt16 MatchClientSession::GetLastInputTick() const
+	{
+		return m_lastInputTick;
+	}
+
 	inline Nz::UInt32 MatchClientSession::GetPing() const
 	{
 		return m_ping;

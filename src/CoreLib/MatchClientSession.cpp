@@ -17,6 +17,7 @@
 namespace bw
 {
 	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge) :
+	m_queuedInputs(4),
 	m_match(match),
 	m_commandStore(commandStore),
 	m_sessionId(sessionId),
@@ -47,6 +48,26 @@ namespace bw
 	void MatchClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
 		m_commandStore.UnserializePacket(*this, packet);
+	}
+
+	void MatchClientSession::OnTick(float elapsedTime)
+	{
+		if (!m_queuedInputs.IsEmpty())
+		{
+			Input inputData = m_queuedInputs.Dequeue();
+			m_lastInputTick = inputData.inputTick;
+
+			for (std::size_t playerIndex = 0; playerIndex < inputData.inputs.size(); ++playerIndex)
+			{
+				const auto& inputOpt = inputData.inputs[playerIndex];
+				if (!inputOpt.has_value())
+					continue;
+
+				m_players[playerIndex]->UpdateInputs(*inputOpt);
+			}
+		}
+		else
+			bwLog(m_match.GetLogger(), LogLevel::Warning, "Player session #{} has no input for this tick", m_sessionId);
 	}
 
 	void MatchClientSession::Update(float elapsedTime)
@@ -194,22 +215,7 @@ namespace bw
 
 		SendPacket(correctionPacket);
 
-		if (estimatedServerTick < currentTick)
-			return; //< Tick has already been simulated, ignore
-
-		if (estimatedServerTick >= currentTick + 10)
-			return; //< Tick is way off prediction
-
-		std::size_t tickDelay = estimatedServerTick - currentTick;
-
-		for (std::size_t playerIndex = 0; playerIndex < packet.inputs.size(); ++playerIndex)
-		{
-			const auto& inputOpt = packet.inputs[playerIndex];
-			if (!inputOpt.has_value())
-				continue;
-
-			m_players[playerIndex]->UpdateInputs(tickDelay, *inputOpt);
-		}
+		m_queuedInputs.Enqueue(Input{ std::move(packet.inputs), packet.inputTick });
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerSelectWeapon& packet)
