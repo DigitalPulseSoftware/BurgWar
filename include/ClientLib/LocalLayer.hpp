@@ -40,8 +40,9 @@ namespace bw
 			template<typename F> void ForEachLayerSound(F&& func);
 
 			inline const Nz::Color& GetBackgroundColor() const;
-			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetClientEntity(Ndk::EntityId clientId);
-			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetServerEntity(Nz::UInt32 serverId);
+			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntity(Nz::Int64 uniqueId);
+			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntityByServerId(Nz::UInt32 serverId);
+			inline Nz::Int64 GetUniqueIdByServerId(Nz::UInt32 serverId);
 			LocalMatch& GetLocalMatch();
 
 			inline bool IsEnabled() const;
@@ -70,8 +71,7 @@ namespace bw
 
 		private:
 			void CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData);
-			void HandleClientEntityDestruction(Ndk::Entity* entity);
-			void HandleServerEntityDestruction(Nz::UInt32 serverId);
+			void HandleEntityDestruction(Nz::Int64 uniqueId);
 			void HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::DeleteEntities::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EnableLayer::Entity* entities, std::size_t entityCount);
@@ -110,8 +110,8 @@ namespace bw
 				std::size_t soundIndex;
 			};
 
-			tsl::hopscotch_map<Ndk::EntityId /*clientEntityId*/, EntityData /*localEntity*/> m_clientEntities;
-			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, EntityData /*localEntity*/> m_serverEntities;
+			tsl::hopscotch_map<Nz::Int64 /*uniqueId*/, EntityData> m_entities;
+			tsl::hopscotch_map<Nz::UInt32 /*serverEntityId*/, Nz::Int64> m_serverEntityIds;
 			std::vector<std::optional<SoundData>> m_sounds;
 			Nz::Bitset<Nz::UInt64> m_freeSoundIds;
 			Nz::Color m_backgroundColor;

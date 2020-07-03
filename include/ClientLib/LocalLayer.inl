@@ -21,10 +21,7 @@ namespace bw
 	{
 		assert(m_isEnabled);
 
-		for (auto it = m_serverEntities.begin(); it != m_serverEntities.end(); ++it)
-			func(it.value().layerEntity);
-
-		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
+		for (auto it = m_entities.begin(); it != m_entities.end(); ++it)
 			func(it.value().layerEntity);
 	}
 
@@ -45,26 +42,40 @@ namespace bw
 		return m_backgroundColor;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetClientEntity(Ndk::EntityId clientId)
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(Nz::Int64 uniqueId)
 	{
 		assert(m_isEnabled);
 
-		auto it = m_clientEntities.find(clientId);
-		if (it == m_clientEntities.end())
+		auto it = m_entities.find(uniqueId);
+		if (it == m_entities.end())
 			return std::nullopt;
 
 		return it.value().layerEntity;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetServerEntity(Nz::UInt32 serverId)
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntityByServerId(Nz::UInt32 serverId)
 	{
 		assert(m_isEnabled);
 
-		auto it = m_serverEntities.find(serverId);
-		if (it == m_serverEntities.end())
+		Nz::Int64 uniqueId = GetUniqueIdByServerId(serverId);
+		if (uniqueId == 0)
 			return std::nullopt;
 
-		return it.value().layerEntity;
+		auto entityOpt = GetEntity(uniqueId);
+		assert(entityOpt);
+
+		return entityOpt;
+	}
+
+	inline Nz::Int64 LocalLayer::GetUniqueIdByServerId(Nz::UInt32 serverId)
+	{
+		assert(m_isEnabled);
+
+		auto it = m_serverEntityIds.find(serverId);
+		if (it == m_serverEntityIds.end())
+			return 0;
+
+		return it->second;
 	}
 
 	inline bool LocalLayer::IsEnabled() const

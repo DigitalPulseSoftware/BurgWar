@@ -78,7 +78,7 @@ namespace bw
 
 	void LocalLayerEntity::Enable(bool enable)
 	{
-		if (m_entity->IsEnabled() == enable)
+		if (IsEnabled() == enable)
 			return;
 
 		m_entity->Enable(enable);

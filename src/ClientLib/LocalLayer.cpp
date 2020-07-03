@@ -35,30 +35,23 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
 			entity->OnEntityDestruction.Clear();
 
-		// Kill all entities while still alive
-		GetWorld().Clear();
+		Enable(false);
 	}
 
 	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
 	SharedLayer(std::move(layer)),
-	m_clientEntities(std::move(layer.m_clientEntities)),
-	m_serverEntities(std::move(layer.m_serverEntities)),
+	m_entities(std::move(layer.m_entities)),
+	m_serverEntityIds(std::move(layer.m_serverEntityIds)),
 	m_backgroundColor(layer.m_backgroundColor),
 	m_isEnabled(layer.m_isEnabled),
 	m_isPredictionEnabled(layer.m_isPredictionEnabled)
 	{
-		for (auto it = m_clientEntities.begin(); it != m_clientEntities.end(); ++it)
+		for (auto it = m_entities.begin(); it != m_entities.end(); ++it)
 		{
-			EntityData& clientEntity = it.value();
-			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleClientEntityDestruction);
-		}
-
-		for (auto it = m_serverEntities.begin(); it != m_serverEntities.end(); ++it)
-		{
-			EntityData& serverEntity = it.value();
-			serverEntity.onDestruction.Connect(serverEntity.layerEntity.GetEntity()->OnEntityDestruction, [this, serverId = serverEntity.layerEntity.GetServerId()](Ndk::Entity*)
+			EntityData& entity = it.value();
+			entity.onDestruction.Connect(entity.layerEntity.GetEntity()->OnEntityDestruction, [this, uniqueId = entity.layerEntity.GetUniqueId()](Ndk::Entity*)
 			{
-				HandleServerEntityDestruction(serverId);
+				HandleEntityDestruction(uniqueId);
 			});
 		}
 	}
@@ -77,8 +70,7 @@ namespace bw
 		else
 		{
 			OnDisabled(this);
-			m_clientEntities.clear();
-			m_serverEntities.clear();
+			m_entities.clear();
 
 			// Since we are disabled, refresh won't be called until we are enabled, refresh the world now to kill entities
 			GetWorld().Refresh();
@@ -147,42 +139,30 @@ namespace bw
 
 	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
 	{
-		const Ndk::EntityHandle& entity = layerEntity.GetEntity();
-		assert(entity);
-		assert(entity->GetWorld() == &GetWorld());
+		assert(layerEntity.GetEntity());
+		assert(layerEntity.GetEntity()->GetWorld() == &GetWorld());
 
-		if (layerEntity.IsClientside())
-		{
-			assert(m_clientEntities.find(entity->GetId()) == m_clientEntities.end());
-			auto it = m_clientEntities.emplace(entity->GetId(), std::move(layerEntity)).first;
-			// Warning: entity reference is invalidated from here
+		Nz::Int64 uniqueId = layerEntity.GetUniqueId();
 
-			EntityData& clientEntity = it.value();
-
-			clientEntity.onDestruction.Connect(clientEntity.layerEntity.GetEntity()->OnEntityDestruction, this, &LocalLayer::HandleClientEntityDestruction);
-
-			OnEntityCreated(this, clientEntity.layerEntity);
-
-			return clientEntity.layerEntity;
-		}
-		else
+		if (!layerEntity.IsClientside())
 		{
 			Nz::UInt32 serverId = layerEntity.GetServerId();
-			assert(m_serverEntities.find(serverId) == m_serverEntities.end());
-			auto it = m_serverEntities.emplace(serverId, std::move(layerEntity)).first;
-			// Warning: entity reference is invalidated from here
-
-			EntityData& serverEntity = it.value();
-
-			serverEntity.onDestruction.Connect(serverEntity.layerEntity.GetEntity()->OnEntityDestruction, [this, serverId = serverEntity.layerEntity.GetServerId()](Ndk::Entity*)
-			{
-				HandleServerEntityDestruction(serverId);
-			});
-
-			OnEntityCreated(this, serverEntity.layerEntity);
-
-			return serverEntity.layerEntity;
+			assert(m_serverEntityIds.find(serverId) == m_serverEntityIds.end());
+			m_serverEntityIds.emplace(serverId, uniqueId);
 		}
+
+		assert(m_entities.find(uniqueId) == m_entities.end());
+		auto it = m_entities.emplace(uniqueId, std::move(layerEntity)).first;
+
+		EntityData& entity = it.value();
+		entity.onDestruction.Connect(entity.layerEntity.GetEntity()->OnEntityDestruction, [this, uniqueId](Ndk::Entity*)
+		{
+			HandleEntityDestruction(uniqueId);
+		});
+
+		OnEntityCreated(this, entity.layerEntity);
+
+		return entity.layerEntity;
 	}
 
 	LocalLayerSound& LocalLayer::RegisterSound(LocalLayerSound layerEntity)
@@ -270,10 +250,13 @@ namespace bw
 		const LocalLayerEntity* parent = nullptr;
 		if (entityData.parentId)
 		{
-			auto it = m_serverEntities.find(entityData.parentId.value());
-			assert(it != m_serverEntities.end());
+			auto idIt = m_serverEntityIds.find(entityData.parentId.value());
+			assert(idIt != m_serverEntityIds.end());
 
-			parent = &it.value().layerEntity;
+			auto entityIt = m_entities.find(idIt->second);
+			assert(entityIt != m_entities.end());
+
+			parent = &entityIt.value().layerEntity;
 		}
 
 		Nz::Int64 uniqueId = static_cast<Nz::Int64>(entityData.uniqueId);
@@ -372,22 +355,22 @@ namespace bw
 		RegisterEntity(std::move(layerEntity.value()));
 	}
 
-	void LocalLayer::HandleClientEntityDestruction(Ndk::Entity* entity)
+	void LocalLayer::HandleEntityDestruction(Nz::Int64 uniqueId)
 	{
-		auto it = m_clientEntities.find(entity->GetId());
-		assert(it != m_clientEntities.end());
+		auto it = m_entities.find(uniqueId);
+		assert(it != m_entities.end());
 
-		OnEntityDelete(this, it.value().layerEntity);
-		m_clientEntities.erase(it);
-	}
+		EntityData& entity = it.value();
+		OnEntityDelete(this, entity.layerEntity);
 
-	void LocalLayer::HandleServerEntityDestruction(Nz::UInt32 serverId)
-	{
-		auto it = m_serverEntities.find(serverId);
-		assert(it != m_serverEntities.end());
+		if (!entity.layerEntity.IsClientside())
+		{
+			std::size_t erasedCount = m_serverEntityIds.erase(entity.layerEntity.GetServerId());
+			NazaraUnused(erasedCount);
+			assert(erasedCount == 1);
+		}
 
-		OnEntityDelete(this, it.value().layerEntity);
-		m_serverEntities.erase(it);
+		m_entities.erase(it);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
@@ -409,15 +392,8 @@ namespace bw
 
 		for (std::size_t i = 0; i < entityCount; ++i)
 		{
-			Nz::UInt32 entityId = entities[i].id;
-
-			auto it = m_serverEntities.find(entityId);
-			if (it == m_serverEntities.end())
-				continue;
-
-			OnEntityDelete(this, it.value().layerEntity);
-
-			m_serverEntities.erase(it);
+			if (Nz::Int64 uniqueId = GetUniqueIdByServerId(entities[i].id); uniqueId != 0)
+				HandleEntityDestruction(uniqueId);
 		}
 	}
 
@@ -443,11 +419,11 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].entityId;
 			Nz::UInt8 animationId = entities[i].animId;
 
-			auto it = m_serverEntities.find(entityId);
-			if (it == m_serverEntities.end())
+			auto entityOpt = GetEntityByServerId(entityId);
+			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = it.value().layerEntity;
+			LocalLayerEntity& localEntity = entityOpt.value();
 			localEntity.UpdateAnimation(animationId);
 		}
 	}
@@ -459,20 +435,19 @@ namespace bw
 		for (std::size_t i = 0; i < entityCount; ++i)
 		{
 			Nz::UInt32 entityId = entities[i].id;
+			if (Nz::Int64 uniqueId = GetUniqueIdByServerId(entityId); uniqueId != 0)
+			{
+				auto entityOpt = GetEntity(uniqueId);
+				assert(entityOpt);
 
-			auto it = m_serverEntities.find(entityId);
-			if (it == m_serverEntities.end())
-				continue;
+				LocalLayerEntity& localEntity = entityOpt.value();
+				if (localEntity.HasHealth())
+					localEntity.UpdateHealth(0);
+				else
+					bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received death event for entity {} which has no life", localEntity.GetUniqueId());
 
-			LocalLayerEntity& localEntity = it.value().layerEntity;
-			if (localEntity.HasHealth())
-				localEntity.UpdateHealth(0);
-			else
-				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received death event for entity {} which has no life", localEntity.GetUniqueId());
-
-			OnEntityDelete(this, it.value().layerEntity);
-
-			m_serverEntities.erase(it);
+				HandleEntityDestruction(uniqueId);
+			}
 		}
 	}
 
@@ -485,11 +460,11 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].id;
 			const auto& inputs = entities[i].inputs;
 
-			auto it = m_serverEntities.find(entityId);
-			if (it == m_serverEntities.end())
+			auto entityOpt = GetEntityByServerId(entityId);
+			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = it.value().layerEntity;
+			LocalLayerEntity& localEntity = entityOpt.value();
 			localEntity.UpdateInputs(inputs);
 		}
 	}
@@ -498,7 +473,7 @@ namespace bw
 	{
 		assert(packet.entityId.layerId == GetLayerIndex());
 
-		auto entityOpt = GetServerEntity(packet.entityId.entityId);
+		auto entityOpt = GetEntityByServerId(packet.entityId.entityId);
 		if (!entityOpt)
 			return;
 
@@ -518,14 +493,14 @@ namespace bw
 	{
 		assert(packet.entityId.layerId == GetLayerIndex());
 
-		auto entityOpt = GetServerEntity(packet.entityId.entityId);
+		auto entityOpt = GetEntityByServerId(packet.entityId.entityId);
 		if (!entityOpt)
 			return;
 
 		LocalLayerEntity& localEntity = *entityOpt;
 		if (packet.weaponEntityId != Packets::EntityWeapon::NoWeapon)
 		{
-			auto newWeaponOpt = GetServerEntity(packet.weaponEntityId);
+			auto newWeaponOpt = GetEntityByServerId(packet.weaponEntityId);
 			if (!newWeaponOpt)
 				return;
 
@@ -545,11 +520,11 @@ namespace bw
 			Nz::UInt32 entityId = entities[i].id;
 			Nz::UInt16 currentHealth = entities[i].currentHealth;
 
-			auto it = m_serverEntities.find(entityId);
-			if (it == m_serverEntities.end())
+			auto entityOpt = GetEntityByServerId(entityId);
+			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = it.value().layerEntity;
+			LocalLayerEntity& localEntity = entityOpt.value();
 			if (localEntity.HasHealth())
 				localEntity.UpdateHealth(currentHealth);
 			else
@@ -565,11 +540,11 @@ namespace bw
 		{
 			auto& entityData = entities[i];
 
-			auto it = m_serverEntities.find(entityData.id);
-			if (it == m_serverEntities.end())
+			auto entityOpt = GetEntityByServerId(entityData.id);
+			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = it.value().layerEntity;
+			LocalLayerEntity& localEntity = entityOpt.value();
 			if (localEntity.IsPhysical())
 			{
 				if (entityData.physicsProperties.has_value())
