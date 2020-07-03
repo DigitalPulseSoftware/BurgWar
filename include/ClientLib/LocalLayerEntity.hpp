@@ -62,6 +62,7 @@ namespace bw
 			void InitializeName(const std::string& name);
 			
 			inline bool IsClientside() const;
+			inline bool IsEnabled() const;
 			bool IsFacingRight() const;
 			bool IsPhysical() const;
 

@@ -91,7 +91,7 @@ namespace bw
 
 	void VisibleLayerComponent::CreateVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)
 	{
-		if (Nz::UInt32 id = layerEntity.GetServerId(); id != LocalLayerEntity::ClientsideId)
+		if (!layerEntity.IsClientside())
 			layer->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
 		else
 			layer->localEntities.emplace(layerEntity.GetEntity()->GetId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
@@ -104,7 +104,7 @@ namespace bw
 
 	void VisibleLayerComponent::DeleteVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)
 	{
-		if (Nz::UInt32 id = layerEntity.GetServerId(); id != LocalLayerEntity::ClientsideId)
+		if (!layerEntity.IsClientside())
 			layer->visualEntities.erase(layerEntity.GetServerId());
 		else
 			layer->localEntities.erase(layerEntity.GetEntity()->GetId());

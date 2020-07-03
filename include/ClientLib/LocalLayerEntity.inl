@@ -36,6 +36,11 @@ namespace bw
 		return m_serverEntityId == ClientsideId;
 	}
 
+	inline bool LocalLayerEntity::IsEnabled() const
+	{
+		return m_entity->IsEnabled();
+	}
+
 	inline bool LocalLayerEntity::HasHealth() const
 	{
 		return m_health.has_value();

@@ -32,6 +32,7 @@
 #include <NDK/Canvas.hpp>
 #include <NDK/EntityOwner.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
+#include <Thirdparty/tsl/hopscotch_set.h>
 #include <memory>
 #include <optional>
 #include <variant>
@@ -199,17 +200,15 @@ namespace bw
 				{
 					Nz::RadianAnglef angularVelocity;
 					Nz::RadianAnglef rotation;
-					Nz::UInt32 id;
 					Nz::Vector2f position;
 					Nz::Vector2f linearVelocity;
-					bool isLocal;
 					bool isPhysical;
 				};
 
 				struct LayerData
 				{
 					LayerIndex layerIndex;
-					std::vector<EntityData> entities;
+					tsl::hopscotch_map<Nz::Int64, EntityData> entities;
 				};
 
 				struct PlayerData
@@ -273,6 +272,7 @@ namespace bw
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			tsl::hopscotch_map<Nz::Int64, LocalLayerEntityHandle> m_entitiesByUniqueId;
+			tsl::hopscotch_set<Nz::Int64> m_inactiveEntities;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			Chatbox m_chatBox;
