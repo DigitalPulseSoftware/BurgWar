@@ -1129,6 +1129,8 @@ namespace bw
 						m_inactiveEntities.insert(uniqueId);
 					}
 				});
+
+				layer->TickUpdate(GetTickDuration());
 			}
 		}
 
@@ -1460,14 +1462,20 @@ namespace bw
 						assert(layerData.entities.find(layerEntity.GetUniqueId()) == layerData.entities.end());
 						auto& entityData = layerData.entities.emplace(layerEntity.GetUniqueId(), PredictedInput::EntityData{}).first.value();
 						entityData.isPhysical = layerEntity.IsPhysical();
-						entityData.position   = layerEntity.GetPosition();
-						entityData.rotation   = layerEntity.GetRotation();
 
 						if (entityData.isPhysical)
 						{
+							entityData.position = layerEntity.GetPhysicalPosition();
+							entityData.rotation = layerEntity.GetPhysicalRotation();
+
 							entityData.angularVelocity = layerEntity.GetAngularVelocity();
 							entityData.linearVelocity = layerEntity.GetLinearVelocity();
 							bwLog(GetLogger(), LogLevel::Info, "Tick {} : Pos ({}) Vel ({})", predictedInputs.inputTick, entityData.position.y, entityData.linearVelocity.y);
+						}
+						else
+						{
+							entityData.position = layerEntity.GetPosition();
+							entityData.rotation = layerEntity.GetRotation();
 						}
 					});
 				}
