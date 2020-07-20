@@ -368,9 +368,6 @@ namespace bw
 		{
 			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
 			inputComponent.UpdateInputs(inputData);
-
-			if (inputData.isJumping)
-				bwLog(m_match.GetLogger(), LogLevel::Error, "Is jumping!");
 		}
 	}
 
