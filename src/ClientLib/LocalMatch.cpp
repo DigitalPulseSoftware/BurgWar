@@ -1219,8 +1219,6 @@ namespace bw
 							else
 								layerEntity.UpdateState(entityData.position, entityData.rotation);
 
-							bwLog(GetLogger(), LogLevel::Debug, "Entity #{} - Rollback to {} : Pos ({}) Vel ({})", uniqueId, input.inputTick, entityData.position.y, entityData.linearVelocity.y);
-
 							return true;
 						}
 					}
@@ -1380,9 +1378,6 @@ namespace bw
 					{
 						auto& entityInputs = entity->GetComponent<InputComponent>();
 						entityInputs.UpdateInputs(controllerData.lastInputData);
-
-						if (controllerData.lastInputData.isJumping)
-							bwLog(GetLogger(), LogLevel::Error, "I ARE JUMPING");
 					}
 				}
 			}
@@ -1423,9 +1418,6 @@ namespace bw
 						movementData.isOnGround = playerMovement.IsOnGround();
 						movementData.jumpTime = playerMovement.GetJumpTime();
 						movementData.wasJumping = playerMovement.WasJumping();
-
-						if (playerData.input.isJumping)
-							bwLog(GetLogger(), LogLevel::Error, "I ARE JUMPING (ground: {}, jump time: {}, was jumping: {})", movementData.isOnGround, movementData.jumpTime, movementData.wasJumping);
 
 						movementData.friction = playerPhysics.GetFriction(0);
 						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
@@ -1470,7 +1462,6 @@ namespace bw
 
 							entityData.angularVelocity = layerEntity.GetAngularVelocity();
 							entityData.linearVelocity = layerEntity.GetLinearVelocity();
-							bwLog(GetLogger(), LogLevel::Info, "Tick {} : Pos ({}) Vel ({})", predictedInputs.inputTick, entityData.position.y, entityData.linearVelocity.y);
 						}
 						else
 						{
