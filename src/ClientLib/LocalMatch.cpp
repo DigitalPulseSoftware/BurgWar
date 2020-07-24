@@ -1104,6 +1104,60 @@ namespace bw
 		});
 		if (inputIt != m_predictedInputs.end())
 		{
+			bool performReconciliation = [&]
+			{
+				// Check if reconciliation is required (were all packets entities at the same position back then?)
+				std::size_t offset = 0;
+				for (auto&& packetLayer : packet.layers)
+				{
+					assert(packetLayer.layerIndex < m_layers.size());
+					auto& layer = m_layers[packetLayer.layerIndex];
+					if (!layer->IsEnabled() || !layer->IsPredictionEnabled())
+						continue;
+
+					auto layerIt = std::find_if(inputIt->layers.begin(), inputIt->layers.end(), [&](const auto& layer) { return layer.layerIndex == packetLayer.layerIndex; });
+					if (layerIt == inputIt->layers.end())
+						continue;
+
+					const auto& layerData = *layerIt;
+
+					for (std::size_t i = 0; i < packetLayer.entityCount; ++i)
+					{
+						auto& packetEntity = packet.entities[offset + i];
+						Nz::Int64 uniqueId = layer->GetUniqueIdByServerId(packetEntity.id);
+						if (uniqueId == 0)
+							continue;
+
+						auto it = layerData.entities.find(uniqueId);
+						if (it == layerData.entities.end())
+							continue;
+
+						constexpr float MaxPositionError = 5.f; //< five pixels
+						constexpr float MaxRotationError = Nz::DegreeToRadian(5.f);
+
+						auto& entityData = it.value();
+						if (!CompareWithEpsilon(entityData.position, packetEntity.position, MaxPositionError) ||
+							!CompareWithEpsilon(entityData.rotation, packetEntity.rotation, MaxRotationError))
+						{
+							Nz::Vector2f posDiff = entityData.position - packetEntity.position;
+							Nz::RadianAnglef rotDiff = entityData.rotation - packetEntity.rotation;
+
+							//bwLog(GetLogger(), LogLevel::Debug, "Prediction error for entity #{} (position diff: {}, rotation diff: {})", uniqueId, posDiff.ToString().ToStdString(), rotDiff.ToString().ToStdString());
+							return true;
+						}
+					}
+
+					offset += packetLayer.entityCount;
+				}
+
+				return false;
+			}();
+
+			if (!performReconciliation)
+				return;
+
+			//bwLog(GetLogger(), LogLevel::Debug, "Too much error detected, performing reconciliation...");
+
 			for (const auto& layerData : inputIt->layers)
 			{
 				assert(layerData.layerIndex < m_layers.size());
@@ -1136,12 +1190,46 @@ namespace bw
 
 		// Apply physics state to all layers
 		std::size_t offset = 0;
-		for (auto&& layerData : packet.layers)
+		for (auto&& packetLayer : packet.layers)
 		{
-			assert(layerData.layerIndex < m_layers.size());
-			auto& layer = m_layers[layerData.layerIndex];
-			layer->HandlePacket(&packet.entities[offset], layerData.entityCount);
-			offset += layerData.entityCount;
+			assert(packetLayer.layerIndex < m_layers.size());
+			auto& layer = m_layers[packetLayer.layerIndex];
+
+			for (std::size_t i = 0; i < packetLayer.entityCount; ++i)
+			{
+				auto& packetEntity = packet.entities[offset + i];
+
+				auto entityOpt = layer->GetEntityByServerId(packetEntity.id);
+				if (!entityOpt)
+					continue;
+
+				LocalLayerEntity& localEntity = entityOpt.value();
+				if (localEntity.IsPhysical())
+				{
+					if (packetEntity.physicsProperties.has_value())
+					{
+						auto& physData = packetEntity.physicsProperties.value();
+						localEntity.UpdateState(packetEntity.position, packetEntity.rotation, physData.linearVelocity, physData.angularVelocity);
+					}
+					else
+					{
+						bwLog(GetLogger(), LogLevel::Warning, "Entity {} has client-side physics but server sends no data", localEntity.GetUniqueId());
+						localEntity.UpdateState(packetEntity.position, packetEntity.rotation);
+					}
+				}
+				else
+				{
+					if (packetEntity.physicsProperties.has_value())
+						bwLog(GetLogger(), LogLevel::Warning, "Received physics properties for entity {} which is not physical client-side", localEntity.GetUniqueId());
+
+					localEntity.UpdateState(packetEntity.position, packetEntity.rotation);
+				}
+
+				if (packetEntity.playerMovement)
+					localEntity.UpdatePlayerMovement(packetEntity.playerMovement->isFacingRight);
+			}
+
+			offset += packetLayer.entityCount;
 		}
 
 		// Remove treated inputs
@@ -1233,7 +1321,7 @@ namespace bw
 			}
 		}
 
-		// Prevent entities being locked
+		// Prevent locking entities forever
 		for (Nz::Int64 uniqueId : m_inactiveEntities)
 		{
 			for (auto& layer : m_layers)

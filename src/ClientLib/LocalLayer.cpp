@@ -531,43 +531,4 @@ namespace bw
 				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received health data for entity {} which has none", localEntity.GetUniqueId());
 		}
 	}
-
-	void LocalLayer::HandlePacket(const Packets::MatchState::Entity* entities, std::size_t entityCount)
-	{
-		assert(m_isEnabled);
-
-		for (std::size_t i = 0; i < entityCount; ++i)
-		{
-			auto& entityData = entities[i];
-
-			auto entityOpt = GetEntityByServerId(entityData.id);
-			if (!entityOpt)
-				continue;
-
-			LocalLayerEntity& localEntity = entityOpt.value();
-			if (localEntity.IsPhysical())
-			{
-				if (entityData.physicsProperties.has_value())
-				{
-					auto& physData = entityData.physicsProperties.value();
-					localEntity.UpdateState(entityData.position, entityData.rotation, physData.linearVelocity, physData.angularVelocity);
-				}
-				else
-				{
-					bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {} has client-side physics but server sends no data", localEntity.GetUniqueId());
-					localEntity.UpdateState(entityData.position, entityData.rotation);
-				}
-			}
-			else
-			{
-				if (entityData.physicsProperties.has_value())
-					bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Received physics properties for entity {} which is not physical client-side", localEntity.GetUniqueId());
-
-				localEntity.UpdateState(entityData.position, entityData.rotation);
-			}
-
-			if (entityData.playerMovement)
-				localEntity.UpdatePlayerMovement(entityData.playerMovement->isFacingRight);
-		}
-	}
 }
