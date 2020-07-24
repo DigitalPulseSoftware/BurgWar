@@ -28,6 +28,18 @@ namespace bw
 		return position;
 	}
 
+	template<Nz::AngleUnit Unit, typename T>
+	bool CompareWithEpsilon(const Nz::Angle<Unit, T>& left, const Nz::Angle<Unit, T>& right, T epsilon)
+	{
+		return Nz::NumberEquals(left.value, right.value, epsilon);
+	}
+
+	template<typename T>
+	bool CompareWithEpsilon(const Nz::Vector2<T>& left, const Nz::Vector2<T>& right, T epsilon)
+	{
+		return left.SquaredDistance(right) < Nz::IntegralPow(epsilon, 2);
+	}
+
 	template<typename T>
 	bool IsMoreRecent(T a, T b)
 	{
