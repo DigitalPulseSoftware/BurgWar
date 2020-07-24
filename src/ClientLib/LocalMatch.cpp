@@ -1183,8 +1183,6 @@ namespace bw
 						m_inactiveEntities.insert(uniqueId);
 					}
 				});
-
-				layer->TickUpdate(GetTickDuration());
 			}
 		}
 
@@ -1471,6 +1469,15 @@ namespace bw
 			}
 		}
 
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback("OnTick");
+
+		for (auto& layer : m_layers)
+		{
+			if (layer->IsEnabled())
+				layer->TickUpdate(GetTickDuration());
+		}
+
 		if (lastTick)
 		{
 			// Remember predicted ticks for improving over time
@@ -1559,15 +1566,6 @@ namespace bw
 					});
 				}
 			}
-		}
-
-		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
-
-		for (auto& layer : m_layers)
-		{
-			if (layer->IsEnabled())
-				layer->TickUpdate(GetTickDuration());
 		}
 	}
 
