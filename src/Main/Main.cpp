@@ -19,12 +19,12 @@ int main(int argc, char* argv[])
 	catch (const std::exception& e)
 	{
 		std::cerr << "Unhandled exception: " << e.what() << std::endl;
-		return EXIT_FAILURE;
+		throw;
 	}
 	catch (...)
 	{
 		std::cerr << "Unhandled non-standard exception" << std::endl;
-		return EXIT_FAILURE;
+		throw;
 	}
 }
 
