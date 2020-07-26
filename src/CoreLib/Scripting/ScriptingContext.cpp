@@ -53,8 +53,6 @@ namespace bw
 					result = state.do_string(std::string_view(reinterpret_cast<const char*>(arg.data()), arg.size()), folderOrFile.generic_string());
 				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 				{
-					std::vector<Nz::UInt8> content;
-
 					Nz::File file(arg.generic_u8string());
 					if (!file.Open(Nz::OpenMode_ReadOnly))
 					{
@@ -62,14 +60,14 @@ namespace bw
 						return false;
 					}
 
-					content.resize(file.GetSize());
+					std::vector<char> content(file.GetSize());
 					if (file.Read(content.data(), content.size()) != content.size())
 					{
 						bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", folderOrFile.generic_u8string());
 						return false;
 					}
 
-					result = state.do_string(std::string_view(reinterpret_cast<const char*>(content.data()), content.size()), folderOrFile.generic_string());
+					result = state.do_string(std::string_view(content.data(), content.size()), folderOrFile.generic_string());
 				}
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive if");

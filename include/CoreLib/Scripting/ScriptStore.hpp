@@ -64,15 +64,17 @@ namespace bw
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
 			void SetElementTypeName(std::string typeName);
-			void SetTableName(std::string tableName);
+			void SetElementName(std::string elementName);
 
 		private:
+			void CreateOrGetElement(const sol::optional<sol::table>& tableOpt);
 			bool RegisterElement(std::shared_ptr<Element> element);
 
 			sol::table m_elementMetatable;
+			sol::table m_currentElementTable;
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_elementTypeName;
-			std::string m_tableName;
+			std::string m_elementName;
 			std::vector<std::shared_ptr<AbstractElementLibrary>> m_libraries;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;

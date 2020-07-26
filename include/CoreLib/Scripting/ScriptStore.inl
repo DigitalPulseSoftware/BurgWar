@@ -124,7 +124,7 @@ namespace bw
 
 		InitializeElementTable(elementTable);
 
-		state[m_tableName] = elementTable;
+		m_currentElementTable = elementTable;
 
 		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
 
@@ -158,7 +158,7 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		state[m_tableName] = nullptr;
+		m_currentElementTable = nullptr;
 
 		std::shared_ptr<Element> element = CreateElement();
 		element->name = std::move(elementName);
@@ -201,6 +201,9 @@ namespace bw
 		// Link new metatables
 		for (const auto& elementPtr : m_elements)
 			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
+
+		sol::state& state = GetLuaState();
+		state["Scripted" + m_elementName] = [this](const sol::optional<sol::table>& parameters) { return CreateOrGetElement(parameters); };
 	}
 
 	template<typename Element>
@@ -288,6 +291,11 @@ namespace bw
 
 	template<typename Element>
 	void ScriptStore<Element>::InitializeElementTable(sol::table& /*elementTable*/)
+	{
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::CreateOrGetElement(const sol::optional<sol::table>& tableOpt)
 	{
 	}
 
@@ -418,8 +426,8 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::SetTableName(std::string tableName)
+	void ScriptStore<Element>::SetElementName(std::string elementName)
 	{
-		m_tableName = std::move(tableName);
+		m_elementName = std::move(elementName);
 	}
 }

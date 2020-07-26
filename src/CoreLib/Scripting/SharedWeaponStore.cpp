@@ -20,7 +20,7 @@ namespace bw
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
-		SetTableName("WEAPON");
+		SetElementName("Weapon");
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

@@ -1,10 +1,10 @@
-ENTITY.IsNetworked = true
-ENTITY.Sprite = "burger2.png"
-ENTITY.Scale = 0.33
-ENTITY.PlayerControlled = true
-ENTITY.MaxHealth = 1000
-ENTITY.HasInputs = true
-ENTITY.Faces = {
+local entity = ScriptedEntity()
+entity.IsNetworked = true
+entity.Sprite = "burger2.png"
+entity.Scale = 0.33
+entity.MaxHealth = 100
+entity.HasInputs = true
+entity.Faces = {
 	Attack = "faces/face_attack.png",
 	Damage = "faces/face_damage.png",
 	Default = "faces/face_default.png",

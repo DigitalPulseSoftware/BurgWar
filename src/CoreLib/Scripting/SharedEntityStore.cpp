@@ -13,7 +13,7 @@ namespace bw
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("entity");
-		SetTableName("ENTITY");
+		SetElementName("Entity");
 	}
 
 	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& entity) const
