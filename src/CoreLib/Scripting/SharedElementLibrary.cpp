@@ -32,6 +32,18 @@ namespace bw
 			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
 		};
 
+		elementMetatable["Disable"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			entity->Disable();
+		};
+
+		elementMetatable["Enable"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			entity->Enable();
+		};
+
 		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -59,6 +71,12 @@ namespace bw
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
+		};
+
+		elementMetatable["IsEnabled"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			return entity->IsEnabled();
 		};
 
 		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
