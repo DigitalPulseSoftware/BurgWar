@@ -119,10 +119,18 @@ namespace bw
 
 			struct EntityPhysics
 			{
+				struct PlayerMovement
+				{
+					float jumpHeight;
+					float jumpHeightBoost;
+					float movementSpeed;
+				};
+
 				Ndk::EntityId entityId;
 				bool isAsleep;
 				float mass;
 				float momentOfInertia;
+				std::optional<PlayerMovement> playerMovement;
 			};
 
 			struct EntityWeapon

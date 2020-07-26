@@ -527,6 +527,16 @@ namespace bw
 					physicsPacket.asleep = physicsData.isAsleep;
 					physicsPacket.mass = physicsData.mass;
 					physicsPacket.momentOfInertia = physicsData.momentOfInertia;
+					
+					if (physicsData.playerMovement)
+					{
+						const auto& playerMovementData = physicsData.playerMovement.value();
+
+						auto& packetMovement = physicsPacket.playerMovement.emplace();
+						packetMovement.jumpHeight = playerMovementData.jumpHeight;
+						packetMovement.jumpHeightBoost = playerMovementData.jumpHeightBoost;
+						packetMovement.movementSpeed = playerMovementData.movementSpeed;
+					}
 
 					m_session.SendPacket(physicsPacket);
 				}
