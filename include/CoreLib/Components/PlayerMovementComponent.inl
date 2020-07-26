@@ -10,7 +10,10 @@ namespace bw
 	m_isFacingRight(true),
 	m_isOnGround(false),
 	m_lastJumpingState(false),
-	m_jumpTime(0.f)
+	m_jumpBoostHeight(80.f),
+	m_jumpHeight(80.f),
+	m_jumpTime(0.f),
+	m_movementSpeed(500.f)
 	{
 	}
 
@@ -19,9 +22,24 @@ namespace bw
 		return m_controller;
 	}
 
+	inline float PlayerMovementComponent::GetJumpBoostHeight() const
+	{
+		return m_jumpBoostHeight;
+	}
+
+	inline float PlayerMovementComponent::GetJumpHeight() const
+	{
+		return m_jumpHeight;
+	}
+
 	inline float PlayerMovementComponent::GetJumpTime() const
 	{
 		return m_jumpTime;
+	}
+
+	inline float PlayerMovementComponent::GetMovementSpeed() const
+	{
+		return m_movementSpeed;
 	}
 
 	inline bool PlayerMovementComponent::IsFacingRight() const
@@ -53,9 +71,24 @@ namespace bw
 		m_isOnGround = isOnGround;
 	}
 
+	inline void PlayerMovementComponent::UpdateJumpBoostHeight(float boostHeight)
+	{
+		m_jumpBoostHeight = boostHeight;
+	}
+
+	inline void PlayerMovementComponent::UpdateJumpHeight(float jumpHeight)
+	{
+		m_jumpHeight = jumpHeight;
+	}
+
 	inline void PlayerMovementComponent::UpdateJumpTime(float jumpTime)
 	{
 		m_jumpTime = jumpTime;
+	}
+
+	inline void PlayerMovementComponent::UpdateMovementSpeed(float movementSpeed)
+	{
+		m_movementSpeed = movementSpeed;
 	}
 
 	inline void PlayerMovementComponent::UpdateWasJumpingState(bool isJumping)

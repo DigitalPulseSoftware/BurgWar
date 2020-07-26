@@ -129,6 +129,25 @@ namespace bw
 		}
 	}
 
+	void SharedEntityLibrary::UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
+	{
+		if (!entity->HasComponent<PlayerMovementComponent>())
+			throw std::runtime_error("Entity has no player movement");
+
+		auto& playerMovementComponent = entity->GetComponent<PlayerMovementComponent>();
+		playerMovementComponent.UpdateJumpHeight(jumpHeight);
+		playerMovementComponent.UpdateJumpBoostHeight(jumpHeightBoost);
+	}
+
+	void SharedEntityLibrary::UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed)
+	{
+		if (!entity->HasComponent<PlayerMovementComponent>())
+			throw std::runtime_error("Entity has no player movement");
+
+		auto& playerMovementComponent = entity->GetComponent<PlayerMovementComponent>();
+		playerMovementComponent.UpdateMovementSpeed(movementSpeed);
+	}
+
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
 		elementMetatable["ApplyImpulse"] = [this](const sol::table& entityTable, const Nz::Vector2f& force)
@@ -229,6 +248,30 @@ namespace bw
 				throw std::runtime_error("Entity has no player movement");
 
 			return entity->GetComponent<PlayerMovementComponent>().GetController();
+		};
+
+		elementMetatable["GetPlayerMovementSpeed"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			return entity->GetComponent<PlayerMovementComponent>().GetMovementSpeed();
+		};
+
+		elementMetatable["GetPlayerJumpHeight"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<PlayerMovementComponent>())
+				throw std::runtime_error("Entity has no player movement");
+
+			auto& movementComponent = entity->GetComponent<PlayerMovementComponent>();
+			float jumpHeight = movementComponent.GetJumpHeight();
+			float jumpBoostHeigh = movementComponent.GetJumpBoostHeight();
+
+			return std::make_pair(jumpHeight, jumpBoostHeigh);
 		};
 
 		elementMetatable["GetUpVector"] = [](const sol::table& entityTable)
@@ -494,11 +537,22 @@ namespace bw
 		elementMetatable["UpdatePlayerMovementController"] = [](const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				throw std::runtime_error("Entity has no player movement");
 
 			return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(controller));
+		};
+
+		elementMetatable["UpdatePlayerMovementSpeed"] = [&](const sol::table& entityTable, float newSpeed)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			return UpdatePlayerMovement(entity, newSpeed);
+		};
+
+		elementMetatable["UpdatePlayerJumpHeight"] = [&](const sol::table& entityTable, float newJumpHeight, float newJumpBoostHeight)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			return UpdatePlayerJumpHeight(entity, newJumpHeight, newJumpBoostHeight);
 		};
 	}
 }
