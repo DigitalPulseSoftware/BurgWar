@@ -511,7 +511,7 @@ namespace bw
 			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
 				auto& layer = *it.value();
-				if (layer.weaponEvents.empty())
+				if (layer.physicsEvents.empty())
 					continue;
 
 				LayerIndex layerIndex = it.key();
@@ -526,11 +526,12 @@ namespace bw
 					auto& physicsData = pair.second;
 					physicsPacket.asleep = physicsData.isAsleep;
 					physicsPacket.mass = physicsData.mass;
+					physicsPacket.momentOfInertia = physicsData.momentOfInertia;
 
 					m_session.SendPacket(physicsPacket);
 				}
 
-				layer.weaponEvents.clear();
+				layer.physicsEvents.clear();
 			}
 
 			m_pendingEvents.Clear(VisibilityEventType::PhysicsUpdate);

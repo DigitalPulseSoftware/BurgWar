@@ -682,6 +682,11 @@ namespace bw
 			PushTickPacket(inputs.stateTick, inputs);
 		});
 
+		m_session.OnEntityPhysics.Connect([this](ClientSession* /*session*/, const Packets::EntityPhysics& physics)
+		{
+			PushTickPacket(physics.stateTick, physics);
+		});
+
 		m_session.OnEntityWeapon.Connect([this](ClientSession* /*session*/, const Packets::EntityWeapon& weapon)
 		{
 			PushTickPacket(weapon.stateTick, weapon);
