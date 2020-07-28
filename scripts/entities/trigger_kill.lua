@@ -1,8 +1,8 @@
-entity.IsNetworked = false
-
-entity.Properties = {
-	{ Name = "size", Type = PropertyType.FloatSize },
-}
+local entity = ScriptedEntity({
+	Properties = {
+		{ Name = "size", Type = PropertyType.FloatSize },
+	}
+})
 
 function entity:Initialize()
 	local size = self:GetProperty("size")

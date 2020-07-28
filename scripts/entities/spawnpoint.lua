@@ -1,4 +1,4 @@
-entity.IsNetworked = false
+local entity = ScriptedEntity({})
 
 function entity:Initialize()
 	if (EDITOR) then

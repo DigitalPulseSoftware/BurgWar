@@ -1,9 +1,9 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/potato.png")
 
-entity.IsNetworked = true
-
-entity.Properties = {}
+local entity = ScriptedEntity({
+	IsNetworked = true
+})
 
 entity.ExplosionSounds = {
     "placeholder/explosion1.wav",

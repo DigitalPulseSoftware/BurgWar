@@ -1,18 +1,21 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 0.5
-WEAPON.Scale = 0.75
-WEAPON.Sprite = "placeholder/baguette.png"
-WEAPON.SpriteOrigin = Vec2(40, 20) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
-WEAPON.Animations = {}
+local scale = 0.75
 
-RegisterClientAssets(WEAPON.Sprite)
+local weapon = ScriptedWeapon({
+	Cooldown = 0.5,
+	Scale = scale,
+	Sprite = "placeholder/baguette.png",
+	SpriteOrigin = Vec2(40, 20) * scale,
+	WeaponOffset = Vec2(20, -60) -- This should not be here
+})
+
+RegisterClientAssets(weapon.Sprite)
 
 local maxDist = 1000
 
 if (SERVER) then
-	function WEAPON:OnAttack()
+	function weapon:OnAttack()
 		if (self.GrapplePull or self.GrappleSprite) then
 			self:Release()
 		else
@@ -20,7 +23,7 @@ if (SERVER) then
 		end
 	end
 
-	function WEAPON:Launch()
+	function weapon:Launch()
 		local startOffset = Vec2(85 * self.Scale, 0)
 
 		local startPos = self:ToGlobalPosition(startOffset)
@@ -98,7 +101,7 @@ if (SERVER) then
 		end
 	end
 
-	function WEAPON:Release()
+	function weapon:Release()
 		if (self.GrapplePull and self.GrapplePull:IsValid()) then
 			self.GrapplePull:Remove()
 		end

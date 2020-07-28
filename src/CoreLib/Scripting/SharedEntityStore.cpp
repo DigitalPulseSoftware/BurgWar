@@ -14,6 +14,8 @@ namespace bw
 	{
 		SetElementTypeName("entity");
 		SetElementName("Entity");
+
+		ReloadLibraries(); // This function creates the metatable
 	}
 
 	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& entity) const

@@ -21,6 +21,8 @@ namespace bw
 	{
 		SetElementTypeName("weapon");
 		SetElementName("Weapon");
+
+		ReloadLibraries(); // This function creates the metatable
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

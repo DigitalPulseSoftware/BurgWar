@@ -51,8 +51,6 @@ namespace bw
 	void ClientWeaponStore::InitializeElementTable(sol::table& elementTable)
 	{
 		SharedWeaponStore::InitializeElementTable(elementTable);
-
-		elementTable["Scale"] = 1.f;
 	}
 
 	void ClientWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

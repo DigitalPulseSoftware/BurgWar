@@ -1,9 +1,10 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/healthpack.png")
 
-entity.IsNetworked = true
-
-entity.Properties = {}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {}
+})
 
 function entity:Initialize()
 	local colliderSize = Vec2(400, 200) / 4 / 2

@@ -1,12 +1,13 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/socle.png")
 
-entity.IsNetworked = true
-
-entity.Properties = {
-	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
-	{ Name = "powerup_type", Type = PropertyType.String, Default = "" }
-}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
+		{ Name = "powerup_type", Type = PropertyType.String, Default = "" }
+	}
+})
 
 entity.CanSpawn = true
 

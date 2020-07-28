@@ -1,9 +1,11 @@
 RegisterClientScript()
 
-entity.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true
+})
 
-function entity:Initialize()
-	if (EDITOR) then
+if (EDITOR) then
+	function entity:Initialize()
 		self:AddSprite({
 			Color = { r = 255, g = 255, b = 255, a = 120 },
 			RenderOrder = 2000,

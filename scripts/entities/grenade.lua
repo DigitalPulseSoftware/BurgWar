@@ -1,13 +1,13 @@
 RegisterClientScript()
 RegisterClientAssets("grenade.png")
 
-entity.IsNetworked = true
-entity.PlayerControlled = false
-entity.MaxHealth = 50
-
-entity.Properties = {
-	{ Name = "lifetime", Type = PropertyType.Float, Default = 1.0, Shared = true }
-}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	MaxHealth = 50,
+	Properties = {
+		{ Name = "lifetime", Type = PropertyType.Float, Default = 1.0, Shared = true }
+	}	
+})
 
 entity.ExplosionSounds = {
     "placeholder/explosion1.wav",

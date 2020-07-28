@@ -1,5 +1,7 @@
 local entity = ScriptedEntity({
 	IsNetworked = true,
+	HasInputs = true,
+	PlayerControlled = true,
 	MaxHealth = 100,
 	Properties = {
 		{ Name = "seed", Type = PropertyType.Integer, Shared = true },
@@ -8,8 +10,6 @@ local entity = ScriptedEntity({
 
 entity.Sprite = "burger2.png"
 entity.Scale = 0.33
-entity.MaxHealth = 100
-entity.HasInputs = true
 entity.Faces = {
 	Attack = "faces/face_attack.png",
 	Damage = "faces/face_damage.png",

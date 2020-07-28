@@ -1,15 +1,18 @@
 RegisterClientScript("rifle.lua")
 
-WEAPON.Scale = 0.2
-WEAPON.Sprite = "rifle-30349_640.png"
-WEAPON.SpriteOrigin = Vec2(-100, 105) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
-WEAPON.Cooldown = 0.1
-WEAPON.AttackMode = WeaponAttackType.SingleShotRepeat
+local scale = 0.2
 
-RegisterClientAssets(WEAPON.Sprite)
+local weapon = ScriptedWeapon({
+	Cooldown = 0.1,
+	Scale = scale,
+	Sprite = "rifle-30349_640.png",
+	SpriteOrigin = Vec2(-100, 105) * scale,
+	WeaponOffset = Vec2(0, -40) -- This should not be here
+})
 
-WEAPON.ShootSound = {
+RegisterClientAssets(weapon.Sprite)
+
+weapon.ShootSound = {
 --[[    "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR1_stereo.wav",
     "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR2_stereo.wav",
     "sounds/FIREARM_Assault_Rifle_Model_01_Fire_Single_RR3_stereo.wav",]]
@@ -17,10 +20,10 @@ WEAPON.ShootSound = {
     "placeholder/piou2.wav",
     "placeholder/piou3.wav",
 }
-RegisterClientAssets(WEAPON.ShootSound)
+RegisterClientAssets(weapon.ShootSound)
 
 
-function WEAPON:OnAttack()
+function weapon:OnAttack()
 	if (CLIENT) then
 		self:PlaySound(self.ShootSound[math.random(1, #self.ShootSound)], true, false, true)
 	end

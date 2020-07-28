@@ -1,18 +1,16 @@
 RegisterClientScript()
 
-entity.IsNetworked = true
-entity.CollisionType = 2
-entity.PlayerControlled = false
-entity.MaxHealth = 0
-
-entity.Properties = {
-	{ Name = "duration", Type = PropertyType.Float, Shared = true },
-	{ Name = "retracting", Type = PropertyType.Boolean, Default = false, Shared = true },
-	{ Name = "source_entity", Type = PropertyType.Entity, Shared = true },
-	{ Name = "source_offset", Type = PropertyType.FloatPosition, Shared = true },
-	{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
-	{ Name = "target_offset", Type = PropertyType.FloatPosition, Shared = true },
-}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "duration", Type = PropertyType.Float, Shared = true },
+		{ Name = "retracting", Type = PropertyType.Boolean, Default = false, Shared = true },
+		{ Name = "source_entity", Type = PropertyType.Entity, Shared = true },
+		{ Name = "source_offset", Type = PropertyType.FloatPosition, Shared = true },
+		{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
+		{ Name = "target_offset", Type = PropertyType.FloatPosition, Shared = true },
+	}
+})
 
 function entity:Initialize()
 	self.SourceEntity = self:GetProperty("source_entity")

@@ -1,15 +1,19 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 1
-WEAPON.Scale = 0.2
-WEAPON.Sprite = "grenade.png"
-WEAPON.SpriteOrigin = Vec2(60, 256) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(0, -40) -- This should not be here
+local scale = 0.2
 
-RegisterClientAssets(WEAPON.Sprite)
+local weapon = ScriptedWeapon({
+	Cooldown = 1,
+	Scale = scale,
+	Sprite = "grenade.png",
+	SpriteOrigin = Vec2(60, 256) * scale,
+	WeaponOffset = Vec2(20, -40) -- This should not be here
+})
+
+RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
-	function WEAPON:OnAttack()
+	function weapon:OnAttack()
 		local projectile = match.CreateEntity({
 			Type = "entity_grenade",
 			LayerIndex = self:GetLayerIndex(),

@@ -20,8 +20,6 @@ namespace bw
 	m_isServer(isServer)
 	{
 		assert(m_context);
-
-		ReloadLibraries(); // This function creates the metatable
 	}
 
 	template<typename Element>
@@ -151,11 +149,14 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
+		if (!currentElement.initialized || hasError)
+			throw std::runtime_error("loading of " + m_elementTypeName + " " + currentElement.name + " failed");
+
 		std::shared_ptr<Element> element = CreateElement();
 		element->name = std::move(currentElement.name);
 		element->fullName = std::move(currentElement.fullName);
 		element->elementTable = std::move(currentElement.table);
-		element->base = currentElement.table.get_or("Base", std::string());
+		element->base = element->elementTable.get_or("Base", std::string());
 
 		// If no base element (or element already loaded), initialize it now
 		if (element->base.empty() || m_elementsByName.find(element->base) != m_elementsByName.end())

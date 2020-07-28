@@ -1,11 +1,9 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/baguette.png")
 
-entity.IsNetworked = true
-entity.PlayerControlled = false
-entity.MaxHealth = 0
-
-entity.Properties = {}
+local entity = ScriptedEntity({
+	IsNetworked = true
+})
 
 function entity:Initialize()
 	self:SetCollider({ Collider = Circle(Vec2(0, 0), 128 * 0.3), IsTrigger = true })
