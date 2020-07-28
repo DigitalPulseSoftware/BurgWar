@@ -1,10 +1,10 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
+entity.IsNetworked = true
 
 local defaultTextureCell = Vec2(1, 1)
 
-ENTITY.Properties = {
+entity.Properties = {
 	{ Name = "mapSize", Type = PropertyType.IntegerSize, Default = Vec2(1, 1), Shared = true },
 	{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
 	{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
@@ -59,7 +59,7 @@ local function GenerateMaterialData(textures, textureCells)
 end
 
 if (EDITOR) then
-	ENTITY.EditorActions = {
+	entity.EditorActions = {
 		{
 			Name = "editTilemap",
 			Label = "Edit Tilemap",
@@ -97,7 +97,7 @@ if (EDITOR) then
 	}
 end
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	local mapSize = self:GetProperty("mapSize")
 	local cellSize = self:GetProperty("cellSize")
 	local content = self:GetProperty("content")

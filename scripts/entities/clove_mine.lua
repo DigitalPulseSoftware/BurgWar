@@ -2,23 +2,25 @@ RegisterClientScript()
 RegisterClientAssets("placeholder/cloves_base.png")
 RegisterClientAssets("placeholder/cloves_eye.png")
 
-ENTITY.ExplosionSounds = {
-    "placeholder/explosion1.wav",
-    "placeholder/explosion2.wav",
-    "placeholder/explosion3.wav",
-    "placeholder/explosion4.wav",
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	MaxHealth = 1,
+	Properties = {
+		{ Name = "free", Type = PropertyType.Boolean, Default = true, Shared = true }
+	}
+})
+
+entity.ExplosionSounds = {
+	"placeholder/explosion1.wav",
+	"placeholder/explosion2.wav",
+	"placeholder/explosion3.wav",
+	"placeholder/explosion4.wav",
 }
-RegisterClientAssets(ENTITY.ExplosionSounds)
+RegisterClientAssets(entity.ExplosionSounds)
 
-ENTITY.IsNetworked = true
-ENTITY.MaxHealth = 1
+entity.Status = "free"
 
-ENTITY.Properties = {
-	{ Name = "free", Type = PropertyType.Boolean, Default = true, Shared = true }
-}
-ENTITY.Status = "free"
-
-function ENTITY:Initialize()
+function entity:Initialize()
 	local centerOffset = -Vec2(96, 96) / 2
 	local colliders = {
 		Circle(Vec2(48, 27) + centerOffset, 21),
@@ -62,7 +64,7 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:OnTick()
+function entity:OnTick()
 	local pos = self:GetPosition()
 	local size = Vec2(256, 256)
 	local rect = Rect(pos - size, pos + size)
@@ -100,7 +102,7 @@ function ENTITY:OnTick()
 end
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	function entity:OnCollisionStart(other)
 		if (other.Name == self.Name) then
 			return false
 		end
@@ -114,7 +116,7 @@ if (SERVER) then
 		return true
 	end
 
-	function ENTITY:Dig()
+	function entity:Dig()
 		if (self.Status ~= "free") then
 			return
 		end
@@ -149,7 +151,7 @@ if (SERVER) then
 		end
 	end
 
-	function ENTITY:Explode()
+	function entity:Explode()
 		if (self.Status ~= "free" and self.Status ~= "undigged") then
 			return
 		end
@@ -163,7 +165,7 @@ if (SERVER) then
 		self:Kill()
 	end
 
-	function ENTITY:Undig()
+	function entity:Undig()
 		if (self.Status ~= "digged") then
 			return
 		end
@@ -184,7 +186,7 @@ if (SERVER) then
 end
 
 if (CLIENT) then
-	function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+	function entity:OnHealthUpdate(oldHealth, newHealth)
 		if (newHealth == 0) then
 			self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 	

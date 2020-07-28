@@ -1,8 +1,9 @@
-ENTITY.IsMoving = false
-ENTITY.IsHopping = false
+local entity = ScriptedEntity()
+entity.IsMoving = false
+entity.IsHopping = false
 
-local oldInit = ENTITY.Initialize
-function ENTITY:Initialize()
+local oldInit = entity.Initialize
+function entity:Initialize()
 	oldInit(self)
 
 	if (EDITOR) then
@@ -83,7 +84,7 @@ function ENTITY:Initialize()
 	self.DefaultFace:Show()
 end
 
-function ENTITY:UpdateFace(face, duration)
+function entity:UpdateFace(face, duration)
 	if (self.CurrentFace ~= face) then
 		self.CurrentFace:Hide()
 		self.CurrentFace = face
@@ -98,7 +99,7 @@ function ENTITY:UpdateFace(face, duration)
 	end
 end
 
-function ENTITY:OnTick()
+function entity:OnTick()
 	if (self.FaceExpiration) then
 		if (match.GetSeconds() >= self.FaceExpiration) then
 			self.CurrentFace:Hide()
@@ -110,7 +111,7 @@ function ENTITY:OnTick()
 	end
 end
 
-function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+function entity:OnHealthUpdate(oldHealth, newHealth)
 	if (newHealth > 0) then
 		if (newHealth > oldHealth) then
 			-- Heal
@@ -124,7 +125,7 @@ function ENTITY:OnHealthUpdate(oldHealth, newHealth)
 	end
 end
 
-function ENTITY:OnDeath()
+function entity:OnDeath()
 	local layerIndex = self:GetLayerIndex()
 	local pos = self:GetPosition()
 	local vel = self:GetVelocity()
@@ -150,7 +151,7 @@ function ENTITY:OnDeath()
 	end
 end
 
-function ENTITY:OnInputUpdate(input)
+function entity:OnInputUpdate(input)
 	if (input.isAttacking) then
 		if (self.CurrentFace == self.DamageFace) then
 			self:UpdateFace(self.RampageFace, 1)

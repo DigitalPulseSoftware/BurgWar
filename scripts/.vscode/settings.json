@@ -14,7 +14,6 @@
         "engine_GetLocalPlayerCount",
         "engine_GetPlayerPosition",
         "engine_SetCameraPosition",
-        "ENTITY",
         "GM",
         "include",
         "match",
@@ -29,7 +28,8 @@
         "SERVER",
         "TileMapEditorMode",
         "timer",
-        "WEAPON",
-        "DummyInputController"
+        "DummyInputController",
+        "ScriptedEntity",
+        "ScriptedWeapon",
     ]
 }

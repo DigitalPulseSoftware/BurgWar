@@ -1,13 +1,14 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/socle.png")
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 }
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 }
-}
-
-function ENTITY:Initialize()
+function entity:Initialize()
 	if (CLIENT) then
 		self:AddSprite({
 			Scale = Vec2(0.5, 0.5),
@@ -17,9 +18,9 @@ function ENTITY:Initialize()
 end
 
 if (SERVER) then
-	ENTITY.NextRespawn = os.time()
+	entity.NextRespawn = os.time()
 
-	function ENTITY:OnTick()
+	function entity:OnTick()
 		local now = os.time()
 
 		if (self.SpawnedBox) then

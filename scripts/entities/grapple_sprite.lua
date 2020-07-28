@@ -1,11 +1,11 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
-ENTITY.CollisionType = 2
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
+entity.IsNetworked = true
+entity.CollisionType = 2
+entity.PlayerControlled = false
+entity.MaxHealth = 0
 
-ENTITY.Properties = {
+entity.Properties = {
 	{ Name = "duration", Type = PropertyType.Float, Shared = true },
 	{ Name = "retracting", Type = PropertyType.Boolean, Default = false, Shared = true },
 	{ Name = "source_entity", Type = PropertyType.Entity, Shared = true },
@@ -14,7 +14,7 @@ ENTITY.Properties = {
 	{ Name = "target_offset", Type = PropertyType.FloatPosition, Shared = true },
 }
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	self.SourceEntity = self:GetProperty("source_entity")
 	self.SourceOffset = self:GetProperty("source_offset")
 	self.TargetEntity = self:GetProperty("target_entity")
@@ -52,7 +52,7 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:UpdatePositions()
+function entity:UpdatePositions()
 	if (self.SourceEntity:IsValid()) then
 		self.startPos = self.SourceEntity:ToGlobalPosition(self.SourceOffset)
 	else
@@ -69,7 +69,7 @@ function ENTITY:UpdatePositions()
 	end
 end
 
-function ENTITY:Retract()
+function entity:Retract()
 	assert(not self.isRetracting)
 
 	if (SERVER) then
@@ -88,7 +88,7 @@ function ENTITY:Retract()
 end
 
 if (SERVER) then
-	function ENTITY:OnTick()
+	function entity:OnTick()
 		if (self.isRetracting) then
 			local elapsedTime = match.GetSeconds() - self.startTime
 			if (elapsedTime > self.retractTime) then
@@ -98,7 +98,7 @@ if (SERVER) then
 		end
 	end
 else
-	function ENTITY:OnKilled()
+	function entity:OnKilled()
 		--TODO: Use RPC to prevent creating a second entity
 		if (not self:GetProperty("retracting")) then
 			local elapsedTime = match.GetSeconds() - self.startTime
@@ -118,7 +118,7 @@ else
 		end
 	end
 
-	function ENTITY:UpdateSprite()
+	function entity:UpdateSprite()
 		local direction, length = (self.endPos - self.startPos):GetNormalized()
 		local rotation = math.atan(direction.y, direction.x) * 180 / math.pi
 
@@ -138,7 +138,7 @@ else
 		self.sprite:SetSize(Vec2(length, 4))
 	end
 
-	function ENTITY:OnFrame()
+	function entity:OnFrame()
 		self:UpdatePositions()
 		self:UpdateSprite()
 	end

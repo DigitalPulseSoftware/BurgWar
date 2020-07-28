@@ -1,11 +1,11 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
-ENTITY.CollisionType = 2
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
+entity.IsNetworked = true
+entity.CollisionType = 2
+entity.PlayerControlled = false
+entity.MaxHealth = 0
 
-ENTITY.Properties = {
+entity.Properties = {
 	{ Name = "modelPath", Type = PropertyType.String, Default = "", Shared = true },
 	{ Name = "offset", Type = PropertyType.FloatPosition3D, Default = Vec3(0, 0, 0), Shared = true },
 	{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
@@ -14,7 +14,7 @@ ENTITY.Properties = {
 }
 
 if (CLIENT) then
-	function ENTITY:Initialize()
+	function entity:Initialize()
 		self:AddModel({
 			ModelPath = self:GetProperty("modelPath"),
 			Offset = self:GetProperty("offset"),

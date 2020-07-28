@@ -1,10 +1,10 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
+entity.IsNetworked = true
+entity.PlayerControlled = false
+entity.MaxHealth = 0
 
-ENTITY.Properties = {
+entity.Properties = {
 	{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
 	{ Name = "health", Type = PropertyType.Integer, Default = 0, Shared = true },
 	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
@@ -16,7 +16,7 @@ ENTITY.Properties = {
 }
 
 if (EDITOR) then
-	ENTITY.EditorActions = {
+	entity.EditorActions = {
 		{
 			Name = "resizeSprite",
 			Label = "Resize to texture size",
@@ -34,7 +34,7 @@ if (EDITOR) then
 	}
 end
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	local mass = self:GetProperty("mass")
 	local scale = self:GetProperty("scale")
 	local size = self:GetProperty("size")

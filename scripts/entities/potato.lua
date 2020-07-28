@@ -1,19 +1,19 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/potato.png")
 
-ENTITY.IsNetworked = true
+entity.IsNetworked = true
 
-ENTITY.Properties = {}
+entity.Properties = {}
 
-ENTITY.ExplosionSounds = {
+entity.ExplosionSounds = {
     "placeholder/explosion1.wav",
     "placeholder/explosion2.wav",
     "placeholder/explosion3.wav",
     "placeholder/explosion4.wav",
 }
-RegisterClientAssets(ENTITY.ExplosionSounds)
+RegisterClientAssets(entity.ExplosionSounds)
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	self.ExplosionTick = match.GetLocalTick() + 5 / match.GetTickDuration()
 	self:SetCollider(Circle(Vec2(0, 0) * 0.2, 128 * 0.2))
 	self:InitRigidBody(20, 10)
@@ -31,7 +31,7 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:OnTick()
+function entity:OnTick()
 	local currentTick = match.GetLocalTick()
 	if (currentTick >= self.ExplosionTick) then
 		self:Explode()
@@ -43,14 +43,14 @@ function ENTITY:OnTick()
 end
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	function entity:OnCollisionStart(other)
 		self:Explode()
 		self:Kill()
 		return true
 	end
 end
 
-function ENTITY:Explode()
+function entity:Explode()
 	if (self.Exploded) then
 		return
 	end
@@ -88,7 +88,7 @@ function ENTITY:Explode()
 end
 
 if (CLIENT) then
-	function ENTITY:OnKilled()
+	function entity:OnKilled()
 		if (self:GetHealth() == 0) then
 			self:Explode()
 		end

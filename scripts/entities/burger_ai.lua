@@ -1,11 +1,13 @@
 RegisterClientScript()
 
-ENTITY.Base = "entity_burger"
+local entity = ScriptedEntity({
+	Base = "entity_burger"
+})
 
-ENTITY.DetectionRange = 500
+entity.DetectionRange = 500
 
 if (SERVER) then
-	function ENTITY:Initialize()
+	function entity:Initialize()
 		self.Base.Initialize(self)
 
 		match.CreateWeapon({
@@ -14,7 +16,7 @@ if (SERVER) then
 		})
 	end
 
-	ENTITY.OnTick = utils.OverrideFunction(ENTITY.OnTick, function (self)
+	entity.OnTick = utils.OverrideFunction(entity.OnTick, function (self)
 		local pos = self:GetPosition()
 		local closestEnemy
 		local closestEnemyDist = math.huge

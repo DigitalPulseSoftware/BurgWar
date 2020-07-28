@@ -1,24 +1,27 @@
 RegisterClientScript()
 
-ENTITY.Base = "entity_sprite"
 
-ENTITY.Properties = {
-	{ Name = "lifetime", Type = PropertyType.Integer, Default = 10, Shared = true },
-	{ Name = "disappeartime", Type = PropertyType.Integer, Default = 2, Shared = true },
-}
+local entity = ScriptedEntity({
+	Base = "entity_sprite",
+	IsNetworked = true,
+	Properties = {
+		{ Name = "lifetime", Type = PropertyType.Integer, Default = 10, Shared = true },
+		{ Name = "disappeartime", Type = PropertyType.Integer, Default = 2, Shared = true },
+	}
+})
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	self.Base.Initialize(self)
 
 	self:EnableCollisionCallbacks(true)
 	self.DisappearTime = match.GetSeconds() + self:GetProperty("lifetime")
 end
 
-function ENTITY:OnCollisionStart(entity)
+function entity:OnCollisionStart(entity)
 	return entity:GetMass() == 0
 end
 
-function ENTITY:OnTick()
+function entity:OnTick()
 	local now = match.GetSeconds()
 	if (now >= self.DisappearTime) then
 		local alphaFactor = 1 - (now - self.DisappearTime) / self:GetProperty("disappeartime")

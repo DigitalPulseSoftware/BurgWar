@@ -1,13 +1,15 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
+		{ Name = "transition_time", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true }
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
-	{ Name = "transition_time", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true }
-}
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	if (EDITOR) then
 		local rect = self:GetRect()
 
@@ -50,13 +52,13 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:GetRect()
+function entity:GetRect()
 	local position = self:GetPosition()
 	local size = self:GetProperty("size")
 
 	return Rect(position, position + size)
 end
 
-function ENTITY:GetTransitionTime()
+function entity:GetTransitionTime()
 	return self:GetProperty("transition_time")
 end

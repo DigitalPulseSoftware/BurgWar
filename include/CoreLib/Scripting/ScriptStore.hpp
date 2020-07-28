@@ -67,11 +67,19 @@ namespace bw
 			void SetElementName(std::string elementName);
 
 		private:
-			void CreateOrGetElement(const sol::optional<sol::table>& tableOpt);
+			sol::table CreateElement(sol::table initTable);
+			sol::table GetElementTable();
 			bool RegisterElement(std::shared_ptr<Element> element);
 
+			struct CurrentElement
+			{
+				sol::table table;
+				std::string fullName;
+				std::string name;
+				bool initialized = false;
+			};
+
 			sol::table m_elementMetatable;
-			sol::table m_currentElementTable;
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_elementTypeName;
 			std::string m_elementName;
@@ -79,6 +87,7 @@ namespace bw
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
 			tsl::hopscotch_map<std::string /*dependency*/, std::vector<std::shared_ptr<Element>>> m_pendingElements;
+			CurrentElement* m_currentElement;
 			const Logger& m_logger;
 			bool m_isServer;
 	};

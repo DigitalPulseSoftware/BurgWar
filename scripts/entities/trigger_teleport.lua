@@ -1,11 +1,11 @@
-ENTITY.IsNetworked = false
+entity.IsNetworked = false
 
-ENTITY.Properties = {
+entity.Properties = {
 	{ Name = "size", Type = PropertyType.FloatSize },
 	{ Name = "target", Type = PropertyType.Entity },
 }
 
-function ENTITY:Initialize()
+function entity:Initialize()
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
 	self:SetCollider(Rect(-colliderSize, colliderSize), true)
@@ -20,7 +20,7 @@ function ENTITY:Initialize()
 	end
 end
 
-function ENTITY:OnCollisionStart(other)
+function entity:OnCollisionStart(other)
 	local targetEntity = self:GetProperty("target")
 	if (targetEntity == NoEntity) then
 		return false

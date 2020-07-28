@@ -6,6 +6,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/World.hpp>
 #include <cassert>
 #include <filesystem>
@@ -105,26 +106,18 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
-		sol::state& state = GetLuaState();
+		CurrentElement currentElement;
 
 		std::string elementName;
 		if (!isDirectory)
-			elementName = elementPath.stem().u8string();
+			currentElement.name = elementPath.stem().u8string();
 		else
-			elementName = elementPath.filename().u8string();
+			currentElement.name = elementPath.filename().u8string();
 
-		std::string fullName = m_elementTypeName + "_" + elementName;
+		currentElement.fullName = m_elementTypeName + "_" + currentElement.name;
 
-		sol::table elementTable = state.create_table();
-		elementTable["__index"] = elementTable;
-
-		elementTable["FullName"] = fullName;
-		elementTable["Name"] = elementName;
-		elementTable[sol::metatable_key] = m_elementMetatable;
-
-		InitializeElementTable(elementTable);
-
-		m_currentElementTable = elementTable;
+		m_currentElement = &currentElement;
+		Nz::CallOnExit resetOnExit([&] { m_currentElement = nullptr; });
 
 		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
 
@@ -158,13 +151,11 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		m_currentElementTable = nullptr;
-
 		std::shared_ptr<Element> element = CreateElement();
-		element->name = std::move(elementName);
-		element->fullName = std::move(fullName);
-		element->elementTable = std::move(elementTable);
-		element->base = element->elementTable.get_or("Base", std::string());
+		element->name = std::move(currentElement.name);
+		element->fullName = std::move(currentElement.fullName);
+		element->elementTable = std::move(currentElement.table);
+		element->base = currentElement.table.get_or("Base", std::string());
 
 		// If no base element (or element already loaded), initialize it now
 		if (element->base.empty() || m_elementsByName.find(element->base) != m_elementsByName.end())
@@ -202,8 +193,16 @@ namespace bw
 		for (const auto& elementPtr : m_elements)
 			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
 
-		sol::state& state = GetLuaState();
-		state["Scripted" + m_elementName] = [this](const sol::optional<sol::table>& parameters) { return CreateOrGetElement(parameters); };
+		state["Scripted" + m_elementName] = [this](std::optional<sol::table> parameters)
+		{
+			if (!m_currentElement)
+				throw std::runtime_error("you can only call this function in a scripted " + m_elementTypeName + " file");
+
+			if (parameters.has_value())
+				return CreateElement(std::move(parameters.value()));
+			else
+				return GetElementTable();
+		};
 	}
 
 	template<typename Element>
@@ -295,8 +294,36 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::CreateOrGetElement(const sol::optional<sol::table>& tableOpt)
+	sol::table ScriptStore<Element>::CreateElement(sol::table initTable)
 	{
+		assert(m_currentElement);
+		assert(initTable.valid());
+
+		if (m_currentElement->initialized)
+			throw std::runtime_error("you can only initialize an " + m_elementTypeName + " once");
+
+		m_currentElement->table = std::move(initTable);
+		m_currentElement->table[sol::metatable_key] = m_elementMetatable;
+		m_currentElement->table["__index"] = m_currentElement->table;
+
+		m_currentElement->table["FullName"] = m_currentElement->fullName;
+		m_currentElement->table["Name"] = m_currentElement->name;
+		InitializeElementTable(m_currentElement->table);
+
+		m_currentElement->initialized = true;
+
+		return m_currentElement->table;
+	}
+
+	template<typename Element>
+	sol::table ScriptStore<Element>::GetElementTable()
+	{
+		assert(m_currentElement);
+
+		if (!m_currentElement->initialized)
+			throw std::runtime_error("you must initialize the " + m_elementTypeName + " first");
+
+		return m_currentElement->table;
 	}
 
 	template<typename Element>

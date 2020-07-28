@@ -1,13 +1,14 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
+		{ Name = "target_offset", Type = PropertyType.FloatPosition, Default = Vec2(0, 0), Shared = true },
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
-	{ Name = "target_offset", Type = PropertyType.FloatPosition, Default = Vec2(0, 0), Shared = true },
-}
-
-function ENTITY:Initialize()
+function entity:Initialize()
 	self:InitRigidBody(0)
 
 	local targetEntity = self:GetProperty("target_entity")
@@ -20,7 +21,7 @@ function ENTITY:Initialize()
 	self.PositionConstraint = physics.CreatePivotConstraint(self, targetEntity, Vec2(0,0), targetOffset)
 end
 
-function ENTITY:OnKilled()
+function entity:OnKilled()
 	if (self.PositionConstraint) then
 		self.PositionConstraint:Remove()
 	end
