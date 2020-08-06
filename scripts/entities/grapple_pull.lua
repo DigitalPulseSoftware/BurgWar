@@ -23,8 +23,8 @@ entity:On("init", function (self)
 	self.Constraint = physics.CreateDampenedSpringConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset, 10, 500, 0)
 end)
 
-function entity:OnKilled()
+entity:On("destroyed", function (self)
 	if (self.Constraint) then
 		self.Constraint:Remove()
 	end
-end
+end)

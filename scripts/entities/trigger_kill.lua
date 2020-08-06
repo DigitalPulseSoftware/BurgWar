@@ -19,8 +19,8 @@ entity:On("init", function (self)
 	end
 end)
 
-function entity:OnCollisionStart(other)
+entity:On("collisionstart", function (self, other)
 	other:Kill()
 	return true
-end
+end)
 

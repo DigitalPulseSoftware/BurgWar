@@ -31,7 +31,7 @@ entity:On("init", function (self)
 	end
 end)
 
-function entity:OnTick()
+entity:On("tick", function (self)
 	local currentTick = match.GetLocalTick()
 	if (currentTick >= self.ExplosionTick) then
 		self:Explode()
@@ -40,14 +40,14 @@ function entity:OnTick()
 			self:Kill()
 		end
 	end
-end
+end)
 
 if (SERVER) then
-	function entity:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		self:Explode()
 		self:Kill()
 		return true
-	end
+	end)
 end
 
 function entity:Explode()
@@ -88,9 +88,9 @@ function entity:Explode()
 end
 
 if (CLIENT) then
-	function entity:OnKilled()
+	entity:On("destroyed", function (self)
 		if (self:GetHealth() == 0) then
 			self:Explode()
 		end
-	end
+	end)
 end

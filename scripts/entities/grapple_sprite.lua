@@ -86,7 +86,7 @@ function entity:Retract()
 end
 
 if (SERVER) then
-	function entity:OnTick()
+	entity:On("tick", function (self)
 		if (self.isRetracting) then
 			local elapsedTime = match.GetSeconds() - self.startTime
 			if (elapsedTime > self.retractTime) then
@@ -94,9 +94,9 @@ if (SERVER) then
 				return
 			end
 		end
-	end
+	end)
 else
-	function entity:OnKilled()
+	entity:On("destroyed", function (self)
 		--TODO: Use RPC to prevent creating a second entity
 		if (not self:GetProperty("retracting")) then
 			local elapsedTime = match.GetSeconds() - self.startTime
@@ -114,7 +114,7 @@ else
 				}
 			})
 		end
-	end
+	end)
 
 	function entity:UpdateSprite()
 		local direction, length = (self.endPos - self.startPos):GetNormalized()
@@ -136,8 +136,8 @@ else
 		self.sprite:SetSize(Vec2(length, 4))
 	end
 
-	function entity:OnFrame()
+	entity:On("frame", function (self)
 		self:UpdatePositions()
 		self:UpdateSprite()
-	end
+	end)
 end

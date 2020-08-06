@@ -21,8 +21,8 @@ entity:On("init", function (self)
 	self.PositionConstraint = physics.CreatePivotConstraint(self, targetEntity, Vec2(0,0), targetOffset)
 end)
 
-function entity:OnKilled()
+entity:On("destroyed", function (self)
 	if (self.PositionConstraint) then
 		self.PositionConstraint:Remove()
 	end
-end
+end)

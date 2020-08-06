@@ -30,9 +30,6 @@ entity:On("init", function (self)
 	self.ParticleGroup:GenerateParticles(25)
 end)
 
-function entity:OnTick()
-end
-
-function entity:OnKilled()
+entity:On("destroyed", function (self)
 	self.ParticleGroup:Kill()
-end
+end)

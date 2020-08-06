@@ -20,7 +20,7 @@ entity:On("init", function (self)
 	end
 end)
 
-function entity:OnCollisionStart(other)
+entity:On("collisionstart", function (self, other)
 	local targetEntity = self:GetProperty("target")
 	if (targetEntity == NoEntity) then
 		return false
@@ -36,5 +36,5 @@ function entity:OnCollisionStart(other)
 	end
 
 	return false
-end
+end)
 

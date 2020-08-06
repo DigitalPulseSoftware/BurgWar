@@ -29,6 +29,6 @@ entity:On("init", function (self)
 	self.ParticleGroup:GenerateParticles(100)
 end)
 
-function entity:OnKilled()
+entity:On("destroyed", function (self)
 	self.ParticleGroup:Kill()
-end
+end)

@@ -28,8 +28,8 @@ entity:On("init", function (self)
 	self.Constraint = physics.CreatePinConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset)
 end)
 
-function entity:OnKilled()
+entity:On("destroyed", function (self)
 	if (self.Constraint) then
 		self.Constraint:Remove()
 	end
-end
+end)

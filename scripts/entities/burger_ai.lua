@@ -14,7 +14,7 @@ if (SERVER) then
 		})
 	end)
 
-	entity.OnTick = utils.OverrideFunction(entity.OnTick, function (self)
+	entity:On("tick", function (self)
 		local pos = self:GetPosition()
 		local closestEnemy
 		local closestEnemyDist = math.huge

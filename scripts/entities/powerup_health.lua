@@ -20,7 +20,7 @@ entity:On("init", function (self)
 end)
 
 if (SERVER) then
-	function entity:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		if (other.Name == "burger") then
 			if (not other:IsFullHealth()) then
 				other:Heal(250)
@@ -30,5 +30,5 @@ if (SERVER) then
 		end
 
 		return false
-	end
+	end)
 end

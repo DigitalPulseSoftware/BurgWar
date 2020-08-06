@@ -11,17 +11,15 @@ local entity = ScriptedEntity({
 })
 
 entity:On("init", function (self)
-	self.Base.Initialize(self)
-
 	self:EnableCollisionCallbacks(true)
 	self.DisappearTime = match.GetSeconds() + self:GetProperty("lifetime")
 end)
 
-function entity:OnCollisionStart(entity)
+entity:On("collisionstart", function (self, entity)
 	return entity:GetMass() == 0
-end
+end)
 
-function entity:OnTick()
+entity:On("tick", function (self)
 	local now = match.GetSeconds()
 	if (now >= self.DisappearTime) then
 		local alphaFactor = 1 - (now - self.DisappearTime) / self:GetProperty("disappeartime")
@@ -31,4 +29,4 @@ function entity:OnTick()
 			self:Remove()
 		end
 	end
-end
+end)

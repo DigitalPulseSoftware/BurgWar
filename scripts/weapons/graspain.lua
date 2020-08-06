@@ -15,13 +15,13 @@ RegisterClientAssets(weapon.Sprite)
 local maxDist = 1000
 
 if (SERVER) then
-	function weapon:OnAttack()
+	weapon:OnAsync("attack", function (self)
 		if (self.GrapplePull or self.GrappleSprite) then
 			self:Release()
 		else
 			self:Launch()
 		end
-	end
+	end)
 
 	function weapon:Launch()
 		local startOffset = Vec2(85 * self.Scale, 0)

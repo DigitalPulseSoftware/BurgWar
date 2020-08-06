@@ -13,7 +13,7 @@ local weapon = ScriptedWeapon({
 RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
-	function weapon:OnAttack()
+	weapon:On("attack", function (self)
 		local projectile = match.CreateEntity({
 			Type = "entity_grenade",
 			LayerIndex = self:GetLayerIndex(),
@@ -26,5 +26,5 @@ if (SERVER) then
 
 		projectile:SetVelocity(self:GetDirection() * 1000)
 		self:GetOwner():RemoveWeapon(self.FullName)
-	end
+	end)
 end

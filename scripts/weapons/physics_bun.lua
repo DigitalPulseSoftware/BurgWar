@@ -14,13 +14,13 @@ RegisterClientAssets(weapon.Sprite)
 
 local maxDist = 1000
 
-function weapon:OnAttack()
+weapon:On("attack", function (self)
 	if (self.Constraint) then
 		self:Release()
 	else
 		self:Launch()
 	end
-end
+end)
 
 function weapon:Launch()
 	local startOffset = Vec2(85 * self.Scale, 0)
@@ -75,8 +75,8 @@ function weapon:Release()
 	self.Constraint = nil
 end
 
-function weapon:OnTick()
+weapon:On("tick", function (self)
 	if (self.Constraint and self.Constraint:IsValid()) then
 		self.Constraint:SetPosition(self:ToGlobalPosition(self.EntityOffset))
 	end
-end
+end)

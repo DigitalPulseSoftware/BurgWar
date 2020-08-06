@@ -23,7 +23,7 @@ weapon.ShootSound = {
 RegisterClientAssets(weapon.ShootSound)
 
 
-function weapon:OnAttack()
+weapon:On("attack", function (self)
 	if (CLIENT) then
 		self:PlaySound(self.ShootSound[math.random(1, #self.ShootSound)], true, false, true)
 	end
@@ -32,4 +32,4 @@ function weapon:OnAttack()
 	local shootPos = self:GetPosition() + shootDir * 740 * self.Scale
 
 	self:Shoot(shootPos, shootDir, 20, 10000)
-end
+end)

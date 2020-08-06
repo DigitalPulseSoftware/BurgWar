@@ -28,7 +28,7 @@ if (SERVER) then
 		self.NextRespawn = os.time() + self:GetProperty("respawntime")
 	end
 
-	function entity:OnTick()
+	entity:On("tick", function (self)
 		local now = os.time()
 		if (now >= self.NextRespawn) then
 			if (self.CanSpawn) then
@@ -46,5 +46,5 @@ if (SERVER) then
 
 			self.NextRespawn = os.time() + self:GetProperty("respawntime")
 		end
-	end
+	end)
 end

@@ -64,7 +64,7 @@ entity:On("init", function (self)
 	end
 end)
 
-function entity:OnTick()
+entity:On("tick", function (self)
 	local pos = self:GetPosition()
 	local size = Vec2(256, 256)
 	local rect = Rect(pos - size, pos + size)
@@ -99,10 +99,10 @@ function entity:OnTick()
 
 	local nextTick = closestPlayerDist and closestPlayerDist / 128 or 2
 	return nextTick
-end
+end)
 
 if (SERVER) then
-	function entity:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		if (other.Name == self.Name) then
 			return false
 		end
@@ -114,7 +114,7 @@ if (SERVER) then
 		end
 
 		return true
-	end
+	end)
 
 	function entity:Dig()
 		if (self.Status ~= "free") then
@@ -186,7 +186,7 @@ if (SERVER) then
 end
 
 if (CLIENT) then
-	function entity:OnHealthUpdate(oldHealth, newHealth)
+	entity:On("healthupdate", function (self, oldHealth, newHealth)
 		if (newHealth == 0) then
 			self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 	
@@ -209,5 +209,5 @@ if (CLIENT) then
 				}
 			})
 		end
-	end
+	end)
 end

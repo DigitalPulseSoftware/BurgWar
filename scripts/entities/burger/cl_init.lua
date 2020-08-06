@@ -96,7 +96,7 @@ function entity:UpdateFace(face, duration)
 	end
 end
 
-function entity:OnTick()
+entity:On("tick", function (self)
 	if (self.FaceExpiration) then
 		if (match.GetSeconds() >= self.FaceExpiration) then
 			self.CurrentFace:Hide()
@@ -106,9 +106,9 @@ function entity:OnTick()
 			self.FaceExpiration = nil
 		end
 	end
-end
+end)
 
-function entity:OnHealthUpdate(oldHealth, newHealth)
+entity:On("healthupdate", function (self, oldHealth, newHealth)
 	if (newHealth > 0) then
 		if (newHealth > oldHealth) then
 			-- Heal
@@ -117,12 +117,10 @@ function entity:OnHealthUpdate(oldHealth, newHealth)
 			-- Damage
 			self:UpdateFace(self.DamageFace, 2)
 		end
-	else
-		self:OnDeath()
 	end
-end
+end)
 
-function entity:OnDeath()
+entity:On("death", function (self)
 	local layerIndex = self:GetLayerIndex()
 	local pos = self:GetPosition()
 	local vel = self:GetVelocity()
@@ -146,9 +144,9 @@ function entity:OnDeath()
 		entity:SetVelocity(randVel)
 		--break
 	end
-end
+end)
 
-function entity:OnInputUpdate(input)
+entity:OnAsync("inputupdate", function (self, input)
 	if (input.isAttacking) then
 		if (self.CurrentFace == self.DamageFace) then
 			self:UpdateFace(self.RampageFace, 1)
@@ -175,4 +173,4 @@ function entity:OnInputUpdate(input)
 			end
 		end
 	end
-end
+end)

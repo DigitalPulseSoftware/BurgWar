@@ -17,7 +17,7 @@ local weapon = ScriptedWeapon({
 RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
-	function weapon:OnAttack()
+	weapon:On("attack", function (self)
 		local pos = self:GetPosition()
 		local maxs = Vec2(128, 66)
 		local mins = Vec2(28, -76)
@@ -29,7 +29,7 @@ if (SERVER) then
 
 		self:PlayAnim("attack")
 		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 20000)
-	end
+	end)
 end
 
 if (CLIENT) then
