@@ -69,6 +69,7 @@ namespace bw
 		private:
 			sol::table CreateElement(sol::table initTable);
 			sol::table GetElementTable();
+			std::size_t HandleProperties(const std::shared_ptr<Element>& element, Element* baseElement);
 			bool RegisterElement(std::shared_ptr<Element> element);
 
 			struct CurrentElementData

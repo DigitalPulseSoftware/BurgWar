@@ -332,6 +332,76 @@ namespace bw
 	}
 
 	template<typename Element>
+	std::size_t ScriptStore<Element>::HandleProperties(const std::shared_ptr<Element>& element, Element* baseElement)
+	{
+		std::size_t propertyIndex = 0;
+		if (!baseElement->base.empty())
+		{
+			auto it = m_elementsByName.find(element->base);
+			assert(it != m_elementsByName.end());
+
+			Element* parentElement = m_elements[it->second].get();
+			
+			// Merge parent events
+			for (std::size_t i = 0; i < ScriptingEventCount; ++i)
+			{
+				const auto& parentCallbacks = parentElement->events[i];
+				auto& callbacks = element->events[i];
+
+				std::copy(parentCallbacks.rbegin(), parentCallbacks.rend(), std::inserter(callbacks, callbacks.begin()));
+			}
+
+			propertyIndex += HandleProperties(element, parentElement);
+		}
+
+		sol::object properties = baseElement->elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
+		if (properties)
+		{
+			sol::table elementProperties = properties.as<sol::table>();
+
+			for (const auto& kv : elementProperties)
+			{
+				sol::table propertyTable = kv.second;
+
+				std::string propertyName = propertyTable["Name"];
+
+				try
+				{
+					ScriptedElement::Property property;
+					property.index = propertyIndex;
+					property.type = propertyTable["Type"];
+
+					sol::object propertyShared = propertyTable["Shared"];
+					if (propertyShared)
+						property.shared = propertyShared.as<bool>();
+
+					sol::object propertyArray = propertyTable["Array"];
+					if (propertyArray)
+						property.isArray = propertyArray.as<bool>();
+
+					sol::object propertyDefault = propertyTable["Default"];
+					if (!propertyDefault.is<sol::nil_t>())
+						property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
+
+					auto it = element->properties.find(propertyName);
+					if (it == element->properties.end())
+						element->properties.emplace(std::move(propertyName), std::move(property));
+					else
+						throw std::runtime_error("Property " + propertyName + " already exists");
+				}
+				catch (const std::exception& e)
+				{
+					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
+				}
+
+				propertyIndex++;
+			}
+		}
+
+		return propertyIndex;
+	}
+
+	template<typename Element>
 	bool ScriptStore<Element>::RegisterElement(std::shared_ptr<Element> element)
 	{
 		std::shared_ptr<Element> baseElement;
@@ -341,66 +411,12 @@ namespace bw
 			assert(it != m_elementsByName.end());
 
 			baseElement = m_elements[it->second];
-		}
 
-		if (baseElement)
-		{
 			element->elementTable["Base"] = baseElement->elementTable;
 			element->elementTable[sol::metatable_key] = baseElement->elementTable;
 		}
 
-		std::size_t propertyIndex = 0;
-		auto HandleProperties = [&](const sol::table& elementTable)
-		{
-			sol::object properties = elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
-			if (properties)
-			{
-				sol::table elementProperties = properties.as<sol::table>();
-
-				for (const auto& kv : elementProperties)
-				{
-					sol::table propertyTable = kv.second;
-
-					std::string propertyName = propertyTable["Name"];
-
-					try
-					{
-						ScriptedElement::Property property;
-						property.index = propertyIndex;
-						property.type = propertyTable["Type"];
-
-						sol::object propertyShared = propertyTable["Shared"];
-						if (propertyShared)
-							property.shared = propertyShared.as<bool>();
-
-						sol::object propertyArray = propertyTable["Array"];
-						if (propertyArray)
-							property.isArray = propertyArray.as<bool>();
-
-						sol::object propertyDefault = propertyTable["Default"];
-						if (!propertyDefault.is<sol::nil_t>())
-							property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
-
-						auto it = element->properties.find(propertyName);
-						if (it == element->properties.end())
-							element->properties.emplace(std::move(propertyName), std::move(property));
-						else
-							throw std::runtime_error("Property " + propertyName + " already exists");
-					}
-					catch (const std::exception& e)
-					{
-						bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
-					}
-
-					propertyIndex++;
-				}
-			}
-		};
-
-		if (baseElement)
-			HandleProperties(baseElement->elementTable);
-
-		HandleProperties(element->elementTable);
+		HandleProperties(element, element.get());
 
 		try
 		{
