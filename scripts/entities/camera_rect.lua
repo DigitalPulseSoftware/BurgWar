@@ -9,7 +9,7 @@ local entity = ScriptedEntity({
 })
 
 
-function entity:Initialize()
+entity:On("init", function (self)
 	if (EDITOR) then
 		local rect = self:GetRect()
 
@@ -50,7 +50,7 @@ function entity:Initialize()
 			Size = Vec2(lineWidth, rect.height),
 		})
 	end
-end
+end)
 
 function entity:GetRect()
 	local position = self:GetPosition()

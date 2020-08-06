@@ -11,7 +11,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	-- FIXME
 	if (EDITOR) then
 		return
@@ -23,7 +23,7 @@ function entity:Initialize()
 			self:Show()
 		end
 	end
-end
+end)
 
 if (CLIENT) then
 	function entity:Hide()

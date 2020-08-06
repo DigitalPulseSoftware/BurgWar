@@ -8,7 +8,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local lifetime = self:GetProperty("lifetime")
 	self:SetLifeTime(lifetime)
 
@@ -28,7 +28,7 @@ function entity:Initialize()
 	})
 
 	self.ParticleGroup:GenerateParticles(25)
-end
+end)
 
 function entity:OnTick()
 end

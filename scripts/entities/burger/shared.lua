@@ -130,7 +130,7 @@ function entity:ForEachElement(callback)
 	AddElement("Tops")
 end
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local cursor = 0
 	local maxWidth = 0
 
@@ -218,4 +218,4 @@ function entity:Initialize()
 	self:SetCollider(colliders)
 	self:InitRigidBody(50, 1, false)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation
-end
+end)

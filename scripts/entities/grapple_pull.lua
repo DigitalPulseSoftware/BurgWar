@@ -10,7 +10,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local sourceEntity = self:GetProperty("source_entity")
 	local sourceOffset = self:GetProperty("source_offset")
 	local targetEntity = self:GetProperty("target_entity")
@@ -21,7 +21,7 @@ function entity:Initialize()
 	end
 
 	self.Constraint = physics.CreateDampenedSpringConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset, 10, 500, 0)
-end
+end)
 
 function entity:OnKilled()
 	if (self.Constraint) then

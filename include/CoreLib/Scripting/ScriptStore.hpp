@@ -71,12 +71,11 @@ namespace bw
 			sol::table GetElementTable();
 			bool RegisterElement(std::shared_ptr<Element> element);
 
-			struct CurrentElement
+			struct CurrentElementData
 			{
-				sol::table table;
-				std::string fullName;
 				std::string name;
-				bool initialized = false;
+				std::string fullName;
+				std::shared_ptr<Element> element;
 			};
 
 			sol::table m_elementMetatable;
@@ -87,7 +86,7 @@ namespace bw
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
 			tsl::hopscotch_map<std::string /*dependency*/, std::vector<std::shared_ptr<Element>>> m_pendingElements;
-			CurrentElement* m_currentElement;
+			CurrentElementData* m_currentElementData;
 			const Logger& m_logger;
 			bool m_isServer;
 	};

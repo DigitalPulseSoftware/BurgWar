@@ -98,7 +98,7 @@ if (EDITOR) then
 	}
 end
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local mapSize = self:GetProperty("mapSize")
 	local cellSize = self:GetProperty("cellSize")
 	local content = self:GetProperty("content")
@@ -144,4 +144,4 @@ function entity:Initialize()
 
 		self:AddTilemap(mapSize, cellSize, content, tiles, renderOrder)
 	end
-end
+end)

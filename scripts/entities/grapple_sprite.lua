@@ -12,7 +12,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	self.SourceEntity = self:GetProperty("source_entity")
 	self.SourceOffset = self:GetProperty("source_offset")
 	self.TargetEntity = self:GetProperty("target_entity")
@@ -48,7 +48,7 @@ function entity:Initialize()
 
 		self:UpdateSprite()
 	end
-end
+end)
 
 function entity:UpdatePositions()
 	if (self.SourceEntity:IsValid()) then

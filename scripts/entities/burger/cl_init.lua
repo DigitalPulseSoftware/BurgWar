@@ -2,10 +2,7 @@ local entity = ScriptedEntity()
 entity.IsMoving = false
 entity.IsHopping = false
 
-local oldInit = entity.Initialize
-function entity:Initialize()
-	oldInit(self)
-
+entity:On("init", function (self)
 	if (EDITOR) then
 		self:AddSprite({
 			RenderOrder = 0,
@@ -82,7 +79,7 @@ function entity:Initialize()
 
 	self.CurrentFace = self.DefaultFace
 	self.DefaultFace:Show()
-end
+end)
 
 function entity:UpdateFace(face, duration)
 	if (self.CurrentFace ~= face) then

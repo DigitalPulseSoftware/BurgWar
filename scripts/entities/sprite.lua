@@ -33,7 +33,7 @@ if (EDITOR) then
 	}
 end
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local mass = self:GetProperty("mass")
 	local scale = self:GetProperty("scale")
 	local size = self:GetProperty("size")
@@ -57,4 +57,4 @@ function entity:Initialize()
 			TexturePath = self:GetProperty("texture")
 		})
 	end
-end
+end)

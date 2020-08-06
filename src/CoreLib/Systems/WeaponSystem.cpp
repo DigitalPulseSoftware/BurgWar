@@ -63,7 +63,7 @@ namespace bw
 					if (weaponCooldown.Trigger(m_match.GetCurrentTime()))
 					{
 						auto& weaponScript = weapon->GetComponent<ScriptComponent>();
-						weaponScript.ExecuteCallback("OnAttack", weaponScript.GetTable());
+						weaponScript.ExecuteCallback(ScriptingEvent::Attack, weaponScript.GetTable());
 
 						weaponComponent.SetAttacking(true);
 					}
@@ -71,7 +71,7 @@ namespace bw
 				else if (!inputs.isAttacking && weaponComponent.IsAttacking())
 				{
 					auto& weaponScript = weapon->GetComponent<ScriptComponent>();
-					weaponScript.ExecuteCallback("OnAttackFinish", weaponScript.GetTable());
+					weaponScript.ExecuteCallback(ScriptingEvent::AttackFinish, weaponScript.GetTable());
 
 					weaponComponent.SetAttacking(false);
 				}

@@ -4,7 +4,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
 	self:SetCollider(Rect(-colliderSize, colliderSize))
@@ -17,7 +17,7 @@ function entity:Initialize()
 			Size = self:GetProperty("size"),
 		})
 	end
-end
+end)
 
 function entity:OnCollisionStart(other)
 	other:Kill()

@@ -13,7 +13,7 @@ entity.ExplosionSounds = {
 }
 RegisterClientAssets(entity.ExplosionSounds)
 
-function entity:Initialize()
+entity:On("init", function (self)
 	self.ExplosionTick = match.GetLocalTick() + 5 / match.GetTickDuration()
 	self:SetCollider(Circle(Vec2(0, 0) * 0.2, 128 * 0.2))
 	self:InitRigidBody(20, 10)
@@ -29,7 +29,7 @@ function entity:Initialize()
 			TexturePath = "placeholder/potato.png"
 		})
 	end
-end
+end)
 
 function entity:OnTick()
 	local currentTick = match.GetLocalTick()

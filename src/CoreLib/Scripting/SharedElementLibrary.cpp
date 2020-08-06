@@ -75,6 +75,26 @@ namespace bw
 			return entity.IsValid();
 		};
 
+		elementMetatable["On"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
+		{
+			std::optional<ScriptingEvent> scriptingEventOpt = RetrieveScriptingEvent(event);
+			if (!scriptingEventOpt)
+				throw std::runtime_error("unknown event " + std::string(event));
+
+			ScriptingEvent scriptingEvent = scriptingEventOpt.value();
+			std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
+
+			if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
+				element->events[eventIndex].emplace_back(std::move(callback));
+			else
+			{
+				Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				entityScript.RegisterCallback(scriptingEvent, std::move(callback));
+			}
+		};
+
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);

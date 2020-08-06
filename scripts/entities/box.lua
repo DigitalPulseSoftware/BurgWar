@@ -10,7 +10,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local size = self:GetProperty("size")
 
 	local colliderSize = Vec2(0.2, 0.2) * size * 256 / 2
@@ -26,4 +26,4 @@ function entity:Initialize()
 			TexturePath = "box.png"
 		})
 	end
-end
+end)

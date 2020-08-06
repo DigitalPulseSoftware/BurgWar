@@ -8,9 +8,11 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDELEMENT_HPP
 
 #include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/Scripting/Events.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <Thirdparty/sol3/sol.hpp>
+#include <array>
 #include <memory>
 #include <optional>
 #include <string>
@@ -29,10 +31,7 @@ namespace bw
 		};
 
 		sol::table elementTable;
-		sol::protected_function frameFunction;
-		sol::protected_function initializeFunction;
-		sol::protected_function postFrameFunction;
-		sol::protected_function tickFunction;
+		std::array<std::vector<sol::protected_function>, ScriptingEventCount> events;
 		std::string base;
 		std::string name;
 		std::string fullName;

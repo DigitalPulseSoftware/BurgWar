@@ -11,14 +11,14 @@ local entity = ScriptedEntity({
 
 entity.CanSpawn = true
 
-function entity:Initialize()
+entity:On("init", function (self)
 	if (CLIENT) then
 		self:AddSprite({
 			Scale = Vec2(0.5, 0.5),
 			TexturePath = "placeholder/socle.png"
 		})
 	end
-end
+end)
 
 if (SERVER) then
 	entity.NextRespawn = os.time()

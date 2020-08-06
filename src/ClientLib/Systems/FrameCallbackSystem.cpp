@@ -25,9 +25,8 @@ namespace bw
 	void FrameCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-		const auto& element = scriptComponent.GetElement();
 
-		if (element->frameFunction)
+		if (scriptComponent.HasCallbacks(ScriptingEvent::Frame))
 			m_frameUpdateEntities.Insert(entity);
 		else
 			m_frameUpdateEntities.Remove(entity);
@@ -40,14 +39,7 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			const auto& element = scriptComponent.GetElement();
 
-			assert(element->frameFunction);
-
-			auto result = element->frameFunction(scriptComponent.GetTable());
-			if (!result.valid())
-			{
-				sol::error err = result;
-				bwLog(m_match.GetLogger(), LogLevel::Error, "OnFrame failed: {0}", err.what());
-			}
+			scriptComponent.ExecuteCallback(ScriptingEvent::Frame);
 		}
 	}
 

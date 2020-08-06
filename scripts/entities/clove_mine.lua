@@ -20,7 +20,7 @@ RegisterClientAssets(entity.ExplosionSounds)
 
 entity.Status = "free"
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local centerOffset = -Vec2(96, 96) / 2
 	local colliders = {
 		Circle(Vec2(48, 27) + centerOffset, 21),
@@ -62,7 +62,7 @@ function entity:Initialize()
 		AddEye(Vec2(35, 35))
 		AddEye(Vec2(61, 35))
 	end
-end
+end)
 
 function entity:OnTick()
 	local pos = self:GetPosition()

@@ -10,7 +10,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local sourceEntity = self:GetProperty("source_entity")
 	local sourceOffset = self:GetProperty("source_offset")
 	local targetEntity = self:GetProperty("target_entity")
@@ -26,7 +26,7 @@ function entity:Initialize()
 	end
 
 	self.Constraint = physics.CreatePinConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset)
-end
+end)
 
 function entity:OnKilled()
 	if (self.Constraint) then

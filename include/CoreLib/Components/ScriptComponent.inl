@@ -3,14 +3,15 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Utils.hpp>
 
 namespace bw
 {
 	template<typename... Args>
-	std::optional<sol::object> ScriptComponent::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	std::optional<sol::object> ScriptComponent::ExecuteCallback(ScriptingEvent event, Args&&... args)
 	{
-		sol::protected_function callback = m_entityTable[callbackName];
-		if (callback)
+		const auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+		for (const auto& callback : callbacks)
 		{
 			auto co = m_context->CreateCoroutine(callback);
 
@@ -18,14 +19,14 @@ namespace bw
 			if (!result.valid())
 			{
 				sol::error err = result;
-				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", callbackName, err.what());
-				return std::nullopt;
+				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", ToString(event), err.what());
+				continue;
 			}
 
-			return result;
+			//return result; //< FIXME: Accumulate results
 		}
-		else
-			return sol::nil;
+
+		return sol::nil;
 	}
 
 	inline const std::shared_ptr<ScriptingContext>& ScriptComponent::GetContext()
@@ -65,6 +66,18 @@ namespace bw
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;
+	}
+
+	inline bool ScriptComponent::HasCallbacks(ScriptingEvent event) const
+	{
+		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+		return !callbacks.empty();
+	}
+
+	inline void ScriptComponent::RegisterCallback(ScriptingEvent event, sol::protected_function callback)
+	{
+		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+		callbacks.emplace_back(std::move(callback));
 	}
 
 	inline void ScriptComponent::SetNextTick(float seconds)

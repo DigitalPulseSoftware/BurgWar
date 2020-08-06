@@ -8,19 +8,19 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
-	if (CLIENT) then
+if (CLIENT) then
+	entity:On("init", function (self)
 		self:AddSprite({
 			Scale = Vec2(0.5, 0.5),
 			TexturePath = "placeholder/socle.png"
 		})
-	end
+	end)
 end
 
 if (SERVER) then
 	entity.NextRespawn = os.time()
 
-	function entity:OnTick()
+	entity:On("tick", function (self)
 		local now = os.time()
 
 		if (self.SpawnedBox) then
@@ -41,5 +41,5 @@ if (SERVER) then
 			})
 			self.SpawnedBox:ForceSleep()
 		end
-	end
+	end)
 end

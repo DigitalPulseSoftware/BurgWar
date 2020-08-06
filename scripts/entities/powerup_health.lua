@@ -6,7 +6,7 @@ local entity = ScriptedEntity({
 	Properties = {}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	local colliderSize = Vec2(400, 200) / 4 / 2
 	self:SetCollider({ Collider = Rect(-colliderSize, colliderSize), IsTrigger = true })
 	self:EnableCollisionCallbacks(true)
@@ -17,7 +17,7 @@ function entity:Initialize()
 			TexturePath = "placeholder/healthpack.png"
 		})
 	end
-end
+end)
 
 if (SERVER) then
 	function entity:OnCollisionStart(other)

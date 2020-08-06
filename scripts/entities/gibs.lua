@@ -10,12 +10,12 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	self.Base.Initialize(self)
 
 	self:EnableCollisionCallbacks(true)
 	self.DisappearTime = match.GetSeconds() + self:GetProperty("lifetime")
-end
+end)
 
 function entity:OnCollisionStart(entity)
 	return entity:GetMass() == 0

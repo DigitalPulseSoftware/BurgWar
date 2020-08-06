@@ -104,20 +104,20 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
-		CurrentElement currentElement;
-
 		std::string elementName;
 		if (!isDirectory)
-			currentElement.name = elementPath.stem().u8string();
+			elementName = elementPath.stem().u8string();
 		else
-			currentElement.name = elementPath.filename().u8string();
+			elementName = elementPath.filename().u8string();
 
-		currentElement.fullName = m_elementTypeName + "_" + currentElement.name;
+		CurrentElementData elementData;
+		elementData.name = std::move(elementName);
+		elementData.fullName = m_elementTypeName + "_" + elementData.name;
 
-		m_currentElement = &currentElement;
-		Nz::CallOnExit resetOnExit([&] { m_currentElement = nullptr; });
+		m_currentElementData = &elementData;
+		Nz::CallOnExit resetOnExit([&] { m_currentElementData = nullptr; });
 
-		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
+		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementData.name);
 
 		bool hasError = false;
 		auto LoadFile = [&](const std::filesystem::path& path)
@@ -149,23 +149,20 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		if (!currentElement.initialized || hasError)
-			throw std::runtime_error("loading of " + m_elementTypeName + " " + currentElement.name + " failed");
+		if (!elementData.element || hasError)
+			throw std::runtime_error("loading of " + m_elementTypeName + " " + elementData.name + " failed");
 
-		std::shared_ptr<Element> element = CreateElement();
-		element->name = std::move(currentElement.name);
-		element->fullName = std::move(currentElement.fullName);
-		element->elementTable = std::move(currentElement.table);
-		element->base = element->elementTable.get_or("Base", std::string());
+		std::string& baseElement = elementData.element->base;
+		baseElement = elementData.element->elementTable.get_or("Base", std::string());
 
 		// If no base element (or element already loaded), initialize it now
-		if (element->base.empty() || m_elementsByName.find(element->base) != m_elementsByName.end())
-			return RegisterElement(std::move(element));
+		if (baseElement.empty() || m_elementsByName.find(baseElement) != m_elementsByName.end())
+			return RegisterElement(std::move(elementData.element));
 		else
 		{
 			// Else, add it in a pending list
-			auto& pendingElements = m_pendingElements[element->base];
-			pendingElements.emplace_back(std::move(element));
+			auto& pendingElements = m_pendingElements[baseElement];
+			pendingElements.emplace_back(std::move(elementData.element));
 
 			return true;
 		}
@@ -196,7 +193,7 @@ namespace bw
 
 		state["Scripted" + m_elementName] = [this](std::optional<sol::table> parameters)
 		{
-			if (!m_currentElement)
+			if (!m_currentElementData)
 				throw std::runtime_error("you can only call this function in a scripted " + m_elementTypeName + " file");
 
 			if (parameters.has_value())
@@ -290,41 +287,48 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::InitializeElementTable(sol::table& /*elementTable*/)
+	void ScriptStore<Element>::InitializeElementTable(sol::table& elementTable)
 	{
+		assert(m_elementMetatable);
+
+		elementTable[sol::metatable_key] = m_elementMetatable;
+		elementTable["__index"] = elementTable;
+
+		elementTable["FullName"] = m_currentElementData->element->fullName;
+		elementTable["Name"] = m_currentElementData->element->name;
+
+		elementTable["_Element"] = m_currentElementData->element;
 	}
 
 	template<typename Element>
 	sol::table ScriptStore<Element>::CreateElement(sol::table initTable)
 	{
-		assert(m_currentElement);
+		assert(m_currentElementData);
 		assert(initTable.valid());
 
-		if (m_currentElement->initialized)
+		if (m_currentElementData->element)
 			throw std::runtime_error("you can only initialize an " + m_elementTypeName + " once");
 
-		m_currentElement->table = std::move(initTable);
-		m_currentElement->table[sol::metatable_key] = m_elementMetatable;
-		m_currentElement->table["__index"] = m_currentElement->table;
+		m_currentElementData->element = CreateElement();
+		m_currentElementData->element->fullName = std::move(m_currentElementData->fullName);
+		m_currentElementData->element->name = std::move(m_currentElementData->name);
 
-		m_currentElement->table["FullName"] = m_currentElement->fullName;
-		m_currentElement->table["Name"] = m_currentElement->name;
-		InitializeElementTable(m_currentElement->table);
+		InitializeElementTable(initTable);
 
-		m_currentElement->initialized = true;
+		m_currentElementData->element->elementTable = std::move(initTable);
 
-		return m_currentElement->table;
+		return m_currentElementData->element->elementTable;
 	}
 
 	template<typename Element>
 	sol::table ScriptStore<Element>::GetElementTable()
 	{
-		assert(m_currentElement);
+		assert(m_currentElementData);
 
-		if (!m_currentElement->initialized)
+		if (!m_currentElementData->element)
 			throw std::runtime_error("you must initialize the " + m_elementTypeName + " first");
 
-		return m_currentElement->table;
+		return m_currentElementData->element->elementTable;
 	}
 
 	template<typename Element>
@@ -344,11 +348,6 @@ namespace bw
 			element->elementTable["Base"] = baseElement->elementTable;
 			element->elementTable[sol::metatable_key] = baseElement->elementTable;
 		}
-
-		element->frameFunction = element->elementTable["OnFrame"];
-		element->initializeFunction = element->elementTable["Initialize"];
-		element->postFrameFunction = element->elementTable["OnPostFrame"];
-		element->tickFunction = element->elementTable["OnTick"];
 
 		std::size_t propertyIndex = 0;
 		auto HandleProperties = [&](const sol::table& elementTable)
@@ -422,16 +421,8 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
 	{
-		if (entityClass.initializeFunction)
-		{
-			auto result = entityClass.initializeFunction(entity->GetComponent<ScriptComponent>().GetTable());
-			if (!result.valid())
-			{
-				sol::error err = result;
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create element \"{0}\", Initialize() failed: {1}", entityClass.fullName, err.what());
-				return false;
-			}
-		}
+		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		entityScript.ExecuteCallback(ScriptingEvent::Init); //< FIXME: Handle errors
 
 		return true;
 	}

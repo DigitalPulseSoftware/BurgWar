@@ -12,7 +12,7 @@ local entity = ScriptedEntity({
 })
 
 if (CLIENT) then
-	function entity:Initialize()
+	entity:On("init", function (self)
 		self:AddModel({
 			ModelPath = self:GetProperty("modelPath"),
 			Offset = self:GetProperty("offset"),
@@ -20,5 +20,5 @@ if (CLIENT) then
 			Rotation = self:GetProperty("rotation"),
 			Scale = self:GetProperty("scale"),
 		})
-	end
+	end)
 end

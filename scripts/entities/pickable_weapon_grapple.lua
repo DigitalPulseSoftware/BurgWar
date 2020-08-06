@@ -5,7 +5,7 @@ local entity = ScriptedEntity({
 	IsNetworked = true
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	self:SetCollider({ Collider = Circle(Vec2(0, 0), 128 * 0.3), IsTrigger = true })
 	self:EnableCollisionCallbacks(true)
 
@@ -14,7 +14,7 @@ function entity:Initialize()
 			TexturePath = "placeholder/baguette.png"
 		})
 	end
-end
+end)
 
 function entity:OnCollisionStart(other)
 	if (SERVER and other.Name == "burger") then

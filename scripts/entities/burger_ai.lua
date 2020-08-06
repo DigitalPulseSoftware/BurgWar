@@ -7,14 +7,12 @@ local entity = ScriptedEntity({
 entity.DetectionRange = 500
 
 if (SERVER) then
-	function entity:Initialize()
-		self.Base.Initialize(self)
-
+	entity:On("init", function (self)
 		match.CreateWeapon({
 			Type = "weapon_sword_emmentalibur",
 			Owner = self
 		})
-	end
+	end)
 
 	entity.OnTick = utils.OverrideFunction(entity.OnTick, function (self)
 		local pos = self:GetPosition()

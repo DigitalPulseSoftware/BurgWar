@@ -8,7 +8,7 @@ local entity = ScriptedEntity({
 	}
 })
 
-function entity:Initialize()
+entity:On("init", function (self)
 	self:InitRigidBody(0)
 
 	local targetEntity = self:GetProperty("target_entity")
@@ -19,7 +19,7 @@ function entity:Initialize()
 	end
 
 	self.PositionConstraint = physics.CreatePivotConstraint(self, targetEntity, Vec2(0,0), targetOffset)
-end
+end)
 
 function entity:OnKilled()
 	if (self.PositionConstraint) then
