@@ -77,22 +77,12 @@ namespace bw
 
 		elementMetatable["On"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
 		{
-			std::optional<ScriptingEvent> scriptingEventOpt = RetrieveScriptingEvent(event);
-			if (!scriptingEventOpt)
-				throw std::runtime_error("unknown event " + std::string(event));
+			RegisterEvent(entityTable, event, std::move(callback), false);
+		};
 
-			ScriptingEvent scriptingEvent = scriptingEventOpt.value();
-			std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
-
-			if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
-				element->events[eventIndex].emplace_back(std::move(callback));
-			else
-			{
-				Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				entityScript.RegisterCallback(scriptingEvent, std::move(callback));
-			}
+		elementMetatable["OnAsync"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
+		{
+			RegisterEvent(entityTable, event, std::move(callback), true);
 		};
 
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
@@ -116,5 +106,32 @@ namespace bw
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
 		};
+	}
+	
+	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::protected_function callback, bool async)
+	{
+		std::optional<ScriptingEvent> scriptingEventOpt = RetrieveScriptingEvent(event);
+		if (!scriptingEventOpt)
+			throw std::runtime_error("unknown event " + std::string(event));
+
+		ScriptingEvent scriptingEvent = scriptingEventOpt.value();
+		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
+
+		if (async && HasReturnValue(scriptingEvent))
+			throw std::runtime_error("events returning a value cannot be async");
+
+		if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
+		{
+			auto& callbackData = element->events[eventIndex].emplace_back();
+			callbackData.async = async;
+			callbackData.callback = std::move(callback);
+		}
+		else
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
+		}
 	}
 }

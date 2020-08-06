@@ -21,6 +21,7 @@ namespace bw
 
 		private:
 			void RegisterCommonLibrary(sol::table& elementMetatable);
+			void RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::protected_function callback, bool async);
 	};
 }
 

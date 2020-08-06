@@ -21,6 +21,12 @@ namespace bw
 {
 	struct ScriptedElement : std::enable_shared_from_this<ScriptedElement>
 	{
+		struct Callback
+		{
+			sol::protected_function callback;
+			bool async = false;
+		};
+
 		struct Property
 		{
 			PropertyType type;
@@ -31,7 +37,7 @@ namespace bw
 		};
 
 		sol::table elementTable;
-		std::array<std::vector<sol::protected_function>, ScriptingEventCount> events;
+		std::array<std::vector<Callback>, ScriptingEventCount> events;
 		std::string base;
 		std::string name;
 		std::string fullName;

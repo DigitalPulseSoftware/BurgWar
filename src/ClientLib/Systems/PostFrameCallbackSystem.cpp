@@ -40,7 +40,7 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			const auto& element = scriptComponent.GetElement();
 
-			scriptComponent.ExecuteCallback(ScriptingEvent::PostFrame);
+			scriptComponent.ExecuteCallback<ScriptingEvent::PostFrame>();
 		}
 	}
 

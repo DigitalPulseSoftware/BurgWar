@@ -422,7 +422,12 @@ namespace bw
 	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
 	{
 		auto& entityScript = entity->GetComponent<ScriptComponent>();
-		entityScript.ExecuteCallback(ScriptingEvent::Init); //< FIXME: Handle errors
+		if (!entityScript.ExecuteCallback<ScriptingEvent::Init>())
+		{
+			//TODO: Retrieve error message
+			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}", m_elementTypeName, entityClass.name);
+			return false;
+		}
 
 		return true;
 	}

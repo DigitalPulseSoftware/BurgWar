@@ -41,7 +41,7 @@ namespace bw
 			{
 				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback(ScriptingEvent::HealthUpdate);
+				entityScript.ExecuteCallback<ScriptingEvent::HealthUpdate>();
 			});
 
 			healthComponent.OnDying.Connect([&](HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -49,7 +49,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback(ScriptingEvent::Death, attacker);
+				entityScript.ExecuteCallback<ScriptingEvent::Death>(attacker);
 			});
 
 			healthComponent.OnDied.Connect([&](const HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -57,7 +57,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback(ScriptingEvent::Died, attacker);
+				entityScript.ExecuteCallback<ScriptingEvent::Died>(attacker);
 			});
 		}
 

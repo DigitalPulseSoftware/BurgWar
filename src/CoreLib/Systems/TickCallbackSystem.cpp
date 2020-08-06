@@ -42,7 +42,7 @@ namespace bw
 			const auto& element = scriptComponent.GetElement();
 
 			//FIXME
-			scriptComponent.ExecuteCallback(ScriptingEvent::Tick);
+			scriptComponent.ExecuteCallback<ScriptingEvent::Tick>();
 
 			/*auto result = element->tickFunction(scriptComponent.GetTable());
 			if (result.valid())
