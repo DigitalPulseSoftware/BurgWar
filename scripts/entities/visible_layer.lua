@@ -1,16 +1,17 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "layer", Type = PropertyType.Layer, Default = NoLayer, Shared = true },
+		{ Name = "parallaxFactor", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true },
+		{ Name = "recursive", Type = PropertyType.Boolean, Default = false, Shared = true },
+		{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
+		{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true },
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "layer", Type = PropertyType.Layer, Default = NoLayer, Shared = true },
-	{ Name = "parallaxFactor", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true },
-	{ Name = "recursive", Type = PropertyType.Boolean, Default = false, Shared = true },
-	{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
-	{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1, 1), Shared = true },
-}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	-- FIXME
 	if (EDITOR) then
 		return
@@ -22,17 +23,17 @@ function ENTITY:Initialize()
 			self:Show()
 		end
 	end
-end
+end)
 
 if (CLIENT) then
-	function ENTITY:Hide()
+	function entity:Hide()
 		assert(self.isVisible)
 		self.isVisible = false
 
 		self:ClearLayers()
 	end
 
-	function ENTITY:Show()
+	function entity:Show()
 		assert(not self.isVisible)
 		self.isVisible = true
 
@@ -45,7 +46,7 @@ if (CLIENT) then
 	end
 end
 
-function ENTITY:OnPlayerEnterLayer(player, newLayer)
+function entity:OnPlayerEnterLayer(player, newLayer)
 	if (newLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " visible")
@@ -57,7 +58,7 @@ function ENTITY:OnPlayerEnterLayer(player, newLayer)
 	end
 end
 
-function ENTITY:OnPlayerLeaveLayer(player, oldLayer)
+function entity:OnPlayerLeaveLayer(player, oldLayer)
 	if (oldLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " invisible")
@@ -65,7 +66,7 @@ function ENTITY:OnPlayerLeaveLayer(player, oldLayer)
 	end
 end
 
-function ENTITY:OnEnterLayer(newLayer)
+function entity:OnEnterLayer(newLayer)
 	if (newLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " visible")
@@ -73,7 +74,7 @@ function ENTITY:OnEnterLayer(newLayer)
 	end
 end
 
-function ENTITY:OnLeaveLayer(oldLayer)
+function entity:OnLeaveLayer(oldLayer)
 	if (oldLayer == self:GetLayerIndex() or self:GetProperty("recursive")) then
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " invisible")

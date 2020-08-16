@@ -20,7 +20,9 @@ namespace bw
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("weapon");
-		SetTableName("WEAPON");
+		SetElementName("Weapon");
+
+		ReloadLibraries(); // This function creates the metatable
 	}
 
 	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)

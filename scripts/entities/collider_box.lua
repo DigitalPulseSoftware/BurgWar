@@ -1,14 +1,15 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
+		{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
+		{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
-	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
-	{ Name = "size", Type = PropertyType.FloatSize, Shared = true },
-}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
 	self:SetCollider(Rect(-colliderSize, colliderSize))
@@ -21,4 +22,4 @@ function ENTITY:Initialize()
 			Size = self:GetProperty("size"),
 		})
 	end
-end
+end)

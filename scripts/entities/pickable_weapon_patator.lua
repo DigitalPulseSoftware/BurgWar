@@ -1,13 +1,11 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/patator.png")
 
-ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
+local entity = ScriptedEntity({
+	IsNetworked = true
+})
 
-ENTITY.Properties = {}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	self:SetCollider({ Collider = Circle(Vec2(0, 0), 128 * 0.3), IsTrigger = true })
 	self:EnableCollisionCallbacks(true)
 
@@ -17,9 +15,9 @@ function ENTITY:Initialize()
 			TexturePath = "placeholder/patator.png"
 		})
 	end
-end
+end)
 
-function ENTITY:OnCollisionStart(other)
+entity:On("collisionstart", function (self, other)
 	if (SERVER and other.Name == "burger") then
 		local owner = other:GetOwner()
 		if (not owner:HasWeapon("weapon_patator")) then
@@ -30,4 +28,4 @@ function ENTITY:OnCollisionStart(other)
 	end
 
 	return false
-end
+end)

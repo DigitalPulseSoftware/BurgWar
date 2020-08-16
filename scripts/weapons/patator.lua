@@ -1,23 +1,25 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 5
-WEAPON.Scale = 0.25
-WEAPON.Sprite = "placeholder/patator.png"
-WEAPON.SpriteOrigin = Vec2(100, 160) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
-WEAPON.Animations = {}
-
 local ammoSprite = "placeholder/potato.png"
+local scale = 0.25
 
-RegisterClientAssets(WEAPON.Sprite)
+local weapon = ScriptedWeapon({
+	Cooldown = 5,
+	Scale = scale,
+	Sprite = "placeholder/patator.png",
+	SpriteOrigin = Vec2(100, 160) * scale,
+	WeaponOffset = Vec2(20, -60) -- This should not be here
+})
+
+RegisterClientAssets(weapon.Sprite)
 RegisterClientAssets(ammoSprite)
 
 if (SERVER) then
-	function WEAPON:OnAttack()
+	weapon:On("attack", function (self)
 		self.ChargeStart = match.GetSeconds()
-	end
+	end)
 
-	function WEAPON:OnAttackFinish()
+	weapon:On("attackfinish", function (self)
 		local chargeFactor = math.clamp((match.GetSeconds() - self.ChargeStart) ^ 2, 0, 5) / 5
 
 		local rotation = self:GetRotation() + 90
@@ -35,11 +37,11 @@ if (SERVER) then
 		})
 
 		projectile:SetVelocity(self:GetDirection() * 1500 * chargeFactor)
-	end
+	end)
 else
-	WEAPON.ChargeBarFullsize = Vec2(60, 10)
+	weapon.ChargeBarFullsize = Vec2(60, 10)
 
-	function WEAPON:Initialize()
+	weapon:On("init", function (self)
 		self.Potato = self:AddSprite({
 			Offset = Vec2(360, -20) * self.Scale,
 			Rotation = 90,
@@ -56,16 +58,16 @@ else
 			}
 		})
 		self.ChargeBar:Hide()
-	end
+	end)
 
-	function WEAPON:OnAttack()
+	weapon:On("attack", function (self)
 		self.ChargeStart = match.GetSeconds()
 		self.IsCharging = true
 		self.ChargeBar:SetSize(Vec2(0, self.ChargeBarFullsize.y))
 		self.ChargeBar:Show()
-	end
+	end)
 
-	function WEAPON:OnTick()
+	weapon:On("tick", function (self)
 		if (self.IsCharging) then
 			local chargeFactor = math.clamp((match.GetSeconds() - self.ChargeStart) ^ 2, 0, 5) / 5
 			self.ChargeBar:SetSize(Vec2(self.ChargeBarFullsize.x * chargeFactor, self.ChargeBarFullsize.y))
@@ -74,9 +76,9 @@ else
 			self.ChargeBar:SetCornerColor("TopRight", rightColor)
 			self.ChargeBar:SetCornerColor("BottomRight", rightColor)
 		end
-	end
+	end)
 
-	function WEAPON:OnAttackFinish()
+	weapon:OnAsync("attackfinish", function (self)
 		self.IsCharging = false
 		self.ChargeBar:Hide()
 		self.Potato:Hide()
@@ -86,5 +88,5 @@ else
 		if (self.Potato:IsValid()) then
 			self.Potato:Show()
 		end
-	end
+	end)
 end

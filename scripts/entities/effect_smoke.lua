@@ -1,12 +1,14 @@
 RegisterClientScript()
 RegisterClientAssets("smoke.png")
 
-ENTITY.IsNetworked = true
-ENTITY.Properties = {
-	{ Name = "lifetime", Type = PropertyType.Float, Shared = true },
-}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "lifetime", Type = PropertyType.Float, Shared = true },
+	}
+})
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local lifetime = self:GetProperty("lifetime")
 	self:SetLifeTime(lifetime)
 
@@ -26,11 +28,8 @@ function ENTITY:Initialize()
 	})
 
 	self.ParticleGroup:GenerateParticles(25)
-end
+end)
 
-function ENTITY:OnTick()
-end
-
-function ENTITY:OnKilled()
+entity:On("destroyed", function (self)
 	self.ParticleGroup:Kill()
-end
+end)

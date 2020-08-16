@@ -27,7 +27,7 @@ namespace bw
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 		const auto& element = scriptComponent.GetElement();
 
-		if (element->postFrameFunction)
+		if (scriptComponent.HasCallbacks(ScriptingEvent::PostFrame))
 			m_frameUpdateEntities.Insert(entity);
 		else
 			m_frameUpdateEntities.Remove(entity);
@@ -40,14 +40,7 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			const auto& element = scriptComponent.GetElement();
 
-			assert(element->postFrameFunction);
-
-			auto result = element->postFrameFunction(scriptComponent.GetTable());
-			if (!result.valid())
-			{
-				sol::error err = result;
-				bwLog(m_match.GetLogger(), LogLevel::Error, "OnPostFrame failed: {0}", err.what());
-			}
+			scriptComponent.ExecuteCallback<ScriptingEvent::PostFrame>();
 		}
 	}
 

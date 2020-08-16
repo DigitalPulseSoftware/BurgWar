@@ -1,17 +1,16 @@
 RegisterClientScript()
 RegisterClientAssets("box.png")
 
-ENTITY.IsNetworked = true
-ENTITY.CollisionType = 2
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 1000
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	MaxHealth = 1000,
+	Properties = {
+		{ Name = "dynamic", Type = PropertyType.Boolean, Default = true, Shared = true },
+		{ Name = "size", Type = PropertyType.Float, Default = 1.0, Shared = true }
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "dynamic", Type = PropertyType.Boolean, Default = true, Shared = true },
-	{ Name = "size", Type = PropertyType.Float, Default = 1.0, Shared = true }
-}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local size = self:GetProperty("size")
 
 	local colliderSize = Vec2(0.2, 0.2) * size * 256 / 2
@@ -27,4 +26,4 @@ function ENTITY:Initialize()
 			TexturePath = "box.png"
 		})
 	end
-end
+end)

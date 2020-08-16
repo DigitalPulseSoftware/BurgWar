@@ -1,11 +1,12 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/healthpack.png")
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {}
+})
 
-ENTITY.Properties = {}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local colliderSize = Vec2(400, 200) / 4 / 2
 	self:SetCollider({ Collider = Rect(-colliderSize, colliderSize), IsTrigger = true })
 	self:EnableCollisionCallbacks(true)
@@ -16,10 +17,10 @@ function ENTITY:Initialize()
 			TexturePath = "placeholder/healthpack.png"
 		})
 	end
-end
+end)
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		if (other.Name == "burger") then
 			if (not other:IsFullHealth()) then
 				other:Heal(250)
@@ -29,5 +30,5 @@ if (SERVER) then
 		end
 
 		return false
-	end
+	end)
 end

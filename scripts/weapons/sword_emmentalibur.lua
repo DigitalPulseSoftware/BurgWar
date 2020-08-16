@@ -1,19 +1,23 @@
 RegisterClientScript()
 
-WEAPON.Cooldown = 0.5
-WEAPON.Scale = 0.6
-WEAPON.Sprite = "emmentalibur.png"
-WEAPON.SpriteOrigin = Vec2(40, 284) * WEAPON.Scale
-WEAPON.WeaponOffset = Vec2(20, -60) -- This should not be here
-WEAPON.Animations = {
-	{"attack", 0.3}
-}
-WEAPON.AttackMode = WeaponAttackType.SingleShotRepeat
+local scale = 0.6
 
-RegisterClientAssets(WEAPON.Sprite)
+local weapon = ScriptedWeapon({
+	Cooldown = 0.1,
+	Scale = scale,
+	Sprite = "emmentalibur.png",
+	SpriteOrigin = Vec2(40, 284) * scale,
+	WeaponOffset = Vec2(20, -60), -- This should not be here
+	Animations = {
+		{"attack", 0.3}
+	},
+	AttackMode = WeaponAttackType.SingleShotRepeat
+})
+
+RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
-	function WEAPON:OnAttack()
+	weapon:On("attack", function (self)
 		local pos = self:GetPosition()
 		local maxs = Vec2(128, 66)
 		local mins = Vec2(28, -76)
@@ -25,11 +29,11 @@ if (SERVER) then
 
 		self:PlayAnim("attack")
 		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 20000)
-	end
+	end)
 end
 
 if (CLIENT) then
-	function WEAPON:OnAnimationStart(animationId)
+	function weapon:OnAnimationStart(animationId)
 		local startRotation = self:GetRotation()
 		local endRotation
 		if (self:IsLookingRight()) then

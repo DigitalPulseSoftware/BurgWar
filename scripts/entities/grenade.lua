@@ -1,23 +1,23 @@
 RegisterClientScript()
 RegisterClientAssets("grenade.png")
 
-ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 50
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	MaxHealth = 50,
+	Properties = {
+		{ Name = "lifetime", Type = PropertyType.Float, Default = 1.0, Shared = true }
+	}	
+})
 
-ENTITY.Properties = {
-	{ Name = "lifetime", Type = PropertyType.Float, Default = 1.0, Shared = true }
-}
-
-ENTITY.ExplosionSounds = {
+entity.ExplosionSounds = {
     "placeholder/explosion1.wav",
     "placeholder/explosion2.wav",
     "placeholder/explosion3.wav",
     "placeholder/explosion4.wav",
 }
-RegisterClientAssets(ENTITY.ExplosionSounds)
+RegisterClientAssets(entity.ExplosionSounds)
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	self.ExplosionTick = match.GetLocalTick() + self:GetProperty("lifetime") / match.GetTickDuration()
 	self:SetCollider(Circle(Vec2(0, 0) * 0.2, 128 * 0.2))
 	self:InitRigidBody(20, 10)
@@ -28,9 +28,9 @@ function ENTITY:Initialize()
 			TexturePath = "grenade.png"
 		})
 	end
-end
+end)
 
-function ENTITY:OnTick()
+entity:On("tick", function (self)
 	local currentTick = match.GetLocalTick()
 	if (currentTick >= self.ExplosionTick) then
 		self:Explode()
@@ -39,9 +39,9 @@ function ENTITY:OnTick()
 			self:Kill()
 		end
 	end
-end
+end)
 
-function ENTITY:Explode()
+function entity:Explode()
 	if (self.Exploded) then
 		return
 	end
@@ -79,9 +79,9 @@ function ENTITY:Explode()
 end
 
 if (CLIENT) then
-	function ENTITY:OnKilled()
+	entity:On("destroyed", function (self)
 		if (self:GetHealth() == 0) then
 			self:Explode()
 		end
-	end
+	end)
 end

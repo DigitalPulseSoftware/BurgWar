@@ -1,19 +1,19 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/potato.png")
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true
+})
 
-ENTITY.Properties = {}
-
-ENTITY.ExplosionSounds = {
+entity.ExplosionSounds = {
     "placeholder/explosion1.wav",
     "placeholder/explosion2.wav",
     "placeholder/explosion3.wav",
     "placeholder/explosion4.wav",
 }
-RegisterClientAssets(ENTITY.ExplosionSounds)
+RegisterClientAssets(entity.ExplosionSounds)
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	self.ExplosionTick = match.GetLocalTick() + 5 / match.GetTickDuration()
 	self:SetCollider(Circle(Vec2(0, 0) * 0.2, 128 * 0.2))
 	self:InitRigidBody(20, 10)
@@ -29,9 +29,9 @@ function ENTITY:Initialize()
 			TexturePath = "placeholder/potato.png"
 		})
 	end
-end
+end)
 
-function ENTITY:OnTick()
+entity:On("tick", function (self)
 	local currentTick = match.GetLocalTick()
 	if (currentTick >= self.ExplosionTick) then
 		self:Explode()
@@ -40,17 +40,17 @@ function ENTITY:OnTick()
 			self:Kill()
 		end
 	end
-end
+end)
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		self:Explode()
 		self:Kill()
 		return true
-	end
+	end)
 end
 
-function ENTITY:Explode()
+function entity:Explode()
 	if (self.Exploded) then
 		return
 	end
@@ -88,9 +88,9 @@ function ENTITY:Explode()
 end
 
 if (CLIENT) then
-	function ENTITY:OnKilled()
+	entity:On("destroyed", function (self)
 		if (self:GetHealth() == 0) then
 			self:Explode()
 		end
-	end
+	end)
 end

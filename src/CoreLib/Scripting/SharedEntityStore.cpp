@@ -13,7 +13,9 @@ namespace bw
 	ScriptStore(logger, std::move(context), isServer)
 	{
 		SetElementTypeName("entity");
-		SetTableName("ENTITY");
+		SetElementName("Entity");
+
+		ReloadLibraries(); // This function creates the metatable
 	}
 
 	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& entity) const
@@ -26,7 +28,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = input->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback("OnInputUpdate", input->GetInputs());
+				entityScript.ExecuteCallback<ScriptingEvent::InputUpdate>(input->GetInputs());
 			});
 		}
 
@@ -34,7 +36,7 @@ namespace bw
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-			entityScript.ExecuteCallback("OnKilled");
+			entityScript.ExecuteCallback<ScriptingEvent::Destroyed>();
 		});
 	}
 

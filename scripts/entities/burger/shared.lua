@@ -1,10 +1,16 @@
-ENTITY.IsNetworked = true
-ENTITY.Sprite = "burger2.png"
-ENTITY.Scale = 0.33
-ENTITY.PlayerControlled = true
-ENTITY.MaxHealth = 1000
-ENTITY.HasInputs = true
-ENTITY.Faces = {
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	HasInputs = true,
+	PlayerControlled = true,
+	MaxHealth = 100,
+	Properties = {
+		{ Name = "seed", Type = PropertyType.Integer, Shared = true },
+	}
+})
+
+entity.Sprite = "burger2.png"
+entity.Scale = 0.33
+entity.Faces = {
 	Attack = "faces/face_attack.png",
 	Damage = "faces/face_damage.png",
 	Default = "faces/face_default.png",
@@ -12,11 +18,7 @@ ENTITY.Faces = {
 	Victory = "faces/face_victory.png"
 }
 
-ENTITY.Properties = {
-	{ Name = "seed", Type = PropertyType.Integer, Shared = true },
-}
-
-ENTITY.Elements = {
+entity.Elements = {
 	Cheeses = {
 		Sprites = {
 			"burger/cheeses/blue.png", 
@@ -95,20 +97,20 @@ ENTITY.Elements = {
 	},
 }
 
-for type, element in pairs(ENTITY.Elements) do
+for type, element in pairs(entity.Elements) do
 	for _, sprite in pairs(element.Sprites) do
 		RegisterClientAssets(sprite)
 	end
 end
 
-RegisterClientAssets(ENTITY.Sprite)
-for _, texturePath in pairs(ENTITY.Faces) do
+RegisterClientAssets(entity.Sprite)
+for _, texturePath in pairs(entity.Faces) do
 	RegisterClientAssets(texturePath)
 end
 
 local controller = BasicPlayerMovementController and BasicPlayerMovementController.new() or nil
 
-function ENTITY:ForEachElement(callback)
+function entity:ForEachElement(callback)
 	local randomEngine = RandomEngine.new(self:GetProperty("seed"))
 
 	local function AddElement(elementType)
@@ -128,7 +130,7 @@ function ENTITY:ForEachElement(callback)
 	AddElement("Tops")
 end
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local cursor = 0
 	local maxWidth = 0
 
@@ -216,4 +218,4 @@ function ENTITY:Initialize()
 	self:SetCollider(colliders)
 	self:InitRigidBody(50, 1, false)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation
-end
+end)

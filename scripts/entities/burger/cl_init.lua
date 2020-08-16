@@ -1,10 +1,8 @@
-ENTITY.IsMoving = false
-ENTITY.IsHopping = false
+local entity = ScriptedEntity()
+entity.IsMoving = false
+entity.IsHopping = false
 
-local oldInit = ENTITY.Initialize
-function ENTITY:Initialize()
-	oldInit(self)
-
+entity:On("init", function (self)
 	if (EDITOR) then
 		self:AddSprite({
 			RenderOrder = 0,
@@ -81,9 +79,9 @@ function ENTITY:Initialize()
 
 	self.CurrentFace = self.DefaultFace
 	self.DefaultFace:Show()
-end
+end)
 
-function ENTITY:UpdateFace(face, duration)
+function entity:UpdateFace(face, duration)
 	if (self.CurrentFace ~= face) then
 		self.CurrentFace:Hide()
 		self.CurrentFace = face
@@ -98,7 +96,7 @@ function ENTITY:UpdateFace(face, duration)
 	end
 end
 
-function ENTITY:OnTick()
+entity:On("tick", function (self)
 	if (self.FaceExpiration) then
 		if (match.GetSeconds() >= self.FaceExpiration) then
 			self.CurrentFace:Hide()
@@ -108,9 +106,9 @@ function ENTITY:OnTick()
 			self.FaceExpiration = nil
 		end
 	end
-end
+end)
 
-function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+entity:On("healthupdate", function (self, oldHealth, newHealth)
 	if (newHealth > 0) then
 		if (newHealth > oldHealth) then
 			-- Heal
@@ -119,12 +117,10 @@ function ENTITY:OnHealthUpdate(oldHealth, newHealth)
 			-- Damage
 			self:UpdateFace(self.DamageFace, 2)
 		end
-	else
-		self:OnDeath()
 	end
-end
+end)
 
-function ENTITY:OnDeath()
+entity:On("death", function (self)
 	local layerIndex = self:GetLayerIndex()
 	local pos = self:GetPosition()
 	local vel = self:GetVelocity()
@@ -148,9 +144,9 @@ function ENTITY:OnDeath()
 		entity:SetVelocity(randVel)
 		--break
 	end
-end
+end)
 
-function ENTITY:OnInputUpdate(input)
+entity:OnAsync("inputupdate", function (self, input)
 	if (input.isAttacking) then
 		if (self.CurrentFace == self.DamageFace) then
 			self:UpdateFace(self.RampageFace, 1)
@@ -177,4 +173,4 @@ function ENTITY:OnInputUpdate(input)
 			end
 		end
 	end
-end
+end)

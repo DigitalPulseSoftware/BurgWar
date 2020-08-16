@@ -6,6 +6,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <NDK/World.hpp>
 #include <cassert>
 #include <filesystem>
@@ -19,8 +20,6 @@ namespace bw
 	m_isServer(isServer)
 	{
 		assert(m_context);
-
-		ReloadLibraries(); // This function creates the metatable
 	}
 
 	template<typename Element>
@@ -105,28 +104,20 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
 	{
-		sol::state& state = GetLuaState();
-
 		std::string elementName;
 		if (!isDirectory)
 			elementName = elementPath.stem().u8string();
 		else
 			elementName = elementPath.filename().u8string();
 
-		std::string fullName = m_elementTypeName + "_" + elementName;
+		CurrentElementData elementData;
+		elementData.name = std::move(elementName);
+		elementData.fullName = m_elementTypeName + "_" + elementData.name;
 
-		sol::table elementTable = state.create_table();
-		elementTable["__index"] = elementTable;
+		m_currentElementData = &elementData;
+		Nz::CallOnExit resetOnExit([&] { m_currentElementData = nullptr; });
 
-		elementTable["FullName"] = fullName;
-		elementTable["Name"] = elementName;
-		elementTable[sol::metatable_key] = m_elementMetatable;
-
-		InitializeElementTable(elementTable);
-
-		state[m_tableName] = elementTable;
-
-		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementName);
+		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementData.name);
 
 		bool hasError = false;
 		auto LoadFile = [&](const std::filesystem::path& path)
@@ -158,22 +149,20 @@ namespace bw
 				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		state[m_tableName] = nullptr;
+		if (!elementData.element || hasError)
+			throw std::runtime_error("loading of " + m_elementTypeName + " " + elementData.name + " failed");
 
-		std::shared_ptr<Element> element = CreateElement();
-		element->name = std::move(elementName);
-		element->fullName = std::move(fullName);
-		element->elementTable = std::move(elementTable);
-		element->base = element->elementTable.get_or("Base", std::string());
+		std::string& baseElement = elementData.element->base;
+		baseElement = elementData.element->elementTable.get_or("Base", std::string());
 
 		// If no base element (or element already loaded), initialize it now
-		if (element->base.empty() || m_elementsByName.find(element->base) != m_elementsByName.end())
-			return RegisterElement(std::move(element));
+		if (baseElement.empty() || m_elementsByName.find(baseElement) != m_elementsByName.end())
+			return RegisterElement(std::move(elementData.element));
 		else
 		{
 			// Else, add it in a pending list
-			auto& pendingElements = m_pendingElements[element->base];
-			pendingElements.emplace_back(std::move(element));
+			auto& pendingElements = m_pendingElements[baseElement];
+			pendingElements.emplace_back(std::move(elementData.element));
 
 			return true;
 		}
@@ -201,6 +190,17 @@ namespace bw
 		// Link new metatables
 		for (const auto& elementPtr : m_elements)
 			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
+
+		state["Scripted" + m_elementName] = [this](std::optional<sol::table> parameters)
+		{
+			if (!m_currentElementData)
+				throw std::runtime_error("you can only call this function in a scripted " + m_elementTypeName + " file");
+
+			if (parameters.has_value())
+				return CreateElement(std::move(parameters.value()));
+			else
+				return GetElementTable();
+		};
 	}
 
 	template<typename Element>
@@ -287,8 +287,118 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::InitializeElementTable(sol::table& /*elementTable*/)
+	void ScriptStore<Element>::InitializeElementTable(sol::table& elementTable)
 	{
+		assert(m_elementMetatable);
+
+		elementTable[sol::metatable_key] = m_elementMetatable;
+		elementTable["__index"] = elementTable;
+
+		elementTable["FullName"] = m_currentElementData->element->fullName;
+		elementTable["Name"] = m_currentElementData->element->name;
+
+		elementTable["_Element"] = m_currentElementData->element;
+	}
+
+	template<typename Element>
+	sol::table ScriptStore<Element>::CreateElement(sol::table initTable)
+	{
+		assert(m_currentElementData);
+		assert(initTable.valid());
+
+		if (m_currentElementData->element)
+			throw std::runtime_error("you can only initialize an " + m_elementTypeName + " once");
+
+		m_currentElementData->element = CreateElement();
+		m_currentElementData->element->fullName = std::move(m_currentElementData->fullName);
+		m_currentElementData->element->name = std::move(m_currentElementData->name);
+
+		InitializeElementTable(initTable);
+
+		m_currentElementData->element->elementTable = std::move(initTable);
+
+		return m_currentElementData->element->elementTable;
+	}
+
+	template<typename Element>
+	sol::table ScriptStore<Element>::GetElementTable()
+	{
+		assert(m_currentElementData);
+
+		if (!m_currentElementData->element)
+			throw std::runtime_error("you must initialize the " + m_elementTypeName + " first");
+
+		return m_currentElementData->element->elementTable;
+	}
+
+	template<typename Element>
+	std::size_t ScriptStore<Element>::HandleProperties(const std::shared_ptr<Element>& element, Element* baseElement)
+	{
+		std::size_t propertyIndex = 0;
+		if (!baseElement->base.empty())
+		{
+			auto it = m_elementsByName.find(element->base);
+			assert(it != m_elementsByName.end());
+
+			Element* parentElement = m_elements[it->second].get();
+			
+			// Merge parent events
+			for (std::size_t i = 0; i < ScriptingEventCount; ++i)
+			{
+				const auto& parentCallbacks = parentElement->events[i];
+				auto& callbacks = element->events[i];
+
+				std::copy(parentCallbacks.rbegin(), parentCallbacks.rend(), std::inserter(callbacks, callbacks.begin()));
+			}
+
+			propertyIndex += HandleProperties(element, parentElement);
+		}
+
+		sol::object properties = baseElement->elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
+		if (properties)
+		{
+			sol::table elementProperties = properties.as<sol::table>();
+
+			for (const auto& kv : elementProperties)
+			{
+				sol::table propertyTable = kv.second;
+
+				std::string propertyName = propertyTable["Name"];
+
+				try
+				{
+					ScriptedElement::Property property;
+					property.index = propertyIndex;
+					property.type = propertyTable["Type"];
+
+					sol::object propertyShared = propertyTable["Shared"];
+					if (propertyShared)
+						property.shared = propertyShared.as<bool>();
+
+					sol::object propertyArray = propertyTable["Array"];
+					if (propertyArray)
+						property.isArray = propertyArray.as<bool>();
+
+					sol::object propertyDefault = propertyTable["Default"];
+					if (!propertyDefault.is<sol::nil_t>())
+						property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
+
+					auto it = element->properties.find(propertyName);
+					if (it == element->properties.end())
+						element->properties.emplace(std::move(propertyName), std::move(property));
+					else
+						throw std::runtime_error("Property " + propertyName + " already exists");
+				}
+				catch (const std::exception& e)
+				{
+					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
+				}
+
+				propertyIndex++;
+			}
+		}
+
+		return propertyIndex;
 	}
 
 	template<typename Element>
@@ -301,71 +411,12 @@ namespace bw
 			assert(it != m_elementsByName.end());
 
 			baseElement = m_elements[it->second];
-		}
 
-		if (baseElement)
-		{
 			element->elementTable["Base"] = baseElement->elementTable;
 			element->elementTable[sol::metatable_key] = baseElement->elementTable;
 		}
 
-		element->frameFunction = element->elementTable["OnFrame"];
-		element->initializeFunction = element->elementTable["Initialize"];
-		element->postFrameFunction = element->elementTable["OnPostFrame"];
-		element->tickFunction = element->elementTable["OnTick"];
-
-		std::size_t propertyIndex = 0;
-		auto HandleProperties = [&](const sol::table& elementTable)
-		{
-			sol::object properties = elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
-			if (properties)
-			{
-				sol::table elementProperties = properties.as<sol::table>();
-
-				for (const auto& kv : elementProperties)
-				{
-					sol::table propertyTable = kv.second;
-
-					std::string propertyName = propertyTable["Name"];
-
-					try
-					{
-						ScriptedElement::Property property;
-						property.index = propertyIndex;
-						property.type = propertyTable["Type"];
-
-						sol::object propertyShared = propertyTable["Shared"];
-						if (propertyShared)
-							property.shared = propertyShared.as<bool>();
-
-						sol::object propertyArray = propertyTable["Array"];
-						if (propertyArray)
-							property.isArray = propertyArray.as<bool>();
-
-						sol::object propertyDefault = propertyTable["Default"];
-						if (!propertyDefault.is<sol::nil_t>())
-							property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
-
-						auto it = element->properties.find(propertyName);
-						if (it == element->properties.end())
-							element->properties.emplace(std::move(propertyName), std::move(property));
-						else
-							throw std::runtime_error("Property " + propertyName + " already exists");
-					}
-					catch (const std::exception& e)
-					{
-						bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
-					}
-
-					propertyIndex++;
-				}
-			}
-		};
-
-		if (baseElement)
-			HandleProperties(baseElement->elementTable);
-
-		HandleProperties(element->elementTable);
+		HandleProperties(element, element.get());
 
 		try
 		{
@@ -386,15 +437,12 @@ namespace bw
 	template<typename Element>
 	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
 	{
-		if (entityClass.initializeFunction)
+		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		if (!entityScript.ExecuteCallback<ScriptingEvent::Init>())
 		{
-			auto result = entityClass.initializeFunction(entity->GetComponent<ScriptComponent>().GetTable());
-			if (!result.valid())
-			{
-				sol::error err = result;
-				bwLog(GetLogger(), LogLevel::Error, "Failed to create element \"{0}\", Initialize() failed: {1}", entityClass.fullName, err.what());
-				return false;
-			}
+			//TODO: Retrieve error message
+			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}", m_elementTypeName, entityClass.name);
+			return false;
 		}
 
 		return true;
@@ -418,8 +466,8 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::SetTableName(std::string tableName)
+	void ScriptStore<Element>::SetElementName(std::string elementName)
 	{
-		m_tableName = std::move(tableName);
+		m_elementName = std::move(elementName);
 	}
 }

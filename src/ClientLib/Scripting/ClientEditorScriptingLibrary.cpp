@@ -26,7 +26,7 @@ namespace bw
 		RegisterTextureClass(context);
 	}
 
-	void ClientEditorScriptingLibrary::RegisterAssetLibrary(ScriptingContext& context, sol::table& library)
+	void ClientEditorScriptingLibrary::RegisterAssetLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
 		library["GetTexture"] = [this](const std::string& texturePath) -> std::optional<Texture>
 		{
@@ -61,7 +61,7 @@ namespace bw
 			"SetSize", &Sprite::SetSize,
 
 			"Show", sol::overload(&Sprite::Show, [](Sprite* sprite) { return sprite->Show(); })
-			);
+		);
 	}
 
 	void ClientEditorScriptingLibrary::RegisterTextureClass(ScriptingContext& context)

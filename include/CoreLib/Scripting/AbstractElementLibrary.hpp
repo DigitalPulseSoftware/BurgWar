@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_ABSTRACTELEMENTLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTELEMENTLIBRARY_HPP
 
+#include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <NDK/Entity.hpp>
 #include <Thirdparty/sol3/forward.hpp>
 #include <memory>
@@ -25,7 +26,9 @@ namespace bw
 
 			virtual void RegisterLibrary(sol::table& elementMetatable) = 0;
 
+			static std::shared_ptr<ScriptedElement> AssertScriptElement(const sol::table& entityTable);
 			static Ndk::EntityHandle AssertScriptEntity(const sol::table& entityTable);
+			static std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
 			static Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
 
 		private:

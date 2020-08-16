@@ -24,9 +24,8 @@ namespace bw
 	void TickCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-		const auto& element = scriptComponent.GetElement();
 
-		if (element->tickFunction)
+		if (scriptComponent.HasCallbacks(ScriptingEvent::Tick))
 			m_tickableEntities.Insert(entity);
 		else
 			m_tickableEntities.Remove(entity);
@@ -42,9 +41,10 @@ namespace bw
 
 			const auto& element = scriptComponent.GetElement();
 
-			assert(element->tickFunction);
+			//FIXME
+			scriptComponent.ExecuteCallback<ScriptingEvent::Tick>();
 
-			auto result = element->tickFunction(scriptComponent.GetTable());
+			/*auto result = element->tickFunction(scriptComponent.GetTable());
 			if (result.valid())
 			{
 				sol::object retObj = result;
@@ -55,7 +55,7 @@ namespace bw
 			{
 				sol::error err = result;
 				bwLog(m_match.GetLogger(), LogLevel::Error, "OnTick failed: {0}", err.what());
-			}
+			}*/
 		}
 	}
 

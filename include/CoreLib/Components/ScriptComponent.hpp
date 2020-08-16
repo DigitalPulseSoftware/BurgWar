@@ -9,9 +9,11 @@
 
 #include <CoreLib/EntityProperties.hpp>
 #include <CoreLib/LogSystem/EntityLogger.hpp>
+#include <CoreLib/Scripting/Events.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <NDK/Component.hpp>
+#include <array>
 #include <functional>
 #include <optional>
 #include <string>
@@ -27,8 +29,11 @@ namespace bw
 			ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
 			~ScriptComponent();
 
-			template<typename... Args>
-			std::optional<sol::object> ExecuteCallback(const std::string& callbackName, Args&&... args);
+			template<ScriptingEvent Event, typename... Args>
+			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(const Args&... args);
+
+			template<ScriptingEvent Event, typename... Args>
+			std::enable_if_t<HasReturnValue(Event), std::optional<typename ScriptingEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
 
 			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
@@ -36,6 +41,10 @@ namespace bw
 			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
 			inline const EntityProperties& GetProperties() const;
 			inline sol::table& GetTable();
+
+			inline bool HasCallbacks(ScriptingEvent event) const;
+
+			inline void RegisterCallback(ScriptingEvent event, sol::protected_function callback, bool async);
 
 			inline void SetNextTick(float seconds);
 
@@ -48,6 +57,7 @@ namespace bw
 			inline bool CanTriggerTick(float elapsedTime);
 			void OnAttached() override;
 
+			std::array<std::vector<ScriptedElement::Callback>, ScriptingEventCount> m_eventCallbacks;
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_entityTable;

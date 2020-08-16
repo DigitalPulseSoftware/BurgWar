@@ -1,10 +1,10 @@
-ENTITY.IsNetworked = false
+local entity = ScriptedEntity({
+	Properties = {
+		{ Name = "size", Type = PropertyType.FloatSize },
+	}
+})
 
-ENTITY.Properties = {
-	{ Name = "size", Type = PropertyType.FloatSize },
-}
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
 	self:SetCollider(Rect(-colliderSize, colliderSize))
@@ -17,10 +17,10 @@ function ENTITY:Initialize()
 			Size = self:GetProperty("size"),
 		})
 	end
-end
+end)
 
-function ENTITY:OnCollisionStart(other)
+entity:On("collisionstart", function (self, other)
 	other:Kill()
 	return true
-end
+end)
 

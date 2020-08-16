@@ -1,22 +1,21 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
-ENTITY.PlayerControlled = false
-ENTITY.MaxHealth = 0
-
-ENTITY.Properties = {
-	{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
-	{ Name = "health", Type = PropertyType.Integer, Default = 0, Shared = true },
-	{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
-	{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
-	{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
-	{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
-	{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
-	{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
-}
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
+		{ Name = "health", Type = PropertyType.Integer, Default = 0, Shared = true },
+		{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
+		{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
+		{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
+		{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
+		{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
+		{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
+	}
+})
 
 if (EDITOR) then
-	ENTITY.EditorActions = {
+	entity.EditorActions = {
 		{
 			Name = "resizeSprite",
 			Label = "Resize to texture size",
@@ -34,7 +33,7 @@ if (EDITOR) then
 	}
 end
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local mass = self:GetProperty("mass")
 	local scale = self:GetProperty("scale")
 	local size = self:GetProperty("size")
@@ -58,4 +57,4 @@ function ENTITY:Initialize()
 			TexturePath = self:GetProperty("texture")
 		})
 	end
-end
+end)

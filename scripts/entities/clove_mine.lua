@@ -2,23 +2,25 @@ RegisterClientScript()
 RegisterClientAssets("placeholder/cloves_base.png")
 RegisterClientAssets("placeholder/cloves_eye.png")
 
-ENTITY.ExplosionSounds = {
-    "placeholder/explosion1.wav",
-    "placeholder/explosion2.wav",
-    "placeholder/explosion3.wav",
-    "placeholder/explosion4.wav",
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	MaxHealth = 1,
+	Properties = {
+		{ Name = "free", Type = PropertyType.Boolean, Default = true, Shared = true }
+	}
+})
+
+entity.ExplosionSounds = {
+	"placeholder/explosion1.wav",
+	"placeholder/explosion2.wav",
+	"placeholder/explosion3.wav",
+	"placeholder/explosion4.wav",
 }
-RegisterClientAssets(ENTITY.ExplosionSounds)
+RegisterClientAssets(entity.ExplosionSounds)
 
-ENTITY.IsNetworked = true
-ENTITY.MaxHealth = 1
+entity.Status = "free"
 
-ENTITY.Properties = {
-	{ Name = "free", Type = PropertyType.Boolean, Default = true, Shared = true }
-}
-ENTITY.Status = "free"
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	local centerOffset = -Vec2(96, 96) / 2
 	local colliders = {
 		Circle(Vec2(48, 27) + centerOffset, 21),
@@ -60,9 +62,9 @@ function ENTITY:Initialize()
 		AddEye(Vec2(35, 35))
 		AddEye(Vec2(61, 35))
 	end
-end
+end)
 
-function ENTITY:OnTick()
+entity:On("tick", function (self)
 	local pos = self:GetPosition()
 	local size = Vec2(256, 256)
 	local rect = Rect(pos - size, pos + size)
@@ -97,10 +99,10 @@ function ENTITY:OnTick()
 
 	local nextTick = closestPlayerDist and closestPlayerDist / 128 or 2
 	return nextTick
-end
+end)
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		if (other.Name == self.Name) then
 			return false
 		end
@@ -112,9 +114,9 @@ if (SERVER) then
 		end
 
 		return true
-	end
+	end)
 
-	function ENTITY:Dig()
+	function entity:Dig()
 		if (self.Status ~= "free") then
 			return
 		end
@@ -149,7 +151,7 @@ if (SERVER) then
 		end
 	end
 
-	function ENTITY:Explode()
+	function entity:Explode()
 		if (self.Status ~= "free" and self.Status ~= "undigged") then
 			return
 		end
@@ -163,7 +165,7 @@ if (SERVER) then
 		self:Kill()
 	end
 
-	function ENTITY:Undig()
+	function entity:Undig()
 		if (self.Status ~= "digged") then
 			return
 		end
@@ -184,7 +186,7 @@ if (SERVER) then
 end
 
 if (CLIENT) then
-	function ENTITY:OnHealthUpdate(oldHealth, newHealth)
+	entity:On("healthupdate", function (self, oldHealth, newHealth)
 		if (newHealth == 0) then
 			self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 	
@@ -207,5 +209,5 @@ if (CLIENT) then
 				}
 			})
 		end
-	end
+	end)
 end

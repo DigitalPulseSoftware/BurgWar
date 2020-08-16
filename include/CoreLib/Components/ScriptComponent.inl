@@ -3,29 +3,78 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Utils.hpp>
 
 namespace bw
 {
-	template<typename... Args>
-	std::optional<sol::object> ScriptComponent::ExecuteCallback(const std::string& callbackName, Args&&... args)
+	template<ScriptingEvent Event, typename... Args>
+	std::enable_if_t<!HasReturnValue(Event), bool> ScriptComponent::ExecuteCallback(const Args&... args)
 	{
-		sol::protected_function callback = m_entityTable[callbackName];
-		if (callback)
-		{
-			auto co = m_context->CreateCoroutine(callback);
+		using EventData = ScriptingEventData<Event>;
 
-			auto result = co(m_entityTable, std::forward<Args>(args)...);
-			if (!result.valid())
+		const auto& callbacks = m_eventCallbacks[UnderlyingCast(Event)];
+		if (callbacks.empty())
+			return true;
+
+		bool ret = false;
+
+		for (const auto& callbackData : callbacks)
+		{
+			sol::protected_function_result callbackResult;
+			if (callbackData.async)
 			{
-				sol::error err = result;
-				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", callbackName, err.what());
-				return std::nullopt;
+				auto co = m_context->CreateCoroutine(callbackData.callback);
+				callbackResult = co(m_entityTable, args...);
+			}
+			else
+				callbackResult = callbackData.callback(m_entityTable, args...);
+
+			if (!callbackResult.valid())
+			{
+				sol::error err = callbackResult;
+				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
+
+				if constexpr (!EventData::FatalError)
+					continue;
+
+				return false;
 			}
 
-			return result;
+			ret = true;
 		}
-		else
-			return sol::nil;
+
+		return ret;
+	}
+
+	template<ScriptingEvent Event, typename... Args>
+	std::enable_if_t<HasReturnValue(Event), std::optional<typename ScriptingEventData<Event>::ResultType>> ScriptComponent::ExecuteCallback(const Args&... args)
+	{
+		using EventData = ScriptingEventData<Event>;
+		using ResultType = typename EventData::ResultType;
+
+		std::optional<ResultType> combinedResult;
+
+		const auto& callbacks = m_eventCallbacks[UnderlyingCast(Event)];
+		for (const auto& callbackData : callbacks)
+		{
+			assert(!callbackData.async);
+
+			auto callbackResult = callbackData.callback(m_entityTable, args...);
+			if (!callbackResult.valid())
+			{
+				sol::error err = callbackResult;
+				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
+
+				if constexpr (!EventData::FatalError)
+					continue;
+
+				return {};
+			}
+
+			combinedResult = EventData::Combinator(combinedResult, callbackResult.get<ResultType>());
+		}
+
+		return combinedResult;
 	}
 
 	inline const std::shared_ptr<ScriptingContext>& ScriptComponent::GetContext()
@@ -65,6 +114,20 @@ namespace bw
 	inline sol::table& ScriptComponent::GetTable()
 	{
 		return m_entityTable;
+	}
+
+	inline bool ScriptComponent::HasCallbacks(ScriptingEvent event) const
+	{
+		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+		return !callbacks.empty();
+	}
+
+	inline void ScriptComponent::RegisterCallback(ScriptingEvent event, sol::protected_function callback, bool async)
+	{
+		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+		auto& callbackData = callbacks.emplace_back();
+		callbackData.async = async;
+		callbackData.callback = std::move(callback);
 	}
 
 	inline void ScriptComponent::SetNextTick(float seconds)

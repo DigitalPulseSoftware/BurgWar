@@ -10,6 +10,15 @@ namespace bw
 {
 	AbstractElementLibrary::~AbstractElementLibrary() = default;
 
+	std::shared_ptr<ScriptedElement> AbstractElementLibrary::AssertScriptElement(const sol::table& entityTable)
+	{
+		std::shared_ptr<ScriptedElement> element = RetrieveScriptElement(entityTable);
+		if (!element)
+			throw std::runtime_error("Invalid element");
+
+		return element;
+	}
+
 	Ndk::EntityHandle AbstractElementLibrary::AssertScriptEntity(const sol::table& entityTable)
 	{
 		Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
@@ -17,6 +26,15 @@ namespace bw
 			throw std::runtime_error("Invalid entity");
 
 		return entity;
+	}
+
+	std::shared_ptr<ScriptedElement> AbstractElementLibrary::RetrieveScriptElement(const sol::table& entityTable)
+	{
+		sol::object entityObject = entityTable["_Element"];
+		if (!entityObject)
+			return nullptr;
+
+		return entityObject.as<std::shared_ptr<ScriptedElement>>();
 	}
 
 	Ndk::EntityHandle AbstractElementLibrary::RetrieveScriptEntity(const sol::table& entityTable)
