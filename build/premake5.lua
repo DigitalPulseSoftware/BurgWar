@@ -213,6 +213,8 @@ workspace("Burgwar")
 	filter "action:vs*"
 		defines "_CRT_SECURE_NO_WARNINGS"
 		buildoptions "/bigobj"
+		--enablewarnings("4062") -- switch case not handled
+		buildoptions("/w44062") -- looks like enablewarnings is broken currently for msvc
 
 	filter({})
 
