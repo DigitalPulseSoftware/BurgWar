@@ -130,7 +130,6 @@ namespace bw
 				hasError = true;
 				return false;
 			}
-
 		};
 
 		if (!isDirectory)
@@ -150,7 +149,7 @@ namespace bw
 		}
 
 		if (!elementData.element || hasError)
-			throw std::runtime_error("loading of " + m_elementTypeName + " " + elementData.name + " failed");
+			return false;
 
 		std::string& baseElement = elementData.element->base;
 		baseElement = elementData.element->elementTable.get_or("Base", std::string());
