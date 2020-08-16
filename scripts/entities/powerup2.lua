@@ -1,16 +1,17 @@
 RegisterClientScript()
 RegisterClientAssets("placeholder/socle.png")
 
-ENTITY.IsNetworked = true
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
+		{ Name = "powerup_entity", Type = PropertyType.Entity, Default = NoEntity }
+		}
+})
 
-ENTITY.Properties = {
-	{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
-	{ Name = "powerup_entity", Type = PropertyType.Entity, Default = NoEntity }
-}
+entity.CanSpawn = true
 
-ENTITY.CanSpawn = true
-
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	if (SERVER) then
 		self.Powerup = self:GetProperty("powerup_entity")
 		if (self.Powerup and self.Powerup:IsValid()) then
@@ -22,18 +23,18 @@ function ENTITY:Initialize()
 			TexturePath = "placeholder/socle.png"
 		})
 	end
-end
+end)
 
 if (SERVER) then
-	ENTITY.NextRespawn = os.time()
+	entity.NextRespawn = os.time()
 
-	function ENTITY:OnPowerupConsumed()
+	function entity:OnPowerupConsumed()
 		self.Powerup:Disable()
 		self.CanSpawn = true
 		self.NextRespawn = os.time() + self:GetProperty("respawntime")
 	end
 
-	function ENTITY:OnTick()
+	entity:On("tick", function (self)
 		local now = os.time()
 		if (now >= self.NextRespawn) then
 			if (self.CanSpawn) then
@@ -43,5 +44,5 @@ if (SERVER) then
 
 			self.NextRespawn = os.time() + self:GetProperty("respawntime")
 		end
-	end
+	end)
 end

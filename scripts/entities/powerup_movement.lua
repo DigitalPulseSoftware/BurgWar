@@ -1,16 +1,17 @@
 RegisterClientScript()
 
-ENTITY.Base = "entity_powerup_base"
-ENTITY.IsNetworked = true
-
-ENTITY.Properties = {
-	{ Name = "effect_speed", Type = PropertyType.Float, Default = 1 },
-	{ Name = "effect_jump_height", Type = PropertyType.Float, Default = 1 },
-	{ Name = "effect_jump_height_boost", Type = PropertyType.Float, Default = 1 },
-}
+local entity = ScriptedEntity({
+	Base = "entity_powerup_base",
+	IsNetworked = true,
+	Properties = {
+		{ Name = "effect_speed", Type = PropertyType.Float, Default = 1 },
+		{ Name = "effect_jump_height", Type = PropertyType.Float, Default = 1 },
+		{ Name = "effect_jump_height_boost", Type = PropertyType.Float, Default = 1 },
+	}
+})
 
 if (SERVER) then
-	function ENTITY:Apply(playerEnt)
+	function entity:Apply(playerEnt)
 		local movementSpeed = playerEnt:GetPlayerMovementSpeed()
 		local jumpHeight, jumpBoostHeight = playerEnt:GetPlayerJumpHeight()
 
@@ -28,7 +29,7 @@ if (SERVER) then
 		}
 	end
 
-	function ENTITY:Unapply(playerEnt, data)
+	function entity:Unapply(playerEnt, data)
 		playerEnt:UpdatePlayerMovementSpeed(data.movementSpeed)
 		playerEnt:UpdatePlayerJumpHeight(data.jumpHeight, data.jumpBoostHeight)
 	end

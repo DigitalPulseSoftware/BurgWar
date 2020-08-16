@@ -1,17 +1,15 @@
 RegisterClientScript()
 
-ENTITY.IsNetworked = true
-
-ENTITY.Properties = {
-	{ Name = "duration", Type = PropertyType.Float, Default = 5 },
-	{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
-	{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
-	{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
-	{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
-}
-
-if (EDITOR) then
-	ENTITY.EditorActions = {
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "duration", Type = PropertyType.Float, Default = 5 },
+		{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
+		{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
+		{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
+		{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
+	},
+	EditorActions = {
 		{
 			Name = "resizeSprite",
 			Label = "Resize to texture size",
@@ -27,9 +25,9 @@ if (EDITOR) then
 			end
 		}
 	}
-end
+})
 
-function ENTITY:Initialize()
+entity:On("init", function (self)
 	self.Duration = math.floor(self:GetProperty("duration") * 1000)
 
 	local scale = self:GetProperty("scale")
@@ -49,10 +47,10 @@ function ENTITY:Initialize()
 			TexturePath = self:GetProperty("texture")
 		})
 	end
-end
+end)
 
 if (SERVER) then
-	function ENTITY:OnCollisionStart(other)
+	entity:On("collisionstart", function (self, other)
 		-- Disabling an entity won't have any effect until the next tick, but we may still be resolving collisions
 		if (not self:IsEnabled()) then
 			return false
@@ -71,5 +69,5 @@ if (SERVER) then
 		end
 
 		return false
-	end
+	end)
 end
