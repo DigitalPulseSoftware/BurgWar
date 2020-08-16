@@ -22,7 +22,10 @@ namespace bw
 			~PlayerMovementComponent() = default;
 
 			inline const std::shared_ptr<PlayerMovementController>& GetController() const;
+			inline float GetJumpBoostHeight() const;
+			inline float GetJumpHeight() const;
 			inline float GetJumpTime() const;
+			inline float GetMovementSpeed() const;
 
 			inline bool IsFacingRight() const;
 			inline bool IsOnGround() const;
@@ -30,7 +33,10 @@ namespace bw
 			void UpdateController(std::shared_ptr<PlayerMovementController> controller);
 			inline bool UpdateFacingRightState(bool isFacingRight);
 			inline void UpdateGroundState(bool isOnGround);
+			inline void UpdateJumpBoostHeight(float boostHeight);
+			inline void UpdateJumpHeight(float jumpHeight);
 			inline void UpdateJumpTime(float jumpTime);
+			inline void UpdateMovementSpeed(float movementSpeed);
 			inline void UpdateWasJumpingState(bool isJumping);
 
 			inline bool WasJumping() const;
@@ -42,7 +48,10 @@ namespace bw
 			bool m_isFacingRight;
 			bool m_isOnGround;
 			bool m_lastJumpingState;
+			float m_jumpBoostHeight;
+			float m_jumpHeight;
 			float m_jumpTime;
+			float m_movementSpeed;
 	};
 }
 

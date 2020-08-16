@@ -295,6 +295,25 @@ namespace bw
 			serializer &= data.asleep;
 			serializer &= data.mass;
 			serializer &= data.momentOfInertia;
+
+			bool hasPlayerMovement;
+			if (serializer.IsWriting())
+				hasPlayerMovement = data.playerMovement.has_value();
+
+			serializer &= hasPlayerMovement;
+			if (!serializer.IsWriting())
+			{
+				if (hasPlayerMovement)
+					data.playerMovement.emplace();
+			}
+
+			if (data.playerMovement.has_value())
+			{
+				auto& playerMovement = data.playerMovement.value();
+				serializer &= playerMovement.jumpHeight;
+				serializer &= playerMovement.jumpHeightBoost;
+				serializer &= playerMovement.movementSpeed;
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)

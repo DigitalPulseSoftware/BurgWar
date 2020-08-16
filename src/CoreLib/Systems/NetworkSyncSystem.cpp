@@ -366,6 +366,16 @@ namespace bw
 				physicsEvent.isAsleep = entityPhysics.IsSleeping();
 				physicsEvent.mass = entityPhysics.GetMass();
 				physicsEvent.momentOfInertia = entityPhysics.GetMomentOfInertia();
+
+				if (entity->HasComponent<PlayerMovementComponent>())
+				{
+					auto& playerMovementData = physicsEvent.playerMovement.emplace();
+				
+					auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
+					playerMovementData.jumpHeight = entityPlayerMovement.GetJumpHeight();
+					playerMovementData.jumpHeightBoost = entityPlayerMovement.GetJumpBoostHeight();
+					playerMovementData.movementSpeed = entityPlayerMovement.GetMovementSpeed();
+				}
 			}
 
 			m_physicsUpdateEntities.Clear();

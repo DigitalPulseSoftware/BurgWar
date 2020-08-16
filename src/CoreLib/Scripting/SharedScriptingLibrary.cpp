@@ -108,15 +108,39 @@ namespace bw
 		state.new_usertype<IncomingNetworkPacket>("IncomingNetworkPacket",
 			"new", sol::no_constructor,
 
+			"ReadCompressedInteger",  &IncomingNetworkPacket::ReadCompressedInteger,
 			"ReadCompressedUnsigned", &IncomingNetworkPacket::ReadCompressedUnsigned,
-			"ReadString", &IncomingNetworkPacket::ReadString
+			"ReadDouble",  &IncomingNetworkPacket::ReadDouble,
+			"ReadSingle",  &IncomingNetworkPacket::ReadSingle,
+			"ReadString",  &IncomingNetworkPacket::ReadString,
+			"ReadVector2", &IncomingNetworkPacket::ReadVector2,
+
+			"ReadEntity", [&](IncomingNetworkPacket& incomingPacket) -> sol::object
+			{
+				Nz::Int64 entityId = incomingPacket.ReadCompressedInteger();
+				const Ndk::EntityHandle& entity = m_match.RetrieveEntityByUniqueId(entityId);
+				if (entity && entity->HasComponent<ScriptComponent>())
+					return entity->GetComponent<ScriptComponent>().GetTable();
+				else
+					return sol::nil;
+			}
 		);
 
 		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
 			"new", sol::no_constructor,
 
+			"WriteCompressedInteger",  &OutgoingNetworkPacket::WriteCompressedInteger,
 			"WriteCompressedUnsigned", &OutgoingNetworkPacket::WriteCompressedUnsigned,
-			"WriteString", &OutgoingNetworkPacket::WriteString
+			"WriteDouble",  &OutgoingNetworkPacket::WriteDouble,
+			"WriteSingle",  &OutgoingNetworkPacket::WriteSingle,
+			"WriteString",  &OutgoingNetworkPacket::WriteString,
+			"WriteVector2", & OutgoingNetworkPacket::WriteVector2,
+
+			"WriteEntity", [&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
+			{
+				const Ndk::EntityHandle& entity = SharedElementLibrary::AssertScriptEntity(entityTable);
+				outgoingPacket.WriteCompressedInteger(m_match.RetrieveUniqueIdByEntity(entity));
+			}
 		);
 	}
 

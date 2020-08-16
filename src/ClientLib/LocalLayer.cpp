@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalLayer.hpp>
+#include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
@@ -482,12 +483,27 @@ namespace bw
 		LocalLayerEntity& localEntity = *entityOpt;
 		if (localEntity.IsPhysical())
 		{
-			auto& entityPhys = localEntity.GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+			const Ndk::EntityHandle& entity = localEntity.GetEntity();
+
+			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			entityPhys.SetMass(packet.mass, false);
 			entityPhys.SetMomentOfInertia(packet.momentOfInertia);
 
 			if (packet.asleep)
 				entityPhys.ForceSleep();
+
+			if (packet.playerMovement)
+			{
+				auto& packetPlayerMovement = packet.playerMovement.value();
+
+				if (entity->HasComponent<PlayerMovementComponent>())
+				{
+					auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
+					entityPlayerMovement.UpdateJumpBoostHeight(packetPlayerMovement.jumpHeightBoost);
+					entityPlayerMovement.UpdateJumpHeight(packetPlayerMovement.jumpHeight);
+					entityPlayerMovement.UpdateMovementSpeed(packetPlayerMovement.movementSpeed);
+				}
+			}
 		}
 	}
 

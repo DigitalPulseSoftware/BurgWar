@@ -33,4 +33,20 @@ namespace bw
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
+
+	void ServerEntityLibrary::UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
+	{
+		SharedEntityLibrary::UpdatePlayerJumpHeight(entity, jumpHeight, jumpHeightBoost);
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
+	}
+
+	void ServerEntityLibrary::UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed)
+	{
+		SharedEntityLibrary::UpdatePlayerMovement(entity, movementSpeed);
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
+	}
 }

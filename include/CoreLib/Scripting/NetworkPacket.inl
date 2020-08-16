@@ -27,9 +27,33 @@ namespace bw
 	{
 	}
 
+	inline double IncomingNetworkPacket::ReadDouble()
+	{
+		double output;
+		m_stream >> output;
+
+		return output;
+	}
+
+	inline Nz::Int64 IncomingNetworkPacket::ReadCompressedInteger()
+	{
+		CompressedSigned<Nz::Int64> output;
+		m_stream >> output;
+
+		return output;
+	}
+
 	inline Nz::UInt64 IncomingNetworkPacket::ReadCompressedUnsigned()
 	{
 		CompressedUnsigned<Nz::UInt64> output;
+		m_stream >> output;
+
+		return output;
+	}
+
+	inline float IncomingNetworkPacket::ReadSingle()
+	{
+		float output;
 		m_stream >> output;
 
 		return output;
@@ -39,6 +63,15 @@ namespace bw
 	{
 		std::string output;
 		m_stream >> output;
+
+		return output;
+	}
+
+	inline Nz::Vector2f IncomingNetworkPacket::ReadVector2()
+	{
+		Nz::Vector2f output;
+		output.x = ReadSingle();
+		output.y = ReadSingle();
 
 		return output;
 	}
@@ -57,14 +90,36 @@ namespace bw
 		return packet;
 	}
 	
+	inline void OutgoingNetworkPacket::WriteCompressedInteger(Nz::Int64 number)
+	{
+		CompressedSigned<Nz::Int64> input(number);
+		m_stream << input;
+	}
+
 	inline void OutgoingNetworkPacket::WriteCompressedUnsigned(Nz::UInt64 number)
 	{
 		CompressedUnsigned<Nz::UInt64> input(number);
 		m_stream << input;
 	}
 
+	inline void OutgoingNetworkPacket::WriteDouble(double number)
+	{
+		m_stream << number;
+	}
+
+	inline void OutgoingNetworkPacket::WriteSingle(float number)
+	{
+		m_stream << number;
+	}
+
 	inline void OutgoingNetworkPacket::WriteString(const std::string& str)
 	{
 		m_stream << str;
+	}
+	
+	inline void OutgoingNetworkPacket::WriteVector2(const Nz::Vector2f& vec)
+	{
+		WriteSingle(vec.x);
+		WriteSingle(vec.y);
 	}
 }

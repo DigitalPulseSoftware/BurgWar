@@ -511,7 +511,7 @@ namespace bw
 			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
 				auto& layer = *it.value();
-				if (layer.weaponEvents.empty())
+				if (layer.physicsEvents.empty())
 					continue;
 
 				LayerIndex layerIndex = it.key();
@@ -526,11 +526,22 @@ namespace bw
 					auto& physicsData = pair.second;
 					physicsPacket.asleep = physicsData.isAsleep;
 					physicsPacket.mass = physicsData.mass;
+					physicsPacket.momentOfInertia = physicsData.momentOfInertia;
+					
+					if (physicsData.playerMovement)
+					{
+						const auto& playerMovementData = physicsData.playerMovement.value();
+
+						auto& packetMovement = physicsPacket.playerMovement.emplace();
+						packetMovement.jumpHeight = playerMovementData.jumpHeight;
+						packetMovement.jumpHeightBoost = playerMovementData.jumpHeightBoost;
+						packetMovement.movementSpeed = playerMovementData.movementSpeed;
+					}
 
 					m_session.SendPacket(physicsPacket);
 				}
 
-				layer.weaponEvents.clear();
+				layer.physicsEvents.clear();
 			}
 
 			m_pendingEvents.Clear(VisibilityEventType::PhysicsUpdate);

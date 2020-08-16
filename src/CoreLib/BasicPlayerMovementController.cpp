@@ -20,8 +20,8 @@ namespace bw
 		{
 			if (!playerMovement.WasJumping() && isOnGround)
 			{
-				constexpr float jumpHeight = 80.f;
-				constexpr float jumpBoostHeight = 80.f;
+				float jumpHeight = playerMovement.GetJumpHeight();
+				float jumpBoostHeight = playerMovement.GetJumpBoostHeight();
 
 				jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 128.f);
 
@@ -39,13 +39,13 @@ namespace bw
 
 		rigidBody.UpdateVelocity((disableGravity) ? Nz::Vector2f::Zero() : gravity, damping, dt);
 
-		constexpr float playerVelocity = 500.f;
+		float playerVelocity = playerMovement.GetMovementSpeed();
 
 		constexpr float groundAccelTime = 0.1f;
-		constexpr float groundAccel = playerVelocity / groundAccelTime;
+		float groundAccel = playerVelocity / groundAccelTime;
 
 		constexpr float airAccelTime = 0.5f;
-		constexpr float airAccel = playerVelocity / airAccelTime;
+		float airAccel = playerVelocity / airAccelTime;
 
 		float targetVelocity = 0.f;
 		if (inputs.isMovingLeft)

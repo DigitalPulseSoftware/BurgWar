@@ -32,6 +32,18 @@ namespace bw
 			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
 		};
 
+		elementMetatable["Disable"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			entity->Disable();
+		};
+
+		elementMetatable["Enable"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			entity->Enable();
+		};
+
 		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -61,6 +73,12 @@ namespace bw
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
 		};
 
+		elementMetatable["IsEnabled"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			return entity->IsEnabled();
+		};
+
 		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -83,6 +101,12 @@ namespace bw
 		elementMetatable["OnAsync"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
 		{
 			RegisterEvent(entityTable, event, std::move(callback), true);
+		};
+    
+		elementMetatable["SetScale"] = [](const sol::table& entityTable, const Nz::Vector2f& scale)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
+			entity->GetComponent<Ndk::NodeComponent>().SetScale(scale, Nz::CoordSys_Local);
 		};
 
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)

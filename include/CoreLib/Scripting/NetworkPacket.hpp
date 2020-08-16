@@ -11,6 +11,7 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ByteStream.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <memory>
 
 namespace bw
@@ -37,8 +38,12 @@ namespace bw
 		public:
 			inline IncomingNetworkPacket(const NetworkStringStore& stringStore, const Packets::ScriptPacket& packet);
 
+			inline double ReadDouble();
+			inline Nz::Int64 ReadCompressedInteger();
 			inline Nz::UInt64 ReadCompressedUnsigned();
+			inline float ReadSingle();
 			inline std::string ReadString();
+			inline Nz::Vector2f ReadVector2();
 	};
 
 	class OutgoingNetworkPacket : public NetworkPacket
@@ -48,8 +53,12 @@ namespace bw
 
 			Packets::ScriptPacket ToPacket(const NetworkStringStore& stringStore) const;
 			
+			inline void WriteCompressedInteger(Nz::Int64 number);
 			inline void WriteCompressedUnsigned(Nz::UInt64 number);
+			inline void WriteDouble(double number);
+			inline void WriteSingle(float number);
 			inline void WriteString(const std::string& str);
+			inline void WriteVector2(const Nz::Vector2f& vec);
 	};
 }
 

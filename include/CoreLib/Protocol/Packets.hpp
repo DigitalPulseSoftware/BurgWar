@@ -336,11 +336,19 @@ namespace bw
 
 		DeclarePacket(EntityPhysics)
 		{
+			struct PlayerMovement
+			{
+				float movementSpeed;
+				float jumpHeight;
+				float jumpHeightBoost;
+			};
+
 			Nz::UInt16 stateTick;
 			Helper::EntityId entityId;
 			bool asleep;
 			float mass;
 			float momentOfInertia;
+			std::optional<PlayerMovement> playerMovement;
 		};
 
 		DeclarePacket(EntityWeapon)
