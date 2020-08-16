@@ -35,6 +35,7 @@ build/**/*.vcxproj
 build/**/*.vcxproj.FileListAbsolute.txt
 build/**/*.tlog
 build/**/*.sln
+build/**/*.recipe
 build/**/*.vcxprojResolveAssemblyReference.cache
 build/**/*.nativecodeanalysis.all.xml
 build/**/*.nativecodeanalysis.xml
