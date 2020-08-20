@@ -28,7 +28,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = input->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ScriptingEvent::InputUpdate>(input->GetInputs());
+				entityScript.ExecuteCallback<ElementEvent::InputUpdate>(input->GetInputs());
 			});
 		}
 
@@ -36,7 +36,7 @@ namespace bw
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-			entityScript.ExecuteCallback<ScriptingEvent::Destroyed>();
+			entityScript.ExecuteCallback<ElementEvent::Destroyed>();
 		});
 	}
 

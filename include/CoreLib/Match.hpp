@@ -57,6 +57,7 @@ namespace bw
 
 			inline Nz::Int64 AllocateUniqueId();
 
+			void BroadcastChatMessage(Player* player, std::string message);
 			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true);
 
 			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;

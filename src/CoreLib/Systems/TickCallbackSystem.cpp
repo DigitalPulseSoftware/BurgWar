@@ -25,7 +25,7 @@ namespace bw
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
-		if (scriptComponent.HasCallbacks(ScriptingEvent::Tick))
+		if (scriptComponent.HasCallbacks(ElementEvent::Tick))
 			m_tickableEntities.Insert(entity);
 		else
 			m_tickableEntities.Remove(entity);
@@ -42,7 +42,7 @@ namespace bw
 			const auto& element = scriptComponent.GetElement();
 
 			//FIXME
-			scriptComponent.ExecuteCallback<ScriptingEvent::Tick>();
+			scriptComponent.ExecuteCallback<ElementEvent::Tick>();
 
 			/*auto result = element->tickFunction(scriptComponent.GetTable());
 			if (result.valid())

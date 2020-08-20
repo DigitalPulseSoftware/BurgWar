@@ -11,7 +11,11 @@ function GM:ClampCameraPosition(viewport, rect, position)
 	return clampedPos
 end
 
-GM.OnFrame = utils.OverrideFunction(GM.OnFrame, function (self, elapsedTime)
+function GM:SetCameraScale(scale)
+	engine_SetCameraZoom(1.0 / scale)
+end
+
+GM:On("frame", function (self, elapsedTime)
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
 		local viewport = engine_GetCameraViewport()
@@ -57,6 +61,8 @@ GM.OnFrame = utils.OverrideFunction(GM.OnFrame, function (self, elapsedTime)
 		end
 
 		engine_SetCameraPosition(clampedOrigin)
+	else
+		self.ShakeData = nil
 	end
 end)
 
@@ -104,7 +110,7 @@ function GM:RefreshCameraRect()
 	end
 end
 
-GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
+GM:On("tick", function (self)
 	self:RefreshCameraRect()
 end)
 

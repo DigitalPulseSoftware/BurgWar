@@ -287,12 +287,12 @@ namespace bw
 		if (m_entity->HasComponent<ScriptComponent>())
 		{
 			auto& scriptComponent = m_entity->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ScriptingEvent::HealthUpdate>(oldHealth, newHealth);
+			scriptComponent.ExecuteCallback<ElementEvent::HealthUpdate>(oldHealth, newHealth);
 
 			if (newHealth == 0)
 			{
-				scriptComponent.ExecuteCallback<ScriptingEvent::Death>();
-				scriptComponent.ExecuteCallback<ScriptingEvent::Died>();
+				scriptComponent.ExecuteCallback<ElementEvent::Death>();
+				scriptComponent.ExecuteCallback<ElementEvent::Died>();
 			}
 		}
 	}

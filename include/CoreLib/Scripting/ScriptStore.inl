@@ -342,7 +342,7 @@ namespace bw
 			Element* parentElement = m_elements[it->second].get();
 			
 			// Merge parent events
-			for (std::size_t i = 0; i < ScriptingEventCount; ++i)
+			for (std::size_t i = 0; i < ElementEventCount; ++i)
 			{
 				const auto& parentCallbacks = parentElement->events[i];
 				auto& callbacks = element->events[i];
@@ -437,7 +437,7 @@ namespace bw
 	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
 	{
 		auto& entityScript = entity->GetComponent<ScriptComponent>();
-		if (!entityScript.ExecuteCallback<ScriptingEvent::Init>())
+		if (!entityScript.ExecuteCallback<ElementEvent::Init>())
 		{
 			//TODO: Retrieve error message
 			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}", m_elementTypeName, entityClass.name);

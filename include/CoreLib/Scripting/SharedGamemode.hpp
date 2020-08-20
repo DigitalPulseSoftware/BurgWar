@@ -8,6 +8,8 @@
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <CoreLib/Scripting/GamemodeEvents.hpp>
+#include <array>
 #include <string>
 
 namespace bw
@@ -21,10 +23,17 @@ namespace bw
 			SharedGamemode(const SharedGamemode&) = delete;
 			~SharedGamemode() = default;
 
-			template<typename... Args>
-			std::optional<sol::object> ExecuteCallback(const std::string& callbackName, Args&&... args);
+			template<GamemodeEvent Event, typename... Args>
+			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(const Args&... args);
+
+			template<GamemodeEvent Event, typename... Args>
+			std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
 
 			inline sol::table& GetTable();
+
+			inline bool HasCallbacks(GamemodeEvent event) const;
+
+			inline void RegisterCallback(GamemodeEvent event, sol::protected_function callback, bool async);
 
 			virtual void Reload();
 
@@ -37,7 +46,15 @@ namespace bw
 
 		private:
 			void InitializeGamemode();
+			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async);
 
+			struct Callback
+			{
+				sol::protected_function callback;
+				bool async = false;
+			};
+
+			std::array<std::vector<Callback>, GamemodeEventCount> m_eventCallbacks;
 			std::filesystem::path m_gamemodePath;
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_gamemodeTable;

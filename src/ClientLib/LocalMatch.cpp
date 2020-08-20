@@ -432,7 +432,7 @@ namespace bw
 		if (!m_gamemode)
 		{
 			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
-			m_gamemode->ExecuteCallback("OnInit");
+			m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 		}
 		else
 			m_gamemode->Reload();
@@ -565,7 +565,7 @@ namespace bw
 		}
 
 		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnFrame", elapsedTime);
+			m_gamemode->ExecuteCallback<GamemodeEvent::Frame>(elapsedTime);
 
 		for (auto& layer : m_layers)
 		{
@@ -582,6 +582,9 @@ namespace bw
 		}
 
 		m_renderWorld.Update(elapsedTime);
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback<GamemodeEvent::PostFrame>(elapsedTime);
 
 		for (auto& layer : m_layers)
 		{
@@ -896,7 +899,7 @@ namespace bw
 
 		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName);
 
-		m_gamemode->ExecuteCallback("OnPlayerJoined", newPlayer.CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>("OnPlayerJoined", newPlayer.CreateHandle());
 	}
 
 	void LocalMatch::HandlePlayerLeaving(const Packets::PlayerLeaving& packet)
@@ -908,7 +911,7 @@ namespace bw
 		if (!playerOpt)
 			return;
 
-		m_gamemode->ExecuteCallback("OnPlayerLeave", playerOpt->CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerLeave>(playerOpt->CreateHandle());
 
 		playerOpt.reset();
 	}
@@ -922,7 +925,7 @@ namespace bw
 		if (!playerOpt)
 			return;
 
-		m_gamemode->ExecuteCallback("OnPlayerNameUpdate", playerOpt->CreateHandle(), packet.newName);
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerNameUpdate>(playerOpt->CreateHandle(), packet.newName);
 		playerOpt->UpdateName(packet.newName);
 	}
 
@@ -936,7 +939,7 @@ namespace bw
 			m_matchPlayers[playerData.playerIndex]->UpdatePing(playerData.ping);
 		}
 
-		m_gamemode->ExecuteCallback("OnPlayerPingUpdate");
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerPingUpdate>();
 	}
 
 	void LocalMatch::HandleScriptPacket(const Packets::ScriptPacket& packet)
@@ -1347,7 +1350,8 @@ namespace bw
 	{
 		m_localPlayers[packet.localIndex].layerIndex = packet.layerIndex;
 
-		m_gamemode->ExecuteCallback("OnChangeLayer", m_activeLayerIndex, static_cast<LayerIndex>(packet.layerIndex));
+		m_gamemode->ExecuteCallback<GamemodeEvent::ChangeLayer>(m_activeLayerIndex, static_cast<LayerIndex>(packet.layerIndex));
+
 		m_activeLayerIndex = packet.layerIndex;
 
 		auto& layer = m_layers[m_activeLayerIndex];
@@ -1431,7 +1435,7 @@ namespace bw
 	void LocalMatch::InitializeScoreboard()
 	{
 		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
-		m_gamemode->ExecuteCallback("OnInitScoreboard", m_scoreboard->CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::InitScoreboard>(m_scoreboard->CreateHandle());
 
 		Nz::Vector2f size = Nz::Vector2f(m_renderTarget->GetSize());
 
@@ -1475,7 +1479,7 @@ namespace bw
 		}
 
 		if (m_gamemode)
-			m_gamemode->ExecuteCallback("OnTick");
+			m_gamemode->ExecuteCallback<GamemodeEvent::Tick>();
 
 		for (auto& layer : m_layers)
 		{

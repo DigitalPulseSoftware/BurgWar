@@ -44,7 +44,7 @@ namespace bw
 
 		BuildMatchData();
 
-		m_gamemode->ExecuteCallback("OnInit");
+		m_gamemode->ExecuteCallback<GamemodeEvent::Init>("OnInit");
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}
@@ -63,6 +63,20 @@ namespace bw
 		m_weaponStore.reset();
 		m_gamemode.reset();
 		m_scriptingLibrary.reset();
+	}
+
+	void Match::BroadcastChatMessage(Player* player, std::string message)
+	{
+		Packets::ChatMessage chatPacket;
+		chatPacket.playerIndex = player->GetPlayerIndex();
+		chatPacket.content = std::move(message);
+
+		ForEachPlayer([&](Player* player)
+		{
+			chatPacket.localIndex = player->GetLocalIndex();
+
+			player->SendPacket(chatPacket);
+		});
 	}
 
 	Player* Match::CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name)
@@ -85,7 +99,7 @@ namespace bw
 
 		m_players[playerIndex] = std::move(playerPtr);
 
-		m_gamemode->ExecuteCallback("OnPlayerConnected", player->CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerConnected>(player->CreateHandle());
 
 		return player;
 	}
@@ -400,7 +414,7 @@ namespace bw
 		auto it = std::find_if(m_players.begin(), m_players.end(), [player](const auto& playerPtr) { return playerPtr.get() == player; });
 		assert(it != m_players.end());
 
-		m_gamemode->ExecuteCallback("OnPlayerLeave", player->CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerLeave>(player->CreateHandle());
 
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = player->GetName() + " has left";
@@ -587,7 +601,7 @@ namespace bw
 
 		newPlayer->SetReady();
 
-		m_gamemode->ExecuteCallback("OnPlayerJoin", newPlayer->CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
 
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = newPlayer->GetName() + " has joined.";
@@ -621,7 +635,7 @@ namespace bw
 			player->OnTick(lastTick);
 		});
 
-		m_gamemode->ExecuteCallback("OnTick");
+		m_gamemode->ExecuteCallback<GamemodeEvent::Tick>();
 
 		m_terrain->Update(elapsedTime);
 

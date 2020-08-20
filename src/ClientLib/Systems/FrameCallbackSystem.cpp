@@ -26,7 +26,7 @@ namespace bw
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
-		if (scriptComponent.HasCallbacks(ScriptingEvent::Frame))
+		if (scriptComponent.HasCallbacks(ElementEvent::Frame))
 			m_frameUpdateEntities.Insert(entity);
 		else
 			m_frameUpdateEntities.Remove(entity);
@@ -39,7 +39,7 @@ namespace bw
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			const auto& element = scriptComponent.GetElement();
 
-			scriptComponent.ExecuteCallback<ScriptingEvent::Frame>();
+			scriptComponent.ExecuteCallback<ElementEvent::Frame>();
 		}
 	}
 

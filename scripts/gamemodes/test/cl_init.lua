@@ -1,7 +1,7 @@
 include("cl_camera.lua")
 include("cl_scoreboard.lua")
 
-function GM:OnChangeLayer(oldLayer, newLayer)
+GM:On("changelayer", function (self, oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
 
 	if (oldLayer ~= NoLayer) then
@@ -15,4 +15,4 @@ function GM:OnChangeLayer(oldLayer, newLayer)
 			ent:OnEnterLayer(newLayer)
 		end
 	end
-end
+end)

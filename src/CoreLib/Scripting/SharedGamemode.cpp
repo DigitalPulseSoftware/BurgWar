@@ -22,6 +22,16 @@ namespace bw
 
 		m_gamemodeTable = state.create_table();
 
+		m_gamemodeTable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		{
+			RegisterEvent(gamemodeTable, event, std::move(callback), false);
+		};
+
+		m_gamemodeTable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		{
+			RegisterEvent(gamemodeTable, event, std::move(callback), true);
+		};
+
 		InitializeGamemode();
 	}
 
@@ -32,5 +42,24 @@ namespace bw
 
 	void SharedGamemode::InitializeGamemode()
 	{
+	}
+
+	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async)
+	{
+		assert(gamemodeTable == m_gamemodeTable);
+
+		std::optional<GamemodeEvent> gamemodeEventOpt = RetrieveGamemodeEvent(event);
+		if (!gamemodeEventOpt)
+			throw std::runtime_error("unknown event " + std::string(event));
+
+		GamemodeEvent scriptingEvent = gamemodeEventOpt.value();
+		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
+
+		if (async && HasReturnValue(scriptingEvent))
+			throw std::runtime_error("events returning a value cannot be async");
+
+		auto& callbackData = m_eventCallbacks[eventIndex].emplace_back();
+		callbackData.async = async;
+		callbackData.callback = std::move(callback);
 	}
 }

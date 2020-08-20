@@ -9,7 +9,7 @@ function GM:GetPlayerKills(player)
 	return self.ScoreKills[player:GetPlayerIndex()] or 0
 end
 
-GM.OnPlayerLeave = utils.OverrideFunction(GM.OnPlayerLeave, function (self, player)
+GM:On("playerleave", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
 	self.ScoreDeaths[playerIndex] = nil
 	self.ScoreKills[playerIndex] = nil

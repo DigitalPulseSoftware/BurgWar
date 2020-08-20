@@ -7,10 +7,10 @@
 
 namespace bw
 {
-	template<ScriptingEvent Event, typename... Args>
+	template<ElementEvent Event, typename... Args>
 	std::enable_if_t<!HasReturnValue(Event), bool> ScriptComponent::ExecuteCallback(const Args&... args)
 	{
-		using EventData = ScriptingEventData<Event>;
+		using EventData = ElementEventData<Event>;
 
 		const auto& callbacks = m_eventCallbacks[UnderlyingCast(Event)];
 		if (callbacks.empty())
@@ -46,10 +46,10 @@ namespace bw
 		return ret;
 	}
 
-	template<ScriptingEvent Event, typename... Args>
-	std::enable_if_t<HasReturnValue(Event), std::optional<typename ScriptingEventData<Event>::ResultType>> ScriptComponent::ExecuteCallback(const Args&... args)
+	template<ElementEvent Event, typename... Args>
+	std::enable_if_t<HasReturnValue(Event), std::optional<typename ElementEventData<Event>::ResultType>> ScriptComponent::ExecuteCallback(const Args&... args)
 	{
-		using EventData = ScriptingEventData<Event>;
+		using EventData = ElementEventData<Event>;
 		using ResultType = typename EventData::ResultType;
 
 		std::optional<ResultType> combinedResult;
@@ -116,13 +116,13 @@ namespace bw
 		return m_entityTable;
 	}
 
-	inline bool ScriptComponent::HasCallbacks(ScriptingEvent event) const
+	inline bool ScriptComponent::HasCallbacks(ElementEvent event) const
 	{
 		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
 		return !callbacks.empty();
 	}
 
-	inline void ScriptComponent::RegisterCallback(ScriptingEvent event, sol::protected_function callback, bool async)
+	inline void ScriptComponent::RegisterCallback(ElementEvent event, sol::protected_function callback, bool async)
 	{
 		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
 		auto& callbackData = callbacks.emplace_back();

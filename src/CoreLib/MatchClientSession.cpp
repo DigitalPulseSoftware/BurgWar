@@ -50,7 +50,7 @@ namespace bw
 		m_commandStore.UnserializePacket(*this, packet);
 	}
 
-	void MatchClientSession::OnTick(float elapsedTime)
+	void MatchClientSession::OnTick(float /*elapsedTime*/)
 	{
 		if (!m_queuedInputs.IsEmpty())
 		{
@@ -154,29 +154,20 @@ namespace bw
 		if (packet.localIndex >= m_players.size())
 			return;
 
-		if (auto contentOpt = m_match.GetGamemode()->ExecuteCallback("OnPlayerChat", m_players[packet.localIndex]->CreateHandle(), packet.message))
-		{
-			sol::object& content = *contentOpt;
-			if (content.is<sol::nil_t>())
-				return;
+		Player* player = m_players[packet.localIndex];
 
-			if (!content.is<std::string>())
-			{
-				bwLog(m_match.GetLogger(), LogLevel::Error, "OnPlayerChat was excepted to return a string, but returned a {}", content.get_type());
-				return;
-			}
+		auto chatRetOpt = m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerChat>(m_players[packet.localIndex]->CreateHandle(), packet.message);
+		if (!chatRetOpt)
+			return m_match.BroadcastChatMessage(player, packet.message);
 
-			Packets::ChatMessage chatPacket;
-			chatPacket.playerIndex = m_players[packet.localIndex]->GetPlayerIndex();
-			chatPacket.content = content.as<std::string>();
+		GamemodePlayerChatReturn& chatRet = *chatRetOpt;
+		if (chatRet.first.has_value() && !*chatRet.first)
+			return;
 
-			m_match.ForEachPlayer([&](Player* player)
-			{
-				chatPacket.localIndex = player->GetLocalIndex();
-
-				player->SendPacket(chatPacket);
-			});
-		}
+		if (chatRet.second)
+			m_match.BroadcastChatMessage(player, std::move(*chatRet.second));
+		else
+			m_match.BroadcastChatMessage(player, packet.message);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::PlayerConsoleCommand& packet)

@@ -47,7 +47,7 @@ namespace bw
 				{
 					auto& firstScript = first->GetComponent<ScriptComponent>();
 					auto& secondScript = second->GetComponent<ScriptComponent>();
-					if (auto ret = firstScript.ExecuteCallback<ScriptingEvent::CollisionStart>(secondScript.GetTable()); ret.has_value())
+					if (auto ret = firstScript.ExecuteCallback<ElementEvent::CollisionStart>(secondScript.GetTable()); ret.has_value())
 						shouldCollide = *ret;
 				}
 			};

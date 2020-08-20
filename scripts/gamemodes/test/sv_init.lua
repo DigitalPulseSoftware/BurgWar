@@ -4,7 +4,7 @@ GM.PlayerSeeds = {}
 
 math.randomseed(os.time())
 
-function GM:OnPlayerDeath(player, attacker)
+GM:OnAsync("playerdeath", function (self, player, attacker)
 	self:IncreasePlayerDeath(player)
 	if (attacker) then
 		local attackerPlayer = attacker:GetOwner()
@@ -16,9 +16,9 @@ function GM:OnPlayerDeath(player, attacker)
 	print(player:GetName() .. " died")
 	timer.Sleep(3000)
 	self:SpawnPlayer(player)
-end
+end)
 
-GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player)
+GM:On("playerjoined", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = math.random(0, math.maxinteger)
 
 	print(player:GetName() .. " joined")
@@ -26,7 +26,7 @@ GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player
 	self:SpawnPlayer(player)
 end)
 
-GM.OnPlayerLeave = utils.OverrideFunction(GM.OnPlayerLeave, function (self, player)
+GM:On("playerleave", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = nil
 end)
 
@@ -67,11 +67,11 @@ password = table.concat(password)
 
 print("Admin password: " .. password)
 
-function GM:OnPlayerChat(player, message)
+GM:On("playerchat", function (self, player, message)
 	if (message:sub(1,1) == "/") then
 		local commandName, commandArgs = message:match("/(%w+)%s*(.*)")
 		if (not commandName) then
-			return
+			return false
 		end
 
 		if (commandName == "admin") then
@@ -82,18 +82,18 @@ function GM:OnPlayerChat(player, message)
 		elseif (commandName == "suicide") then
 			local controlledEntity = player:GetControlledEntity()
 			if (not controlledEntity) then
-				return
+				return false
 			end
 
 			controlledEntity:Kill()
 		elseif (commandName == "noclip") then
 			if (not player:IsAdmin()) then
-				return
+				return false
 			end
 
 			local controlledEntity = player:GetControlledEntity()
 			if (not controlledEntity) then
-				return
+				return false
 			end
 
 			if (controlledEntity.previousController) then
@@ -106,14 +106,14 @@ function GM:OnPlayerChat(player, message)
 				player:PrintChatMessage("Noclip enabled")
 			end
 		end
-	else
-		return message
+
+		return false
 	end
-end
+end)
 
 GM.NextSpawnTime = 0
 
-GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
+GM:On("tick", function (self)
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 10000) then
@@ -141,10 +141,7 @@ function GM:ChoosePlayerSpawnPosition()
 	return spawnpointEntity:GetPosition(), spawnpointEntity:GetLayerIndex()
 end
 
-function GM:OnPlayerChangeLayer(player, newLayer)
-	-- FIXME: This shouldn't be handled by this callback
-
-	local oldLayer = player:GetLayerIndex()
+GM:On("playerlayerupdate", function (self, player, oldLayer, newLayer)
 	print("Player " .. player:GetName() .. " change layer (", oldLayer .. " => " ..  newLayer .. ")")
 	if (oldLayer ~= NoLayer) then
 		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", oldLayer)) do
@@ -157,4 +154,4 @@ function GM:OnPlayerChangeLayer(player, newLayer)
 			ent:OnPlayerEnterLayer(player, newLayer)
 		end
 	end
-end
+end)

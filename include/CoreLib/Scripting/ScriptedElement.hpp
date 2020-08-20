@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDELEMENT_HPP
 
 #include <CoreLib/EntityProperties.hpp>
-#include <CoreLib/Scripting/Events.hpp>
+#include <CoreLib/Scripting/ElementEvents.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <Thirdparty/sol3/sol.hpp>
@@ -37,7 +37,7 @@ namespace bw
 		};
 
 		sol::table elementTable;
-		std::array<std::vector<Callback>, ScriptingEventCount> events;
+		std::array<std::vector<Callback>, ElementEventCount> events;
 		std::string base;
 		std::string name;
 		std::string fullName;

@@ -1,4 +1,4 @@
-function GM:OnInitScoreboard(scoreboard)
+GM:On("initscoreboard", function (self, scoreboard)
 	self.Scoreboard = scoreboard
 	self.ScoreboardColumns = {}
 
@@ -11,16 +11,16 @@ function GM:OnInitScoreboard(scoreboard)
 	for _, player in pairs(match.GetPlayers()) do
 		self:RegisterScoreboardPlayer(player)
 	end
-end
+end)
 
-function GM:OnPlayerJoined(player)
+GM:On("playerjoined", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
 	end
 
 	self:RegisterScoreboardPlayer(player)
-end
+end)
 
 function GM:RegisterScoreboardPlayer(player)
 	local scoreboard = assert(self.Scoreboard)
@@ -43,16 +43,16 @@ function GM:RegisterScoreboardPlayer(player)
 	}, isLocalPlayer)
 end
 
-function GM:OnPlayerLeave(player)
+GM:On("playerleave", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
 	end
 
 	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
-end
+end)
 
-function GM:OnPlayerNameUpdate(player, newName)
+GM:On("playernameupdate", function (self, player, newName)
 	print(player:GetName() .. " has changed name to " .. newName)
 
 	local scoreboard = self.Scoreboard
@@ -61,9 +61,9 @@ function GM:OnPlayerNameUpdate(player, newName)
 	end
 
 	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
-end
+end)
 
-function GM:OnPlayerPingUpdate()
+GM:On("playerpingupdate", function (self, player, newName)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -72,7 +72,7 @@ function GM:OnPlayerPingUpdate()
 	for _, player in pairs(match.GetPlayers()) do
 		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Ping, tostring(player:GetPing() or ""))
 	end
-end
+end)
 
 function GM:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard

@@ -134,11 +134,11 @@ namespace bw
 	
 	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::protected_function callback, bool async)
 	{
-		std::optional<ScriptingEvent> scriptingEventOpt = RetrieveScriptingEvent(event);
+		std::optional<ElementEvent> scriptingEventOpt = RetrieveElementEvent(event);
 		if (!scriptingEventOpt)
 			throw std::runtime_error("unknown event " + std::string(event));
 
-		ScriptingEvent scriptingEvent = scriptingEventOpt.value();
+		ElementEvent scriptingEvent = scriptingEventOpt.value();
 		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
 
 		if (async && HasReturnValue(scriptingEvent))

@@ -133,7 +133,7 @@ namespace bw
 	{
 		if (m_layerIndex != layerIndex)
 		{
-			m_match.GetGamemode()->ExecuteCallback("OnPlayerChangeLayer", CreateHandle(), layerIndex);
+			m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerLayerUpdate>(CreateHandle(), m_layerIndex, layerIndex);
 
 			if (m_layerIndex != NoLayer)
 				UpdateLayerVisibility(m_layerIndex, false);
@@ -373,7 +373,7 @@ namespace bw
 
 	void Player::UpdateName(std::string newName)
 	{
-		m_match.GetGamemode()->ExecuteCallback("OnPlayerNameUpdate", CreateHandle(), newName);
+		m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerNameUpdate>(CreateHandle(), newName);
 		m_name = std::move(newName);
 
 		Packets::PlayerNameUpdate nameUpdatePacket;
@@ -410,10 +410,10 @@ namespace bw
 		if (attacker && attacker->HasComponent<ScriptComponent>())
 		{
 			auto& attackerScript = attacker->GetComponent<ScriptComponent>();
-			m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), attackerScript.GetTable());
+			m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), attackerScript.GetTable());
 		}
 		else
-			m_match.GetGamemode()->ExecuteCallback("OnPlayerDeath", CreateHandle(), sol::nil);
+			m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), sol::nil);
 	}
 
 	void Player::SetReady()
