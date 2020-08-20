@@ -15,6 +15,10 @@ function GM:SetCameraScale(scale)
 	engine_SetCameraZoom(1.0 / scale)
 end
 
+GM:On("init", function (self)
+	self.CameraRect = nil
+end)
+
 GM:On("frame", function (self, elapsedTime)
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
@@ -64,10 +68,6 @@ GM:On("frame", function (self, elapsedTime)
 	else
 		self.ShakeData = nil
 	end
-end)
-
-GM.OnInit = utils.OverrideFunction(GM.OnInit, function (self)
-	self.CameraRect = nil
 end)
 
 function GM:RefreshCameraRect()
