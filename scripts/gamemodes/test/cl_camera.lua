@@ -1,8 +1,8 @@
 GM.ShakeData = nil
 
-function GM:ClampCameraPosition(viewport, rect, position)
+function GM:ClampCameraPosition(viewportSize, rect, position)
 	local mins = rect:GetCorner(false, false)
-	local maxs = rect:GetCorner(true, true) - viewport
+	local maxs = rect:GetCorner(true, true) - viewportSize
 
 	local clampedPos = Vec2()
 	clampedPos.x = math.clamp(position.x, mins.x, maxs.x)
@@ -12,7 +12,8 @@ function GM:ClampCameraPosition(viewport, rect, position)
 end
 
 function GM:SetCameraScale(scale)
-	engine_SetCameraZoom(1.0 / scale)
+	local camera = match.GetCamera()
+	camera:SetZoomFactor(1.0 / scale)
 end
 
 GM:On("init", function (self)
@@ -20,10 +21,12 @@ GM:On("init", function (self)
 end)
 
 GM:On("frame", function (self, elapsedTime)
+	local camera = match.GetCamera()
+
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
-		local viewport = engine_GetCameraViewport()
-		local cameraOrigin = playerPosition - viewport / 2
+		local viewportSize = camera:GetViewport():GetSize() / camera:GetZoomFactor()
+		local cameraOrigin = playerPosition - viewportSize / 2
 
 		local shakeData = self.ShakeData
 		if (shakeData) then
@@ -36,7 +39,7 @@ GM:On("frame", function (self, elapsedTime)
 
 		local clampedOrigin = cameraOrigin
 		if (self.CameraRect and self.CameraRect:IsValid()) then
-			clampedOrigin = self:ClampCameraPosition(viewport, self.CameraRect:GetRect(), cameraOrigin)
+			clampedOrigin = self:ClampCameraPosition(viewportSize, self.CameraRect:GetRect(), cameraOrigin)
 		end
 
 		if (self.CameraRectTransition) then
@@ -45,7 +48,7 @@ GM:On("frame", function (self, elapsedTime)
 
 			local nextClampedOrigin
 			if (targetRectEntity and targetRectEntity:IsValid()) then
-				nextClampedOrigin = self:ClampCameraPosition(viewport, targetRectEntity:GetRect(), cameraOrigin)
+				nextClampedOrigin = self:ClampCameraPosition(viewportSize, targetRectEntity:GetRect(), cameraOrigin)
 			else
 				nextClampedOrigin = cameraOrigin
 			end
@@ -64,7 +67,7 @@ GM:On("frame", function (self, elapsedTime)
 			end
 		end
 
-		engine_SetCameraPosition(clampedOrigin)
+		camera:MoveToPosition(clampedOrigin)
 	else
 		self.ShakeData = nil
 	end

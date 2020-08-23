@@ -16,9 +16,11 @@
 
 namespace bw
 {
+	class Camera;
 	class Player;
 	class RandomEngine;
 
+	using CameraHandle = Nz::ObjectHandle<Camera>;
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	inline AbstractScriptingLibrary::AbstractScriptingLibrary(const Logger& logger) :
@@ -36,6 +38,9 @@ namespace sol
 {
 	template <>
 	struct is_automagical<Ndk::EntityHandle> : std::false_type {};
+
+	template <>
+	struct is_automagical<bw::CameraHandle> : std::false_type {};
 
 	template <>
 	struct is_automagical<bw::PlayerHandle> : std::false_type {};

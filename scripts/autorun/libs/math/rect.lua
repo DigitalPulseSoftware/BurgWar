@@ -64,6 +64,10 @@ function rectmeta:Intersect(rect)
 	return true
 end
 
+function rectmeta:GetSize()
+	return Vec2(self.width, self.height)
+end
+
 function rectmeta:__tostring()
 	return "rect(" .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.width) .. ", " .. tostring(self.height) .. ")"
 end

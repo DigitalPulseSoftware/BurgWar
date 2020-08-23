@@ -398,16 +398,6 @@ namespace bw
 			return m_activeLayerIndex;
 		};
 
-		state["engine_GetCameraViewport"] = [&]()
-		{
-			return Nz::Vector2f(m_renderTarget->GetSize()) / m_camera->GetZoomFactor();
-		};
-
-		state["engine_SetCameraPosition"] = [&](Nz::Vector2f position)
-		{
-			m_camera->MoveToPosition(position);
-		};
-
 		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
 		{
 			if (localIndex >= m_localPlayers.size())

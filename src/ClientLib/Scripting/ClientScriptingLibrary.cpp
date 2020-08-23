@@ -3,7 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
+#include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
+#include <ClientLib/Camera.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Scoreboard.hpp>
@@ -26,6 +28,7 @@ namespace bw
 
 		sol::state& luaState = context.GetLuaState();
 
+		RegisterCameraClass(context);
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
 		RegisterLocalPlayerClass(context);
@@ -126,6 +129,12 @@ namespace bw
 			return scriptComponent.GetTable();
 		};
 
+		library["GetCamera"] = [&]() -> CameraHandle
+		{
+			LocalMatch& match = GetMatch();
+			return match.GetCamera().CreateHandle();
+		};
+
 		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);
@@ -188,6 +197,29 @@ namespace bw
 		};
 	}
 	
+	void ClientScriptingLibrary::RegisterCameraClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Camera>("Camera",
+			"new", sol::no_constructor,
+
+			"GetFOV",         &Camera::GetFOV,
+			"GetPosition",    &Camera::GetPosition,
+			"GetZoomFactor",  &Camera::GetZoomFactor,
+			"GetViewport",    &Camera::GetViewport,
+
+			"MoveBy",         &Camera::MoveBy,
+			"MoveToPosition", &Camera::MoveToPosition,
+
+			"SetFOV",         &Camera::SetFOV,
+			"SetZoomFactor",  &Camera::SetZoomFactor,
+
+			"Project",   sol::overload(Overload<const Nz::Vector2f&>(&Camera::Project), Overload<const Nz::Vector3f&>(&Camera::Project)),
+			"Unproject", sol::overload(Overload<const Nz::Vector2f&>(&Camera::Unproject), Overload<const Nz::Vector3f&>(&Camera::Unproject))
+		);
+	}
+
 	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
 	{
 #define BW_INPUT_PROPERTY(name, type) #name, sol::property( \

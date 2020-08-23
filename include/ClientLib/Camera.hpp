@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_CAMERA_HPP
 #define BURGWAR_CLIENTLIB_CAMERA_HPP
 
+#include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
@@ -15,7 +16,11 @@
 
 namespace bw
 {
-	class Camera
+	class Camera;
+
+	using CameraHandle = Nz::ObjectHandle<Camera>;
+
+	class Camera : public Nz::HandledObject<Camera>
 	{
 		public:
 			Camera(Ndk::World& world, Nz::RenderTarget* renderTarget, bool perspective);

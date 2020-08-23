@@ -28,6 +28,7 @@ namespace bw
 			virtual void RegisterParticleLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;
 
+			void RegisterCameraClass(ScriptingContext& context);
 			void RegisterDummyInputControllerClass(ScriptingContext& context);
 			void RegisterLocalPlayerClass(ScriptingContext& context);
 			void RegisterParticleGroupClass(ScriptingContext& context);
