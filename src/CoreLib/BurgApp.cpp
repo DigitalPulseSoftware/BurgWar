@@ -5,6 +5,7 @@
 #include <CoreLib/BurgApp.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
@@ -36,6 +37,7 @@ namespace bw
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 
 		Ndk::InitializeComponent<AnimationComponent>("Anim");
+		Ndk::InitializeComponent<CollisionDataComponent>("CollData");
 		Ndk::InitializeComponent<CooldownComponent>("Cooldown");
 		Ndk::InitializeComponent<EntityOwnerComponent>("EntOwner");
 		Ndk::InitializeComponent<HealthComponent>("Health");

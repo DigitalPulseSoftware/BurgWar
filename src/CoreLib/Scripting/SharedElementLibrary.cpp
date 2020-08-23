@@ -102,12 +102,6 @@ namespace bw
 		{
 			RegisterEvent(entityTable, event, std::move(callback), true);
 		};
-    
-		elementMetatable["SetScale"] = [](const sol::table& entityTable, const Nz::Vector2f& scale)
-		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
-			entity->GetComponent<Ndk::NodeComponent>().SetScale(scale, Nz::CoordSys_Local);
-		};
 
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
 		{

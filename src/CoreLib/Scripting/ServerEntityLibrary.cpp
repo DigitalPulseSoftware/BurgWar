@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerEntityLibrary.hpp>
+#include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 
 namespace bw
@@ -32,6 +33,22 @@ namespace bw
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
+	}
+
+	void ServerEntityLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
+	{
+		entity->GetComponent<Ndk::NodeComponent>().SetScale(newScale, Nz::CoordSys_Local);
+
+		if (entity->HasComponent<CollisionDataComponent>())
+		{
+			auto& entityCollData = entity->GetComponent<CollisionDataComponent>();
+			auto& entityCollider = entity->GetComponent<Ndk::CollisionComponent2D>();
+
+			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
+		}
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyScaleUpdate(entity);
 	}
 
 	void ServerEntityLibrary::UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)

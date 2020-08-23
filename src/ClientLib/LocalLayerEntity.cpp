@@ -4,6 +4,7 @@
 
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
@@ -321,6 +322,19 @@ namespace bw
 
 			for (VisualEntity* visualEntity : m_visualEntities)
 				visualEntity->UpdateRenderableMatrix(renderable, offsetMatrix);
+		}
+	}
+
+	void LocalLayerEntity::UpdateScale(float newScale)
+	{
+		m_entity->GetComponent<Ndk::NodeComponent>().SetScale(newScale, Nz::CoordSys_Local);
+
+		if (m_entity->HasComponent<CollisionDataComponent>())
+		{
+			auto& entityCollData = m_entity->GetComponent<CollisionDataComponent>();
+			auto& entityCollider = m_entity->GetComponent<Ndk::CollisionComponent2D>();
+
+			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
 		}
 	}
 

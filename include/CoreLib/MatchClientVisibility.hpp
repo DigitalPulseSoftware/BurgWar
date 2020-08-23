@@ -33,6 +33,7 @@ namespace bw
 		InputUpdate,
 		PlayAnimation,
 		PhysicsUpdate,
+		ScaleUpdate,
 		WeaponUpdate,
 
 		Max = WeaponUpdate
@@ -120,6 +121,7 @@ namespace bw
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityMovement> staticMovementUpdateEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> playAnimationEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPhysics> physicsEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityScale> scaleEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityWeapon> weaponEvents;
 				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, VisibleEntityData> visibleEntities;
 				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> deathEvents;
@@ -133,6 +135,7 @@ namespace bw
 				NazaraSlot(NetworkSyncSystem, OnEntitiesHealthUpdate,  onEntitiesHealthUpdate);
 				NazaraSlot(NetworkSyncSystem, OnEntitiesInputUpdate,   onEntitiesInputUpdate);
 				NazaraSlot(NetworkSyncSystem, OnEntitiesPhysicsUpdate, onEntitiesPhysicsUpdate);
+				NazaraSlot(NetworkSyncSystem, OnEntitiesScaleUpdate,   onEntitiesScaleUpdate);
 				NazaraSlot(NetworkSyncSystem, OnEntitiesWeaponUpdate,  onEntitiesWeaponUpdate);
 			};
 

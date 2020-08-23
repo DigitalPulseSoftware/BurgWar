@@ -67,6 +67,7 @@ namespace bw
 			NazaraSignal(OnEntitiesDeath,                ClientSession* /*session*/, const Packets::EntitiesDeath&                /*data*/);
 			NazaraSignal(OnEntitiesInputs,               ClientSession* /*session*/, const Packets::EntitiesInputs&               /*data*/);
 			NazaraSignal(OnEntityPhysics,                ClientSession* /*session*/, const Packets::EntityPhysics&                /*data*/);
+			NazaraSignal(OnEntityScale,                  ClientSession* /*session*/, const Packets::EntityScale&                  /*data*/);
 			NazaraSignal(OnEntityWeapon,                 ClientSession* /*session*/, const Packets::EntityWeapon&                 /*data*/);
 			NazaraSignal(OnHealthUpdate,                 ClientSession* /*session*/, const Packets::HealthUpdate&                 /*data*/);
 			NazaraSignal(OnInputTimingCorrection,        ClientSession* /*session*/, const Packets::InputTimingCorrection&        /*data*/);

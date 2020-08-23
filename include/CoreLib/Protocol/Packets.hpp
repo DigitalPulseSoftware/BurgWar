@@ -46,6 +46,7 @@ namespace bw
 		EntitiesDeath,
 		EntitiesInputs,
 		EntityPhysics,
+		EntityScale,
 		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
@@ -128,6 +129,7 @@ namespace bw
 				CompressedUnsigned<Nz::UInt64> uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
+				std::optional<float> scale;
 				std::optional<std::string> name;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
@@ -351,6 +353,13 @@ namespace bw
 			std::optional<PlayerMovement> playerMovement;
 		};
 
+		DeclarePacket(EntityScale)
+		{
+			Nz::UInt16 stateTick;
+			Helper::EntityId entityId;
+			float newScale;
+		};
+
 		DeclarePacket(EntityWeapon)
 		{
 			Nz::UInt16 stateTick;
@@ -564,6 +573,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
 		void Serialize(PacketSerializer& serializer, EntityPhysics& data);
+		void Serialize(PacketSerializer& serializer, EntityScale& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);

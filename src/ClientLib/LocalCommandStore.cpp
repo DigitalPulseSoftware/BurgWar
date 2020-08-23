@@ -34,6 +34,7 @@ namespace bw
 		IncomingCommand(EntitiesDeath);
 		IncomingCommand(EntitiesInputs);
 		IncomingCommand(EntityPhysics);
+		IncomingCommand(EntityScale);
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(InputTimingCorrection);

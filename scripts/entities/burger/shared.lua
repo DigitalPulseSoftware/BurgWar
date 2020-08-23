@@ -216,6 +216,6 @@ entity:On("init", function (self)
 	end
 
 	self:SetCollider(colliders)
-	self:InitRigidBody(50, 1, false)
+	self:InitRigidBody(50)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation
 end)

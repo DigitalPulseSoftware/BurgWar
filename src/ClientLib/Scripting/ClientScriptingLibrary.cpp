@@ -84,6 +84,7 @@ namespace bw
 
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
+			float scale = parameters.get_or("Scale", 1.f);
 
 			Ndk::EntityHandle lifeOwner;
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
@@ -111,7 +112,7 @@ namespace bw
 			Nz::Int64 clientUniqueId = match.AllocateClientUniqueId();
 
 			LocalLayer& layer = match.GetLayer(layerIndex);
-			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, entityProperties, parentEntity);
+			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
 			if (!entityOpt)
 				throw std::runtime_error("Failed to create \"" + entityType + "\"");
 

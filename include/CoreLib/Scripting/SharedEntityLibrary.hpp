@@ -23,6 +23,7 @@ namespace bw
 			virtual void InitRigidBody(const Ndk::EntityHandle& entity, float mass);
 			virtual void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia);
 			virtual void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia);
+			virtual void SetScale(const Ndk::EntityHandle& entity, float newScale) = 0;
 			virtual void UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost);
 			virtual void UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed);
 

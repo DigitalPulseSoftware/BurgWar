@@ -125,16 +125,17 @@ entity:On("death", function (self)
 	local pos = self:GetPosition()
 	local vel = self:GetVelocity()
 	local force = vel:Normalize()
+	local scale = self:GetScale()
 
 	for _, sprite in pairs(self.Sprites) do
 		local entity = match.CreateEntity({
 			Type = "entity_gibs",
-			Position = pos + sprite.Offset - sprite.Origin,
+			Position = pos + (sprite.Offset - sprite.Origin) * scale,
 			LayerIndex = layerIndex,
 			Properties = {
 				mass = 5,
 				physical = true,
-				size = sprite.Size,
+				size = sprite.Size * scale,
 				texture = sprite.TexturePath
 			}
 		})

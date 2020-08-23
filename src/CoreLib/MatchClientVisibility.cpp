@@ -119,6 +119,21 @@ namespace bw
 					m_pendingEvents.Set(VisibilityEventType::PhysicsUpdate);
 				}
 			});
+			
+			layer.onEntitiesScaleUpdate.Connect(syncSystem.OnEntitiesScaleUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityScale* events, std::size_t entityCount)
+			{
+				assert(m_layers.find(layerIndex) != m_layers.end());
+				Layer& layer = *m_layers[layerIndex];
+
+				for (std::size_t i = 0; i < entityCount; ++i)
+				{
+					if (layer.visibleEntities.find(events[i].entityId) == layer.visibleEntities.end())
+						continue;
+
+					layer.scaleEvents[events[i].entityId] = events[i];
+					m_pendingEvents.Set(VisibilityEventType::ScaleUpdate);
+				}
+			});
 
 			layer.onEntitiesWeaponUpdate.Connect(syncSystem.OnEntitiesWeaponUpdate, [this, layerIndex](NetworkSyncSystem*, const NetworkSyncSystem::EntityWeapon* events, std::size_t entityCount)
 			{
@@ -547,6 +562,33 @@ namespace bw
 			m_pendingEvents.Clear(VisibilityEventType::PhysicsUpdate);
 		}
 
+		if (m_pendingEvents.Test(VisibilityEventType::ScaleUpdate))
+		{
+			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+			{
+				auto& layer = *it.value();
+				if (layer.scaleEvents.empty())
+					continue;
+
+				LayerIndex layerIndex = it.key();
+
+				for (auto&& pair : layer.scaleEvents)
+				{
+					Packets::EntityScale scalePacket;
+					scalePacket.entityId.layerId = layerIndex;
+					scalePacket.entityId.entityId = pair.first;
+					scalePacket.stateTick = networkTick;
+					scalePacket.newScale = pair.second.newScale;
+
+					m_session.SendPacket(scalePacket);
+				}
+
+				layer.scaleEvents.clear();
+			}
+
+			m_pendingEvents.Clear(VisibilityEventType::ScaleUpdate);
+		}
+
 		if (m_pendingEvents.Test(VisibilityEventType::WeaponUpdate))
 		{
 			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
@@ -856,6 +898,9 @@ namespace bw
 		entityData.position = creationEvent.position;
 		entityData.rotation = creationEvent.rotation;
 
+		if (!Nz::NumberEquals(creationEvent.scale, 1.f))
+			entityData.scale = creationEvent.scale;
+
 		if (creationEvent.inputs.has_value())
 			entityData.inputs = creationEvent.inputs.value();
 
@@ -869,8 +914,8 @@ namespace bw
 			entityData.health->maxHealth = creationEvent.healthProperties->maxHealth;
 		}
 
-		if (creationEvent.name.has_value())
-			entityData.name.emplace(creationEvent.name.value());
+		if (!creationEvent.name.empty())
+			entityData.name = creationEvent.name;
 
 		if (creationEvent.playerMovement.has_value())
 		{

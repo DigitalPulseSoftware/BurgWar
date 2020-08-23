@@ -26,7 +26,7 @@ namespace bw
 		return true;
 	}
 
-	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
+	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -38,6 +38,8 @@ namespace bw
 		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
+		nodeComponent.SetScale(scale);
+
 		if (parentEntity)
 			nodeComponent.SetParent(parentEntity);
 

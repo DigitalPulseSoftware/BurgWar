@@ -679,6 +679,11 @@ namespace bw
 		{
 			PushTickPacket(physics.stateTick, physics);
 		});
+		
+		m_session.OnEntityScale.Connect([this](ClientSession* /*session*/, const Packets::EntityScale& scale)
+		{
+			PushTickPacket(scale.stateTick, scale);
+		});
 
 		m_session.OnEntityWeapon.Connect([this](ClientSession* /*session*/, const Packets::EntityWeapon& weapon)
 		{
@@ -1064,6 +1069,13 @@ namespace bw
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
+	{
+		assert(packet.entityId.layerId < m_layers.size());
+		auto& layer = m_layers[packet.entityId.layerId];
+		layer->HandlePacket(packet);
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::EntityScale&& packet)
 	{
 		assert(packet.entityId.layerId < m_layers.size());
 		auto& layer = m_layers[packet.entityId.layerId];

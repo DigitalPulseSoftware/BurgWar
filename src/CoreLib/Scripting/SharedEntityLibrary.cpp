@@ -4,7 +4,9 @@
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
+#include <CoreLib/Colliders.hpp>
 #include <CoreLib/Utils.hpp>
+#include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -22,12 +24,9 @@ namespace bw
 {
 	namespace
 	{
-		Nz::Collider2DRef ParseCollider(lua_State* L, const sol::table& colliderData)
+		Collider ParseCollider(const sol::table& colliderData)
 		{
-			float elasticity = 0.f;
-			float friction = 1.f;
-			bool isTrigger = false;
-			Nz::Vector2f surfaceVelocity = Nz::Vector2f::Zero();
+			ColliderPhysics physics;
 
 			sol::table colliderTable;
 			sol::object metatableOpt = colliderData[sol::metatable_key];
@@ -37,15 +36,12 @@ namespace bw
 
 				metatableOpt = colliderTable[sol::metatable_key];
 				if (!metatableOpt)
-				{
-					luaL_argerror(L, 2, "Invalid collider");
-					return nullptr;
-				}
+					throw std::runtime_error("invalid collider");
 
-				elasticity = colliderData.get_or("Elasticity", elasticity);
-				friction = colliderData.get_or("Friction", friction);
-				isTrigger = colliderData.get_or("IsTrigger", isTrigger);
-				surfaceVelocity = colliderData.get_or("Friction", surfaceVelocity);
+				physics.elasticity = colliderData.get_or("Elasticity", physics.elasticity);
+				physics.friction = colliderData.get_or("Friction", physics.friction);
+				physics.isTrigger = colliderData.get_or("IsTrigger", physics.isTrigger);
+				physics.surfaceVelocity = colliderData.get_or("SurfaceVelocity", physics.surfaceVelocity);
 			}
 			else
 				colliderTable = colliderData;
@@ -54,45 +50,46 @@ namespace bw
 
 			std::string typeName = metatable["__name"];
 
-			Nz::Collider2DRef collider;
 			if (typeName == "rect")
 			{
-				Nz::Rectf rect = colliderTable.as<Nz::Rectf>();
-				collider = Nz::BoxCollider2D::New(rect);
+				RectangleCollider collider;
+				collider.physics = physics;
+
+				collider.data = colliderTable.as<Nz::Rectf>();
+
+				return collider;
 			}
 			else if (typeName == "circle")
 			{
-				Nz::Vector2f origin = colliderTable["origin"];
-				float radius = colliderTable["radius"];
+				CircleCollider collider;
+				collider.physics = physics;
 
-				collider = Nz::CircleCollider2D::New(radius, origin);
+				collider.offset = colliderTable["origin"];
+				collider.radius = colliderTable["radius"];
+
+				return collider;
 			}
 			else if (typeName == "segment")
 			{
-				Nz::Vector2f from = colliderTable["from"];
-				Nz::Vector2f to = colliderTable["to"];
+				SegmentCollider collider;
+				collider.physics = physics;
 
-				Nz::Vector2f fromNeighbor = from;
-				Nz::Vector2f toNeighbor = to;
+				collider.from = colliderTable["from"];
+				collider.to = colliderTable["to"];
+
+				collider.fromNeighbor = collider.from;
+				collider.toNeighbor = collider.to;
 
 				if (colliderData != colliderTable)
 				{
-					fromNeighbor = colliderData.get_or("FromNeighbor", fromNeighbor);
-					toNeighbor = colliderData.get_or("ToNeighbor", toNeighbor);
+					collider.fromNeighbor = colliderData.get_or("FromNeighbor", collider.fromNeighbor);
+					collider.toNeighbor = colliderData.get_or("ToNeighbor", collider.toNeighbor);
 				}
 
-				collider = Nz::SegmentCollider2D::New(from, fromNeighbor, to, toNeighbor);
+				return collider;
 			}
 			else
-				luaL_argerror(L, 2, ("Invalid collider type: " + typeName).c_str());
-
-			assert(collider);
-			collider->SetElasticity(elasticity);
-			collider->SetFriction(friction);
-			collider->SetSurfaceVelocity(surfaceVelocity);
-			collider->SetTrigger(isTrigger);
-
-			return collider;
+				throw std::runtime_error("invalid collider type " + typeName);
 		};
 	}
 
@@ -174,23 +171,13 @@ namespace bw
 		elementMetatable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-			if (!entity->HasComponent<Ndk::CollisionComponent2D>())
+			if (!entity->HasComponent<CollisionDataComponent>())
 				throw std::runtime_error("Entity has no colliders");
 
-			auto& collisionComponent = entity->GetComponent<Ndk::CollisionComponent2D>();
+			auto& entityCollData = entity->GetComponent<CollisionDataComponent>();
+			entityCollData.EnableCollisionCallbacks(enable);
 
-			// FIXME: For now, collision changes are only taken in account on SetGeom
-			Nz::Collider2DRef geom = collisionComponent.GetGeom();
-			if (geom->GetType() == Nz::ColliderType2D_Compound)
-			{
-				Nz::CompoundCollider2D* compoundGeom = static_cast<Nz::CompoundCollider2D*>(geom.Get());
-				for (Nz::Collider2D* subGeom : compoundGeom->GetGeoms())
-					subGeom->SetCollisionId((enable) ? 1 : 0);
-			}
-			else
-				geom->SetCollisionId((enable) ? 1 : 0);
-
-			collisionComponent.SetGeom(std::move(geom));
+			entity->GetComponent<Ndk::CollisionComponent2D>().SetGeom(entityCollData.BuildCollider(), false, false);
 		};
 
 		elementMetatable["ForceSleep"] = [](const sol::table& entityTable)
@@ -272,6 +259,12 @@ namespace bw
 			float jumpBoostHeigh = movementComponent.GetJumpBoostHeight();
 
 			return std::make_pair(jumpHeight, jumpBoostHeigh);
+		};
+
+		elementMetatable["GetScale"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			return entity->GetComponent<Ndk::NodeComponent>().GetScale(Nz::CoordSys_Local).y; //< .x can be negative
 		};
 
 		elementMetatable["GetUpVector"] = [](const sol::table& entityTable)
@@ -412,35 +405,46 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
-			Nz::Collider2DRef collider;
 			std::size_t colliderCount = colliderTable.size();
-			if (colliderCount == 0)
+
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityCollData = entity->AddComponent<CollisionDataComponent>();
+
+			if (colliderCount <= 1)
 			{
-				// Case where a collider has been passed directly
-				collider = ParseCollider(L, colliderTable);
-			}
-			else if (colliderCount == 1)
-			{
-				// Only one collider passed in a table
-				collider = ParseCollider(L, colliderTable[1]);
+				// Only one collider passed in a table or directly
+
+				try
+				{
+					if (colliderCount == 0)
+						entityCollData.AddCollider(ParseCollider(colliderTable));
+					else
+						entityCollData.AddCollider(ParseCollider(colliderTable[1]));
+				}
+				catch (const std::exception& e)
+				{
+					std::string err = "invalid collider: " + std::string(e.what());
+					luaL_argerror(L, 2, err.c_str());
+				}
 			}
 			else
 			{
 				// Multiple colliders passed in a table
-				std::vector<Nz::Collider2DRef> colliders(colliderCount);
 				for (std::size_t i = 0; i < colliderCount; ++i)
 				{
-					colliders[i] = ParseCollider(L, colliderTable[i + 1]);
-					luaL_argcheck(L, colliders[i].IsValid(), 2, ("Invalid collider #" + std::to_string(i + 1)).c_str());
+					try
+					{
+						entityCollData.AddCollider(ParseCollider(colliderTable[i + 1]));
+					}
+					catch (const std::exception& e)
+					{
+						std::string err = "invalid collider #" + std::to_string(i + 1) + ": " + std::string(e.what());
+						luaL_argerror(L, 2, err.c_str());
+					}
 				}
-
-				Nz::CompoundCollider2DRef compound = Nz::CompoundCollider2D::New(std::move(colliders));
-				compound->OverridesCollisionProperties(false);
-
-				collider = compound;
 			}
 
-			entity->AddComponent<Ndk::CollisionComponent2D>(collider);
+			entity->AddComponent<Ndk::CollisionComponent2D>(entityCollData.BuildCollider(entityNode.GetScale().y));
 		};
 
 		elementMetatable["SetDirection"] = [](const sol::table& entityTable, const Nz::Vector2f& upVector)
@@ -512,6 +516,12 @@ namespace bw
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			nodeComponent.SetRotation(rotation);
+		};
+
+		elementMetatable["SetScale"] = [&](const sol::table& entityTable, float scale)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
+			SetScale(entity, scale);
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)

@@ -26,7 +26,7 @@ namespace bw
 			~ClientEditorEntityStore() = default;
 
 			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
-			virtual const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
+			virtual const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
 
 		protected:
 			void InitializeElementTable(sol::table& elementTable) override;

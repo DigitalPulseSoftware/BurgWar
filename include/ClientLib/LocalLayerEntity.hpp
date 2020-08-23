@@ -74,6 +74,7 @@ namespace bw
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateParent(const LocalLayerEntity* newParent);
 			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateScale(float newScale);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel);
 			void UpdateWeaponEntity(const LocalLayerEntityHandle& entity);

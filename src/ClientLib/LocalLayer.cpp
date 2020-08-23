@@ -266,6 +266,8 @@ namespace bw
 
 		std::optional<LocalLayerEntity> layerEntity;
 
+		float scale = (entityData.scale) ? entityData.scale.value() : 1.f;
+
 		//FIXME: Entity creation failure should instantiate some placeholder entity
 		try
 		{
@@ -274,7 +276,7 @@ namespace bw
 				// Entity
 				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
 				{
-					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
+					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, scale, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
 					if (!entity)
 					{
 						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {0} of type {1}", uniqueId, entityClass);
@@ -505,6 +507,18 @@ namespace bw
 				}
 			}
 		}
+	}
+
+	void LocalLayer::HandlePacket(const Packets::EntityScale& packet)
+	{
+		assert(packet.entityId.layerId == GetLayerIndex());
+
+		auto entityOpt = GetEntityByServerId(packet.entityId.entityId);
+		if (!entityOpt)
+			return;
+
+		LocalLayerEntity& localEntity = *entityOpt;
+		localEntity.UpdateScale(packet.newScale);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::EntityWeapon& packet)

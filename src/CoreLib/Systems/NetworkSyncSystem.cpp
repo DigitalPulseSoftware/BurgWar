@@ -72,6 +72,11 @@ namespace bw
 			m_physicsUpdateEntities.Insert(entity);
 	}
 
+	void NetworkSyncSystem::NotifyScaleUpdate(const Ndk::EntityHandle& entity)
+	{
+		m_scaleUpdateEntities.Insert(entity);
+	}
+
 	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
 		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
@@ -104,6 +109,9 @@ namespace bw
 			creationEvent.inputs = entityInputs.GetInputs();
 		}
 
+		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+		creationEvent.scale = entityNode.GetScale().y; //< x is affected by the "looking right" flag
+
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
@@ -120,8 +128,6 @@ namespace bw
 		}
 		else
 		{
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-
 			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
 			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
 		}
@@ -137,7 +143,7 @@ namespace bw
 		if (entity->HasComponent<PlayerControlledComponent>())
 		{
 			if (Player* player = entity->GetComponent<PlayerControlledComponent>().GetOwner())
-				creationEvent.name.emplace(player->GetName());
+				creationEvent.name = player->GetName();
 		}
 
 		if (entity->HasComponent<ScriptComponent>())
@@ -381,6 +387,24 @@ namespace bw
 			m_physicsUpdateEntities.Clear();
 
 			OnEntitiesPhysicsUpdate(this, m_physicsEvent.data(), m_physicsEvent.size());
+		}
+
+		if (!m_scaleUpdateEntities.empty())
+		{
+			m_scaleEvent.clear();
+
+			for (const auto& entity : m_scaleUpdateEntities)
+			{
+				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+
+				EntityScale& scaleEvent = m_scaleEvent.emplace_back();
+				scaleEvent.entityId = entity->GetId();
+				scaleEvent.newScale = entityNode.GetScale().y;
+			}
+
+			m_scaleUpdateEntities.Clear();
+
+			OnEntitiesScaleUpdate(this, m_scaleEvent.data(), m_scaleEvent.size());
 		}
 
 		if (!m_weaponUpdateEntities.empty())

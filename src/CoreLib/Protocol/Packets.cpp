@@ -316,6 +316,13 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, EntityScale& data)
+		{
+			Serialize(serializer, data.entityId);
+			serializer &= data.stateTick;
+			serializer &= data.newScale;
+		}
+
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)
 		{
 			Serialize(serializer, data.entityId);
@@ -597,6 +604,7 @@ namespace bw
 
 		void Serialize(PacketSerializer& serializer, Helper::EntityData& data)
 		{
+			bool hasScale;
 			bool hasHealth;
 			bool hasInputs;
 			bool hasParent;
@@ -606,6 +614,7 @@ namespace bw
 
 			if (serializer.IsWriting())
 			{
+				hasScale = data.scale.has_value();
 				hasHealth = data.health.has_value();
 				hasInputs = data.inputs.has_value();
 				hasParent = data.parentId.has_value();
@@ -614,6 +623,7 @@ namespace bw
 				hasName = data.name.has_value();
 			}
 
+			serializer &= hasScale;
 			serializer &= hasHealth;
 			serializer &= hasInputs;
 			serializer &= hasParent;
@@ -623,6 +633,9 @@ namespace bw
 
 			if (!serializer.IsWriting())
 			{
+				if (hasScale)
+					data.scale.emplace();
+
 				if (hasHealth)
 					data.health.emplace();
 
@@ -646,6 +659,9 @@ namespace bw
 			serializer &= data.uniqueId;
 			serializer &= data.position;
 			serializer &= data.rotation;
+
+			if (data.scale)
+				serializer &= data.scale.value();
 
 			if (data.health)
 			{
