@@ -3,7 +3,7 @@ RegisterClientScript()
 local scale = 0.6
 
 local weapon = ScriptedWeapon({
-	Cooldown = 0.5,
+	Cooldown = 0.4,
 	Scale = scale,
 	Sprite = "emmentalibur.png",
 	SpriteOrigin = Vec2(40, 284) * scale,
