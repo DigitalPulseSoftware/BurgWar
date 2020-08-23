@@ -39,8 +39,6 @@ namespace bw
 			if (!scriptComponent.CanTriggerTick(elapsedTime)) //<FIXME: Due to reconciliation, this is not right
 				continue;
 
-			const auto& element = scriptComponent.GetElement();
-
 			//FIXME
 			scriptComponent.ExecuteCallback<ElementEvent::Tick>();
 
