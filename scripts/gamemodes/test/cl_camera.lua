@@ -1,6 +1,8 @@
-GM.ShakeData = nil
+local gamemode = ScriptedGamemode()
 
-function GM:ClampCameraPosition(viewportSize, rect, position)
+gamemode.ShakeData = nil
+
+function gamemode:ClampCameraPosition(viewportSize, rect, position)
 	local mins = rect:GetCorner(false, false)
 	local maxs = rect:GetCorner(true, true) - viewportSize
 
@@ -11,16 +13,16 @@ function GM:ClampCameraPosition(viewportSize, rect, position)
 	return clampedPos
 end
 
-function GM:SetCameraScale(scale)
+function gamemode:SetCameraScale(scale)
 	local camera = match.GetCamera()
 	camera:SetZoomFactor(1.0 / scale)
 end
 
-GM:On("init", function (self)
+gamemode:On("init", function (self)
 	self.CameraRect = nil
 end)
 
-GM:On("frame", function (self, elapsedTime)
+gamemode:On("frame", function (self, elapsedTime)
 	local camera = match.GetCamera()
 
 	local playerPosition = engine_GetPlayerPosition(0)
@@ -73,7 +75,7 @@ GM:On("frame", function (self, elapsedTime)
 	end
 end)
 
-function GM:RefreshCameraRect()
+function gamemode:RefreshCameraRect()
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
 		local cameraRects = match.GetEntitiesByClass("entity_camera_rect", engine_GetActiveLayer())
@@ -113,11 +115,11 @@ function GM:RefreshCameraRect()
 	end
 end
 
-GM:On("tick", function (self)
+gamemode:On("tick", function (self)
 	self:RefreshCameraRect()
 end)
 
-function GM:ShakeCamera(duration, strength)
+function gamemode:ShakeCamera(duration, strength)
 	self.ShakeData = {
 		Strength = strength,
 		StrengthDecrease = strength / duration

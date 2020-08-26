@@ -1,7 +1,9 @@
 include("cl_camera.lua")
 include("cl_scoreboard.lua")
 
-GM:On("changelayer", function (self, oldLayer, newLayer)
+local gamemode = ScriptedGamemode()
+
+gamemode:On("changelayer", function (self, oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
 
 	if (oldLayer ~= NoLayer) then
