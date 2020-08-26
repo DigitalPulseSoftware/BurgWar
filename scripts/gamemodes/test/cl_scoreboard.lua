@@ -1,6 +1,4 @@
-local gamemode = ScriptedGamemode()
-
-gamemode:On("initscoreboard", function (self, scoreboard)
+GM:On("initscoreboard", function (self, scoreboard)
 	self.Scoreboard = scoreboard
 	self.ScoreboardColumns = {}
 
@@ -15,7 +13,7 @@ gamemode:On("initscoreboard", function (self, scoreboard)
 	end
 end)
 
-gamemode:On("playerjoined", function (self, player)
+GM:On("playerjoined", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -24,7 +22,7 @@ gamemode:On("playerjoined", function (self, player)
 	self:RegisterScoreboardPlayer(player)
 end)
 
-function gamemode:RegisterScoreboardPlayer(player)
+function GM:RegisterScoreboardPlayer(player)
 	local scoreboard = assert(self.Scoreboard)
 
 	local playerIndex = player:GetPlayerIndex()
@@ -45,7 +43,7 @@ function gamemode:RegisterScoreboardPlayer(player)
 	}, isLocalPlayer)
 end
 
-gamemode:On("playerleave", function (self, player)
+GM:On("playerleave", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -54,7 +52,7 @@ gamemode:On("playerleave", function (self, player)
 	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
 end)
 
-gamemode:On("playernameupdate", function (self, player, newName)
+GM:On("playernameupdate", function (self, player, newName)
 	print(player:GetName() .. " has changed name to " .. newName)
 
 	local scoreboard = self.Scoreboard
@@ -65,7 +63,7 @@ gamemode:On("playernameupdate", function (self, player, newName)
 	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
 end)
 
-gamemode:On("playerpingupdate", function (self, player, newName)
+GM:On("playerpingupdate", function (self, player, newName)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -76,7 +74,7 @@ gamemode:On("playerpingupdate", function (self, player, newName)
 	end
 end)
 
-function gamemode:UpdateScoreboard(deaths, kills)
+function GM:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return

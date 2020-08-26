@@ -1,17 +1,15 @@
-local gamemode = ScriptedGamemode()
+GM.ScoreDeaths = {}
+GM.ScoreKills = {}
 
-gamemode.ScoreDeaths = {}
-gamemode.ScoreKills = {}
-
-function gamemode:GetPlayerDeaths(player)
+function GM:GetPlayerDeaths(player)
 	return self.ScoreDeaths[player:GetPlayerIndex()] or 0
 end
 
-function gamemode:GetPlayerKills(player)
+function GM:GetPlayerKills(player)
 	return self.ScoreKills[player:GetPlayerIndex()] or 0
 end
 
-gamemode:On("playerleave", function (self, player)
+GM:On("playerleave", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
 	self.ScoreDeaths[playerIndex] = nil
 	self.ScoreKills[playerIndex] = nil
@@ -21,15 +19,15 @@ if (SERVER) then
 	local function BuildScorePacket()
 		local packet = network.NewPacket("ScoreUpdate")
 
-		packet:WriteCompressedUnsigned(table.count(gamemode.ScoreDeaths))
-		packet:WriteCompressedUnsigned(table.count(gamemode.ScoreKills))
+		packet:WriteCompressedUnsigned(table.count(GM.ScoreDeaths))
+		packet:WriteCompressedUnsigned(table.count(GM.ScoreKills))
 
-		for playerIndex, death in pairs(gamemode.ScoreDeaths) do
+		for playerIndex, death in pairs(GM.ScoreDeaths) do
 			packet:WriteCompressedUnsigned(playerIndex)
 			packet:WriteCompressedUnsigned(death)
 		end
 
-		for playerIndex, kill in pairs(gamemode.ScoreKills) do
+		for playerIndex, kill in pairs(GM.ScoreKills) do
 			packet:WriteCompressedUnsigned(playerIndex)
 			packet:WriteCompressedUnsigned(kill)
 		end
@@ -37,35 +35,35 @@ if (SERVER) then
 		return packet
 	end
 
-	gamemode.ScoreUpdated = false
+	GM.ScoreUpdated = false
 
-	gamemode.OnPlayerJoin = utils.OverrideFunction(gamemode.OnPlayerJoin, function (self, player)
+	GM.OnPlayerJoin = utils.OverrideFunction(GM.OnPlayerJoin, function (self, player)
 		player:SendPacket(BuildScorePacket())
 	end)
 
-	function gamemode:IncreasePlayerDeath(player, deathCount)
+	function GM:IncreasePlayerDeath(player, deathCount)
 		local playerIndex = player:GetPlayerIndex()
 		self.ScoreDeaths[playerIndex] = (self.ScoreDeaths[playerIndex] or 0) + (deathCount or 1)
 		self.ScoreUpdated = false
 	end
 
-	function gamemode:IncreasePlayerKill(player, killCount)
+	function GM:IncreasePlayerKill(player, killCount)
 		local playerIndex = player:GetPlayerIndex()
 		self.ScoreKills[playerIndex] = (self.ScoreKills[playerIndex] or 0) + (killCount or 1)
 		self.ScoreUpdated = false
 	end
 
-	function gamemode:UpdatePlayerDeath(player, deathCount)
+	function GM:UpdatePlayerDeath(player, deathCount)
 		self.ScoreDeaths[player:GetPlayerIndex()] = deathCount
 		self.ScoreUpdated = false
 	end
 
-	function gamemode:UpdatePlayerKill(player, killCount)
+	function GM:UpdatePlayerKill(player, killCount)
 		self.ScoreKills[player:GetPlayerIndex()] = killCount
 		self.ScoreUpdated = false
 	end
 
-	gamemode.OnTick = utils.OverrideFunction(gamemode.OnTick, function (self)
+	GM.OnTick = utils.OverrideFunction(GM.OnTick, function (self)
 		if (not self.ScoreUpdated) then
 			-- Send score to players
 			match.BroadcastPacket(BuildScorePacket())
@@ -88,7 +86,7 @@ else
 			local death = packet:ReadCompressedUnsigned()
 
 			deaths[playerIndex] = death
-			gamemode.ScoreDeaths[playerIndex] = death
+			GM.ScoreDeaths[playerIndex] = death
 		end
 
 		for i = 1, killCount do
@@ -96,9 +94,9 @@ else
 			local kill = packet:ReadCompressedUnsigned()
 
 			kills[playerIndex] = kill
-			gamemode.ScoreKills[playerIndex] = kill
+			GM.ScoreKills[playerIndex] = kill
 		end
 
-		gamemode:UpdateScoreboard(deaths, kills)
+		GM:UpdateScoreboard(deaths, kills)
 	end)
 end
