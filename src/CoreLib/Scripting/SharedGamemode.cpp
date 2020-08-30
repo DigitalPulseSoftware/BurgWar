@@ -13,9 +13,10 @@
 
 namespace bw
 {
-	SharedGamemode::SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName) :
+	SharedGamemode::SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues) :
 	m_context(std::move(scriptingContext)),
 	m_gamemodeName(std::move(gamemodeName)),
+	m_propertyValues(std::move(propertyValues)),
 	m_sharedMatch(match)
 	{
 	}
@@ -28,6 +29,37 @@ namespace bw
 
 		m_gamemodeTable = resultOpt->as<sol::table>();
 
+		sol::object properties = m_gamemodeTable.get<sol::object>("Properties");
+		if (properties)
+		{
+			sol::table elementProperties = properties.as<sol::table>();
+			std::size_t propertyIndex = 0;
+
+			for (const auto& kv : elementProperties)
+			{
+				sol::table propertyTable = kv.second;
+
+				std::string propertyName = propertyTable["Name"];
+
+				try
+				{
+					ScriptedProperty property = InitPropertyFromLua(propertyIndex, propertyTable);
+
+					auto it = m_properties.find(propertyName);
+					if (it == m_properties.end())
+						m_properties.emplace(std::move(propertyName), std::move(property));
+					else
+						throw std::runtime_error("Property " + propertyName + " already exists");
+
+					propertyIndex++;
+				}
+				catch (const std::exception& e)
+				{
+					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "Failed to load property {0} for gamemode {1}: {2}", propertyName, m_gamemodeName, e.what());
+				}
+			}
+		}
+
 		m_gamemodeTable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), false);
@@ -36,6 +68,23 @@ namespace bw
 		m_gamemodeTable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), true);
+		};
+
+		m_gamemodeTable["GetProperty"] = [&](sol::this_state s, const sol::table& /*table*/, const std::string& propertyName) -> sol::object
+		{
+			auto propertyVal = GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				sol::state_view lua(s);
+				const PropertyValue& property = propertyVal.value();
+
+				auto propertyIt = m_properties.find(propertyName);
+				assert(propertyIt != m_properties.end());
+
+				return TranslatePropertyToLua(&m_sharedMatch, lua, property, propertyIt->second.type);
+			}
+			else
+				return sol::nil;
 		};
 
 		sol::state& state = m_context->GetLuaState();

@@ -68,6 +68,29 @@ namespace bw
 	{
 		assert(window);
 
+		// TODO: Split to a function to prevent code duplication
+		for (const auto& property : matchData.gamemodeProperties)
+		{
+			const std::string& propertyName = m_session.GetNetworkStringStore().GetString(property.name);
+
+			std::visit([&](auto&& value)
+			{
+				using T = std::decay_t<decltype(value)>;
+				using StoredType = typename T::value_type;
+
+				if (property.isArray)
+				{
+					PropertyArray<StoredType> elements(value.size());
+					for (std::size_t i = 0; i < value.size(); ++i)
+						elements[i] = value[i];
+
+					m_gamemodeProperties.emplace(propertyName, std::move(elements));
+				}
+				else
+					m_gamemodeProperties.emplace(propertyName, value.front());
+			}, property.value);
+		}
+
 		m_averageTickError.InsertValue(-static_cast<Nz::Int32>(matchData.currentTick));
 
 		m_layers.reserve(matchData.layers.size());
@@ -421,7 +444,7 @@ namespace bw
 
 		if (!m_gamemode)
 		{
-			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodeName);
+			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodeName, m_gamemodeProperties);
 			m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 		}
 		else

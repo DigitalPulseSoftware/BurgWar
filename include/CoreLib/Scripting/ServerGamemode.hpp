@@ -16,7 +16,7 @@ namespace bw
 	class ServerGamemode : public SharedGamemode
 	{
 		public:
-			ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName);
+			ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);
 			~ServerGamemode() = default;
 
 			void Reload() override;

@@ -281,6 +281,7 @@ namespace bw
 			ClientEditorApp& m_application;
 			ClientSession& m_session;
 			EscapeMenu m_escapeMenu;
+			PropertyValueMap m_gamemodeProperties;
 			Scoreboard* m_scoreboard;
 			Packets::PlayersInput m_inputPacket;
 			bool m_hasFocus;

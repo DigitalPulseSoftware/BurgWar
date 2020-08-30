@@ -103,7 +103,7 @@ namespace bw
 				float momentOfInertia;
 			};
 
-			struct Properties
+			struct Property
 			{
 				using PropertyValue = std::variant<
 					std::vector<bool>,
@@ -136,7 +136,7 @@ namespace bw
 				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
-				std::vector<Properties> properties;
+				std::vector<Property> properties;
 			};
 		}
 
@@ -414,11 +414,12 @@ namespace bw
 				std::string path;
 			};
 
+			std::string gamemode;
 			std::vector<std::string> fastDownloadUrls;
 			std::vector<Asset> assets;
 			std::vector<Layer> layers;
+			std::vector<Helper::Property> gamemodeProperties;
 			std::vector<Script> scripts;
-			std::string gamemode;
 			Nz::UInt16 currentTick;
 			float tickDuration;
 		};
@@ -598,6 +599,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
 		void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
 		void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
+		void Serialize(PacketSerializer& serializer, Helper::Property& data);
 	}
 }
 

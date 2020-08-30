@@ -49,8 +49,10 @@ namespace bw
 		public:
 			struct Asset;
 			struct ClientScript;
+			struct MatchSettings;
+			struct GamemodeSettings;
 
-			Match(BurgApp& app, std::string matchName, std::string gamemodeName, Map map, std::size_t maxPlayerCount, float tickDuration);
+			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -74,7 +76,6 @@ namespace bw
 			ServerEntityStore& GetEntityStore() override;
 			const ServerEntityStore& GetEntityStore() const override;
 			inline const std::shared_ptr<ServerGamemode>& GetGamemode();
-			inline const std::filesystem::path& GetGamemodePath() const;
 			TerrainLayer& GetLayer(LayerIndex layerIndex) override;
 			const TerrainLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
@@ -123,6 +124,20 @@ namespace bw
 				std::vector<Nz::UInt8> content;
 			};
 
+			struct MatchSettings
+			{
+				std::size_t maxPlayerCount;
+				std::string name;
+				Map map;
+				float tickDuration;
+			};
+
+			struct GamemodeSettings
+			{
+				std::string name;
+				PropertyValueMap properties;
+			};
+
 		private:
 			void BuildMatchData();
 			void OnPlayerReady(Player* player);
@@ -150,7 +165,6 @@ namespace bw
 			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
-			std::string m_gamemodeName;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::unique_ptr<Player>> m_players;
@@ -162,6 +176,7 @@ namespace bw
 			Nz::Int64 m_nextUniqueId;
 			Nz::UInt64 m_lastPingUpdate;
 			BurgApp& m_app;
+			GamemodeSettings m_gamemodeSettings;
 			Map m_map;
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;

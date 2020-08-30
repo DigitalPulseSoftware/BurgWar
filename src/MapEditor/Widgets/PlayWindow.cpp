@@ -17,8 +17,7 @@ namespace bw
 {
 	PlayWindow::PlayWindow(ClientEditorApp& app, Map map, std::shared_ptr<VirtualDirectory> assetFolder, std::shared_ptr<VirtualDirectory> scriptFolder, float tickRate, QWidget* parent) :
 	NazaraCanvas(parent),
-	m_canvas(m_world.CreateHandle(), GetEventHandler(), GetCursorController().CreateHandle()),
-	m_match(app, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate)
+	m_canvas(m_world.CreateHandle(), GetEventHandler(), GetCursorController().CreateHandle())
 	{
 		setAttribute(Qt::WA_DeleteOnClose);
 		setWindowTitle("Play test");
@@ -35,7 +34,19 @@ namespace bw
 		cameraComponent2D.SetProjectionType(Nz::ProjectionType_Orthogonal);
 		cameraComponent2D.SetTarget(this);
 
-		MatchSessions& sessions = m_match.GetSessions();
+
+		Match::GamemodeSettings gamemodeSettings;
+		gamemodeSettings.name = "test";
+
+		Match::MatchSettings matchSettings;
+		matchSettings.map = std::move(map);
+		matchSettings.maxPlayerCount = 64;
+		matchSettings.name = "local";
+		matchSettings.tickDuration = 1.f / tickRate;
+
+		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings));
+
+		MatchSessions& sessions = m_match->GetSessions();
 		LocalSessionManager* sessionManager = sessions.CreateSessionManager<LocalSessionManager>();
 
 		m_session = std::make_shared<ClientSession>(app);
@@ -70,7 +81,7 @@ namespace bw
 	{
 		NazaraCanvas::OnUpdate(elapsedTime);
 
-		m_match.Update(elapsedTime);
+		m_match->Update(elapsedTime);
 
 		if (m_localMatch)
 		{

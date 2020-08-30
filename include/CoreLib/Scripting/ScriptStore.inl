@@ -366,34 +366,20 @@ namespace bw
 
 				try
 				{
-					ScriptedProperty property;
-					property.index = propertyIndex;
-					property.type = propertyTable["Type"];
-
-					sol::object propertyShared = propertyTable["Shared"];
-					if (propertyShared)
-						property.shared = propertyShared.as<bool>();
-
-					sol::object propertyArray = propertyTable["Array"];
-					if (propertyArray)
-						property.isArray = propertyArray.as<bool>();
-
-					sol::object propertyDefault = propertyTable["Default"];
-					if (!propertyDefault.is<sol::nil_t>())
-						property.defaultValue = TranslatePropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
+					ScriptedProperty property = InitPropertyFromLua(propertyIndex, propertyTable);
 
 					auto it = element->properties.find(propertyName);
 					if (it == element->properties.end())
 						element->properties.emplace(std::move(propertyName), std::move(property));
 					else
 						throw std::runtime_error("Property " + propertyName + " already exists");
+
+					propertyIndex++;
 				}
 				catch (const std::exception& e)
 				{
 					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
 				}
-
-				propertyIndex++;
 			}
 		}
 

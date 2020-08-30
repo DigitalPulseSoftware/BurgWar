@@ -25,14 +25,14 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, std::string gamemodeName, Map map, std::size_t maxPlayerCount, float tickDuration) :
-	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
-	m_gamemodeName(std::move(gamemodeName)),
-	m_maxPlayerCount(maxPlayerCount),
-	m_nextUniqueId(map.GetFreeUniqueId()),
+	Match::Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings) :
+	SharedMatch(app, LogSide::Server, std::move(matchSettings.name), matchSettings.tickDuration),
+	m_maxPlayerCount(matchSettings.maxPlayerCount),
+	m_nextUniqueId(matchSettings.map.GetFreeUniqueId()),
 	m_lastPingUpdate(0),
 	m_app(app),
-	m_map(std::move(map)),
+	m_gamemodeSettings(std::move(gamemodeSettings)),
+	m_map(std::move(matchSettings.map)),
 	m_sessions(*this),
 	m_disableWhenEmpty(true)
 	{
@@ -364,9 +364,15 @@ namespace bw
 		m_weaponStore->Resolve();
 
 		if (!m_gamemode)
-			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodeName);
+			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodeSettings.name, m_gamemodeSettings.properties);
 		else
 			m_gamemode->Reload();
+
+		for (auto&& [propertyName, propertyData] : m_gamemode->GetProperties())
+		{
+			if (propertyData.shared)
+				m_networkStringStore.RegisterString(propertyName);
+		}
 
 		if (m_terrain)
 		{
@@ -567,7 +573,7 @@ namespace bw
 		// Send match data
 		const Map& mapData = m_terrain->GetMap();
 
-		m_matchData.gamemode = m_gamemodeName;
+		m_matchData.gamemode = m_gamemodeSettings.name;
 		m_matchData.tickDuration = GetTickDuration();
 
 		m_matchData.layers.clear();
@@ -586,6 +592,44 @@ namespace bw
 
 		m_matchData.scripts.clear();
 		BuildClientScriptListPacket(m_matchData);
+
+		const auto& gamemodePropertyData = m_gamemode->GetProperties();
+		for (auto&& [propertyName, propertyValue] : m_gamemodeSettings.properties)
+		{
+			auto propertyIt = gamemodePropertyData.find(propertyName);
+			if (propertyIt == gamemodePropertyData.end())
+				continue;
+
+			const ScriptedProperty& scriptedProperty = propertyIt->second;
+			if (!scriptedProperty.shared)
+				continue;
+
+			auto& propertyData = m_matchData.gamemodeProperties.emplace_back();
+			propertyData.name = m_networkStringStore.CheckStringIndex(propertyName);
+
+			std::visit([&](auto&& propertyValue)
+			{
+				using T = std::decay_t<decltype(propertyValue)>;
+				constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
+
+				propertyData.isArray = IsArray;
+
+				auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
+
+				if constexpr (IsArray)
+				{
+					std::size_t elementCount = propertyValue.GetSize();
+					vec.reserve(elementCount);
+
+					for (std::size_t i = 0; i < elementCount; ++i)
+						vec.emplace_back(std::move(propertyValue[i]));
+				}
+				else
+					vec.push_back(propertyValue);
+
+			}, std::move(propertyValue));
+		}
 	}
 
 	void Match::OnPlayerReady(Player* newPlayer)

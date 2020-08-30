@@ -9,6 +9,8 @@
 
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/GamemodeEvents.hpp>
+#include <CoreLib/Scripting/ScriptedProperty.hpp>
+#include <Thirdparty/tsl/bhopscotch_map.h>
 #include <array>
 #include <string>
 
@@ -19,7 +21,7 @@ namespace bw
 	class SharedGamemode
 	{
 		public:
-			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName);
+			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);
 			SharedGamemode(const SharedGamemode&) = delete;
 			~SharedGamemode() = default;
 
@@ -29,6 +31,8 @@ namespace bw
 			template<GamemodeEvent Event, typename... Args>
 			std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
 
+			inline const tsl::hopscotch_map<std::string /*key*/, ScriptedProperty>& GetProperties() const;
+			inline const PropertyValueMap& GetPropertyValues() const;
 			inline sol::table& GetTable();
 
 			inline bool HasCallbacks(GamemodeEvent event) const;
@@ -42,6 +46,7 @@ namespace bw
 		protected:
 			inline const std::string& GetGamemodeName() const;
 			inline sol::table& GetGamemodeTable();
+			inline std::optional<std::reference_wrapper<const PropertyValue>> GetProperty(const std::string& keyName) const;
 			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
 			virtual void InitializeGamemode() = 0;
@@ -59,6 +64,8 @@ namespace bw
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_gamemodeName;
 			sol::table m_gamemodeTable;
+			tsl::hopscotch_map<std::string /*key*/, ScriptedProperty> m_properties;
+			PropertyValueMap m_propertyValues;
 			SharedMatch& m_sharedMatch;
 	};
 }

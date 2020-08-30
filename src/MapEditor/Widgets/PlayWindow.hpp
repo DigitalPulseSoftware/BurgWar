@@ -33,7 +33,7 @@ namespace bw
 			Ndk::World m_world;
 			Ndk::Canvas m_canvas;
 			std::optional<LocalMatch> m_localMatch;
-			Match m_match;
+			std::optional<Match> m_match;
 			std::shared_ptr<ClientSession> m_session;
 	};
 }

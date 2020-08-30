@@ -12,8 +12,8 @@
 
 namespace bw
 {
-	ServerGamemode::ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName) :
-	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodeName)),
+	ServerGamemode::ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues) :
+	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodeName), std::move(propertyValues)),
 	m_match(match)
 	{
 		InitializeGamemode();

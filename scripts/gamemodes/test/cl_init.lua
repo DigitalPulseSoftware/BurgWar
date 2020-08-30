@@ -1,6 +1,8 @@
 include("cl_camera.lua")
 include("cl_scoreboard.lua")
 
+print("respawntime", GM:GetProperty("respawntime"))
+
 GM:On("changelayer", function (self, oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
 

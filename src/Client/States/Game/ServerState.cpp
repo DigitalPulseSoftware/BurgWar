@@ -16,10 +16,17 @@ namespace bw
 		ClientApp& app = *GetStateData().app;
 		const ConfigFile& config = app.GetConfig();
 
-		Map map = Map::LoadFromBinary(config.GetStringValue("GameSettings.MapFile"));
-		float tickRate = config.GetFloatValue<float>("GameSettings.TickRate");
+		Match::GamemodeSettings gamemodeSettings;
+		gamemodeSettings.name = "test";
+		gamemodeSettings.properties.emplace("respawntime", Nz::Int64(2));
 
-		m_match.emplace(app, "local", "test", std::move(map), 64, 1.f / tickRate);
+		Match::MatchSettings matchSettings;
+		matchSettings.map = Map::LoadFromBinary(config.GetStringValue("GameSettings.MapFile"));
+		matchSettings.maxPlayerCount = 64;
+		matchSettings.name = "local";
+		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("GameSettings.TickRate");
+
+		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings));
 
 		MatchSessions& sessions = m_match->GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();

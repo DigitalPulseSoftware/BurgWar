@@ -14,7 +14,7 @@ GM:OnAsync("playerdeath", function (self, player, attacker)
 	end
 
 	print(player:GetName() .. " died")
-	timer.Sleep(3000)
+	timer.Sleep(self:GetProperty("respawntime") * 1000)
 	self:SpawnPlayer(player)
 end)
 

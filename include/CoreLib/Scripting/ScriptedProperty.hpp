@@ -19,6 +19,8 @@ namespace bw
 		bool isArray = false;
 		bool shared = false;
 	};
+
+	ScriptedProperty InitPropertyFromLua(std::size_t index, const sol::table& table);
 }
 
 #endif

@@ -390,6 +390,10 @@ namespace bw
 			for (auto& layer : data.layers)
 				serializer &= layer.backgroundColor;
 
+			serializer.SerializeArraySize(data.gamemodeProperties);
+			for (auto& property : data.gamemodeProperties)
+				Serialize(serializer, property);
+
 			serializer.SerializeArraySize(data.scripts);
 
 			for (auto& script : data.scripts)
@@ -697,115 +701,118 @@ namespace bw
 
 			serializer.SerializeArraySize(data.properties);
 			for (auto& property : data.properties)
-			{
-				serializer &= property.name;
-
-				// Serialize type
-				Nz::UInt8 dataType;
-				if (serializer.IsWriting())
-					dataType = static_cast<Nz::UInt8>(property.value.index());
-
-				serializer &= dataType;
-				serializer &= property.isArray;
-
-				// Read/write value
-
-				// Waiting for template lambda in C++20
-				auto SerializeValue = [&](auto dummyType)
-				{
-					using T = std::decay_t<decltype(dummyType)>;
-
-					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(property.value) : property.value.emplace<std::vector<T>>();
-
-					if (property.isArray)
-					{
-						serializer.SerializeArraySize(elements);
-						for (auto& element : elements)
-							serializer &= element;
-					}
-					else
-					{
-						assert(!serializer.IsWriting() || elements.size() == 1);
-						if (!serializer.IsWriting())
-							elements.resize(1);
-
-						serializer &= elements.front();
-					}
-				};
-
-
-				static_assert(std::variant_size_v<Helper::Properties::PropertyValue> == 10);
-				switch (dataType)
-				{
-					case 0:
-					{
-						// Handle std::vector<bool> specialization
-						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(property.value) : property.value.emplace<std::vector<bool>>();
-
-						serializer.SerializeArraySize(elements);
-						if (serializer.IsWriting())
-						{
-							for (bool val : elements)
-								serializer &= val;
-						}
-						else
-						{
-							for (std::size_t i = 0; i < elements.size(); ++i)
-							{
-								bool val;
-								serializer &= val;
-
-								elements[i] = val;
-							}
-						}
-
-						break;
-					}
-
-					case 1: SerializeValue(float()); break;
-					case 2: SerializeValue(Nz::Int64()); break;
-					case 3: SerializeValue(Nz::Vector2f()); break;
-					case 4: SerializeValue(Nz::Vector2i64()); break;
-					case 5: SerializeValue(Nz::Vector3f()); break;
-					case 6: SerializeValue(Nz::Vector3i64()); break;
-					case 7: SerializeValue(Nz::Vector4f()); break;
-					case 8: SerializeValue(Nz::Vector4i64()); break;
-
-					case 9: // std::string
-					{
-						auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(property.value) : property.value.emplace<std::vector<std::string>>();
-
-						serializer.SerializeArraySize(elements);
-						if (serializer.IsWriting())
-						{
-							for (const auto& element : elements)
-							{
-								serializer.SerializeArraySize(element);
-								serializer.Write(element.data(), element.size());
-							}
-						}
-						else
-						{
-							for (auto& element : elements)
-							{
-								serializer.SerializeArraySize(element);
-								serializer.Read(element.data(), element.size());
-							}
-						}
-						break;
-					}
-
-					default:
-						assert(!"Unexpected datatype");
-						break;
-				}
-			}
+				Serialize(serializer, property);
 		}
 
 		void Serialize(PacketSerializer& serializer, Helper::EntityId& data)
 		{
 			serializer &= data.layerId;
 			serializer &= data.entityId;
+		}
+		
+		void Serialize(PacketSerializer& serializer, Helper::Property& data)
+		{
+			serializer &= data.name;
+
+			// Serialize type
+			Nz::UInt8 dataType;
+			if (serializer.IsWriting())
+				dataType = static_cast<Nz::UInt8>(data.value.index());
+
+			serializer &= dataType;
+			serializer &= data.isArray;
+
+			// Read/write value
+
+			// Waiting for template lambda in C++20
+			auto SerializeValue = [&](auto dummyType)
+			{
+				using T = std::decay_t<decltype(dummyType)>;
+
+				auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(data.value) : data.value.emplace<std::vector<T>>();
+
+				if (data.isArray)
+				{
+					serializer.SerializeArraySize(elements);
+					for (auto& element : elements)
+						serializer &= element;
+				}
+				else
+				{
+					assert(!serializer.IsWriting() || elements.size() == 1);
+					if (!serializer.IsWriting())
+						elements.resize(1);
+
+					serializer &= elements.front();
+				}
+			};
+
+
+			static_assert(std::variant_size_v<Helper::Property::PropertyValue> == 10);
+			switch (dataType)
+			{
+				case 0:
+				{
+					// Handle std::vector<bool> specialization
+					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(data.value) : data.value.emplace<std::vector<bool>>();
+
+					serializer.SerializeArraySize(elements);
+					if (serializer.IsWriting())
+					{
+						for (bool val : elements)
+							serializer &= val;
+					}
+					else
+					{
+						for (std::size_t i = 0; i < elements.size(); ++i)
+						{
+							bool val;
+							serializer &= val;
+
+							elements[i] = val;
+						}
+					}
+
+					break;
+				}
+
+				case 1: SerializeValue(float()); break;
+				case 2: SerializeValue(Nz::Int64()); break;
+				case 3: SerializeValue(Nz::Vector2f()); break;
+				case 4: SerializeValue(Nz::Vector2i64()); break;
+				case 5: SerializeValue(Nz::Vector3f()); break;
+				case 6: SerializeValue(Nz::Vector3i64()); break;
+				case 7: SerializeValue(Nz::Vector4f()); break;
+				case 8: SerializeValue(Nz::Vector4i64()); break;
+
+				case 9: // std::string
+				{
+					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(data.value) : data.value.emplace<std::vector<std::string>>();
+
+					serializer.SerializeArraySize(elements);
+					if (serializer.IsWriting())
+					{
+						for (const auto& element : elements)
+						{
+							serializer.SerializeArraySize(element);
+							serializer.Write(element.data(), element.size());
+						}
+					}
+					else
+					{
+						for (auto& element : elements)
+						{
+							serializer.SerializeArraySize(element);
+							serializer.Read(element.data(), element.size());
+						}
+					}
+					break;
+				}
+
+				default:
+					assert(!"Unexpected datatype");
+					break;
+			}
 		}
 	}
 }

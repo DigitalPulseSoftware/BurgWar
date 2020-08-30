@@ -80,6 +80,16 @@ namespace bw
 		return combinedResult;
 	}
 
+	inline const tsl::hopscotch_map<std::string, ScriptedProperty>& SharedGamemode::GetProperties() const
+	{
+		return m_properties;
+	}
+
+	inline const PropertyValueMap& SharedGamemode::GetPropertyValues() const
+	{
+		return m_propertyValues;
+	}
+
 	inline sol::table& SharedGamemode::GetTable()
 	{
 		return m_gamemodeTable;
@@ -107,6 +117,20 @@ namespace bw
 	inline sol::table& SharedGamemode::GetGamemodeTable()
 	{
 		return m_gamemodeTable;
+	}
+
+	inline std::optional<std::reference_wrapper<const PropertyValue>> SharedGamemode::GetProperty(const std::string& keyName) const
+	{
+		// Check specific value
+		if (auto it = m_propertyValues.find(keyName); it != m_propertyValues.end())
+			return it->second;
+
+		// Check default value
+		if (auto it = m_properties.find(keyName); it != m_properties.end())
+			return it->second.defaultValue;
+
+		// Not found, return nil for now (should we throw an error?)
+		return std::nullopt;
 	}
 
 	inline const std::shared_ptr<ScriptingContext>& SharedGamemode::GetScriptingContext() const

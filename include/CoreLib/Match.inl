@@ -84,11 +84,6 @@ namespace bw
 		return m_gamemode;
 	}
 
-	inline const std::filesystem::path& Match::GetGamemodePath() const
-	{
-		return m_gamemodeName;
-	}
-
 	inline sol::state& Match::GetLuaState()
 	{
 		return m_scriptingContext->GetLuaState();
