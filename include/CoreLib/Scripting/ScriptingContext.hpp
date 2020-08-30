@@ -32,7 +32,8 @@ namespace bw
 			inline const sol::state& GetLuaState() const;
 			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 
-			bool Load(const std::filesystem::path& folderOrFile);
+			std::optional<sol::object> Load(const std::filesystem::path& file);
+			bool LoadDirectory(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
 			void ReloadLibraries();
@@ -42,6 +43,11 @@ namespace bw
 
 		private:
 			sol::thread& CreateThread();
+
+			std::optional<sol::object> Load(std::filesystem::path path, VirtualDirectory::Entry& entry);
+			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry);
+			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry);
+			void LoadDirectory(std::filesystem::path path, const VirtualDirectory::VirtualDirectoryEntry& folder);
 
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;

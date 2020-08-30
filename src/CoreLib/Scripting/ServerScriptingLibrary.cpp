@@ -41,7 +41,7 @@ namespace bw
 		RegisterPlayerClass(context);
 		RegisterServerTextureClass(context);
 
-		context.Load("autorun");
+		context.LoadDirectory("autorun");
 	}
 
 	void ServerScriptingLibrary::RegisterAssetLibrary(ScriptingContext& /*context*/, sol::table& library)

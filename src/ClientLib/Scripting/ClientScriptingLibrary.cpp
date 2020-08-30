@@ -39,7 +39,7 @@ namespace bw
 		sol::table particleTable = luaState.create_named_table("particle");
 		RegisterParticleLibrary(context, particleTable);
 
-		context.Load("autorun");
+		context.LoadDirectory("autorun");
 	}
 
 	void ClientScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
