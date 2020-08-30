@@ -25,9 +25,9 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration) :
+	Match::Match(BurgApp& app, std::string matchName, std::string gamemodeName, Map map, std::size_t maxPlayerCount, float tickDuration) :
 	SharedMatch(app, LogSide::Server, std::move(matchName), tickDuration),
-	m_gamemodePath(std::move(gamemodeFolder)),
+	m_gamemodeName(std::move(gamemodeName)),
 	m_maxPlayerCount(maxPlayerCount),
 	m_nextUniqueId(map.GetFreeUniqueId()),
 	m_lastPingUpdate(0),
@@ -364,7 +364,7 @@ namespace bw
 		m_weaponStore->Resolve();
 
 		if (!m_gamemode)
-			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodePath);
+			m_gamemode = std::make_shared<ServerGamemode>(*this, m_scriptingContext, m_gamemodeName);
 		else
 			m_gamemode->Reload();
 
@@ -567,7 +567,7 @@ namespace bw
 		// Send match data
 		const Map& mapData = m_terrain->GetMap();
 
-		m_matchData.gamemodePath = m_gamemodePath.generic_string();
+		m_matchData.gamemode = m_gamemodeName;
 		m_matchData.tickDuration = GetTickDuration();
 
 		m_matchData.layers.clear();

@@ -418,7 +418,7 @@ namespace bw
 			std::vector<Asset> assets;
 			std::vector<Layer> layers;
 			std::vector<Script> scripts;
-			std::string gamemodePath;
+			std::string gamemode;
 			Nz::UInt16 currentTick;
 			float tickDuration;
 		};

@@ -50,7 +50,7 @@ namespace bw
 			struct Asset;
 			struct ClientScript;
 
-			Match(BurgApp& app, std::string matchName, std::filesystem::path gamemodeFolder, Map map, std::size_t maxPlayerCount, float tickDuration);
+			Match(BurgApp& app, std::string matchName, std::string gamemodeName, Map map, std::size_t maxPlayerCount, float tickDuration);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -142,7 +142,6 @@ namespace bw
 				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
 			};
 
-			std::filesystem::path m_gamemodePath;
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
 			std::optional<ServerEntityStore> m_entityStore;
@@ -151,6 +150,7 @@ namespace bw
 			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
+			std::string m_gamemodeName;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::unique_ptr<Player>> m_players;

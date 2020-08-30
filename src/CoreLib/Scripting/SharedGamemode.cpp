@@ -13,14 +13,20 @@
 
 namespace bw
 {
-	SharedGamemode::SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
-	m_gamemodePath(std::move(gamemodePath)),
+	SharedGamemode::SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName) :
 	m_context(std::move(scriptingContext)),
+	m_gamemodeName(std::move(gamemodeName)),
 	m_sharedMatch(match)
 	{
-		sol::state& state = m_context->GetLuaState();
+	}
 
-		m_gamemodeTable = state.create_table();
+	void SharedGamemode::InitializeGamemode()
+	{
+		auto resultOpt = m_context->Load("gamemodes/" + m_gamemodeName + ".lua");
+		if (!resultOpt)
+			throw std::runtime_error("failed to retrieve gamemode " + m_gamemodeName + " data");
+
+		m_gamemodeTable = resultOpt->as<sol::table>();
 
 		m_gamemodeTable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
 		{
@@ -32,16 +38,8 @@ namespace bw
 			RegisterEvent(gamemodeTable, event, std::move(callback), true);
 		};
 
-		InitializeGamemode();
-	}
-
-	void SharedGamemode::Reload()
-	{
-		InitializeGamemode();
-	}
-
-	void SharedGamemode::InitializeGamemode()
-	{
+		sol::state& state = m_context->GetLuaState();
+		state["GM"] = GetGamemodeTable();
 	}
 
 	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async)

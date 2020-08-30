@@ -19,7 +19,7 @@ namespace bw
 		Map map = Map::LoadFromBinary(config.GetStringValue("GameSettings.MapFile"));
 		float tickRate = config.GetFloatValue<float>("GameSettings.TickRate");
 
-		m_match.emplace(app, "local", "gamemodes/test", std::move(map), 64, 1.f / tickRate);
+		m_match.emplace(app, "local", "test", std::move(map), 64, 1.f / tickRate);
 
 		MatchSessions& sessions = m_match->GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();

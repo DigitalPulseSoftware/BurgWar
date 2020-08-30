@@ -99,9 +99,9 @@ namespace bw
 		callbackData.callback = std::move(callback);
 	}
 
-	inline const std::filesystem::path& SharedGamemode::GetGamemodePath() const
+	inline const std::string& SharedGamemode::GetGamemodeName() const
 	{
-		return m_gamemodePath;
+		return m_gamemodeName;
 	}
 
 	inline sol::table& SharedGamemode::GetGamemodeTable()

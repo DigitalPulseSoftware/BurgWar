@@ -12,8 +12,8 @@
 
 namespace bw
 {
-	ServerGamemode::ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
-	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodePath)),
+	ServerGamemode::ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName) :
+	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodeName)),
 	m_match(match)
 	{
 		InitializeGamemode();
@@ -21,13 +21,13 @@ namespace bw
 
 	void ServerGamemode::Reload()
 	{
-		SharedGamemode::Reload();
-
 		InitializeGamemode();
 	}
 
 	void ServerGamemode::InitializeGamemode()
 	{
+		SharedGamemode::InitializeGamemode();
+
 		auto& context = GetScriptingContext();
 
 		auto Load = [&](const std::filesystem::path& filepath)
@@ -35,11 +35,13 @@ namespace bw
 			return context->Load(filepath);
 		};
 
-		sol::state& state = context->GetLuaState();
-		state["GM"] = GetGamemodeTable();
+		std::filesystem::path gamemodeName = GetGamemodeName();
+		Load("gamemodes" / gamemodeName / "shared.lua");
+		Load("gamemodes" / gamemodeName / "sv_init.lua");
 
-		const std::filesystem::path& gamemodePath = GetGamemodePath();
-		Load(gamemodePath / "shared.lua");
-		Load(gamemodePath / "sv_init.lua");
+		std::filesystem::path gamemodeFile = "gamemodes" / gamemodeName;
+		gamemodeFile.replace_extension("lua");
+
+		m_match.RegisterClientScript(gamemodeFile);
 	}
 }

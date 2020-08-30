@@ -47,7 +47,7 @@ namespace bw
 {
 	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
-	m_gamemodePath(matchData.gamemodePath),
+	m_gamemodeName(matchData.gamemode),
 	m_averageTickError(20),
 	m_canvas(canvas),
 	m_renderWorld(false),
@@ -421,7 +421,7 @@ namespace bw
 
 		if (!m_gamemode)
 		{
-			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodePath);
+			m_gamemode = std::make_shared<ClientGamemode>(*this, m_scriptingContext, m_gamemodeName);
 			m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 		}
 		else

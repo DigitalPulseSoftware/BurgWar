@@ -258,7 +258,7 @@ namespace bw
 			std::optional<ParticleRegistry> m_particleRegistry;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
-			std::string m_gamemodePath;
+			std::string m_gamemodeName;
 			std::vector<std::unique_ptr<LocalLayer>> m_layers;
 			std::vector<LocalPlayerData> m_localPlayers;
 			std::vector<std::optional<LocalPlayer>> m_matchPlayers;

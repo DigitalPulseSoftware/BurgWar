@@ -8,8 +8,8 @@
 
 namespace bw
 {
-	ClientGamemode::ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath) :
-	SharedGamemode(localMatch, std::move(scriptingContext), std::move(gamemodePath)),
+	ClientGamemode::ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName) :
+	SharedGamemode(localMatch, std::move(scriptingContext), std::move(gamemodeName)),
 	m_match(localMatch)
 	{
 		InitializeGamemode();
@@ -17,13 +17,13 @@ namespace bw
 
 	void ClientGamemode::Reload()
 	{
-		SharedGamemode::Reload();
-
 		InitializeGamemode();
 	}
 
 	void ClientGamemode::InitializeGamemode()
 	{
+		SharedGamemode::InitializeGamemode();
+
 		auto& context = GetScriptingContext();
 
 		auto Load = [&](const std::filesystem::path& filepath)
@@ -31,11 +31,8 @@ namespace bw
 			return context->Load(filepath);
 		};
 
-		sol::state& state = context->GetLuaState();
-		state["GM"] = GetGamemodeTable();
-
-		const std::filesystem::path& gamemodePath = GetGamemodePath();
-		Load(gamemodePath / "shared.lua");
-		Load(gamemodePath / "cl_init.lua");
+		std::filesystem::path gamemodeName = GetGamemodeName();
+		Load("gamemodes" / gamemodeName / "shared.lua");
+		Load("gamemodes" / gamemodeName / "cl_init.lua");
 	}
 }

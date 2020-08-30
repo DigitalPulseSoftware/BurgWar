@@ -19,7 +19,7 @@ namespace bw
 	class SharedGamemode
 	{
 		public:
-			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName);
 			SharedGamemode(const SharedGamemode&) = delete;
 			~SharedGamemode() = default;
 
@@ -35,17 +35,18 @@ namespace bw
 
 			inline void RegisterCallback(GamemodeEvent event, sol::protected_function callback, bool async);
 
-			virtual void Reload();
+			virtual void Reload() = 0;
 
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 
 		protected:
-			inline const std::filesystem::path& GetGamemodePath() const;
+			inline const std::string& GetGamemodeName() const;
 			inline sol::table& GetGamemodeTable();
 			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
+			virtual void InitializeGamemode() = 0;
+	
 		private:
-			void InitializeGamemode();
 			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async);
 
 			struct Callback
@@ -55,8 +56,8 @@ namespace bw
 			};
 
 			std::array<std::vector<Callback>, GamemodeEventCount> m_eventCallbacks;
-			std::filesystem::path m_gamemodePath;
 			std::shared_ptr<ScriptingContext> m_context;
+			std::string m_gamemodeName;
 			sol::table m_gamemodeTable;
 			SharedMatch& m_sharedMatch;
 	};

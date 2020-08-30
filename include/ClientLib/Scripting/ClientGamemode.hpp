@@ -16,13 +16,13 @@ namespace bw
 	class ClientGamemode : public SharedGamemode
 	{
 		public:
-			ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::filesystem::path gamemodePath);
+			ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName);
 			~ClientGamemode() = default;
 
 			void Reload() override;
 
 		private:
-			void InitializeGamemode();
+			void InitializeGamemode() override;
 
 			LocalMatch& m_match;
 	};

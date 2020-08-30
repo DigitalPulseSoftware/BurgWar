@@ -367,7 +367,7 @@ namespace bw
 		{
 			serializer &= data.currentTick;
 			serializer &= data.tickDuration;
-			serializer &= data.gamemodePath;
+			serializer &= data.gamemode;
 
 			serializer.SerializeArraySize(data.assets);
 			serializer.SerializeArraySize(data.fastDownloadUrls);
