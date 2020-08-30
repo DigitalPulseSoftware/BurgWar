@@ -229,11 +229,11 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
 		{
 			if (propertyData.isArray)
 			{
-				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
 					UpdateLayerIndex(layerIndex);
 			}
 			else
@@ -466,11 +466,11 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
 		{
 			if (propertyData.isArray)
 			{
-				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
 					UpdateLayerIndex(layerIndex);
 			}
 			else
@@ -675,11 +675,11 @@ namespace bw
 	{
 		tsl::hopscotch_set<std::string> textures;
 
-		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
 		{
 			if (propertyData.isArray)
 			{
-				for (const std::string& texture : std::get<EntityPropertyArray<std::string>>(value))
+				for (const std::string& texture : std::get<PropertyArray<std::string>>(value))
 					textures.insert(texture);
 			}
 			else
@@ -1706,11 +1706,11 @@ namespace bw
 		};
 
 		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedEntity::Property& propertyData, EntityProperty& value)
+		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
 		{
 			if (propertyData.isArray)
 			{
-				for (Nz::Int64& layerIndex : std::get<EntityPropertyArray<Nz::Int64>>(value))
+				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
 					UpdateEntityIndex(layerIndex);
 			}
 			else

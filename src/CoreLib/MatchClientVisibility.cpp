@@ -943,8 +943,8 @@ namespace bw
 			std::visit([&](auto&& propertyValue)
 			{
 				using T = std::decay_t<decltype(propertyValue)>;
-				constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+				constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
 
 				propertyData.isArray = IsArray;
 

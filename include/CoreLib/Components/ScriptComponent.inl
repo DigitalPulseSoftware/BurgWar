@@ -92,7 +92,7 @@ namespace bw
 		return m_logger;
 	}
 
-	inline std::optional<std::reference_wrapper<const EntityProperty>> ScriptComponent::GetProperty(const std::string& keyName) const
+	inline std::optional<std::reference_wrapper<const PropertyValue>> ScriptComponent::GetProperty(const std::string& keyName) const
 	{
 		// Check specific value
 		if (auto it = m_properties.find(keyName); it != m_properties.end())
@@ -106,7 +106,7 @@ namespace bw
 		return std::nullopt;
 	}
 
-	inline const EntityProperties& ScriptComponent::GetProperties() const
+	inline const PropertyValueMap& ScriptComponent::GetProperties() const
 	{
 		return m_properties;
 	}

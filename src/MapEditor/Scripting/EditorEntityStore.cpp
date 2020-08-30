@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const EntityProperties& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
 	{
 		try
 		{

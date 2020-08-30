@@ -7,8 +7,9 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTEDELEMENT_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDELEMENT_HPP
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Scripting/ElementEvents.hpp>
+#include <CoreLib/Scripting/ScriptedProperty.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <Thirdparty/sol3/sol.hpp>
@@ -27,21 +28,12 @@ namespace bw
 			bool async = false;
 		};
 
-		struct Property
-		{
-			PropertyType type;
-			std::optional<EntityProperty> defaultValue;
-			std::size_t index;
-			bool isArray = false;
-			bool shared = false;
-		};
-
 		sol::table elementTable;
 		std::array<std::vector<Callback>, ElementEventCount> events;
 		std::string base;
 		std::string name;
 		std::string fullName;
-		tsl::hopscotch_map<std::string /*key*/, Property> properties;
+		tsl::hopscotch_map<std::string /*key*/, ScriptedProperty> properties;
 	};
 }
 

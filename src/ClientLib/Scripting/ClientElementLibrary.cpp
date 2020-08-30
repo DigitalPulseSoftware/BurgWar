@@ -192,7 +192,7 @@ namespace bw
 			if (propertyVal.has_value())
 			{
 				sol::state_view lua(s);
-				const EntityProperty& property = propertyVal.value();
+				const PropertyValue& property = propertyVal.value();
 
 				LocalMatch* match;
 				if (entity->HasComponent<LocalMatchComponent>())
@@ -205,7 +205,7 @@ namespace bw
 				auto propertyIt = entityElement->properties.find(propertyName);
 				assert(propertyIt != entityElement->properties.end());
 
-				return TranslateEntityPropertyToLua(match, lua, property, propertyIt->second.type);
+				return TranslatePropertyToLua(match, lua, property, propertyIt->second.type);
 			}
 			else
 				return sol::nil;

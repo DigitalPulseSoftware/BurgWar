@@ -26,7 +26,7 @@ namespace bw
 		return true;
 	}
 
-	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const EntityProperties& properties, const Ndk::EntityHandle& parentEntity) const
+	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 

@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
 
 #include <CoreLib/AnimationManager.hpp>
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CORELIB_ENTITYPROPERTIES_HPP
-#define BURGWAR_CORELIB_ENTITYPROPERTIES_HPP
+#ifndef BURGWAR_CORELIB_PROPERTYVALUES_HPP
+#define BURGWAR_CORELIB_PROPERTYVALUES_HPP
 
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Math/Rect.hpp>
@@ -61,15 +61,15 @@ namespace bw
 	};
 
 	template<typename T> 
-	class EntityPropertyArray
+	class PropertyArray
 	{
 		public:
 			using StoredType = T;
 
-			explicit EntityPropertyArray(std::size_t elementCount);
-			EntityPropertyArray(const EntityPropertyArray&);
-			EntityPropertyArray(EntityPropertyArray&&) noexcept = default;
-			~EntityPropertyArray() = default;
+			explicit PropertyArray(std::size_t elementCount);
+			PropertyArray(const PropertyArray&);
+			PropertyArray(PropertyArray&&) noexcept = default;
+			~PropertyArray() = default;
 
 			T& GetElement(std::size_t i);
 			const T& GetElement(std::size_t i) const;
@@ -83,29 +83,29 @@ namespace bw
 			T* end() const;
 			std::size_t size() const;
 
-			EntityPropertyArray& operator=(const EntityPropertyArray&);
-			EntityPropertyArray& operator=(EntityPropertyArray&&) noexcept = default;
+			PropertyArray& operator=(const PropertyArray&);
+			PropertyArray& operator=(PropertyArray&&) noexcept = default;
 
 		private:
 			std::size_t m_size;
 			std::unique_ptr<T[]> m_arrayData;
 	};
 
-	using EntityProperty = std::variant<bool, EntityPropertyArray<bool>,
-	                                    float, EntityPropertyArray<float>,
-	                                    Nz::Int64, EntityPropertyArray<Nz::Int64>,
-	                                    Nz::Vector2f, EntityPropertyArray<Nz::Vector2f>,
-	                                    Nz::Vector2i64, EntityPropertyArray<Nz::Vector2i64>,
-	                                    Nz::Vector3f, EntityPropertyArray<Nz::Vector3f>,
-	                                    Nz::Vector3i64, EntityPropertyArray<Nz::Vector3i64>,
-	                                    Nz::Vector4f, EntityPropertyArray<Nz::Vector4f>,
-	                                    Nz::Vector4i64, EntityPropertyArray<Nz::Vector4i64>,
-	                                    std::string, EntityPropertyArray<std::string>
+	using PropertyValue = std::variant<bool, PropertyArray<bool>,
+	                                    float, PropertyArray<float>,
+	                                    Nz::Int64, PropertyArray<Nz::Int64>,
+	                                    Nz::Vector2f, PropertyArray<Nz::Vector2f>,
+	                                    Nz::Vector2i64, PropertyArray<Nz::Vector2i64>,
+	                                    Nz::Vector3f, PropertyArray<Nz::Vector3f>,
+	                                    Nz::Vector3i64, PropertyArray<Nz::Vector3i64>,
+	                                    Nz::Vector4f, PropertyArray<Nz::Vector4f>,
+	                                    Nz::Vector4i64, PropertyArray<Nz::Vector4i64>,
+	                                    std::string, PropertyArray<std::string>
 	>;
 	
-	using EntityProperties = tsl::hopscotch_map<std::string /*propertyName*/, EntityProperty /*property*/>;
+	using PropertyValueMap = tsl::hopscotch_map<std::string /*propertyName*/, PropertyValue /*property*/>;
 
-	std::pair<PropertyInternalType, bool> ExtractPropertyType(const EntityProperty& property);
+	std::pair<PropertyInternalType, bool> ExtractPropertyType(const PropertyValue& property);
 
 	PropertyType ParsePropertyType(const std::string_view& str);
 	PropertyInternalType ParsePropertyInternalType(const std::string_view& str);
@@ -113,13 +113,13 @@ namespace bw
 	const char* ToString(PropertyType propertyType);
 	const char* ToString(PropertyInternalType propertyType);
 
-	EntityProperty TranslateEntityPropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
-	sol::object TranslateEntityPropertyToLua(SharedMatch* match, sol::state_view& lua, const EntityProperty& property, PropertyType propertyType);
+	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
+	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property, PropertyType propertyType);
 
 	template<typename T> Nz::Vector4<T> TranslateRectToVec(const Nz::Rect<T>& value);
 	template<typename T> Nz::Rect<T> TranslateVecToRect(const Nz::Vector4<T>& value);
 }
 
-#include <CoreLib/EntityProperties.inl>
+#include <CoreLib/PropertyValues.inl>
 
 #endif

@@ -171,7 +171,7 @@ namespace bw
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
 				lifeOwner = AbstractElementLibrary::AssertScriptEntity(*lifeOwnerEntitytable);
 
-			EntityProperties entityProperties;
+			PropertyValueMap entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
 			{
 				sol::table& propertyTable = propertyTableOpt.value();
@@ -181,7 +181,7 @@ namespace bw
 				{
 					sol::object propertyValue = propertyTable[propertyName];
 					if (propertyValue)
-						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
+						entityProperties.emplace(propertyName, TranslatePropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
 				}
 			}
 
@@ -227,7 +227,7 @@ namespace bw
 			if (elementIndex == ServerEntityStore::InvalidIndex)
 				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
 
-			EntityProperties entityProperties;
+			PropertyValueMap entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
 			{
 				sol::table& propertyTable = propertyTableOpt.value();
@@ -237,7 +237,7 @@ namespace bw
 				{
 					sol::object propertyValue = propertyTable[propertyName];
 					if (propertyValue)
-						entityProperties.emplace(propertyName, TranslateEntityPropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
+						entityProperties.emplace(propertyName, TranslatePropertyFromLua(&match, propertyValue, propertyData.type, propertyData.isArray));
 				}
 			}
 

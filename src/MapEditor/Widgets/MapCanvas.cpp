@@ -53,7 +53,7 @@ namespace bw
 		m_entityGizmo.reset();
 	}
 
-	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties)
+	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties)
 	{
 		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
 

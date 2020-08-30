@@ -19,7 +19,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, Nz::Int64 uniqueId, const EntityProperties& properties, const Ndk::EntityHandle& parent)
+	const Ndk::EntityHandle& ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, Nz::Int64 uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
 	{
 		const auto& weaponClass = GetElement(weaponIndex);
 

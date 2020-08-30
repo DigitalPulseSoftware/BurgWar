@@ -642,9 +642,9 @@ namespace bw
 
 	EntityInfoDialog::~EntityInfoDialog() = default;
 
-	const EntityProperty& EntityInfoDialog::GetProperty(const std::string& propertyName) const
+	const PropertyValue& EntityInfoDialog::GetProperty(const std::string& propertyName) const
 	{
-		const bw::EntityProperty* property;
+		const bw::PropertyValue* property;
 
 		auto it = m_entityInfo.properties.find(propertyName);
 		if (it != m_entityInfo.properties.end())
@@ -729,7 +729,7 @@ namespace bw
 		m_rotationWidget->setValue(rotation.ToDegrees());
 	}
 
-	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, EntityProperty propertyValue)
+	void EntityInfoDialog::UpdateProperty(const std::string& propertyName, PropertyValue propertyValue)
 	{
 		auto it = m_entityInfo.properties.insert_or_assign(propertyName, std::move(propertyValue)).first;
 		m_updateFlags |= EntityInfoUpdate::Properties;
@@ -807,7 +807,7 @@ namespace bw
 		auto entityTypeInfo = std::static_pointer_cast<EditorScriptedEntity, ScriptedEntity>(m_entityStore.GetElement(m_entityTypeIndex));
 
 		// Build property list and ensure relevant properties are stored
-		EntityProperties oldProperties = std::move(m_entityInfo.properties);
+		PropertyValueMap oldProperties = std::move(m_entityInfo.properties);
 		m_entityInfo.properties.clear(); // Put back in a valid state
 
 		std::bitset<MaxPropertyCount> modifiedProperties;
@@ -921,7 +921,7 @@ namespace bw
 		{
 			std::visit([&](auto&& propertyValue)
 			{
-				constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, std::decay_t<decltype(propertyValue)>>;
+				constexpr bool IsArray = IsSameTpl_v<PropertyArray, std::decay_t<decltype(propertyValue)>>;
 
 				isArray = IsArray;
 				if constexpr (IsArray)
@@ -955,14 +955,14 @@ namespace bw
 				std::size_t newSize = spinbox->value();
 
 				// Ensure we have a custom value for this
-				EntityProperty* property;
+				PropertyValue* property;
 				if (auto it = m_entityInfo.properties.find(propertyInfo.keyName); it != m_entityInfo.properties.end())
 					property = &it.value();
 				else
 				{
 					if (propertyInfo.defaultValue)
 					{
-						const EntityProperty& defaultValue = propertyInfo.defaultValue.value();
+						const PropertyValue& defaultValue = propertyInfo.defaultValue.value();
 
 						auto propertyIt = m_entityInfo.properties.emplace(propertyInfo.keyName, defaultValue);
 						property = &propertyIt.first.value();
@@ -976,14 +976,14 @@ namespace bw
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
 
 						// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
 						assert(IsArray);
 						if constexpr (IsArray) //< always true
 						{
-							EntityPropertyArray<PropertyType> newArray(newSize);
+							PropertyArray<PropertyType> newArray(newSize);
 
 							// Copy old values
 							std::size_t size = std::min(newArray.size(), propertyValue.size());
@@ -1010,7 +1010,7 @@ namespace bw
 			auto SetProperty = [this, keyName = propertyInfo.keyName, arraySize, OnPropertyOverride](int rowIndex, auto&& value)
 			{
 				using T = std::decay_t<decltype(value)>;
-				using ArrayType = EntityPropertyArray<T>;
+				using ArrayType = PropertyArray<T>;
 
 				auto it = m_entityInfo.properties.find(keyName);
 				if (it == m_entityInfo.properties.end())
@@ -1029,7 +1029,7 @@ namespace bw
 			{
 				case PropertyType::Bool:
 				{
-					using T = EntityPropertyArray<bool>;
+					using T = PropertyArray<bool>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1065,7 +1065,7 @@ namespace bw
 				{
 					m_delegates->comboBoxDelegate.emplace(BuildEntityComboBoxOptions());
 
-					using T = EntityPropertyArray<Nz::Int64>;
+					using T = PropertyArray<Nz::Int64>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1093,7 +1093,7 @@ namespace bw
 
 				case PropertyType::Float:
 				{
-					using T = EntityPropertyArray<float>;
+					using T = PropertyArray<float>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1121,7 +1121,7 @@ namespace bw
 				case PropertyType::FloatPosition:
 				case PropertyType::FloatSize:
 				{
-					using T = EntityPropertyArray<Nz::Vector2f>;
+					using T = PropertyArray<Nz::Vector2f>;
 					
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1149,7 +1149,7 @@ namespace bw
 				case PropertyType::FloatPosition3D:
 				case PropertyType::FloatSize3D:
 				{
-					using T = EntityPropertyArray<Nz::Vector3f>;
+					using T = PropertyArray<Nz::Vector3f>;
 					
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1176,7 +1176,7 @@ namespace bw
 
 				case PropertyType::FloatRect:
 				{
-					using T = EntityPropertyArray<Nz::Vector4f>;
+					using T = PropertyArray<Nz::Vector4f>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1203,7 +1203,7 @@ namespace bw
 
 				case PropertyType::Integer:
 				{
-					using T = EntityPropertyArray<Nz::Int64>;
+					using T = PropertyArray<Nz::Int64>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1231,7 +1231,7 @@ namespace bw
 				case PropertyType::IntegerPosition:
 				case PropertyType::IntegerSize:
 				{
-					using T = EntityPropertyArray<Nz::Vector2i64>;
+					using T = PropertyArray<Nz::Vector2i64>;
 
 
 					QTableView* tableView = new QTableView;
@@ -1261,7 +1261,7 @@ namespace bw
 				case PropertyType::IntegerPosition3D:
 				case PropertyType::IntegerSize3D:
 				{
-					using T = EntityPropertyArray<Nz::Vector3i64>;
+					using T = PropertyArray<Nz::Vector3i64>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1289,7 +1289,7 @@ namespace bw
 
 				case PropertyType::IntegerRect:
 				{
-					using T = EntityPropertyArray<Nz::Vector4i64>;
+					using T = PropertyArray<Nz::Vector4i64>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1319,7 +1319,7 @@ namespace bw
 				{
 					m_delegates->comboBoxDelegate.emplace(BuildLayerComboBoxOptions());
 
-					using T = EntityPropertyArray<Nz::Int64>;
+					using T = PropertyArray<Nz::Int64>;
 
 					QTableView* tableView = new QTableView;
 					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
@@ -1348,7 +1348,7 @@ namespace bw
 				case PropertyType::String:
 				case PropertyType::Texture:
 				{
-					using T = EntityPropertyArray<std::string>;
+					using T = PropertyArray<std::string>;
 
 					QTableWidget* table = new QTableWidget(arraySize, 1);
 					table->setHorizontalHeaderLabels({ tr("Value") });
@@ -1381,7 +1381,7 @@ namespace bw
 				auto it = m_entityInfo.properties.find(keyName);
 				if (it == m_entityInfo.properties.end())
 				{
-					it = m_entityInfo.properties.emplace(keyName, EntityProperty{}).first;
+					it = m_entityInfo.properties.emplace(keyName, PropertyValue{}).first;
 					OnPropertyOverride();
 				}
 
@@ -1743,7 +1743,7 @@ namespace bw
 		return std::visit([=](const auto& value) -> QString
 		{
 			using T = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+			constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
 
 			// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
 			if constexpr (IsArray)

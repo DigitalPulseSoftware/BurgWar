@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_MAPWIDGET_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_MAPWIDGET_HPP
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <MapEditor/Gizmos/EditorGizmo.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/WorldCanvas.hpp>
@@ -25,7 +25,7 @@ namespace bw
 			void ClearEntities();
 			void ClearEntitySelection();
 
-			const Ndk::EntityHandle& CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const EntityProperties& properties);
+			const Ndk::EntityHandle& CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties);
 			void DeleteEntity(Ndk::EntityId entityId);
 
 			template<typename F> void ForEachEntity(F&& func);

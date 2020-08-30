@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
@@ -55,7 +55,7 @@ namespace bw
 
 		protected:
 			virtual std::shared_ptr<Element> CreateElement() const;
-			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const;
+			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const PropertyValueMap& properties) const;
 			virtual void InitializeElementTable(sol::table& elementTable);
 			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
 			bool InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const;

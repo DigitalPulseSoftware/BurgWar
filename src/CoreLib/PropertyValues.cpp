@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in Prerequisites.hpp
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
@@ -17,7 +17,7 @@ namespace bw
 		sol::object PushValue(sol::state_view& lua, T&& value, ConvertFunc&& convertFunc)
 		{
 			using Type = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, Type>;
+			constexpr bool IsArray = IsSameTpl_v<PropertyArray, Type>;
 
 			if constexpr (IsArray)
 			{
@@ -37,8 +37,8 @@ namespace bw
 		sol::object PushValuePassthrough(sol::state_view& lua, T&& value)
 		{
 			// I had troubles using a passthrough (std::forward) function with PushValue
-			/*constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+			/*constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
 
 			return PushValue(lua, value, [&lua](InternalType&& val) -> sol::object
 			{
@@ -46,7 +46,7 @@ namespace bw
 			});*/
 
 			using Type = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, Type>;
+			constexpr bool IsArray = IsSameTpl_v<PropertyArray, Type>;
 
 			if constexpr (IsArray)
 			{
@@ -63,85 +63,85 @@ namespace bw
 		};
 	}
 
-	std::pair<PropertyInternalType, bool> ExtractPropertyType(const EntityProperty& property)
+	std::pair<PropertyInternalType, bool> ExtractPropertyType(const PropertyValue& property)
 	{
 		// Use switch on index() instead of visitor for speed
 		switch (property.index())
 		{
-			static_assert(std::is_same_v<std::variant_alternative_t<0, EntityProperty>, bool>);
-			static_assert(std::is_same_v<std::variant_alternative_t<1, EntityProperty>, EntityPropertyArray<bool>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<0, PropertyValue>, bool>);
+			static_assert(std::is_same_v<std::variant_alternative_t<1, PropertyValue>, PropertyArray<bool>>);
 			
 			case 0:
 				return std::make_pair(PropertyInternalType::Bool, false);
 			case 1:
 				return std::make_pair(PropertyInternalType::Bool, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<2, EntityProperty>, float>);
-			static_assert(std::is_same_v<std::variant_alternative_t<3, EntityProperty>, EntityPropertyArray<float>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<2, PropertyValue>, float>);
+			static_assert(std::is_same_v<std::variant_alternative_t<3, PropertyValue>, PropertyArray<float>>);
 
 			case 2:
 				return std::make_pair(PropertyInternalType::Float, false);
 			case 3:
 				return std::make_pair(PropertyInternalType::Float, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<4, EntityProperty>, Nz::Int64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<5, EntityProperty>, EntityPropertyArray<Nz::Int64>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<4, PropertyValue>, Nz::Int64>);
+			static_assert(std::is_same_v<std::variant_alternative_t<5, PropertyValue>, PropertyArray<Nz::Int64>>);
 
 			case 4:
 				return std::make_pair(PropertyInternalType::Integer, false);
 			case 5:
 				return std::make_pair(PropertyInternalType::Integer, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<6, EntityProperty>, Nz::Vector2f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<7, EntityProperty>, EntityPropertyArray<Nz::Vector2f>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<6, PropertyValue>, Nz::Vector2f>);
+			static_assert(std::is_same_v<std::variant_alternative_t<7, PropertyValue>, PropertyArray<Nz::Vector2f>>);
 
 			case 6:
 				return std::make_pair(PropertyInternalType::Float2, false);
 			case 7:
 				return std::make_pair(PropertyInternalType::Float2, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<8, EntityProperty>, Nz::Vector2i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<9, EntityProperty>, EntityPropertyArray<Nz::Vector2i64>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<8, PropertyValue>, Nz::Vector2i64>);
+			static_assert(std::is_same_v<std::variant_alternative_t<9, PropertyValue>, PropertyArray<Nz::Vector2i64>>);
 
 			case 8:
 				return std::make_pair(PropertyInternalType::Integer2, false);
 			case 9:
 				return std::make_pair(PropertyInternalType::Integer2, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<10, EntityProperty>, Nz::Vector3f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<11, EntityProperty>, EntityPropertyArray<Nz::Vector3f>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<10, PropertyValue>, Nz::Vector3f>);
+			static_assert(std::is_same_v<std::variant_alternative_t<11, PropertyValue>, PropertyArray<Nz::Vector3f>>);
 
 			case 10:
 				return std::make_pair(PropertyInternalType::Float3, false);
 			case 11:
 				return std::make_pair(PropertyInternalType::Float3, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<12, EntityProperty>, Nz::Vector3i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<13, EntityProperty>, EntityPropertyArray<Nz::Vector3i64>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<12, PropertyValue>, Nz::Vector3i64>);
+			static_assert(std::is_same_v<std::variant_alternative_t<13, PropertyValue>, PropertyArray<Nz::Vector3i64>>);
 
 			case 12:
 				return std::make_pair(PropertyInternalType::Integer3, false);
 			case 13:
 				return std::make_pair(PropertyInternalType::Integer3, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<14, EntityProperty>, Nz::Vector4f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<15, EntityProperty>, EntityPropertyArray<Nz::Vector4f>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<14, PropertyValue>, Nz::Vector4f>);
+			static_assert(std::is_same_v<std::variant_alternative_t<15, PropertyValue>, PropertyArray<Nz::Vector4f>>);
 
 			case 14:
 				return std::make_pair(PropertyInternalType::Float4, false);
 			case 15:
 				return std::make_pair(PropertyInternalType::Float4, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<16, EntityProperty>, Nz::Vector4i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<17, EntityProperty>, EntityPropertyArray<Nz::Vector4i64>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<16, PropertyValue>, Nz::Vector4i64>);
+			static_assert(std::is_same_v<std::variant_alternative_t<17, PropertyValue>, PropertyArray<Nz::Vector4i64>>);
 
 			case 16:
 				return std::make_pair(PropertyInternalType::Integer4, false);
 			case 17:
 				return std::make_pair(PropertyInternalType::Integer4, true);
 
-			static_assert(std::is_same_v<std::variant_alternative_t<18, EntityProperty>, std::string>);
-			static_assert(std::is_same_v<std::variant_alternative_t<19, EntityProperty>, EntityPropertyArray<std::string>>);
+			static_assert(std::is_same_v<std::variant_alternative_t<18, PropertyValue>, std::string>);
+			static_assert(std::is_same_v<std::variant_alternative_t<19, PropertyValue>, PropertyArray<std::string>>);
 
 			case 18:
 				return std::make_pair(PropertyInternalType::String, false);
@@ -317,7 +317,7 @@ namespace bw
 		return nullptr;
 	}
 
-	EntityProperty TranslateEntityPropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray)
+	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray)
 	{
 		auto TranslateEntityToUniqueId = [&](const sol::object& value) -> Nz::Int64
 		{
@@ -346,11 +346,11 @@ namespace bw
 			if (elementCount == 0)
 				throw std::runtime_error("Property array must contain at least one element");
 
-			auto HandleDataArray = [&](auto dummyType) -> EntityProperty
+			auto HandleDataArray = [&](auto dummyType) -> PropertyValue
 			{
 				using T = std::decay_t<decltype(dummyType)>;
 
-				EntityPropertyArray<T> container(elementCount);
+				PropertyArray<T> container(elementCount);
 				for (std::size_t i = 0; i < elementCount; ++i)
 					container[i] = content[i + 1];
 
@@ -364,7 +364,7 @@ namespace bw
 
 				case PropertyType::Entity:
 				{
-					EntityPropertyArray<Nz::Int64> container(elementCount);
+					PropertyArray<Nz::Int64> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateEntityToUniqueId(content[i + 1]);
 
@@ -388,7 +388,7 @@ namespace bw
 
 				case PropertyType::FloatRect:
 				{
-					EntityPropertyArray<Nz::Vector4f> container(elementCount);
+					PropertyArray<Nz::Vector4f> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateRectToVec<float>(content[i + 1]);
 
@@ -405,7 +405,7 @@ namespace bw
 
 				case PropertyType::IntegerRect:
 				{
-					EntityPropertyArray<Nz::Vector4i64> container(elementCount);
+					PropertyArray<Nz::Vector4i64> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateRectToVec<Nz::Int64>(content[i + 1]);
 
@@ -465,13 +465,13 @@ namespace bw
 		throw std::runtime_error("Unhandled type");
 	}
 
-	sol::object TranslateEntityPropertyToLua(SharedMatch* match, sol::state_view& lua, const EntityProperty& property, PropertyType propertyType)
+	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property, PropertyType propertyType)
 	{
 		return std::visit([&](auto&& value) -> sol::object
 		{
 			using T = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
-			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<EntityPropertyArray, T>::ContainedType, T>;
+			constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
 
 			if constexpr (std::is_same_v<InternalType, bool> ||
 			              std::is_same_v<InternalType, float> ||

@@ -248,11 +248,11 @@ namespace bw
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const EntityProperties& properties) const
+	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const PropertyValueMap& properties) const
 	{
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 
-		EntityProperties filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
+		PropertyValueMap filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
 
 		for (auto&& [propertyName, propertyInfo] : element->properties)
 		{
@@ -366,7 +366,7 @@ namespace bw
 
 				try
 				{
-					ScriptedElement::Property property;
+					ScriptedProperty property;
 					property.index = propertyIndex;
 					property.type = propertyTable["Type"];
 
@@ -380,7 +380,7 @@ namespace bw
 
 					sol::object propertyDefault = propertyTable["Default"];
 					if (!propertyDefault.is<sol::nil_t>())
-						property.defaultValue = TranslateEntityPropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
+						property.defaultValue = TranslatePropertyFromLua(nullptr, propertyDefault, property.type, property.isArray);
 
 					auto it = element->properties.find(propertyName);
 					if (it == element->properties.end())

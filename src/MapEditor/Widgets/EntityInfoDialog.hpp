@@ -9,7 +9,7 @@
 
 #include <Nazara/Core/Flags.hpp>
 #include <NDK/Entity.hpp>
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Map.hpp>
 #include <MapEditor/Enums.hpp>
 #include <QtWidgets/QDialog>
@@ -42,7 +42,7 @@ namespace bw
 		std::string entityName;
 		Nz::DegreeAnglef rotation = Nz::DegreeAnglef::Zero();
 		Nz::Vector2f position = Nz::Vector2f::Zero();
-		EntityProperties properties;
+		PropertyValueMap properties;
 	};
 
 	class EntityInfoDialog : public QDialog
@@ -56,7 +56,7 @@ namespace bw
 			inline const Nz::Vector2f& GetPosition() const;
 			inline const Nz::DegreeAnglef& GetRotation() const;
 
-			const EntityProperty& GetProperty(const std::string& propertyName) const;
+			const PropertyValue& GetProperty(const std::string& propertyName) const;
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
@@ -64,13 +64,13 @@ namespace bw
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
-			void UpdateProperty(const std::string& propertyName, EntityProperty propertyValue);
+			void UpdateProperty(const std::string& propertyName, PropertyValue propertyValue);
 
 		private:
 			struct Delegates;
 			struct PropertyData;
 
-			using EntityPropertyConstRefOpt = std::optional<std::reference_wrapper<const EntityProperty>>;
+			using EntityPropertyConstRefOpt = std::optional<std::reference_wrapper<const PropertyValue>>;
 
 			std::vector<std::pair<QString, QVariant>> BuildEntityComboBoxOptions();
 			std::vector<std::pair<QString, QVariant>> BuildLayerComboBoxOptions();
@@ -103,7 +103,7 @@ namespace bw
 				std::size_t index;
 				std::string keyName;
 				std::string visualName;
-				std::optional<EntityProperty> defaultValue;
+				std::optional<PropertyValue> defaultValue;
 				PropertyType type;
 				bool isArray;
 			};

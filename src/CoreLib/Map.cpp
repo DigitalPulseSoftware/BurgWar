@@ -150,7 +150,7 @@ namespace bw
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
 
 						if constexpr (IsArray)
 						{
@@ -237,7 +237,7 @@ namespace bw
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<EntityPropertyArray, T>;
+						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
 
 						auto Serialize = [&](const auto& value)
 						{
@@ -392,7 +392,7 @@ namespace bw
 							Nz::UInt32 size;
 							stream >> size;
 
-							EntityPropertyArray<T> elements(size);
+							PropertyArray<T> elements(size);
 							for (T& element : elements)
 								stream >> element;
 
@@ -506,7 +506,7 @@ namespace bw
 							if (elementCount == 0)
 								return; //< Ignore empty arrays
 
-							EntityPropertyArray<T> elements(elementCount);
+							PropertyArray<T> elements(elementCount);
 							for (std::size_t i = 0; i < elementCount; ++i)
 								elements[i] = value[i];
 

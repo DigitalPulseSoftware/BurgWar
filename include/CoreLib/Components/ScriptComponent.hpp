@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_SCRIPTCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_SCRIPTCOMPONENT_HPP
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LogSystem/EntityLogger.hpp>
 #include <CoreLib/Scripting/ElementEvents.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
@@ -26,7 +26,7 @@ namespace bw
 		friend class TickCallbackSystem;
 
 		public:
-			ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, EntityProperties properties);
+			ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, PropertyValueMap properties);
 			~ScriptComponent();
 
 			template<ElementEvent Event, typename... Args>
@@ -38,8 +38,8 @@ namespace bw
 			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;
 			inline const EntityLogger& GetLogger() const;
-			inline std::optional<std::reference_wrapper<const EntityProperty>> GetProperty(const std::string& keyName) const;
-			inline const EntityProperties& GetProperties() const;
+			inline std::optional<std::reference_wrapper<const PropertyValue>> GetProperty(const std::string& keyName) const;
+			inline const PropertyValueMap& GetProperties() const;
 			inline sol::table& GetTable();
 
 			inline bool HasCallbacks(ElementEvent event) const;
@@ -62,7 +62,7 @@ namespace bw
 			std::shared_ptr<ScriptingContext> m_context;
 			sol::table m_entityTable;
 			EntityLogger m_logger;
-			EntityProperties m_properties;
+			PropertyValueMap m_properties;
 			float m_timeBeforeTick;
 	};
 }

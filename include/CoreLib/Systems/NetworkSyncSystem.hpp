@@ -93,7 +93,7 @@ namespace bw
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
-				tsl::hopscotch_map<std::string /*key*/, EntityProperty> properties;
+				tsl::hopscotch_map<std::string /*key*/, PropertyValue> properties;
 				std::vector<std::pair<LayerIndex, Ndk::EntityId>> dependentIds;
 			};
 

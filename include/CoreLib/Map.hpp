@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_MAP_HPP
 #define BURGWAR_CORELIB_MAP_HPP
 
-#include <CoreLib/EntityProperties.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -94,7 +94,7 @@ namespace bw
 				Nz::DegreeAnglef rotation;
 				Nz::Int64 uniqueId;
 				Nz::Vector2f position;
-				EntityProperties properties;
+				PropertyValueMap properties;
 			};
 
 			struct EntityIndices

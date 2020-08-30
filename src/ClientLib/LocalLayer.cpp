@@ -226,7 +226,7 @@ namespace bw
 
 		const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
 
-		EntityProperties properties;
+		PropertyValueMap properties;
 		for (const auto& property : entityData.properties)
 		{
 			const std::string& propertyName = networkStringStore.GetString(property.name);
@@ -238,7 +238,7 @@ namespace bw
 
 				if (property.isArray)
 				{
-					EntityPropertyArray<StoredType> elements(value.size());
+					PropertyArray<StoredType> elements(value.size());
 					for (std::size_t i = 0; i < value.size(); ++i)
 						elements[i] = value[i];
 
