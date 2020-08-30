@@ -58,7 +58,6 @@ namespace bw::Commands
 
 	void LayerCreationDelete::Delete()
 	{
-		const Map& map = m_editor.GetWorkingMap();
 		m_editor.DeleteLayer(m_layerIndex);
 	}
 
