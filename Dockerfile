@@ -24,3 +24,12 @@ WORKDIR /usr/lib/NazaraEngine/build/gmake
 # Install GCC
 RUN apt install build-essential -y
 RUN make -j4
+
+WORKDIR /root/BurgWar/build
+
+RUN apt install qt5-default curl -y
+
+COPY config-docker.lua.default config.lua
+
+RUN ./premake5-linux64 gmake
+RUN make
