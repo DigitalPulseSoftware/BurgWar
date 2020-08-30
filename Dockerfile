@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:stable
 MAINTAINER SirMishaa
 
 RUN apt update && apt upgrade -y && apt install curl -y
