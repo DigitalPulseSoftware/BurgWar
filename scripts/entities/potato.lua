@@ -66,7 +66,7 @@ function entity:Explode()
 			local minDistance = 1000
 			local strength = math.min(50, 250 / math.max(1, distance - minDistance))
 			if (strength > 0.1) then
-				GM:ShakeCamera(1, strength)
+				match.GetGamemode():ShakeCamera(1, strength)
 			end
 		end
 

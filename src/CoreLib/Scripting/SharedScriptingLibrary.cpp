@@ -6,6 +6,7 @@
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/BasicPlayerMovementController.hpp>
 #include <CoreLib/NoclipPlayerMovementController.hpp>
+#include <CoreLib/Scripting/SharedGamemode.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/Constraint.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
@@ -190,6 +191,11 @@ namespace bw
 				m_match.ForEachEntity(entityFunc);
 
 			return result;
+		};
+
+		library["GetGamemode"] = [this]()
+		{
+			return m_match.GetSharedGamemode()->GetTable();
 		};
 
 		library["GetMilliseconds"] = [this]()

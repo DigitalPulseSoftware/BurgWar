@@ -34,6 +34,7 @@ namespace bw
 			inline const tsl::hopscotch_map<std::string /*key*/, ScriptedProperty>& GetProperties() const;
 			inline const PropertyValueMap& GetPropertyValues() const;
 			inline sol::table& GetTable();
+			inline const sol::table& GetTable() const;
 
 			inline bool HasCallbacks(GamemodeEvent event) const;
 

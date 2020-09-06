@@ -1,4 +1,6 @@
-GM:On("initscoreboard", function (self, scoreboard)
+local gamemode = ScriptedGamemode()
+
+gamemode:On("initscoreboard", function (self, scoreboard)
 	self.Scoreboard = scoreboard
 	self.ScoreboardColumns = {}
 
@@ -13,7 +15,7 @@ GM:On("initscoreboard", function (self, scoreboard)
 	end
 end)
 
-GM:On("playerjoined", function (self, player)
+gamemode:On("playerjoined", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -22,7 +24,7 @@ GM:On("playerjoined", function (self, player)
 	self:RegisterScoreboardPlayer(player)
 end)
 
-function GM:RegisterScoreboardPlayer(player)
+function gamemode:RegisterScoreboardPlayer(player)
 	local scoreboard = assert(self.Scoreboard)
 
 	local playerIndex = player:GetPlayerIndex()
@@ -43,7 +45,7 @@ function GM:RegisterScoreboardPlayer(player)
 	}, isLocalPlayer)
 end
 
-GM:On("playerleave", function (self, player)
+gamemode:On("playerleave", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -52,7 +54,7 @@ GM:On("playerleave", function (self, player)
 	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
 end)
 
-GM:On("playernameupdate", function (self, player, newName)
+gamemode:On("playernameupdate", function (self, player, newName)
 	print(player:GetName() .. " has changed name to " .. newName)
 
 	local scoreboard = self.Scoreboard
@@ -63,7 +65,7 @@ GM:On("playernameupdate", function (self, player, newName)
 	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
 end)
 
-GM:On("playerpingupdate", function (self, player, newName)
+gamemode:On("playerpingupdate", function (self, player, newName)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -74,7 +76,7 @@ GM:On("playerpingupdate", function (self, player, newName)
 	end
 end)
 
-function GM:UpdateScoreboard(deaths, kills)
+function gamemode:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return

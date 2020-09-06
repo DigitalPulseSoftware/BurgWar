@@ -156,6 +156,11 @@ namespace bw
 		return m_networkStringStore;
 	}
 
+	std::shared_ptr<const SharedGamemode> Match::GetSharedGamemode() const
+	{
+		return m_gamemode;
+	}
+
 	ServerWeaponStore& Match::GetWeaponStore()
 	{
 		return *m_weaponStore;

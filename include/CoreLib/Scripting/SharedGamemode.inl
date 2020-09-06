@@ -95,6 +95,11 @@ namespace bw
 		return m_gamemodeTable;
 	}
 
+	inline const sol::table& SharedGamemode::GetTable() const
+	{
+		return m_gamemodeTable;
+	}
+
 	inline bool SharedGamemode::HasCallbacks(GamemodeEvent event) const
 	{
 		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];

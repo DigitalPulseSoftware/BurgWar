@@ -21,6 +21,8 @@ namespace bw
 	{
 	}
 
+	SharedGamemode::~SharedGamemode() = default;
+
 	void SharedGamemode::InitializeGamemode()
 	{
 		auto resultOpt = m_context->Load("gamemodes/" + m_gamemodeName + ".lua");
@@ -88,7 +90,10 @@ namespace bw
 		};
 
 		sol::state& state = m_context->GetLuaState();
-		state["GM"] = GetGamemodeTable();
+		state["ScriptedGamemode"] = [this]()
+		{
+			return m_gamemodeTable;
+		};
 	}
 
 	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async)

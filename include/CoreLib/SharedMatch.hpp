@@ -20,6 +20,7 @@ namespace bw
 	class ScriptingContext;
 	class SharedEntityStore;
 	class SharedLayer;
+	class SharedGamemode;
 	class SharedWeaponStore;
 
 	class SharedMatch
@@ -46,6 +47,7 @@ namespace bw
 			inline Nz::UInt16 GetNetworkTick(Nz::UInt64 tick) const;
 			inline ScriptHandlerRegistry& GetScriptPacketHandlerRegistry();
 			inline const ScriptHandlerRegistry& GetScriptPacketHandlerRegistry() const;
+			virtual std::shared_ptr<const SharedGamemode> GetSharedGamemode() const = 0;
 			inline float GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 			virtual SharedWeaponStore& GetWeaponStore() = 0;

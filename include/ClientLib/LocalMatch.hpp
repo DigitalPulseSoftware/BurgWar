@@ -83,6 +83,7 @@ namespace bw
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
 			inline Ndk::World& GetRenderWorld();
+			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
 

@@ -85,6 +85,7 @@ namespace bw
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
+			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
 			ServerWeaponStore& GetWeaponStore() override;

@@ -221,6 +221,11 @@ namespace bw
 		return m_session.GetNetworkStringStore();
 	}
 
+	std::shared_ptr<const SharedGamemode> LocalMatch::GetSharedGamemode() const
+	{
+		return m_gamemode;
+	}
+
 	ClientWeaponStore& LocalMatch::GetWeaponStore()
 	{
 		return *m_weaponStore;

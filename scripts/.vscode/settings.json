@@ -12,7 +12,6 @@
         "engine_GetLocalPlayer_PlayerIndex",
         "engine_GetLocalPlayerCount",
         "engine_GetPlayerPosition",
-        "GM",
         "include",
         "match",
         "network",
@@ -29,5 +28,6 @@
         "DummyInputController",
         "ScriptedEntity",
         "ScriptedWeapon",
+        "ScriptedGamemode"
     ]
 }
