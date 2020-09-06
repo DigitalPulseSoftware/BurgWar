@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/States/LoginState.hpp>
+#include <Client/States/JoinServerState.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/OptionState.hpp>
@@ -23,8 +23,9 @@
 
 namespace bw
 {
-	LoginState::LoginState(std::shared_ptr<StateData> stateData) :
-	AbstractState(std::move(stateData))
+	JoinServerState::JoinServerState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
+	AbstractState(std::move(stateData)),
+	m_previousState(std::move(previousState))
 	{
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Hide();
@@ -65,45 +66,27 @@ namespace bw
 			OnConnectionPressed();
 		});
 		
-		m_optionButton = CreateWidget<Ndk::ButtonWidget>();
-		m_optionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Option", 24));
-		m_optionButton->Resize(m_optionButton->GetPreferredSize());
+		m_backButton = CreateWidget<Ndk::ButtonWidget>();
+		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
+		m_backButton->Resize(m_backButton->GetPreferredSize());
 		
-		m_optionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
 		{
-			OnOptionPressed();
-		});
-
-		m_quitButton = CreateWidget<Ndk::ButtonWidget>();
-		m_quitButton->UpdateText(Nz::SimpleTextDrawer::Draw("Quit", 24));
-		m_quitButton->Resize(m_quitButton->GetPreferredSize());
-		
-		m_quitButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
-		{
-			OnQuitPressed();
-		});
-
-		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
-		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server", 24));
-		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
-		
-		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
-		{
-			OnStartServerPressed();
+			OnBackPressed();
 		});
 	}
 
-	void LoginState::Enter(Ndk::StateMachine& fsm)
+	void JoinServerState::Enter(Ndk::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
 		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
 
-		m_serverAddressArea->SetText(playerConfig.GetStringValue("Server.Address"));
-		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("Server.Port")));
+		m_serverAddressArea->SetText(playerConfig.GetStringValue("JoinServer.Address"));
+		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("JoinServer.Port")));
 	}
 
-	bool LoginState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool JoinServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -116,7 +99,12 @@ namespace bw
 		return true;
 	}
 
-	void LoginState::OnConnectionPressed()
+	void JoinServerState::OnBackPressed()
+	{
+		m_nextState = std::move(m_previousState);
+	}
+
+	void JoinServerState::OnConnectionPressed()
 	{
 		Nz::String serverHostname = m_serverAddressArea->GetText();
 		if (serverHostname.IsEmpty())
@@ -148,56 +136,15 @@ namespace bw
 		}
 
 		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetStringValue("Server.Address", serverHostname.ToStdString());
-		playerConfig.SetIntegerValue("Server.Port", rawPort);
+		playerConfig.SetStringValue("JoinServer.Address", serverHostname.ToStdString());
+		playerConfig.SetIntegerValue("JoinServer.Port", rawPort);
 
 		GetStateData().app->SavePlayerConfig();
 
 		m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address);
 	}
 
-	void LoginState::OnOptionPressed()
-	{
-		m_nextState = std::make_shared<OptionState>(GetStateDataPtr(), shared_from_this());
-	}
-
-	void LoginState::OnStartServerPressed()
-	{
-		Nz::String serverPort = m_serverPortArea->GetText();
-		if (serverPort.IsEmpty())
-		{
-			UpdateStatus("Error: blank server port", Nz::Color::Red);
-			return;
-		}
-
-		long long rawPort;
-		if (!serverPort.ToInteger(&rawPort) || rawPort < 0 || rawPort > 0xFFFF)
-		{
-			UpdateStatus("Error: " + serverPort.ToStdString() + " is not a valid port", Nz::Color::Red);
-			return;
-		}
-
-		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetIntegerValue("Server.Port", rawPort);
-
-		GetStateData().app->SavePlayerConfig();
-
-		try
-		{
-			m_nextGameState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort));
-		}
-		catch (const std::exception& e)
-		{
-			UpdateStatus("Failed to start server: " + std::string(e.what()), Nz::Color::Red);
-		}
-	}
-
-	void LoginState::OnQuitPressed()
-	{
-		GetStateData().app->Quit();
-	}
-
-	void LoginState::LayoutWidgets()
+	void JoinServerState::LayoutWidgets()
 	{
 		Nz::Vector2f canvasSize = GetStateData().canvas->GetSize();
 		Nz::Vector2f center = canvasSize / 2.f;
@@ -233,15 +180,12 @@ namespace bw
 		m_connectionButton->CenterHorizontal();
 		cursor.y += m_connectionButton->GetSize().y + padding;
 
-		m_startServerButton->SetPosition({ 0.f, cursor.y, 0.f });
-		m_startServerButton->CenterHorizontal();
-		cursor.y += m_startServerButton->GetSize().y + padding;
-
-		m_optionButton->SetPosition(10.f, canvasSize.y - m_optionButton->GetSize().y - 10.f);
-		m_quitButton->SetPosition(canvasSize.x - m_quitButton->GetSize().x - 10.f, canvasSize.y - m_quitButton->GetSize().y - 10.f);
+		m_backButton->SetPosition({ 0.f, cursor.y, 0.f });
+		m_backButton->CenterHorizontal();
+		cursor.y += m_backButton->GetSize().y + padding;
 	}
 
-	void LoginState::UpdateStatus(const std::string& status, const Nz::Color& color)
+	void JoinServerState::UpdateStatus(const std::string& status, const Nz::Color& color)
 	{
 		m_statusLabel->UpdateText(Nz::SimpleTextDrawer::Draw(status, 24, 0L, color));
 		m_statusLabel->CenterHorizontal();

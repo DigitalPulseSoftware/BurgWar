@@ -4,7 +4,7 @@
 
 #include <Client/States/Game/AuthenticationState.hpp>
 #include <Client/ClientApp.hpp>
-#include <Client/States/LoginState.hpp>
+#include <Client/States/MainMenuState.hpp>
 #include <Client/States/Game/AssetDownloadState.hpp>
 
 namespace bw
@@ -17,7 +17,7 @@ namespace bw
 		{
 			UpdateStatus("Failed to authenticate", Nz::Color::Red);
 
-			m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
+			m_nextState = std::make_shared<MainMenuState>(GetStateDataPtr());
 			m_nextStateDelay = 3.f;
 		});
 
@@ -33,7 +33,7 @@ namespace bw
 			{
 				UpdateStatus("Protocol error", Nz::Color::Red);
 
-				m_nextState = std::make_shared<LoginState>(GetStateDataPtr());
+				m_nextState = std::make_shared<MainMenuState>(GetStateDataPtr());
 				m_nextStateDelay = 3.f;
 				return;
 			}

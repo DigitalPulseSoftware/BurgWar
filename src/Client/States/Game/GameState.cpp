@@ -6,7 +6,7 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/BackgroundState.hpp>
-#include <Client/States/LoginState.hpp>
+#include <Client/States/MainMenuState.hpp>
 
 namespace bw
 {
@@ -56,7 +56,7 @@ namespace bw
 		if (!m_match->Update(elapsedTime))
 		{
 			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
-			fsm.PushState(std::make_shared<LoginState>(GetStateDataPtr()));
+			fsm.PushState(std::make_shared<MainMenuState>(GetStateDataPtr()));
 			return true;
 		}
 

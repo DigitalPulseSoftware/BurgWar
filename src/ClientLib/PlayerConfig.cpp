@@ -10,8 +10,11 @@ namespace bw
 	ConfigFile(app)
 	{
 		RegisterStringOption("Player.Name", "mingebag");
-		RegisterStringOption("Server.Address", "localhost");
-		RegisterIntegerOption("Server.Port", 0, 0xFFFF, 14768);
+		RegisterStringOption("JoinServer.Address", "localhost");
+		RegisterStringOption("StartServer.Gamemode", "test");
+		RegisterStringOption("StartServer.Map", "mapdetest");
+		RegisterIntegerOption("JoinServer.Port", 0, 0xFFFF, 14768);
+		RegisterIntegerOption("StartServer.Port", 0, 0xFFFF, 14768);
 		RegisterIntegerOption("Sound.GlobalVolume", 0, 100, 80);
 		RegisterIntegerOption("Sound.EffectVolume", 0, 100, 100);
 		RegisterIntegerOption("Sound.MusicVolume", 0, 100, 60);

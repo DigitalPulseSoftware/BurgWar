@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/ConnectionLostState.hpp>
-#include <Client/States/LoginState.hpp>
+#include <Client/States/MainMenuState.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/StateMachine.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
@@ -25,7 +25,7 @@ namespace bw
 			return false;
 
 		if ((m_timer -= elapsedTime) < 0.f)
-			fsm.ChangeState(std::make_shared<LoginState>(GetStateDataPtr()));
+			fsm.ChangeState(std::make_shared<MainMenuState>(GetStateDataPtr()));
 
 		return true;
 	}

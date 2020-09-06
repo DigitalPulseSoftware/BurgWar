@@ -12,7 +12,7 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/States/BackgroundState.hpp>
-#include <Client/States/LoginState.hpp>
+#include <Client/States/MainMenuState.hpp>
 
 namespace bw
 {
@@ -83,7 +83,7 @@ namespace bw
 		});
 
 		m_stateMachine.PushState(std::make_shared<BackgroundState>(m_stateData));
-		m_stateMachine.PushState(std::make_shared<LoginState>(m_stateData));
+		m_stateMachine.PushState(std::make_shared<MainMenuState>(m_stateData));
 	}
 
 	ClientApp::~ClientApp()

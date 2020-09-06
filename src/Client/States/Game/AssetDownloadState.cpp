@@ -5,7 +5,6 @@
 #include <Client/States/Game/AssetDownloadState.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <Client/ClientApp.hpp>
-#include <Client/States/LoginState.hpp>
 #include <Client/States/Game/ScriptDownloadState.hpp>
 
 namespace bw

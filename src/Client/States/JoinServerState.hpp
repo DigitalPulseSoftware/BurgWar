@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_STATES_LOGINSTATE_HPP
-#define BURGWAR_STATES_LOGINSTATE_HPP
+#ifndef BURGWAR_STATES_JOINSERVERSTATE_HPP
+#define BURGWAR_STATES_JOINSERVERSTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
 #include <NDK/State.hpp>
@@ -15,11 +15,11 @@
 
 namespace bw
 {
-	class LoginState final : public AbstractState
+	class JoinServerState final : public AbstractState
 	{
 		public:
-			LoginState(std::shared_ptr<StateData> stateData);
-			~LoginState() = default;
+			JoinServerState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState);
+			~JoinServerState() = default;
 
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
@@ -27,20 +27,17 @@ namespace bw
 
 			void LayoutWidgets() override;
 
+			void OnBackPressed();
 			void OnConnectionPressed();
-			void OnOptionPressed();
-			void OnStartServerPressed();
-			void OnQuitPressed();
 
 			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White);
 
-			std::shared_ptr<AbstractState> m_nextState;
+			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
+			std::shared_ptr<AbstractState> m_nextState;
 			Ndk::BoxLayout* m_serverAddressLayout;
+			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_connectionButton;
-			Ndk::ButtonWidget* m_optionButton;
-			Ndk::ButtonWidget* m_quitButton;
-			Ndk::ButtonWidget* m_startServerButton;
 			Ndk::LabelWidget* m_serverLabel;
 			Ndk::LabelWidget* m_statusLabel;
 			Ndk::TextAreaWidget* m_serverAddressArea;
@@ -48,6 +45,6 @@ namespace bw
 	};
 }
 
-#include <Client/States/LoginState.inl>
+#include <Client/States/JoinServerState.inl>
 
 #endif

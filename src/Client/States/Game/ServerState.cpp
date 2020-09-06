@@ -10,18 +10,18 @@
 
 namespace bw
 {
-	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort) :
+	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map) :
 	AbstractState(std::move(stateDataPtr))
 	{
 		ClientApp& app = *GetStateData().app;
 		const ConfigFile& config = app.GetConfig();
 
 		Match::GamemodeSettings gamemodeSettings;
-		gamemodeSettings.name = "test";
+		gamemodeSettings.name = gamemode;
 		gamemodeSettings.properties.emplace("respawntime", Nz::Int64(2));
 
 		Match::MatchSettings matchSettings;
-		matchSettings.map = Map::LoadFromBinary(config.GetStringValue("GameSettings.MapFile"));
+		matchSettings.map = Map::LoadFromBinary(map + ".bmap");
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
 		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("GameSettings.TickRate");

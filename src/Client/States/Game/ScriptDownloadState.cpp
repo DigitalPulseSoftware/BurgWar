@@ -6,7 +6,6 @@
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <Client/ClientApp.hpp>
-#include <Client/States/LoginState.hpp>
 #include <Client/States/Game/GameState.hpp>
 
 namespace bw
