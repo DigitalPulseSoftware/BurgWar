@@ -1183,10 +1183,12 @@ namespace bw
 
 		const Map& map = GetWorkingMap();
 
-		Map::Layer newLayer;
-		newLayer.name = "Layer #" + std::to_string(map.GetLayerCount());
+		LayerIndex newLayerIndex = LayerIndex(map.GetLayerCount());
 
-		PushCommand<Commands::LayerCreate>(map.GetLayerCount(), std::move(newLayer));
+		Map::Layer newLayer;
+		newLayer.name = "Layer #" + std::to_string(newLayerIndex);
+
+		PushCommand<Commands::LayerCreate>(newLayerIndex, std::move(newLayer));
 	}
 
 	bool EditorWindow::OnDeleteEntity()
