@@ -550,7 +550,7 @@ namespace bw
 				biggestId = std::max(biggestId, entity.uniqueId);
 		}
 
-		std::size_t layerIndex = 0;
+		LayerIndex layerIndex = 0;
 		for (auto& layer : m_layers)
 		{
 			std::size_t entityIndex = 0;
