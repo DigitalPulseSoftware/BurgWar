@@ -27,6 +27,7 @@ build/**/*.project
 # GMake
 build/**/*.make
 build/**/*.d
+build/**/Makefile
 
 # Visual Studio
 build/**/*.pdb
