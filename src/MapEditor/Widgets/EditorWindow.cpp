@@ -1415,11 +1415,11 @@ namespace bw
 		if (!m_currentLayer)
 			return;
 
-		std::size_t oldPosition = m_currentLayer.value();
+		LayerIndex oldPosition = m_currentLayer.value();
 		if (oldPosition + 1 >= m_layerList.listWidget->count())
 			return;
 
-		std::size_t newPosition = oldPosition + 1;
+		LayerIndex newPosition = oldPosition + 1;
 		PushCommand<Commands::LayerSwap>(oldPosition, newPosition);
 
 		m_layerList.downArrowButton->setEnabled(newPosition + 1 < m_layerList.listWidget->count());
@@ -1431,18 +1431,18 @@ namespace bw
 		if (!m_currentLayer)
 			return;
 
-		std::size_t oldPosition = m_currentLayer.value();
+		LayerIndex oldPosition = m_currentLayer.value();
 		if (oldPosition == 0)
 			return;
 
-		std::size_t newPosition = oldPosition - 1;
+		LayerIndex newPosition = oldPosition - 1;
 		PushCommand<Commands::LayerSwap>(oldPosition, newPosition);
 
 		m_layerList.downArrowButton->setEnabled(true);
 		m_layerList.upArrowButton->setEnabled(newPosition != 0);
 	}
 
-	void EditorWindow::OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer)
+	void EditorWindow::OnMoveEntity(std::size_t entityIndex, LayerIndex targetLayer)
 	{
 		assert(m_currentLayer);
 		PushCommand<Commands::EntityLayerUpdate>(GetWorkingMap().GetEntity(*m_currentLayer, entityIndex).uniqueId, targetLayer);

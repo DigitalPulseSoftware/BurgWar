@@ -122,7 +122,7 @@ namespace bw
 			void OnLayerChanged(int layerIndex);
 			void OnLayerMovedDown();
 			void OnLayerMovedUp();
-			void OnMoveEntity(std::size_t entityIndex, std::size_t targetLayer);
+			void OnMoveEntity(std::size_t entityIndex, LayerIndex targetLayer);
 			void OnOpenMap();
 			void OnOpenRecentMap();
 			void OnPerspectiveSwitch(bool enable);
