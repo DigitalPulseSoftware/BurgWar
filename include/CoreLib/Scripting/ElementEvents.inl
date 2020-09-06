@@ -16,7 +16,6 @@ namespace bw
 #include <CoreLib/Scripting/ElementEventList.hpp>
 		}
 
-		assert(!"Unhandled gamemode event");
 		return false;
 	}
 }

@@ -57,7 +57,7 @@ namespace bw
 			~DampedSpringConstraint() = default;
 
 			DampedSpringConstraint& operator=(const DampedSpringConstraint&) = delete;
-			DampedSpringConstraint& operator=(DampedSpringConstraint&&) noexcept = default;
+			DampedSpringConstraint& operator=(DampedSpringConstraint&&) = delete;
 	};
 
 	class PinConstraint : public Constraint
@@ -72,7 +72,7 @@ namespace bw
 			void SetDistance(float distance);
 
 			PinConstraint& operator=(const PinConstraint&) = delete;
-			PinConstraint& operator=(PinConstraint&&) noexcept = default;
+			PinConstraint& operator=(PinConstraint&&) = delete;
 	};
 
 	class PivotConstraint : public Constraint
@@ -83,7 +83,7 @@ namespace bw
 		~PivotConstraint() = default;
 
 		PivotConstraint& operator=(const PivotConstraint&) = delete;
-		PivotConstraint& operator=(PivotConstraint&&) noexcept = default;
+		PivotConstraint& operator=(PivotConstraint&&) = delete;
 	};
 
 	class RotaryLimitConstraint : public Constraint
@@ -100,7 +100,7 @@ namespace bw
 			void SetMinAngle(Nz::RadianAnglef maxAngle);
 
 			RotaryLimitConstraint& operator=(const RotaryLimitConstraint&) = delete;
-			RotaryLimitConstraint& operator=(RotaryLimitConstraint&&) noexcept = default;
+			RotaryLimitConstraint& operator=(RotaryLimitConstraint&&) = delete;
 	};
 }
 

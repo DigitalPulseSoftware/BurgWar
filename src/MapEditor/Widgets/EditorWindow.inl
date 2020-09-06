@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline const std::optional<std::size_t>& EditorWindow::GetCurrentLayer() const
+	inline const std::optional<LayerIndex>& EditorWindow::GetCurrentLayer() const
 	{
 		return m_currentLayer;
 	}

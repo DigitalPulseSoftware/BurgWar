@@ -48,17 +48,17 @@ namespace bw
 	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodeName(matchData.gamemode),
-	m_averageTickError(20),
 	m_canvas(canvas),
 	m_renderWorld(false),
 	m_freeClientId(-1),
 	m_renderTarget(renderTarget),
 	m_window(window),
 	m_activeLayerIndex(0xFFFF),
+	m_averageTickError(20),
 	m_chatBox(GetLogger(), renderTarget, canvas),
 	m_application(burgApp),
-	m_escapeMenu(burgApp, canvas),
 	m_session(session),
+	m_escapeMenu(burgApp, canvas),
 	m_scoreboard(nullptr),
 	m_hasFocus(window->HasFocus()),
 	m_isLeavingMatch(false),
@@ -394,12 +394,12 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_GetLocalPlayer_PlayerIndex"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> Nz::UInt16
+		state["engine_GetLocalPlayer_PlayerIndex"] = [&](Nz::UInt8 localIndex) -> Nz::UInt16
 		{
 			return m_localPlayers[localIndex].playerIndex;
 		};
 
-		state["engine_GetLocalPlayerCount"] = [&](sol::this_state lua) -> std::size_t
+		state["engine_GetLocalPlayerCount"] = [&]() -> std::size_t
 		{
 			return m_localPlayers.size();
 		};
@@ -1172,10 +1172,10 @@ namespace bw
 						if (!CompareWithEpsilon(entityData.position, packetEntity.position, MaxPositionError) ||
 							!CompareWithEpsilon(entityData.rotation, packetEntity.rotation, MaxRotationError))
 						{
-							Nz::Vector2f posDiff = entityData.position - packetEntity.position;
+							/*Nz::Vector2f posDiff = entityData.position - packetEntity.position;
 							Nz::RadianAnglef rotDiff = entityData.rotation - packetEntity.rotation;
 
-							//bwLog(GetLogger(), LogLevel::Debug, "Prediction error for entity #{} (position diff: {}, rotation diff: {})", uniqueId, posDiff.ToString().ToStdString(), rotDiff.ToString().ToStdString());
+							bwLog(GetLogger(), LogLevel::Debug, "Prediction error for entity #{} (position diff: {}, rotation diff: {})", uniqueId, posDiff.ToString().ToStdString(), rotDiff.ToString().ToStdString());*/
 							return true;
 						}
 					}

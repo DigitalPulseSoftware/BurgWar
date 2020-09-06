@@ -9,8 +9,7 @@
 namespace bw
 {
 	ClientGamemode::ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues) :
-	SharedGamemode(localMatch, std::move(scriptingContext), std::move(gamemodeName), std::move(propertyValues)),
-	m_match(localMatch)
+	SharedGamemode(localMatch, std::move(scriptingContext), std::move(gamemodeName), std::move(propertyValues))
 	{
 		InitializeGamemode();
 	}

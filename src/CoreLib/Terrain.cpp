@@ -15,7 +15,7 @@ namespace bw
 	void Terrain::Initialize(Match& match)
 	{
 		m_layers.reserve(m_map.GetLayerCount());
-		for (std::size_t layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
+		for (LayerIndex layerIndex = 0; layerIndex < m_map.GetLayerCount(); ++layerIndex)
 			m_layers.emplace_back(match, LayerIndex(layerIndex), m_map.GetLayer(layerIndex));
 
 		for (TerrainLayer& layer : m_layers)

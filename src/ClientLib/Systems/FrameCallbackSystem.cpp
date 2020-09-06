@@ -9,8 +9,7 @@
 
 namespace bw
 {
-	FrameCallbackSystem::FrameCallbackSystem(LocalMatch& match) :
-	m_match(match)
+	FrameCallbackSystem::FrameCallbackSystem()
 	{
 		Requires<ScriptComponent>();
 		SetMaximumUpdateRate(0);
@@ -37,7 +36,6 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : m_frameUpdateEntities)
 		{
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-			const auto& element = scriptComponent.GetElement();
 
 			scriptComponent.ExecuteCallback<ElementEvent::Frame>();
 		}

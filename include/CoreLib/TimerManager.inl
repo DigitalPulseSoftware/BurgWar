@@ -6,11 +6,6 @@
 
 namespace bw
 {
-	inline TimerManager::TimerManager(SharedMatch& match) :
-	m_match(match)
-	{
-	}
-
 	inline void TimerManager::Clear()
 	{
 		m_pendingTimers.clear();

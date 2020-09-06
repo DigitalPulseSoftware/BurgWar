@@ -24,7 +24,7 @@ namespace bw
 
 			ScriptingEnvironment(const Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);
 			ScriptingEnvironment(const ScriptingEnvironment&) = delete;
-			ScriptingEnvironment(ScriptingEnvironment&&) = delete;
+			ScriptingEnvironment(ScriptingEnvironment&&) = default;
 			~ScriptingEnvironment() = default;
 
 			bool Execute(const std::string& command);
@@ -36,7 +36,6 @@ namespace bw
 
 		private:
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
-			const Logger& m_logger;
 			OutputCallback m_outputCallback;
 	};
 }

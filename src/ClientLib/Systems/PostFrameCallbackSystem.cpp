@@ -25,7 +25,6 @@ namespace bw
 	void PostFrameCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-		const auto& element = scriptComponent.GetElement();
 
 		if (scriptComponent.HasCallbacks(ElementEvent::PostFrame))
 			m_frameUpdateEntities.Insert(entity);
@@ -38,7 +37,6 @@ namespace bw
 		for (const Ndk::EntityHandle& entity : m_frameUpdateEntities)
 		{
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-			const auto& element = scriptComponent.GetElement();
 
 			scriptComponent.ExecuteCallback<ElementEvent::PostFrame>();
 		}

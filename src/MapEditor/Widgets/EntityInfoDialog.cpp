@@ -1649,7 +1649,7 @@ namespace bw
 				{
 					for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 					{
-						auto& layer = m_map.GetLayer(i);
+						auto& layer = m_map.GetLayer(LayerIndex(i));
 						for (std::size_t j = 0; j < layer.entities.size(); ++j)
 						{
 							auto& entity = layer.entities[j];
@@ -1764,7 +1764,7 @@ namespace bw
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{
-			auto& layer = m_map.GetLayer(i);
+			auto& layer = m_map.GetLayer(LayerIndex(i));
 
 			QString layerName = QString::fromStdString(layer.name);
 
@@ -1795,7 +1795,7 @@ namespace bw
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{
-			auto& layer = m_map.GetLayer(i);
+			auto& layer = m_map.GetLayer(LayerIndex(i));
 
 			options.emplace_back(tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(i + 1), LayerIndex(i));
 		}

@@ -57,7 +57,7 @@ namespace bw
 			bool ShouldLog(const LogContext& context) const override;
 
 			Logger& operator=(const Logger& logger) = delete;
-			Logger& operator=(Logger&&) noexcept = default;
+			Logger& operator=(Logger&&) = delete;
 
 		protected:
 			template<typename T> T* AllocateContext(Nz::MemoryPool& pool) const;

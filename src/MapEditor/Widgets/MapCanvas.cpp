@@ -114,7 +114,7 @@ namespace bw
 			OnEntityPositionUpdated(this, entityId, newPosition);
 		});
 
-		m_onLayerAlignmentUpdate.Connect(m_editor.OnLayerAlignmentUpdate, [this, gizmo = positionGizmo.get()](EditorWindow* /*editor*/, std::size_t layerIndex, const Nz::Vector2f& newAlignment)
+		m_onLayerAlignmentUpdate.Connect(m_editor.OnLayerAlignmentUpdate, [this, gizmo = positionGizmo.get()](EditorWindow* /*editor*/, LayerIndex layerIndex, const Nz::Vector2f& newAlignment)
 		{
 			auto currentLayerOpt = m_editor.GetCurrentLayer();
 			if (!currentLayerOpt || *currentLayerOpt != layerIndex)

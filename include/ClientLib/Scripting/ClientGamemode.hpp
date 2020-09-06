@@ -23,8 +23,6 @@ namespace bw
 
 		private:
 			void InitializeGamemode() override;
-
-			LocalMatch& m_match;
 	};
 }
 

@@ -51,7 +51,7 @@ namespace bw
 			Map::Entity DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex);
 			Map::Layer DeleteLayer(LayerIndex layerIndex);
 
-			inline const std::optional<std::size_t>& GetCurrentLayer() const;
+			inline const std::optional<LayerIndex>& GetCurrentLayer() const;
 
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
 			inline const EditorEntityStore& GetEntityStore() const;
@@ -68,25 +68,25 @@ namespace bw
 
 			void PushCommand(QUndoCommand* command);
 			template<typename T, typename... Args> void PushCommand(Args&&... args);
-			void RefreshEntityPositionAndRotation(std::size_t layerIndex, std::size_t entityIndex);
+			void RefreshEntityPositionAndRotation(LayerIndex layerIndex, std::size_t entityIndex);
 
 			void SelectEntity(Ndk::EntityId entityId);
 
-			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
 			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
 
-			void UpdateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
+			void UpdateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
 
-			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, std::size_t /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);
+			NazaraSignal(OnLayerAlignmentUpdate, EditorWindow* /*emitter*/, LayerIndex /*layerIndex*/, const Nz::Vector2f& /*newAlignment*/);
 
 		private:
 			void closeEvent(QCloseEvent* event) override;
 			bool event(QEvent* e) override;
 
 			void AddToRecentFileList(const QString& mapFolder);
-			void AlignLayerEntities(std::size_t layerIndex);
+			void AlignLayerEntities(LayerIndex layerIndex);
 
 			void BuildAssetList();
 			void BuildEntityList(const std::string& editorAssetsFolder);
@@ -104,8 +104,8 @@ namespace bw
 
 			void OnAlignEntities();
 			void OnCloneEntity(std::size_t entityIndex);
-			void OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex);
-			void OnCloneLayer(std::size_t layerIndex);
+			void OnCloneEntity(std::size_t entityIndex, LayerIndex layerIndex);
+			void OnCloneLayer(LayerIndex layerIndex);
 			void OnCloseMap();
 			void OnCompileMap();
 			void OnCreateEntity();
@@ -113,9 +113,9 @@ namespace bw
 			void OnCreateLayer();
 			bool OnDeleteEntity();
 			bool OnDeleteEntity(std::size_t entityIndex);
-			void OnDeleteLayer(std::size_t layerIndex);
+			void OnDeleteLayer(LayerIndex layerIndex);
 			void OnEditEntity(std::size_t entityIndex);
-			void OnEditLayer(std::size_t layerIndex);
+			void OnEditLayer(LayerIndex layerIndex);
 			void OnEntityMovedDown();
 			void OnEntityMovedUp();
 			void OnEntitySelectionUpdate(int entityIndex);
@@ -153,7 +153,7 @@ namespace bw
 			std::filesystem::path m_workingMapPath;
 			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
-			std::optional<std::size_t> m_currentLayer;
+			std::optional<LayerIndex> m_currentLayer;
 			PlayWindow* m_playWindow;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;

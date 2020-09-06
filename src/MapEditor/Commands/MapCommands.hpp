@@ -58,7 +58,7 @@ namespace bw
 
 			private:
 				std::optional<Map::Layer> m_layerData;
-				std::size_t m_layerIndex;
+				LayerIndex m_layerIndex;
 		};
 		
 		class LayerClone final : public LayerCreationDelete

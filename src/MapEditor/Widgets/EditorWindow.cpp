@@ -363,18 +363,18 @@ namespace bw
 					if (i == currentLayer)
 						continue;
 
-					auto& layer = m_workingMap.GetLayer(i);
+					auto& layer = m_workingMap.GetLayer(LayerIndex(i));
 
 					QString layerName = QString::fromStdString(layer.name);
 
 					QAction* cloneAction = cloneEntityMenu->addAction(layerName);
-					connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					connect(cloneAction, &QAction::triggered, [this, entityIndex, layerIndex = LayerIndex(i)](bool)
 					{
 						OnCloneEntity(entityIndex, layerIndex);
 					});
 
 					QAction* moveAction = moveEntityMenu->addAction(layerName);
-					connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = i](bool)
+					connect(moveAction, &QAction::triggered, [this, entityIndex, layerIndex = LayerIndex(i)](bool)
 					{
 						OnMoveEntity(entityIndex, layerIndex);
 					});
@@ -398,7 +398,7 @@ namespace bw
 		m_undoStack.push(command);
 	}
 
-	void EditorWindow::RefreshEntityPositionAndRotation(std::size_t layerIndex, std::size_t entityIndex)
+	void EditorWindow::RefreshEntityPositionAndRotation(LayerIndex layerIndex, std::size_t entityIndex)
 	{
 		if (!m_currentLayer.has_value() || *m_currentLayer != layerIndex)
 			return;
@@ -418,7 +418,7 @@ namespace bw
 		m_entityList.listWidget->setCurrentRow(int(GetEntityIndex(entityId)));
 	}
 
-	void EditorWindow::SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
+	void EditorWindow::SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
 	{
 		auto& map = GetWorkingMapMut();
 		map.SwapEntities(layerIndex, firstEntityIndex, secondEntityIndex);
@@ -508,7 +508,7 @@ namespace bw
 		m_currentMode->OnEnter();
 	}
 
-	void EditorWindow::UpdateEntity(std::size_t layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags)
+	void EditorWindow::UpdateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags)
 	{
 		auto& mapEntity = GetWorkingMapMut().GetEntity(layerIndex, entityIndex);
 
@@ -650,7 +650,7 @@ namespace bw
 		RefreshRecentFileListMenu(recentlyOpenedMaps);
 	}
 
-	void EditorWindow::AlignLayerEntities(std::size_t layerIndex)
+	void EditorWindow::AlignLayerEntities(LayerIndex layerIndex)
 	{
 		auto& layer = GetWorkingMapMut().GetLayer(layerIndex);
 		for (auto& layerEntity : layer.entities)
@@ -786,7 +786,7 @@ namespace bw
 			QListWidgetItem* item = m_layerList.listWidget->itemAt(pos);
 			if (item)
 			{
-				std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+				LayerIndex layerIndex = static_cast<LayerIndex>(item->data(Qt::UserRole).value<qulonglong>());
 
 				QAction* editLayer = contextMenu.addAction(tr("Edit layer"));
 				connect(editLayer, &QAction::triggered, [this, layerIndex](bool)
@@ -821,7 +821,7 @@ namespace bw
 		connect(m_layerList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnLayerChanged);
 		connect(m_layerList.listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item)
 		{
-			std::size_t layerIndex = static_cast<std::size_t>(item->data(Qt::UserRole).value<qulonglong>());
+			LayerIndex layerIndex = static_cast<LayerIndex>(item->data(Qt::UserRole).value<qulonglong>());
 
 			OnEditLayer(layerIndex);
 		});
@@ -1067,7 +1067,7 @@ namespace bw
 	void EditorWindow::OnAlignEntities()
 	{
 		assert(m_currentLayer);
-		std::size_t currentLayerIndex = *m_currentLayer;
+		LayerIndex currentLayerIndex = *m_currentLayer;
 
 		const auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
 
@@ -1086,7 +1086,7 @@ namespace bw
 		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ currentLayer, entityCount });
 	}
 
-	void EditorWindow::OnCloneEntity(std::size_t entityIndex, std::size_t layerIndex)
+	void EditorWindow::OnCloneEntity(std::size_t entityIndex, LayerIndex layerIndex)
 	{
 		assert(m_currentLayer);
 		LayerIndex currentLayer = *m_currentLayer;
@@ -1095,9 +1095,9 @@ namespace bw
 		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ layerIndex, entityCount });
 	}
 
-	void EditorWindow::OnCloneLayer(std::size_t layerIndex)
+	void EditorWindow::OnCloneLayer(LayerIndex layerIndex)
 	{
-		PushCommand<Commands::LayerClone>(layerIndex, GetWorkingMap().GetLayerCount());
+		PushCommand<Commands::LayerClone>(layerIndex, LayerIndex(GetWorkingMap().GetLayerCount()));
 	}
 
 	void EditorWindow::OnCloseMap()
@@ -1131,7 +1131,7 @@ namespace bw
 		if (!currentLayerOpt)
 			return;
 
-		std::size_t layerIndex = *currentLayerOpt;
+		LayerIndex layerIndex = *currentLayerOpt;
 		const auto& layer = m_workingMap.GetLayer(layerIndex);
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
@@ -1223,7 +1223,7 @@ namespace bw
 			return false;
 	}
 
-	void EditorWindow::OnDeleteLayer(std::size_t layerIndex)
+	void EditorWindow::OnDeleteLayer(LayerIndex layerIndex)
 	{
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -1240,7 +1240,7 @@ namespace bw
 			return;
 
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		std::size_t layerIndex = static_cast<std::size_t>(m_layerList.listWidget->currentRow());
+		LayerIndex layerIndex = static_cast<LayerIndex>(m_layerList.listWidget->currentRow());
 
 		auto& layer = m_workingMap.GetLayer(layerIndex);
 
@@ -1270,7 +1270,7 @@ namespace bw
 		});
 	}
 	
-	void EditorWindow::OnEditLayer(std::size_t layerIndex)
+	void EditorWindow::OnEditLayer(LayerIndex layerIndex)
 	{
 		QListWidgetItem* item = m_layerList.listWidget->item(int(layerIndex));
 		if (!item)
@@ -1385,7 +1385,7 @@ namespace bw
 			return;
 
 		assert(layerIndex >= 0);
-		std::size_t layerIdx = static_cast<std::size_t>(layerIndex);
+		LayerIndex layerIdx = static_cast<LayerIndex>(layerIndex);
 
 		m_currentLayer = layerIdx;
 
@@ -1496,7 +1496,7 @@ namespace bw
 	void EditorWindow::OnSetAlignment()
 	{
 		assert(m_currentLayer);
-		std::size_t currentLayerIndex = *m_currentLayer;
+		LayerIndex currentLayerIndex = *m_currentLayer;
 
 		const auto& layerData = m_workingMap.GetLayer(currentLayerIndex);
 
@@ -1684,7 +1684,7 @@ namespace bw
 		std::size_t layerCount = m_workingMap.GetLayerCount();
 		for (std::size_t i = 0; i < layerCount; ++i)
 		{
-			auto& layer = m_workingMap.GetLayer(i);
+			auto& layer = m_workingMap.GetLayer(LayerIndex(i));
 			for (auto& entity : layer.entities)
 			{
 				Nz::Int64 previousId = entity.uniqueId;
@@ -1725,7 +1725,7 @@ namespace bw
 
 		m_layerList.listWidget->clear();
 
-		for (std::size_t layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
+		for (LayerIndex layerIndex = 0; layerIndex < m_workingMap.GetLayerCount(); ++layerIndex)
 		{
 			const auto& layer = m_workingMap.GetLayer(layerIndex);
 

@@ -803,7 +803,7 @@ namespace bw
 		{
 			std::size_t entityIndex = 0;
 
-			std::size_t layerIndex = 0;
+			LayerIndex layerIndex = 0;
 			std::size_t layerCount = m_matchStatePacket.layers.size();
 			for (; layerIndex < layerCount; ++layerIndex)
 			{

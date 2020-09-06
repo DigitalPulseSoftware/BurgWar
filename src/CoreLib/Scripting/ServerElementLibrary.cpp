@@ -27,7 +27,7 @@ namespace bw
 
 	void ServerElementLibrary::RegisterServerLibrary(sol::table& elementTable)
 	{
-		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
+		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();

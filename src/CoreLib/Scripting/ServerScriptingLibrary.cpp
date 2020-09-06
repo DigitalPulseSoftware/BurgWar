@@ -244,7 +244,7 @@ namespace bw
 			Ndk::EntityHandle owner = AbstractElementLibrary::AssertScriptEntity(parameters["Owner"]);
 			auto& ownerMatchComponent = owner->GetComponent<MatchComponent>();
 
-			std::size_t layerIndex = ownerMatchComponent.GetLayerIndex();
+			LayerIndex layerIndex = ownerMatchComponent.GetLayerIndex();
 			auto& layer = match.GetTerrain().GetLayer(layerIndex);
 
 			// Create weapon

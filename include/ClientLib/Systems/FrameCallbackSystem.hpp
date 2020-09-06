@@ -18,7 +18,7 @@ namespace bw
 	class FrameCallbackSystem : public Ndk::System<FrameCallbackSystem>
 	{
 		public:
-			FrameCallbackSystem(LocalMatch& match);
+			FrameCallbackSystem();
 			~FrameCallbackSystem() = default;
 
 			static Ndk::SystemIndex systemIndex;
@@ -29,7 +29,6 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			Ndk::EntityList m_frameUpdateEntities;
-			LocalMatch& m_match;
 	};
 }
 

@@ -146,6 +146,8 @@ namespace bw
 
 			struct Debug
 			{
+				Debug() = default;
+
 				Nz::UdpSocket socket;
 				Nz::UInt64 lastBroadcastTime = 0;
 			};

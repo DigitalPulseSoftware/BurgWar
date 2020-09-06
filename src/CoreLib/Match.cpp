@@ -168,7 +168,7 @@ namespace bw
 
 	void Match::InitDebugGhosts()
 	{
-		m_debug.emplace();
+		m_debug.emplace(Debug{}); //< Weird clang bug
 		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
 			m_debug->socket.EnableBlocking(false);
 		else
@@ -580,7 +580,7 @@ namespace bw
 		m_matchData.layers.reserve(mapData.GetLayerCount());
 		for (std::size_t i = 0; i < mapData.GetLayerCount(); ++i)
 		{
-			const auto& mapLayer = mapData.GetLayer(i);
+			const auto& mapLayer = mapData.GetLayer(LayerIndex(i));
 
 			auto& packetLayer = m_matchData.layers.emplace_back();
 			packetLayer.backgroundColor = mapLayer.backgroundColor;

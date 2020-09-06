@@ -192,7 +192,7 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = [this]()
+		library["ReloadAll"] = []()
 		{
 			throw std::runtime_error("Only the server can reload scripts");
 		};

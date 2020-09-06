@@ -33,7 +33,7 @@ namespace bw
 			bool ShouldLog(const LogContext& context) const override;
 
 			LoggerProxy& operator=(const LoggerProxy& logger) = delete;
-			LoggerProxy& operator=(LoggerProxy&&) noexcept = default;
+			LoggerProxy& operator=(LoggerProxy&&) = delete;
 
 		protected:
 			virtual void OverrideContent(const LogContext& context, std::string& content) const;

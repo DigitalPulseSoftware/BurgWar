@@ -114,7 +114,6 @@ namespace sol
 		if (success)
 		{
 			luaL_getmetatable(L, "vec2");
-			sol::stack_table expectedMetatable;
 
 			lua_getmetatable(L, absoluteIndex);
 
@@ -135,7 +134,6 @@ namespace sol
 		if (success)
 		{
 			luaL_getmetatable(L, "vec3");
-			sol::stack_table expectedMetatable;
 
 			lua_getmetatable(L, absoluteIndex);
 

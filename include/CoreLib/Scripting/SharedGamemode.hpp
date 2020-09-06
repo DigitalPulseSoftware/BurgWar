@@ -23,7 +23,7 @@ namespace bw
 		public:
 			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);
 			SharedGamemode(const SharedGamemode&) = delete;
-			~SharedGamemode() = default;
+			virtual ~SharedGamemode();
 
 			template<GamemodeEvent Event, typename... Args>
 			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(const Args&... args);

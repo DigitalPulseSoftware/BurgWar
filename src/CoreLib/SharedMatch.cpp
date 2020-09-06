@@ -21,7 +21,6 @@ namespace bw
 	m_name(std::move(matchName)),
 	m_logger(app, *this, side, app.GetLogger(), sizeof(EntityLogContext)),
 	m_scriptPacketHandler(m_logger),
-	m_timerManager(*this),
 	m_currentTick(0),
 	m_currentTime(0),
 	m_floatingTime(0.f),

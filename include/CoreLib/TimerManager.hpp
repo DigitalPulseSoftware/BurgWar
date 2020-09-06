@@ -20,7 +20,7 @@ namespace bw
 		public:
 			using Callback = std::function<void()>;
 
-			inline TimerManager(SharedMatch& match);
+			TimerManager() = default;
 			~TimerManager() = default;
 
 			inline void Clear();
@@ -37,7 +37,6 @@ namespace bw
 			};
 
 			std::vector<Timer> m_pendingTimers;
-			SharedMatch& m_match;
 	};
 }
 

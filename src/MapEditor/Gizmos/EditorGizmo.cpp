@@ -65,10 +65,10 @@ namespace bw
 			}
 		};
 
-		Nz::IndexBufferRef boxIndexBuffer = Nz::IndexBuffer::New(false, Nz::UInt32(indices.size()), Nz::DataStorage_Hardware, 0);
+		Nz::IndexBufferRef boxIndexBuffer = Nz::IndexBuffer::New(false, Nz::UInt32(indices.size()), Nz::DataStorage_Hardware, Nz::BufferUsageFlags{});
 		boxIndexBuffer->Fill(indices.data(), 0, Nz::UInt32(indices.size()));
 
-		Nz::VertexBufferRef boxVertexBuffer = Nz::VertexBuffer::New(Nz::VertexDeclaration::Get(Nz::VertexLayout_XYZ), Nz::UInt32(positions.size()), Nz::DataStorage_Hardware, 0);
+		Nz::VertexBufferRef boxVertexBuffer = Nz::VertexBuffer::New(Nz::VertexDeclaration::Get(Nz::VertexLayout_XYZ), Nz::UInt32(positions.size()), Nz::DataStorage_Hardware, Nz::BufferUsageFlags{});
 		boxVertexBuffer->Fill(positions.data(), 0, Nz::UInt32(positions.size()));
 
 		Nz::StaticMeshRef boxMesh = Nz::StaticMesh::New(boxVertexBuffer, boxIndexBuffer);

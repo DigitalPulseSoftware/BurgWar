@@ -7,8 +7,8 @@
 namespace bw
 {
 	inline VisualInterpolationComponent::VisualInterpolationComponent() :
-	m_lastPosition(Nz::Vector2f::Zero()),
-	m_lastRotation(Nz::RadianAnglef::Zero())
+	m_lastRotation(Nz::RadianAnglef::Zero()),
+	m_lastPosition(Nz::Vector2f::Zero())
 	{
 	}
 

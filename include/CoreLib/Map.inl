@@ -21,7 +21,7 @@ namespace bw
 	}
 
 	template<typename... Args> 
-	auto Map::AddEntity(std::size_t layerIndex, Args&&... args) -> Entity&
+	auto Map::AddEntity(LayerIndex layerIndex, Args&&... args) -> Entity&
 	{
 		assert(IsValid());
 		assert(layerIndex < m_layers.size());
@@ -39,7 +39,7 @@ namespace bw
 	template<typename... Args> 
 	auto Map::AddLayer(Args&&... args) -> Layer&
 	{
-		std::size_t layerIndex = m_layers.size();
+		LayerIndex layerIndex = m_layers.size();
 		Layer& layer = m_layers.emplace_back(std::forward<Args>(args)...);
 
 		std::size_t entityIndex = 0;
@@ -54,7 +54,7 @@ namespace bw
 		return layer;
 	}
 
-	inline auto Map::DropEntity(std::size_t layerIndex, std::size_t entityIndex) -> Entity
+	inline auto Map::DropEntity(LayerIndex layerIndex, std::size_t entityIndex) -> Entity
 	{
 		Layer& layer = GetLayer(layerIndex);
 
@@ -78,7 +78,7 @@ namespace bw
 		return entityData;
 	}
 
-	inline auto Map::DropLayer(std::size_t layerIndex) -> Layer
+	inline auto Map::DropLayer(LayerIndex layerIndex) -> Layer
 	{
 		Layer layer = std::move(GetLayer(layerIndex));
 
@@ -104,7 +104,7 @@ namespace bw
 	}
 
 	template<typename ...Args>
-	auto Map::EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args) -> Entity&
+	auto Map::EmplaceEntity(LayerIndex layerIndex, std::size_t entityIndex, Args&&... args) -> Entity&
 	{
 		auto& layer = GetLayer(layerIndex);
 		auto& entity = *layer.entities.emplace(layer.entities.begin() + entityIndex, std::forward<Args>(args)...);
@@ -126,7 +126,7 @@ namespace bw
 	}
 
 	template<typename... Args> 
-	auto Map::EmplaceLayer(std::size_t layerIndex, Args&&... args) -> Layer&
+	auto Map::EmplaceLayer(LayerIndex layerIndex, Args&&... args) -> Layer&
 	{
 		Layer& layer = *m_layers.emplace(m_layers.begin() + layerIndex, std::forward<Args>(args)...);
 
@@ -174,14 +174,14 @@ namespace bw
 		return m_assets;
 	}
 
-	inline auto Map::GetEntity(std::size_t layerIndex, std::size_t entityIndex) -> Entity&
+	inline auto Map::GetEntity(LayerIndex layerIndex, std::size_t entityIndex) -> Entity&
 	{
 		auto& layer = GetLayer(layerIndex);
 		assert(entityIndex < layer.entities.size());
 		return layer.entities[entityIndex];
 	}
 
-	inline auto Map::GetEntity(std::size_t layerIndex, std::size_t entityIndex) const -> const Entity&
+	inline auto Map::GetEntity(LayerIndex layerIndex, std::size_t entityIndex) const -> const Entity&
 	{
 		auto& layer = GetLayer(layerIndex);
 		assert(entityIndex < layer.entities.size());
@@ -209,7 +209,7 @@ namespace bw
 		return it->second;
 	}
 
-	inline std::size_t Map::GetEntityCount(std::size_t layerIndex) const
+	inline std::size_t Map::GetEntityCount(LayerIndex layerIndex) const
 	{
 		auto& layer = GetLayer(layerIndex);
 		return layer.entities.size();
@@ -220,13 +220,13 @@ namespace bw
 		return m_freeUniqueId;
 	}
 
-	inline auto Map::GetLayer(std::size_t layerIndex) -> Layer&
+	inline auto Map::GetLayer(LayerIndex layerIndex) -> Layer&
 	{
 		assert(layerIndex < m_layers.size());
 		return m_layers[layerIndex];
 	}
 
-	inline auto Map::GetLayer(std::size_t layerIndex) const -> const Layer&
+	inline auto Map::GetLayer(LayerIndex layerIndex) const -> const Layer&
 	{
 		assert(layerIndex < m_layers.size());
 		return m_layers[layerIndex];
@@ -247,7 +247,7 @@ namespace bw
 		return m_isValid;
 	}
 
-	inline auto Map::MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex, std::size_t targetEntityIndex) -> Entity&
+	inline auto Map::MoveEntity(LayerIndex sourceLayerIndex, std::size_t sourceEntityIndex, LayerIndex targetLayerIndex, std::size_t targetEntityIndex) -> Entity&
 	{
 		assert(sourceLayerIndex != targetLayerIndex);
 
@@ -284,7 +284,7 @@ namespace bw
 		return targetLayer.entities[targetEntityIndex];
 	}
 
-	inline void Map::SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
+	inline void Map::SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
 	{
 		if (firstEntityIndex == secondEntityIndex)
 			return;
@@ -308,7 +308,7 @@ namespace bw
 		}
 	}
 
-	inline void Map::SwapLayers(std::size_t firstLayerIndex, std::size_t secondLayerIndex)
+	inline void Map::SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex)
 	{
 		Layer& firstLayer = GetLayer(firstLayerIndex);
 		Layer& secondLayer = GetLayer(secondLayerIndex);
@@ -345,7 +345,7 @@ namespace bw
 		return map;
 	}
 
-	inline void Map::RegisterEntity(Nz::Int64 uniqueId, std::size_t layerIndex, std::size_t entityIndex)
+	inline void Map::RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId[uniqueId] = EntityIndices{ layerIndex, entityIndex };

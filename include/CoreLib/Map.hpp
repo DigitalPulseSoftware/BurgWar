@@ -39,17 +39,17 @@ namespace bw
 			inline Map(MapInfo mapInfo);
 			~Map() = default;
 
-			template<typename... Args> Entity& AddEntity(std::size_t layerIndex, Args&&... args);
+			template<typename... Args> Entity& AddEntity(LayerIndex layerIndex, Args&&... args);
 			template<typename... Args> Layer& AddLayer(Args&&... args);
 			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
 
-			inline Entity DropEntity(std::size_t layerIndex, std::size_t entityIndex);
-			inline Layer DropLayer(std::size_t layerIndex);
+			inline Entity DropEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			inline Layer DropLayer(LayerIndex layerIndex);
 
-			template<typename... Args> Entity& EmplaceEntity(std::size_t layerIndex, std::size_t entityIndex, Args&&... args);
-			template<typename... Args> Layer& EmplaceLayer(std::size_t layerIndex, Args&&... args);
+			template<typename... Args> Entity& EmplaceEntity(LayerIndex layerIndex, std::size_t entityIndex, Args&&... args);
+			template<typename... Args> Layer& EmplaceLayer(LayerIndex layerIndex, Args&&... args);
 
 			template<typename F> void ForeachEntity(F&& func);
 
@@ -57,26 +57,26 @@ namespace bw
 
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
-			inline Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex);
-			inline const Entity& GetEntity(std::size_t layerIndex, std::size_t entityIndex) const;
+			inline Entity& GetEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			inline const Entity& GetEntity(LayerIndex layerIndex, std::size_t entityIndex) const;
 			inline Entity& GetEntity(Nz::Int64 uniqueId);
 			inline const Entity& GetEntity(Nz::Int64 uniqueId) const;
 			inline const EntityIndices& GetEntityIndices(Nz::Int64 uniqueId) const;
-			inline std::size_t GetEntityCount(std::size_t layerIndex) const;
+			inline std::size_t GetEntityCount(LayerIndex layerIndex) const;
 			inline Nz::Int64 GetFreeUniqueId() const;
-			inline Layer& GetLayer(std::size_t layerIndex);
-			inline const Layer& GetLayer(std::size_t layerIndex) const;
+			inline Layer& GetLayer(LayerIndex layerIndex);
+			inline const Layer& GetLayer(LayerIndex layerIndex) const;
 			inline std::size_t GetLayerCount() const;
 			inline const MapInfo& GetMapInfo() const;
 
 			inline bool IsValid() const;
 
-			Entity& MoveEntity(std::size_t sourceLayerIndex, std::size_t sourceEntityIndex, std::size_t targetLayerIndex, std::size_t targetEntityIndex);
+			Entity& MoveEntity(LayerIndex sourceLayerIndex, std::size_t sourceEntityIndex, LayerIndex targetLayerIndex, std::size_t targetEntityIndex);
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
 
-			void SwapEntities(std::size_t layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
-			void SwapLayers(std::size_t firstLayerIndex, std::size_t secondLayerIndex);
+			void SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
+			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 
 			struct Asset
 			{
@@ -99,7 +99,7 @@ namespace bw
 
 			struct EntityIndices
 			{
-				std::size_t layerIndex;
+				LayerIndex layerIndex;
 				std::size_t entityIndex;
 			};
 
@@ -117,7 +117,7 @@ namespace bw
 		private:
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
-			inline void RegisterEntity(Nz::Int64 uniqueId, std::size_t layerIndex, std::size_t entityIndex);
+			inline void RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
 			void Sanitize();
 			void SetupDefault();
 			inline void UnregisterEntity(Nz::Int64 uniqueId);

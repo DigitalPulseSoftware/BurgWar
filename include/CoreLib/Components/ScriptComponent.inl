@@ -67,11 +67,11 @@ namespace bw
 
 				if constexpr (!EventData::FatalError)
 					continue;
-
-				return {};
+				else
+					return {};
 			}
 
-			combinedResult = EventData::Combinator(combinedResult, callbackResult.get<ResultType>());
+			combinedResult = EventData::Combinator(combinedResult, callbackResult.template get<ResultType>());
 		}
 
 		return combinedResult;

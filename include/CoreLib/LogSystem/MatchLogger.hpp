@@ -17,7 +17,7 @@ namespace bw
 		public:
 			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));
 			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
-			MatchLogger(const MatchLogger&) = default;
+			MatchLogger(const MatchLogger&) = delete;
 			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;
 

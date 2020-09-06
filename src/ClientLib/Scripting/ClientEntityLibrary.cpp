@@ -48,7 +48,7 @@ namespace bw
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["AddLayer"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		elementMetatable["AddLayer"] = [](const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
@@ -137,7 +137,7 @@ namespace bw
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), renderOrder);
 		};
 
-		elementMetatable["ClearLayers"] = [this](const sol::table& entityTable)
+		elementMetatable["ClearLayers"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 

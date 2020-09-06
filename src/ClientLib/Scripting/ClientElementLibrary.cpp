@@ -145,7 +145,7 @@ namespace bw
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
 		};
 
-		auto DealDamage = [this](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
+		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
 			// Client-side this function only applies push-back forces
 			if (Nz::NumberEquals(pushbackForce, 0.f))

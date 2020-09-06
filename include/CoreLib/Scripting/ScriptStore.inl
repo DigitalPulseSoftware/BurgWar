@@ -353,7 +353,7 @@ namespace bw
 			propertyIndex += HandleProperties(element, parentElement);
 		}
 
-		sol::object properties = baseElement->elementTable.raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
+		sol::object properties = baseElement->elementTable.template raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
 		if (properties)
 		{
 			sol::table elementProperties = properties.as<sol::table>();

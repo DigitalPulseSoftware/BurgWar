@@ -194,18 +194,20 @@ namespace bw
 	{
 		for (auto&& [optionName, optionValue] : m_updatedValues)
 		{
+			const std::string& name = optionName;
+
 			std::visit([&](auto&& arg)
 			{
 				using T = std::decay_t<decltype(arg)>;
 
 				if constexpr (std::is_same_v<T, bool>)
-					m_playerConfig.SetBoolValue(optionName, arg);
+					m_playerConfig.SetBoolValue(name, arg);
 				else if constexpr (std::is_same_v<T, double>)
-					m_playerConfig.SetFloatValue(optionName, arg);
+					m_playerConfig.SetFloatValue(name, arg);
 				else if constexpr (std::is_same_v<T, long long>)
-					m_playerConfig.SetIntegerValue(optionName, arg);
+					m_playerConfig.SetIntegerValue(name, arg);
 				else if constexpr (std::is_same_v<T, std::string>)
-					m_playerConfig.SetStringValue(optionName, arg);
+					m_playerConfig.SetStringValue(name, arg);
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
