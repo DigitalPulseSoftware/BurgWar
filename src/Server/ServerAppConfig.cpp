@@ -10,6 +10,7 @@ namespace bw
 	ServerAppConfig::ServerAppConfig(ServerApp& app) :
 	SharedAppConfig(app)
 	{
+		RegisterStringOption("GameSettings.Gamemode");
 		RegisterStringOption("GameSettings.MapFile");
 	}
 }

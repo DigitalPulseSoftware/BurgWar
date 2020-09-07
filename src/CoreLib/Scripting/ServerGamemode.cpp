@@ -16,30 +16,20 @@ namespace bw
 	SharedGamemode(match, std::move(scriptingContext), std::move(gamemodeName), std::move(propertyValues)),
 	m_match(match)
 	{
-		InitializeGamemode();
+		Reload();
 	}
 
-	void ServerGamemode::Reload()
+	void ServerGamemode::InitializeGamemode(const std::string& gamemodeName)
 	{
-		InitializeGamemode();
-	}
+		const std::filesystem::path gamemodeFolder = "gamemodes";
 
-	void ServerGamemode::InitializeGamemode()
-	{
-		SharedGamemode::InitializeGamemode();
+		std::filesystem::path gamemodePath = gamemodeFolder / gamemodeName;
 
 		auto& context = GetScriptingContext();
+		context->Load(gamemodePath / "shared.lua");
+		context->Load(gamemodePath / "sv_init.lua");
 
-		auto Load = [&](const std::filesystem::path& filepath)
-		{
-			return context->Load(filepath);
-		};
-
-		std::filesystem::path gamemodeName = GetGamemodeName();
-		Load("gamemodes" / gamemodeName / "shared.lua");
-		Load("gamemodes" / gamemodeName / "sv_init.lua");
-
-		std::filesystem::path gamemodeFile = "gamemodes" / gamemodeName;
+		std::filesystem::path gamemodeFile = gamemodePath;
 		gamemodeFile.replace_extension("lua");
 
 		m_match.RegisterClientScript(gamemodeFile);

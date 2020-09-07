@@ -1,13 +1,12 @@
 local gamemode = ScriptedGamemode()
+gamemode.ScoreboardColumns = { "Name", "Ping" }
 
 gamemode:On("initscoreboard", function (self, scoreboard)
 	self.Scoreboard = scoreboard
-	self.ScoreboardColumns = {}
+	self.ScoreboardColumnIndexes = {}
 
-	local columns = { "Name", "Kill", "Death", "Ping" }
-
-	for _, columnName in pairs(columns) do
-		self.ScoreboardColumns[columnName] = scoreboard:AddColumn(columnName)
+	for _, columnName in pairs(self.ScoreboardColumns) do
+		self.ScoreboardColumnIndexes[columnName] = scoreboard:AddColumn(columnName)
 	end
 
 	for _, player in pairs(match.GetPlayers()) do
@@ -39,8 +38,6 @@ function gamemode:RegisterScoreboardPlayer(player)
 
 	scoreboard:RegisterPlayer(playerIndex, 0, {
 		player:GetName(),
-		tostring(self:GetPlayerKills(player)),
-		tostring(self:GetPlayerDeaths(player)),
 		tostring(player:GetPing() or ""),
 	}, isLocalPlayer)
 end
@@ -62,7 +59,7 @@ gamemode:On("playernameupdate", function (self, player, newName)
 		return
 	end
 
-	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Name, newName)
+	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumnIndexes.Name, newName)
 end)
 
 gamemode:On("playerpingupdate", function (self, player, newName)
@@ -72,21 +69,6 @@ gamemode:On("playerpingupdate", function (self, player, newName)
 	end
 
 	for _, player in pairs(match.GetPlayers()) do
-		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumns.Ping, tostring(player:GetPing() or ""))
+		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumnIndexes.Ping, tostring(player:GetPing() or ""))
 	end
 end)
-
-function gamemode:UpdateScoreboard(deaths, kills)
-	local scoreboard = self.Scoreboard
-	if (not scoreboard) then
-		return
-	end
-
-	for playerIndex, death in pairs(deaths) do
-		scoreboard:UpdatePlayerValue(playerIndex, self.ScoreboardColumns.Death, tostring(death))
-	end
-
-	for playerIndex, kill in pairs(kills) do
-		scoreboard:UpdatePlayerValue(playerIndex, self.ScoreboardColumns.Kill, tostring(kill))
-	end
-end

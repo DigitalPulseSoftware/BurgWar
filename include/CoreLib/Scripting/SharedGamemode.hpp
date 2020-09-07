@@ -40,7 +40,7 @@ namespace bw
 
 			inline void RegisterCallback(GamemodeEvent event, sol::protected_function callback, bool async);
 
-			virtual void Reload() = 0;
+			void Reload();
 
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 
@@ -50,9 +50,11 @@ namespace bw
 			inline std::optional<std::reference_wrapper<const PropertyValue>> GetProperty(const std::string& keyName) const;
 			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
-			virtual void InitializeGamemode() = 0;
-	
+			virtual void InitializeGamemode(const std::string& gamemodeName) = 0;
+
 		private:
+			sol::table LoadGamemode(const std::string& gamemodeName, std::size_t* newPropertyIndex);
+			void InitializeMetatable();
 			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async);
 
 			struct Callback
@@ -65,6 +67,7 @@ namespace bw
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_gamemodeName;
 			sol::table m_gamemodeTable;
+			sol::table m_gamemodeMetatable;
 			tsl::hopscotch_map<std::string /*key*/, ScriptedProperty> m_properties;
 			PropertyValueMap m_propertyValues;
 			SharedMatch& m_sharedMatch;

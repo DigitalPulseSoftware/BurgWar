@@ -12,7 +12,6 @@ namespace bw
 	{
 		RegisterStringOption("Debug.ShowConnectionData");
 		RegisterBoolOption("Debug.ShowServerGhosts");
-		RegisterStringOption("GameSettings.MapFile");
 		RegisterIntegerOption("WindowSettings.AntialiasingLevel", 0, 16);
 		RegisterBoolOption("WindowSettings.Fullscreen");
 		RegisterBoolOption("WindowSettings.VSync");

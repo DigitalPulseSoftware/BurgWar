@@ -11,27 +11,17 @@ namespace bw
 	ClientGamemode::ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues) :
 	SharedGamemode(localMatch, std::move(scriptingContext), std::move(gamemodeName), std::move(propertyValues))
 	{
-		InitializeGamemode();
+		Reload();
 	}
 
-	void ClientGamemode::Reload()
+	void ClientGamemode::InitializeGamemode(const std::string& gamemodeName)
 	{
-		InitializeGamemode();
-	}
+		const std::filesystem::path gamemodeFolder = "gamemodes";
 
-	void ClientGamemode::InitializeGamemode()
-	{
-		SharedGamemode::InitializeGamemode();
+		std::filesystem::path gamemodePath = gamemodeFolder / gamemodeName;
 
 		auto& context = GetScriptingContext();
-
-		auto Load = [&](const std::filesystem::path& filepath)
-		{
-			return context->Load(filepath);
-		};
-
-		std::filesystem::path gamemodeName = GetGamemodeName();
-		Load("gamemodes" / gamemodeName / "shared.lua");
-		Load("gamemodes" / gamemodeName / "cl_init.lua");
+		context->Load(gamemodePath / "shared.lua");
+		context->Load(gamemodePath / "cl_init.lua");
 	}
 }

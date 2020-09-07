@@ -7,14 +7,6 @@ gamemode.PlayerSeeds = {}
 math.randomseed(os.time())
 
 gamemode:OnAsync("playerdeath", function (self, player, attacker)
-	self:IncreasePlayerDeath(player)
-	if (attacker) then
-		local attackerPlayer = attacker:GetOwner()
-		if (attackerPlayer and attackerPlayer:GetPlayerIndex() ~= player:GetPlayerIndex()) then
-			self:IncreasePlayerKill(attackerPlayer)
-		end
-	end
-
 	print(player:GetName() .. " died")
 	timer.Sleep(self:GetProperty("respawntime") * 1000)
 	self:SpawnPlayer(player)

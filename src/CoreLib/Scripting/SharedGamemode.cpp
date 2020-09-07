@@ -23,19 +23,37 @@ namespace bw
 
 	SharedGamemode::~SharedGamemode() = default;
 
-	void SharedGamemode::InitializeGamemode()
+	void SharedGamemode::Reload()
 	{
-		auto resultOpt = m_context->Load("gamemodes/" + m_gamemodeName + ".lua");
+		InitializeMetatable();
+		m_gamemodeTable = LoadGamemode(m_gamemodeName, nullptr);
+	}
+
+	sol::table SharedGamemode::LoadGamemode(const std::string& gamemodeName, std::size_t* newPropertyIndex)
+	{
+		auto resultOpt = m_context->Load("gamemodes/" + gamemodeName + ".lua");
 		if (!resultOpt)
-			throw std::runtime_error("failed to retrieve gamemode " + m_gamemodeName + " data");
+			throw std::runtime_error("failed to retrieve gamemode " + gamemodeName + " data");
 
-		m_gamemodeTable = resultOpt->as<sol::table>();
+		sol::table gamemodeTable = resultOpt->as<sol::table>();
+		gamemodeTable["__index"] = gamemodeTable;
 
-		sol::object properties = m_gamemodeTable.get<sol::object>("Properties");
+		std::size_t propertyIndex = 0;
+
+		std::string baseGamemode = gamemodeTable.get_or("Base", std::string{});
+		if (!baseGamemode.empty())
+		{
+			sol::table parentGamemodeTable = LoadGamemode(baseGamemode, &propertyIndex);
+			gamemodeTable["Base"] = parentGamemodeTable;
+			gamemodeTable[sol::metatable_key] = parentGamemodeTable;
+		}
+		else
+			gamemodeTable[sol::metatable_key] = m_gamemodeMetatable;
+
+		sol::object properties = gamemodeTable.get<sol::object>("Properties");
 		if (properties)
 		{
 			sol::table elementProperties = properties.as<sol::table>();
-			std::size_t propertyIndex = 0;
 
 			for (const auto& kv : elementProperties)
 			{
@@ -60,19 +78,41 @@ namespace bw
 					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "Failed to load property {0} for gamemode {1}: {2}", propertyName, m_gamemodeName, e.what());
 				}
 			}
+
+			if (newPropertyIndex)
+				*newPropertyIndex = propertyIndex;
 		}
 
-		m_gamemodeTable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		sol::state& state = m_context->GetLuaState();
+		state["ScriptedGamemode"] = [&]()
+		{
+			return gamemodeTable;
+		};
+
+		InitializeGamemode(gamemodeName);
+
+		state["ScriptedGamemode"] = sol::nil;
+
+		return gamemodeTable;
+	}
+
+	void SharedGamemode::InitializeMetatable()
+	{
+		sol::state& state = m_context->GetLuaState();
+		m_gamemodeMetatable = state.create_table();
+		m_gamemodeMetatable["__index"] = m_gamemodeMetatable;
+
+		m_gamemodeMetatable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), false);
 		};
 
-		m_gamemodeTable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		m_gamemodeMetatable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), true);
 		};
 
-		m_gamemodeTable["GetProperty"] = [&](sol::this_state s, const sol::table& /*table*/, const std::string& propertyName) -> sol::object
+		m_gamemodeMetatable["GetProperty"] = [&](sol::this_state s, const sol::table& /*table*/, const std::string& propertyName) -> sol::object
 		{
 			auto propertyVal = GetProperty(propertyName);
 			if (propertyVal.has_value())
@@ -88,18 +128,10 @@ namespace bw
 			else
 				return sol::nil;
 		};
-
-		sol::state& state = m_context->GetLuaState();
-		state["ScriptedGamemode"] = [this]()
-		{
-			return m_gamemodeTable;
-		};
 	}
 
-	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async)
+	void SharedGamemode::RegisterEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::protected_function callback, bool async)
 	{
-		assert(gamemodeTable == m_gamemodeTable);
-
 		std::optional<GamemodeEvent> gamemodeEventOpt = RetrieveGamemodeEvent(event);
 		if (!gamemodeEventOpt)
 			throw std::runtime_error("unknown event " + std::string(event));

@@ -17,13 +17,13 @@ namespace bw
 			throw std::runtime_error("Failed to load config file");
 
 		Match::GamemodeSettings gamemodeSettings;
-		gamemodeSettings.name = "test";
+		gamemodeSettings.name = m_configFile.GetStringValue("GameSettings.Gamemode");
 
 		Match::MatchSettings matchSettings;
-		matchSettings.map = Map::LoadFromBinary(GetConfig().GetStringValue("GameSettings.MapFile"));
+		matchSettings.map = Map::LoadFromBinary(m_configFile.GetStringValue("GameSettings.MapFile"));
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
-		matchSettings.tickDuration = 1.f / GetConfig().GetFloatValue<float>("GameSettings.TickRate");
+		matchSettings.tickDuration = 1.f / m_configFile.GetFloatValue<float>("GameSettings.TickRate");
 
 		m_match = std::make_unique<Match>(*this, std::move(matchSettings), std::move(gamemodeSettings));
 		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(Nz::UInt16(14768), 64);
