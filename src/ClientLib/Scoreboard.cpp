@@ -149,6 +149,9 @@ namespace bw
 		Nz::Vector2f size = GetSize();
 		m_backgroundWidget->Resize(size);
 
+		if (m_columns.empty())
+			return;
+
 		constexpr float padding = 5.f;
 
 		float scoreboardWidth = size.x - padding * 2.f;
