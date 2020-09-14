@@ -22,17 +22,6 @@ function gamemode:RegisterScoreboardPlayer(player)
 	}, isLocalPlayer)
 end
 
-gamemode:On("playerpingupdate", function (self, player, newName)
-	local scoreboard = self.Scoreboard
-	if (not scoreboard) then
-		return
-	end
-
-	for _, player in pairs(match.GetPlayers()) do
-		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumnIndexes.Ping, tostring(player:GetPing() or ""))
-	end
-end)
-
 function gamemode:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
