@@ -11,7 +11,7 @@ namespace bw
 		m_pendingTimers.clear();
 	}
 
-	void TimerManager::PushCallback(Nz::UInt64 expirationTime, Callback callback)
+	inline void TimerManager::PushCallback(Nz::UInt64 expirationTime, Callback callback)
 	{
 		Timer& timer = m_pendingTimers.emplace_back();
 		timer.callback = std::move(callback);
@@ -20,7 +20,7 @@ namespace bw
 		//TODO: Insertion sort
 	}
 
-	void TimerManager::Update(Nz::UInt64 now)
+	inline void TimerManager::Update(Nz::UInt64 now)
 	{
 		// Use index instead of iterator because callback may push new timers
 		for (std::size_t i = 0; i < m_pendingTimers.size();)
