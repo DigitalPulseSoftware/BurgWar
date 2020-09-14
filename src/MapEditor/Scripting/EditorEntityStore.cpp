@@ -46,7 +46,7 @@ namespace bw
 		return std::make_shared<EditorScriptedEntity>();
 	}
 
-	void EditorEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
+	void EditorEntityStore::InitializeElement(sol::main_table& elementTable, ScriptedEntity& element)
 	{
 		ClientEditorEntityStore::InitializeElement(elementTable, element);
 

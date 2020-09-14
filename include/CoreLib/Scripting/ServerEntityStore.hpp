@@ -27,8 +27,8 @@ namespace bw
 			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 
 		private:
-			void InitializeElementTable(sol::table& elementTable) override;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+			void InitializeElementTable(sol::main_table& elementTable) override;
+			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override;
 	};
 }
 

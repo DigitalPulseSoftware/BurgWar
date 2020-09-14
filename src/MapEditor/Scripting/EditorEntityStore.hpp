@@ -23,7 +23,7 @@ namespace bw
 			void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const override;
 
 			std::shared_ptr<ScriptedEntity> CreateElement() const override;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override;
 	};
 }
 

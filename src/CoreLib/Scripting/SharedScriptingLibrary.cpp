@@ -225,7 +225,7 @@ namespace bw
 			return OutgoingNetworkPacket(std::move(name));
 		};
 
-		library["SetHandler"] = [this](std::string name, sol::protected_function handler)
+		library["SetHandler"] = [this](std::string name, sol::main_protected_function handler)
 		{
 			ScriptHandlerRegistry& packetHandlerRegistry = GetSharedMatch().GetScriptPacketHandlerRegistry();
 
@@ -400,11 +400,11 @@ namespace bw
 	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context, sol::table& library)
 	{
 		sol::state& state = context.GetLuaState();
-		library["Create"] = [&](Nz::UInt64 time, sol::object callbackObject)
+		library["Create"] = [&](Nz::UInt64 time, sol::protected_function callbackObject)
 		{
-			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, &state, callbackObject]()
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callbackObject]()
 			{
-				sol::protected_function callback(state, sol::ref_index(callbackObject.registry_index()));
+				sol::main_protected_function callback(callbackObject);
 
 				auto result = callback();
 				if (!result.valid())

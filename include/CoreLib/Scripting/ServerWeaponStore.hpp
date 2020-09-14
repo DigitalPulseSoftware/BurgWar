@@ -24,7 +24,7 @@ namespace bw
 			const Ndk::EntityHandle& InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, Nz::Int64 uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent);
 
 		private:
-			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
+			void InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon) override;
 	};
 }
 

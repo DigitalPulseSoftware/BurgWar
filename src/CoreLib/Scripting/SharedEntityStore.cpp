@@ -40,7 +40,7 @@ namespace bw
 		});
 	}
 
-	void SharedEntityStore::InitializeElement(sol::table& /*elementTable*/, ScriptedEntity& /*element*/)
+	void SharedEntityStore::InitializeElement(sol::main_table& /*elementTable*/, ScriptedEntity& /*element*/)
 	{
 	}
 

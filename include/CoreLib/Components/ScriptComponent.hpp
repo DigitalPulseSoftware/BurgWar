@@ -44,7 +44,7 @@ namespace bw
 
 			inline bool HasCallbacks(ElementEvent event) const;
 
-			inline void RegisterCallback(ElementEvent event, sol::protected_function callback, bool async);
+			inline void RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async);
 
 			inline void SetNextTick(float seconds);
 

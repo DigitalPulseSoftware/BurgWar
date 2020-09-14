@@ -48,12 +48,12 @@ namespace bw
 		return layerEntity;
 	}
 
-	void ClientWeaponStore::InitializeElementTable(sol::table& elementTable)
+	void ClientWeaponStore::InitializeElementTable(sol::main_table& elementTable)
 	{
 		SharedWeaponStore::InitializeElementTable(elementTable);
 	}
 
-	void ClientWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
+	void ClientWeaponStore::InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon)
 	{
 		SharedWeaponStore::InitializeElement(elementTable, weapon);
 

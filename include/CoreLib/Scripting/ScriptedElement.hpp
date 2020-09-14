@@ -24,12 +24,12 @@ namespace bw
 	{
 		struct Callback
 		{
-			sol::protected_function callback;
+			sol::main_protected_function callback;
 			bool async = false;
 		};
 
-		sol::table elementTable;
 		std::array<std::vector<Callback>, ElementEventCount> events;
+		sol::main_table elementTable;
 		std::string base;
 		std::string name;
 		std::string fullName;

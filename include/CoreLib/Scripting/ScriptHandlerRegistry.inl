@@ -16,7 +16,7 @@ namespace bw
 	{
 		if (auto it = m_handlers.find(name); it != m_handlers.end())
 		{
-			const sol::protected_function& handler = it.value();
+			const sol::main_protected_function& handler = it.value();
 			if (handler)
 			{
 				auto result = handler(std::forward<Args>(args)...);
@@ -46,7 +46,7 @@ namespace bw
 		return m_handlers.find(name) != m_handlers.end();
 	}
 	
-	inline void ScriptHandlerRegistry::Register(std::string name, sol::protected_function handler)
+	inline void ScriptHandlerRegistry::Register(std::string name, sol::main_protected_function handler)
 	{
 		m_handlers.emplace(std::move(name), std::move(handler));
 	}

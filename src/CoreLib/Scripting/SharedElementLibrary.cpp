@@ -93,12 +93,12 @@ namespace bw
 			return entity.IsValid();
 		};
 
-		elementMetatable["On"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
+		elementMetatable["On"] = [&](const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(entityTable, event, std::move(callback), false);
 		};
 
-		elementMetatable["OnAsync"] = [&](const sol::table& entityTable, const std::string_view& event, sol::protected_function callback)
+		elementMetatable["OnAsync"] = [&](const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(entityTable, event, std::move(callback), true);
 		};
@@ -126,7 +126,7 @@ namespace bw
 		};
 	}
 	
-	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::protected_function callback, bool async)
+	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<ElementEvent> scriptingEventOpt = RetrieveElementEvent(event);
 		if (!scriptingEventOpt)

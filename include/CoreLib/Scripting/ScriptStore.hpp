@@ -56,8 +56,8 @@ namespace bw
 		protected:
 			virtual std::shared_ptr<Element> CreateElement() const;
 			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const PropertyValueMap& properties) const;
-			virtual void InitializeElementTable(sol::table& elementTable);
-			virtual void InitializeElement(sol::table& elementTable, Element& element) = 0;
+			virtual void InitializeElementTable(sol::main_table& elementTable);
+			virtual void InitializeElement(sol::main_table& elementTable, Element& element) = 0;
 			bool InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const;
 
 			sol::state& GetLuaState();

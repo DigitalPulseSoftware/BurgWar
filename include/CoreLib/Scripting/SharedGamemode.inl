@@ -106,7 +106,7 @@ namespace bw
 		return !callbacks.empty();
 	}
 
-	inline void SharedGamemode::RegisterCallback(GamemodeEvent event, sol::protected_function callback, bool async)
+	inline void SharedGamemode::RegisterCallback(GamemodeEvent event, sol::main_protected_function callback, bool async)
 	{
 		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
 		auto& callbackData = callbacks.emplace_back();

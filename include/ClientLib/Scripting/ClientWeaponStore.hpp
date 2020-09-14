@@ -24,8 +24,8 @@ namespace bw
 			std::optional<LocalLayerEntity> InstantiateWeapon(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, Nz::Int64 uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent);
 
 		private:
-			void InitializeElementTable(sol::table& elementTable) override;
-			void InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon) override;
+			void InitializeElementTable(sol::main_table& elementTable) override;
+			void InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon) override;
 
 			ClientAssetStore& m_assetStore;
 	};

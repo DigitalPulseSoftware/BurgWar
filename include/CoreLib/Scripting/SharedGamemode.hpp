@@ -38,7 +38,7 @@ namespace bw
 
 			inline bool HasCallbacks(GamemodeEvent event) const;
 
-			inline void RegisterCallback(GamemodeEvent event, sol::protected_function callback, bool async);
+			inline void RegisterCallback(GamemodeEvent event, sol::main_protected_function callback, bool async);
 
 			void Reload();
 
@@ -55,7 +55,7 @@ namespace bw
 		private:
 			sol::table LoadGamemode(const std::string& gamemodeName, std::size_t* newPropertyIndex);
 			void InitializeMetatable();
-			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback, bool async);
+			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
 
 			struct Callback
 			{

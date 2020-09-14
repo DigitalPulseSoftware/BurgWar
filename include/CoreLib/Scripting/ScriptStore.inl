@@ -286,7 +286,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::InitializeElementTable(sol::table& elementTable)
+	void ScriptStore<Element>::InitializeElementTable(sol::main_table& elementTable)
 	{
 		assert(m_elementMetatable);
 

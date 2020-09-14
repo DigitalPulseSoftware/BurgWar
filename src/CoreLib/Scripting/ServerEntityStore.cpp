@@ -102,12 +102,12 @@ namespace bw
 		return entity;
 	}
 
-	void ServerEntityStore::InitializeElementTable(sol::table& elementTable)
+	void ServerEntityStore::InitializeElementTable(sol::main_table& elementTable)
 	{
 		SharedEntityStore::InitializeElementTable(elementTable);
 	}
 
-	void ServerEntityStore::InitializeElement(sol::table& elementTable, ScriptedEntity& element)
+	void ServerEntityStore::InitializeElement(sol::main_table& elementTable, ScriptedEntity& element)
 	{
 		SharedEntityStore::InitializeElement(elementTable, element);
 

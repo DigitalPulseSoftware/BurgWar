@@ -29,8 +29,8 @@ namespace bw
 			virtual const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
 
 		protected:
-			void InitializeElementTable(sol::table& elementTable) override;
-			void InitializeElement(sol::table& elementTable, ScriptedEntity& element) override;
+			void InitializeElementTable(sol::main_table& elementTable) override;
+			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override;
 			using SharedEntityStore::InitializeEntity;
 
 			ClientAssetStore& m_assetStore;

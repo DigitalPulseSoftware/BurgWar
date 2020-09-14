@@ -102,12 +102,12 @@ namespace bw
 		m_gamemodeMetatable = state.create_table();
 		m_gamemodeMetatable["__index"] = m_gamemodeMetatable;
 
-		m_gamemodeMetatable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		m_gamemodeMetatable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), false);
 		};
 
-		m_gamemodeMetatable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::protected_function callback)
+		m_gamemodeMetatable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(gamemodeTable, event, std::move(callback), true);
 		};
@@ -130,7 +130,7 @@ namespace bw
 		};
 	}
 
-	void SharedGamemode::RegisterEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::protected_function callback, bool async)
+	void SharedGamemode::RegisterEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<GamemodeEvent> gamemodeEventOpt = RetrieveGamemodeEvent(event);
 		if (!gamemodeEventOpt)

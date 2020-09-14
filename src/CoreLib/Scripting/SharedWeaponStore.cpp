@@ -25,7 +25,7 @@ namespace bw
 		ReloadLibraries(); // This function creates the metatable
 	}
 
-	void SharedWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
+	void SharedWeaponStore::InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon)
 	{
 		weapon.attackMode = static_cast<WeaponAttackMode>(elementTable.get_or("AttackMode", UnderlyingCast(WeaponAttackMode::SingleShot)));
 		if (UnderlyingCast(weapon.attackMode) > UnderlyingCast(WeaponAttackMode::Max))
@@ -54,7 +54,7 @@ namespace bw
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
 		}
 
-		weapon.animationStartFunction = elementTable["OnAnimationStart"];
+		weapon.animationStartFunction = elementTable.get_or("OnAnimationStart", sol::main_protected_function{});
 	}
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
@@ -83,9 +83,9 @@ namespace bw
 		{
 			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
 
-			if (sol::protected_function callback = weaponClass.animationStartFunction)
+			if (weaponClass.animationStartFunction)
 			{
-				anim.OnAnimationStart.Connect([this, callback](AnimationComponent* anim)
+				anim.OnAnimationStart.Connect([this, callback = weaponClass.animationStartFunction](AnimationComponent* anim)
 				{
 					const Ndk::EntityHandle& entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();

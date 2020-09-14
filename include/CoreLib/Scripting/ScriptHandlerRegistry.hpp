@@ -27,11 +27,11 @@ namespace bw
 
 			inline bool Has(const std::string& name) const;
 
-			inline void Register(std::string name, sol::protected_function handler);
+			inline void Register(std::string name, sol::main_protected_function handler);
 			inline void Unregister(const std::string& name);
 
 		private:
-			tsl::hopscotch_map<std::string /*packetName*/, sol::protected_function /*handler*/> m_handlers;
+			tsl::hopscotch_map<std::string /*packetName*/, sol::main_protected_function /*handler*/> m_handlers;
 			Logger& m_logger;
 	};
 }

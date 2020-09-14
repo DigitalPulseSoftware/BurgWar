@@ -350,7 +350,7 @@ namespace bw
 				entity->Kill();
 		};
 
-		elementMetatable["OverrideMovementController"] = [this](const sol::table& entityTable, sol::protected_function fn)
+		elementMetatable["OverrideMovementController"] = [this](const sol::table& entityTable, sol::main_protected_function fn)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 

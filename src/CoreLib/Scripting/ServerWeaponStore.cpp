@@ -34,7 +34,7 @@ namespace bw
 		return weapon;
 	}
 
-	void ServerWeaponStore::InitializeElement(sol::table& elementTable, ScriptedWeapon& weapon)
+	void ServerWeaponStore::InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon)
 	{
 		SharedWeaponStore::InitializeElement(elementTable, weapon);
 	}
