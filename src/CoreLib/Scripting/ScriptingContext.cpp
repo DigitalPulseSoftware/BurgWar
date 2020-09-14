@@ -14,7 +14,7 @@ namespace bw
 {
 	namespace
 	{
-		std::size_t MaxInactiveCoroutines = 50;
+		std::size_t MaxInactiveCoroutines = 20;
 	}
 
 	ScriptingContext::~ScriptingContext()
