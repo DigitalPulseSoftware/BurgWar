@@ -49,6 +49,31 @@ namespace bw
 		}, entry);
 	}
 
+	auto ScriptingContext::Load(const std::filesystem::path& file, Async) -> std::optional<FileLoadCoroutine>
+	{
+		VirtualDirectory::Entry entry;
+		if (!m_scriptDirectory->GetEntry(file.generic_u8string(), &entry))
+		{
+			bwLog(m_logger, LogLevel::Error, "Unknown path {0}", file.generic_u8string());
+			return {};
+		}
+		
+		return std::visit([&](auto&& arg) -> std::optional<FileLoadCoroutine>
+		{
+			using T = std::decay_t<decltype(arg)>;
+
+			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+				return LoadFile(file, arg, Async{});
+			else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+			{
+				bwLog(m_logger, LogLevel::Error, "{0} is a directory, expected a file", file.generic_u8string());
+				return {};
+			}
+			else
+				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+		}, entry);
+	}
+
 	bool ScriptingContext::LoadDirectory(const std::filesystem::path& folder)
 	{
 		VirtualDirectory::Entry entry;
@@ -137,50 +162,36 @@ namespace bw
 		return (!m_availableThreads.empty()) ? PopThread() : AllocateThread();
 	}
 
-	std::optional<sol::object> ScriptingContext::Load(std::filesystem::path path, VirtualDirectory::Entry& entry)
-	{
-		return std::visit([&](auto&& arg) -> std::optional<sol::object>
-		{
-			using T = std::decay_t<decltype(arg)>;
-
-			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
-				return LoadFile(path, arg);
-			else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
-			{
-				LoadDirectory(path, arg);
-				return sol::nil;
-			}
-			else
-				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-		}, entry);
-	}
-
 	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry)
 	{
-		Nz::CallOnExit resetOnExit([this, currentFile = std::move(m_currentFile), currentFolder = std::move(m_currentFolder)]() mutable
-		{
-			m_currentFile = std::move(currentFile);
-			m_currentFolder = std::move(currentFolder);
-		});
+		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data()), entry.size()));
+	}
 
-		m_currentFile = std::move(path);
-		m_currentFolder = m_currentFile.parent_path();
-
-		sol::state& state = GetLuaState();
-		sol::protected_function_result result = state.do_string(std::string_view(reinterpret_cast<const char*>(entry.data()), entry.size()), m_currentFile.generic_string());
-		if (!result.valid())
-		{
-			sol::error err = result;
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: {1}", m_currentFile.generic_u8string(), err.what());
-			return {};
-		}
-
-		return result;
+	auto ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry, Async) -> std::optional<FileLoadCoroutine>
+	{
+		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data()), entry.size()), Async{});
 	}
 
 	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry)
 	{
+		std::string fileContent = ReadFile(path, entry);
+		if (fileContent.empty())
+			return {};
+
+		return LoadFile(std::move(path), std::string_view(fileContent));
+	}
+
+	auto ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry, Async) -> std::optional<FileLoadCoroutine>
+	{
+		std::string fileContent = ReadFile(path, entry);
+		if (fileContent.empty())
+			return {};
+
+		return LoadFile(std::move(path), std::string_view(fileContent), Async{});
+	}
+
+	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content)
+	{
 		Nz::CallOnExit resetOnExit([this, currentFile = std::move(m_currentFile), currentFolder = std::move(m_currentFolder)]() mutable
 		{
 			m_currentFile = std::move(currentFile);
@@ -190,37 +201,74 @@ namespace bw
 		m_currentFile = std::move(path);
 		m_currentFolder = m_currentFile.parent_path();
 
-		Nz::File file(entry.generic_u8string());
-		if (!file.Open(Nz::OpenMode_ReadOnly))
-		{
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to open file", m_currentFile.generic_u8string());
-			return {};
-		}
-
-		std::vector<char> content(file.GetSize());
-		if (file.Read(content.data(), content.size()) != content.size())
-		{
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", m_currentFile.generic_u8string());
-			return {};
-		}
-
 		sol::state& state = GetLuaState();
-		sol::protected_function_result result = state.do_string(std::string_view(content.data(), content.size()), m_currentFile.generic_string());
+		sol::protected_function_result result = state.do_string(content, m_currentFile.generic_string());
 		if (!result.valid())
 		{
 			sol::error err = result;
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: {1}", m_currentFile.generic_u8string(), err.what());
+			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", m_currentFile.generic_u8string(), err.what());
 			return {};
 		}
 
 		return result;
 	}
-	
+
+	auto ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content, Async) -> std::optional<FileLoadCoroutine>
+	{
+		sol::state& state = GetLuaState();
+		sol::load_result result = state.load(content, path.generic_string());
+		if (!result.valid())
+		{
+			sol::error err = result;
+			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", path.generic_u8string(), err.what());
+			return {};
+		}
+
+		return FileLoadCoroutine{
+			sol::coroutine(sol::thread::create(state.lua_state()).state(), sol::protected_function(result)),
+			std::move(path)
+		};
+	}
+
 	void ScriptingContext::LoadDirectory(std::filesystem::path path, const VirtualDirectory::VirtualDirectoryEntry& folder)
 	{
 		folder->Foreach([&](const std::string& entryName, VirtualDirectory::Entry& entry)
 		{
-			Load(path / entryName, entry);
+			std::filesystem::path entryPath = path / entryName;
+			std::visit([&](auto&& arg) -> std::optional<sol::object>
+			{
+				using T = std::decay_t<decltype(arg)>;
+
+				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+					return LoadFile(entryPath, arg);
+				else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+				{
+					LoadDirectory(entryPath, arg);
+					return sol::nil;
+				}
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+			}, entry);
 		});
+	}
+
+	std::string ScriptingContext::ReadFile(const std::filesystem::path& path, const VirtualDirectory::PhysicalFileEntry& entry)
+	{
+		Nz::File file(entry.generic_u8string());
+		if (!file.Open(Nz::OpenMode_ReadOnly))
+		{
+			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to open file", path.generic_u8string());
+			return {};
+		}
+
+		std::string content(file.GetSize(), '\0');
+		if (file.Read(content.data(), content.size()) != content.size())
+		{
+			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", path.generic_u8string());
+			return {};
+		}
+
+		return content;
 	}
 }

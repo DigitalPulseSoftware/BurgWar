@@ -21,10 +21,15 @@ namespace bw
 	class ScriptingContext
 	{
 		public:
+			struct Async {};
+			struct FileLoadCoroutine;
+
 			inline ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
 			~ScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
+
+			template<typename... Args> std::optional<sol::object> Exec(FileLoadCoroutine& coroutineData, Args&&... args);
 
 			inline const std::filesystem::path& GetCurrentFile() const;
 			inline const std::filesystem::path& GetCurrentFolder() const;
@@ -33,6 +38,7 @@ namespace bw
 			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 
 			std::optional<sol::object> Load(const std::filesystem::path& file);
+			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
 			bool LoadDirectory(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
@@ -41,13 +47,23 @@ namespace bw
 			void Update();
 			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
 
+			struct FileLoadCoroutine
+			{
+				sol::coroutine coroutine;
+				std::filesystem::path filePath;
+			};
+
 		private:
 			sol::thread& CreateThread();
 
-			std::optional<sol::object> Load(std::filesystem::path path, VirtualDirectory::Entry& entry);
 			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry, Async);
 			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry, Async);
+			std::optional<sol::object> LoadFile(std::filesystem::path path, const std::string_view& content);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
 			void LoadDirectory(std::filesystem::path path, const VirtualDirectory::VirtualDirectoryEntry& folder);
+			std::string ReadFile(const std::filesystem::path& path, const VirtualDirectory::PhysicalFileEntry& entry);
 
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;
