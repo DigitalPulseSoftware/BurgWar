@@ -8,9 +8,6 @@ local weapon = ScriptedWeapon({
 	Sprite = "emmentalibur.png",
 	SpriteOrigin = Vec2(40, 284) * scale,
 	WeaponOffset = Vec2(20, -60), -- This should not be here
-	Animations = {
-		{"attack", 0.3}
-	},
 	AttackMode = WeaponAttackType.SingleShotRepeat
 })
 
@@ -27,13 +24,12 @@ if (SERVER) then
 			mins = mins * -1
 		end
 
-		self:PlayAnim("attack")
 		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 20000)
 	end)
 end
 
 if (CLIENT) then
-	function weapon:OnAnimationStart(animationId)
+	weapon:OnAsync("attack", function (self)
 		local startRotation = self:GetRotation()
 		local endRotation
 		if (self:IsLookingRight()) then
@@ -44,5 +40,5 @@ if (CLIENT) then
 
 		animation.Rotate(self, startRotation, endRotation, 0.1)
 		animation.Rotate(self, endRotation, startRotation, 0.2)
-	end
+	end)
 end
