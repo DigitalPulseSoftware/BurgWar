@@ -397,15 +397,12 @@ namespace bw
 		// empty for now
 	}
 
-	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& context, sol::table& library)
+	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		sol::state& state = context.GetLuaState();
-		library["Create"] = [&](Nz::UInt64 time, sol::protected_function callbackObject)
+		library["Create"] = [&](Nz::UInt64 time, sol::main_protected_function callback)
 		{
-			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callbackObject]()
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callback = std::move(callback)]()
 			{
-				sol::main_protected_function callback(callbackObject);
-
 				auto result = callback();
 				if (!result.valid())
 				{

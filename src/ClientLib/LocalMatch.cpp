@@ -343,7 +343,7 @@ namespace bw
 		m_weaponStore->Resolve();
 
 		sol::state& state = m_scriptingContext->GetLuaState();
-		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::protected_function callbackObject)
+		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
@@ -357,10 +357,8 @@ namespace bw
 				nodeComponent.SetRotation(Nz::DegreeAnglef(newAngle));
 
 				return true;
-			}, [this, callbackObject]()
+			}, [this, callback]()
 			{
-				sol::protected_function callback(m_scriptingContext->GetLuaState(), callbackObject);
-
 				auto result = callback();
 				if (!result.valid())
 				{
@@ -371,7 +369,7 @@ namespace bw
 			return 0;
 		};
 
-		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::protected_function callbackObject)
+		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
@@ -385,10 +383,8 @@ namespace bw
 				nodeComponent.SetInitialPosition(offset); //< FIXME
 
 				return true;
-			}, [this, callbackObject]()
+			}, [this, callback]()
 			{
-				sol::protected_function callback(m_scriptingContext->GetLuaState(), callbackObject);
-
 				auto result = callback();
 				if (!result.valid())
 				{
