@@ -42,7 +42,7 @@ namespace bw
 			const Logger& GetLogger() const;
 
 			void LoadDirectory(const std::filesystem::path& directoryPath);
-			bool LoadElement(bool isDirectory, const std::filesystem::path& elementPath);
+			bool LoadElement(bool isDirectory, std::filesystem::path elementPath);
 			void LoadLibrary(std::shared_ptr<AbstractElementLibrary> library);
 
 			void ReloadLibraries();
@@ -67,16 +67,28 @@ namespace bw
 			void SetElementName(std::string elementName);
 
 		private:
-			sol::table CreateElement(sol::table initTable);
+			sol::table CreateElement(lua_State* L, sol::table initTable);
 			sol::table GetElementTable();
-			std::size_t HandleProperties(const std::shared_ptr<Element>& element, Element* baseElement);
+			void RegisterCustomEvents(const std::shared_ptr<Element>& element, Element* baseElement);
 			bool RegisterElement(std::shared_ptr<Element> element);
+			void RegisterProperties(const std::shared_ptr<Element>& element, Element* baseElement);
 
 			struct CurrentElementData
 			{
+				ScriptingContext::FileLoadCoroutine fileCoro;
+				std::filesystem::path elementPath;
 				std::string name;
 				std::string fullName;
 				std::shared_ptr<Element> element;
+				bool directory;
+			};
+
+			struct PendingElementData
+			{
+				ScriptingContext::FileLoadCoroutine fileCoro;
+				std::filesystem::path elementPath;
+				std::shared_ptr<Element> element;
+				bool directory;
 			};
 
 			sol::table m_elementMetatable;
@@ -86,7 +98,7 @@ namespace bw
 			std::vector<std::shared_ptr<AbstractElementLibrary>> m_libraries;
 			std::vector<std::shared_ptr<Element>> m_elements;
 			tsl::hopscotch_map<std::string /*name*/, std::size_t /*elementIndex*/> m_elementsByName;
-			tsl::hopscotch_map<std::string /*dependency*/, std::vector<std::shared_ptr<Element>>> m_pendingElements;
+			tsl::hopscotch_map<std::string /*dependency*/, std::vector<PendingElementData>> m_pendingElements;
 			CurrentElementData* m_currentElementData;
 			const Logger& m_logger;
 			bool m_isServer;

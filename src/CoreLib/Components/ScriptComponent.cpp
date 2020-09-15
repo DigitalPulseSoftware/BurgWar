@@ -7,7 +7,8 @@
 namespace bw
 {
 	ScriptComponent::ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, PropertyValueMap properties) :
-	m_eventCallbacks(element->events),
+	m_eventCallbacks(element->eventCallbacks),
+	m_customEventCallbacks(element->customEventCallbacks),
 	m_element(std::move(element)),
 	m_context(std::move(context)),
 	m_entityTable(std::move(entityTable)),

@@ -26,10 +26,10 @@ namespace bw
 	void SharedGamemode::Reload()
 	{
 		InitializeMetatable();
-		m_gamemodeTable = LoadGamemode(m_gamemodeName, nullptr);
+		m_gamemodeTable = LoadGamemode(m_gamemodeName);
 	}
 
-	sol::table SharedGamemode::LoadGamemode(const std::string& gamemodeName, std::size_t* newPropertyIndex)
+	sol::table SharedGamemode::LoadGamemode(const std::string& gamemodeName)
 	{
 		auto resultOpt = m_context->Load("gamemodes/" + gamemodeName + ".lua");
 		if (!resultOpt)
@@ -38,24 +38,53 @@ namespace bw
 		sol::table gamemodeTable = resultOpt->as<sol::table>();
 		gamemodeTable["__index"] = gamemodeTable;
 
-		std::size_t propertyIndex = 0;
-
 		std::string baseGamemode = gamemodeTable.get_or("Base", std::string{});
 		if (!baseGamemode.empty())
 		{
-			sol::table parentGamemodeTable = LoadGamemode(baseGamemode, &propertyIndex);
+			sol::table parentGamemodeTable = LoadGamemode(baseGamemode);
 			gamemodeTable["Base"] = parentGamemodeTable;
 			gamemodeTable[sol::metatable_key] = parentGamemodeTable;
 		}
 		else
 			gamemodeTable[sol::metatable_key] = m_gamemodeMetatable;
 
-		sol::object properties = gamemodeTable.get<sol::object>("Properties");
+		sol::object events = gamemodeTable.raw_get<sol::object>("Events");
+		if (events)
+		{
+			sol::table gamemodeEvents = events.as<sol::table>();
+
+			for (const auto& kv : gamemodeEvents)
+			{
+				sol::table propertyTable = kv.second;
+
+				try
+				{
+					std::size_t eventIndex = m_customEvents.size();
+					ScriptedEvent event = InitEventFromLua(eventIndex, propertyTable);
+
+					auto it = m_customEventByName.find(event.name);
+					if (it == m_customEventByName.end())
+					{
+						m_customEventByName.emplace(event.name, eventIndex);
+						m_customEvents.emplace_back(std::move(event));
+					}
+					else
+						throw std::runtime_error("Custom event " + event.name + " already exists");
+				}
+				catch (const std::exception& e)
+				{
+					std::string_view eventName = propertyTable.get_or<std::string_view>("Name", "<No name set>");
+					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "Failed to load custom event {0} for gamemode {1}: {2}", eventName, m_gamemodeName, e.what());
+				}
+			}
+		}
+
+		sol::object properties = gamemodeTable.raw_get<sol::object>("Properties");
 		if (properties)
 		{
-			sol::table elementProperties = properties.as<sol::table>();
+			sol::table gamemodeProperties = properties.as<sol::table>();
 
-			for (const auto& kv : elementProperties)
+			for (const auto& kv : gamemodeProperties)
 			{
 				sol::table propertyTable = kv.second;
 
@@ -63,6 +92,8 @@ namespace bw
 
 				try
 				{
+					std::size_t propertyIndex = m_properties.size();
+
 					ScriptedProperty property = InitPropertyFromLua(propertyIndex, propertyTable);
 
 					auto it = m_properties.find(propertyName);
@@ -70,17 +101,12 @@ namespace bw
 						m_properties.emplace(std::move(propertyName), std::move(property));
 					else
 						throw std::runtime_error("Property " + propertyName + " already exists");
-
-					propertyIndex++;
 				}
 				catch (const std::exception& e)
 				{
 					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "Failed to load property {0} for gamemode {1}: {2}", propertyName, m_gamemodeName, e.what());
 				}
 			}
-
-			if (newPropertyIndex)
-				*newPropertyIndex = propertyIndex;
 		}
 
 		sol::state& state = m_context->GetLuaState();
@@ -112,6 +138,18 @@ namespace bw
 			RegisterEvent(gamemodeTable, event, std::move(callback), true);
 		};
 
+		m_gamemodeMetatable["Trigger"] = [&](const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::variadic_args parameters)
+		{
+			std::string eventName = std::string(event);
+			auto it = m_customEventByName.find(eventName);
+			if (it == m_customEventByName.end())
+				throw std::runtime_error("unknown event " + eventName);
+
+			const auto& eventData = m_customEvents[it->second];
+
+			return ExecuteCustomCallback(eventData.index, parameters);
+		};
+
 		m_gamemodeMetatable["GetProperty"] = [&](sol::this_state s, const sol::table& /*table*/, const std::string& propertyName) -> sol::object
 		{
 			auto propertyVal = GetProperty(propertyName);
@@ -130,11 +168,32 @@ namespace bw
 		};
 	}
 
-	void SharedGamemode::RegisterEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::main_protected_function callback, bool async)
+	void SharedGamemode::RegisterCustomEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::main_protected_function callback, bool async)
+	{
+		std::string eventName(event);
+		auto it = m_customEventByName.find(eventName);
+		if (it == m_customEventByName.end())
+			throw std::runtime_error("unknown event " + eventName);
+
+		std::size_t eventIndex = it->second;
+		const auto& eventData = m_customEvents[eventIndex];
+
+		if (async && !eventData.returnType.empty())
+			throw std::runtime_error("events returning a value cannot be async");
+
+		if (m_customEventCallbacks.size() <= eventIndex)
+			m_customEventCallbacks.resize(eventIndex + 1);
+
+		auto& callbackData = m_customEventCallbacks[eventIndex].emplace_back();
+		callbackData.async = async;
+		callbackData.callback = std::move(callback);
+	}
+
+	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<GamemodeEvent> gamemodeEventOpt = RetrieveGamemodeEvent(event);
 		if (!gamemodeEventOpt)
-			throw std::runtime_error("unknown event " + std::string(event));
+			return RegisterCustomEvent(gamemodeTable, event, std::move(callback), async);
 
 		GamemodeEvent scriptingEvent = gamemodeEventOpt.value();
 		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);

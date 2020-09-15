@@ -24,6 +24,20 @@ local entity = ScriptedEntity({
 				entityEditor:UpdateProperty("size", texture:GetSize())
 			end
 		}
+	},
+	CustomEvents = {
+		{
+			Name = "apply",
+			ReturnType = "any",
+			Combinator = function (a, b) 
+				print("combinator")
+				return a
+			end
+		},
+		{
+			Name = "unapply",
+			ReturnType = nil
+		}
 	}
 })
 
@@ -57,11 +71,11 @@ if (SERVER) then
 		end
 
 		if (other.Name == "burger") then
-			local data = self:Apply(other)
+			local data = self:Trigger("apply", other)
 
 			timer.Create(self.Duration, function ()
 				if (other:IsValid()) then
-					self:Unapply(other, data)
+					self:Trigger("unapply", other, data)
 				end
 			end)
 

@@ -80,6 +80,88 @@ namespace bw
 		return combinedResult;
 	}
 
+	template<typename ...Args>
+	std::optional<sol::object> bw::SharedGamemode::ExecuteCustomCallback(std::size_t eventIndex, const Args & ...args)
+	{
+		if (eventIndex >= m_customEventCallbacks.size())
+			return sol::nil;
+
+		const auto& callbacks = m_customEventCallbacks[eventIndex];
+		if (callbacks.empty())
+			return sol::nil;
+
+		assert(eventIndex < m_customEvents.size());
+		const auto& eventData = m_customEvents[eventIndex];
+		if (eventData.returnType.empty())
+		{
+			// No return
+			bool ret = false;
+
+			for (const auto& callbackData : callbacks)
+			{
+				sol::protected_function_result callbackResult;
+				if (callbackData.async)
+				{
+					auto co = m_context->CreateCoroutine(callbackData.callback);
+					callbackResult = co(m_gamemodeTable, args...);
+				}
+				else
+					callbackResult = callbackData.callback(m_gamemodeTable, args...);
+
+				if (!callbackResult.valid())
+				{
+					sol::error err = callbackResult;
+					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
+
+					continue;
+				}
+
+				ret = true;
+			}
+
+			if (ret)
+				return sol::nil;
+			else
+				return {};
+		}
+		else
+		{
+			std::optional<sol::object> combinedResult;
+
+			for (const auto& callbackData : callbacks)
+			{
+				assert(!callbackData.async);
+
+				auto callbackResult = callbackData.callback(m_gamemodeTable, args...);
+				if (!callbackResult.valid())
+				{
+					sol::error err = callbackResult;
+					bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
+
+					continue;
+				}
+
+				if (eventData.combinator && combinedResult.has_value())
+				{
+					auto combinatorResult = eventData.combinator(combinedResult, callbackResult);
+					if (!callbackResult.valid())
+					{
+						sol::error err = callbackResult;
+						bwLog(m_sharedMatch.GetLogger(), LogLevel::Error, "{} combinator failed: {}", eventData.name, err.what());
+
+						continue;
+					}
+
+					combinedResult.emplace(combinatorResult);
+				}
+				else
+					combinedResult.emplace(callbackResult);
+			}
+
+			return combinedResult;
+		}
+	}
+
 	inline const tsl::hopscotch_map<std::string, ScriptedProperty>& SharedGamemode::GetProperties() const
 	{
 		return m_properties;

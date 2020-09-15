@@ -11,7 +11,7 @@ local entity = ScriptedEntity({
 })
 
 if (SERVER) then
-	function entity:Apply(playerEnt)
+	entity:On("apply", function (self, playerEnt)
 		local movementSpeed = playerEnt:GetPlayerMovementSpeed()
 		local jumpHeight, jumpBoostHeight = playerEnt:GetPlayerJumpHeight()
 
@@ -27,10 +27,10 @@ if (SERVER) then
 			jumpHeight = jumpHeight,
 			jumpBoostHeight = jumpBoostHeight
 		}
-	end
+	end)
 
-	function entity:Unapply(playerEnt, data)
+	entity:On("unapply", function(self, playerEnt, data)
 		playerEnt:UpdatePlayerMovementSpeed(data.movementSpeed)
 		playerEnt:UpdatePlayerJumpHeight(data.jumpHeight, data.jumpBoostHeight)
-	end
+	end)
 end

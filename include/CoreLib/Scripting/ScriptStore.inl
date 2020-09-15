@@ -102,7 +102,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::LoadElement(bool isDirectory, const std::filesystem::path& elementPath)
+	bool ScriptStore<Element>::LoadElement(bool isDirectory, std::filesystem::path elementPath)
 	{
 		std::string elementName;
 		if (!isDirectory)
@@ -111,60 +111,49 @@ namespace bw
 			elementName = elementPath.filename().u8string();
 
 		CurrentElementData elementData;
+		elementData.elementPath = std::move(elementPath);
 		elementData.name = std::move(elementName);
 		elementData.fullName = m_elementTypeName + "_" + elementData.name;
+		elementData.directory = isDirectory;
 
 		m_currentElementData = &elementData;
 		Nz::CallOnExit resetOnExit([&] { m_currentElementData = nullptr; });
 
 		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementData.name);
 
-		bool hasError = false;
-		auto LoadFile = [&](const std::filesystem::path& path)
+		std::optional<ScriptingContext::FileLoadCoroutine> fileLoadCoOpt;
+
+		if (isDirectory)
+			fileLoadCoOpt = m_context->Load(elementData.elementPath / "shared.lua", ScriptingContext::Async{});
+		else
+			fileLoadCoOpt = m_context->Load(elementData.elementPath, ScriptingContext::Async{});
+
+		if (!fileLoadCoOpt)
 		{
-			if (m_context->Load(path))
-				return true;
-			else
+			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath.generic_u8string());
+			return false;
+		}
+
+		elementData.fileCoro = std::move(fileLoadCoOpt.value());
+
+		if (!m_context->Exec(elementData.fileCoro))
+		{
+			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath.generic_u8string());
+			return false;
+		}
+
+		if (isDirectory)
+		{
+			const char* fileName = (m_isServer) ? "sv_init.lua" : "cl_init.lua";
+
+			if (!m_context->Load(elementData.elementPath / fileName))
 			{
-				bwLog(m_logger, LogLevel::Error, "{0} loading failed", path.generic_u8string());
-				hasError = true;
+				bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementData.elementPath.generic_u8string());
 				return false;
 			}
-		};
-
-		if (!isDirectory)
-		{
-			// Element script
-			LoadFile(elementPath);
-		}
-		else
-		{
-			// Element folder
-			LoadFile(elementPath / "shared.lua");
-
-			if (m_isServer)
-				LoadFile(elementPath / "sv_init.lua");
-			else
-				LoadFile(elementPath / "cl_init.lua");
 		}
 
-		if (!elementData.element || hasError)
-			return false;
-
-		std::string& baseElement = elementData.element->base;
-		baseElement = elementData.element->elementTable.get_or("Base", std::string());
-
-		// If no base element (or element already loaded), initialize it now
-		if (baseElement.empty() || m_elementsByName.find(baseElement) != m_elementsByName.end())
-			return RegisterElement(std::move(elementData.element));
-		else
-		{
-			// Else, add it in a pending list
-			auto& pendingElements = m_pendingElements[baseElement];
-			pendingElements.emplace_back(std::move(elementData.element));
-
-			return true;
-		}
+		return true;
 	}
 
 	template<typename Element>
@@ -190,13 +179,13 @@ namespace bw
 		for (const auto& elementPtr : m_elements)
 			elementPtr->elementTable[sol::metatable_key] = m_elementMetatable;
 
-		state["Scripted" + m_elementName] = [this](std::optional<sol::table> parameters)
+		state["Scripted" + m_elementName] = [this](sol::this_state L, std::optional<sol::table> parameters)
 		{
 			if (!m_currentElementData)
 				throw std::runtime_error("you can only call this function in a scripted " + m_elementTypeName + " file");
 
 			if (parameters.has_value())
-				return CreateElement(std::move(parameters.value()));
+				return CreateElement(L, std::move(parameters.value()));
 			else
 				return GetElementTable();
 		};
@@ -219,9 +208,26 @@ namespace bw
 				{
 					auto& elements = it.value();
 
-					for (auto&& element : elements)
+					for (auto&& pendingElement : elements)
 					{
-						if (RegisterElement(std::move(element)))
+						if (!m_context->Exec(pendingElement.fileCoro, pendingElement.element->elementTable))
+						{
+							bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath.generic_u8string());
+							continue;
+						}
+
+						if (pendingElement.directory)
+						{
+							const char* fileName = (m_isServer) ? "sv_init.lua" : "cl_init.lua";
+
+							if (!m_context->Load(pendingElement.elementPath / fileName))
+							{
+								bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath.generic_u8string());
+								continue;
+							}
+						}
+
+						if (RegisterElement(std::move(pendingElement.element)))
 							continueResolving = true;
 					}
 
@@ -235,8 +241,8 @@ namespace bw
 
 		for (const auto& [dependency, elements] : m_pendingElements)
 		{
-			for (auto&& element : elements)
-				bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: dependency {2} does not exist", m_elementTypeName, element->name, dependency);
+			for (auto&& pendingElement : elements)
+				bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: dependency {2} does not exist", m_elementTypeName, pendingElement.element->name, dependency);
 		}
 		m_pendingElements.clear();
 	}
@@ -300,7 +306,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	sol::table ScriptStore<Element>::CreateElement(sol::table initTable)
+	sol::table ScriptStore<Element>::CreateElement(lua_State* L, sol::table initTable)
 	{
 		assert(m_currentElementData);
 		assert(initTable.valid());
@@ -308,15 +314,35 @@ namespace bw
 		if (m_currentElementData->element)
 			throw std::runtime_error("you can only initialize an " + m_elementTypeName + " once");
 
-		m_currentElementData->element = CreateElement();
-		m_currentElementData->element->fullName = std::move(m_currentElementData->fullName);
-		m_currentElementData->element->name = std::move(m_currentElementData->name);
+		std::shared_ptr<Element>& element = m_currentElementData->element;
+		element = CreateElement();
+		element->fullName = std::move(m_currentElementData->fullName);
+		element->name = std::move(m_currentElementData->name);
 
-		InitializeElementTable(initTable);
+		element->elementTable = std::move(initTable);
 
-		m_currentElementData->element->elementTable = std::move(initTable);
+		InitializeElementTable(element->elementTable);
 
-		return m_currentElementData->element->elementTable;
+		std::string& baseElement = element->base;
+		baseElement = element->elementTable.get_or("Base", std::string());
+
+		// If no base element (or element already loaded), initialize it now
+		if (baseElement.empty() || m_elementsByName.find(baseElement) != m_elementsByName.end())
+			RegisterElement(element);
+		else
+		{
+			// Else, add it in a pending list
+			auto& pendingElements = m_pendingElements[baseElement];
+			auto& pendingElementData = pendingElements.emplace_back();
+			pendingElementData.directory = m_currentElementData->directory;
+			pendingElementData.element = std::move(element);
+			pendingElementData.elementPath = std::move(m_currentElementData->elementPath);
+			pendingElementData.fileCoro = m_currentElementData->fileCoro; //< Don't move since we're inside this coroutine
+
+			lua_yield(L, 0);
+		}
+
+		return element->elementTable;
 	}
 
 	template<typename Element>
@@ -331,59 +357,70 @@ namespace bw
 	}
 
 	template<typename Element>
-	std::size_t ScriptStore<Element>::HandleProperties(const std::shared_ptr<Element>& element, Element* baseElement)
+	void ScriptStore<Element>::RegisterCustomEvents(const std::shared_ptr<Element>& element, Element* baseElement)
 	{
-		std::size_t propertyIndex = 0;
 		if (!baseElement->base.empty())
 		{
 			auto it = m_elementsByName.find(element->base);
 			assert(it != m_elementsByName.end());
 
 			Element* parentElement = m_elements[it->second].get();
-			
-			// Merge parent events
+
+			// Merge parent regular events
 			for (std::size_t i = 0; i < ElementEventCount; ++i)
 			{
-				const auto& parentCallbacks = parentElement->events[i];
-				auto& callbacks = element->events[i];
+				const auto& parentCallbacks = parentElement->eventCallbacks[i];
+				auto& callbacks = element->eventCallbacks[i];
 
 				std::copy(parentCallbacks.rbegin(), parentCallbacks.rend(), std::inserter(callbacks, callbacks.begin()));
 			}
 
-			propertyIndex += HandleProperties(element, parentElement);
+			// Merge parent custom events
+			for (std::size_t i = 0; i < parentElement->customEventCallbacks.size(); ++i)
+			{
+				const auto& parentCallbacks = parentElement->customEventCallbacks[i];
+
+				if (element->customEventCallbacks.size() <= i)
+					element->customEventCallbacks.resize(i + 1);
+
+				auto& callbacks = element->customEventCallbacks[i];
+
+				std::copy(parentCallbacks.rbegin(), parentCallbacks.rend(), std::inserter(callbacks, callbacks.begin()));
+			}
+
+			RegisterCustomEvents(element, parentElement);
 		}
 
-		sol::object properties = baseElement->elementTable.template raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
-		if (properties)
+		sol::object customEvents = baseElement->elementTable.template raw_get<sol::object>("CustomEvents"); //< raw get as we don't want to fetch from the base
+		if (customEvents)
 		{
-			sol::table elementProperties = properties.as<sol::table>();
+			sol::table elementCustomEvents = customEvents.as<sol::table>();
 
-			for (const auto& kv : elementProperties)
+			for (const auto& kv : elementCustomEvents)
 			{
 				sol::table propertyTable = kv.second;
 
-				std::string propertyName = propertyTable["Name"];
-
 				try
 				{
-					ScriptedProperty property = InitPropertyFromLua(propertyIndex, propertyTable);
+					std::size_t eventIndex = element->customEvents.size();
+					ScriptedEvent event = InitEventFromLua(eventIndex, propertyTable);
 
-					auto it = element->properties.find(propertyName);
-					if (it == element->properties.end())
-						element->properties.emplace(std::move(propertyName), std::move(property));
+					auto it = element->customEventByName.find(event.name);
+					if (it == element->customEventByName.end())
+					{
+						element->customEventByName.emplace(event.name, eventIndex);
+						element->customEvents.emplace_back(std::move(event));
+					}
 					else
-						throw std::runtime_error("Property " + propertyName + " already exists");
-
-					propertyIndex++;
+						throw std::runtime_error("Custom event " + event.name + " already exists");
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for entity {1}: {2}", propertyName, element->name, e.what());
+					std::string_view eventName = propertyTable.get_or<std::string_view>("Name", "<No name set>");
+					bwLog(m_logger, LogLevel::Error, "Failed to load custom event {0} for {1} {2}: {3}", eventName, m_elementName, element->name, e.what());
 				}
 			}
 		}
-
-		return propertyIndex;
 	}
 
 	template<typename Element>
@@ -401,7 +438,8 @@ namespace bw
 			element->elementTable[sol::metatable_key] = baseElement->elementTable;
 		}
 
-		HandleProperties(element, element.get());
+		RegisterCustomEvents(element, element.get());
+		RegisterProperties(element, element.get());
 
 		try
 		{
@@ -417,6 +455,48 @@ namespace bw
 		m_elements.emplace_back(std::move(element));
 
 		return true;
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::RegisterProperties(const std::shared_ptr<Element>& element, Element* baseElement)
+	{
+		if (!baseElement->base.empty())
+		{
+			auto it = m_elementsByName.find(element->base);
+			assert(it != m_elementsByName.end());
+
+			Element* parentElement = m_elements[it->second].get();
+			RegisterProperties(element, parentElement);
+		}
+
+		sol::object properties = baseElement->elementTable.template raw_get<sol::object>("Properties"); //< raw get as we don't want to fetch from the base
+		if (properties)
+		{
+			sol::table elementProperties = properties.as<sol::table>();
+
+			for (const auto& kv : elementProperties)
+			{
+				sol::table propertyTable = kv.second;
+
+				std::string propertyName = propertyTable["Name"];
+
+				try
+				{
+					std::size_t propertyIndex = element->properties.size();
+					ScriptedProperty property = InitPropertyFromLua(propertyIndex, propertyTable);
+
+					auto it = element->properties.find(propertyName);
+					if (it == element->properties.end())
+						element->properties.emplace(std::move(propertyName), std::move(property));
+					else
+						throw std::runtime_error("Property " + propertyName + " already exists");
+				}
+				catch (const std::exception& e)
+				{
+					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for {1} {2}: {3}", propertyName, m_elementName, element->name, e.what());
+				}
+			}
+		}
 	}
 
 	template<typename Element>

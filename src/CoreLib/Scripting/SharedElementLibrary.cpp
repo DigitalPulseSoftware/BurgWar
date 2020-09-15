@@ -124,13 +124,70 @@ namespace bw
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
 		};
+
+		elementMetatable["Trigger"] = [](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			const auto& element = entityScript.GetElement();
+
+			std::string eventName = std::string(event);
+			auto it = element->customEventByName.find(eventName);
+			if (it == element->customEventByName.end())
+				throw std::runtime_error("unknown event " + eventName);
+
+			const auto& eventData = element->customEvents[it->second];
+
+			return entityScript.ExecuteCustomCallback(eventData.index, parameters);
+		};
 	}
-	
+
+	void SharedElementLibrary::RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	{
+		auto RetrieveEventIndex = [&](const std::shared_ptr<const ScriptedElement>& element) -> std::size_t
+		{
+			std::string eventName = std::string(event);
+
+			auto it = element->customEventByName.find(eventName);
+			if (it == element->customEventByName.end())
+				throw std::runtime_error("unknown event " + eventName);
+
+			const auto& eventData = element->customEvents[it->second];
+
+			if (async && !eventData.returnType.empty())
+				throw std::runtime_error("events returning a value cannot be async");
+
+			return eventData.index;
+		};
+
+		if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
+		{
+			std::size_t eventIndex = RetrieveEventIndex(element);
+
+			if (element->customEventCallbacks.size() <= eventIndex)
+				element->customEventCallbacks.resize(eventIndex + 1);
+
+			auto& callbackData = element->customEventCallbacks[eventIndex].emplace_back();
+			callbackData.async = async;
+			callbackData.callback = std::move(callback);
+		}
+		else
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
+
+			entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
+		}
+	}
+
 	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<ElementEvent> scriptingEventOpt = RetrieveElementEvent(event);
 		if (!scriptingEventOpt)
-			throw std::runtime_error("unknown event " + std::string(event));
+			return RegisterCustomEvent(entityTable, event, std::move(callback), async);
 
 		ElementEvent scriptingEvent = scriptingEventOpt.value();
 		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
@@ -140,7 +197,7 @@ namespace bw
 
 		if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
 		{
-			auto& callbackData = element->events[eventIndex].emplace_back();
+			auto& callbackData = element->eventCallbacks[eventIndex].emplace_back();
 			callbackData.async = async;
 			callbackData.callback = std::move(callback);
 		}

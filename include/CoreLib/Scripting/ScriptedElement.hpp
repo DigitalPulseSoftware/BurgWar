@@ -9,6 +9,7 @@
 
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Scripting/ElementEvents.hpp>
+#include <CoreLib/Scripting/ScriptedEvent.hpp>
 #include <CoreLib/Scripting/ScriptedProperty.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
@@ -28,12 +29,15 @@ namespace bw
 			bool async = false;
 		};
 
-		std::array<std::vector<Callback>, ElementEventCount> events;
 		sol::main_table elementTable;
+		std::array<std::vector<Callback>, ElementEventCount> eventCallbacks;
 		std::string base;
 		std::string name;
 		std::string fullName;
+		std::vector<ScriptedEvent> customEvents;
+		std::vector<std::vector<Callback>> customEventCallbacks;
 		tsl::hopscotch_map<std::string /*key*/, ScriptedProperty> properties;
+		tsl::hopscotch_map<std::string /*eventName*/, std::size_t> customEventByName;
 	};
 }
 

@@ -9,6 +9,7 @@
 
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/GamemodeEvents.hpp>
+#include <CoreLib/Scripting/ScriptedEvent.hpp>
 #include <CoreLib/Scripting/ScriptedProperty.hpp>
 #include <Thirdparty/tsl/bhopscotch_map.h>
 #include <array>
@@ -30,6 +31,9 @@ namespace bw
 
 			template<GamemodeEvent Event, typename... Args>
 			std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
+
+			template<typename... Args>
+			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, const Args&... args);
 
 			inline const tsl::hopscotch_map<std::string /*key*/, ScriptedProperty>& GetProperties() const;
 			inline const PropertyValueMap& GetPropertyValues() const;
@@ -53,8 +57,9 @@ namespace bw
 			virtual void InitializeGamemode(const std::string& gamemodeName) = 0;
 
 		private:
-			sol::table LoadGamemode(const std::string& gamemodeName, std::size_t* newPropertyIndex);
+			sol::table LoadGamemode(const std::string& gamemodeName);
 			void InitializeMetatable();
+			void RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
 			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
 
 			struct Callback
@@ -66,9 +71,12 @@ namespace bw
 			std::array<std::vector<Callback>, GamemodeEventCount> m_eventCallbacks;
 			std::shared_ptr<ScriptingContext> m_context;
 			std::string m_gamemodeName;
+			std::vector<std::vector<Callback>> m_customEventCallbacks;
+			std::vector<ScriptedEvent> m_customEvents;
 			sol::table m_gamemodeTable;
 			sol::table m_gamemodeMetatable;
 			tsl::hopscotch_map<std::string /*key*/, ScriptedProperty> m_properties;
+			tsl::hopscotch_map<std::string /*eventName*/, std::size_t> m_customEventByName;
 			PropertyValueMap m_propertyValues;
 			SharedMatch& m_sharedMatch;
 	};

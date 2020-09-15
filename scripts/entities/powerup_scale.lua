@@ -16,12 +16,12 @@ if (SERVER) then
 		end)()
 	end
 
-	function entity:Apply(playerEnt)
+	entity:On("apply", function (self, playerEnt)
 		local scale = self:GetProperty("effect_scale")
 		self:Scale(playerEnt, scale)
-	end
+	end)
 
-	function entity:Unapply(playerEnt, data)
+	entity:On("unapply", function (self, playerEnt)
 		self:Scale(playerEnt, 1.0)
-	end
+	end)
 end
