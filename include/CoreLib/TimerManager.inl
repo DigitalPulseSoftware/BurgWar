@@ -25,12 +25,14 @@ namespace bw
 		// Use index instead of iterator because callback may push new timers
 		for (std::size_t i = 0; i < m_pendingTimers.size();)
 		{
-			Timer& timer = m_pendingTimers[i];
-			if (now > timer.expirationTime)
+			if (now > m_pendingTimers[i].expirationTime)
 			{
-				timer.callback();
+				auto it = m_pendingTimers.begin() + i;
 
-				m_pendingTimers.erase(m_pendingTimers.begin() + i);
+				Timer timer = std::move(*it);
+				m_pendingTimers.erase(it);
+
+				timer.callback();
 			}
 			else
 				++i;

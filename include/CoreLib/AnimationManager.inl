@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/AnimationManager.hpp>
+#include <algorithm>
+#include <iterator>
 
 namespace bw
 {
@@ -11,7 +13,7 @@ namespace bw
 		if (!update(0.f))
 			return;
 
-		Animation& anim = m_playingAnimations.emplace_back();
+		Animation& anim = m_newAnimations.emplace_back();
 		anim.duration = duration;
 		anim.elapsedtime = 0.f;
 		anim.finishCallback = std::move(finish);
@@ -20,6 +22,9 @@ namespace bw
 
 	inline void AnimationManager::Update(float elapsedTime)
 	{
+		std::move(m_newAnimations.begin(), m_newAnimations.end(), std::back_inserter(m_playingAnimations));
+		m_newAnimations.clear();
+
 		// Keep animation count to prevent updating newly pushed animations
 		std::size_t animationCount = m_playingAnimations.size();
 		for (std::size_t i = 0; i < animationCount;)

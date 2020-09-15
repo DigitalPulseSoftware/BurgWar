@@ -35,6 +35,7 @@ namespace bw
 				float elapsedtime;
 			};
 
+			std::vector<Animation> m_newAnimations;
 			std::vector<Animation> m_playingAnimations;
 	};
 }
