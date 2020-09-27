@@ -2,21 +2,6 @@ RegisterClientScript()
 
 local defaultTextureCell = Vec2(1, 1)
 
-local entity = ScriptedEntity({
-	IsNetworked = true,
-	Properties = {
-		{ Name = "mapSize", Type = PropertyType.IntegerSize, Default = Vec2(1, 1), Shared = true },
-		{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
-		{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
-		{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
-		{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { defaultTextureCell }, Shared = true },
-		{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
-		{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
-		{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
-		{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true }
-	}
-})
-
 local function GenerateTiles(textures, textureCells)
 	local tiles = {}
 	for i = 1, #textures do
@@ -59,8 +44,20 @@ local function GenerateMaterialData(textures, textureCells)
 	return materialData
 end
 
-if (EDITOR) then
-	entity.EditorActions = {
+local entity = ScriptedEntity({
+	IsNetworked = true,
+	Properties = {
+		{ Name = "mapSize", Type = PropertyType.IntegerSize, Default = Vec2(1, 1), Shared = true },
+		{ Name = "cellSize", Type = PropertyType.FloatSize, Default = Vec2(64.0, 64.0), Shared = true },
+		{ Name = "content", Type = PropertyType.Integer, Array = true, Default = { 0 }, Shared = true },
+		{ Name = "textures", Type = PropertyType.Texture, Array = true, Default = { "" }, Shared = true },
+		{ Name = "textureCells", Type = PropertyType.IntegerSize, Array = true, Default = { defaultTextureCell }, Shared = true },
+		{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
+		{ Name = "friction", Type = PropertyType.Float, Default = 1, Shared = true },
+		{ Name = "physical", Type = PropertyType.Boolean, Default = true, Shared = true },
+		{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true }
+	},
+	EditorActions = {
 		{
 			Name = "editTilemap",
 			Label = "Edit Tilemap",
@@ -96,7 +93,7 @@ if (EDITOR) then
 			end
 		}
 	}
-end
+})
 
 entity:On("init", function (self)
 	local mapSize = self:GetProperty("mapSize")

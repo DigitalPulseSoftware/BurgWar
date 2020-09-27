@@ -36,7 +36,7 @@ namespace bw
 
 
 		Match::GamemodeSettings gamemodeSettings;
-		gamemodeSettings.name = "test";
+		gamemodeSettings.name = "base";
 
 		Match::MatchSettings matchSettings;
 		matchSettings.map = std::move(map);

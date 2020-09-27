@@ -11,11 +11,8 @@ local entity = ScriptedEntity({
 		{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
 		{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
 		{ Name = "textureCoords", Type = PropertyType.FloatRect, Default = Rect(Vec2(0.0, 0.0), Vec2(1.0, 1.0)), Shared = true }
-	}
-})
-
-if (EDITOR) then
-	entity.EditorActions = {
+	},
+	EditorActions = {
 		{
 			Name = "resizeSprite",
 			Label = "Resize to texture size",
@@ -31,7 +28,7 @@ if (EDITOR) then
 			end
 		}
 	}
-end
+})
 
 entity:On("init", function (self)
 	local mass = self:GetProperty("mass")

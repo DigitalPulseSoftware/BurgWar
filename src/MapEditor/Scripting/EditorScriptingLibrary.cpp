@@ -27,7 +27,7 @@ namespace bw
 		AbstractScriptingLibrary::RegisterMetatableLibrary(context);
 		AbstractScriptingLibrary::RegisterRandomEngineClass(context);
 
-		context.Load("autorun");
+		context.LoadDirectory("autorun");
 
 		BindEditorWindow(context);
 		BindEntityInfoDialog(context);
