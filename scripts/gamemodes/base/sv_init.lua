@@ -99,6 +99,17 @@ gamemode:On("playerchat", function (self, player, message)
 				controlledEntity:UpdatePlayerMovementController(noclipController)
 				player:PrintChatMessage("Noclip enabled")
 			end
+		elseif (commandName == "teleport") then
+			if (not player:IsAdmin()) then
+				return false
+			end
+
+			local controlledEntity = player:GetControlledEntity()
+			if (not controlledEntity) then
+				return false
+			end
+
+			controlledEntity:SetPosition(Vec2(0, 0))
 		end
 
 		return false
