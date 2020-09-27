@@ -92,15 +92,15 @@ namespace bw
 	};
 
 	using PropertyValue = std::variant<bool, PropertyArray<bool>,
-	                                    float, PropertyArray<float>,
-	                                    Nz::Int64, PropertyArray<Nz::Int64>,
-	                                    Nz::Vector2f, PropertyArray<Nz::Vector2f>,
-	                                    Nz::Vector2i64, PropertyArray<Nz::Vector2i64>,
-	                                    Nz::Vector3f, PropertyArray<Nz::Vector3f>,
-	                                    Nz::Vector3i64, PropertyArray<Nz::Vector3i64>,
-	                                    Nz::Vector4f, PropertyArray<Nz::Vector4f>,
-	                                    Nz::Vector4i64, PropertyArray<Nz::Vector4i64>,
-	                                    std::string, PropertyArray<std::string>
+	                                   float, PropertyArray<float>,
+	                                   Nz::Int64, PropertyArray<Nz::Int64>,
+	                                   Nz::Vector2f, PropertyArray<Nz::Vector2f>,
+	                                   Nz::Vector2i64, PropertyArray<Nz::Vector2i64>,
+	                                   Nz::Vector3f, PropertyArray<Nz::Vector3f>,
+	                                   Nz::Vector3i64, PropertyArray<Nz::Vector3i64>,
+	                                   Nz::Vector4f, PropertyArray<Nz::Vector4f>,
+	                                   Nz::Vector4i64, PropertyArray<Nz::Vector4i64>,
+	                                   std::string, PropertyArray<std::string>
 	>;
 	
 	using PropertyValueMap = tsl::hopscotch_map<std::string /*propertyName*/, PropertyValue /*property*/>;
