@@ -29,6 +29,7 @@ namespace bw::Commands
 		EntityData& entityData = m_entityData.value();
 
 		auto& createdEntity = m_editor.CreateEntity(entityData.indices.layerIndex, entityData.indices.entityIndex, std::move(entityData.entity));
+		m_entityData.reset();
 
 		NazaraUnused(createdEntity); //< Silent warnings in release
 		assert(createdEntity.uniqueId == m_entityUniqueId); //< Ensure entity wasn't given a new unique id
@@ -174,5 +175,47 @@ namespace bw::Commands
 		entity.position -= m_offset;
 
 		m_editor.RefreshEntityPositionAndRotation(indices.layerIndex, indices.entityIndex);
+	}
+	
+	PrefabInstantiate::PrefabInstantiate(EditorWindow& editor, Map::EntityIndices entityIndices, std::vector<Map::Entity> entities) :
+	m_entityData(std::move(entities)),
+	m_entityIndices(std::move(entityIndices)),
+	m_editor(editor)
+	{
+		m_entityUniqueIds.reserve(m_entityData.size());
+		for (const auto& entity : m_entityData)
+			m_entityUniqueIds.push_back(entity.uniqueId);
+
+		setText("instantiate prefab");
+	}
+	
+	void PrefabInstantiate::redo()
+	{
+		LayerIndex layerIndex = m_entityIndices.layerIndex;
+		std::size_t entityIndex = m_entityIndices.entityIndex;
+
+		assert(m_entityUniqueIds.size() == m_entityData.size());
+		for (std::size_t i = 0; i < m_entityData.size(); ++i)
+		{
+			auto& createdEntity = m_editor.CreateEntity(layerIndex, entityIndex++, std::move(m_entityData[i]));
+
+			NazaraUnused(createdEntity); //< Silent warnings in release
+			assert(createdEntity.uniqueId == m_entityUniqueIds[i]); //< Ensure entity wasn't given a new unique id
+		}
+		m_entityData.clear();
+	}
+	
+	void PrefabInstantiate::undo()
+	{
+		const Map& map = m_editor.GetWorkingMap();
+
+		assert(m_entityData.empty());
+		for (Nz::Int64 uniqueId : m_entityUniqueIds)
+		{
+			const auto& indices = map.GetEntityIndices(uniqueId);
+
+			Map::Entity& entityData = m_entityData.emplace_back(m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex));
+			assert(entityData.uniqueId == uniqueId);
+		}
 	}
 }

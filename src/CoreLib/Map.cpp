@@ -129,49 +129,8 @@ namespace bw
 
 			auto entityArray = nlohmann::json::array();
 			for (auto&& entityEntry : layerEntry.entities)
-			{
-				nlohmann::json entityInfo;
-				entityInfo["entityType"] = entityEntry.entityType;
-				entityInfo["name"] = entityEntry.name;
-				entityInfo["position"] = entityEntry.position;
-				entityInfo["rotation"] = entityEntry.rotation.ToDegrees();
-				entityInfo["uniqueId"] = entityEntry.uniqueId;
+				entityArray.emplace_back(SerializeEntity(entityEntry));
 
-				auto propertiesObject = nlohmann::json::object();
-				for (auto&& propertyPair : entityEntry.properties)
-				{
-					const std::string& keyName = propertyPair.first;
-
-					auto [internalType, isArray] = ExtractPropertyType(propertyPair.second);
-
-					auto propertyData = nlohmann::json::object();
-					propertyData["type"] = ToString(internalType);
-
-					std::visit([&](auto&& propertyValue)
-					{
-						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
-
-						if constexpr (IsArray)
-						{
-							auto elementArray = nlohmann::json::array();
-							for (std::size_t i = 0; i < propertyValue.size(); ++i)
-								elementArray.push_back(propertyValue[i]);
-
-							propertyData["isArray"] = true;
-							propertyData["value"] = std::move(elementArray);
-						}
-						else
-							propertyData["value"] = propertyValue;
-
-					}, propertyPair.second);
-
-					propertiesObject[keyName] = std::move(propertyData);
-				}
-				entityInfo["properties"] = std::move(propertiesObject);
-
-				entityArray.emplace_back(std::move(entityInfo));
-			}
 			layerInfo["entities"] = std::move(entityArray);
 
 			layerArray.emplace_back(std::move(layerInfo));
@@ -305,6 +264,111 @@ namespace bw
 			return false;
 
 		return true;
+	}
+
+	nlohmann::json Map::SerializeEntity(const Entity& entity)
+	{
+		nlohmann::json entityInfo;
+		entityInfo["entityType"] = entity.entityType;
+		entityInfo["name"] = entity.name;
+		entityInfo["position"] = entity.position;
+		entityInfo["rotation"] = entity.rotation.ToDegrees();
+		entityInfo["uniqueId"] = entity.uniqueId;
+
+		auto propertiesObject = nlohmann::json::object();
+		for (auto&& propertyPair : entity.properties)
+		{
+			const std::string& keyName = propertyPair.first;
+
+			auto [internalType, isArray] = ExtractPropertyType(propertyPair.second);
+
+			auto propertyData = nlohmann::json::object();
+			propertyData["type"] = ToString(internalType);
+
+			std::visit([&](auto&& propertyValue)
+			{
+				using T = std::decay_t<decltype(propertyValue)>;
+				constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+
+				if constexpr (IsArray)
+				{
+					auto elementArray = nlohmann::json::array();
+					for (std::size_t i = 0; i < propertyValue.size(); ++i)
+						elementArray.push_back(propertyValue[i]);
+
+					propertyData["isArray"] = true;
+					propertyData["value"] = std::move(elementArray);
+				}
+				else
+					propertyData["value"] = propertyValue;
+
+			}, propertyPair.second);
+
+			propertiesObject[keyName] = std::move(propertyData);
+		}
+		entityInfo["properties"] = std::move(propertiesObject);
+
+		return entityInfo;
+	}
+
+	auto Map::UnserializeEntity(const nlohmann::json& entityInfo) -> Entity
+	{
+		Entity entity;
+		entity.entityType = entityInfo.at("entityType");
+		entity.name = entityInfo.value("name", "");
+		entity.position = entityInfo.at("position");
+		entity.rotation = Nz::DegreeAnglef(entityInfo.value("rotation", 0.f));
+		entity.uniqueId = entityInfo.value("uniqueId", NoEntity);
+
+		for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
+		{
+			bool isArray = propertyData.value<bool>("isArray", false);
+			PropertyInternalType propertyType = ParsePropertyInternalType(propertyData.at("type"));
+			auto&& value = propertyData.at("value");
+
+			// Waiting for template lambda in C++20
+			auto Unserialize = [&, propertyName = propertyName](auto dummyType)
+			{
+				using T = std::decay_t<decltype(dummyType)>;
+
+				if (isArray)
+				{
+					if (!value.is_array())
+						throw std::runtime_error("Expected array");
+
+					std::size_t elementCount = value.size();
+					if (elementCount == 0)
+						return; //< Ignore empty arrays
+
+					PropertyArray<T> elements(elementCount);
+					for (std::size_t i = 0; i < elementCount; ++i)
+						elements[i] = value[i];
+
+					entity.properties.emplace(std::move(propertyName), std::move(elements));
+				}
+				else
+				{
+					T propertyValue = value;
+					entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
+				}
+			};
+
+			switch (propertyType)
+			{
+				case PropertyInternalType::Bool: Unserialize(bool()); break;
+				case PropertyInternalType::Float: Unserialize(float()); break;
+				case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
+				case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
+				case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
+				case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
+				case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
+				case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
+				case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
+				case PropertyInternalType::String: Unserialize(std::string()); break;
+			}
+		}
+
+		return entity;
 	}
 
 	void Map::LoadFromBinaryInternal(const std::filesystem::path& mapFile)
@@ -479,60 +543,7 @@ namespace bw
 
 			for (auto&& entityInfo : entry["entities"])
 			{
-				Entity& entity = layer.entities.emplace_back();
-				entity.entityType = entityInfo.at("entityType");
-				entity.name = entityInfo.value("name", "");
-				entity.position = entityInfo.at("position");
-				entity.rotation = Nz::DegreeAnglef(float(entityInfo.at("rotation")));
-				entity.uniqueId = entityInfo.value("uniqueId", NoEntity);
-				
-				for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
-				{
-					bool isArray = propertyData.value<bool>("isArray", false);
-					PropertyInternalType propertyType = ParsePropertyInternalType(propertyData.at("type"));
-					auto&& value = propertyData.at("value");
-
-					// Waiting for template lambda in C++20
-					auto Unserialize = [&, propertyName = propertyName](auto dummyType)
-					{
-						using T = std::decay_t<decltype(dummyType)>;
-
-						if (isArray)
-						{
-							if (!value.is_array())
-								throw std::runtime_error("Expected array");
-
-							std::size_t elementCount = value.size();
-							if (elementCount == 0)
-								return; //< Ignore empty arrays
-
-							PropertyArray<T> elements(elementCount);
-							for (std::size_t i = 0; i < elementCount; ++i)
-								elements[i] = value[i];
-
-							entity.properties.emplace(std::move(propertyName), std::move(elements));
-						}
-						else
-						{
-							T propertyValue = value;
-							entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
-						}
-					};
-
-					switch (propertyType)
-					{
-						case PropertyInternalType::Bool: Unserialize(bool()); break;
-						case PropertyInternalType::Float: Unserialize(float()); break;
-						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
-						case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
-						case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
-						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
-						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
-						case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
-						case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
-						case PropertyInternalType::String: Unserialize(std::string()); break;
-					}
-				}
+				layer.entities.emplace_back(UnserializeEntity(entityInfo));
 			}
 		}
 

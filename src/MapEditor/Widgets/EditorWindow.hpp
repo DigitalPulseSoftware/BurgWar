@@ -15,12 +15,14 @@
 #include <MapEditor/EditorAppConfig.hpp>
 #include <MapEditor/Enums.hpp>
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
+#include <MapEditor/Widgets/EditorWindowPrefabs.hpp>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QUndoStack>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <vector>
 
 class QAction;
 class QListWidget;
@@ -51,6 +53,7 @@ namespace bw
 			Map::Entity DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex);
 			Map::Layer DeleteLayer(LayerIndex layerIndex);
 
+			Nz::Vector2f GetCameraCenter() const;
 			inline const std::optional<LayerIndex>& GetCurrentLayer() const;
 
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
@@ -58,6 +61,8 @@ namespace bw
 
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;
+
+			inline const std::vector<std::size_t>& GetSelectedEntities() const;
 
 			inline Map& GetWorkingMapMut();
 			inline const Map& GetWorkingMap() const;
@@ -70,7 +75,8 @@ namespace bw
 			template<typename T, typename... Args> void PushCommand(Args&&... args);
 			void RefreshEntityPositionAndRotation(LayerIndex layerIndex, std::size_t entityIndex);
 
-			void SelectEntity(Ndk::EntityId entityId);
+			void SelectEntity(std::size_t entityIndex);
+			void SelectEntities(const std::vector<std::size_t>& entityIndices);
 
 			void SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
 			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
@@ -118,7 +124,7 @@ namespace bw
 			void OnEditLayer(LayerIndex layerIndex);
 			void OnEntityMovedDown();
 			void OnEntityMovedUp();
-			void OnEntitySelectionUpdate(int entityIndex);
+			void OnEntitySelectionUpdate();
 			void OnLayerChanged(int layerIndex);
 			void OnLayerMovedDown();
 			void OnLayerMovedUp();
@@ -160,6 +166,7 @@ namespace bw
 			std::shared_ptr<VirtualDirectory> m_assetFolder;
 			std::shared_ptr<VirtualDirectory> m_scriptFolder;
 			std::vector<QAction*> m_recentMapActions;
+			std::vector<std::size_t> m_selectedEntities;
 			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
 			List m_entityList;
 			List m_layerList;
@@ -180,6 +187,7 @@ namespace bw
 			QUndoStack m_undoStack;
 			EntityInfoDialog* m_entityInfoDialog;
 			EditorAppConfig m_configFile;
+			EditorWindowPrefabs m_prefabs;
 			Map m_workingMap;
 			MapCanvas* m_canvas;
 			bool m_mapDirtyFlag;

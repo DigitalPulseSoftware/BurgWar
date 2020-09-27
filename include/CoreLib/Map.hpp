@@ -114,6 +114,9 @@ namespace bw
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);
 			static inline Map LoadFromFolder(const std::filesystem::path& mapFolder);
 
+			static nlohmann::json SerializeEntity(const Entity& entity);
+			static Entity UnserializeEntity(const nlohmann::json& entityInfo);
+
 		private:
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);

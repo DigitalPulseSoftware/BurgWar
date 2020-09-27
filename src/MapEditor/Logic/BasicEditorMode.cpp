@@ -22,7 +22,7 @@ namespace bw
 	{
 		EditorWindow& editorWindow = GetEditorWindow();
 		if (selectedEntity)
-			editorWindow.SelectEntity(selectedEntity->GetId());
+			editorWindow.SelectEntity(editorWindow.GetEntityIndex(selectedEntity->GetId()));
 		else
 			editorWindow.ClearSelectedEntity();
 	}

@@ -24,7 +24,7 @@
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
 #include <MapEditor/Widgets/LayerEditDialog.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
-#include <MapEditor/Widgets/MapInfoDialog.hpp>
+#include <MapEditor/Widgets/FileDescDialog.hpp>
 #include <MapEditor/Widgets/PlayWindow.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
@@ -63,6 +63,7 @@ namespace bw
 	m_playWindow(nullptr),
 	m_canvas(nullptr),
 	m_configFile(*this),
+	m_prefabs(this),
 	m_mapDirtyFlag(false)
 	{
 		if (!m_configFile.LoadFromFile("editorconfig.lua"))
@@ -286,6 +287,14 @@ namespace bw
 		return layer;
 	}
 
+	Nz::Vector2f EditorWindow::GetCameraCenter() const
+	{
+		const Camera& camera = m_canvas->GetCamera();
+		const Nz::Recti& viewport = camera.GetViewport();
+
+		return camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f });
+	}
+
 	void EditorWindow::MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex)
 	{
 		GetWorkingMapMut().MoveEntity(layerIndex, entityIndex, targetLayer, targetEntityIndex);
@@ -413,9 +422,19 @@ namespace bw
 		m_canvas->UpdateEntityPositionAndRotation(canvasId, entity.position, entity.rotation);
 	}
 
-	void EditorWindow::SelectEntity(Ndk::EntityId entityId)
+	void EditorWindow::SelectEntity(std::size_t entityIndex)
 	{
-		m_entityList.listWidget->setCurrentRow(int(GetEntityIndex(entityId)));
+		m_entityList.listWidget->setCurrentRow(int(entityIndex));
+	}
+
+	void EditorWindow::SelectEntities(const std::vector<std::size_t>& entityIndices)
+	{
+		m_entityList.listWidget->clearSelection();
+		for (std::size_t entityIndex : entityIndices)
+		{
+			assert(entityIndex < m_entityList.listWidget->count());
+			m_entityList.listWidget->item(int(entityIndex))->setSelected(true);
+		}
 	}
 
 	void EditorWindow::SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
@@ -724,6 +743,7 @@ namespace bw
 
 		m_entityList.listWidget = new QListWidget;
 		m_entityList.listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+		m_entityList.listWidget->setSelectionMode(QListWidget::ExtendedSelection);
 		connect(m_entityList.listWidget, &QListWidget::customContextMenuRequested, [this](const QPoint& pos)
 		{
 			std::optional<std::size_t> entityIndex;
@@ -742,7 +762,7 @@ namespace bw
 			OnEditEntity(entityIndex);
 		});
 
-		connect(m_entityList.listWidget, &QListWidget::currentRowChanged, this, &EditorWindow::OnEntitySelectionUpdate);
+		connect(m_entityList.listWidget, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		m_entityList.upArrowButton = new QPushButton;
 		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
@@ -921,6 +941,8 @@ namespace bw
 			QAction* setAlignment = m_layerMenu->addAction(tr("Set position alignment..."));
 			connect(setAlignment, &QAction::triggered, this, &EditorWindow::OnSetAlignment);
 		}
+
+		m_prefabs.BuildMenu(menuBar());
 
 		QMenu* showMenu = menuBar()->addMenu(tr("&Show"));
 		{
@@ -1136,13 +1158,8 @@ namespace bw
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
 
-		const Camera& camera = m_canvas->GetCamera();
-
-		// Create entity at camera center
-		const Nz::Recti& viewport = camera.GetViewport();
-
 		EntityInfo entityInfo;
-		entityInfo.position = AlignPosition(camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f }), layer.positionAlignment);
+		entityInfo.position = AlignPosition(GetCameraCenter(), layer.positionAlignment);
 
 		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
@@ -1166,10 +1183,15 @@ namespace bw
 
 	void EditorWindow::OnCreateMap()
 	{
-		MapInfoDialog* createMapDialog = new MapInfoDialog(this);
+		FileDescDialog* createMapDialog = new FileDescDialog(this);
 		connect(createMapDialog, &QDialog::accepted, [this, createMapDialog]()
 		{
-			MapInfo mapInfo = createMapDialog->GetMapInfo();
+			FileDescInfo fileDescInfo = createMapDialog->Getnfo();
+
+			MapInfo mapInfo;
+			mapInfo.author = std::move(fileDescInfo.author);
+			mapInfo.description = std::move(fileDescInfo.description);
+			mapInfo.name = std::move(fileDescInfo.name);
 
 			UpdateWorkingMap(Map(mapInfo));
 		});
@@ -1193,11 +1215,10 @@ namespace bw
 
 	bool EditorWindow::OnDeleteEntity()
 	{
-		int selectedEntity = m_entityList.listWidget->currentRow();
-		if (selectedEntity < 0)
+		if (m_selectedEntities.size() != 1)
 			return false;
 
-		if (OnDeleteEntity(static_cast<std::size_t>(selectedEntity)))
+		if (OnDeleteEntity(m_selectedEntities.front()))
 		{
 			m_entityList.listWidget->setCurrentRow(-1);
 			return true;
@@ -1347,9 +1368,14 @@ namespace bw
 		m_layerList.upArrowButton->setEnabled(newEntityIndex != 0);
 	}
 
-	void EditorWindow::OnEntitySelectionUpdate(int entityIndex)
+	void EditorWindow::OnEntitySelectionUpdate()
 	{
-		if (entityIndex < 0)
+		m_selectedEntities.clear();
+
+		for (QListWidgetItem* item : m_entityList.listWidget->selectedItems())
+			m_selectedEntities.push_back(static_cast<std::size_t>(m_entityList.listWidget->row(item)));
+
+		if (m_selectedEntities.size() != 1)
 		{
 			m_canvas->ClearEntitySelection();
 
@@ -1358,13 +1384,15 @@ namespace bw
 			return;
 		}
 
-		QListWidgetItem* item = m_entityList.listWidget->item(entityIndex);
+		std::size_t selectedEntity = m_selectedEntities.front();
+
+		QListWidgetItem* item = m_entityList.listWidget->item(selectedEntity);
 
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		m_canvas->EditEntityPosition(canvasId);
 
-		m_entityList.downArrowButton->setEnabled(int(entityIndex + 1) < m_entityList.listWidget->count());
-		m_entityList.upArrowButton->setEnabled(entityIndex > 0);
+		m_entityList.downArrowButton->setEnabled(int(selectedEntity + 1) < m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setEnabled(selectedEntity > 0);
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)

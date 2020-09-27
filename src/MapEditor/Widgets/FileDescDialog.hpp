@@ -4,10 +4,9 @@
 
 #pragma once
 
-#ifndef BURGWAR_MAPEDITOR_WIDGETS_MAPINFODIALOG_HPP
-#define BURGWAR_MAPEDITOR_WIDGETS_MAPINFODIALOG_HPP
+#ifndef BURGWAR_MAPEDITOR_WIDGETS_FILEDESCDIALOG_HPP
+#define BURGWAR_MAPEDITOR_WIDGETS_FILEDESCDIALOG_HPP
 
-#include <CoreLib/Map.hpp>
 #include <QtWidgets/QDialog>
 
 class QLineEdit;
@@ -15,13 +14,20 @@ class QTextEdit;
 
 namespace bw
 {
-	class MapInfoDialog : public QDialog
+	struct FileDescInfo
+	{
+		std::string author;
+		std::string description;
+		std::string name;
+	};
+
+	class FileDescDialog : public QDialog
 	{
 		public:
-			MapInfoDialog(QWidget* parent = nullptr);
-			~MapInfoDialog() = default;
+			FileDescDialog(QWidget* parent = nullptr);
+			~FileDescDialog() = default;
 
-			MapInfo GetMapInfo() const;
+			FileDescInfo Getnfo() const;
 
 		private:
 			void OnAccept();
@@ -33,6 +39,6 @@ namespace bw
 }
 
 
-#include <MapEditor/Widgets/MapInfoDialog.inl>
+#include <MapEditor/Widgets/FileDescDialog.inl>
 
 #endif

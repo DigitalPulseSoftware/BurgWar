@@ -35,6 +35,11 @@ namespace bw
 		return m_canvas;
 	}
 
+	inline const std::vector<std::size_t>& EditorWindow::GetSelectedEntities() const
+	{
+		return m_selectedEntities;
+	}
+
 	inline Map& EditorWindow::GetWorkingMapMut()
 	{
 		assert(m_workingMap.IsValid());

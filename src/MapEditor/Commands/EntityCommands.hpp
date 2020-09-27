@@ -124,6 +124,22 @@ namespace bw
 			private:
 				Nz::Vector2f m_offset;
 		};
+
+		class PrefabInstantiate final : public QUndoCommand
+		{
+			public:
+				PrefabInstantiate(EditorWindow& editor, Map::EntityIndices entityIndices, std::vector<Map::Entity> entities);
+				~PrefabInstantiate() = default;
+
+				void redo() override;
+				void undo() override;
+
+			private:
+				std::vector<Map::Entity> m_entityData;
+				std::vector<Nz::Int64> m_entityUniqueIds;
+				Map::EntityIndices m_entityIndices;
+				EditorWindow& m_editor;
+		};
 	}
 }
 
