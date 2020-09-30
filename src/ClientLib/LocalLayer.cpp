@@ -230,24 +230,7 @@ namespace bw
 		for (const auto& property : entityData.properties)
 		{
 			const std::string& propertyName = networkStringStore.GetString(property.name);
-
-			std::visit([&](auto&& value)
-			{
-				using T = std::decay_t<decltype(value)>;
-				using StoredType = typename T::value_type;
-
-				if (property.isArray)
-				{
-					PropertyArray<StoredType> elements(value.size());
-					for (std::size_t i = 0; i < value.size(); ++i)
-						elements[i] = value[i];
-
-					properties.emplace(propertyName, std::move(elements));
-				}
-				else
-					properties.emplace(propertyName, value.front());
-
-			}, property.value);
+			properties.emplace(propertyName, property.value);
 		}
 
 		const LocalLayerEntity* parent = nullptr;

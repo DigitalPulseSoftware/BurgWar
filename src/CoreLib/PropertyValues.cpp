@@ -13,12 +13,9 @@ namespace bw
 {
 	namespace
 	{
-		template<typename T, typename ConvertFunc>
+		template<bool IsArray, typename T, typename ConvertFunc>
 		sol::object PushValue(sol::state_view& lua, T&& value, ConvertFunc&& convertFunc)
 		{
-			using Type = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<PropertyArray, Type>;
-
 			if constexpr (IsArray)
 			{
 				std::size_t elementCount = value.GetSize();
@@ -30,10 +27,10 @@ namespace bw
 				return content;
 			}
 			else
-				return convertFunc(value);
+				return convertFunc(*value);
 		};
 
-		template<typename T>
+		template<bool IsArray, typename T>
 		sol::object PushValuePassthrough(sol::state_view& lua, T&& value)
 		{
 			// I had troubles using a passthrough (std::forward) function with PushValue
@@ -44,9 +41,6 @@ namespace bw
 			{
 				return sol::make_object(lua, std::forward<InternalType>(val));
 			});*/
-
-			using Type = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<PropertyArray, Type>;
 
 			if constexpr (IsArray)
 			{
@@ -59,97 +53,19 @@ namespace bw
 				return content;
 			}
 			else
-				return sol::make_object(lua, value);
+				return sol::make_object(lua, *value);
 		};
 	}
 
-	std::pair<PropertyInternalType, bool> ExtractPropertyType(const PropertyValue& property)
+	std::pair<PropertyType, bool> ExtractPropertyType(const PropertyValue& value)
 	{
-		// Use switch on index() instead of visitor for speed
-		switch (property.index())
+		return std::visit([&](auto&& arg)
 		{
-			static_assert(std::is_same_v<std::variant_alternative_t<0, PropertyValue>, bool>);
-			static_assert(std::is_same_v<std::variant_alternative_t<1, PropertyValue>, PropertyArray<bool>>);
-			
-			case 0:
-				return std::make_pair(PropertyInternalType::Bool, false);
-			case 1:
-				return std::make_pair(PropertyInternalType::Bool, true);
+			using T = std::decay_t<decltype(arg)>;
+			using TypeExtractor = PropertyTypeExtractor<T>;
 
-			static_assert(std::is_same_v<std::variant_alternative_t<2, PropertyValue>, float>);
-			static_assert(std::is_same_v<std::variant_alternative_t<3, PropertyValue>, PropertyArray<float>>);
-
-			case 2:
-				return std::make_pair(PropertyInternalType::Float, false);
-			case 3:
-				return std::make_pair(PropertyInternalType::Float, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<4, PropertyValue>, Nz::Int64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<5, PropertyValue>, PropertyArray<Nz::Int64>>);
-
-			case 4:
-				return std::make_pair(PropertyInternalType::Integer, false);
-			case 5:
-				return std::make_pair(PropertyInternalType::Integer, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<6, PropertyValue>, Nz::Vector2f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<7, PropertyValue>, PropertyArray<Nz::Vector2f>>);
-
-			case 6:
-				return std::make_pair(PropertyInternalType::Float2, false);
-			case 7:
-				return std::make_pair(PropertyInternalType::Float2, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<8, PropertyValue>, Nz::Vector2i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<9, PropertyValue>, PropertyArray<Nz::Vector2i64>>);
-
-			case 8:
-				return std::make_pair(PropertyInternalType::Integer2, false);
-			case 9:
-				return std::make_pair(PropertyInternalType::Integer2, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<10, PropertyValue>, Nz::Vector3f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<11, PropertyValue>, PropertyArray<Nz::Vector3f>>);
-
-			case 10:
-				return std::make_pair(PropertyInternalType::Float3, false);
-			case 11:
-				return std::make_pair(PropertyInternalType::Float3, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<12, PropertyValue>, Nz::Vector3i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<13, PropertyValue>, PropertyArray<Nz::Vector3i64>>);
-
-			case 12:
-				return std::make_pair(PropertyInternalType::Integer3, false);
-			case 13:
-				return std::make_pair(PropertyInternalType::Integer3, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<14, PropertyValue>, Nz::Vector4f>);
-			static_assert(std::is_same_v<std::variant_alternative_t<15, PropertyValue>, PropertyArray<Nz::Vector4f>>);
-
-			case 14:
-				return std::make_pair(PropertyInternalType::Float4, false);
-			case 15:
-				return std::make_pair(PropertyInternalType::Float4, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<16, PropertyValue>, Nz::Vector4i64>);
-			static_assert(std::is_same_v<std::variant_alternative_t<17, PropertyValue>, PropertyArray<Nz::Vector4i64>>);
-
-			case 16:
-				return std::make_pair(PropertyInternalType::Integer4, false);
-			case 17:
-				return std::make_pair(PropertyInternalType::Integer4, true);
-
-			static_assert(std::is_same_v<std::variant_alternative_t<18, PropertyValue>, std::string>);
-			static_assert(std::is_same_v<std::variant_alternative_t<19, PropertyValue>, PropertyArray<std::string>>);
-
-			case 18:
-				return std::make_pair(PropertyInternalType::String, false);
-			case 19:
-				return std::make_pair(PropertyInternalType::String, true);
-		}
-
-		throw std::runtime_error("Unhandled internal type");
+			return std::make_pair(TypeExtractor::Property, TypeExtractor::IsArray);
+		}, value);
 	}
 
 	PropertyType ParsePropertyType(const std::string_view& str)
@@ -175,12 +91,12 @@ namespace bw
 		else if (str == "intpos" || str == "integerposition")
 			return PropertyType::IntegerPosition;
 		else if (str == "intpos3" || str == "integerposition3" || str == "intpos3d" || str == "integerposition3d")
-			return PropertyType::IntegerPosition;
+			return PropertyType::IntegerPosition3D;
 		else if (str == "intrect")
 			return PropertyType::IntegerRect;
 		else if (str == "intsize" || str == "integersize")
 			return PropertyType::IntegerSize;
-		else if (str == "intsize" || str == "intsize3d" || str == "integersize" || str == "integersize3d")
+		else if (str == "intsize3d" || str == "integersize3d")
 			return PropertyType::IntegerSize3D;
 		else if (str == "layer")
 			return PropertyType::Layer;
@@ -188,32 +104,6 @@ namespace bw
 			return PropertyType::String;
 		else if (str == "texture")
 			return PropertyType::Texture;
-
-		throw std::runtime_error("Invalid property type " + std::string(str));
-	}
-
-	PropertyInternalType ParsePropertyInternalType(const std::string_view & str)
-	{
-		if (str == "bool")
-			return PropertyInternalType::Bool;
-		else if (str == "float")
-			return PropertyInternalType::Float;
-		else if (str == "float2")
-			return PropertyInternalType::Float2;
-		else if (str == "float3")
-			return PropertyInternalType::Float3;
-		else if (str == "float4")
-			return PropertyInternalType::Float4;
-		else if (str == "integer")
-			return PropertyInternalType::Integer;
-		else if (str == "integer2")
-			return PropertyInternalType::Integer2;
-		else if (str == "integer3")
-			return PropertyInternalType::Integer3;
-		else if (str == "integer4")
-			return PropertyInternalType::Integer4;
-		else if (str == "string")
-			return PropertyInternalType::String;
 
 		throw std::runtime_error("Invalid property type " + std::string(str));
 	}
@@ -278,45 +168,6 @@ namespace bw
 		return nullptr;
 	}
 
-	const char* ToString(PropertyInternalType propertyType)
-	{
-		switch (propertyType)
-		{
-			case PropertyInternalType::Bool:
-				return "bool";
-
-			case PropertyInternalType::Float:
-				return "float";
-
-			case PropertyInternalType::Float2:
-				return "float2";
-
-			case PropertyInternalType::Float3:
-				return "float3";
-
-			case PropertyInternalType::Float4:
-				return "float4";
-
-			case PropertyInternalType::Integer:
-				return "integer";
-
-			case PropertyInternalType::Integer2:
-				return "integer2";
-
-			case PropertyInternalType::Integer3:
-				return "integer3";
-
-			case PropertyInternalType::Integer4:
-				return "integer4";
-
-			case PropertyInternalType::String:
-				return "string";
-		}
-
-		assert(!"Unhandled property internal type");
-		return nullptr;
-	}
-
 	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray)
 	{
 		auto TranslateEntityToUniqueId = [&](const sol::object& value) -> Nz::Int64
@@ -350,7 +201,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(dummyType)>;
 
-				PropertyArray<T> container(elementCount);
+				PropertyArrayValue<T::Property> container(elementCount);
 				for (std::size_t i = 0; i < elementCount; ++i)
 					container[i] = content[i + 1];
 
@@ -360,105 +211,137 @@ namespace bw
 			switch (expectedType)
 			{
 				case PropertyType::Bool:
-					return HandleDataArray(bool());
+					return HandleDataArray(PropertyTag<PropertyType::Bool>{});
 
 				case PropertyType::Entity:
 				{
-					PropertyArray<Nz::Int64> container(elementCount);
+					PropertyArrayValue<PropertyType::Entity> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateEntityToUniqueId(content[i + 1]);
 
 					return container;
 				}
 
-				case PropertyType::Integer:
-				case PropertyType::Layer:
-					return HandleDataArray(Nz::Int64());
-
 				case PropertyType::Float:
-					return HandleDataArray(float());
+					return HandleDataArray(PropertyTag<PropertyType::Float>{});
 
 				case PropertyType::FloatPosition:
-				case PropertyType::FloatSize:
-					return HandleDataArray(Nz::Vector2f());
+					return HandleDataArray(PropertyTag<PropertyType::FloatPosition>{});
 
 				case PropertyType::FloatPosition3D:
-				case PropertyType::FloatSize3D:
-					return HandleDataArray(Nz::Vector3f());
+					return HandleDataArray(PropertyTag<PropertyType::FloatPosition3D>{});
 
 				case PropertyType::FloatRect:
 				{
-					PropertyArray<Nz::Vector4f> container(elementCount);
+					PropertyArrayValue<PropertyType::FloatRect> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateRectToVec<float>(content[i + 1]);
 
 					return container;
 				}
 
+				case PropertyType::FloatSize:
+					return HandleDataArray(PropertyTag<PropertyType::FloatSize>{});
+
+				case PropertyType::FloatSize3D:
+					return HandleDataArray(PropertyTag<PropertyType::FloatSize3D>{});
+
+				case PropertyType::Integer:
+					return HandleDataArray(PropertyTag<PropertyType::Integer>{});
+
 				case PropertyType::IntegerPosition:
+					return HandleDataArray(PropertyTag<PropertyType::IntegerPosition>{});
+
 				case PropertyType::IntegerSize:
-					return HandleDataArray(Nz::Vector2i64());
+					return HandleDataArray(PropertyTag<PropertyType::IntegerSize>{});
 
 				case PropertyType::IntegerPosition3D:
+					return HandleDataArray(PropertyTag<PropertyType::IntegerPosition3D>{});
+
 				case PropertyType::IntegerSize3D:
-					return HandleDataArray(Nz::Vector3i64());
+					return HandleDataArray(PropertyTag<PropertyType::IntegerSize3D>{});
 
 				case PropertyType::IntegerRect:
 				{
-					PropertyArray<Nz::Vector4i64> container(elementCount);
+					PropertyArrayValue<PropertyType::IntegerRect> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						container[i] = TranslateRectToVec<Nz::Int64>(content[i + 1]);
 
 					return container;
 				}
 
+				case PropertyType::Layer:
+					return HandleDataArray(PropertyTag<PropertyType::Layer>{});
+
 				case PropertyType::String:
+					return HandleDataArray(PropertyTag<PropertyType::String>{});
+
 				case PropertyType::Texture:
-					return HandleDataArray(std::string());
+					return HandleDataArray(PropertyTag<PropertyType::Texture>{});
 			}
 		}
 		else
 		{
+			auto HandleData = [&](auto dummyType) -> PropertyValue
+			{
+				using T = std::decay_t<decltype(dummyType)>;
+				using SingleValue = PropertySingleValue<T::Property>;
+
+				return PropertySingleValue<T::Property>{ value.as<SingleValue::UnderlyingType>() };
+			};
+
 			switch (expectedType)
 			{
 				case PropertyType::Bool:
-					return value.as<bool>();
+					return HandleData(PropertyTag<PropertyType::Bool>{});
 
 				case PropertyType::Entity:
-					return TranslateEntityToUniqueId(value);
+					return PropertySingleValue<PropertyType::Entity>{ TranslateEntityToUniqueId(value) };
 
 				case PropertyType::Float:
-					return value.as<float>();
+					return HandleData(PropertyTag<PropertyType::Float>{});
 
 				case PropertyType::FloatPosition:
-				case PropertyType::FloatSize:
-					return value.as<Nz::Vector2f>();
+					return HandleData(PropertyTag<PropertyType::FloatPosition>{});
 
 				case PropertyType::FloatPosition3D:
-				case PropertyType::FloatSize3D:
-					return value.as<Nz::Vector3f>();
+					return HandleData(PropertyTag<PropertyType::FloatPosition3D>{});
 
 				case PropertyType::FloatRect:
-					return TranslateRectToVec<float>(value.as<Nz::Rectf>());
+					return PropertySingleValue<PropertyType::FloatRect>{ TranslateRectToVec<float>(value.as<Nz::Rectf>()) };
+
+				case PropertyType::FloatSize:
+					return HandleData(PropertyTag<PropertyType::FloatSize>{});
+
+				case PropertyType::FloatSize3D:
+					return HandleData(PropertyTag<PropertyType::FloatSize3D>{});
 
 				case PropertyType::Integer:
-				case PropertyType::Layer:
-					return value.as<Nz::Int64>();
+					return HandleData(PropertyTag<PropertyType::Integer>{});
 
 				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-					return value.as<Nz::Vector2i64>();
+					return HandleData(PropertyTag<PropertyType::IntegerPosition>{});
 
 				case PropertyType::IntegerPosition3D:
-				case PropertyType::IntegerSize3D:
-					return value.as<Nz::Vector3i64>();
+					return HandleData(PropertyTag<PropertyType::IntegerPosition3D>{});
 
 				case PropertyType::IntegerRect:
-					return TranslateRectToVec<Nz::Int64>(value.as<Nz::Recti64>());
+					return PropertySingleValue<PropertyType::IntegerRect>{ TranslateRectToVec<Nz::Int64>(value.as<Nz::Recti64>()) };
+
+				case PropertyType::IntegerSize:
+					return HandleData(PropertyTag<PropertyType::IntegerSize>{});
+
+				case PropertyType::IntegerSize3D:
+					return HandleData(PropertyTag<PropertyType::IntegerSize3D>{});
+
+				case PropertyType::Layer:
+					return PropertySingleValue<PropertyType::Layer>{ value.as<Nz::Int64>() };
 
 				case PropertyType::String:
+					return HandleData(PropertyTag<PropertyType::String>{});
+
 				case PropertyType::Texture:
-					return value.as<std::string>();
+					return HandleData(PropertyTag<PropertyType::Texture>{});
 			}
 		}
 
@@ -470,25 +353,26 @@ namespace bw
 		return std::visit([&](auto&& value) -> sol::object
 		{
 			using T = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
-			using InternalType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
+			using PropertyTypeExtractor = PropertyTypeExtractor<T>;
+			using UnderlyingType = PropertyTypeExtractor::UnderlyingType;
+			constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
-			if constexpr (std::is_same_v<InternalType, bool> ||
-			              std::is_same_v<InternalType, float> ||
-			              std::is_same_v<InternalType, Nz::Int64> ||
-			              std::is_same_v<InternalType, Nz::Vector2f> ||
-			              std::is_same_v<InternalType, Nz::Vector2i64> ||
-			              std::is_same_v<InternalType, Nz::Vector3f> ||
-			              std::is_same_v<InternalType, Nz::Vector3i64> ||
-			              std::is_same_v<InternalType, Nz::Vector4f> ||
-			              std::is_same_v<InternalType, Nz::Vector4i64> ||
-			              std::is_same_v<InternalType, std::string>)
+			if constexpr (std::is_same_v<UnderlyingType, bool> ||
+			              std::is_same_v<UnderlyingType, float> ||
+			              std::is_same_v<UnderlyingType, Nz::Int64> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector2f> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector2i64> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector3f> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector3i64> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector4f> ||
+			              std::is_same_v<UnderlyingType, Nz::Vector4i64> ||
+			              std::is_same_v<UnderlyingType, std::string>)
 			{
 				switch (propertyType)
 				{
 					case PropertyType::Entity:
 					{
-						if constexpr (std::is_same_v<InternalType, Nz::Int64>)
+						if constexpr (std::is_same_v<UnderlyingType, Nz::Int64>)
 						{
 							auto PushEntity = [&](Nz::Int64 uniqueId) -> sol::object
 							{
@@ -503,7 +387,7 @@ namespace bw
 								return entityScript.GetTable();
 							};
 
-							return PushValue(lua, value, PushEntity);
+							return PushValue<IsArray>(lua, value, PushEntity);
 						}
 						else
 							throw std::runtime_error("Property type doesn't match internal type");
@@ -513,14 +397,14 @@ namespace bw
 
 					case PropertyType::FloatRect:
 					{
-						if constexpr (std::is_same_v<InternalType, Nz::Vector4f>)
+						if constexpr (std::is_same_v<UnderlyingType, Nz::Vector4f>)
 						{
 							auto PushRect = [&](const Nz::Vector4f& vec) -> sol::object
 							{
 								return sol::make_object(lua, TranslateVecToRect<float>(vec));
 							};
 
-							return PushValue(lua, value, PushRect);
+							return PushValue<IsArray>(lua, value, PushRect);
 						}
 						else
 							throw std::runtime_error("Property type doesn't match internal type");
@@ -528,21 +412,21 @@ namespace bw
 
 					case PropertyType::IntegerRect:
 					{
-						if constexpr (std::is_same_v<InternalType, Nz::Vector4i64>)
+						if constexpr (std::is_same_v<UnderlyingType, Nz::Vector4i64>)
 						{
 							auto PushRect = [&](const Nz::Vector4i64& vec) -> sol::object
 							{
 								return sol::make_object(lua, TranslateVecToRect<Nz::Int64>(vec));
 							};
 
-							return PushValue(lua, value, PushRect);
+							return PushValue<IsArray>(lua, value, PushRect);
 						}
 						else
 							throw std::runtime_error("Property type doesn't match internal type");
 					}
 
 					default:
-						return PushValuePassthrough(lua, value);
+						return PushValuePassthrough<IsArray>(lua, value);
 				}
 			}
 			else

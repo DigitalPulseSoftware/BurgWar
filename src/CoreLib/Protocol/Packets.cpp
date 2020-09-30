@@ -4,7 +4,9 @@
 
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Nazara/Core/Algorithm.hpp>
+#include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
+#include <Nazara/Math/Vector4.hpp>
 #include <CoreLib/Utils.hpp>
 #include <cassert>
 
@@ -714,104 +716,88 @@ namespace bw
 		{
 			serializer &= data.name;
 
-			// Serialize type
-			Nz::UInt8 dataType;
 			if (serializer.IsWriting())
-				dataType = static_cast<Nz::UInt8>(data.value.index());
-
-			serializer &= dataType;
-			serializer &= data.isArray;
-
-			// Read/write value
-
-			// Waiting for template lambda in C++20
-			auto SerializeValue = [&](auto dummyType)
 			{
-				using T = std::decay_t<decltype(dummyType)>;
+				auto [internalType, isArray] = ExtractPropertyType(data.value);
 
-				auto& elements = (serializer.IsWriting()) ? std::get<std::vector<T>>(data.value) : data.value.emplace<std::vector<T>>();
+				Nz::UInt8 propertyType = Nz::UInt8(internalType);
+				serializer &= propertyType;
 
-				if (data.isArray)
+				serializer &= Nz::UInt8((isArray) ? 1 : 0);
+
+				std::visit([&](auto&& propertyValue)
 				{
-					serializer.SerializeArraySize(elements);
-					for (auto& element : elements)
-						serializer &= element;
-				}
-				else
-				{
-					assert(!serializer.IsWriting() || elements.size() == 1);
-					if (!serializer.IsWriting())
-						elements.resize(1);
+					using T = std::decay_t<decltype(propertyValue)>;
+					using TypeExtractor = PropertyTypeExtractor<T>;
+					constexpr bool IsArray = TypeExtractor::IsArray;
 
-					serializer &= elements.front();
-				}
-			};
-
-
-			static_assert(std::variant_size_v<Helper::Property::PropertyValue> == 10);
-			switch (dataType)
-			{
-				case 0:
-				{
-					// Handle std::vector<bool> specialization
-					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<bool>>(data.value) : data.value.emplace<std::vector<bool>>();
-
-					serializer.SerializeArraySize(elements);
-					if (serializer.IsWriting())
+					auto Serialize = [&](auto& value)
 					{
-						for (bool val : elements)
-							serializer &= val;
+						using T = std::decay_t<decltype(value)>;
+
+						if constexpr (std::is_same_v<T, bool>)
+						{
+							Nz::UInt8 boolValue = (value) ? 1 : 0;
+							serializer &= boolValue;
+						}
+						else
+							serializer &= value;
+					};
+
+					if constexpr (IsArray)
+					{
+						CompressedUnsigned<Nz::UInt32> arraySize(Nz::UInt32(propertyValue.size()));
+						serializer.Serialize(arraySize);
+
+						for (auto& element : propertyValue)
+							Serialize(element);
 					}
 					else
-					{
-						for (std::size_t i = 0; i < elements.size(); ++i)
-						{
-							bool val;
-							serializer &= val;
+						Serialize(propertyValue.value);
 
-							elements[i] = val;
-						}
-					}
+				}, data.value);
+			}
+			else
+			{
+				Nz::UInt8 propertyTypeInt;
+				serializer &= propertyTypeInt;
 
-					break;
-				}
+				PropertyType propertyType = static_cast<PropertyType>(propertyTypeInt);
 
-				case 1: SerializeValue(float()); break;
-				case 2: SerializeValue(Nz::Int64()); break;
-				case 3: SerializeValue(Nz::Vector2f()); break;
-				case 4: SerializeValue(Nz::Vector2i64()); break;
-				case 5: SerializeValue(Nz::Vector3f()); break;
-				case 6: SerializeValue(Nz::Vector3i64()); break;
-				case 7: SerializeValue(Nz::Vector4f()); break;
-				case 8: SerializeValue(Nz::Vector4i64()); break;
+				Nz::UInt8 isArrayInt;
+				serializer &= isArrayInt;
 
-				case 9: // std::string
+				bool isArray = (isArrayInt != 0);
+
+				// Waiting for template lambda in C++20
+				auto Unserialize = [&](auto dummyType)
 				{
-					auto& elements = (serializer.IsWriting()) ? std::get<std::vector<std::string>>(data.value) : data.value.emplace<std::vector<std::string>>();
+					using T = std::decay_t<decltype(dummyType)>;
 
-					serializer.SerializeArraySize(elements);
-					if (serializer.IsWriting())
+					static constexpr PropertyType Property = T::Property;
+
+					if (isArray)
 					{
-						for (const auto& element : elements)
-						{
-							serializer.SerializeArraySize(element);
-							serializer.Write(element.data(), element.size());
-						}
-					}
-					else
-					{
+						CompressedUnsigned<Nz::UInt32> size;
+						serializer &= size;
+
+						auto& elements = data.value.emplace<PropertyArrayValue<Property>>(size);
 						for (auto& element : elements)
-						{
-							serializer.SerializeArraySize(element);
-							serializer.Read(element.data(), element.size());
-						}
+							serializer &= element;
 					}
-					break;
-				}
+					else
+					{
+						auto& value = data.value.emplace<PropertySingleValue<Property>>();
+						serializer &= value.value;
+					}
+				};
 
-				default:
-					assert(!"Unexpected datatype");
-					break;
+				switch (propertyType)
+				{
+#define BURGWAR_PROPERTYTYPE(V, T, UT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+
+#include <CoreLib/PropertyTypeList.hpp>
+				}
 			}
 		}
 	}

@@ -9,11 +9,11 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent) const
 	{
 		try
 		{
-			const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, properties, parent);
+			const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
 			if (!entity)
 				return Ndk::EntityHandle::InvalidHandle;
 
@@ -31,7 +31,7 @@ namespace bw
 		{
 			const auto& entityClass = GetElement(entityIndex);
 
-			bwLog(GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {0}: {1}", entityClass->name, e.what());
+			bwLog(GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {0}: {1}", entityClass->fullName, e.what());
 			return Ndk::EntityHandle::InvalidHandle;
 		}
 	}

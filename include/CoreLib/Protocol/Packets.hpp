@@ -9,6 +9,7 @@
 
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/PacketSerializer.hpp>
 #include <Nazara/Prerequisites.hpp>
@@ -105,22 +106,8 @@ namespace bw
 
 			struct Property
 			{
-				using PropertyValue = std::variant<
-					std::vector<bool>,
-					std::vector<float>,
-					std::vector<Nz::Int64>,
-					std::vector<Nz::Vector2f>,
-					std::vector<Nz::Vector2i64>,
-					std::vector<Nz::Vector3f>,
-					std::vector<Nz::Vector3i64>,
-					std::vector<Nz::Vector4f>,
-					std::vector<Nz::Vector4i64>,
-					std::vector<std::string>
-				>;
-
 				CompressedUnsigned<Nz::UInt32> name;
 				PropertyValue value;
-				bool isArray;
 			};
 
 			struct EntityData

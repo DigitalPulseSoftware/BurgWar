@@ -70,6 +70,9 @@ namespace bw
 			struct Delegates;
 			struct PropertyData;
 
+			template<PropertyType P> friend struct PropertyWidgets;
+			template<bool IsArray> friend struct PropertyOverrider;
+
 			using EntityPropertyConstRefOpt = std::optional<std::reference_wrapper<const PropertyValue>>;
 
 			std::vector<std::pair<QString, QVariant>> BuildEntityComboBoxOptions();

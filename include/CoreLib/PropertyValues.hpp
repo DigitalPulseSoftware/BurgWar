@@ -27,91 +27,98 @@ namespace bw
 
 	enum class PropertyType
 	{
-		Bool              = 0,
-		Entity            = 1,
-		Float             = 2,
-		FloatPosition     = 3,
-		FloatPosition3D   = 4,
-		FloatRect         = 5,
-		FloatSize         = 6,
-		FloatSize3D       = 7,
-		Integer           = 8,
-		IntegerPosition   = 9,
-		IntegerPosition3D = 10,
-		IntegerRect       = 11,
-		IntegerSize       = 12,
-		IntegerSize3D     = 13,
-		Layer             = 14,
-		String            = 15,
-		Texture           = 16
+#define BURGWAR_PROPERTYTYPE(V, T, IT) T = V,
+#define BURGWAR_PROPERTYTYPE_LAST(V, T, IT) T = V
+
+#include <CoreLib/PropertyTypeList.hpp>
 	};
 
-	enum class PropertyInternalType
+	template<PropertyType P>
+	struct PropertyUnderlyingType;
+
+	template<PropertyType P>
+	using PropertyUnderlyingType_t = typename PropertyUnderlyingType<P>::UnderlyingType;
+
+
+	template<typename>
+	struct PropertyTypeExtractor;
+
+	template<PropertyType P>
+	struct PropertyTag
 	{
-		Bool     = 0,
-		Float    = 1,
-		Float2   = 2,
-		Float3   = 3,
-		Float4   = 4,
-		Integer  = 5,
-		Integer2 = 6,
-		Integer3 = 7,
-		Integer4 = 8,
-		String   = 9
+		static constexpr PropertyType Property = P;
 	};
 
-	template<typename T> 
-	class PropertyArray
+	template<PropertyType P>
+	class PropertyArrayValue
 	{
 		public:
-			using StoredType = T;
+			static constexpr PropertyType Property = P;
+			using UnderlyingType = PropertyUnderlyingType_t<Property>;
 
-			explicit PropertyArray(std::size_t elementCount);
-			PropertyArray(const PropertyArray&);
-			PropertyArray(PropertyArray&&) noexcept = default;
-			~PropertyArray() = default;
+			explicit PropertyArrayValue(std::size_t elementCount);
+			PropertyArrayValue(const PropertyArrayValue&);
+			PropertyArrayValue(PropertyArrayValue&&) noexcept = default;
+			~PropertyArrayValue() = default;
 
-			T& GetElement(std::size_t i);
-			const T& GetElement(std::size_t i) const;
+			UnderlyingType& GetElement(std::size_t i);
+			const UnderlyingType& GetElement(std::size_t i) const;
 			std::size_t GetSize() const;
 
-			T& operator[](std::size_t i);
-			const T& operator[](std::size_t i) const;
+			UnderlyingType& operator[](std::size_t i);
+			const UnderlyingType& operator[](std::size_t i) const;
 
 			// To allow range-for loops
-			T* begin() const;
-			T* end() const;
+			UnderlyingType* begin();
+			const UnderlyingType* begin() const;
+			UnderlyingType* end();
+			const UnderlyingType* end() const;
 			std::size_t size() const;
 
-			PropertyArray& operator=(const PropertyArray&);
-			PropertyArray& operator=(PropertyArray&&) noexcept = default;
+			PropertyArrayValue& operator=(const PropertyArrayValue&);
+			PropertyArrayValue& operator=(PropertyArrayValue&&) noexcept = default;
 
 		private:
 			std::size_t m_size;
-			std::unique_ptr<T[]> m_arrayData;
+			std::unique_ptr<UnderlyingType[]> m_arrayData;
 	};
 
-	using PropertyValue = std::variant<bool, PropertyArray<bool>,
-	                                   float, PropertyArray<float>,
-	                                   Nz::Int64, PropertyArray<Nz::Int64>,
-	                                   Nz::Vector2f, PropertyArray<Nz::Vector2f>,
-	                                   Nz::Vector2i64, PropertyArray<Nz::Vector2i64>,
-	                                   Nz::Vector3f, PropertyArray<Nz::Vector3f>,
-	                                   Nz::Vector3i64, PropertyArray<Nz::Vector3i64>,
-	                                   Nz::Vector4f, PropertyArray<Nz::Vector4f>,
-	                                   Nz::Vector4i64, PropertyArray<Nz::Vector4i64>,
-	                                   std::string, PropertyArray<std::string>
+	template<PropertyType P>
+	struct PropertySingleValue
+	{
+		static constexpr PropertyType Property = P;
+		using UnderlyingType = PropertyUnderlyingType_t<Property>;
+
+		PropertySingleValue() = default;
+		PropertySingleValue(const UnderlyingType& v);
+		PropertySingleValue(UnderlyingType&& v);
+		PropertySingleValue(const PropertySingleValue&) = default;
+		PropertySingleValue(PropertySingleValue&&) = default;
+
+		UnderlyingType& operator*() &;
+		UnderlyingType&& operator*() &&;
+		const UnderlyingType& operator*() const &;
+
+		PropertySingleValue& operator=(const PropertySingleValue&) = default;
+		PropertySingleValue& operator=(PropertySingleValue&&) = default;
+
+		UnderlyingType value;
+	};
+
+	using PropertyValue = std::variant<
+#define BURGWAR_PROPERTYTYPE(V, T, IT) PropertySingleValue<PropertyType:: T>, PropertyArrayValue<PropertyType:: T>,
+#define BURGWAR_PROPERTYTYPE_LAST(V, T, IT) PropertySingleValue<PropertyType:: T>, PropertyArrayValue<PropertyType:: T>
+
+#include <CoreLib/PropertyTypeList.hpp>
 	>;
 	
 	using PropertyValueMap = tsl::hopscotch_map<std::string /*propertyName*/, PropertyValue /*property*/>;
 
-	std::pair<PropertyInternalType, bool> ExtractPropertyType(const PropertyValue& property);
+	std::pair<PropertyType, bool> ExtractPropertyType(const PropertyValue& value);
 
 	PropertyType ParsePropertyType(const std::string_view& str);
-	PropertyInternalType ParsePropertyInternalType(const std::string_view& str);
 
 	const char* ToString(PropertyType propertyType);
-	const char* ToString(PropertyInternalType propertyType);
 
 	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
 	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property, PropertyType propertyType);

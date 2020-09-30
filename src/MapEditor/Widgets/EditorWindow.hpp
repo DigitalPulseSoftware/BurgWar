@@ -102,8 +102,6 @@ namespace bw
 
 			bool CanCloseMap();
 
-			template<typename T> void ForeachEntityProperty(PropertyType type, T&& func);
-
 			EntityInfoDialog* GetEntityInfoDialog();
 
 			void InvalidateMap();

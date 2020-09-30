@@ -53,7 +53,7 @@ namespace bw
 		m_entityGizmo.reset();
 	}
 
-	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties)
+	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties)
 	{
 		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
 
@@ -64,7 +64,7 @@ namespace bw
 			if (classIndex == entityStore.InvalidIndex)
 				throw std::runtime_error("entity class is not registered");
 
-			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, 1.f, properties);
+			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, 1.f, std::move(properties));
 			if (!entity)
 				throw std::runtime_error("failed to instantiate entity");
 

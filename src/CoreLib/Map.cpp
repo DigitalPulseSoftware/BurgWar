@@ -186,9 +186,9 @@ namespace bw
 				{
 					stream << key;
 
-					auto [internalType, isArray] = ExtractPropertyType(value);
+					auto [P, isArray] = ExtractPropertyType(value);
 
-					Nz::UInt8 propertyType = Nz::UInt8(internalType);
+					Nz::UInt8 propertyType = Nz::UInt8(P);
 					stream << propertyType;
 
 					stream << Nz::UInt8((isArray) ? 1 : 0);
@@ -196,7 +196,8 @@ namespace bw
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+						using TypeExtractor = PropertyTypeExtractor<T>;
+						constexpr bool IsArray = TypeExtractor::IsArray;
 
 						auto Serialize = [&](const auto& value)
 						{
@@ -218,7 +219,7 @@ namespace bw
 								Serialize(element);
 						}
 						else
-							Serialize(propertyValue);
+							Serialize(propertyValue.value);
 
 					}, value);
 				}
@@ -280,15 +281,16 @@ namespace bw
 		{
 			const std::string& keyName = propertyPair.first;
 
-			auto [internalType, isArray] = ExtractPropertyType(propertyPair.second);
+			auto [P, isArray] = ExtractPropertyType(propertyPair.second);
 
 			auto propertyData = nlohmann::json::object();
-			propertyData["type"] = ToString(internalType);
+			propertyData["type"] = ToString(P);
 
 			std::visit([&](auto&& propertyValue)
 			{
 				using T = std::decay_t<decltype(propertyValue)>;
-				constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+				using TypeExtractor = PropertyTypeExtractor<T>;
+				constexpr bool IsArray = TypeExtractor::IsArray;
 
 				if constexpr (IsArray)
 				{
@@ -300,7 +302,7 @@ namespace bw
 					propertyData["value"] = std::move(elementArray);
 				}
 				else
-					propertyData["value"] = propertyValue;
+					propertyData["value"] = propertyValue.value;
 
 			}, propertyPair.second);
 
@@ -323,13 +325,15 @@ namespace bw
 		for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
 		{
 			bool isArray = propertyData.value<bool>("isArray", false);
-			PropertyInternalType propertyType = ParsePropertyInternalType(propertyData.at("type"));
+			PropertyType propertyType = ParsePropertyType(propertyData.at("type"));
 			auto&& value = propertyData.at("value");
 
 			// Waiting for template lambda in C++20
 			auto Unserialize = [&, propertyName = propertyName](auto dummyType)
 			{
 				using T = std::decay_t<decltype(dummyType)>;
+
+				static constexpr PropertyType Property = T::Property;
 
 				if (isArray)
 				{
@@ -340,7 +344,7 @@ namespace bw
 					if (elementCount == 0)
 						return; //< Ignore empty arrays
 
-					PropertyArray<T> elements(elementCount);
+					PropertyArrayValue<Property> elements(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
 						elements[i] = value[i];
 
@@ -348,23 +352,16 @@ namespace bw
 				}
 				else
 				{
-					T propertyValue = value;
+					PropertySingleValue<Property> propertyValue(value);
 					entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
 				}
 			};
 
 			switch (propertyType)
 			{
-				case PropertyInternalType::Bool: Unserialize(bool()); break;
-				case PropertyInternalType::Float: Unserialize(float()); break;
-				case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
-				case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
-				case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
-				case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
-				case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
-				case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
-				case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
-				case PropertyInternalType::String: Unserialize(std::string()); break;
+#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+
+#include <CoreLib/PropertyTypeList.hpp>
 			}
 		}
 
@@ -439,7 +436,7 @@ namespace bw
 					Nz::UInt8 propertyTypeInt;
 					stream >> propertyTypeInt;
 
-					PropertyInternalType propertyType = static_cast<PropertyInternalType>(propertyTypeInt);
+					PropertyType propertyType = static_cast<PropertyType>(propertyTypeInt);
 
 					Nz::UInt8 isArrayInt;
 					stream >> isArrayInt;
@@ -451,21 +448,23 @@ namespace bw
 					{
 						using T = std::decay_t<decltype(dummyType)>;
 
+						static constexpr PropertyType Property = T::Property;
+
 						if (isArray)
 						{
 							Nz::UInt32 size;
 							stream >> size;
 
-							PropertyArray<T> elements(size);
-							for (T& element : elements)
+							PropertyArrayValue<Property> elements(size);
+							for (auto& element : elements)
 								stream >> element;
 
 							entity.properties.emplace(std::move(propertyName), std::move(elements));
 						}
 						else
 						{
-							T value;
-							stream >> value;
+							PropertySingleValue<Property> value;
+							stream >> value.value;
 
 							entity.properties.emplace(std::move(propertyName), std::move(value));
 						}
@@ -473,16 +472,9 @@ namespace bw
 
 					switch (propertyType)
 					{
-						case PropertyInternalType::Bool: Unserialize(bool()); break;
-						case PropertyInternalType::Float: Unserialize(float()); break;
-						case PropertyInternalType::Float2: Unserialize(Nz::Vector2f()); break;
-						case PropertyInternalType::Float3: Unserialize(Nz::Vector3f()); break;
-						case PropertyInternalType::Float4: Unserialize(Nz::Vector4f()); break;
-						case PropertyInternalType::Integer: Unserialize(Nz::Int64()); break;
-						case PropertyInternalType::Integer2: Unserialize(Nz::Vector2i64()); break;
-						case PropertyInternalType::Integer3: Unserialize(Nz::Vector3i64()); break;
-						case PropertyInternalType::Integer4: Unserialize(Nz::Vector4i64()); break;
-						case PropertyInternalType::String: Unserialize(std::string()); break;
+#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+
+#include <CoreLib/PropertyTypeList.hpp>
 					}
 				}
 			}

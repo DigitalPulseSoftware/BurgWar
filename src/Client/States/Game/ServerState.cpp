@@ -18,7 +18,7 @@ namespace bw
 
 		Match::GamemodeSettings gamemodeSettings;
 		gamemodeSettings.name = gamemode;
-		gamemodeSettings.properties.emplace("respawntime", Nz::Int64(2));
+		gamemodeSettings.properties.emplace("respawntime", PropertySingleValue<PropertyType::Integer>(2));
 
 		Match::MatchSettings matchSettings;
 		matchSettings.map = Map::LoadFromBinary(map + ".bmap");

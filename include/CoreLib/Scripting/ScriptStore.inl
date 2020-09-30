@@ -10,6 +10,7 @@
 #include <NDK/World.hpp>
 #include <cassert>
 #include <filesystem>
+#include <sstream>
 
 namespace bw
 {
@@ -254,7 +255,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, const PropertyValueMap& properties) const
+	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
 	{
 		const Ndk::EntityHandle& entity = world.CreateEntity();
 
@@ -264,17 +265,39 @@ namespace bw
 		{
 			if (auto it = properties.find(propertyName); it != properties.end())
 			{
-				// Property exists, check its type
+				auto&& value = std::move(it.value());
 
-				//TODO: Check property type
+				auto [propertyType, isArray] = ExtractPropertyType(value);
 
-				filteredProperties.emplace(propertyName, it->second);
+				if (propertyInfo.type != propertyType || propertyInfo.isArray != isArray)
+				{
+					std::ostringstream ss;
+					ss << "property " << propertyName << ": expected ";
+
+					if (propertyInfo.isArray)
+						ss << "an array of ";
+					else
+						ss << "a single ";
+
+					ss << ToString(propertyInfo.type) << ", got ";
+
+					if (isArray)
+						ss << "an array of ";
+					else
+						ss << "a single ";
+
+					ss << ToString(propertyType);
+
+					throw std::runtime_error(std::move(ss).str());
+				}
+
+				filteredProperties.emplace(propertyName, std::move(value));
 			}
 			else
 			{
 				// Property doesn't exist, check for it's default value
 				if (!propertyInfo.defaultValue)
-					throw std::runtime_error("Missing property " + propertyName);
+					throw std::runtime_error("missing mandatory property " + propertyName);
 			}
 		}
 

@@ -939,29 +939,7 @@ namespace bw
 		{
 			auto& propertyData = entityData.properties.emplace_back();
 			propertyData.name = networkStringStore.CheckStringIndex(propertyName);
-
-			std::visit([&](auto&& propertyValue)
-			{
-				using T = std::decay_t<decltype(propertyValue)>;
-				constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
-				using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
-
-				propertyData.isArray = IsArray;
-
-				auto& vec = propertyData.value.emplace<std::vector<PropertyType>>();
-
-				if constexpr (IsArray)
-				{
-					std::size_t elementCount = propertyValue.GetSize();
-					vec.reserve(elementCount);
-
-					for (std::size_t i = 0; i < elementCount; ++i)
-						vec.emplace_back(std::move(propertyValue[i]));
-				}
-				else
-					vec.push_back(propertyValue);
-
-			}, std::move(propertyValue));
+			propertyData.value = propertyValue;
 		}
 	}
 }

@@ -222,25 +222,6 @@ namespace bw
 
 	Map::Layer& EditorWindow::CreateLayer(LayerIndex layerIndex, Map::Layer layerData)
 	{
-		auto UpdateLayerIndex = [=](Nz::Int64& currentLayerIndex)
-		{
-			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
-			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
-				currentLayerIndex++;
-		};
-
-		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
-		{
-			if (propertyData.isArray)
-			{
-				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
-					UpdateLayerIndex(layerIndex);
-			}
-			else
-				UpdateLayerIndex(std::get<Nz::Int64>(value));
-		});
-
 		auto& layer = GetWorkingMapMut().EmplaceLayer(layerIndex, std::move(layerData));
 
 		RefreshLayerList();
@@ -474,28 +455,6 @@ namespace bw
 		Map& map = GetWorkingMapMut();
 		map.SwapLayers(firstLayerIndex, secondLayerIndex);
 
-		auto UpdateLayerIndex = [=](Nz::Int64& layerIndex)
-		{
-			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
-
-			if (static_cast<LayerIndex>(layerIndex) == firstLayerIndex)
-				layerIndex = secondLayerIndex;
-			else if (static_cast<LayerIndex>(layerIndex) == secondLayerIndex)
-				layerIndex = firstLayerIndex;
-		};
-
-		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Layer, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
-		{
-			if (propertyData.isArray)
-			{
-				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
-					UpdateLayerIndex(layerIndex);
-			}
-			else
-				UpdateLayerIndex(std::get<Nz::Int64>(value));
-		});
-
 		// Swap items text
 		QListWidgetItem* oldItem = m_layerList.listWidget->item(int(firstLayerIndex));
 		QListWidgetItem* newItem = m_layerList.listWidget->item(int(secondLayerIndex));
@@ -693,18 +652,9 @@ namespace bw
 	void EditorWindow::BuildAssetList()
 	{
 		tsl::hopscotch_set<std::string> textures;
-
-		ForeachEntityProperty(PropertyType::Texture, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
+		m_workingMap.ForeachEntityPropertyValue<PropertyType::Texture>([&](const std::string& /*name*/, const std::string& texturePath)
 		{
-			if (propertyData.isArray)
-			{
-				for (const std::string& texture : std::get<PropertyArray<std::string>>(value))
-					textures.insert(texture);
-			}
-			else
-			{
-				textures.insert(std::get<std::string>(value));
-			}
+			textures.insert(texturePath);
 		});
 
 		std::filesystem::path gameResourceFolder = std::filesystem::u8path(m_config.GetStringValue("Assets.ResourceFolder"));
@@ -1711,10 +1661,12 @@ namespace bw
 
 		Nz::Int64 uniqueId = 1;
 
-		std::size_t layerCount = m_workingMap.GetLayerCount();
+		Map& map = GetWorkingMapMut();
+
+		std::size_t layerCount = map.GetLayerCount();
 		for (std::size_t i = 0; i < layerCount; ++i)
 		{
-			auto& layer = m_workingMap.GetLayer(LayerIndex(i));
+			auto& layer = map.GetLayer(LayerIndex(i));
 			for (auto& entity : layer.entities)
 			{
 				Nz::Int64 previousId = entity.uniqueId;
@@ -1735,18 +1687,16 @@ namespace bw
 			}
 		};
 
-		// Update entities pointing to this layer
-		ForeachEntityProperty(PropertyType::Entity, [&](Map::Entity& /*entity*/, const ScriptedEntity& /*entityInfo*/, const ScriptedProperty& propertyData, PropertyValue& value)
+		// Update entities pointing to this entity
+		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](const std::string& /*name*/, Nz::Int64& entityIndex)
 		{
-			if (propertyData.isArray)
+			if (entityIndex >= 0)
 			{
-				for (Nz::Int64& layerIndex : std::get<PropertyArray<Nz::Int64>>(value))
-					UpdateEntityIndex(layerIndex);
+				auto it = uniqueIds.find(entityIndex);
+				if (it != uniqueIds.end())
+					entityIndex = it->second;
 			}
-			else
-				UpdateEntityIndex(std::get<Nz::Int64>(value));
 		});
-
 	}
 
 	void EditorWindow::RefreshLayerList()

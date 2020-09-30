@@ -162,22 +162,34 @@ namespace bw
 
 				creationEvent.properties.emplace(key, value);
 
-				switch (it->second.type)
+				auto RegisterDependentId = [&](Nz::Int64 entityId)
 				{
-					case PropertyType::Entity:
+					const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
+					if (propertyEntity)
 					{
-						const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(std::get<Nz::Int64>(value));
-						if (propertyEntity)
-						{
-							auto& propertyEntityMatch = propertyEntity->GetComponent<MatchComponent>();
-							creationEvent.dependentIds.emplace_back(propertyEntityMatch.GetLayerIndex(), propertyEntity->GetId());
-						}
-						break;
+						auto& propertyEntityMatch = propertyEntity->GetComponent<MatchComponent>();
+						creationEvent.dependentIds.emplace_back(propertyEntityMatch.GetLayerIndex(), propertyEntity->GetId());
 					}
+				};
 
-					default:
-						break;
-				}
+				std::visit([&](auto&& propertyValue)
+				{
+					using T = std::decay_t<decltype(propertyValue)>;
+					using TypeExtractor = PropertyTypeExtractor<T>;
+					constexpr bool IsArray = TypeExtractor::IsArray;
+
+					if constexpr (TypeExtractor::Property == PropertyType::Entity)
+					{
+						if constexpr (IsArray)
+						{
+							for (auto& id : propertyValue)
+								RegisterDependentId(id);
+						}
+						else
+							RegisterDependentId(propertyValue.value);
+
+					}
+				}, value);
 			}
 		}
 

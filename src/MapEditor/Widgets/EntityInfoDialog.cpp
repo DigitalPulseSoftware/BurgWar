@@ -510,6 +510,586 @@ namespace bw
 		Integer4PropertyDelegate int4Delegate;
 	};
 
+
+	template<bool IsArray>
+	struct PropertyOverrider;
+
+	template<>
+	struct PropertyOverrider<true>
+	{
+		template<PropertyType P, typename V, typename CB>
+		static void OverrideProperty(EntityInfoDialog* /*owner*/, int arraySize, int rowIndex, PropertyValueMap& properties, const std::string& keyName, V&& newValue, CB&& callback)
+		{
+			bool first = false;
+
+			using T = PropertyArrayValue<P>;
+
+			auto it = properties.find(keyName);
+			if (it == properties.end())
+			{
+				it = properties.emplace(keyName, T(arraySize)).first;
+				first = true;
+			}
+
+			T& propertyArray = std::get<T>(it.value());
+			propertyArray[rowIndex] = std::forward<V>(newValue);
+
+			callback(first, QString{});
+		}
+	};
+
+	template<>
+	struct PropertyOverrider<false>
+	{
+		template<PropertyType P, typename V, typename CB>
+		static void OverrideProperty(EntityInfoDialog* owner, PropertyValueMap& properties, const std::string& keyName, V&& newValue, CB&& callback)
+		{
+			bool first = false;
+
+			using T = PropertySingleValue<P>;
+
+			auto it = properties.find(keyName);
+			if (it == properties.end())
+			{
+				it = properties.emplace(keyName, T{}).first;
+				first = true;
+			}
+
+			it.value() = T(std::forward<V>(newValue));
+
+			callback(first, owner->ToString(it.value(), P));
+		}
+	};
+
+
+	template<PropertyType P, typename D, typename SpinBox, typename SpinBox::LabelMode L>
+	struct MultiSpinboxPropertyWidget
+	{
+		virtual D* GetDelegate(EntityInfoDialog* owner) = 0;
+		virtual PropertyValueMap& GetProperties(EntityInfoDialog* owner) = 0;
+
+		using UT = PropertyUnderlyingType_t<P>;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			D* delegate = GetDelegate(owner);
+			PropertyValueMap& properties = GetProperties(owner);
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setItemDelegate(delegate);
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Value") });
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+				for (int i = 0; i < arraySize; ++i)
+					delegate->ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+			}
+
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, &properties, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item)
+			{
+				UT value = delegate->RetrieveModelData(item->index());
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		SpinBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			PropertyValueMap& properties = GetProperties(owner);
+
+			SpinBox* spinbox = new SpinBox(L, QBoxLayout::TopToBottom);
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+				spinbox->setValue(*std::get<T>(propertyValue->get()));
+
+			owner->connect(spinbox, &SpinBox::valueChanged, [=, &properties, keyName = std::move(keyName), callback = std::forward<CB>(callback)]()
+			{
+				UT value = spinbox->value();
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, properties, keyName, value, callback);
+			});
+
+			return spinbox;
+		}
+	};
+
+	template<PropertyType P>
+	struct TextPropertyWidget
+	{
+		virtual PropertyValueMap& GetProperties(EntityInfoDialog* owner) = 0;
+
+		template<typename V, typename CB>
+		QTableWidget* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			PropertyValueMap& properties = GetProperties(owner);
+
+			QTableWidget* table = new QTableWidget(arraySize, 1);
+			table->setHorizontalHeaderLabels({ owner->tr("Value") });
+			table->setSelectionMode(QAbstractItemView::NoSelection);
+			table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+
+				QAbstractItemModel* model = table->model();
+				for (int i = 0; i < arraySize; ++i)
+					model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
+			}
+
+			owner->connect(table, &QTableWidget::cellChanged, [=, &properties, keyName = std::move(keyName), callback = std::forward<CB>(callback)](int row, int column)
+			{
+				std::string value = table->item(row, column)->text().toStdString();
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, row, properties, keyName, std::move(value), callback);
+			});
+
+			return table;
+		}
+
+		template<typename V, typename CB>
+		QLineEdit* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			PropertyValueMap& properties = GetProperties(owner);
+
+			QLineEdit* lineEdit = new QLineEdit;
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+				lineEdit->setText(QString::fromStdString(*std::get<T>(propertyValue->get())));
+
+			owner->connect(lineEdit, &QLineEdit::editingFinished, [=, &properties, keyName = std::move(keyName), callback = std::forward<CB>(callback)]()
+			{
+				std::string value = lineEdit->text().toStdString();
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, properties, keyName, std::move(value), callback);
+			});
+
+			return lineEdit;
+		}
+	};
+
+
+	template<PropertyType P> 
+	struct PropertyWidgets;
+
+	template<>
+	struct PropertyWidgets<PropertyType::Bool>
+	{
+		static constexpr PropertyType P = PropertyType::Bool;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Enabled") });
+
+			for (int i = 0; i < arraySize; ++i)
+			{
+				QStandardItem* item = new QStandardItem(1);
+				item->setCheckable(true);
+
+				model->setItem(i, 0, item);
+			}
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+				for (int i = 0; i < arraySize; ++i)
+					model->item(i)->setCheckState((propertyArray[i]) ? Qt::Checked : Qt::Unchecked);
+			}
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item) mutable
+			{
+				bool value = item->checkState() == Qt::Checked;
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		QCheckBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			QCheckBox* checkBox = new QCheckBox;
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+				checkBox->setChecked(*std::get<T>(propertyValue->get()));
+
+			owner->connect(checkBox, &QCheckBox::toggled, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](bool checked) mutable
+			{
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, checked, callback);
+			});
+
+			return checkBox;
+		}
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::Entity>
+	{
+		static constexpr PropertyType P = PropertyType::Entity;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			owner->m_delegates->comboBoxDelegate.emplace(owner->BuildEntityComboBoxOptions());
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setItemDelegate(&owner->m_delegates->comboBoxDelegate.value());
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Value") });
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+
+				for (int i = 0; i < arraySize; ++i)
+					owner->m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
+			}
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item) mutable
+			{
+				Nz::Int64 value = static_cast<Nz::Int64>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+				if (value <= 0)
+					value = NoEntity;
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		QComboBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			QComboBox* comboBox = new QComboBox;
+			for (const auto& option : owner->BuildEntityComboBoxOptions())
+				comboBox->addItem(option.first, option.second);
+
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+			{
+				Nz::Int64 uniqueId = *std::get<T>(propertyValue->get());
+				int listSize = comboBox->count();
+
+				int i = 0;
+				for (; i < listSize; ++i)
+				{
+					if (static_cast<Nz::Int64>(comboBox->itemData(i).toLongLong()) == uniqueId)
+					{
+						comboBox->setCurrentIndex(i);
+						break;
+					}
+				}
+
+				if (i >= listSize)
+					comboBox->setCurrentIndex(0);
+			}
+
+			owner->connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](int index)
+			{
+				Nz::Int64 value = static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong());
+				if (value <= 0)
+					value = NoEntity;
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return comboBox;
+		}
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::Float>
+	{
+		static constexpr PropertyType P = PropertyType::Float;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setItemDelegate(&owner->m_delegates->floatDelegate);
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Value") });
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+				for (int i = 0; i < arraySize; ++i)
+					owner->m_delegates->floatDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+			}
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item)
+			{
+				float value = owner->m_delegates->floatDelegate.RetrieveModelData(item->index());
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		QDoubleSpinBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			QDoubleSpinBox* spinbox = new QDoubleSpinBox;
+			spinbox->setDecimals(6);
+			spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+				spinbox->setValue(*std::get<T>(propertyValue->get()));
+
+			owner->connect(spinbox, &QDoubleSpinBox::editingFinished, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)]()
+			{
+				float value = float(spinbox->value());
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return spinbox;
+		}
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::FloatPosition> final : MultiSpinboxPropertyWidget<PropertyType::FloatPosition, Float2PropertyDelegate, Float2SpinBox, Float2SpinBox::LabelMode::PositionLabel>
+	{
+		Float2PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->float2Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::FloatPosition3D> final : MultiSpinboxPropertyWidget<PropertyType::FloatPosition3D, Float3PropertyDelegate, Float3SpinBox, Float3SpinBox::LabelMode::PositionLabel>
+	{
+		Float3PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->float3Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::FloatRect> final : MultiSpinboxPropertyWidget<PropertyType::FloatRect, Float4PropertyDelegate, Float4SpinBox, Float4SpinBox::LabelMode::RectLabel>
+	{
+		Float4PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->float4Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::FloatSize> final : MultiSpinboxPropertyWidget<PropertyType::FloatSize, Float2PropertyDelegate, Float2SpinBox, Float2SpinBox::LabelMode::SizeLabel>
+	{
+		Float2PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->float2Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::FloatSize3D> final : MultiSpinboxPropertyWidget<PropertyType::FloatSize3D, Float3PropertyDelegate, Float3SpinBox, Float3SpinBox::LabelMode::SizeLabel>
+	{
+		Float3PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->float3Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::Integer>
+	{
+		static constexpr PropertyType P = PropertyType::Integer;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setItemDelegate(&owner->m_delegates->intDelegate);
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Value") });
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+				for (int i = 0; i < arraySize; ++i)
+					owner->m_delegates->intDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
+			}
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item)
+			{
+				Nz::Int64 value = owner->m_delegates->intDelegate.RetrieveModelData(item->index());
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		QSpinBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			// TODO: Handle properly int64
+			QSpinBox* spinbox = new QSpinBox;
+			spinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
+
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+				spinbox->setValue(*std::get<T>(propertyValue->get()));
+
+			owner->connect(spinbox, &QSpinBox::editingFinished, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)]()
+			{
+				Nz::Int64 value = spinbox->value();
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return spinbox;
+		}
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::IntegerPosition> final : MultiSpinboxPropertyWidget<PropertyType::IntegerPosition, Integer2PropertyDelegate, Integer2SpinBox, Integer2SpinBox::LabelMode::PositionLabel>
+	{
+		Integer2PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->int2Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::IntegerPosition3D> final : MultiSpinboxPropertyWidget<PropertyType::IntegerPosition3D, Integer3PropertyDelegate, Integer3SpinBox, Integer3SpinBox::LabelMode::PositionLabel>
+	{
+		Integer3PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->int3Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::IntegerRect> final : MultiSpinboxPropertyWidget<PropertyType::IntegerRect, Integer4PropertyDelegate, Integer4SpinBox, Integer4SpinBox::LabelMode::RectLabel>
+	{
+		Integer4PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->int4Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::IntegerSize> final : MultiSpinboxPropertyWidget<PropertyType::IntegerSize, Integer2PropertyDelegate, Integer2SpinBox, Integer2SpinBox::LabelMode::SizeLabel>
+	{
+		Integer2PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->int2Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::IntegerSize3D> final : MultiSpinboxPropertyWidget<PropertyType::IntegerSize3D, Integer3PropertyDelegate, Integer3SpinBox, Integer3SpinBox::LabelMode::SizeLabel>
+	{
+		Integer3PropertyDelegate* GetDelegate(EntityInfoDialog* owner) override { return &owner->m_delegates->int3Delegate; }
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::Layer>
+	{
+		static constexpr PropertyType P = PropertyType::Layer;
+
+		template<typename V, typename CB>
+		QTableView* SetupArray(EntityInfoDialog* owner, int arraySize, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertyArrayValue<P>;
+
+			owner->m_delegates->comboBoxDelegate.emplace(owner->BuildLayerComboBoxOptions());
+
+			QTableView* tableView = new QTableView;
+			QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
+			tableView->setItemDelegate(&owner->m_delegates->comboBoxDelegate.value());
+			tableView->setModel(model);
+
+			model->setHorizontalHeaderLabels({ owner->tr("Value") });
+
+			if (propertyValue)
+			{
+				auto& propertyArray = std::get<T>(propertyValue->get());
+
+				for (int i = 0; i < arraySize; ++i)
+					owner->m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
+			}
+
+			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item)
+			{
+				Nz::Int64 value = static_cast<Nz::Int64>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+
+				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return tableView;
+		}
+
+		template<typename V, typename CB>
+		QComboBox* Setup(EntityInfoDialog* owner, const V& propertyValue, std::string keyName, CB&& callback)
+		{
+			using T = PropertySingleValue<P>;
+
+			QComboBox* comboBox = new QComboBox;
+			for (const auto& option : owner->BuildLayerComboBoxOptions())
+				comboBox->addItem(option.first, option.second);
+
+			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
+			{
+				int index = int(*std::get<T>(propertyValue->get()));
+				if (index == NoLayer)
+					index = 0;
+				else
+					index++;
+
+				comboBox->setCurrentIndex(index);
+			}
+
+			owner->connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](int index)
+			{
+				Nz::Int64 value = static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong());
+
+				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
+			});
+
+			return comboBox;
+		}
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::String> final : TextPropertyWidget<PropertyType::String>
+	{
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+	template<>
+	struct PropertyWidgets<PropertyType::Texture> final : TextPropertyWidget<PropertyType::Texture>
+	{
+		PropertyValueMap& GetProperties(EntityInfoDialog* owner) override { return owner->m_entityInfo.properties; }
+	};
+
+
 	EntityInfoDialog::EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent) :
 	QDialog(parent),
 	m_entityTypeIndex(0),
@@ -921,7 +1501,9 @@ namespace bw
 		{
 			std::visit([&](auto&& propertyValue)
 			{
-				constexpr bool IsArray = IsSameTpl_v<PropertyArray, std::decay_t<decltype(propertyValue)>>;
+				using T = std::decay_t<decltype(propertyValue)>;
+				using PropertyTypeExtractor = PropertyTypeExtractor<T>;
+				constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
 				isArray = IsArray;
 				if constexpr (IsArray)
@@ -930,17 +1512,25 @@ namespace bw
 			}, propertyValue->get());
 		}
 
-		auto OnPropertyOverride = [this, propertyIndex]()
-		{
-			QFont boldFont;
-			boldFont.setWeight(QFont::Medium);
-
-			m_propertiesList->item(int(propertyIndex), 1)->setFont(boldFont);
-		};
-
 		auto UpdatePropertyPreview = [this, propertyIndex](const QString& preview)
 		{
 			m_propertiesList->item(int(propertyIndex), 1)->setText(preview);
+		};
+
+		auto OnPropertyOverride = [this, propertyIndex, isArray, UpdatePropertyPreview](bool firstTime, QString preview)
+		{
+			if (firstTime)
+			{
+				QFont boldFont;
+				boldFont.setWeight(QFont::Medium);
+
+				m_propertiesList->item(int(propertyIndex), 1)->setFont(boldFont);
+			}
+
+			if (!preview.isEmpty())
+				UpdatePropertyPreview(preview);
+
+			m_updateFlags |= EntityInfoUpdate::Properties;
 		};
 
 		if (isArray)
@@ -976,14 +1566,15 @@ namespace bw
 					std::visit([&](auto&& propertyValue)
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
-						constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
-						using PropertyType = std::conditional_t<IsArray, typename IsSameTpl<PropertyArray, T>::ContainedType, T>;
+						using PropertyTypeExtractor = PropertyTypeExtractor<T>;
+						using UnderlyingType = PropertyTypeExtractor::UnderlyingType;
+						constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
 						// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
 						assert(IsArray);
 						if constexpr (IsArray) //< always true
 						{
-							PropertyArray<PropertyType> newArray(newSize);
+							PropertyArrayValue<PropertyTypeExtractor::Property> newArray(newSize);
 
 							// Copy old values
 							std::size_t size = std::min(newArray.size(), propertyValue.size());
@@ -1006,620 +1597,26 @@ namespace bw
 
 			layout->addLayout(arraySizeLayout);
 			
-			// Waiting for template lambda in C++20
-			auto SetProperty = [this, keyName = propertyInfo.keyName, arraySize, OnPropertyOverride](int rowIndex, auto&& value)
-			{
-				using T = std::decay_t<decltype(value)>;
-				using ArrayType = PropertyArray<T>;
-
-				auto it = m_entityInfo.properties.find(keyName);
-				if (it == m_entityInfo.properties.end())
-				{
-					it = m_entityInfo.properties.emplace(keyName, ArrayType(arraySize)).first;
-					OnPropertyOverride();
-				}
-
-				ArrayType& propertyArray = std::get<ArrayType>(it.value());
-				propertyArray[rowIndex] = std::forward<decltype(value)>(value);
-
-				m_updateFlags |= EntityInfoUpdate::Properties;
-			};
-
 			switch (propertyInfo.type)
 			{
-				case PropertyType::Bool:
-				{
-					using T = PropertyArray<bool>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ QString("Enabled") });
-
-					for (int i = 0; i < arraySize; ++i)
-					{
-						QStandardItem* item = new QStandardItem(1);
-						item->setCheckable(true);
-
-						model->setItem(i, 0, item);
-					}
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							model->item(i)->setCheckState((propertyArray[i]) ? Qt::Checked : Qt::Unchecked);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), item->checkState() == Qt::Checked);
-					});
-
-					layout->addWidget(tableView);
+#define BURGWAR_PROPERTYTYPE(V, X, UT) \
+				case PropertyType:: X: \
+					layout->addWidget(PropertyWidgets<PropertyType:: X>().SetupArray(this, arraySize, propertyValue, propertyInfo.keyName, OnPropertyOverride)); \
 					break;
-				}
-				
-				case PropertyType::Entity:
-				{
-					m_delegates->comboBoxDelegate.emplace(BuildEntityComboBoxOptions());
 
-					using T = PropertyArray<Nz::Int64>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->comboBoxDelegate.value());
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ QString("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), static_cast<Nz::Int64>(m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::Float:
-				{
-					using T = PropertyArray<float>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->floatDelegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ QString("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->floatDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->floatDelegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::FloatPosition:
-				case PropertyType::FloatSize:
-				{
-					using T = PropertyArray<Nz::Vector2f>;
-					
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->float2Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->float2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->float2Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-				
-				case PropertyType::FloatPosition3D:
-				case PropertyType::FloatSize3D:
-				{
-					using T = PropertyArray<Nz::Vector3f>;
-					
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->float3Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->float3Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->float3Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::FloatRect:
-				{
-					using T = PropertyArray<Nz::Vector4f>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->float4Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->float4Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->float2Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::Integer:
-				{
-					using T = PropertyArray<Nz::Int64>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->intDelegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ QString("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->intDelegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->intDelegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-				{
-					using T = PropertyArray<Nz::Vector2i64>;
-
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->int2Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->int2Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->int2Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::IntegerPosition3D:
-				case PropertyType::IntegerSize3D:
-				{
-					using T = PropertyArray<Nz::Vector3i64>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->int3Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->int3Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->int3Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::IntegerRect:
-				{
-					using T = PropertyArray<Nz::Vector4i64>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->int4Delegate);
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ tr("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->int4Delegate.ApplyModelData(model, model->index(i, 0), propertyArray[i]);
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), m_delegates->int4Delegate.RetrieveModelData(item->index()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-				
-				case PropertyType::Layer:
-				{
-					m_delegates->comboBoxDelegate.emplace(BuildLayerComboBoxOptions());
-
-					using T = PropertyArray<Nz::Int64>;
-
-					QTableView* tableView = new QTableView;
-					QStandardItemModel* model = new QStandardItemModel(arraySize, 1, tableView);
-					tableView->setItemDelegate(&m_delegates->comboBoxDelegate.value());
-					tableView->setModel(model);
-
-					model->setHorizontalHeaderLabels({ QString("Value") });
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						for (int i = 0; i < arraySize; ++i)
-							m_delegates->comboBoxDelegate->ApplyModelData(model, model->index(i, 0), static_cast<qlonglong>(propertyArray[i]));
-					}
-
-					connect(model, &QStandardItemModel::itemChanged, [=](QStandardItem* item)
-					{
-						SetProperty(item->index().row(), static_cast<Nz::Int64>(m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong()));
-					});
-
-					layout->addWidget(tableView);
-					break;
-				}
-
-				case PropertyType::String:
-				case PropertyType::Texture:
-				{
-					using T = PropertyArray<std::string>;
-
-					QTableWidget* table = new QTableWidget(arraySize, 1);
-					table->setHorizontalHeaderLabels({ tr("Value") });
-					table->setSelectionMode(QAbstractItemView::NoSelection);
-					table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
-
-					if (propertyValue)
-					{
-						auto& propertyArray = std::get<T>(propertyValue->get());
-
-						QAbstractItemModel* model = table->model();
-						for (int i = 0; i < arraySize; ++i)
-							model->setData(model->index(i, 0), QString::fromStdString(propertyArray[i]));
-					}
-
-					connect(table, &QTableWidget::cellChanged, [=](int row, int column)
-					{
-						SetProperty(row, table->item(row, column)->text().toStdString());
-					});
-
-					layout->addWidget(table);
-					break;
-				}
+#include <CoreLib/PropertyTypeList.hpp>
 			}
 		}
 		else
 		{
-			auto SetProperty = [this, keyName = propertyInfo.keyName, type = propertyInfo.type, OnPropertyOverride, UpdatePropertyPreview](auto&& value)
-			{
-				auto it = m_entityInfo.properties.find(keyName);
-				if (it == m_entityInfo.properties.end())
-				{
-					it = m_entityInfo.properties.emplace(keyName, PropertyValue{}).first;
-					OnPropertyOverride();
-				}
-
-				it.value() = std::forward<decltype(value)>(value);
-				UpdatePropertyPreview(ToString(it.value(), type));
-
-				m_updateFlags |= EntityInfoUpdate::Properties;
-			};
-
 			switch (propertyInfo.type)
 			{
-				case PropertyType::Bool:
-				{
-					QCheckBox* checkBox = new QCheckBox;
-					if (propertyValue && std::holds_alternative<bool>(propertyValue->get()))
-						checkBox->setChecked(std::get<bool>(propertyValue->get()));
-
-					connect(checkBox, &QCheckBox::toggled, [=](bool checked)
-					{
-						SetProperty(checked);
-					});
-
-					layout->addWidget(checkBox);
+#define BURGWAR_PROPERTYTYPE(V, X, UT) \
+				case PropertyType:: X: \
+					layout->addWidget(PropertyWidgets<PropertyType:: X>().Setup(this, propertyValue, propertyInfo.keyName, OnPropertyOverride)); \
 					break;
-				}
-				
-				case PropertyType::Entity:
-				{
-					QComboBox* comboBox = new QComboBox;
-					for (const auto& option : BuildEntityComboBoxOptions())
-						comboBox->addItem(option.first, option.second);
 
-					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
-					{
-						Nz::Int64 uniqueId = std::get<Nz::Int64>(propertyValue->get());
-						int listSize = comboBox->count();
-
-						int i = 0;
-						for (; i < listSize; ++i)
-						{
-							if (static_cast<Nz::Int64>(comboBox->itemData(i).toLongLong()) == uniqueId)
-							{
-								comboBox->setCurrentIndex(i);
-								break;
-							}
-						}
-
-						if (i >= listSize)
-							comboBox->setCurrentIndex(0);
-					}
-
-					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
-					{
-						if (index > 0)
-							SetProperty(static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong()));
-						else
-							SetProperty(NoEntity);
-					});
-
-					layout->addWidget(comboBox);
-					break;
-				}
-
-				case PropertyType::Float:
-				{
-					QDoubleSpinBox* spinbox = new QDoubleSpinBox;
-					spinbox->setDecimals(6);
-					spinbox->setRange(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
-					if (propertyValue && std::holds_alternative<float>(propertyValue->get()))
-						spinbox->setValue(std::get<float>(propertyValue->get()));
-
-					connect(spinbox, &QDoubleSpinBox::editingFinished, [=]()
-					{
-						SetProperty(float(spinbox->value()));
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::FloatPosition:
-				case PropertyType::FloatSize:
-				{
-					Float2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition) ? Float2SpinBox::LabelMode::PositionLabel : Float2SpinBox::LabelMode::SizeLabel;
-					Float2SpinBox* spinbox = new Float2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector2f>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector2f>(propertyValue->get()));
-
-					connect(spinbox, &Float2SpinBox::valueChanged, [=]()
-					{
-						SetProperty(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-				
-				case PropertyType::FloatPosition3D:
-				case PropertyType::FloatSize3D:
-				{
-					Float3SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::FloatPosition3D) ? Float3SpinBox::LabelMode::PositionLabel : Float3SpinBox::LabelMode::SizeLabel;
-					Float3SpinBox* spinbox = new Float3SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector3f>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector3f>(propertyValue->get()));
-
-					connect(spinbox, &Float3SpinBox::valueChanged, [=]()
-					{
-						SetProperty(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::FloatRect:
-				{
-					Float4SpinBox* spinbox = new Float4SpinBox(Float4SpinBox::LabelMode::RectLabel, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector4f>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector4f>(propertyValue->get()));
-
-					connect(spinbox, &Float4SpinBox::valueChanged, [=]()
-					{
-						SetProperty(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::Integer:
-				{
-					// TODO: Handle properly int64
-					QSpinBox* spinbox = new QSpinBox;
-					spinbox->setRange(std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max());
-
-					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Int64>(propertyValue->get()));
-
-					connect(spinbox, &QSpinBox::editingFinished, [=]()
-					{
-						SetProperty(Nz::Int64(spinbox->value()));
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::IntegerPosition:
-				case PropertyType::IntegerSize:
-				{
-					Integer2SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::IntegerPosition) ? Integer2SpinBox::LabelMode::PositionLabel : Integer2SpinBox::LabelMode::SizeLabel;
-					Integer2SpinBox* spinbox = new Integer2SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector2i64>(propertyValue->get()));
-
-					connect(spinbox, &Integer2SpinBox::valueChanged, [=]()
-					{
-						SetProperty(Nz::Vector2i64(spinbox->value()));
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::IntegerPosition3D:
-				case PropertyType::IntegerSize3D:
-				{
-					Integer3SpinBox::LabelMode labelMode = (propertyInfo.type == PropertyType::IntegerPosition3D) ? Integer3SpinBox::LabelMode::PositionLabel : Integer3SpinBox::LabelMode::SizeLabel;
-					Integer3SpinBox* spinbox = new Integer3SpinBox(labelMode, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector2i64>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector3i64>(propertyValue->get()));
-
-					connect(spinbox, &Integer3SpinBox::valueChanged, [=]()
-					{
-						SetProperty(Nz::Vector3i64(spinbox->value()));
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::IntegerRect:
-				{
-					// TODO: Handle properly int64
-					Integer4SpinBox* spinbox = new Integer4SpinBox(Integer4SpinBox::LabelMode::RectLabel, QBoxLayout::TopToBottom);
-					if (propertyValue && std::holds_alternative<Nz::Vector4i64>(propertyValue->get()))
-						spinbox->setValue(std::get<Nz::Vector4i64>(propertyValue->get()));
-
-					connect(spinbox, &Integer4SpinBox::valueChanged, [=]()
-					{
-						SetProperty(spinbox->value());
-					});
-
-					layout->addWidget(spinbox);
-					break;
-				}
-
-				case PropertyType::Layer:
-				{
-					QComboBox* comboBox = new QComboBox;
-					for (const auto& option : BuildLayerComboBoxOptions())
-						comboBox->addItem(option.first, option.second);
-
-					if (propertyValue && std::holds_alternative<Nz::Int64>(propertyValue->get()))
-					{
-						int index = int(std::get<Nz::Int64>(propertyValue->get()));
-						if (index == NoLayer)
-							index = 0;
-						else
-							index++;
-
-						comboBox->setCurrentIndex(index);
-					}
-
-					connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
-					{
-						SetProperty(static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong()));
-					});
-
-					layout->addWidget(comboBox);
-					break;
-				}
-
-				case PropertyType::String:
-				case PropertyType::Texture:
-				{
-					QLineEdit* lineEdit = new QLineEdit;
-					if (propertyValue && std::holds_alternative<std::string>(propertyValue->get()))
-						lineEdit->setText(QString::fromStdString(std::get<std::string>(propertyValue->get())));
-
-					connect(lineEdit, &QLineEdit::editingFinished, [=]()
-					{
-						SetProperty(lineEdit->text().toStdString());
-					});
-
-					layout->addWidget(lineEdit);
-					break;
-				}
+#include <CoreLib/PropertyTypeList.hpp>
 			}
 		}
 
@@ -1743,7 +1740,8 @@ namespace bw
 		return std::visit([=](const auto& value) -> QString
 		{
 			using T = std::decay_t<decltype(value)>;
-			constexpr bool IsArray = IsSameTpl_v<PropertyArray, T>;
+			using PropertyTypeExtractor = PropertyTypeExtractor<T>;
+			constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
 			// We have to use if constexpr here because the compiler will instantiate this lambda even for single types
 			if constexpr (IsArray)
@@ -1752,7 +1750,7 @@ namespace bw
 			}
 			else
 			{
-				return ToString(value, type);
+				return ToString(value.value, type);
 			}
 		}, property->get());
 	}

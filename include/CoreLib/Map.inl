@@ -98,7 +98,14 @@ namespace bw
 		}
 
 		m_layers.erase(m_layers.begin() + layerIndex);
-		//TODO: Should the map fix entity properties?
+
+		// Update entities pointing to this layer
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		{
+			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
+			if (static_cast<LayerIndex>(currentLayerIndex) == layerIndex)
+				currentLayerIndex = NoLayer;
+		});
 
 		return layer;
 	}
@@ -128,6 +135,14 @@ namespace bw
 	template<typename... Args> 
 	auto Map::EmplaceLayer(LayerIndex layerIndex, Args&&... args) -> Layer&
 	{
+		// Update entities pointing to this layer
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		{
+			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
+			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
+				currentLayerIndex++;
+		});
+
 		Layer& layer = *m_layers.emplace(m_layers.begin() + layerIndex, std::forward<Args>(args)...);
 
 		for (auto it = m_entitiesByUniqueId.begin(); it != m_entitiesByUniqueId.end(); ++it)
@@ -157,6 +172,59 @@ namespace bw
 			for (auto& entity : layer.entities)
 				func(entity);
 		}
+	}
+
+	template<PropertyType P, typename F>
+	void Map::ForeachEntityProperty(F&& func)
+	{
+		ForeachEntity([&](Map::Entity& entity)
+		{
+			for (auto it = entity.properties.begin(); it != entity.properties.end(); ++it)
+			{
+				const std::string& name = it->first;
+				PropertyValue& value = it.value();
+
+				std::visit([&](auto&& propertyValue)
+				{
+					using T = std::decay_t<decltype(propertyValue)>;
+					using TypeExtractor = PropertyTypeExtractor<T>;
+
+					if constexpr (TypeExtractor::Property == P)
+						func(entity, name, propertyValue, TypeExtractor::IsArray);
+
+				}, value);
+			}
+		});
+	}
+
+	template<PropertyType P, typename F>
+	void Map::ForeachEntityPropertyValue(F&& func)
+	{
+		ForeachEntity([&](Map::Entity& entity)
+		{
+			for (auto it = entity.properties.begin(); it != entity.properties.end(); ++it)
+			{
+				const std::string& name = it->first;
+				PropertyValue& value = it.value();
+
+				std::visit([&](auto&& propertyValue)
+				{
+					using T = std::decay_t<decltype(propertyValue)>;
+					using TypeExtractor = PropertyTypeExtractor<T>;
+
+					if constexpr (TypeExtractor::Property == P)
+					{
+						if constexpr (TypeExtractor::IsArray)
+						{
+							for (auto& row : propertyValue)
+								func(name, row);
+						}
+						else
+							func(name, *propertyValue);
+					}
+				}, value);
+			}
+		});
 	}
 
 	inline Nz::Int64 Map::GenerateUniqueId()
@@ -327,6 +395,17 @@ namespace bw
 			else if (entityIndices.layerIndex == secondLayerIndex)
 				entityIndices.layerIndex = firstLayerIndex;
 		}
+
+		// Update entities pointing to this layer
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& layerIndex)
+		{
+			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
+
+			if (static_cast<LayerIndex>(layerIndex) == firstLayerIndex)
+				layerIndex = secondLayerIndex;
+			else if (static_cast<LayerIndex>(layerIndex) == secondLayerIndex)
+				layerIndex = firstLayerIndex;
+		});
 	}
 
 	inline Map Map::LoadFromBinary(const std::filesystem::path& mapFile)
@@ -355,5 +434,12 @@ namespace bw
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) != m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId.erase(uniqueId);
+
+		// Update entities pointing to this entity
+		ForeachEntityPropertyValue<PropertyType::Entity>([&](const std::string& /*name*/, Nz::Int64& entityIndex)
+		{
+			if (entityIndex == uniqueId)
+				entityIndex = 0;
+		});
 	}
 }

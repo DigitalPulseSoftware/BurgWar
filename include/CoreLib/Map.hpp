@@ -52,6 +52,8 @@ namespace bw
 			template<typename... Args> Layer& EmplaceLayer(LayerIndex layerIndex, Args&&... args);
 
 			template<typename F> void ForeachEntity(F&& func);
+			template<PropertyType P, typename F> void ForeachEntityProperty(F&& func);
+			template<PropertyType P, typename F> void ForeachEntityPropertyValue(F&& func);
 
 			inline Nz::Int64 GenerateUniqueId();
 
