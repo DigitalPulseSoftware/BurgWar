@@ -6,7 +6,7 @@ local entity = ScriptedEntity({
 	Properties = {
 		{ Name = "respawntime", Type = PropertyType.Integer, Default = 30 },
 		{ Name = "powerup_entity", Type = PropertyType.Entity, Default = NoEntity }
-		}
+	}
 })
 
 entity.CanSpawn = true

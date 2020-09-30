@@ -1336,7 +1336,7 @@ namespace bw
 
 		std::size_t selectedEntity = m_selectedEntities.front();
 
-		QListWidgetItem* item = m_entityList.listWidget->item(selectedEntity);
+		QListWidgetItem* item = m_entityList.listWidget->item(int(selectedEntity));
 
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		m_canvas->EditEntityPosition(canvasId);
