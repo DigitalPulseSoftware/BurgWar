@@ -37,11 +37,12 @@ namespace bw
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
+			Map(const Map&) = default;
+			Map(Map&&) noexcept = default;
 			~Map() = default;
 
 			template<typename... Args> Entity& AddEntity(LayerIndex layerIndex, Args&&... args);
 			template<typename... Args> Layer& AddLayer(Args&&... args);
-			nlohmann::json AsJson() const;
 
 			bool Compile(const std::filesystem::path& outputPath);
 
@@ -80,6 +81,9 @@ namespace bw
 			void SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
 			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 
+			Map& operator=(const Map&) = default;
+			Map& operator=(Map&&) noexcept = default;
+
 			struct Asset
 			{
 				static constexpr std::size_t ChecksumSize = 20;
@@ -116,7 +120,9 @@ namespace bw
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);
 			static inline Map LoadFromFolder(const std::filesystem::path& mapFolder);
 
+			static nlohmann::json Serialize(const Map& map);
 			static nlohmann::json SerializeEntity(const Entity& entity);
+			static Map Unserialize(const nlohmann::json& mapInfo);
 			static Entity UnserializeEntity(const nlohmann::json& entityInfo);
 
 		private:

@@ -99,47 +99,6 @@ namespace Nz
 
 namespace bw
 {
-	nlohmann::json Map::AsJson() const
-	{
-		assert(IsValid());
-
-		nlohmann::json mapInfo;
-		mapInfo["name"] = m_mapInfo.name;
-		mapInfo["author"] = m_mapInfo.author;
-		mapInfo["description"] = m_mapInfo.description;
-
-		auto assetArray = nlohmann::json::array();
-		for (auto&& assetEntry : m_assets)
-		{
-			nlohmann::json assetInfo;
-			assetInfo["filePath"] = assetEntry.filepath;
-			assetInfo["checksum"] = assetEntry.sha1Checksum;
-			assetInfo["size"] = assetEntry.size;
-
-			assetArray.emplace_back(std::move(assetInfo));
-		}
-		mapInfo["assets"] = std::move(assetArray);
-
-		auto layerArray = nlohmann::json::array();
-		for (auto&& layerEntry : m_layers)
-		{
-			nlohmann::json layerInfo;
-			layerInfo["backgroundColor"] = layerEntry.backgroundColor;
-			layerInfo["name"] = layerEntry.name;
-
-			auto entityArray = nlohmann::json::array();
-			for (auto&& entityEntry : layerEntry.entities)
-				entityArray.emplace_back(SerializeEntity(entityEntry));
-
-			layerInfo["entities"] = std::move(entityArray);
-
-			layerArray.emplace_back(std::move(layerInfo));
-		}
-		mapInfo["layers"] = std::move(layerArray);
-
-		return mapInfo;
-	}
-
 	bool Map::Compile(const std::filesystem::path& outputPath)
 	{
 		Nz::File infoFile(outputPath.generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
@@ -255,7 +214,7 @@ namespace bw
 	{
 		assert(IsValid());
 
-		std::string content = AsJson().dump(1, '\t');
+		std::string content = Serialize(*this).dump(1, '\t');
 
 		Nz::File infoFile((mapFolderPath / "info.json").generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 		if (!infoFile.IsOpen())
@@ -265,6 +224,49 @@ namespace bw
 			return false;
 
 		return true;
+	}
+
+	nlohmann::json Map::Serialize(const Map& map)
+	{
+		assert(map.IsValid());
+
+		const MapInfo& mapInfo = map.GetMapInfo();
+
+		nlohmann::json mapJson;
+		mapJson["name"] = mapInfo.name;
+		mapJson["author"] = mapInfo.author;
+		mapJson["description"] = mapInfo.description;
+
+		auto assetArray = nlohmann::json::array();
+		for (const auto& mapAsset : map.GetAssets())
+		{
+			nlohmann::json assetInfo;
+			assetInfo["filePath"] = mapAsset.filepath;
+			assetInfo["checksum"] = mapAsset.sha1Checksum;
+			assetInfo["size"] = mapAsset.size;
+
+			assetArray.emplace_back(std::move(assetInfo));
+		}
+		mapJson["assets"] = std::move(assetArray);
+
+		auto layerArray = nlohmann::json::array();
+		for (const auto& mapLayer : map.GetLayers())
+		{
+			nlohmann::json layerInfo;
+			layerInfo["backgroundColor"] = mapLayer.backgroundColor;
+			layerInfo["name"] = mapLayer.name;
+
+			auto entityArray = nlohmann::json::array();
+			for (auto&& entityEntry : mapLayer.entities)
+				entityArray.emplace_back(SerializeEntity(entityEntry));
+
+			layerInfo["entities"] = std::move(entityArray);
+
+			layerArray.emplace_back(std::move(layerInfo));
+		}
+		mapJson["layers"] = std::move(layerArray);
+
+		return mapJson;
 	}
 
 	nlohmann::json Map::SerializeEntity(const Entity& entity)
@@ -311,6 +313,41 @@ namespace bw
 		entityInfo["properties"] = std::move(propertiesObject);
 
 		return entityInfo;
+	}
+
+	Map Map::Unserialize(const nlohmann::json& mapJson)
+	{
+		MapInfo mapInfo;
+
+		mapInfo.author = mapJson.value("author", "unknown");
+		mapInfo.description = mapJson.value("description", "");
+		mapInfo.name = mapJson.at("name");
+
+		Map map(std::move(mapInfo));
+
+		auto& assets = map.GetAssets();
+		for (auto&& entry : mapJson["assets"])
+		{
+			Asset& asset = assets.emplace_back();
+			asset.filepath = entry.at("filePath");
+			asset.sha1Checksum = entry.at("checksum");
+			asset.size = entry.value("size", Nz::UInt64(0));
+		}
+
+		auto& layers = map.GetLayers();
+		for (auto&& entry : mapJson["layers"])
+		{
+			Layer& layer = layers.emplace_back();
+			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black);
+			layer.name = entry.value("name", "");
+
+			for (auto&& entityInfo : entry["entities"])
+				layer.entities.emplace_back(UnserializeEntity(entityInfo));
+		}
+
+		map.Sanitize();
+
+		return map;
 	}
 
 	auto Map::UnserializeEntity(const nlohmann::json& entityInfo) -> Entity
@@ -513,34 +550,7 @@ namespace bw
 			throw std::runtime_error("Failed to read info.json file");
 
 		nlohmann::json json = nlohmann::json::parse(content.begin(), content.end());
-		m_mapInfo.author = json.value("author", "unknown");
-		m_mapInfo.description = json.value("description", "");
-		m_mapInfo.name = json.at("name");
-
-		m_assets.clear();
-		for (auto&& entry : json["assets"])
-		{
-			Asset& asset = m_assets.emplace_back();
-			asset.filepath = entry.at("filePath");
-			asset.sha1Checksum = entry.at("checksum");
-			asset.size = entry.value("size", Nz::UInt64(0));
-		}
-
-		m_layers.clear();
-		for (auto&& entry : json["layers"])
-		{
-			Layer& layer = m_layers.emplace_back();
-			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black);
-			layer.name = entry.value("name", "");
-
-			for (auto&& entityInfo : entry["entities"])
-			{
-				layer.entities.emplace_back(UnserializeEntity(entityInfo));
-			}
-		}
-
-		Sanitize();
-		m_isValid = true;
+		operator=(Unserialize(json));
 	}
 
 	void Map::Sanitize()
