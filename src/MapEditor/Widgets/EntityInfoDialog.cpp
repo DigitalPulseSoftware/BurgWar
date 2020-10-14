@@ -1183,11 +1183,14 @@ namespace bw
 			m_updateFlags |= EntityInfoUpdate::PositionRotation;
 		});
 
+		m_entityIndexLabel = new QLabel;
+
 		QFormLayout* genericPropertyLayout = new QFormLayout;
 		genericPropertyLayout->addRow(tr("Entity type"), m_entityTypeWidget);
 		genericPropertyLayout->addRow(tr("Entity name"), m_nameWidget);
 		genericPropertyLayout->addRow(tr("Entity position"), m_positionWidget);
 		genericPropertyLayout->addRow(tr("Entity rotation"), m_rotationWidget);
+		genericPropertyLayout->addRow(tr("Entity unique id"), m_entityIndexLabel);
 
 		QDialogButtonBox* button = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		connect(button, &QDialogButtonBox::accepted, this, &EntityInfoDialog::OnAccept);
@@ -1255,8 +1258,9 @@ namespace bw
 		return std::make_pair(propertyData.type, propertyData.isArray);
 	}
 
-	void EntityInfoDialog::Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
+	void EntityInfoDialog::Open(Nz::Int64 uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
 	{
+		m_entityUniqueId = uniqueId;
 		m_callback = std::move(callback);
 		m_targetEntity = targetEntity;
 
@@ -1264,10 +1268,6 @@ namespace bw
 		{
 			// Editing mode
 			m_entityInfo = std::move(*info);
-
-			m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
-			m_positionWidget->setValue(m_entityInfo.position);
-			m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
 
 			QString oldClass = m_entityTypeWidget->currentText();
 			QString newClass = QString::fromStdString(m_entityInfo.entityClass);
@@ -1293,6 +1293,7 @@ namespace bw
 		m_nameWidget->setText(QString::fromStdString(m_entityInfo.entityName));
 		m_positionWidget->setValue(m_entityInfo.position);
 		m_rotationWidget->setValue(m_entityInfo.rotation.ToDegrees());
+		m_entityIndexLabel->setText(QString::number(m_entityUniqueId));
 
 		m_updateFlags.Clear();
 

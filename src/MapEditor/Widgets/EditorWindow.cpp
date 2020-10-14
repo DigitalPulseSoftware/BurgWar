@@ -1103,15 +1103,17 @@ namespace bw
 		if (!currentLayerOpt)
 			return;
 
+		const auto& workingMap = GetWorkingMap();
+
 		LayerIndex layerIndex = *currentLayerOpt;
-		const auto& layer = m_workingMap.GetLayer(layerIndex);
+		const auto& layer = workingMap.GetLayer(layerIndex);
 
 		EntityInfoDialog* createEntityDialog = GetEntityInfoDialog();
 
 		EntityInfo entityInfo;
 		entityInfo.position = AlignPosition(GetCameraCenter(), layer.positionAlignment);
 
-		createEntityDialog->Open(entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		createEntityDialog->Open(workingMap.GetFreeUniqueId(), entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			Map& map = GetWorkingMapMut();
 			std::size_t entityIndex = map.GetEntityCount(layerIndex);
@@ -1215,7 +1217,8 @@ namespace bw
 		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
 		LayerIndex layerIndex = static_cast<LayerIndex>(m_layerList.listWidget->currentRow());
 
-		auto& layer = m_workingMap.GetLayer(layerIndex);
+		const auto& workingMap = GetWorkingMap();
+		auto& layer = workingMap.GetLayer(layerIndex);
 
 		auto& layerEntity = layer.entities[entityIndex];
 
@@ -1229,7 +1232,7 @@ namespace bw
 		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(std::move(entityInfo), entity, [this, uniqueId = layerEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
+		editEntityDialog->Open(layerEntity.uniqueId, std::move(entityInfo), entity, [this, uniqueId = layerEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
 			Map::Entity entity;
 			entity.entityType = std::move(entityInfo.entityClass);

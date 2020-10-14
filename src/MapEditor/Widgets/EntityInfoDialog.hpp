@@ -60,7 +60,7 @@ namespace bw
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void Open(std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(Nz::Int64 uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
@@ -112,6 +112,7 @@ namespace bw
 			};
 
 			Ndk::EntityHandle m_targetEntity;
+			Nz::Int64 m_entityUniqueId;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;
@@ -129,6 +130,7 @@ namespace bw
 			QComboBox* m_entityTypeWidget;
 			Float2SpinBox* m_positionWidget;
 			QDoubleSpinBox* m_rotationWidget;
+			QLabel* m_entityIndexLabel;
 			QLabel* m_propertyTitle;
 			QLabel* m_propertyDescription;
 			QLayout* m_editorActionLayout;
