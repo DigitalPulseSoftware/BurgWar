@@ -75,6 +75,8 @@ namespace bw
 			}
 		}
 
+		assert(CheckEntityIndices());
+
 		return entityData;
 	}
 
@@ -107,6 +109,8 @@ namespace bw
 				currentLayerIndex = NoLayer;
 		});
 
+		assert(CheckEntityIndices());
+
 		return layer;
 	}
 
@@ -126,6 +130,8 @@ namespace bw
 			if (entityIndices.layerIndex == layerIndex && entityIndices.entityIndex >= entityIndex)
 				entityIndices.entityIndex++;
 		}
+
+		assert(CheckEntityIndices());
 
 		RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
 
@@ -151,6 +157,8 @@ namespace bw
 			if (entityIndices.layerIndex >= layerIndex)
 				entityIndices.layerIndex++;
 		}
+
+		assert(CheckEntityIndices());
 
 		std::size_t entityIndex = 0;
 		for (auto& entity : layer.entities)
@@ -349,6 +357,8 @@ namespace bw
 
 		movedIt.value() = EntityIndices{ targetLayerIndex, targetEntityIndex };
 
+		assert(CheckEntityIndices());
+
 		return targetLayer.entities[targetEntityIndex];
 	}
 
@@ -374,6 +384,8 @@ namespace bw
 					entityIndices.entityIndex = firstEntityIndex;
 			}
 		}
+
+		assert(CheckEntityIndices());
 	}
 
 	inline void Map::SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex)
@@ -395,6 +407,8 @@ namespace bw
 			else if (entityIndices.layerIndex == secondLayerIndex)
 				entityIndices.layerIndex = firstLayerIndex;
 		}
+
+		assert(CheckEntityIndices());
 
 		// Update entities pointing to this layer
 		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& layerIndex)
@@ -426,14 +440,19 @@ namespace bw
 
 	inline void Map::RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex)
 	{
+		assert(layerIndex < m_layers.size());
+		assert(entityIndex < m_layers[layerIndex].entities.size());
+		assert(m_layers[layerIndex].entities[entityIndex].uniqueId == uniqueId);
+
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId[uniqueId] = EntityIndices{ layerIndex, entityIndex };
 	}
 
 	inline void Map::UnregisterEntity(Nz::Int64 uniqueId)
 	{
-		assert(m_entitiesByUniqueId.find(uniqueId) != m_entitiesByUniqueId.end());
-		m_entitiesByUniqueId.erase(uniqueId);
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		assert(it != m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.erase(it);
 
 		// Update entities pointing to this entity
 		ForeachEntityPropertyValue<PropertyType::Entity>([&](const std::string& /*name*/, Nz::Int64& entityIndex)

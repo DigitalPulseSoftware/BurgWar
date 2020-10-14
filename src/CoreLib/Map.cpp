@@ -405,6 +405,24 @@ namespace bw
 		return entity;
 	}
 
+	bool Map::CheckEntityIndices() const
+	{
+		for (auto&& [uniqueId, indices] : m_entitiesByUniqueId)
+		{
+			if (indices.layerIndex >= m_layers.size())
+				return false;
+
+			const auto& layer = m_layers[indices.layerIndex];
+			if (indices.entityIndex >= layer.entities.size())
+				return false;
+
+			if (layer.entities[indices.entityIndex].uniqueId != uniqueId)
+				return false;
+		}
+
+		return true;
+	}
+
 	void Map::LoadFromBinaryInternal(const std::filesystem::path& mapFile)
 	{
 		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode_ReadOnly);

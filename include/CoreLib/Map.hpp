@@ -126,6 +126,7 @@ namespace bw
 			static Entity UnserializeEntity(const nlohmann::json& entityInfo);
 
 		private:
+			bool CheckEntityIndices() const;
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
 			inline void RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
