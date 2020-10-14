@@ -1054,8 +1054,7 @@ namespace bw
 		assert(m_currentLayer);
 		LayerIndex currentLayer = *m_currentLayer;
 
-		std::size_t entityCount = GetWorkingMap().GetEntityCount(currentLayer);
-		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ currentLayer, entityCount });
+		PushCommand<Commands::EntityClone>(Map::EntityIndices{ currentLayer, entityIndex }, Map::EntityIndices{ currentLayer, entityIndex + 1 });
 	}
 
 	void EditorWindow::OnCloneEntity(std::size_t entityIndex, LayerIndex layerIndex)
