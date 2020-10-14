@@ -101,7 +101,7 @@ namespace bw
 		m_layers.erase(m_layers.begin() + layerIndex);
 
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
 			if (static_cast<LayerIndex>(currentLayerIndex) == layerIndex)
@@ -141,7 +141,7 @@ namespace bw
 	auto Map::EmplaceLayer(LayerIndex layerIndex, Args&&... args) -> Layer&
 	{
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/,  const std::string& /*name*/, Nz::Int64& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
 			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
@@ -224,10 +224,10 @@ namespace bw
 						if constexpr (TypeExtractor::IsArray)
 						{
 							for (auto& row : propertyValue)
-								func(name, row);
+								func(entity, name, row);
 						}
 						else
-							func(name, *propertyValue);
+							func(entity, name, *propertyValue);
 					}
 				}, value);
 			}
@@ -410,7 +410,7 @@ namespace bw
 		assert(CheckEntityIndices());
 
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](const std::string& /*name*/, Nz::Int64& layerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& layerIndex)
 		{
 			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
 
@@ -454,7 +454,7 @@ namespace bw
 		m_entitiesByUniqueId.erase(it);
 
 		// Update entities pointing to this entity
-		ForeachEntityPropertyValue<PropertyType::Entity>([&](const std::string& /*name*/, Nz::Int64& entityIndex)
+		ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& entityIndex)
 		{
 			if (entityIndex == uniqueId)
 				entityIndex = 0;

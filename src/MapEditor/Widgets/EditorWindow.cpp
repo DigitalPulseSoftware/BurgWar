@@ -652,7 +652,7 @@ namespace bw
 	void EditorWindow::BuildAssetList()
 	{
 		tsl::hopscotch_set<std::string> textures;
-		m_workingMap.ForeachEntityPropertyValue<PropertyType::Texture>([&](const std::string& /*name*/, const std::string& texturePath)
+		m_workingMap.ForeachEntityPropertyValue<PropertyType::Texture>([&](Map::Entity& /*entity*/, const std::string& /*name*/, const std::string& texturePath)
 		{
 			textures.insert(texturePath);
 		});
@@ -1695,7 +1695,7 @@ namespace bw
 		};
 
 		// Update entities pointing to this entity
-		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](const std::string& /*name*/, Nz::Int64& entityIndex)
+		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& entityIndex)
 		{
 			if (entityIndex >= 0)
 			{
