@@ -1145,7 +1145,11 @@ namespace bw
 			mapInfo.description = std::move(fileDescInfo.description);
 			mapInfo.name = std::move(fileDescInfo.name);
 
-			UpdateWorkingMap(Map(mapInfo));
+			Map newMap(mapInfo);
+			auto& layer = newMap.AddLayer();
+			layer.name = "Layer #1";
+
+			UpdateWorkingMap(newMap);
 		});
 		createMapDialog->exec();
 	}

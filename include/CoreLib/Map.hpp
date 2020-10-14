@@ -131,7 +131,6 @@ namespace bw
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
 			inline void RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
 			void Sanitize();
-			void SetupDefault();
 			inline void UnregisterEntity(Nz::Int64 uniqueId);
 
 			std::vector<Asset> m_assets;

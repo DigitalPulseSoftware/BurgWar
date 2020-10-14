@@ -17,7 +17,6 @@ namespace bw
 	m_mapInfo(std::move(mapInfo)),
 	m_isValid(true)
 	{
-		SetupDefault();
 	}
 
 	template<typename... Args> 

@@ -600,10 +600,4 @@ namespace bw
 
 		m_freeUniqueId = ++biggestId;
 	}
-
-	void Map::SetupDefault()
-	{
-		Layer& layer = m_layers.emplace_back();
-		layer.name = "Layer #1";
-	}
 }
