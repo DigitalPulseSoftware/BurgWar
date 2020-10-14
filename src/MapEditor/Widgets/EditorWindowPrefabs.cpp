@@ -62,9 +62,9 @@ namespace bw
 			entity.position -= centerPos;
 
 		FileDescDialog* createPrefabDialog = new FileDescDialog(m_parent);
-		connect(createPrefabDialog, &QDialog::accepted, [this, createPrefabDialog, layerIndex, entityData = std::move(entityData)]()
+		connect(createPrefabDialog, &QDialog::accepted, [this, createPrefabDialog, layerIndex, entityData = std::move(entityData)]() mutable
 		{
-			FileDescInfo fileDescInfo = createPrefabDialog->Getnfo();
+			FileDescInfo fileDescInfo = createPrefabDialog->GetInfo();
 
 			QString folder = QString::fromStdString("prefabs/" + fileDescInfo.name + ".prefab");
 
@@ -72,23 +72,61 @@ namespace bw
 			if (path.isEmpty())
 				return;
 
-			nlohmann::json prefabInfo;
-			prefabInfo["name"] = fileDescInfo.name;
-			prefabInfo["author"] = fileDescInfo.author;
-			prefabInfo["description"] = fileDescInfo.description;
-
-			auto entityArray = nlohmann::json::array();
+			tsl::hopscotch_map<Nz::Int64 /*uniqueId*/, Nz::Int64 /*prefabId*/> entitiesUniqueToPrefabId;
 			for (auto& entity : entityData)
 			{
-				nlohmann::json entityInfo = Map::SerializeEntity(entity);
-				entityInfo.erase("uniqueId"); //< Don't store unique id as part of the prefab
+				Nz::Int64 prefabId = static_cast<Nz::Int64>(entitiesUniqueToPrefabId.size() + 1);
 
-				entityArray.emplace_back(std::move(entityInfo));
+				assert(entitiesUniqueToPrefabId.find(entity.uniqueId) == entitiesUniqueToPrefabId.end());
+				entitiesUniqueToPrefabId[entity.uniqueId] = prefabId;
+
+				entity.uniqueId = prefabId;
 			}
 
-			prefabInfo["entities"] = std::move(entityArray);
+			MapInfo prefabInfo;
+			prefabInfo.author = std::move(fileDescInfo.author);
+			prefabInfo.description = std::move(fileDescInfo.description);
+			prefabInfo.name = std::move(fileDescInfo.name);
 
-			std::string content = prefabInfo.dump(1, '\t');
+			Map prefab(std::move(prefabInfo));
+			prefab.AddLayer();
+
+			for (auto& entity : entityData)
+				prefab.AddEntity(0, Map::PreserveUniqueId{}, std::move(entity));
+
+			prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& entity, const std::string& name, Nz::Int64& uniqueId)
+			{
+				auto it = entitiesUniqueToPrefabId.find(uniqueId);
+				if (it == entitiesUniqueToPrefabId.end())
+				{
+					//FIXME: Entity ID should not be prefab ID
+					QString errMessage = tr("Entity #%1 (%2) property %3 links entity #%4 which is not part of the prefab")
+					                     .arg(entity.uniqueId)
+					                     .arg(QString::fromStdString(entity.name))
+					                     .arg(QString::fromStdString(name))
+					                     .arg(uniqueId);
+
+					QMessageBox::warning(m_parent, tr("Prefab is not self-containing"), errMessage);
+					uniqueId = 0;
+				}
+				else
+					uniqueId = it->second;
+			});
+
+			prefab.ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& entity, const std::string& name, Nz::Int64& layerId)
+			{
+				//FIXME: Entity ID should not be prefab ID
+				QString errMessage = tr("Entity #%1 (%2) property %3 links to layer #%4 which is not part of the prefab")
+				                     .arg(entity.uniqueId)
+				                     .arg(QString::fromStdString(entity.name))
+				                     .arg(QString::fromStdString(name))
+				                     .arg(layerId);
+
+				QMessageBox::warning(m_parent, tr("Prefab is not self-containing"), errMessage);
+				layerId = 0;
+			});
+
+			std::string content = Map::Serialize(prefab).dump(1, '\t');
 
 			Nz::File infoFile(path.toStdString(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 			if (!infoFile.IsOpen())
@@ -135,13 +173,14 @@ namespace bw
 			return;
 		}
 
-		std::vector<Map::Entity> entities;
+		Map prefab;
 		try
 		{
 			nlohmann::json prefabJson = nlohmann::json::parse(content.begin(), content.end());
+			prefab = Map::Unserialize(prefabJson);
 
-			for (auto&& entityInfo : prefabJson["entities"])
-				entities.emplace_back(Map::UnserializeEntity(entityInfo));
+			if (prefab.GetLayerCount() != 1)
+				throw std::logic_error("one layer expected, " + std::to_string(prefab.GetLayerCount()) + " found");
 		}
 		catch (const std::exception& e)
 		{
@@ -152,20 +191,39 @@ namespace bw
 		Map& map = m_parent->GetWorkingMapMut();
 		const auto& layer = map.GetLayer(layerIndex);
 
-		Nz::Vector2f positionOffset = AlignPosition(m_parent->GetCameraCenter(), layer.positionAlignment);
+		auto& prefabLayer = prefab.GetLayer(0);
 
 		std::size_t entityIndex = layer.entities.size();
-		std::vector<std::size_t> entityIndices;
-		entityIndices.reserve(entities.size());
+		Nz::Vector2f positionOffset = AlignPosition(m_parent->GetCameraCenter(), layer.positionAlignment);
 
-		for (auto& entityData : entities)
+		tsl::hopscotch_map<Nz::Int64 /*prefabId*/, Nz::Int64 /*uniqueId*/> prefabIdToEntitiesUniqueId;
+
+		for (auto& entityData : prefabLayer.entities)
 		{
+			Nz::Int64 newUniqueId = map.GenerateUniqueId();
+			assert(prefabIdToEntitiesUniqueId.find(entityData.uniqueId) == prefabIdToEntitiesUniqueId.end());
+			prefabIdToEntitiesUniqueId[entityData.uniqueId] = newUniqueId;
+
 			entityData.position += positionOffset;
-			entityData.uniqueId = map.GenerateUniqueId();
-			entityIndices.push_back(entityIndex++);
+			entityData.uniqueId = newUniqueId;
 		}
 
-		m_parent->PushCommand<Commands::PrefabInstantiate>(Map::EntityIndices{ layerIndex, layer.entities.size() }, std::move(entities));
+		prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& uniqueId)
+		{
+			auto it = prefabIdToEntitiesUniqueId.find(uniqueId);
+			if (it == prefabIdToEntitiesUniqueId.end())
+			{
+				//TODO: Output warning
+				uniqueId = 0;
+			}
+			else
+				uniqueId = it->second;
+		});
+
+		std::vector<std::size_t> entityIndices(prefabLayer.entities.size());
+		std::iota(entityIndices.begin(), entityIndices.end(), entityIndex);
+
+		m_parent->PushCommand<Commands::PrefabInstantiate>(Map::EntityIndices{ layerIndex, layer.entities.size() }, std::move(prefabLayer.entities));
 
 		m_parent->SelectEntities(std::move(entityIndices));
 	}

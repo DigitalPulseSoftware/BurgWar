@@ -34,6 +34,7 @@ namespace bw
 			struct Entity;
 			struct EntityIndices;
 			struct Layer;
+			struct PreserveUniqueId {};
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
@@ -42,6 +43,7 @@ namespace bw
 			~Map() = default;
 
 			template<typename... Args> Entity& AddEntity(LayerIndex layerIndex, Args&&... args);
+			template<typename... Args> Entity& AddEntity(LayerIndex layerIndex, PreserveUniqueId, Args&&... args);
 			template<typename... Args> Layer& AddLayer(Args&&... args);
 
 			bool Compile(const std::filesystem::path& outputPath);
@@ -70,6 +72,8 @@ namespace bw
 			inline Layer& GetLayer(LayerIndex layerIndex);
 			inline const Layer& GetLayer(LayerIndex layerIndex) const;
 			inline std::size_t GetLayerCount() const;
+			inline std::vector<Layer>& GetLayers();
+			inline const std::vector<Layer>& GetLayers() const;
 			inline const MapInfo& GetMapInfo() const;
 
 			inline bool IsValid() const;

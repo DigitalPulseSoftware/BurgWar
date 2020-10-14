@@ -35,10 +35,27 @@ namespace bw
 		return newEntity;
 	}
 
+	template<typename... Args>
+	auto Map::AddEntity(LayerIndex layerIndex, PreserveUniqueId, Args&&... args) -> Entity&
+	{
+		assert(IsValid());
+		assert(layerIndex < m_layers.size());
+		auto& layer = m_layers[layerIndex];
+
+		std::size_t entityIndex = layer.entities.size();
+		auto& newEntity = layer.entities.emplace_back(std::forward<Args>(args)...);
+		if (m_entitiesByUniqueId.find(newEntity.uniqueId) != m_entitiesByUniqueId.end())
+			throw std::runtime_error("entity id " + std::to_string(newEntity.uniqueId) + " is not unique");
+
+		RegisterEntity(newEntity.uniqueId, layerIndex, entityIndex);
+
+		return newEntity;
+	}
+
 	template<typename... Args> 
 	auto Map::AddLayer(Args&&... args) -> Layer&
 	{
-		LayerIndex layerIndex = m_layers.size();
+		LayerIndex layerIndex = LayerIndex(m_layers.size());
 		Layer& layer = m_layers.emplace_back(std::forward<Args>(args)...);
 
 		std::size_t entityIndex = 0;
@@ -310,6 +327,16 @@ namespace bw
 	inline std::size_t Map::GetLayerCount() const
 	{
 		return m_layers.size();
+	}
+
+	inline auto Map::GetLayers() -> std::vector<Layer>&
+	{
+		return m_layers;
+	}
+
+	inline auto Map::GetLayers() const -> const std::vector<Layer>&
+	{
+		return m_layers;
 	}
 
 	inline const MapInfo& Map::GetMapInfo() const
