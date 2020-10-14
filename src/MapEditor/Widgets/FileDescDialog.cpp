@@ -41,7 +41,7 @@ namespace bw
 		setLayout(verticalLayout);
 	}
 
-	FileDescInfo FileDescDialog::Getnfo() const
+	FileDescInfo FileDescDialog::GetInfo() const
 	{
 		FileDescInfo mapInfo;
 		mapInfo.author = m_author->text().toStdString();

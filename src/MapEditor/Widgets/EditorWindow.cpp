@@ -1138,7 +1138,7 @@ namespace bw
 		FileDescDialog* createMapDialog = new FileDescDialog(this);
 		connect(createMapDialog, &QDialog::accepted, [this, createMapDialog]()
 		{
-			FileDescInfo fileDescInfo = createMapDialog->Getnfo();
+			FileDescInfo fileDescInfo = createMapDialog->GetInfo();
 
 			MapInfo mapInfo;
 			mapInfo.author = std::move(fileDescInfo.author);

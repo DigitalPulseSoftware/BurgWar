@@ -27,7 +27,7 @@ namespace bw
 			FileDescDialog(QWidget* parent = nullptr);
 			~FileDescDialog() = default;
 
-			FileDescInfo Getnfo() const;
+			FileDescInfo GetInfo() const;
 
 		private:
 			void OnAccept();
