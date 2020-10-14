@@ -7,13 +7,13 @@
 namespace bw
 {
 	inline Map::Map() :
-	m_freeUniqueId(0),
+	m_freeUniqueId(1),
 	m_isValid(false)
 	{
 	}
 
 	inline Map::Map(MapInfo mapInfo) :
-	m_freeUniqueId(0),
+	m_freeUniqueId(1),
 	m_mapInfo(std::move(mapInfo)),
 	m_isValid(true)
 	{
