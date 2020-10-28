@@ -137,7 +137,7 @@ namespace bw
 
 			const Map& map = GetWorkingMap();
 
-			std::vector<Nz::Int64> entityUniqueIds;
+			std::vector<EntityId> entityUniqueIds;
 			for (std::size_t i = 0; i < entityCount; ++i)
 			{
 				auto it = m_entityIndexes.find(canvasIndices[i]);
@@ -1224,7 +1224,7 @@ namespace bw
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			std::vector<Nz::Int64> entityUniqueIds(entityCount);
+			std::vector<EntityId> entityUniqueIds(entityCount);
 			for (std::size_t i = 0; i < entityCount; ++i)
 				entityUniqueIds[i] = layer.entities[entityIndices[i]].uniqueId;
 
@@ -1701,9 +1701,9 @@ namespace bw
 	void EditorWindow::RebuildUniqueIds()
 	{
 		// Since we have no guarantee on current unique ids, use a secure hashmap
-		tsl::bhopscotch_map<Nz::Int64 /* from */, Nz::Int64 /* to */> uniqueIds;
+		tsl::bhopscotch_map<EntityId /* from */, EntityId /* to */> uniqueIds;
 
-		Nz::Int64 uniqueId = 1;
+		EntityId uniqueId = 1;
 
 		Map& map = GetWorkingMapMut();
 
@@ -1713,7 +1713,7 @@ namespace bw
 			auto& layer = map.GetLayer(LayerIndex(i));
 			for (auto& entity : layer.entities)
 			{
-				Nz::Int64 previousId = entity.uniqueId;
+				EntityId previousId = entity.uniqueId;
 				entity.uniqueId = uniqueId++;
 
 				if (previousId >= 0)
@@ -1721,7 +1721,7 @@ namespace bw
 			}
 		}
 
-		auto UpdateEntityIndex = [=](Nz::Int64& entityIndex)
+		auto UpdateEntityIndex = [=](EntityId& entityIndex)
 		{
 			if (entityIndex >= 0)
 			{
@@ -1732,7 +1732,7 @@ namespace bw
 		};
 
 		// Update entities pointing to this entity
-		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& entityIndex)
+		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, EntityId& entityIndex)
 		{
 			if (entityIndex >= 0)
 			{

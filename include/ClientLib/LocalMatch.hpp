@@ -60,7 +60,7 @@ namespace bw
 
 			template<typename T> T AdjustServerTick(T tick);
 
-			inline Nz::Int64 AllocateClientUniqueId();
+			inline EntityId AllocateClientUniqueId();
 
 			Nz::UInt64 EstimateServerTick() const;
 
@@ -94,12 +94,12 @@ namespace bw
 
 			inline void Quit();
 
-			void RegisterEntity(Nz::Int64 uniqueId, LocalLayerEntityHandle entity);
+			void RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity);
 			
-			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
-			Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
 
-			void UnregisterEntity(Nz::Int64 uniqueId);
+			void UnregisterEntity(EntityId uniqueId);
 
 			bool Update(float elapsedTime);
 
@@ -211,7 +211,7 @@ namespace bw
 				struct LayerData
 				{
 					LayerIndex layerIndex;
-					tsl::hopscotch_map<Nz::Int64, EntityData> entities;
+					tsl::hopscotch_map<EntityId, EntityData> entities;
 				};
 
 				struct PlayerData
@@ -270,12 +270,12 @@ namespace bw
 			Ndk::EntityHandle m_currentLayer;
 			Ndk::World m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;
-			Nz::Int64 m_freeClientId;
+			EntityId m_freeClientId;
 			Nz::RenderTarget* m_renderTarget;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
-			tsl::hopscotch_map<Nz::Int64, LocalLayerEntityHandle> m_entitiesByUniqueId;
-			tsl::hopscotch_set<Nz::Int64> m_inactiveEntities;
+			tsl::hopscotch_map<EntityId, LocalLayerEntityHandle> m_entitiesByUniqueId;
+			tsl::hopscotch_set<EntityId> m_inactiveEntities;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			Chatbox m_chatBox;

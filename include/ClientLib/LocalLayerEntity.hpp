@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
 #define BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
 
+#include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Core/HandledObject.hpp>
@@ -31,7 +32,7 @@ namespace bw
 		friend VisualEntity;
 
 		public:
-			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, Nz::Int64 uniqueId);
+			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
 			LocalLayerEntity(const LocalLayerEntity&) = delete;
 			LocalLayerEntity(LocalLayerEntity&& entity) noexcept;
 			~LocalLayerEntity();
@@ -52,7 +53,7 @@ namespace bw
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
-			inline Nz::Int64 GetUniqueId() const;
+			inline EntityId GetUniqueId() const;
 			inline const LocalLayerEntityHandle& GetWeaponEntity() const;
 
 			inline bool HasHealth() const;
@@ -125,7 +126,7 @@ namespace bw
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
-			Nz::Int64 m_uniqueId;
+			EntityId m_uniqueId;
 			Nz::UInt32 m_serverEntityId;
 			LocalLayerEntityHandle m_weaponEntity;
 			LocalLayer& m_layer;

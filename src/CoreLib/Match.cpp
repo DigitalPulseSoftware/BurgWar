@@ -259,7 +259,7 @@ namespace bw
 		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
 	}
 
-	void Match::RegisterEntity(Nz::Int64 uniqueId, Ndk::EntityHandle entity)
+	void Match::RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 
@@ -468,7 +468,7 @@ namespace bw
 		});
 	}
 
-	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const
+	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
@@ -477,10 +477,10 @@ namespace bw
 		return it.value().entity;
 	}
 
-	Nz::Int64 Match::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId Match::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
 	{
 		if (!entity || !entity->HasComponent<MatchComponent>())
-			return NoEntity;
+			return InvalidEntityId;
 
 		return entity->GetComponent<MatchComponent>().GetUniqueId();
 	}

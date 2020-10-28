@@ -81,7 +81,7 @@ namespace bw
 			struct EntityCreation
 			{
 				Ndk::EntityId entityId;
-				Nz::Int64 uniqueId;
+				EntityId uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				float scale;

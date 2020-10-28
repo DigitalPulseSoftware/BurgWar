@@ -162,7 +162,7 @@ namespace bw
 
 				creationEvent.properties.emplace(key, value);
 
-				auto RegisterDependentId = [&](Nz::Int64 entityId)
+				auto RegisterDependentId = [&](EntityId entityId)
 				{
 					const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
 					if (propertyEntity)

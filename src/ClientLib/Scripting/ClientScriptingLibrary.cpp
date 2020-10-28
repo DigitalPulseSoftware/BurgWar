@@ -109,7 +109,7 @@ namespace bw
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
-			Nz::Int64 clientUniqueId = match.AllocateClientUniqueId();
+			EntityId clientUniqueId = match.AllocateClientUniqueId();
 
 			LocalLayer& layer = match.GetLayer(layerIndex);
 			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);

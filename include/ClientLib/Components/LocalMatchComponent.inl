@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline LocalMatchComponent::LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, Nz::Int64 uniqueId) :
+	inline LocalMatchComponent::LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, EntityId uniqueId) :
 	m_uniqueId(uniqueId),
 	m_localMatch(localMatch),
 	m_layerIndex(layerIndex)
@@ -23,7 +23,7 @@ namespace bw
 		return m_localMatch;
 	}
 
-	inline Nz::Int64 LocalMatchComponent::GetUniqueId() const
+	inline EntityId LocalMatchComponent::GetUniqueId() const
 	{
 		return m_uniqueId;
 	}

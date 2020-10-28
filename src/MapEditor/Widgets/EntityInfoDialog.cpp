@@ -33,9 +33,8 @@
 #include <bitset>
 #include <limits>
 
-// TODO: Replace Nz::Int64 by some EntityIndex using
-static_assert(sizeof(Nz::Int64) == sizeof(qlonglong));
-static_assert(std::is_signed_v<Nz::Int64> == std::is_signed_v<qlonglong>);
+static_assert(sizeof(bw::EntityId) == sizeof(qlonglong));
+static_assert(std::is_signed_v<bw::EntityId> == std::is_signed_v<qlonglong>);
 
 Q_DECLARE_METATYPE(Nz::Vector2f);
 Q_DECLARE_METATYPE(Nz::Vector2i64);
@@ -775,9 +774,9 @@ namespace bw
 
 			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item) mutable
 			{
-				Nz::Int64 value = static_cast<Nz::Int64>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+				EntityId value = static_cast<EntityId>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
 				if (value <= 0)
-					value = NoEntity;
+					value = InvalidEntityId;
 
 				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
 			});
@@ -796,13 +795,13 @@ namespace bw
 
 			if (propertyValue && std::holds_alternative<T>(propertyValue->get()))
 			{
-				Nz::Int64 uniqueId = *std::get<T>(propertyValue->get());
+				EntityId uniqueId = *std::get<T>(propertyValue->get());
 				int listSize = comboBox->count();
 
 				int i = 0;
 				for (; i < listSize; ++i)
 				{
-					if (static_cast<Nz::Int64>(comboBox->itemData(i).toLongLong()) == uniqueId)
+					if (static_cast<EntityId>(comboBox->itemData(i).toLongLong()) == uniqueId)
 					{
 						comboBox->setCurrentIndex(i);
 						break;
@@ -815,9 +814,9 @@ namespace bw
 
 			owner->connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](int index)
 			{
-				Nz::Int64 value = static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong());
+				EntityId value = static_cast<EntityId>(comboBox->itemData(index).toLongLong());
 				if (value <= 0)
-					value = NoEntity;
+					value = InvalidEntityId;
 
 				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
 			});
@@ -1038,7 +1037,7 @@ namespace bw
 
 			owner->connect(model, &QStandardItemModel::itemChanged, [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](QStandardItem* item)
 			{
-				Nz::Int64 value = static_cast<Nz::Int64>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
+				LayerIndex value = static_cast<LayerIndex>(owner->m_delegates->comboBoxDelegate->RetrieveModelData(item->index()).toLongLong());
 
 				PropertyOverrider<true>::template OverrideProperty<P>(owner, arraySize, item->index().row(), owner->m_entityInfo.properties, keyName, value, callback);
 			});
@@ -1068,7 +1067,7 @@ namespace bw
 
 			owner->connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=, keyName = std::move(keyName), callback = std::forward<CB>(callback)](int index)
 			{
-				Nz::Int64 value = static_cast<Nz::Int64>(comboBox->itemData(index).toLongLong());
+				LayerIndex value = static_cast<LayerIndex>(comboBox->itemData(index).toLongLong());
 
 				PropertyOverrider<false>::template OverrideProperty<P>(owner, owner->m_entityInfo.properties, keyName, value, callback);
 			});
@@ -1258,7 +1257,7 @@ namespace bw
 		return std::make_pair(propertyData.type, propertyData.isArray);
 	}
 
-	void EntityInfoDialog::Open(Nz::Int64 uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
+	void EntityInfoDialog::Open(EntityId uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
 	{
 		m_entityUniqueId = uniqueId;
 		m_callback = std::move(callback);
@@ -1634,9 +1633,22 @@ namespace bw
 		return QString::number(value);
 	}
 
+	QString EntityInfoDialog::ToString(Nz::UInt16 value, PropertyType type)
+	{
+		assert(type == PropertyType::Layer);
+
+		if (value == NoLayer)
+			return tr("<No layer>");
+		else
+		{
+			auto& layer = m_map.GetLayer(value);
+			return tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(value + 1);
+		}
+	}
+
 	QString EntityInfoDialog::ToString(Nz::Int64 value, PropertyType type)
 	{
-		assert(type == PropertyType::Entity || type == PropertyType::Integer || type == PropertyType::Layer);
+		assert(type == PropertyType::Entity || type == PropertyType::Integer);
 		switch (type)
 		{
 			case PropertyType::Entity:
@@ -1674,17 +1686,6 @@ namespace bw
 
 			case PropertyType::Integer:
 				return QString::number(value);
-
-			case PropertyType::Layer:
-			{
-				if (value == NoLayer)
-					return tr("<No layer>");
-				else
-				{
-					auto& layer = m_map.GetLayer(value);
-					return tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(value + 1);
-				}
-			}
 
 			default:
 				assert(false);
@@ -1759,7 +1760,7 @@ namespace bw
 	std::vector<std::pair<QString, QVariant>> EntityInfoDialog::BuildEntityComboBoxOptions()
 	{
 		std::vector<std::pair<QString, QVariant>> options;
-		options.emplace_back(tr("<No entity>"), static_cast<qlonglong>(NoEntity));
+		options.emplace_back(tr("<No entity>"), static_cast<qlonglong>(InvalidEntityId));
 
 		for (std::size_t i = 0; i < m_map.GetLayerCount(); ++i)
 		{

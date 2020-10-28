@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, Nz::Int64 uniqueId) :
+	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
 	m_entity(entity),
 	m_uniqueId(uniqueId),
 	m_serverEntityId(serverEntityId),
@@ -42,7 +42,7 @@ namespace bw
 	m_weaponEntity(std::move(entity.m_weaponEntity)),
 	m_layer(entity.m_layer)
 	{
-		entity.m_uniqueId = NoEntity;
+		entity.m_uniqueId = InvalidEntityId;
 	}
 
 	LocalLayerEntity::~LocalLayerEntity()
@@ -50,7 +50,7 @@ namespace bw
 		if (m_ghostEntity)
 			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
 
-		if (m_uniqueId != NoEntity)
+		if (m_uniqueId != InvalidEntityId)
 			m_layer.GetLocalMatch().UnregisterEntity(m_uniqueId);
 	}
 

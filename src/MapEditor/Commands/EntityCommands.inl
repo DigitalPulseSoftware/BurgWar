@@ -16,9 +16,9 @@ namespace bw::Commands
 		return entityData;
 	}
 
-	std::vector<Nz::Int64> EntityCreationDelete::GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData)
+	std::vector<EntityId> EntityCreationDelete::GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData)
 	{
-		std::vector<Nz::Int64> entitiesId;
+		std::vector<EntityId> entitiesId;
 		entitiesId.reserve(entitiesData.size());
 
 		for (const auto& entityData : entitiesData)

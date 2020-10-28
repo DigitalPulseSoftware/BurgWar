@@ -57,7 +57,7 @@ namespace bw
 			Match(Match&&) = delete;
 			~Match();
 
-			inline Nz::Int64 AllocateUniqueId();
+			inline EntityId AllocateUniqueId();
 
 			void BroadcastChatMessage(Player* player, std::string message);
 			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true);
@@ -96,7 +96,7 @@ namespace bw
 			void RegisterAsset(const std::filesystem::path& assetPath);
 			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
 			void RegisterClientScript(const std::filesystem::path& clientScript);
-			void RegisterEntity(Nz::Int64 uniqueId, Ndk::EntityHandle entity);
+			void RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity);
 			void RegisterNetworkString(std::string string);
 
 			void ReloadAssets();
@@ -104,8 +104,8 @@ namespace bw
 
 			void RemovePlayer(Player* player, DisconnectionReason disconnection);
 
-			const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const override;
-			Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
 
 			void Update(float elapsedTime);
 
@@ -174,9 +174,9 @@ namespace bw
 			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, Asset> m_assets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
-			tsl::hopscotch_map<Nz::Int64, Entity> m_entitiesByUniqueId;
+			tsl::hopscotch_map<EntityId, Entity> m_entitiesByUniqueId;
 			Nz::Bitset<> m_freePlayerId;
-			Nz::Int64 m_nextUniqueId;
+			EntityId m_nextUniqueId;
 			Nz::UInt64 m_lastPingUpdate;
 			BurgApp& m_app;
 			GamemodeSettings m_gamemodeSettings;

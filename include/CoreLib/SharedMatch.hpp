@@ -53,8 +53,8 @@ namespace bw
 			virtual SharedWeaponStore& GetWeaponStore() = 0;
 			virtual const SharedWeaponStore& GetWeaponStore() const = 0;
 
-			virtual const Ndk::EntityHandle& RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const = 0;
-			virtual Nz::Int64 RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const = 0;
+			virtual const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const = 0;
+			virtual EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const = 0;
 
 			void Update(float elapsedTime);
 

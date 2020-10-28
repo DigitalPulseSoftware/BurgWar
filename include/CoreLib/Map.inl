@@ -118,7 +118,7 @@ namespace bw
 		m_layers.erase(m_layers.begin() + layerIndex);
 
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, LayerIndex& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
 			if (static_cast<LayerIndex>(currentLayerIndex) == layerIndex)
@@ -158,7 +158,7 @@ namespace bw
 	auto Map::EmplaceLayer(LayerIndex layerIndex, Args&&... args) -> Layer&
 	{
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/,  const std::string& /*name*/, Nz::Int64& currentLayerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/,  const std::string& /*name*/, LayerIndex& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
 			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
@@ -251,7 +251,7 @@ namespace bw
 		});
 	}
 
-	inline Nz::Int64 Map::GenerateUniqueId()
+	inline EntityId Map::GenerateUniqueId()
 	{
 		return m_freeUniqueId++;
 	}
@@ -280,19 +280,19 @@ namespace bw
 		return layer.entities[entityIndex];
 	}
 
-	inline auto Map::GetEntity(Nz::Int64 uniqueId) -> Entity&
+	inline auto Map::GetEntity(EntityId uniqueId) -> Entity&
 	{
 		const EntityIndices& indices = GetEntityIndices(uniqueId);
 		return GetEntity(indices.layerIndex, indices.entityIndex);
 	}
 
-	inline auto Map::GetEntity(Nz::Int64 uniqueId) const -> const Entity&
+	inline auto Map::GetEntity(EntityId uniqueId) const -> const Entity&
 	{
 		const EntityIndices& indices = GetEntityIndices(uniqueId);
 		return GetEntity(indices.layerIndex, indices.entityIndex);
 	}
 
-	inline auto Map::GetEntityIndices(Nz::Int64 uniqueId) const -> const EntityIndices&
+	inline auto Map::GetEntityIndices(EntityId uniqueId) const -> const EntityIndices&
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		assert(it != m_entitiesByUniqueId.end());
@@ -307,7 +307,7 @@ namespace bw
 		return layer.entities.size();
 	}
 
-	inline Nz::Int64 Map::GetFreeUniqueId() const
+	inline EntityId Map::GetFreeUniqueId() const
 	{
 		return m_freeUniqueId;
 	}
@@ -437,7 +437,7 @@ namespace bw
 		assert(CheckEntityIndices());
 
 		// Update entities pointing to this layer
-		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& layerIndex)
+		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, LayerIndex& layerIndex)
 		{
 			assert(layerIndex >= std::numeric_limits<LayerIndex>::min() && layerIndex <= std::numeric_limits<LayerIndex>::max());
 
@@ -464,7 +464,7 @@ namespace bw
 		return map;
 	}
 
-	inline void Map::RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex)
+	inline void Map::RegisterEntity(EntityId uniqueId, LayerIndex layerIndex, std::size_t entityIndex)
 	{
 		assert(layerIndex < m_layers.size());
 		assert(entityIndex < m_layers[layerIndex].entities.size());
@@ -474,14 +474,14 @@ namespace bw
 		m_entitiesByUniqueId[uniqueId] = EntityIndices{ layerIndex, entityIndex };
 	}
 
-	inline void Map::UnregisterEntity(Nz::Int64 uniqueId)
+	inline void Map::UnregisterEntity(EntityId uniqueId)
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		assert(it != m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId.erase(it);
 
 		// Update entities pointing to this entity
-		ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& entityIndex)
+		ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, EntityId& entityIndex)
 		{
 			if (entityIndex == uniqueId)
 				entityIndex = 0;

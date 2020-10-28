@@ -60,7 +60,7 @@ namespace bw
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void Open(Nz::Int64 uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(EntityId uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
@@ -89,6 +89,7 @@ namespace bw
 
 			QString ToString(bool value, PropertyType type);
 			QString ToString(float value, PropertyType type);
+			QString ToString(Nz::UInt16 value, PropertyType type);
 			QString ToString(Nz::Int64 value, PropertyType type);
 			QString ToString(const Nz::Vector2f& value, PropertyType type);
 			QString ToString(const Nz::Vector2i64& value, PropertyType type);
@@ -112,7 +113,7 @@ namespace bw
 			};
 
 			Ndk::EntityHandle m_targetEntity;
-			Nz::Int64 m_entityUniqueId;
+			EntityId m_entityUniqueId;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;

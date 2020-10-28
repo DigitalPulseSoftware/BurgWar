@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline Nz::Int64 Match::AllocateUniqueId()
+	inline EntityId Match::AllocateUniqueId()
 	{
 		return m_nextUniqueId++;
 	}

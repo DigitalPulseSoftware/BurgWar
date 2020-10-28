@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_MAP_HPP
 #define BURGWAR_CORELIB_MAP_HPP
 
+#include <CoreLib/EntityId.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
@@ -58,17 +59,17 @@ namespace bw
 			template<PropertyType P, typename F> void ForeachEntityProperty(F&& func);
 			template<PropertyType P, typename F> void ForeachEntityPropertyValue(F&& func);
 
-			inline Nz::Int64 GenerateUniqueId();
+			inline EntityId GenerateUniqueId();
 
 			inline std::vector<Asset>& GetAssets();
 			inline const std::vector<Asset>& GetAssets() const;
 			inline Entity& GetEntity(LayerIndex layerIndex, std::size_t entityIndex);
 			inline const Entity& GetEntity(LayerIndex layerIndex, std::size_t entityIndex) const;
-			inline Entity& GetEntity(Nz::Int64 uniqueId);
-			inline const Entity& GetEntity(Nz::Int64 uniqueId) const;
-			inline const EntityIndices& GetEntityIndices(Nz::Int64 uniqueId) const;
+			inline Entity& GetEntity(EntityId uniqueId);
+			inline const Entity& GetEntity(EntityId uniqueId) const;
+			inline const EntityIndices& GetEntityIndices(EntityId uniqueId) const;
 			inline std::size_t GetEntityCount(LayerIndex layerIndex) const;
-			inline Nz::Int64 GetFreeUniqueId() const;
+			inline EntityId GetFreeUniqueId() const;
 			inline Layer& GetLayer(LayerIndex layerIndex);
 			inline const Layer& GetLayer(LayerIndex layerIndex) const;
 			inline std::size_t GetLayerCount() const;
@@ -102,7 +103,7 @@ namespace bw
 				std::string entityType;
 				std::string name;
 				Nz::DegreeAnglef rotation;
-				Nz::Int64 uniqueId;
+				EntityId uniqueId;
 				Nz::Vector2f position;
 				PropertyValueMap properties;
 			};
@@ -133,14 +134,14 @@ namespace bw
 			bool CheckEntityIndices() const;
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
-			inline void RegisterEntity(Nz::Int64 uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
+			inline void RegisterEntity(EntityId uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
 			void Sanitize();
-			inline void UnregisterEntity(Nz::Int64 uniqueId);
+			inline void UnregisterEntity(EntityId uniqueId);
 
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;
-			Nz::Int64 m_freeUniqueId;
-			tsl::hopscotch_map<Nz::Int64 /*unique id*/, EntityIndices> m_entitiesByUniqueId;
+			EntityId m_freeUniqueId;
+			tsl::hopscotch_map<EntityId /*unique id*/, EntityIndices> m_entitiesByUniqueId;
 			MapInfo m_mapInfo;
 			bool m_isValid;
 	};

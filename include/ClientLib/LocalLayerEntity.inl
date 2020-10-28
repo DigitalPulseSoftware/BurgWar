@@ -21,7 +21,7 @@ namespace bw
 		return m_serverEntityId;
 	}
 
-	inline Nz::Int64 LocalLayerEntity::GetUniqueId() const
+	inline EntityId LocalLayerEntity::GetUniqueId() const
 	{
 		return m_uniqueId;
 	}

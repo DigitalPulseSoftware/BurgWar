@@ -7,6 +7,8 @@
 #ifndef BURGWAR_CORELIB_PROPERTYVALUES_HPP
 #define BURGWAR_CORELIB_PROPERTYVALUES_HPP
 
+#include <CoreLib/EntityId.hpp>
+#include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -23,7 +25,6 @@ namespace bw
 	class SharedMatch;
 
 	constexpr std::size_t MaxPropertyCount = 256;
-	constexpr Nz::Int64 NoEntity = 0;
 
 	enum class PropertyType
 	{

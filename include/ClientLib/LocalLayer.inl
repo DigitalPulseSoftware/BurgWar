@@ -42,7 +42,7 @@ namespace bw
 		return m_backgroundColor;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(Nz::Int64 uniqueId)
+	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(EntityId uniqueId)
 	{
 		assert(m_isEnabled);
 
@@ -57,7 +57,7 @@ namespace bw
 	{
 		assert(m_isEnabled);
 
-		Nz::Int64 uniqueId = GetUniqueIdByServerId(serverId);
+		EntityId uniqueId = GetUniqueIdByServerId(serverId);
 		if (uniqueId == 0)
 			return std::nullopt;
 
@@ -67,7 +67,7 @@ namespace bw
 		return entityOpt;
 	}
 
-	inline Nz::Int64 LocalLayer::GetUniqueIdByServerId(Nz::UInt32 serverId)
+	inline EntityId LocalLayer::GetUniqueIdByServerId(Nz::UInt32 serverId)
 	{
 		assert(m_isEnabled);
 

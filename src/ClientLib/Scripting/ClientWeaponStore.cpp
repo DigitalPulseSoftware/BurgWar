@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	std::optional<LocalLayerEntity> ClientWeaponStore::InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, Nz::Int64 uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
+	std::optional<LocalLayerEntity> ClientWeaponStore::InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
 	{
 		const auto& weaponClass = GetElement(entityIndex);
 

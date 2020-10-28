@@ -63,7 +63,7 @@ namespace bw
 			LocalMatch& localMatch = entityLocalMatch.GetLocalMatch();
 			LocalLayer& localLayer = entityLocalMatch.GetLayer();
 			
-			Nz::Int64 trailId = localMatch.AllocateClientUniqueId();
+			EntityId trailId = localMatch.AllocateClientUniqueId();
 
 			const auto& trailEntity = localLayer.GetWorld().CreateEntity();
 			trailEntity->AddComponent<LocalMatchComponent>(localMatch, localLayer.GetLayerIndex(), trailId);

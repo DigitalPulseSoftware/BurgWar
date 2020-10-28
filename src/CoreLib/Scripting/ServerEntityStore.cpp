@@ -17,7 +17,7 @@
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -87,7 +87,7 @@ namespace bw
 		return SharedEntityStore::InitializeEntity(static_cast<const ScriptedEntity&>(*entityScript.GetElement()), entity);
 	}
 
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
+	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
 	{
 		const Ndk::EntityHandle& entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
 		if (!entity)

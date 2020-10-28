@@ -21,12 +21,12 @@ namespace bw
 		class EntitiesCommand : public QUndoCommand
 		{
 			public:
-				EntitiesCommand(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const QString& label);
+				EntitiesCommand(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const QString& label);
 				~EntitiesCommand() = default;
 
 			protected:
 				EditorWindow& m_editor;
-				std::vector<Nz::Int64> m_entitiesUniqueId;
+				std::vector<EntityId> m_entitiesUniqueId;
 		};
 
 		class EntityCreationDelete : public EntitiesCommand
@@ -51,7 +51,7 @@ namespace bw
 				static inline EntityData BuildData(Map::EntityIndices entityIndices, Map::Entity entity);
 
 			private:
-				static inline std::vector<Nz::Int64> GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData);
+				static inline std::vector<EntityId> GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData);
 
 				std::vector<EntityData> m_entitiesData;
 		};
@@ -82,7 +82,7 @@ namespace bw
 		class EntityDelete final : public EntityCreationDelete
 		{
 			public:
-				EntityDelete(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds);
+				EntityDelete(EditorWindow& editor, std::vector<EntityId> entityUniqueIds);
 				~EntityDelete() = default;
 
 				void redo() override;
@@ -92,7 +92,7 @@ namespace bw
 		class EntityLayerUpdate final : public EntitiesCommand
 		{
 			public:
-				EntityLayerUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, LayerIndex newLayerIndex);
+				EntityLayerUpdate(EditorWindow& editor, EntityId entityUniqueId, LayerIndex newLayerIndex);
 				~EntityLayerUpdate() = default;
 
 				void redo() override;
@@ -106,7 +106,7 @@ namespace bw
 		class EntityUpdate final : public EntitiesCommand
 		{
 			public:
-				EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags);
+				EntityUpdate(EditorWindow& editor, EntityId entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags);
 				~EntityUpdate() = default;
 
 				void redo() override;
@@ -121,7 +121,7 @@ namespace bw
 		class PositionUpdate final : public EntitiesCommand
 		{
 			public:
-				PositionUpdate(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const Nz::Vector2f& offset);
+				PositionUpdate(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const Nz::Vector2f& offset);
 				~PositionUpdate() = default;
 
 				void redo() override;
@@ -142,7 +142,7 @@ namespace bw
 
 			private:
 				std::vector<Map::Entity> m_entityData;
-				std::vector<Nz::Int64> m_entityUniqueIds;
+				std::vector<EntityId> m_entityUniqueIds;
 				Map::EntityIndices m_entityIndices;
 				EditorWindow& m_editor;
 		};

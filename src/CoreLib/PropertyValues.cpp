@@ -170,20 +170,20 @@ namespace bw
 
 	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray)
 	{
-		auto TranslateEntityToUniqueId = [&](const sol::object& value) -> Nz::Int64
+		auto TranslateEntityToUniqueId = [&](const sol::object& value) -> EntityId
 		{
-			if (value.is<Nz::Int64>())
+			if (value.is<EntityId>())
 			{
-				Nz::Int64 intValue = value.as<Nz::Int64>();
-				if (intValue != NoEntity)
-					throw std::runtime_error("Entity property must be entities or NoEntity constant");
+				EntityId intValue = value.as<EntityId>();
+				if (intValue != InvalidEntityId)
+					throw std::runtime_error("Entity property must be entities or InvalidEntityId constant");
 
 				return intValue;
 			}
 			else
 			{
 				if (!match)
-					throw std::runtime_error("This context only accepts NoEntity constant");
+					throw std::runtime_error("This context only accepts InvalidEntityId constant");
 
 				const Ndk::EntityHandle& entity = AbstractElementLibrary::RetrieveScriptEntity(value);
 				return match->RetrieveUniqueIdByEntity(entity);
@@ -265,7 +265,7 @@ namespace bw
 				{
 					PropertyArrayValue<PropertyType::IntegerRect> container(elementCount);
 					for (std::size_t i = 0; i < elementCount; ++i)
-						container[i] = TranslateRectToVec<Nz::Int64>(content[i + 1]);
+						container[i] = TranslateRectToVec<EntityId>(content[i + 1]);
 
 					return container;
 				}
@@ -335,7 +335,7 @@ namespace bw
 					return HandleData(PropertyTag<PropertyType::IntegerSize3D>{});
 
 				case PropertyType::Layer:
-					return PropertySingleValue<PropertyType::Layer>{ value.as<Nz::Int64>() };
+					return PropertySingleValue<PropertyType::Layer>{ value.as<LayerIndex>() };
 
 				case PropertyType::String:
 					return HandleData(PropertyTag<PropertyType::String>{});
@@ -359,6 +359,8 @@ namespace bw
 
 			if constexpr (std::is_same_v<UnderlyingType, bool> ||
 			              std::is_same_v<UnderlyingType, float> ||
+			              std::is_same_v<UnderlyingType, EntityId> ||
+			              std::is_same_v<UnderlyingType, LayerIndex> ||
 			              std::is_same_v<UnderlyingType, Nz::Int64> ||
 			              std::is_same_v<UnderlyingType, Nz::Vector2f> ||
 			              std::is_same_v<UnderlyingType, Nz::Vector2i64> ||
@@ -372,16 +374,16 @@ namespace bw
 				{
 					case PropertyType::Entity:
 					{
-						if constexpr (std::is_same_v<UnderlyingType, Nz::Int64>)
+						if constexpr (std::is_same_v<UnderlyingType, EntityId>)
 						{
-							auto PushEntity = [&](Nz::Int64 uniqueId) -> sol::object
+							auto PushEntity = [&](EntityId uniqueId) -> sol::object
 							{
-								if (uniqueId == NoEntity)
-									return sol::make_object(lua, NoEntity);
+								if (uniqueId == InvalidEntityId)
+									return sol::make_object(lua, InvalidEntityId);
 
 								const Ndk::EntityHandle& entity = match->RetrieveEntityByUniqueId(uniqueId);
 								if (!entity || !entity->HasComponent<ScriptComponent>())
-									return sol::make_object(lua, NoEntity);
+									return sol::make_object(lua, InvalidEntityId);
 
 								auto& entityScript = entity->GetComponent<ScriptComponent>();
 								return entityScript.GetTable();

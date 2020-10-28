@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_MATCHCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_MATCHCOMPONENT_HPP
 
+#include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <NDK/Component.hpp>
 
@@ -17,17 +18,17 @@ namespace bw
 	class MatchComponent : public Ndk::Component<MatchComponent>
 	{
 		public:
-			inline MatchComponent(Match& match, LayerIndex layerIndex, Nz::Int64 uniqueId);
+			inline MatchComponent(Match& match, LayerIndex layerIndex, EntityId uniqueId);
 			~MatchComponent() = default;
 
 			inline LayerIndex GetLayerIndex() const;
 			inline Match& GetMatch() const;
-			inline Nz::Int64 GetUniqueId() const;
+			inline EntityId GetUniqueId() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			Nz::Int64 m_uniqueId;
+			EntityId m_uniqueId;
 			Match& m_match;
 			LayerIndex m_layerIndex;
 	};

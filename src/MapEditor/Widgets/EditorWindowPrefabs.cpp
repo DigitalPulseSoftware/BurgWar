@@ -72,10 +72,10 @@ namespace bw
 			if (path.isEmpty())
 				return;
 
-			tsl::hopscotch_map<Nz::Int64 /*uniqueId*/, Nz::Int64 /*prefabId*/> entitiesUniqueToPrefabId;
+			tsl::hopscotch_map<EntityId /*uniqueId*/, EntityId /*prefabId*/> entitiesUniqueToPrefabId;
 			for (auto& entity : entityData)
 			{
-				Nz::Int64 prefabId = static_cast<Nz::Int64>(entitiesUniqueToPrefabId.size() + 1);
+				EntityId prefabId = static_cast<EntityId>(entitiesUniqueToPrefabId.size() + 1);
 
 				assert(entitiesUniqueToPrefabId.find(entity.uniqueId) == entitiesUniqueToPrefabId.end());
 				entitiesUniqueToPrefabId[entity.uniqueId] = prefabId;
@@ -94,7 +94,7 @@ namespace bw
 			for (auto& entity : entityData)
 				prefab.AddEntity(0, Map::PreserveUniqueId{}, std::move(entity));
 
-			prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& entity, const std::string& name, Nz::Int64& uniqueId)
+			prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& entity, const std::string& name, EntityId& uniqueId)
 			{
 				auto it = entitiesUniqueToPrefabId.find(uniqueId);
 				if (it == entitiesUniqueToPrefabId.end())
@@ -113,7 +113,7 @@ namespace bw
 					uniqueId = it->second;
 			});
 
-			prefab.ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& entity, const std::string& name, Nz::Int64& layerId)
+			prefab.ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& entity, const std::string& name, LayerIndex& layerId)
 			{
 				//FIXME: Entity ID should not be prefab ID
 				QString errMessage = tr("Entity #%1 (%2) property %3 links to layer #%4 which is not part of the prefab")
@@ -196,11 +196,11 @@ namespace bw
 		std::size_t entityIndex = layer.entities.size();
 		Nz::Vector2f positionOffset = AlignPosition(m_parent->GetCameraCenter(), layer.positionAlignment);
 
-		tsl::hopscotch_map<Nz::Int64 /*prefabId*/, Nz::Int64 /*uniqueId*/> prefabIdToEntitiesUniqueId;
+		tsl::hopscotch_map<EntityId /*prefabId*/, EntityId /*uniqueId*/> prefabIdToEntitiesUniqueId;
 
 		for (auto& entityData : prefabLayer.entities)
 		{
-			Nz::Int64 newUniqueId = map.GenerateUniqueId();
+			EntityId newUniqueId = map.GenerateUniqueId();
 			assert(prefabIdToEntitiesUniqueId.find(entityData.uniqueId) == prefabIdToEntitiesUniqueId.end());
 			prefabIdToEntitiesUniqueId[entityData.uniqueId] = newUniqueId;
 
@@ -208,7 +208,7 @@ namespace bw
 			entityData.uniqueId = newUniqueId;
 		}
 
-		prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Int64& uniqueId)
+		prefab.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, EntityId& uniqueId)
 		{
 			auto it = prefabIdToEntitiesUniqueId.find(uniqueId);
 			if (it == prefabIdToEntitiesUniqueId.end())

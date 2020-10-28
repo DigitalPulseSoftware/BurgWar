@@ -24,7 +24,7 @@ namespace bw
 		}
 	}
 
-	inline Nz::Int64 bw::LocalMatch::AllocateClientUniqueId()
+	inline EntityId bw::LocalMatch::AllocateClientUniqueId()
 	{
 		return m_freeClientId--;
 	}

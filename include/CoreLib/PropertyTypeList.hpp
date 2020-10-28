@@ -11,7 +11,7 @@
 #endif
 
 BURGWAR_PROPERTYTYPE( 0, Bool, bool)
-BURGWAR_PROPERTYTYPE( 1, Entity, Nz::Int64)
+BURGWAR_PROPERTYTYPE( 1, Entity, EntityId)
 BURGWAR_PROPERTYTYPE( 2, Float, float)
 BURGWAR_PROPERTYTYPE( 3, FloatPosition, Nz::Vector2f)
 BURGWAR_PROPERTYTYPE( 4, FloatPosition3D, Nz::Vector3f)
@@ -24,7 +24,7 @@ BURGWAR_PROPERTYTYPE(10, IntegerPosition3D, Nz::Vector3i64)
 BURGWAR_PROPERTYTYPE(11, IntegerRect, Nz::Vector4i64)
 BURGWAR_PROPERTYTYPE(12, IntegerSize, Nz::Vector2i64)
 BURGWAR_PROPERTYTYPE(13, IntegerSize3D, Nz::Vector3i64)
-BURGWAR_PROPERTYTYPE(14, Layer, Nz::Int64)
+BURGWAR_PROPERTYTYPE(14, Layer, LayerIndex)
 BURGWAR_PROPERTYTYPE(15, String, std::string)
 BURGWAR_PROPERTYTYPE_LAST(16, Texture, std::string)
 

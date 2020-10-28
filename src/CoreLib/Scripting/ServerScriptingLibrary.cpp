@@ -189,7 +189,7 @@ namespace bw
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
 
-			Nz::Int64 uniqueId = match.AllocateUniqueId();
+			EntityId uniqueId = match.AllocateUniqueId();
 
 			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
@@ -248,7 +248,7 @@ namespace bw
 			auto& layer = match.GetTerrain().GetLayer(layerIndex);
 
 			// Create weapon
-			Nz::Int64 uniqueId = match.AllocateUniqueId();
+			EntityId uniqueId = match.AllocateUniqueId();
 
 			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
 			if (!weapon)

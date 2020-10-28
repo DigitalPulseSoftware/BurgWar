@@ -435,13 +435,13 @@ namespace bw
 			m_gamemode->Reload();
 	}
 
-	void LocalMatch::RegisterEntity(Nz::Int64 uniqueId, LocalLayerEntityHandle entity)
+	void LocalMatch::RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId.emplace(uniqueId, std::move(entity));
 	}
 
-	const Ndk::EntityHandle& LocalMatch::RetrieveEntityByUniqueId(Nz::Int64 uniqueId) const
+	const Ndk::EntityHandle& LocalMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
@@ -450,15 +450,15 @@ namespace bw
 		return it.value()->GetEntity();
 	}
 
-	Nz::Int64 LocalMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId LocalMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
 	{
 		if (!entity || !entity->HasComponent<LocalMatchComponent>())
-			return NoEntity;
+			return InvalidEntityId;
 
 		return entity->GetComponent<LocalMatchComponent>().GetUniqueId();
 	}
 
-	void LocalMatch::UnregisterEntity(Nz::Int64 uniqueId)
+	void LocalMatch::UnregisterEntity(EntityId uniqueId)
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		assert(it != m_entitiesByUniqueId.end());
@@ -1141,7 +1141,7 @@ namespace bw
 					for (std::size_t i = 0; i < packetLayer.entityCount; ++i)
 					{
 						auto& packetEntity = packet.entities[offset + i];
-						Nz::Int64 uniqueId = layer->GetUniqueIdByServerId(packetEntity.id);
+						EntityId uniqueId = layer->GetUniqueIdByServerId(packetEntity.id);
 						if (uniqueId == 0)
 							continue;
 
@@ -1184,7 +1184,7 @@ namespace bw
 
 				layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 				{
-					Nz::Int64 uniqueId = layerEntity.GetUniqueId();
+					EntityId uniqueId = layerEntity.GetUniqueId();
 					auto it = layerData.entities.find(uniqueId);
 					if (it != layerData.entities.end())
 					{
@@ -1298,7 +1298,7 @@ namespace bw
 
 			for (auto it = m_inactiveEntities.begin(); it != m_inactiveEntities.end();)
 			{
-				Nz::Int64 uniqueId = *it;
+				EntityId uniqueId = *it;
 				auto FindAndUpdate = [&]
 				{
 					for (const auto& layerData : input.layers)
@@ -1337,7 +1337,7 @@ namespace bw
 		}
 
 		// Prevent locking entities forever
-		for (Nz::Int64 uniqueId : m_inactiveEntities)
+		for (EntityId uniqueId : m_inactiveEntities)
 		{
 			for (auto& layer : m_layers)
 			{

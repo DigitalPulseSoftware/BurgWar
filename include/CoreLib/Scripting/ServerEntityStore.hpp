@@ -22,9 +22,9 @@ namespace bw
 			inline ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerEntityStore() = default;
 
-			const Ndk::EntityHandle& CreateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
+			const Ndk::EntityHandle& CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
-			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, Nz::Int64 uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
+			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 
 		private:
 			void InitializeElementTable(sol::main_table& elementTable) override;

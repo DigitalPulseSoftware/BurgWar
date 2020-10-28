@@ -145,7 +145,7 @@ namespace bw
 		assert(layerEntity.GetEntity());
 		assert(layerEntity.GetEntity()->GetWorld() == &GetWorld());
 
-		Nz::Int64 uniqueId = layerEntity.GetUniqueId();
+		EntityId uniqueId = layerEntity.GetUniqueId();
 
 		if (!layerEntity.IsClientside())
 		{
@@ -245,7 +245,7 @@ namespace bw
 			parent = &entityIt.value().layerEntity;
 		}
 
-		Nz::Int64 uniqueId = static_cast<Nz::Int64>(entityData.uniqueId);
+		EntityId uniqueId = static_cast<EntityId>(entityData.uniqueId);
 
 		std::optional<LocalLayerEntity> layerEntity;
 
@@ -343,7 +343,7 @@ namespace bw
 		RegisterEntity(std::move(layerEntity.value()));
 	}
 
-	void LocalLayer::HandleEntityDestruction(Nz::Int64 uniqueId)
+	void LocalLayer::HandleEntityDestruction(EntityId uniqueId)
 	{
 		auto it = m_entities.find(uniqueId);
 		assert(it != m_entities.end());
@@ -380,7 +380,7 @@ namespace bw
 
 		for (std::size_t i = 0; i < entityCount; ++i)
 		{
-			if (Nz::Int64 uniqueId = GetUniqueIdByServerId(entities[i].id); uniqueId != 0)
+			if (EntityId uniqueId = GetUniqueIdByServerId(entities[i].id); uniqueId != 0)
 				HandleEntityDestruction(uniqueId);
 		}
 	}
@@ -423,7 +423,7 @@ namespace bw
 		for (std::size_t i = 0; i < entityCount; ++i)
 		{
 			Nz::UInt32 entityId = entities[i].id;
-			if (Nz::Int64 uniqueId = GetUniqueIdByServerId(entityId); uniqueId != 0)
+			if (EntityId uniqueId = GetUniqueIdByServerId(entityId); uniqueId != 0)
 			{
 				auto entityOpt = GetEntity(uniqueId);
 				assert(entityOpt);

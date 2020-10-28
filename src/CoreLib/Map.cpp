@@ -135,7 +135,7 @@ namespace bw
 				stream << entity.position.x << entity.position.y;
 				stream << entity.rotation.ToDegrees();
 
-				CompressedSigned<Nz::Int64> compressedUniqueId;
+				CompressedSigned<EntityId> compressedUniqueId;
 				stream << compressedUniqueId;
 
 				Nz::UInt8 propertyCount = Nz::UInt8(entity.properties.size());
@@ -357,7 +357,7 @@ namespace bw
 		entity.name = entityInfo.value("name", "");
 		entity.position = entityInfo.at("position");
 		entity.rotation = Nz::DegreeAnglef(entityInfo.value("rotation", 0.f));
-		entity.uniqueId = entityInfo.value("uniqueId", NoEntity);
+		entity.uniqueId = entityInfo.value("uniqueId", InvalidEntityId);
 
 		for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
 		{
@@ -475,7 +475,7 @@ namespace bw
 				stream >> degRot;
 				entity.rotation = Nz::DegreeAnglef::FromDegrees(degRot);
 
-				CompressedSigned<Nz::Int64> compressedUniqueId;
+				CompressedSigned<EntityId> compressedUniqueId;
 				stream >> compressedUniqueId;
 				entity.uniqueId = compressedUniqueId;
 
@@ -574,7 +574,7 @@ namespace bw
 	void Map::Sanitize()
 	{
 		// Ensures every entity gets an unique id
-		Nz::Int64 biggestId = 0;
+		EntityId biggestId = 0;
 		for (const auto& layer : m_layers)
 		{
 			for (const auto& entity : layer.entities)

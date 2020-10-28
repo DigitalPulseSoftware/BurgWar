@@ -80,7 +80,7 @@ namespace bw
 			if (weaponEntityIndex == ServerEntityStore::InvalidIndex)
 				return Ndk::EntityHandle::InvalidHandle;
 			
-			Nz::Int64 uniqueId = m_match.AllocateUniqueId();
+			EntityId uniqueId = m_match.AllocateUniqueId();
 
 			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, uniqueId, {}, m_playerEntity);
 			if (!weapon)
@@ -156,7 +156,7 @@ namespace bw
 
 					newPlayerEntity->AddComponent(m_playerEntity->GetComponent<Ndk::PhysicsComponent2D>().Clone());*/
 
-					Nz::Int64 uniqueId = m_match.AllocateUniqueId();
+					EntityId uniqueId = m_match.AllocateUniqueId();
 
 					newPlayerEntity->AddComponent<MatchComponent>(m_match, layerIndex, uniqueId);
 
@@ -170,7 +170,7 @@ namespace bw
 
 						weaponWielder.OverrideEntities([&](Ndk::EntityOwner& weaponEntity)
 						{
-							Nz::Int64 weaponUniqueId = m_match.AllocateUniqueId();
+							EntityId weaponUniqueId = m_match.AllocateUniqueId();
 
 							weaponEntity = world.CloneEntity(weaponEntity);
 							weaponEntity->AddComponent<MatchComponent>(m_match, layerIndex, weaponUniqueId);

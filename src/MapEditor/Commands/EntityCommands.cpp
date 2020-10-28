@@ -8,7 +8,7 @@
 
 namespace bw::Commands
 {
-	EntitiesCommand::EntitiesCommand(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const QString& label) :
+	EntitiesCommand::EntitiesCommand(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const QString& label) :
 	m_editor(editor),
 	m_entitiesUniqueId(std::move(entityUniqueIds))
 	{
@@ -40,7 +40,7 @@ namespace bw::Commands
 	{
 		const Map& map = m_editor.GetWorkingMap();
 
-		for (Nz::Int64 entityUniqueId : m_entitiesUniqueId)
+		for (EntityId entityUniqueId : m_entitiesUniqueId)
 		{
 			const auto& indices = map.GetEntityIndices(entityUniqueId);
 
@@ -95,7 +95,7 @@ namespace bw::Commands
 	}
 
 
-	EntityDelete::EntityDelete(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds) :
+	EntityDelete::EntityDelete(EditorWindow& editor, std::vector<EntityId> entityUniqueIds) :
 	EntityCreationDelete(editor, std::move(entityUniqueIds), "delete entity")
 	{
 	}
@@ -112,7 +112,7 @@ namespace bw::Commands
 
 
 	// TODO: Update for multiple entities
-	EntityLayerUpdate::EntityLayerUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, LayerIndex newLayerIndex) :
+	EntityLayerUpdate::EntityLayerUpdate(EditorWindow& editor, EntityId entityUniqueId, LayerIndex newLayerIndex) :
 	EntitiesCommand(editor, { entityUniqueId }, "move entity"),
 	m_newLayerIndex(newLayerIndex)
 	{
@@ -132,7 +132,7 @@ namespace bw::Commands
 	}
 
 
-	EntityUpdate::EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags) :
+	EntityUpdate::EntityUpdate(EditorWindow& editor, EntityId entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags) :
 		EntitiesCommand(editor, { entityUniqueId }, "update entity"),
 	m_updateFlags(updateFlags),
 	m_newState(std::move(update))
@@ -161,7 +161,7 @@ namespace bw::Commands
 	}
 
 
-	PositionUpdate::PositionUpdate(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const Nz::Vector2f& offset) :
+	PositionUpdate::PositionUpdate(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const Nz::Vector2f& offset) :
 	EntitiesCommand(editor, std::move(entityUniqueIds), "move entity"),
 	m_offset(offset)
 	{
@@ -169,7 +169,7 @@ namespace bw::Commands
 
 	void PositionUpdate::redo()
 	{
-		for (Nz::Int64 entityId : m_entitiesUniqueId)
+		for (EntityId entityId : m_entitiesUniqueId)
 		{
 			Map& map = m_editor.GetWorkingMapMut();
 			const auto& indices = map.GetEntityIndices(entityId);
@@ -183,7 +183,7 @@ namespace bw::Commands
 
 	void PositionUpdate::undo()
 	{
-		for (Nz::Int64 entityId : m_entitiesUniqueId)
+		for (EntityId entityId : m_entitiesUniqueId)
 		{
 			Map& map = m_editor.GetWorkingMapMut();
 			const auto& indices = map.GetEntityIndices(entityId);
@@ -228,7 +228,7 @@ namespace bw::Commands
 		const Map& map = m_editor.GetWorkingMap();
 
 		assert(m_entityData.empty());
-		for (Nz::Int64 uniqueId : m_entityUniqueIds)
+		for (EntityId uniqueId : m_entityUniqueIds)
 		{
 			const auto& indices = map.GetEntityIndices(uniqueId);
 
