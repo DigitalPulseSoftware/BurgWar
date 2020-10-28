@@ -80,12 +80,7 @@ namespace bw
 				else
 					match = nullptr;
 
-				const auto& entityElement = entityScript.GetElement();
-				
-				auto propertyIt = entityElement->properties.find(propertyName);
-				assert(propertyIt != entityElement->properties.end());
-
-				return TranslatePropertyToLua(match, lua, property, propertyIt->second.type);
+				return TranslatePropertyToLua(match, lua, property);
 			}
 			else
 				return sol::nil;

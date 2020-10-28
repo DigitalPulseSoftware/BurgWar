@@ -62,10 +62,8 @@ namespace bw
 
 			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state L)
 			{
-				auto [propertyType, isArray] = entityInfo.GetPropertyType(propertyName);
-
 				sol::state_view state(L);
-				return TranslatePropertyToLua(nullptr, state, entityInfo.GetProperty(propertyName), propertyType);
+				return TranslatePropertyToLua(nullptr, state, entityInfo.GetProperty(propertyName));
 			},
 
 			"GetTargetEntity", &EntityInfoDialog::GetTargetEntity,

@@ -122,7 +122,7 @@ namespace bw
 	const char* ToString(PropertyType propertyType);
 
 	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
-	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property, PropertyType propertyType);
+	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property);
 
 	template<typename T> Nz::Vector4<T> TranslateRectToVec(const Nz::Rect<T>& value);
 	template<typename T> Nz::Rect<T> TranslateVecToRect(const Nz::Vector4<T>& value);

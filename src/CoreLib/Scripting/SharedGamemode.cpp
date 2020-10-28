@@ -156,12 +156,7 @@ namespace bw
 			if (propertyVal.has_value())
 			{
 				sol::state_view lua(s);
-				const PropertyValue& property = propertyVal.value();
-
-				auto propertyIt = m_properties.find(propertyName);
-				assert(propertyIt != m_properties.end());
-
-				return TranslatePropertyToLua(&m_sharedMatch, lua, property, propertyIt->second.type);
+				return TranslatePropertyToLua(&m_sharedMatch, lua, propertyVal.value());
 			}
 			else
 				return sol::nil;

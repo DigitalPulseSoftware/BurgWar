@@ -751,7 +751,7 @@
 					},
 					"properties": {
 						"cellSize": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
@@ -759,7 +759,7 @@
 						},
 						"content": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								6,
 								0,
@@ -1804,7 +1804,7 @@
 							]
 						},
 						"mapSize": {
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": {
 								"x": 80,
 								"y": 13
@@ -1812,7 +1812,7 @@
 						},
 						"textureCells": {
 							"isArray": true,
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": [
 								{
 									"x": 1,
@@ -1890,7 +1890,7 @@
 						},
 						"textures": {
 							"isArray": true,
-							"type": "texture",
+							"type": "Texture",
 							"value": [
 								"tiles/1.png",
 								"tiles/2.png",
@@ -1925,7 +1925,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 2.0
 						}
 					},
@@ -1941,7 +1941,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 1.0
 						}
 					},
@@ -1957,7 +1957,7 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_grenade"
 						}
 					},
@@ -1973,11 +1973,11 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_powerup_health"
 						},
 						"respawntime": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 5
 						}
 					},
@@ -1993,7 +1993,7 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_powerup_health"
 						}
 					},
@@ -2009,11 +2009,11 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_grenade"
 						},
 						"respawntime": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 15
 						}
 					},
@@ -2029,11 +2029,11 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_rifle"
 						},
 						"respawntime": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 30
 						}
 					},
@@ -2049,11 +2049,11 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_patator"
 						},
 						"respawntime": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 20
 						}
 					},
@@ -2069,11 +2069,11 @@
 					},
 					"properties": {
 						"dynamic": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 2.0
 						}
 					},
@@ -2089,22 +2089,22 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 796.0,
 								"y": 788.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "hayhouse.png"
 						}
 					},
@@ -2120,14 +2120,14 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 80.0,
 								"y": 100.0
 							}
 						},
 						"target": {
-							"type": "entity",
+							"type": "Entity",
 							"value": 59
 						}
 					},
@@ -2154,22 +2154,22 @@
 					},
 					"properties": {
 						"layer": {
-							"type": "layer",
+							"type": "Layer",
 							"value": 1
 						},
 						"parallaxFactor": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.6000000238418579,
 								"y": 0.6000000238418579
 							}
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -100
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.5,
 								"y": 0.5
@@ -2188,26 +2188,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_plants01.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.0,
@@ -2228,26 +2228,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_plants01.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.16666600108146667,
@@ -2268,26 +2268,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_plants01.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.0,
@@ -2308,26 +2308,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_plants01.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.33333298563957214,
@@ -2348,33 +2348,33 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 1000
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 2.0,
 								"y": 2.0
 							}
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_stones01_128px.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.0,
@@ -2395,7 +2395,7 @@
 					},
 					"properties": {
 						"cellSize": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 64.0,
 								"y": 64.0
@@ -2403,7 +2403,7 @@
 						},
 						"content": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								6,
 								6,
@@ -2418,19 +2418,19 @@
 							]
 						},
 						"mapSize": {
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": {
 								"x": 10,
 								"y": 1
 							}
 						},
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"textureCells": {
 							"isArray": true,
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": [
 								{
 									"x": 12,
@@ -2440,7 +2440,7 @@
 						},
 						"textures": {
 							"isArray": true,
-							"type": "texture",
+							"type": "Texture",
 							"value": [
 								"TooCubeForest/Forest_deco_woodenThorns.png"
 							]
@@ -2458,7 +2458,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 620.0,
 								"y": 32.0
@@ -2477,26 +2477,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_signs.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.8333330154418945,
@@ -2528,7 +2528,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 10240.0,
 								"y": 2176.0
@@ -2547,22 +2547,22 @@
 					},
 					"properties": {
 						"layer": {
-							"type": "layer",
+							"type": "Layer",
 							"value": 2
 						},
 						"parallaxFactor": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.10000000149011612,
 								"y": 0.0
 							}
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -1000000
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 2.0,
 								"y": 2.0
@@ -2581,7 +2581,7 @@
 					},
 					"properties": {
 						"free": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						}
 					},
@@ -2597,7 +2597,7 @@
 					},
 					"properties": {
 						"free": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						}
 					},
@@ -2613,7 +2613,7 @@
 					},
 					"properties": {
 						"free": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						}
 					},
@@ -2640,7 +2640,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 1.100000023841858
 						}
 					},
@@ -2656,7 +2656,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 5.0
 						}
 					},
@@ -2672,7 +2672,7 @@
 					},
 					"properties": {
 						"seed": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 666
 						}
 					},
@@ -2721,7 +2721,7 @@
 					},
 					"properties": {
 						"powerup_entity": {
-							"type": "entity",
+							"type": "Entity",
 							"value": 42
 						}
 					},
@@ -2737,33 +2737,33 @@
 					},
 					"properties": {
 						"effect_jump_height": {
-							"type": "float",
+							"type": "Float",
 							"value": 1.5
 						},
 						"effect_jump_height_boost": {
-							"type": "float",
+							"type": "Float",
 							"value": 1.5
 						},
 						"effect_speed": {
-							"type": "float",
+							"type": "Float",
 							"value": 2.5
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.25,
 								"y": 0.25
 							}
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 512.0,
 								"y": 256.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "placeholder/powerup_movement.png"
 						}
 					},
@@ -2790,25 +2790,25 @@
 					},
 					"properties": {
 						"effect_scale": {
-							"type": "float",
+							"type": "Float",
 							"value": 2.0
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.25,
 								"y": 0.25
 							}
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 512.0,
 								"y": 256.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "placeholder/powerup_movement.png"
 						}
 					},
@@ -2824,7 +2824,7 @@
 					},
 					"properties": {
 						"powerup_entity": {
-							"type": "entity",
+							"type": "Entity",
 							"value": 44
 						}
 					},
@@ -2840,12 +2840,12 @@
 					},
 					"properties": {
 						"bool": {
-							"type": "bool",
+							"type": "Bool",
 							"value": true
 						},
 						"bool_array": {
 							"isArray": true,
-							"type": "bool",
+							"type": "Bool",
 							"value": [
 								false,
 								true,
@@ -2854,12 +2854,12 @@
 							]
 						},
 						"entity": {
-							"type": "entity",
+							"type": "Entity",
 							"value": 1
 						},
 						"entity_array": {
 							"isArray": true,
-							"type": "entity",
+							"type": "Entity",
 							"value": [
 								0,
 								3,
@@ -2867,12 +2867,12 @@
 							]
 						},
 						"float": {
-							"type": "float",
+							"type": "Float",
 							"value": 3.059999942779541
 						},
 						"float_array": {
 							"isArray": true,
-							"type": "float",
+							"type": "Float",
 							"value": [
 								0.0,
 								1.0,
@@ -2880,14 +2880,14 @@
 							]
 						},
 						"float_position": {
-							"type": "floatposition",
+							"type": "FloatPosition",
 							"value": {
 								"x": 1.0,
 								"y": -3.0
 							}
 						},
 						"float_position3d": {
-							"type": "floatposition3d",
+							"type": "FloatPosition3D",
 							"value": {
 								"x": 1.0,
 								"y": 2.0,
@@ -2896,7 +2896,7 @@
 						},
 						"float_position_array": {
 							"isArray": true,
-							"type": "floatposition",
+							"type": "FloatPosition",
 							"value": [
 								{
 									"x": 0.0,
@@ -2925,7 +2925,7 @@
 							]
 						},
 						"float_rect": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.0,
@@ -2934,12 +2934,12 @@
 							}
 						},
 						"int": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 7
 						},
 						"int_array": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								0,
 								0,
@@ -2948,7 +2948,7 @@
 							]
 						},
 						"int_size3d": {
-							"type": "integersize3d",
+							"type": "IntegerSize3D",
 							"value": {
 								"x": 6,
 								"y": 7,
@@ -2956,12 +2956,12 @@
 							}
 						},
 						"layer": {
-							"type": "layer",
+							"type": "Layer",
 							"value": 0
 						},
 						"layer_array": {
 							"isArray": true,
-							"type": "layer",
+							"type": "Layer",
 							"value": [
 								2,
 								1,
@@ -2969,12 +2969,12 @@
 							]
 						},
 						"str": {
-							"type": "string",
+							"type": "String",
 							"value": "dfsdfds"
 						},
 						"str_array": {
 							"isArray": true,
-							"type": "string",
+							"type": "String",
 							"value": [
 								"",
 								"fggfdg",
@@ -2984,7 +2984,7 @@
 							]
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "cccc"
 						}
 					},
@@ -3010,7 +3010,7 @@
 					},
 					"properties": {
 						"cellSize": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
@@ -3018,7 +3018,7 @@
 						},
 						"content": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								0,
 								0,
@@ -3423,7 +3423,7 @@
 							]
 						},
 						"mapSize": {
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": {
 								"x": 20,
 								"y": 20
@@ -3431,7 +3431,7 @@
 						},
 						"textureCells": {
 							"isArray": true,
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": [
 								{
 									"x": 1,
@@ -3509,7 +3509,7 @@
 						},
 						"textures": {
 							"isArray": true,
-							"type": "texture",
+							"type": "Texture",
 							"value": [
 								"tiles/1.png",
 								"tiles/2.png",
@@ -3544,7 +3544,7 @@
 					},
 					"properties": {
 						"cellSize": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
@@ -3552,7 +3552,7 @@
 						},
 						"content": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								0,
 								0,
@@ -3957,7 +3957,7 @@
 							]
 						},
 						"mapSize": {
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": {
 								"x": 20,
 								"y": 20
@@ -3965,7 +3965,7 @@
 						},
 						"textureCells": {
 							"isArray": true,
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": [
 								{
 									"x": 1,
@@ -4043,7 +4043,7 @@
 						},
 						"textures": {
 							"isArray": true,
-							"type": "texture",
+							"type": "Texture",
 							"value": [
 								"tiles/1.png",
 								"tiles/2.png",
@@ -4078,7 +4078,7 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_grapple"
 						}
 					},
@@ -4094,7 +4094,7 @@
 					},
 					"properties": {
 						"powerup_type": {
-							"type": "string",
+							"type": "String",
 							"value": "entity_pickable_weapon_physics_bun"
 						}
 					},
@@ -4110,7 +4110,7 @@
 					},
 					"properties": {
 						"respawntime": {
-							"type": "integer",
+							"type": "Integer",
 							"value": 5
 						}
 					},
@@ -4126,7 +4126,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 10000.0,
 								"y": 100.0
@@ -4145,26 +4145,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_signs.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.6666659712791443,
@@ -4185,26 +4185,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_signs.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.5833330154418945,
@@ -4225,26 +4225,26 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_signs.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.4166660010814667,
@@ -4265,22 +4265,22 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "TooCubeForest/Forest_deco_stones03_128px.png"
 						},
 						"textureCoords": {
-							"type": "floatrect",
+							"type": "FloatRect",
 							"value": {
 								"w": 1.0,
 								"x": 0.75,
@@ -4301,7 +4301,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 110.0,
 								"y": 90.0
@@ -4320,29 +4320,29 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -5
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.5,
 								"y": 0.5
 							}
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 796.0,
 								"y": 788.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "hayhouse.png"
 						}
 					},
@@ -4369,22 +4369,22 @@
 					},
 					"properties": {
 						"layer": {
-							"type": "layer",
+							"type": "Layer",
 							"value": 2
 						},
 						"parallaxFactor": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.10000000149011612,
 								"y": 0.0
 							}
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -1000000
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 2.0,
 								"y": 2.0
@@ -4403,14 +4403,14 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 1000.0,
 								"y": 100.0
 							}
 						},
 						"target": {
-							"type": "entity",
+							"type": "Entity",
 							"value": 28
 						}
 					},
@@ -4426,7 +4426,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 2560.0,
 								"y": 1808.0
@@ -4445,14 +4445,14 @@
 					},
 					"properties": {
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 2048.0,
 								"y": 768.0
 							}
 						},
 						"transition_time": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 0.5,
 								"y": 0.5
@@ -4471,15 +4471,15 @@
 					},
 					"properties": {
 						"modelPath": {
-							"type": "string",
+							"type": "String",
 							"value": "street_light/light.obj"
 						},
 						"renderOrder": {
-							"type": "integer",
+							"type": "Integer",
 							"value": -100
 						},
 						"rotation": {
-							"type": "floatposition3d",
+							"type": "FloatPosition3D",
 							"value": {
 								"x": 0.0,
 								"y": 90.0,
@@ -4487,7 +4487,7 @@
 							}
 						},
 						"scale": {
-							"type": "floatsize3d",
+							"type": "FloatSize3D",
 							"value": {
 								"x": 5.0,
 								"y": 5.0,
@@ -4550,25 +4550,25 @@
 					},
 					"properties": {
 						"physical": {
-							"type": "bool",
+							"type": "Bool",
 							"value": false
 						},
 						"scale": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 1.0,
 								"y": 1.0
 							}
 						},
 						"size": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 1344.0,
 								"y": 422.0
 							}
 						},
 						"texture": {
-							"type": "texture",
+							"type": "Texture",
 							"value": "PaintedBackground/mountain01.png"
 						}
 					},
@@ -4594,7 +4594,7 @@
 					},
 					"properties": {
 						"cellSize": {
-							"type": "floatsize",
+							"type": "FloatSize",
 							"value": {
 								"x": 128.0,
 								"y": 128.0
@@ -4602,7 +4602,7 @@
 						},
 						"content": {
 							"isArray": true,
-							"type": "integer",
+							"type": "Integer",
 							"value": [
 								0,
 								0,
@@ -4707,7 +4707,7 @@
 							]
 						},
 						"mapSize": {
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": {
 								"x": 10,
 								"y": 10
@@ -4715,7 +4715,7 @@
 						},
 						"textureCells": {
 							"isArray": true,
-							"type": "integersize",
+							"type": "IntegerSize",
 							"value": [
 								{
 									"x": 1,
@@ -4753,7 +4753,7 @@
 						},
 						"textures": {
 							"isArray": true,
-							"type": "texture",
+							"type": "Texture",
 							"value": [
 								"tiles/1.png",
 								"tiles/2.png",
@@ -4778,7 +4778,7 @@
 					},
 					"properties": {
 						"size": {
-							"type": "float",
+							"type": "Float",
 							"value": 2.0
 						}
 					},
