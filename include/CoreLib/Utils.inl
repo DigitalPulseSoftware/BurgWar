@@ -108,6 +108,20 @@ namespace bw
 		return func(str.substr(previousPos));
 	}
 
+	inline bool StringEqual(const std::string_view& lhs, const std::string_view& rhs)
+	{
+		if (lhs.size() != rhs.size())
+			return false;
+
+		for (std::size_t i = 0; i < lhs.size(); ++i)
+		{
+			if (std::tolower(lhs[i]) != std::tolower(rhs[i]))
+				return false;
+		}
+
+		return true;
+	}
+
 	template<typename E> auto UnderlyingCast(E value) -> std::underlying_type_t<E>
 	{
 		return static_cast<std::underlying_type_t<E>>(value);

@@ -11,6 +11,7 @@
 #include <Nazara/Math/Quaternion.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
+#include <cctype>
 #include <string>
 #include <type_traits>
 
@@ -73,7 +74,7 @@ namespace bw
 	inline std::string ReplaceStr(std::string str, const std::string_view& from, const std::string_view& to);
 	template<typename F> bool SplitString(const std::string_view& str, const std::string_view& token, F&& func);
 	template<typename F> bool SplitStringAny(const std::string_view& str, const std::string_view& token, F&& func);
-
+	inline bool StringEqual(const std::string_view& lhs, const std::string_view& rhs);
 	template<typename E> auto UnderlyingCast(E value) -> std::underlying_type_t<E>;
 }
 

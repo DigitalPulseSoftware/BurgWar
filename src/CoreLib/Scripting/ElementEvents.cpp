@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ElementEvents.hpp>
+#include <CoreLib/Utils.hpp>
 #include <cassert>
 #include <cctype>
 
@@ -10,24 +11,10 @@ namespace bw
 {
 	std::optional<ElementEvent> RetrieveElementEvent(const std::string_view& eventName)
 	{
-		auto CompareString = [](const std::string_view& lhs, const std::string_view& rhs) -> bool
-		{
-			if (lhs.size() != rhs.size())
-				return false;
-
-			for (std::size_t i = 0; i < lhs.size(); ++i)
-			{
-				if (std::tolower(lhs[i]) != std::tolower(rhs[i]))
-					return false;
-			}
-
-			return true;
-		};
-
 		for (std::size_t i = 0; i < ElementEventCount; ++i)
 		{
 			ElementEvent event = static_cast<ElementEvent>(i);
-			if (CompareString(ToString(event), eventName))
+			if (StringEqual(ToString(event), eventName))
 				return event;
 		}
 
