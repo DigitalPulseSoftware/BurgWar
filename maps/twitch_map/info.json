@@ -1,0 +1,4793 @@
+{
+	"assets": [
+		{
+			"checksum": [
+				49,
+				151,
+				57,
+				112,
+				217,
+				16,
+				140,
+				133,
+				144,
+				179,
+				90,
+				163,
+				134,
+				162,
+				97,
+				95,
+				157,
+				148,
+				19,
+				227
+			],
+			"filePath": "tiles/4.png",
+			"size": 7117
+		},
+		{
+			"checksum": [
+				237,
+				13,
+				248,
+				54,
+				243,
+				173,
+				220,
+				160,
+				44,
+				187,
+				104,
+				104,
+				18,
+				230,
+				19,
+				99,
+				122,
+				122,
+				102,
+				26
+			],
+			"filePath": "TooCubeForest/Forest_deco_stones01_128px.png",
+			"size": 24200
+		},
+		{
+			"checksum": [
+				192,
+				182,
+				231,
+				103,
+				98,
+				171,
+				167,
+				239,
+				28,
+				150,
+				243,
+				154,
+				27,
+				141,
+				202,
+				48,
+				224,
+				70,
+				142,
+				130
+			],
+			"filePath": "tiles/17.png",
+			"size": 7399
+		},
+		{
+			"checksum": [
+				31,
+				84,
+				160,
+				186,
+				204,
+				117,
+				175,
+				81,
+				46,
+				227,
+				117,
+				63,
+				125,
+				115,
+				115,
+				164,
+				38,
+				183,
+				102,
+				100
+			],
+			"filePath": "tiles/10.png",
+			"size": 6547
+		},
+		{
+			"checksum": [
+				152,
+				77,
+				155,
+				254,
+				56,
+				243,
+				190,
+				162,
+				223,
+				189,
+				220,
+				66,
+				1,
+				210,
+				235,
+				162,
+				23,
+				62,
+				110,
+				113
+			],
+			"filePath": "tiles/8.png",
+			"size": 6516
+		},
+		{
+			"checksum": [
+				224,
+				14,
+				248,
+				169,
+				120,
+				119,
+				171,
+				103,
+				156,
+				114,
+				18,
+				165,
+				48,
+				146,
+				115,
+				126,
+				202,
+				23,
+				245,
+				158
+			],
+			"filePath": "tiles/3.png",
+			"size": 10967
+		},
+		{
+			"checksum": [
+				202,
+				77,
+				11,
+				1,
+				29,
+				228,
+				209,
+				215,
+				169,
+				142,
+				160,
+				163,
+				77,
+				14,
+				65,
+				82,
+				84,
+				206,
+				215,
+				162
+			],
+			"filePath": "tiles/6.png",
+			"size": 8880
+		},
+		{
+			"checksum": [
+				101,
+				22,
+				220,
+				149,
+				125,
+				61,
+				11,
+				186,
+				166,
+				227,
+				5,
+				53,
+				100,
+				2,
+				108,
+				176,
+				63,
+				23,
+				183,
+				40
+			],
+			"filePath": "TooCubeForest/Forest_deco_signs.png",
+			"size": 65927
+		},
+		{
+			"checksum": [
+				237,
+				120,
+				169,
+				163,
+				79,
+				68,
+				11,
+				165,
+				199,
+				39,
+				75,
+				58,
+				134,
+				159,
+				132,
+				147,
+				107,
+				229,
+				185,
+				133
+			],
+			"filePath": "tiles/12.png",
+			"size": 9373
+		},
+		{
+			"checksum": [
+				183,
+				23,
+				65,
+				144,
+				165,
+				114,
+				147,
+				222,
+				251,
+				183,
+				130,
+				40,
+				82,
+				169,
+				225,
+				53,
+				34,
+				211,
+				50,
+				69
+			],
+			"filePath": "TooCubeForest/Forest_deco_plants01.png",
+			"size": 59716
+		},
+		{
+			"checksum": [
+				93,
+				1,
+				245,
+				59,
+				197,
+				157,
+				93,
+				120,
+				56,
+				159,
+				197,
+				20,
+				173,
+				20,
+				157,
+				141,
+				135,
+				48,
+				143,
+				130
+			],
+			"filePath": "hayhouse.png",
+			"size": 168634
+		},
+		{
+			"checksum": [
+				235,
+				74,
+				28,
+				152,
+				204,
+				37,
+				144,
+				90,
+				36,
+				71,
+				191,
+				245,
+				55,
+				113,
+				5,
+				177,
+				98,
+				247,
+				169,
+				121
+			],
+			"filePath": "tiles/14.png",
+			"size": 9180
+		},
+		{
+			"checksum": [
+				50,
+				135,
+				202,
+				84,
+				122,
+				231,
+				183,
+				114,
+				190,
+				25,
+				141,
+				15,
+				74,
+				135,
+				105,
+				192,
+				213,
+				77,
+				196,
+				65
+			],
+			"filePath": "tiles/11.png",
+			"size": 10663
+		},
+		{
+			"checksum": [
+				146,
+				235,
+				93,
+				226,
+				101,
+				42,
+				94,
+				72,
+				14,
+				70,
+				20,
+				2,
+				0,
+				83,
+				231,
+				188,
+				243,
+				165,
+				174,
+				173
+			],
+			"filePath": "placeholder/powerup_movement.png",
+			"size": 99128
+		},
+		{
+			"checksum": [
+				156,
+				162,
+				65,
+				141,
+				59,
+				81,
+				74,
+				122,
+				74,
+				205,
+				18,
+				104,
+				28,
+				94,
+				106,
+				239,
+				28,
+				76,
+				203,
+				84
+			],
+			"filePath": "tiles/2.png",
+			"size": 9914
+		},
+		{
+			"checksum": [
+				67,
+				71,
+				216,
+				157,
+				44,
+				201,
+				194,
+				134,
+				105,
+				68,
+				242,
+				40,
+				59,
+				190,
+				16,
+				90,
+				96,
+				242,
+				194,
+				166
+			],
+			"filePath": "tiles/5.png",
+			"size": 4253
+		},
+		{
+			"checksum": [
+				206,
+				66,
+				142,
+				232,
+				221,
+				249,
+				228,
+				111,
+				151,
+				144,
+				189,
+				95,
+				243,
+				249,
+				37,
+				1,
+				96,
+				53,
+				213,
+				217
+			],
+			"filePath": "TooCubeForest/Forest_deco_stones03_128px.png",
+			"size": 46781
+		},
+		{
+			"checksum": [
+				195,
+				79,
+				68,
+				5,
+				105,
+				140,
+				47,
+				252,
+				241,
+				2,
+				223,
+				45,
+				15,
+				12,
+				73,
+				106,
+				83,
+				189,
+				175,
+				170
+			],
+			"filePath": "tiles/16.png",
+			"size": 9369
+		},
+		{
+			"checksum": [
+				174,
+				5,
+				60,
+				230,
+				248,
+				164,
+				203,
+				195,
+				186,
+				88,
+				163,
+				96,
+				29,
+				200,
+				237,
+				86,
+				108,
+				122,
+				31,
+				74
+			],
+			"filePath": "tiles/13.png",
+			"size": 8613
+		},
+		{
+			"checksum": [
+				220,
+				112,
+				241,
+				207,
+				34,
+				218,
+				202,
+				100,
+				84,
+				109,
+				138,
+				230,
+				168,
+				99,
+				218,
+				20,
+				95,
+				177,
+				162,
+				184
+			],
+			"filePath": "tiles/9.png",
+			"size": 7134
+		},
+		{
+			"checksum": [
+				182,
+				126,
+				163,
+				171,
+				156,
+				49,
+				253,
+				135,
+				190,
+				43,
+				162,
+				197,
+				128,
+				169,
+				61,
+				50,
+				5,
+				95,
+				130,
+				37
+			],
+			"filePath": "PaintedBackground/mountain01.png",
+			"size": 338951
+		},
+		{
+			"checksum": [
+				206,
+				40,
+				226,
+				237,
+				142,
+				217,
+				202,
+				222,
+				115,
+				171,
+				161,
+				160,
+				12,
+				142,
+				108,
+				123,
+				171,
+				245,
+				163,
+				15
+			],
+			"filePath": "tiles/7.png",
+			"size": 10463
+		},
+		{
+			"checksum": [
+				211,
+				91,
+				68,
+				146,
+				129,
+				131,
+				49,
+				133,
+				39,
+				102,
+				17,
+				209,
+				15,
+				39,
+				84,
+				246,
+				115,
+				60,
+				171,
+				117
+			],
+			"filePath": "tiles/18.png",
+			"size": 3041
+		},
+		{
+			"checksum": [
+				159,
+				217,
+				180,
+				41,
+				78,
+				93,
+				43,
+				220,
+				221,
+				64,
+				56,
+				138,
+				179,
+				171,
+				197,
+				181,
+				50,
+				62,
+				4,
+				252
+			],
+			"filePath": "tiles/15.png",
+			"size": 8372
+		},
+		{
+			"checksum": [
+				217,
+				151,
+				207,
+				231,
+				209,
+				176,
+				178,
+				87,
+				112,
+				158,
+				81,
+				131,
+				104,
+				17,
+				58,
+				167,
+				100,
+				140,
+				8,
+				23
+			],
+			"filePath": "TooCubeForest/Forest_deco_woodenThorns.png",
+			"size": 194832
+		},
+		{
+			"checksum": [
+				158,
+				82,
+				236,
+				29,
+				34,
+				209,
+				138,
+				198,
+				29,
+				58,
+				50,
+				176,
+				139,
+				234,
+				217,
+				105,
+				205,
+				94,
+				195,
+				45
+			],
+			"filePath": "tiles/1.png",
+			"size": 11044
+		}
+	],
+	"author": "Lynix",
+	"description": "Ceci est une description.",
+	"layers": [
+		{
+			"backgroundColor": {
+				"b": 255,
+				"g": 132,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_box",
+					"name": "Blackbird",
+					"position": {
+						"x": 1024.0,
+						"y": 261.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 1
+				},
+				{
+					"entityType": "entity_box",
+					"name": "Nocrash",
+					"position": {
+						"x": 1522.0,
+						"y": 283.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 2
+				},
+				{
+					"entityType": "entity_box",
+					"name": "NoName",
+					"position": {
+						"x": 614.0,
+						"y": 329.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 3
+				},
+				{
+					"entityType": "entity_box",
+					"name": "guerriernumérique (Clone)",
+					"position": {
+						"x": 826.0,
+						"y": 233.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 4
+				},
+				{
+					"entityType": "entity_box",
+					"name": "guerriernumérique",
+					"position": {
+						"x": 647.0,
+						"y": 117.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 5
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "world",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
+								14,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								14,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								2,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								10,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								3,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								1,
+								2,
+								2,
+								2,
+								2,
+								3,
+								0,
+								0,
+								1,
+								2,
+								3,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								5,
+								5,
+								5,
+								16,
+								0,
+								0,
+								1,
+								8,
+								5,
+								10,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								3,
+								0,
+								0,
+								1,
+								2,
+								2,
+								2,
+								3,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								5,
+								5,
+								16,
+								0,
+								0,
+								1,
+								8,
+								5,
+								5,
+								5,
+								9,
+								9,
+								9,
+								9,
+								9,
+								9,
+								9,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								4,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								1,
+								3,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								1,
+								2,
+								2,
+								2,
+								2,
+								2,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								12,
+								9,
+								16,
+								0,
+								0,
+								1,
+								8,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								12,
+								9,
+								9,
+								16,
+								0,
+								0,
+								4,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								1,
+								8,
+								10,
+								3,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								10,
+								0,
+								0,
+								0,
+								13,
+								8,
+								9,
+								9,
+								9,
+								9,
+								9,
+								16,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								1,
+								8,
+								5,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								12,
+								9,
+								9,
+								9,
+								16,
+								0,
+								0,
+								1,
+								2,
+								2,
+								2,
+								2,
+								3,
+								0,
+								0,
+								8,
+								9,
+								9,
+								10,
+								0,
+								1,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								7,
+								8,
+								5,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								1,
+								8,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								1,
+								8,
+								5,
+								5,
+								5,
+								5,
+								10,
+								3,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								10,
+								11,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								7,
+								8,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								10,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								0,
+								0,
+								0,
+								0,
+								0,
+								11,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								7,
+								8,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								10,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								8,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5
+							]
+						},
+						"mapSize": {
+							"type": "integersize",
+							"value": {
+								"x": 80,
+								"y": 13
+							}
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "integersize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 6
+				},
+				{
+					"entityType": "entity_box",
+					"name": "iammita",
+					"position": {
+						"x": 1421.0,
+						"y": -481.0
+					},
+					"properties": {
+						"size": {
+							"type": "float",
+							"value": 2.0
+						}
+					},
+					"rotation": 45.0,
+					"uniqueId": 7
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 3371.0,
+						"y": 264.0
+					},
+					"properties": {
+						"size": {
+							"type": "float",
+							"value": 1.0
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 8
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "1",
+					"position": {
+						"x": 1085.0,
+						"y": 640.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_grenade"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 9
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "2",
+					"position": {
+						"x": 5851.0,
+						"y": 1414.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_powerup_health"
+						},
+						"respawntime": {
+							"type": "integer",
+							"value": 5
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 10
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "3",
+					"position": {
+						"x": 2781.0,
+						"y": 1411.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_powerup_health"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 11
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "4",
+					"position": {
+						"x": 4478.0,
+						"y": 1408.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_grenade"
+						},
+						"respawntime": {
+							"type": "integer",
+							"value": 15
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 12
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "5",
+					"position": {
+						"x": 4966.0,
+						"y": 1408.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_rifle"
+						},
+						"respawntime": {
+							"type": "integer",
+							"value": 30
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 13
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "6",
+					"position": {
+						"x": 7066.0,
+						"y": -128.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_patator"
+						},
+						"respawntime": {
+							"type": "integer",
+							"value": 20
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 14
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 1735.0,
+						"y": 827.0
+					},
+					"properties": {
+						"dynamic": {
+							"type": "bool",
+							"value": false
+						},
+						"size": {
+							"type": "float",
+							"value": 2.0
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 15
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Maison",
+					"position": {
+						"x": 9350.0,
+						"y": 893.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 796.0,
+								"y": 788.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "hayhouse.png"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 16
+				},
+				{
+					"entityType": "entity_trigger_teleport",
+					"name": "",
+					"position": {
+						"x": 9488.0,
+						"y": 1228.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 80.0,
+								"y": 100.0
+							}
+						},
+						"target": {
+							"type": "entity",
+							"value": 59
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 17
+				},
+				{
+					"entityType": "entity_position",
+					"name": "",
+					"position": {
+						"x": 9368.0,
+						"y": 1230.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 18
+				},
+				{
+					"entityType": "entity_visible_layer",
+					"name": "Îles flottantes",
+					"position": {
+						"x": 2607.0,
+						"y": 196.0
+					},
+					"properties": {
+						"layer": {
+							"type": "layer",
+							"value": 1
+						},
+						"parallaxFactor": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.6000000238418579,
+								"y": 0.6000000238418579
+							}
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -100
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.5,
+								"y": 0.5
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 19
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Grass",
+					"position": {
+						"x": 1391.0,
+						"y": 704.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": 5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_plants01.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.0,
+								"y": 0.0,
+								"z": 0.16666600108146667
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 20
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Grass",
+					"position": {
+						"x": 3082.0,
+						"y": 704.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": 5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_plants01.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.16666600108146667,
+								"y": 0.0,
+								"z": 0.16666600108146667
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 21
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Grass (Clone)",
+					"position": {
+						"x": 6545.0,
+						"y": 831.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": 5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_plants01.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.0,
+								"y": 0.0,
+								"z": 0.16666600108146667
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 22
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Flower",
+					"position": {
+						"x": 7535.0,
+						"y": 832.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_plants01.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.33333298563957214,
+								"y": 0.0,
+								"z": 0.16666600108146667
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 23
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Stone",
+					"position": {
+						"x": 6815.0,
+						"y": -128.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": 1000
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 2.0,
+								"y": 2.0
+							}
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_stones01_128px.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.0,
+								"y": 0.0,
+								"z": 0.25
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 24
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Piques",
+					"position": {
+						"x": 5120.0,
+						"y": 1602.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "floatsize",
+							"value": {
+								"x": 64.0,
+								"y": 64.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								6,
+								6,
+								6,
+								6,
+								6,
+								6,
+								6,
+								6,
+								6,
+								6
+							]
+						},
+						"mapSize": {
+							"type": "integersize",
+							"value": {
+								"x": 10,
+								"y": 1
+							}
+						},
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "integersize",
+							"value": [
+								{
+									"x": 12,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "texture",
+							"value": [
+								"TooCubeForest/Forest_deco_woodenThorns.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 25
+				},
+				{
+					"entityType": "entity_trigger_kill",
+					"name": "",
+					"position": {
+						"x": 5439.0,
+						"y": 1647.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 620.0,
+								"y": 32.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 26
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Death",
+					"position": {
+						"x": 5628.0,
+						"y": 1320.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_signs.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.8333330154418945,
+								"y": 0.0,
+								"z": 0.08333300054073334
+							}
+						}
+					},
+					"rotation": 200.0,
+					"uniqueId": 27
+				},
+				{
+					"entityType": "entity_position",
+					"name": "",
+					"position": {
+						"x": 4476.0,
+						"y": -1297.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 28
+				},
+				{
+					"entityType": "entity_camera_rect",
+					"name": "",
+					"position": {
+						"x": 0.0,
+						"y": -512.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 10240.0,
+								"y": 2176.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 29
+				},
+				{
+					"entityType": "entity_visible_layer",
+					"name": "Background",
+					"position": {
+						"x": 1300.0,
+						"y": 1080.0
+					},
+					"properties": {
+						"layer": {
+							"type": "layer",
+							"value": 2
+						},
+						"parallaxFactor": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.10000000149011612,
+								"y": 0.0
+							}
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -1000000
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 2.0,
+								"y": 2.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 30
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": " (Clone)",
+					"position": {
+						"x": 1384.0,
+						"y": 763.0
+					},
+					"properties": {
+						"free": {
+							"type": "bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 31
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": "",
+					"position": {
+						"x": 1533.0,
+						"y": 1359.0
+					},
+					"properties": {
+						"free": {
+							"type": "bool",
+							"value": false
+						}
+					},
+					"rotation": 90.0,
+					"uniqueId": 32
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": "",
+					"position": {
+						"x": 3081.0,
+						"y": 766.0
+					},
+					"properties": {
+						"free": {
+							"type": "bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 33
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": "",
+					"position": {
+						"x": 2274.0,
+						"y": 570.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 34
+				},
+				{
+					"entityType": "entity_box",
+					"name": "rootkiller",
+					"position": {
+						"x": 1113.0,
+						"y": 271.0
+					},
+					"properties": {
+						"size": {
+							"type": "float",
+							"value": 1.100000023841858
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 35
+				},
+				{
+					"entityType": "entity_box",
+					"name": "hardcpp",
+					"position": {
+						"x": 139.0,
+						"y": -237.0
+					},
+					"properties": {
+						"size": {
+							"type": "float",
+							"value": 5.0
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 36
+				},
+				{
+					"entityType": "entity_burger_ai",
+					"name": "",
+					"position": {
+						"x": 4590.0,
+						"y": 1467.0
+					},
+					"properties": {
+						"seed": {
+							"type": "integer",
+							"value": 666
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 37
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 223.0,
+						"y": 315.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 38
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone) (Clone)",
+					"position": {
+						"x": 205.0,
+						"y": 549.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 39
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 227.0,
+						"y": 186.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 40
+				},
+				{
+					"entityType": "entity_powerup2",
+					"name": "",
+					"position": {
+						"x": 678.0,
+						"y": 639.0
+					},
+					"properties": {
+						"powerup_entity": {
+							"type": "entity",
+							"value": 42
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 41
+				},
+				{
+					"entityType": "entity_powerup_movement",
+					"name": "",
+					"position": {
+						"x": 674.0,
+						"y": 651.0
+					},
+					"properties": {
+						"effect_jump_height": {
+							"type": "float",
+							"value": 1.5
+						},
+						"effect_jump_height_boost": {
+							"type": "float",
+							"value": 1.5
+						},
+						"effect_speed": {
+							"type": "float",
+							"value": 2.5
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.25,
+								"y": 0.25
+							}
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 512.0,
+								"y": 256.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "placeholder/powerup_movement.png"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 42
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone) (Clone) (Clone)",
+					"position": {
+						"x": 225.0,
+						"y": 441.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 43
+				},
+				{
+					"entityType": "entity_powerup_scale",
+					"name": " (Clone)",
+					"position": {
+						"x": 477.0,
+						"y": 654.0
+					},
+					"properties": {
+						"effect_scale": {
+							"type": "float",
+							"value": 2.0
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.25,
+								"y": 0.25
+							}
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 512.0,
+								"y": 256.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "placeholder/powerup_movement.png"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 44
+				},
+				{
+					"entityType": "entity_powerup2",
+					"name": " (Clone)",
+					"position": {
+						"x": 479.0,
+						"y": 639.0
+					},
+					"properties": {
+						"powerup_entity": {
+							"type": "entity",
+							"value": 44
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 45
+				},
+				{
+					"entityType": "entity_a_testeditor",
+					"name": "",
+					"position": {
+						"x": 481.0,
+						"y": 297.0
+					},
+					"properties": {
+						"bool": {
+							"type": "bool",
+							"value": true
+						},
+						"bool_array": {
+							"isArray": true,
+							"type": "bool",
+							"value": [
+								false,
+								true,
+								false,
+								false
+							]
+						},
+						"entity": {
+							"type": "entity",
+							"value": 1
+						},
+						"entity_array": {
+							"isArray": true,
+							"type": "entity",
+							"value": [
+								0,
+								3,
+								1
+							]
+						},
+						"float": {
+							"type": "float",
+							"value": 3.059999942779541
+						},
+						"float_array": {
+							"isArray": true,
+							"type": "float",
+							"value": [
+								0.0,
+								1.0,
+								0.0
+							]
+						},
+						"float_position": {
+							"type": "floatposition",
+							"value": {
+								"x": 1.0,
+								"y": -3.0
+							}
+						},
+						"float_position3d": {
+							"type": "floatposition3d",
+							"value": {
+								"x": 1.0,
+								"y": 2.0,
+								"z": 3.0
+							}
+						},
+						"float_position_array": {
+							"isArray": true,
+							"type": "floatposition",
+							"value": [
+								{
+									"x": 0.0,
+									"y": 0.0
+								},
+								{
+									"x": -1.0,
+									"y": 0.0
+								},
+								{
+									"x": 0.0,
+									"y": 0.0
+								},
+								{
+									"x": 0.0,
+									"y": 0.0
+								},
+								{
+									"x": 0.0,
+									"y": 0.0
+								},
+								{
+									"x": 0.0,
+									"y": 0.0
+								}
+							]
+						},
+						"float_rect": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.0,
+								"y": 0.0,
+								"z": 1.0
+							}
+						},
+						"int": {
+							"type": "integer",
+							"value": 7
+						},
+						"int_array": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								0,
+								0,
+								0,
+								1
+							]
+						},
+						"int_size3d": {
+							"type": "integersize3d",
+							"value": {
+								"x": 6,
+								"y": 7,
+								"z": 0
+							}
+						},
+						"layer": {
+							"type": "layer",
+							"value": 0
+						},
+						"layer_array": {
+							"isArray": true,
+							"type": "layer",
+							"value": [
+								2,
+								1,
+								65535
+							]
+						},
+						"str": {
+							"type": "string",
+							"value": "dfsdfds"
+						},
+						"str_array": {
+							"isArray": true,
+							"type": "string",
+							"value": [
+								"",
+								"fggfdg",
+								"",
+								"",
+								""
+							]
+						},
+						"texture": {
+							"type": "texture",
+							"value": "cccc"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 46
+				}
+			],
+			"name": "Layer #1"
+		},
+		{
+			"backgroundColor": {
+				"b": 255,
+				"g": 132,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_tilemap",
+					"name": " (Clone)",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								1,
+								2,
+								2,
+								2,
+								3,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								12,
+								9,
+								9,
+								9,
+								16,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							]
+						},
+						"mapSize": {
+							"type": "integersize",
+							"value": {
+								"x": 20,
+								"y": 20
+							}
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "integersize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 47
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "",
+					"position": {
+						"x": -1871.0,
+						"y": 0.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							]
+						},
+						"mapSize": {
+							"type": "integersize",
+							"value": {
+								"x": 20,
+								"y": 20
+							}
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "integersize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 48
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "Grappin",
+					"position": {
+						"x": 971.0,
+						"y": 768.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_grapple"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 49
+				},
+				{
+					"entityType": "entity_powerup",
+					"name": "Physgun",
+					"position": {
+						"x": 766.0,
+						"y": 1538.0
+					},
+					"properties": {
+						"powerup_type": {
+							"type": "string",
+							"value": "entity_pickable_weapon_physics_bun"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 50
+				},
+				{
+					"entityType": "entity_box_spawner",
+					"name": "",
+					"position": {
+						"x": 1532.0,
+						"y": 1540.0
+					},
+					"properties": {
+						"respawntime": {
+							"type": "integer",
+							"value": 5
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 51
+				},
+				{
+					"entityType": "entity_trigger_kill",
+					"name": "",
+					"position": {
+						"x": 1522.0,
+						"y": 2704.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 10000.0,
+								"y": 100.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 52
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": " (Clone)",
+					"position": {
+						"x": 1784.0,
+						"y": 1604.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_signs.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.6666659712791443,
+								"y": 0.0,
+								"z": 0.08333300054073334
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 53
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": " (Clone)",
+					"position": {
+						"x": 328.0,
+						"y": 196.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_signs.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.5833330154418945,
+								"y": 0.0,
+								"z": 0.08333300054073334
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 54
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "",
+					"position": {
+						"x": -1548.0,
+						"y": 196.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_signs.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.4166660010814667,
+								"y": 0.0,
+								"z": 0.08333300054073334
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 55
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "",
+					"position": {
+						"x": 1551.0,
+						"y": 198.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "TooCubeForest/Forest_deco_stones03_128px.png"
+						},
+						"textureCoords": {
+							"type": "floatrect",
+							"value": {
+								"w": 1.0,
+								"x": 0.75,
+								"y": 0.0,
+								"z": 0.25
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 56
+				},
+				{
+					"entityType": "entity_collider_box",
+					"name": "",
+					"position": {
+						"x": 1552.0,
+						"y": 218.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 110.0,
+								"y": 90.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 57
+				},
+				{
+					"entityType": "entity_sprite",
+					"name": "Maison (Clone)",
+					"position": {
+						"x": 1134.0,
+						"y": 1472.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -5
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.5,
+								"y": 0.5
+							}
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 796.0,
+								"y": 788.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "hayhouse.png"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 58
+				},
+				{
+					"entityType": "entity_position",
+					"name": "",
+					"position": {
+						"x": 1207.0,
+						"y": 1621.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 59
+				},
+				{
+					"entityType": "entity_visible_layer",
+					"name": "Background (Clone)",
+					"position": {
+						"x": 1300.0,
+						"y": 480.0
+					},
+					"properties": {
+						"layer": {
+							"type": "layer",
+							"value": 2
+						},
+						"parallaxFactor": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.10000000149011612,
+								"y": 0.0
+							}
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -1000000
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 2.0,
+								"y": 2.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 60
+				},
+				{
+					"entityType": "entity_trigger_teleport",
+					"name": "",
+					"position": {
+						"x": -1770.0,
+						"y": 2573.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 1000.0,
+								"y": 100.0
+							}
+						},
+						"target": {
+							"type": "entity",
+							"value": 28
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 61
+				},
+				{
+					"entityType": "entity_camera_rect",
+					"name": "",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 2560.0,
+								"y": 1808.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 62
+				},
+				{
+					"entityType": "entity_camera_rect",
+					"name": "",
+					"position": {
+						"x": -2048.0,
+						"y": -374.0
+					},
+					"properties": {
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 2048.0,
+								"y": 768.0
+							}
+						},
+						"transition_time": {
+							"type": "floatsize",
+							"value": {
+								"x": 0.5,
+								"y": 0.5
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 63
+				},
+				{
+					"entityType": "entity_model",
+					"name": "",
+					"position": {
+						"x": 579.0,
+						"y": 143.0
+					},
+					"properties": {
+						"modelPath": {
+							"type": "string",
+							"value": "street_light/light.obj"
+						},
+						"renderOrder": {
+							"type": "integer",
+							"value": -100
+						},
+						"rotation": {
+							"type": "floatposition3d",
+							"value": {
+								"x": 0.0,
+								"y": 90.0,
+								"z": 0.0
+							}
+						},
+						"scale": {
+							"type": "floatsize3d",
+							"value": {
+								"x": 5.0,
+								"y": 5.0,
+								"z": 5.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 64
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 752.0,
+						"y": 189.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 65
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 1361.0,
+						"y": 2218.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 66
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 1772.0,
+						"y": 141.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 67
+				}
+			],
+			"name": "Îles flottantes"
+		},
+		{
+			"backgroundColor": {
+				"b": 255,
+				"g": 132,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_sprite",
+					"name": "",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {
+						"physical": {
+							"type": "bool",
+							"value": false
+						},
+						"scale": {
+							"type": "floatsize",
+							"value": {
+								"x": 1.0,
+								"y": 1.0
+							}
+						},
+						"size": {
+							"type": "floatsize",
+							"value": {
+								"x": 1344.0,
+								"y": 422.0
+							}
+						},
+						"texture": {
+							"type": "texture",
+							"value": "PaintedBackground/mountain01.png"
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 68
+				}
+			],
+			"name": "Background"
+		},
+		{
+			"backgroundColor": {
+				"b": 0,
+				"g": 0,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_tilemap",
+					"name": "",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "floatsize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "integer",
+							"value": [
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								6,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								4,
+								5,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								7,
+								5
+							]
+						},
+						"mapSize": {
+							"type": "integersize",
+							"value": {
+								"x": 10,
+								"y": 10
+							}
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "integersize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 0,
+									"y": 0
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 69
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 620.4000244140625,
+						"y": 961.5999755859375
+					},
+					"properties": {
+						"size": {
+							"type": "float",
+							"value": 2.0
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 70
+				}
+			],
+			"name": "Layer #3"
+		}
+	],
+	"name": "Twitch map"
+}
