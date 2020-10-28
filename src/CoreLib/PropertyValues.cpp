@@ -392,7 +392,7 @@ namespace bw
 							return PushValue<IsArray>(lua, value, PushEntity);
 						}
 						else
-							throw std::runtime_error("Property type doesn't match internal type");
+							static_assert(AlwaysFalse<T>(), "Property type doesn't match internal type");
 
 						break;
 					}
@@ -409,7 +409,7 @@ namespace bw
 							return PushValue<IsArray>(lua, value, PushRect);
 						}
 						else
-							throw std::runtime_error("Property type doesn't match internal type");
+							static_assert(AlwaysFalse<T>(), "Property type doesn't match internal type");
 					}
 
 					case PropertyType::IntegerRect:
@@ -424,7 +424,7 @@ namespace bw
 							return PushValue<IsArray>(lua, value, PushRect);
 						}
 						else
-							throw std::runtime_error("Property type doesn't match internal type");
+							static_assert(AlwaysFalse<T>(), "Property type doesn't match internal type");
 					}
 
 					default:
