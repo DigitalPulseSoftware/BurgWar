@@ -32,7 +32,7 @@ namespace bw
 
 			inline const Ndk::EntityList& GetMapEntities() const;
 
-			void EditEntityPosition(Ndk::EntityId entityId);
+			void EditEntitiesPosition(const std::vector<Ndk::EntityId>& entityIds);
 
 			void ShowGrid(bool show);
 
@@ -44,8 +44,9 @@ namespace bw
 			NazaraSignal(OnCanvasMouseEntered, MapCanvas* /*emitter*/);
 			NazaraSignal(OnCanvasMouseLeft, MapCanvas* /*emitter*/);
 			NazaraSignal(OnCanvasMouseMoved, MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseMoveEvent& /*mouseButton*/);
-			NazaraSignal(OnDeleteEntity, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/);
-			NazaraSignal(OnEntityPositionUpdated, MapCanvas* /*emitter*/, Ndk::EntityId /*entityId*/, const Nz::Vector2f& /*position*/);
+			NazaraSignal(OnDeleteEntities, MapCanvas* /*emitter*/, const Ndk::EntityId* /*entityId*/, std::size_t /*entityCount*/);
+			NazaraSignal(OnEntitiesPositionUpdated, MapCanvas* /*emitter*/, const Ndk::EntityId* /*entityId*/, std::size_t /*entityCount*/, const Nz::Vector2f& /*position*/);
+			NazaraSignal(OnMultiSelectionStateUpdated, MapCanvas* /*emitter*/, bool /*newState*/);
 
 		private:
 			void OnKeyPressed(const Nz::WindowEvent::KeyEvent& key) override;
@@ -56,6 +57,8 @@ namespace bw
 			void OnMouseLeft() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
 			void UpdateGrid();
+
+			static std::vector<Ndk::EntityId> BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities);
 
 			void resizeEvent(QResizeEvent* event) override;
 

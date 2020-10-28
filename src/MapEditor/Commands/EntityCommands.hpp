@@ -18,49 +18,55 @@ namespace bw
 
 	namespace Commands
 	{
-		class EntityCommand : public QUndoCommand
+		class EntitiesCommand : public QUndoCommand
 		{
 			public:
-				EntityCommand(EditorWindow& editor, Nz::Int64 entityUniqueId, const QString& label);
-				~EntityCommand() = default;
+				EntitiesCommand(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const QString& label);
+				~EntitiesCommand() = default;
 
 			protected:
 				EditorWindow& m_editor;
-				Nz::Int64 m_entityUniqueId;
+				std::vector<Nz::Int64> m_entitiesUniqueId;
 		};
 
-		class EntityCreationDelete : public EntityCommand
+		class EntityCreationDelete : public EntitiesCommand
 		{
 			public:
-				using EntityCommand::EntityCommand;
-				EntityCreationDelete(EditorWindow& editor, const QString& label, Map::EntityIndices entityIndices, Map::Entity entity);
+				struct EntityData;
+
+				using EntitiesCommand::EntitiesCommand;
+				EntityCreationDelete(EditorWindow& editor, const QString& label, std::vector<EntityData> entitiesData);
 				~EntityCreationDelete() = default;
 
-			protected:
-				void Create();
-				void Delete();
-
-			private:
 				struct EntityData
 				{
 					Map::Entity entity;
 					Map::EntityIndices indices;
 				};
 
-				std::optional<EntityData> m_entityData;
+			protected:
+				void Create();
+				void Delete();
+
+				static inline EntityData BuildData(Map::EntityIndices entityIndices, Map::Entity entity);
+
+			private:
+				static inline std::vector<Nz::Int64> GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData);
+
+				std::vector<EntityData> m_entitiesData;
 		};
 		
 		class EntityClone final : public EntityCreationDelete
 		{
 			public:
-				EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, Map::EntityIndices targetEntityIndices);
+				EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, const Map::EntityIndices& targetEntityIndices);
 				~EntityClone() = default;
 
 				void redo() override;
 				void undo() override;
 
 			private:
-				static Map::Entity BuildClone(EditorWindow& editor, const Map::EntityIndices& entityIndices);
+				static EntityData BuildClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, const Map::EntityIndices& targetEntityIndices);
 		};
 
 		class EntityCreate final : public EntityCreationDelete
@@ -76,14 +82,14 @@ namespace bw
 		class EntityDelete final : public EntityCreationDelete
 		{
 			public:
-				EntityDelete(EditorWindow& editor, Nz::Int64 entityUniqueId);
+				EntityDelete(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds);
 				~EntityDelete() = default;
 
 				void redo() override;
 				void undo() override;
 		};
 
-		class EntityLayerUpdate final : public EntityCommand
+		class EntityLayerUpdate final : public EntitiesCommand
 		{
 			public:
 				EntityLayerUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, LayerIndex newLayerIndex);
@@ -97,7 +103,7 @@ namespace bw
 				LayerIndex m_newLayerIndex;
 		};
 
-		class EntityUpdate final : public EntityCommand
+		class EntityUpdate final : public EntitiesCommand
 		{
 			public:
 				EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags);
@@ -112,10 +118,10 @@ namespace bw
 				Map::Entity m_newState;
 		};
 
-		class PositionUpdate final : public EntityCommand
+		class PositionUpdate final : public EntitiesCommand
 		{
 			public:
-				PositionUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, const Nz::Vector2f& offset);
+				PositionUpdate(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const Nz::Vector2f& offset);
 				~PositionUpdate() = default;
 
 				void redo() override;

@@ -124,6 +124,7 @@ namespace bw
 			switch (key)
 			{
 				case Qt::Key_Delete: return Nz::Keyboard::VKey::Delete;
+				case Qt::Key_Shift:  return Nz::Keyboard::VKey::LShift;
 				case Qt::Key_Escape: return Nz::Keyboard::VKey::Escape;
 				case Qt::Key_Return: return Nz::Keyboard::VKey::Return;
 				case Qt::Key_Tab:    return Nz::Keyboard::VKey::Tab;

@@ -96,22 +96,32 @@ namespace bw
 		entity->Kill();
 	}
 
-	void MapCanvas::EditEntityPosition(Ndk::EntityId entityId)
+	void MapCanvas::EditEntitiesPosition(const std::vector<Ndk::EntityId>& entityIds)
 	{
-		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
-		if (!entity)
-			return;
-
 		const Map& mapData = m_editor.GetWorkingMap();
 		const auto& currentLayerOpt = m_editor.GetCurrentLayer();
 		assert(currentLayerOpt);
 
 		const Map::Layer& layerData = mapData.GetLayer(*currentLayerOpt);
 
-		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), entity, layerData.positionAlignment);
-		positionGizmo->OnPositionUpdated.Connect([this, entityId](PositionGizmo* /*emitter*/, Nz::Vector2f newPosition)
+		std::vector<Ndk::EntityHandle> entities;
+		for (Ndk::EntityId entityId : entityIds)
 		{
-			OnEntityPositionUpdated(this, entityId, newPosition);
+			const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
+			if (!entity)
+				continue;
+
+			entities.push_back(entity);
+		}
+
+		if (entities.empty())
+			return;
+
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), std::move(entities), layerData.positionAlignment);
+		positionGizmo->OnPositionUpdated.Connect([this](PositionGizmo* emitter, Nz::Vector2f offset)
+		{
+			std::vector<Ndk::EntityId> ids = BuildEntityIds(emitter->GetTargetEntities());
+			OnEntitiesPositionUpdated(this, ids.data(), ids.size(), offset);
 		});
 
 		m_onLayerAlignmentUpdate.Connect(m_editor.OnLayerAlignmentUpdate, [this, gizmo = positionGizmo.get()](EditorWindow* /*editor*/, LayerIndex layerIndex, const Nz::Vector2f& newAlignment)
@@ -124,13 +134,13 @@ namespace bw
 		});
 
 		m_entityGizmo = std::move(positionGizmo);
-		m_onGizmoEntityDestroyed.Connect(entity->OnEntityDestruction, [this](Ndk::Entity* entity)
+		/*m_onGizmoEntityDestroyed.Connect(entity->OnEntityDestruction, [this](Ndk::Entity* entity)
 		{
 			assert(m_entityGizmo->GetTargetEntity() == entity);
 			NazaraUnused(entity);
 
 			ClearEntitySelection();
-		});
+		});*/
 	}
 
 	void MapCanvas::ShowGrid(bool show)
@@ -167,8 +177,18 @@ namespace bw
 			case Nz::Keyboard::VKey::Delete:
 			{
 				if (m_entityGizmo)
-					OnDeleteEntity(this, m_entityGizmo->GetTargetEntity()->GetId());
+				{
+					std::vector<Ndk::EntityId> ids = BuildEntityIds(m_entityGizmo->GetTargetEntities());
+					OnDeleteEntities(this, ids.data(), ids.size());
+				}
 
+				break;
+			}
+
+			case Nz::Keyboard::VKey::LShift:
+			case Nz::Keyboard::VKey::RShift:
+			{
+				OnMultiSelectionStateUpdated(this, true);
 				break;
 			}
 
@@ -177,8 +197,20 @@ namespace bw
 		}
 	}
 
-	void MapCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& /*key*/)
+	void MapCanvas::OnKeyReleased(const Nz::WindowEvent::KeyEvent& key)
 	{
+		switch (key.virtualKey)
+		{
+			case Nz::Keyboard::VKey::LShift:
+			case Nz::Keyboard::VKey::RShift:
+			{
+				OnMultiSelectionStateUpdated(this, false);
+				break;
+			}
+
+			default:
+				break;
+		}
 	}
 
 	void MapCanvas::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -327,6 +359,20 @@ namespace bw
 			if (screenSize >= 32.f)
 				AddGrid(gridZooms[i].lineWidth, gridZooms[i].gridSize, gridZooms[i].color, int(std::numeric_limits<int>::lowest() + i * 2));
 		}
+	}
+
+	std::vector<Ndk::EntityId> MapCanvas::BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities)
+	{
+		std::vector<Ndk::EntityId> ids;
+		ids.reserve(entities.size());
+
+		for (const Ndk::EntityHandle& entity : entities)
+		{
+			if (entity)
+				ids.push_back(entity->GetId());
+		}
+
+		return ids;
 	}
 	
 	void MapCanvas::resizeEvent(QResizeEvent* event)

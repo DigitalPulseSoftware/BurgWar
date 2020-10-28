@@ -12,8 +12,8 @@
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Camera& camera, Ndk::Entity* entity, const Nz::Vector2f& positionAlignment) :
-	EditorGizmo(entity),
+	PositionGizmo::PositionGizmo(Camera& camera, std::vector<Ndk::EntityHandle> entities, const Nz::Vector2f& positionAlignment) :
+	EditorGizmo(std::move(entities)),
 	m_camera(camera),
 	m_hoveredAction(MovementType::None),
 	m_movementType(MovementType::None),
@@ -44,7 +44,8 @@ namespace bw
 		m_allowedMovements[MovementType::YAxis].Set(0.f, 1.f);
 		m_allowedMovements[MovementType::XYAxis].Set(1.f, 1.f);
 
-		m_arrowEntity = entity->GetWorld()->CreateEntity();
+		const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
+		m_arrowEntity = selectionOverlayEntity->GetWorld()->CreateEntity();
 
 		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
 		gfx.Attach(m_sprites[MovementType::XYAxis], 2);
@@ -54,7 +55,15 @@ namespace bw
 		auto& node = m_arrowEntity->AddComponent<Ndk::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
-		node.SetParent(GetTargetEntity());
+		node.SetParent(selectionOverlayEntity);
+
+		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global));
+
+		for (const Ndk::EntityHandle& entity : GetTargetEntities())
+		{
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global)) - arrowPosition);
+		}
 	}
 
 	bool PositionGizmo::OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -85,8 +94,8 @@ namespace bw
 
 		if (m_movementType != MovementType::None)
 		{
-			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-			m_originalPosition = Nz::Vector2f(node.GetPosition());
+			auto& node = GetSelectionOverlayEntity()->GetComponent<Ndk::NodeComponent>();
+			m_originalPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global));
 			m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 
 			return true;
@@ -102,8 +111,8 @@ namespace bw
 		
 		m_movementType = MovementType::None;
 
-		auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-		OnPositionUpdated(this, Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global)));
+		auto& node = GetSelectionOverlayEntity()->GetComponent<Ndk::NodeComponent>();
+		OnPositionUpdated(this, Nz::Vector2f(node.GetPosition()) - m_originalPosition);
 		
 		return true;
 	}
@@ -156,17 +165,30 @@ namespace bw
 		}
 		else
 		{
-			Nz::Vector2f pos = m_camera.Unproject({ float(mouseMoved.x), float(mouseMoved.y) });
-			Nz::Vector2f delta = pos - m_movementStartPos;
+			Nz::Vector2f newPosition = ComputeNewPosition(mouseMoved.x, mouseMoved.y);
 
-			Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
+			const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
+			auto& node = selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
+			node.SetPosition(newPosition);
 
-			Nz::Vector2f newPosition = AlignPosition(m_originalPosition + allowedMovement * delta, m_positionAlignment);
-
-			auto& node = GetTargetEntity()->GetComponent<Ndk::NodeComponent>();
-			node.SetPosition(newPosition, Nz::CoordSys_Global);
+			const std::vector<Ndk::EntityHandle>& targetEntities = GetTargetEntities();
+			for (std::size_t i = 0; i < targetEntities.size(); ++i)
+			{
+				auto& entityNode = targetEntities[i]->GetComponent<Ndk::NodeComponent>();
+				entityNode.SetPosition(newPosition + m_entitiesOffsets[i], Nz::CoordSys_Global);
+			}
 
 			return true;
 		}
+	}
+
+	Nz::Vector2f PositionGizmo::ComputeNewPosition(int mouseX, int mouseY) const
+	{
+		Nz::Vector2f pos = m_camera.Unproject({ float(mouseX), float(mouseY) });
+		Nz::Vector2f delta = pos - m_movementStartPos;
+
+		Nz::Vector2f allowedMovement = m_allowedMovements[m_movementType];
+
+		return AlignPosition(m_originalPosition + allowedMovement * delta, m_positionAlignment);
 	}
 }

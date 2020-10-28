@@ -4,10 +4,23 @@
 
 #include <MapEditor/Logic/BasicEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
+#include <Nazara/Platform/Keyboard.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
 {
+	BasicEditorMode::BasicEditorMode(EditorWindow& editor) :
+	AbstractSelectionEditorMode(editor),
+	m_multiSelectionEnabled(false)
+	{
+		EditorWindow& editorWindow = GetEditorWindow();
+		MapCanvas* mapCanvas = editorWindow.GetMapCanvas();
+		m_multiSelectionStateUpdateSlot.Connect(mapCanvas->OnMultiSelectionStateUpdated, [this](MapCanvas* /*emitter*/, bool newState)
+		{
+			m_multiSelectionEnabled = newState;
+		});
+	}
+
 	void BasicEditorMode::OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity)
 	{
 		EditorWindow& editorWindow = GetEditorWindow();
@@ -21,9 +34,17 @@ namespace bw
 	void BasicEditorMode::OnEntitySelected(Ndk::Entity* selectedEntity)
 	{
 		EditorWindow& editorWindow = GetEditorWindow();
-		if (selectedEntity)
-			editorWindow.SelectEntity(editorWindow.GetEntityIndex(selectedEntity->GetId()));
+		if (m_multiSelectionEnabled)
+		{
+			if (selectedEntity)
+				editorWindow.ToggleEntitySelection(editorWindow.GetEntityIndex(selectedEntity->GetId()));
+		}
 		else
-			editorWindow.ClearSelectedEntity();
+		{
+			if (selectedEntity)
+				editorWindow.SelectEntity(editorWindow.GetEntityIndex(selectedEntity->GetId()));
+			else
+				editorWindow.ClearSelectedEntity();
+		}
 	}
 }

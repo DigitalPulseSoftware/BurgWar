@@ -117,26 +117,39 @@ namespace bw
 			statusBar()->showMessage(tr("Zoom level: %1%").arg(static_cast<int>(std::round(factor * 100.f))));
 		});
 
-		m_canvas->OnDeleteEntity.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex)
+		m_canvas->OnDeleteEntities.Connect([this](MapCanvas* /*emitter*/, const Ndk::EntityId* entityId, std::size_t entityCount)
 		{
-			auto it = m_entityIndexes.find(canvasIndex);
-			assert(it != m_entityIndexes.end());
+			std::vector<std::size_t> entityIndices(entityCount);
+			for (std::size_t i = 0; i < entityCount; ++i)
+			{
+				auto it = m_entityIndexes.find(entityId[i]);
+				assert(it != m_entityIndexes.end());
 
-			OnDeleteEntity(it.value());
+				entityIndices[i] = it->second;
+			}
+
+			OnDeleteEntities(entityIndices.data(), entityIndices.size());
 		});
 
-		m_canvas->OnEntityPositionUpdated.Connect([this](MapCanvas* /*emitter*/, Ndk::EntityId canvasIndex, const Nz::Vector2f& newPosition)
+		m_canvas->OnEntitiesPositionUpdated.Connect([this](MapCanvas* /*emitter*/, const Ndk::EntityId* canvasIndices, std::size_t entityCount, const Nz::Vector2f& offset)
 		{
 			assert(m_currentLayer.has_value());
 
-			auto it = m_entityIndexes.find(canvasIndex);
-			assert(it != m_entityIndexes.end());
-
-			std::size_t entityIndex = it.value();
-
 			const Map& map = GetWorkingMap();
-			const auto& entity = map.GetEntity(m_currentLayer.value(), entityIndex);
-			PushCommand<Commands::PositionUpdate>(entity.uniqueId, newPosition - entity.position);
+
+			std::vector<Nz::Int64> entityUniqueIds;
+			for (std::size_t i = 0; i < entityCount; ++i)
+			{
+				auto it = m_entityIndexes.find(canvasIndices[i]);
+				assert(it != m_entityIndexes.end());
+
+				std::size_t entityIndex = it.value();
+				const auto& entity = map.GetEntity(m_currentLayer.value(), entityIndex);
+
+				entityUniqueIds.push_back(entity.uniqueId);
+			}
+
+			PushCommand<Commands::PositionUpdate>(std::move(entityUniqueIds), offset);
 		});
 
 		m_canvas->OnCanvasMouseButtonPressed.Connect([this](MapCanvas* /*emitter*/, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
@@ -202,7 +215,7 @@ namespace bw
 
 	void EditorWindow::ClearSelectedEntity()
 	{
-		m_entityList.listWidget->setCurrentRow(-1);
+		m_entityList.listWidget->clearSelection();
 	}
 
 	void EditorWindow::ClearWorkingMap()
@@ -334,7 +347,7 @@ namespace bw
 			QAction* deleteEntity = contextMenu.addAction(tr("Delete entity"));
 			connect(deleteEntity, &QAction::triggered, [this, entityIndex](bool)
 			{
-				OnDeleteEntity(entityIndex);
+				OnDeleteEntities(&entityIndex, 1);
 			});
 
 			std::size_t layerCount = m_workingMap.GetLayerCount();
@@ -403,9 +416,12 @@ namespace bw
 		m_canvas->UpdateEntityPositionAndRotation(canvasId, entity.position, entity.rotation);
 	}
 
-	void EditorWindow::SelectEntity(std::size_t entityIndex)
+	void EditorWindow::SelectEntity(std::size_t entityIndex, bool clearPrevious)
 	{
-		m_entityList.listWidget->setCurrentRow(int(entityIndex));
+		if (clearPrevious)
+			m_entityList.listWidget->clearSelection();
+
+		m_entityList.listWidget->item(int(entityIndex))->setSelected(true);
 	}
 
 	void EditorWindow::SelectEntities(const std::vector<std::size_t>& entityIndices)
@@ -484,6 +500,12 @@ namespace bw
 		m_currentMode->OnLeave();
 		m_currentMode = std::move(editorMode);
 		m_currentMode->OnEnter();
+	}
+
+	void EditorWindow::ToggleEntitySelection(std::size_t entityIndex)
+	{
+		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
+		item->setSelected(!item->isSelected());
 	}
 
 	void EditorWindow::UpdateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags)
@@ -603,7 +625,7 @@ namespace bw
 			{
 				QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
 				if (keyEvent->key() == Qt::Key_Delete)
-					OnDeleteEntity();
+					OnDeleteEntities();
 			}
 
 			default:
@@ -1168,12 +1190,9 @@ namespace bw
 		PushCommand<Commands::LayerCreate>(newLayerIndex, std::move(newLayer));
 	}
 
-	bool EditorWindow::OnDeleteEntity()
+	bool EditorWindow::OnDeleteEntities()
 	{
-		if (m_selectedEntities.size() != 1)
-			return false;
-
-		if (OnDeleteEntity(m_selectedEntities.front()))
+		if (OnDeleteEntities(m_selectedEntities.data(), m_selectedEntities.size()))
 		{
 			m_entityList.listWidget->setCurrentRow(-1);
 			return true;
@@ -1182,18 +1201,34 @@ namespace bw
 		return false;
 	}
 
-	bool EditorWindow::OnDeleteEntity(std::size_t entityIndex)
+	bool EditorWindow::OnDeleteEntities(const std::size_t* entityIndices, std::size_t entityCount)
 	{
 		assert(m_currentLayer);
 		auto& layer = m_workingMap.GetLayer(m_currentLayer.value());
 
-		auto& layerEntity = layer.entities[entityIndex];
+		QString warningText;
+		if (entityCount > 1)
+		{
+			assert(entityCount != 0);
 
-		QString warningText = tr("You are about to delete entity %1 of type %2, are you sure you want to do that?").arg(QString::fromStdString(layerEntity.name)).arg(QString::fromStdString(layerEntity.entityType));
+			warningText = tr("You are about to delete %1 entities, are you sure you want to do that?").arg(QString::number(entityCount));
+		}
+		else
+		{
+			assert(entityCount != 0);
+
+			auto& layerEntity = layer.entities[*entityIndices];
+			warningText = tr("You are about to delete entity %1 of type %2, are you sure you want to do that?").arg(QString::fromStdString(layerEntity.name)).arg(QString::fromStdString(layerEntity.entityType));
+		}
+
 		QMessageBox::StandardButton response = QMessageBox::warning(this, tr("Are you sure?"), warningText, QMessageBox::Yes | QMessageBox::Cancel);
 		if (response == QMessageBox::Yes)
 		{
-			PushCommand<Commands::EntityDelete>(layerEntity.uniqueId);
+			std::vector<Nz::Int64> entityUniqueIds(entityCount);
+			for (std::size_t i = 0; i < entityCount; ++i)
+				entityUniqueIds[i] = layer.entities[entityIndices[i]].uniqueId;
+
+			PushCommand<Commands::EntityDelete>(std::move(entityUniqueIds));
 
 			return true;
 		}
@@ -1331,7 +1366,7 @@ namespace bw
 		for (QListWidgetItem* item : m_entityList.listWidget->selectedItems())
 			m_selectedEntities.push_back(static_cast<std::size_t>(m_entityList.listWidget->row(item)));
 
-		if (m_selectedEntities.size() != 1)
+		if (m_selectedEntities.empty())
 		{
 			m_canvas->ClearEntitySelection();
 
@@ -1340,15 +1375,18 @@ namespace bw
 			return;
 		}
 
-		std::size_t selectedEntity = m_selectedEntities.front();
+		std::vector<Ndk::EntityId> selectedEntities;
+		for (std::size_t entityIndex : m_selectedEntities)
+		{
+			QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
+			Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
+			selectedEntities.push_back(canvasId);
+		}
 
-		QListWidgetItem* item = m_entityList.listWidget->item(int(selectedEntity));
+		m_canvas->EditEntitiesPosition(std::move(selectedEntities));
 
-		Ndk::EntityId canvasId = item->data(Qt::UserRole + 1).value<Ndk::EntityId>();
-		m_canvas->EditEntityPosition(canvasId);
-
-		m_entityList.downArrowButton->setEnabled(int(selectedEntity + 1) < m_entityList.listWidget->count());
-		m_entityList.upArrowButton->setEnabled(selectedEntity > 0);
+		/*m_entityList.downArrowButton->setEnabled(int(selectedEntity + 1) < m_entityList.listWidget->count());
+		m_entityList.upArrowButton->setEnabled(selectedEntity > 0);*/
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)

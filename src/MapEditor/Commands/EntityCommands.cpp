@@ -8,46 +8,51 @@
 
 namespace bw::Commands
 {
-	EntityCommand::EntityCommand(EditorWindow& editor, Nz::Int64 entityUniqueId, const QString& label) :
+	EntitiesCommand::EntitiesCommand(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const QString& label) :
 	m_editor(editor),
-	m_entityUniqueId(entityUniqueId)
+	m_entitiesUniqueId(std::move(entityUniqueIds))
 	{
+		assert(!m_entitiesUniqueId.empty());
 		setText(label);
 	}
 
-	EntityCreationDelete::EntityCreationDelete(EditorWindow& editor, const QString& label, Map::EntityIndices entityIndices, Map::Entity entity) :
-	EntityCommand(editor, entity.uniqueId, label)
+	EntityCreationDelete::EntityCreationDelete(EditorWindow& editor, const QString& label, std::vector<EntityData> entitiesData) :
+	EntitiesCommand(editor, GetEntitiesUniqueId(entitiesData), label),
+	m_entitiesData(std::move(entitiesData))
 	{
-		auto& entityData = m_entityData.emplace();
-		entityData.entity = std::move(entity);
-		entityData.indices = std::move(entityIndices);
 	}
 
 	void EntityCreationDelete::Create()
 	{
-		assert(m_entityData.has_value());
-		EntityData& entityData = m_entityData.value();
+		assert(!m_entitiesData.empty());
+		for (std::size_t i = 0; i < m_entitiesData.size(); ++i)
+		{
+			EntityData& entityData = m_entitiesData[i];
 
-		auto& createdEntity = m_editor.CreateEntity(entityData.indices.layerIndex, entityData.indices.entityIndex, std::move(entityData.entity));
-		m_entityData.reset();
-
-		NazaraUnused(createdEntity); //< Silent warnings in release
-		assert(createdEntity.uniqueId == m_entityUniqueId); //< Ensure entity wasn't given a new unique id
+			auto& createdEntity = m_editor.CreateEntity(entityData.indices.layerIndex, entityData.indices.entityIndex, std::move(entityData.entity));
+			NazaraUnused(createdEntity); //< Silent warnings in release
+			assert(createdEntity.uniqueId == m_entitiesUniqueId[i]); //< Ensure entity wasn't given a new unique id
+		}
+		m_entitiesData.clear();
 	}
 
 	void EntityCreationDelete::Delete()
 	{
 		const Map& map = m_editor.GetWorkingMap();
-		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
 
-		EntityData& entityData = m_entityData.emplace();
-		entityData.indices = indices;
-		entityData.entity = m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex);
-		assert(entityData.entity.uniqueId == m_entityUniqueId);
+		for (Nz::Int64 entityUniqueId : m_entitiesUniqueId)
+		{
+			const auto& indices = map.GetEntityIndices(entityUniqueId);
+
+			EntityData& entityData = m_entitiesData.emplace_back();
+			entityData.indices = indices;
+			entityData.entity = m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex);
+			assert(entityData.entity.uniqueId == entityUniqueId);
+		}
 	}
 
-	EntityClone::EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, Map::EntityIndices targetEntityIndices) :
-	EntityCreationDelete(editor, "clone entity", std::move(targetEntityIndices), BuildClone(editor, sourceEntityIndices))
+	EntityClone::EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, const Map::EntityIndices& targetEntityIndices) :
+	EntityCreationDelete(editor, "clone entity", { BuildClone(editor, sourceEntityIndices, targetEntityIndices) })
 	{
 	}
 
@@ -61,18 +66,21 @@ namespace bw::Commands
 		Delete();
 	}
 
-	Map::Entity EntityClone::BuildClone(EditorWindow& editor, const Map::EntityIndices& entityIndices)
+	auto EntityClone::BuildClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, const Map::EntityIndices& targetEntityIndices) -> EntityData
 	{
 		auto& map = editor.GetWorkingMapMut();
-		Map::Entity entity = map.GetEntity(entityIndices.layerIndex, entityIndices.entityIndex);
-		entity.name += " (Clone)";
-		entity.uniqueId = map.GenerateUniqueId();
+		EntityData entityData;
+		entityData.indices = targetEntityIndices;
 
-		return entity;
+		entityData.entity = map.GetEntity(sourceEntityIndices.layerIndex, sourceEntityIndices.entityIndex);
+		entityData.entity.name += " (Clone)";
+		entityData.entity.uniqueId = map.GenerateUniqueId();
+
+		return entityData;
 	}
 
 	EntityCreate::EntityCreate(EditorWindow& editor, Map::EntityIndices entityIndices, Map::Entity entity) :
-	EntityCreationDelete(editor, "create entity", std::move(entityIndices), std::move(entity))
+	EntityCreationDelete(editor, "create entity", { BuildData(std::move(entityIndices), std::move(entity)) })
 	{
 	}
 
@@ -87,8 +95,8 @@ namespace bw::Commands
 	}
 
 
-	EntityDelete::EntityDelete(EditorWindow& editor, Nz::Int64 entityUniqueId) :
-	EntityCreationDelete(editor, entityUniqueId, "delete entity")
+	EntityDelete::EntityDelete(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds) :
+	EntityCreationDelete(editor, std::move(entityUniqueIds), "delete entity")
 	{
 	}
 
@@ -103,8 +111,9 @@ namespace bw::Commands
 	}
 
 
+	// TODO: Update for multiple entities
 	EntityLayerUpdate::EntityLayerUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, LayerIndex newLayerIndex) :
-	EntityCommand(editor, entityUniqueId, "move entity"),
+	EntitiesCommand(editor, { entityUniqueId }, "move entity"),
 	m_newLayerIndex(newLayerIndex)
 	{
 		m_originalPosition = m_editor.GetWorkingMap().GetEntityIndices(entityUniqueId);
@@ -117,13 +126,14 @@ namespace bw::Commands
 
 	void EntityLayerUpdate::undo()
 	{
-		auto position = m_editor.GetWorkingMap().GetEntityIndices(m_entityUniqueId);
+		assert(m_entitiesUniqueId.size() == 1);
+		auto position = m_editor.GetWorkingMap().GetEntityIndices(m_entitiesUniqueId[0]);
 		m_editor.MoveEntity(position.layerIndex, position.entityIndex, m_originalPosition.layerIndex, m_originalPosition.entityIndex);
 	}
 
 
 	EntityUpdate::EntityUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags) :
-	EntityCommand(editor, entityUniqueId, "update entity"),
+		EntitiesCommand(editor, { entityUniqueId }, "update entity"),
 	m_updateFlags(updateFlags),
 	m_newState(std::move(update))
 	{
@@ -134,47 +144,55 @@ namespace bw::Commands
 
 	void EntityUpdate::redo()
 	{
+		assert(m_entitiesUniqueId.size() == 1);
 		const Map& map = m_editor.GetWorkingMap();
-		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+		const auto& indices = map.GetEntityIndices(m_entitiesUniqueId[0]);
 
 		m_editor.UpdateEntity(indices.layerIndex, indices.entityIndex, m_newState, m_updateFlags);
 	}
 
 	void EntityUpdate::undo()
 	{
+		assert(m_entitiesUniqueId.size() == 1);
 		const Map& map = m_editor.GetWorkingMap();
-		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+		const auto& indices = map.GetEntityIndices(m_entitiesUniqueId[0]);
 
 		m_editor.UpdateEntity(indices.layerIndex, indices.entityIndex, m_previousState, m_updateFlags);
 	}
 
 
-	PositionUpdate::PositionUpdate(EditorWindow& editor, Nz::Int64 entityUniqueId, const Nz::Vector2f& offset) :
-	EntityCommand(editor, entityUniqueId, "move entity"),
+	PositionUpdate::PositionUpdate(EditorWindow& editor, std::vector<Nz::Int64> entityUniqueIds, const Nz::Vector2f& offset) :
+	EntitiesCommand(editor, std::move(entityUniqueIds), "move entity"),
 	m_offset(offset)
 	{
 	}
 
 	void PositionUpdate::redo()
 	{
-		Map& map = m_editor.GetWorkingMapMut();
-		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+		for (Nz::Int64 entityId : m_entitiesUniqueId)
+		{
+			Map& map = m_editor.GetWorkingMapMut();
+			const auto& indices = map.GetEntityIndices(entityId);
 
-		auto& entity = map.GetEntity(indices.layerIndex, indices.entityIndex);
-		entity.position += m_offset;
+			auto& entity = map.GetEntity(indices.layerIndex, indices.entityIndex);
+			entity.position += m_offset;
 
-		m_editor.RefreshEntityPositionAndRotation(indices.layerIndex, indices.entityIndex);
+			m_editor.RefreshEntityPositionAndRotation(indices.layerIndex, indices.entityIndex);
+		}
 	}
 
 	void PositionUpdate::undo()
 	{
-		Map& map = m_editor.GetWorkingMapMut();
-		const auto& indices = map.GetEntityIndices(m_entityUniqueId);
+		for (Nz::Int64 entityId : m_entitiesUniqueId)
+		{
+			Map& map = m_editor.GetWorkingMapMut();
+			const auto& indices = map.GetEntityIndices(entityId);
 
-		auto& entity = map.GetEntity(indices.layerIndex, indices.entityIndex);
-		entity.position -= m_offset;
+			auto& entity = map.GetEntity(indices.layerIndex, indices.entityIndex);
+			entity.position -= m_offset;
 
-		m_editor.RefreshEntityPositionAndRotation(indices.layerIndex, indices.entityIndex);
+			m_editor.RefreshEntityPositionAndRotation(indices.layerIndex, indices.entityIndex);
+		}
 	}
 	
 	PrefabInstantiate::PrefabInstantiate(EditorWindow& editor, Map::EntityIndices entityIndices, std::vector<Map::Entity> entities) :

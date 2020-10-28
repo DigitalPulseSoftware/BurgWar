@@ -6,8 +6,13 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& EditorGizmo::GetTargetEntity() const
+	inline const Ndk::EntityHandle& EditorGizmo::GetSelectionOverlayEntity() const
 	{
-		return m_targetEntity;
+		return m_selectionOverlayEntity;
+	}
+
+	inline const std::vector<Ndk::EntityHandle>& EditorGizmo::GetTargetEntities() const
+	{
+		return m_targetEntities;
 	}
 }

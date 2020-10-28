@@ -7,4 +7,23 @@
 
 namespace bw::Commands
 {
+	inline auto EntityCreationDelete::BuildData(Map::EntityIndices entityIndices, Map::Entity entity) -> EntityData
+	{
+		EntityData entityData;
+		entityData.entity = std::move(entity);
+		entityData.indices = std::move(entityIndices);
+
+		return entityData;
+	}
+
+	std::vector<Nz::Int64> EntityCreationDelete::GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData)
+	{
+		std::vector<Nz::Int64> entitiesId;
+		entitiesId.reserve(entitiesData.size());
+
+		for (const auto& entityData : entitiesData)
+			entitiesId.push_back(entityData.entity.uniqueId);
+
+		return entitiesId;
+	}
 }

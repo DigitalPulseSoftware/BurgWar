@@ -8,18 +8,23 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_BASIC_EDITOR_MODE_HPP
 
 #include <MapEditor/Logic/AbstractSelectionEditorMode.hpp>
+#include <MapEditor/Widgets/MapCanvas.hpp>
 
 namespace bw
 {
 	class BasicEditorMode : public AbstractSelectionEditorMode
 	{
 		public:
-			using AbstractSelectionEditorMode::AbstractSelectionEditorMode;
+			BasicEditorMode(EditorWindow& editor);
 			~BasicEditorMode() = default;
 
 		private:
 			void OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity) override;
 			void OnEntitySelected(Ndk::Entity* selectedEntity) override;
+
+			NazaraSlot(MapCanvas, OnMultiSelectionStateUpdated, m_multiSelectionStateUpdateSlot);
+
+			bool m_multiSelectionEnabled;
 	};
 }
 

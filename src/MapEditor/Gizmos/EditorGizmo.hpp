@@ -17,10 +17,11 @@ namespace bw
 	class EditorGizmo
 	{
 		public:
-			EditorGizmo(Ndk::Entity* entity);
+			EditorGizmo(std::vector<Ndk::EntityHandle> entities);
 			virtual ~EditorGizmo();
 
-			inline const Ndk::EntityHandle& GetTargetEntity() const;
+			inline const Ndk::EntityHandle& GetSelectionOverlayEntity() const;
+			inline const std::vector<Ndk::EntityHandle>& GetTargetEntities() const;
 
 			virtual bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
 			virtual bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
@@ -30,7 +31,7 @@ namespace bw
 			static Nz::ModelRef GenerateBoxModel();
 
 			Ndk::EntityOwner m_selectionOverlayEntity;
-			Ndk::EntityHandle m_targetEntity;
+			std::vector<Ndk::EntityHandle> m_targetEntities;
 	};
 }
 

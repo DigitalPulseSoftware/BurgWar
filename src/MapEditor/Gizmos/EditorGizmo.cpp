@@ -12,22 +12,46 @@
 
 namespace bw
 {
-	EditorGizmo::EditorGizmo(Ndk::Entity* entity) :
-	m_targetEntity(entity)
+	EditorGizmo::EditorGizmo(std::vector<Ndk::EntityHandle> entities) :
+	m_targetEntities(std::move(entities))
 	{
-		Nz::Boxf aabb = m_targetEntity->GetComponent<Ndk::GraphicsComponent>().GetAABB();
+		assert(!m_targetEntities.empty());
+		Nz::Boxf globalAABB = Nz::Boxf::Zero();
 
-		m_selectionOverlayEntity = entity->GetWorld()->CreateEntity();
+		m_selectionOverlayEntity = m_targetEntities.front()->GetWorld()->CreateEntity();
 
-		auto& gfx = m_selectionOverlayEntity->AddComponent<Ndk::GraphicsComponent>();
-		gfx.Attach(GenerateBoxModel(), Nz::Matrix4f::Scale(aabb.GetLengths()), 1000);
+		std::vector<Nz::Boxf> localAABBs;
+		for (const Ndk::EntityHandle& entity : m_targetEntities)
+		{
+			Nz::Boxf aabb = entity->GetComponent<Ndk::GraphicsComponent>().GetAABB();
+			if (!localAABBs.empty())
+				globalAABB.ExtendTo(aabb);
+			else
+				globalAABB = aabb;
+
+			localAABBs.push_back(aabb);
+		}
+
+		Nz::Vector3f origin = globalAABB.GetCenter();
 
 		auto& node = m_selectionOverlayEntity->AddComponent<Ndk::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
-		node.SetPosition(aabb.GetPosition());
-		node.SetParent(m_targetEntity, true);
+		node.SetPosition(origin);
+
+		Nz::ModelRef aabbModel = GenerateBoxModel();
+
+		auto& gfx = m_selectionOverlayEntity->AddComponent<Ndk::GraphicsComponent>();
+		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), 1000);
+
+		if (localAABBs.size() > 1)
+		{
+			for (const Nz::Boxf& localAABB : localAABBs)
+				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(localAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), localAABB.GetLengths()), 999);
+		}
 	}
+
+	EditorGizmo::~EditorGizmo() = default;
 
 	Nz::ModelRef EditorGizmo::GenerateBoxModel()
 	{
@@ -89,6 +113,4 @@ namespace bw
 
 		return model;
 	}
-
-	EditorGizmo::~EditorGizmo() = default;
 }

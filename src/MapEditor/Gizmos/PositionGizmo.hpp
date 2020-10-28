@@ -12,6 +12,7 @@
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <array>
+#include <vector>
 
 namespace bw
 {
@@ -20,7 +21,7 @@ namespace bw
 	class PositionGizmo : public EditorGizmo
 	{
 		public:
-			PositionGizmo(Camera& camera, Ndk::Entity* entity, const Nz::Vector2f& positionAlignment);
+			PositionGizmo(Camera& camera, std::vector<Ndk::EntityHandle> entities, const Nz::Vector2f& positionAlignment);
 			~PositionGizmo() = default;
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
@@ -29,9 +30,11 @@ namespace bw
 
 			inline void UpdatePositionAlignment(const Nz::Vector2f& positionAlignment);
 
-			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*newPosition*/);
+			NazaraSignal(OnPositionUpdated, PositionGizmo* /*emitter*/, Nz::Vector2f /*offset*/);
 
 		private:
+			Nz::Vector2f ComputeNewPosition(int mouseX, int mouseY) const;
+
 			enum MovementType
 			{
 				None = 0xFF,
@@ -44,6 +47,7 @@ namespace bw
 			std::array<Nz::Color, 3> m_spriteDefaultColors;
 			std::array<Nz::SpriteRef, 3> m_sprites;
 			std::array<Nz::Vector2f, 3> m_allowedMovements;
+			std::vector<Nz::Vector2f> m_entitiesOffsets;
 			Camera& m_camera;
 			MovementType m_hoveredAction;
 			MovementType m_movementType;

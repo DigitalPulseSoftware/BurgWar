@@ -75,12 +75,14 @@ namespace bw
 			template<typename T, typename... Args> void PushCommand(Args&&... args);
 			void RefreshEntityPositionAndRotation(LayerIndex layerIndex, std::size_t entityIndex);
 
-			void SelectEntity(std::size_t entityIndex);
+			void SelectEntity(std::size_t entityIndex, bool clearPrevious = true);
 			void SelectEntities(const std::vector<std::size_t>& entityIndices);
 
 			void SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex);
 			void SwapLayers(LayerIndex firstLayerIndex, LayerIndex secondLayerIndex);
 			void SwitchToMode(std::shared_ptr<EditorMode> editorMode);
+
+			void ToggleEntitySelection(std::size_t entityIndex);
 
 			void UpdateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData, EntityInfoUpdateFlags updateFlags);
 			void UpdateWorkingMap(Map map, std::filesystem::path mapPath = std::filesystem::path());
@@ -115,8 +117,8 @@ namespace bw
 			void OnCreateEntity();
 			void OnCreateMap();
 			void OnCreateLayer();
-			bool OnDeleteEntity();
-			bool OnDeleteEntity(std::size_t entityIndex);
+			bool OnDeleteEntities();
+			bool OnDeleteEntities(const std::size_t* entityIndices, std::size_t entityCount);
 			void OnDeleteLayer(LayerIndex layerIndex);
 			void OnEditEntity(std::size_t entityIndex);
 			void OnEditLayer(LayerIndex layerIndex);
