@@ -122,8 +122,8 @@ namespace bw
 			std::vector<std::size_t> entityIndices(entityCount);
 			for (std::size_t i = 0; i < entityCount; ++i)
 			{
-				auto it = m_entityIndexes.find(entityId[i]);
-				assert(it != m_entityIndexes.end());
+				auto it = m_entityIndices.find(entityId[i]);
+				assert(it != m_entityIndices.end());
 
 				entityIndices[i] = it->second;
 			}
@@ -140,8 +140,8 @@ namespace bw
 			std::vector<EntityId> entityUniqueIds;
 			for (std::size_t i = 0; i < entityCount; ++i)
 			{
-				auto it = m_entityIndexes.find(canvasIndices[i]);
-				assert(it != m_entityIndexes.end());
+				auto it = m_entityIndices.find(canvasIndices[i]);
+				assert(it != m_entityIndices.end());
 
 				std::size_t entityIndex = it.value();
 				const auto& entity = map.GetEntity(m_currentLayer.value(), entityIndex);
@@ -253,10 +253,10 @@ namespace bw
 
 			m_canvas->DeleteEntity(canvasId);
 
-			m_entityIndexes.erase(canvasId);
+			m_entityIndices.erase(canvasId);
 
 			// FIXME...
-			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+			for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)
 			{
 				if (it->second >= entityIndex)
 				{
@@ -304,10 +304,10 @@ namespace bw
 
 				m_canvas->DeleteEntity(canvasId);
 
-				m_entityIndexes.erase(canvasId);
+				m_entityIndices.erase(canvasId);
 
 				// FIXME...
-				for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+				for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)
 				{
 					if (it->second >= entityIndex)
 					{
@@ -456,8 +456,8 @@ namespace bw
 		secondItem->setData(Qt::UserRole + 1, firstCanvasId);
 		secondItem->setText(firstItemText);
 
-		m_entityIndexes[firstCanvasId] = secondEntityIndex;
-		m_entityIndexes[secondCanvasId] = firstEntityIndex;
+		m_entityIndices[firstCanvasId] = secondEntityIndex;
+		m_entityIndices[secondCanvasId] = firstEntityIndex;
 
 		if (m_entityList.listWidget->currentRow() == firstEntityIndex)
 			m_entityList.listWidget->setCurrentRow(int(secondEntityIndex));
@@ -545,10 +545,10 @@ namespace bw
 		if (updateFlags & (EntityInfoUpdate::EntityClass | EntityInfoUpdate::Properties))
 		{
 			m_canvas->DeleteEntity(canvasId);
-			m_entityIndexes.erase(canvasId);
+			m_entityIndices.erase(canvasId);
 
 			Ndk::EntityId newCanvasId = m_canvas->CreateEntity(mapEntity.entityType, mapEntity.position, mapEntity.rotation, mapEntity.properties)->GetId();
-			m_entityIndexes.emplace(newCanvasId, entityIndex);
+			m_entityIndices.emplace(newCanvasId, entityIndex);
 			item->setData(Qt::UserRole + 1, newCanvasId);
 		}
 		else if (updateFlags & EntityInfoUpdate::PositionRotation)
@@ -1394,7 +1394,7 @@ namespace bw
 		if (layerIndex < 0)
 		{
 			m_currentLayer.reset();
-			m_entityIndexes.clear();
+			m_entityIndices.clear();
 			m_canvas->ClearEntities();
 			m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
@@ -1425,7 +1425,7 @@ namespace bw
 			m_canvas->UpdateBackgroundColor(layer.backgroundColor);
 
 		m_canvas->ClearEntities();
-		m_entityIndexes.clear();
+		m_entityIndices.clear();
 		m_entityList.listWidget->clear();
 
 		for (std::size_t entityIndex = 0; entityIndex < layer.entities.size(); ++entityIndex)
@@ -1584,7 +1584,7 @@ namespace bw
 			assert(entityIndex < m_entityList.listWidget->count());
 			m_entityList.listWidget->insertItem(int(entityIndex), item);
 
-			for (auto it = m_entityIndexes.begin(); it != m_entityIndexes.end(); ++it)
+			for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)
 			{
 				if (it->second >= entityIndex)
 				{
@@ -1596,7 +1596,7 @@ namespace bw
 		else
 			m_entityList.listWidget->addItem(item);
 
-		m_entityIndexes.emplace(canvasId, entityIndex);
+		m_entityIndices.emplace(canvasId, entityIndex);
 	}
 
 	void EditorWindow::ReloadScripts()

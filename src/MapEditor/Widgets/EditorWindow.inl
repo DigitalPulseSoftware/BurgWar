@@ -14,8 +14,8 @@ namespace bw
 
 	inline std::size_t EditorWindow::GetEntityIndex(Ndk::EntityId entityId) const
 	{
-		auto it = m_entityIndexes.find(entityId);
-		assert(it != m_entityIndexes.end());
+		auto it = m_entityIndices.find(entityId);
+		assert(it != m_entityIndices.end());
 
 		return it.value();
 	}

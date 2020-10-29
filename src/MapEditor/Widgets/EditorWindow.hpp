@@ -167,7 +167,7 @@ namespace bw
 			std::shared_ptr<VirtualDirectory> m_scriptFolder;
 			std::vector<QAction*> m_recentMapActions;
 			std::vector<std::size_t> m_selectedEntities;
-			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndexes;
+			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndices;
 			List m_entityList;
 			List m_layerList;
 			QAction* m_closeMap;
