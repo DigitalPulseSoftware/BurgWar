@@ -27,6 +27,8 @@ namespace bw
 			virtual bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
 			virtual bool OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) = 0;
 
+			void Refresh();
+
 		private:
 			static Nz::ModelRef GenerateBoxModel();
 

@@ -168,6 +168,14 @@ namespace bw
 		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
+
+		// Refresh gizmo if an entity it uses has been updated
+		if (m_entityGizmo)
+		{
+			const auto& targetEntities = m_entityGizmo->GetTargetEntities();
+			if (std::find(targetEntities.begin(), targetEntities.end(), entity) != targetEntities.end())
+				m_entityGizmo->Refresh();
+		}
 	}
 
 	void MapCanvas::OnKeyPressed(const Nz::WindowEvent::KeyEvent& key)
