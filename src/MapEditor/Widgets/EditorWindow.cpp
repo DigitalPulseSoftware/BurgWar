@@ -1323,11 +1323,10 @@ namespace bw
 
 	void EditorWindow::OnEntityMovedDown()
 	{
-		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
-		if (!selectedItem)
+		if (m_selectedEntities.size() != 1)
 			return;
 
-		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
+		std::size_t entityIndex = m_selectedEntities.front();
 		if (int(entityIndex + 1) >= m_entityList.listWidget->count())
 			return;
 
@@ -1342,11 +1341,10 @@ namespace bw
 
 	void EditorWindow::OnEntityMovedUp()
 	{
-		QListWidgetItem* selectedItem = m_entityList.listWidget->currentItem();
-		if (!selectedItem)
+		if (m_selectedEntities.size() != 1)
 			return;
 
-		std::size_t entityIndex = static_cast<std::size_t>(selectedItem->data(Qt::UserRole).value<qulonglong>());
+		std::size_t entityIndex = m_selectedEntities.front();
 		if (entityIndex == 0)
 			return;
 
@@ -1385,8 +1383,18 @@ namespace bw
 
 		m_canvas->EditEntitiesPosition(std::move(selectedEntities));
 
-		/*m_entityList.downArrowButton->setEnabled(int(selectedEntity + 1) < m_entityList.listWidget->count());
-		m_entityList.upArrowButton->setEnabled(selectedEntity > 0);*/
+		if (m_selectedEntities.size() == 1)
+		{
+			std::size_t selectedEntity = m_selectedEntities.front();
+
+			m_entityList.downArrowButton->setEnabled(int(selectedEntity + 1) < m_entityList.listWidget->count());
+			m_entityList.upArrowButton->setEnabled(selectedEntity > 0);
+		}
+		else
+		{
+			m_entityList.downArrowButton->setEnabled(false);
+			m_entityList.upArrowButton->setEnabled(false);
+		}
 	}
 
 	void EditorWindow::OnLayerChanged(int layerIndex)
