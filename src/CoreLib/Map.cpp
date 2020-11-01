@@ -117,7 +117,7 @@ namespace bw
 		stream << m_mapInfo.name << m_mapInfo.author << m_mapInfo.description;
 
 		// Map layers
-		Nz::UInt16 layerCount = Nz::UInt16(m_layers.size());
+		CompressedUnsigned<Nz::UInt16> layerCount(Nz::UInt16(m_layers.size()));
 		stream << layerCount;
 
 		for (const Layer& layer : m_layers)
@@ -125,7 +125,7 @@ namespace bw
 			stream << layer.name;
 			stream << layer.backgroundColor;
 
-			Nz::UInt16 entityCount = Nz::UInt16(layer.entities.size());
+			CompressedUnsigned<Nz::UInt16> entityCount(Nz::UInt16(layer.entities.size()));
 			stream << entityCount;
 
 			for (const Entity& entity : layer.entities)
@@ -138,7 +138,7 @@ namespace bw
 				CompressedSigned<EntityId> compressedUniqueId;
 				stream << compressedUniqueId;
 
-				Nz::UInt8 propertyCount = Nz::UInt8(entity.properties.size());
+				CompressedUnsigned<Nz::UInt16> propertyCount(Nz::UInt16(entity.properties.size()));
 				stream << propertyCount;
 
 				for (const auto& [key, value] : entity.properties)
@@ -150,7 +150,7 @@ namespace bw
 					Nz::UInt8 propertyType = Nz::UInt8(P);
 					stream << propertyType;
 
-					stream << Nz::UInt8((isArray) ? 1 : 0);
+					stream << isArray;
 
 					std::visit([&](auto&& propertyValue)
 					{
@@ -160,7 +160,9 @@ namespace bw
 
 						if constexpr (IsArray)
 						{
-							stream << Nz::UInt32(propertyValue.size());
+							CompressedUnsigned<Nz::UInt32> arraySize(Nz::UInt32(propertyValue.size()));
+
+							stream << arraySize;
 							for (const auto& element : propertyValue)
 								stream << element;
 						}
@@ -172,7 +174,7 @@ namespace bw
 			}
 		}
 
-		Nz::UInt32 empty = 0;
+		CompressedUnsigned<Nz::UInt32> empty(0);
 		stream << empty;
 
 		// Scripts (TODO)
@@ -184,7 +186,7 @@ namespace bw
 		Nz::UInt32 scriptCount = Nz::UInt32(scripts.size());*/
 
 		// Assets
-		Nz::UInt32 assetCount = Nz::UInt32(m_assets.size());
+		CompressedUnsigned<Nz::UInt32> assetCount(Nz::UInt32(m_assets.size()));
 		stream << assetCount;
 
 		for (const Asset& asset : m_assets)
@@ -437,7 +439,7 @@ namespace bw
 		// Map header
 		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
 
-		Nz::UInt16 layerCount;
+		CompressedUnsigned<Nz::UInt16> layerCount;
 		stream >> layerCount;
 
 		m_layers.clear();
@@ -448,7 +450,7 @@ namespace bw
 			stream >> layer.name;
 			stream >> layer.backgroundColor;
 
-			Nz::UInt16 entityCount;
+			CompressedUnsigned<Nz::UInt16> entityCount;
 			stream >> entityCount;
 
 			layer.entities.resize(entityCount);
@@ -466,7 +468,7 @@ namespace bw
 				stream >> compressedUniqueId;
 				entity.uniqueId = compressedUniqueId;
 
-				Nz::UInt8 propertyCount;
+				CompressedUnsigned<Nz::UInt16> propertyCount;
 				stream >> propertyCount;
 
 				std::size_t loopCount = propertyCount;
@@ -480,10 +482,8 @@ namespace bw
 
 					PropertyType propertyType = static_cast<PropertyType>(propertyTypeInt);
 
-					Nz::UInt8 isArrayInt;
-					stream >> isArrayInt;
-
-					bool isArray = (isArrayInt != 0);
+					bool isArray;
+					stream >> isArray;
 
 					// Waiting for template lambda in C++20
 					auto Unserialize = [&](auto dummyType)
@@ -494,7 +494,7 @@ namespace bw
 
 						if (isArray)
 						{
-							Nz::UInt32 size;
+							CompressedUnsigned<Nz::UInt32> size;
 							stream >> size;
 
 							PropertyArrayValue<Property> elements(size);
@@ -522,12 +522,12 @@ namespace bw
 			}
 		}
 
-		Nz::UInt32 scriptCount;
+		CompressedUnsigned<Nz::UInt32> scriptCount;
 		stream >> scriptCount;
 
 		// TODO
 
-		Nz::UInt32 assetCount;
+		CompressedUnsigned<Nz::UInt32> assetCount;
 		stream >> assetCount;
 
 		m_assets.clear();
