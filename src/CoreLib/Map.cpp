@@ -158,27 +158,14 @@ namespace bw
 						using TypeExtractor = PropertyTypeExtractor<T>;
 						constexpr bool IsArray = TypeExtractor::IsArray;
 
-						auto Serialize = [&](const auto& value)
-						{
-							using T = std::decay_t<decltype(value)>;
-
-							if constexpr (std::is_same_v<T, bool>)
-							{
-								Nz::UInt8 boolValue = (value) ? 1 : 0;
-								stream << boolValue;
-							}
-							else
-								stream << value;
-						};
-
 						if constexpr (IsArray)
 						{
 							stream << Nz::UInt32(propertyValue.size());
 							for (const auto& element : propertyValue)
-								Serialize(element);
+								stream << element;
 						}
 						else
-							Serialize(propertyValue.value);
+							stream << propertyValue.value;
 
 					}, value);
 				}
