@@ -60,8 +60,8 @@ namespace bw
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
 	ClientEditorApp(argc, argv, LogSide::Editor, m_configFile),
 	m_entityInfoDialog(nullptr),
-	m_playWindow(nullptr),
 	m_canvas(nullptr),
+	m_playWindow(nullptr),
 	m_configFile(*this),
 	m_prefabs(this),
 	m_mapDirtyFlag(false)
@@ -1589,7 +1589,7 @@ namespace bw
 
 		if (int(entityIndex) != m_entityList.listWidget->count())
 		{
-			assert(entityIndex < m_entityList.listWidget->count());
+			assert(int(entityIndex) < m_entityList.listWidget->count());
 			m_entityList.listWidget->insertItem(int(entityIndex), item);
 
 			for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)

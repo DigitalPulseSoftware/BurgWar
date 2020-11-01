@@ -19,8 +19,8 @@
 namespace bw
 {
 	HttpDownloadManager::HttpDownloadManager(const Logger& logger, std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultaneousDownload) :
-	m_nextFileIndex(0),
 	m_targetFolder(std::move(targetFolder)),
+	m_nextFileIndex(0),
 	m_sourceDirectory(std::move(resourceFolder)),
 	m_baseDownloadUrls(std::move(baseDownloadUrls)),
 	m_curlRequests(maxSimultaneousDownload),

@@ -22,8 +22,6 @@ namespace bw
 
 		//setMouseTracking(true);
 
-		auto mousePos = QWidget::mapFromGlobal(QCursor::pos());
-
 		setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
 		m_updateTimer.setInterval(1000 / 60);
@@ -215,6 +213,7 @@ namespace bw
 					PushEvent(event);
 					return true;
 				}
+
 				break;
 			}
 
@@ -236,6 +235,8 @@ namespace bw
 					PushEvent(event);
 					return true;
 				}
+
+				break;
 			}
 
 			case QEvent::MouseButtonRelease:
@@ -256,6 +257,8 @@ namespace bw
 					PushEvent(event);
 					return true;
 				}
+
+				break;
 			}
 
 			case QEvent::HoverEnter:
