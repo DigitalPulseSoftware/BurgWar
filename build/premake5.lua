@@ -18,8 +18,36 @@ local function qtDebugLib(libname)
 	end
 end
 
+local function stackwalkerlib(debug) 
+	if (os.istarget("windows")) then
+		if (debug) then
+			return "stackwalker-d"
+		else
+			return "stackwalker"
+		end
+	else
+		return nil
+	end
+end
+
 WorkspaceName = "Burgwar"
 Projects = {
+	{
+		Group = "3rdparties",
+		Name = "StackWalker",
+		Kind = "StaticLib",
+		Defines = {},
+		DisableWarnings = true,
+		Enabled = os.istarget("windows"),
+		Files = {
+			"../contrib/StackWalker/include/StackWalker/**.h",
+			"../contrib/StackWalker/src/StackWalker/**.cpp",
+		},
+		Libs = {},
+		LibsDebug = {},
+		LibsRelease = {},
+		AdditionalDependencies = {}
+	},
 	{
 		Group = "3rdparties",
 		Name = "libfmt",
@@ -66,8 +94,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"lua-d", "libfmt-d"},
-		LinkStaticRelease = {"lua", "libfmt"},
+		LinkStaticDebug = {"lua-d", "libfmt-d", stackwalkerlib(true)},
+		LinkStaticRelease = {"lua", "libfmt", stackwalkerlib(false)},
 		Libs = {},
 		LibsDebug = {},
 		LibsRelease = {},
@@ -120,8 +148,8 @@ Projects = {
 		},
 		Frameworks = {"Curl", "Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"Main-d", "ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d"},
-		LinkStaticRelease = {"Main", "ClientLib", "CoreLib", "lua", "libfmt"},
+		LinkStaticDebug = {"Main-d", "ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d", stackwalkerlib(true)},
+		LinkStaticRelease = {"Main", "ClientLib", "CoreLib", "lua", "libfmt", stackwalkerlib(false)},
 		Libs = os.istarget("windows") and {"libcurl"} or {"curl"},
 		LibsDebug = {"NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -139,8 +167,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara"},
 		LinkStatic = {},
-		LinkStaticDebug = {"Main-d", "CoreLib-d", "lua-d", "libfmt-d"},
-		LinkStaticRelease = {"Main", "CoreLib", "lua", "libfmt"},
+		LinkStaticDebug = {"Main-d", "CoreLib-d", "lua-d", "libfmt-d", stackwalkerlib(true)},
+		LinkStaticRelease = {"Main", "CoreLib", "lua", "libfmt", stackwalkerlib(false)},
 		Libs = {},
 		LibsDebug = {"NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d"},
 		LibsRelease = {"NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility"},
@@ -158,8 +186,8 @@ Projects = {
 		},
 		Frameworks = {"Nazara", "Qt"},
 		LinkStatic = {},
-		LinkStaticDebug = {"Main-d", "ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d"},
-		LinkStaticRelease = {"Main", "ClientLib", "CoreLib", "lua", "libfmt"},
+		LinkStaticDebug = {"Main-d", "ClientLib-d", "CoreLib-d", "lua-d", "libfmt-d", stackwalkerlib(true)},
+		LinkStaticRelease = {"Main", "ClientLib", "CoreLib", "lua", "libfmt", stackwalkerlib(false)},
 		Libs = {},
 		LibsDebug = {qtDebugLib("Qt5Core"), qtDebugLib("Qt5Gui"), qtDebugLib("Qt5Widgets"), "NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d"},
 		LibsRelease = {"Qt5Core", "Qt5Gui", "Qt5Widgets", "NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility"},
@@ -231,6 +259,10 @@ workspace("Burgwar")
 		"../thirdparty/include"
 	})
 
+	if (os.istarget("windows")) then
+		includedirs("../contrib/StackWalker/include")
+	end
+
 	libdirs({
 		"../thirdparty/lib/" .. tostring(_ACTION),
 		"../bin/%{cfg.buildcfg}"
@@ -247,13 +279,19 @@ workspace("Burgwar")
 	end
 
 	for _, projectData in pairs(Projects) do
-		local skipProject = false
+		local skipProject
+		if (projectData.Enabled == nil or projectData.Enabled == true) then
+			skipProject = false
+		else
+			skipProject = true
+		end
+
 		local frameworkIncludes = {}
 		local frameworkBins = {}
 		local frameworkLibs = {}
 
 		local usedFrameworks = {}
-		if (projectData.Frameworks) then
+		if (not skipProject and projectData.Frameworks) then
 			for _, framework in pairs(projectData.Frameworks) do
 				local configKey = assert(frameworkConfigs[framework], "Unknown framework " .. framework)
 				local frameworkTable = Config[configKey]

@@ -14,6 +14,8 @@ namespace bw
 	class CrashHandler
 	{
 		public:
+			struct InternalData;
+
 			CrashHandler();
 			~CrashHandler();
 
@@ -21,8 +23,6 @@ namespace bw
 			void Uninstall();
 
 		private:
-			struct InternalData;
-
 			std::unique_ptr<InternalData> m_internalData;
 	};
 }
