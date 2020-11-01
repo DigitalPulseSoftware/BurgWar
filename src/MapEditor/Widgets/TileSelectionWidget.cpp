@@ -24,9 +24,9 @@ namespace bw
 	TileSelectionWidget::TileSelectionWidget(const std::string& editorResourceFolder, const std::vector<TilesetGroup>& tilesetGroups, QWidget* parent) :
 	QWidget(parent),
 	m_activeGroup(InvalidGroup),
-	m_tileSize(64.f, 64.f),
 	m_firstSelectedTile(0),
-	m_lastSelectedTile(0)
+	m_lastSelectedTile(0),
+	m_tileSize(64.f, 64.f)
 	{
 		setWindowTitle(tr("Tile selector"));
 
