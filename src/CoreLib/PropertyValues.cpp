@@ -89,11 +89,11 @@ namespace bw
 			sol::object operator()(SharedMatch* match, sol::state_view& lua, EntityId uniqueId)
 			{
 				if (uniqueId == InvalidEntityId)
-					return sol::nil;
+					return sol::make_object(lua, InvalidEntityId);
 
 				const Ndk::EntityHandle& entity = match->RetrieveEntityByUniqueId(uniqueId);
 				if (!entity || !entity->HasComponent<ScriptComponent>())
-					return sol::nil;
+					return sol::make_object(lua, InvalidEntityId);
 
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 				return sol::table(lua, entityScript.GetTable());
