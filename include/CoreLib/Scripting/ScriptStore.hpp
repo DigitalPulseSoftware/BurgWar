@@ -63,8 +63,8 @@ namespace bw
 			sol::state& GetLuaState();
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;
 
-			void SetElementTypeName(std::string typeName);
 			void SetElementName(std::string elementName);
+			void SetElementTypeName(std::string typeName);
 
 		private:
 			sol::table CreateElement(lua_State* L, sol::table initTable);

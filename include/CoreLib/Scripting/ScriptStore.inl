@@ -548,14 +548,14 @@ namespace bw
 	}
 
 	template<typename Element>
-	void ScriptStore<Element>::SetElementTypeName(std::string typeName)
-	{
-		m_elementTypeName = std::move(typeName);
-	}
-
-	template<typename Element>
 	void ScriptStore<Element>::SetElementName(std::string elementName)
 	{
 		m_elementName = std::move(elementName);
+	}
+
+	template<typename Element>
+	void ScriptStore<Element>::SetElementTypeName(std::string typeName)
+	{
+		m_elementTypeName = std::move(typeName);
 	}
 }
