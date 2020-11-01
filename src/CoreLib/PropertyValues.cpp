@@ -205,7 +205,6 @@ namespace bw
 		{
 			using T = std::decay_t<decltype(value)>;
 			using PropertyTypeExtractor = PropertyTypeExtractor<T>;
-			using UnderlyingType = typename PropertyTypeExtractor::UnderlyingType;
 			constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
 			PropertyPusher<PropertyTypeExtractor::Property> pusher;

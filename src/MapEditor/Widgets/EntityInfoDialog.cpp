@@ -1567,7 +1567,6 @@ namespace bw
 					{
 						using T = std::decay_t<decltype(propertyValue)>;
 						using PropertyTypeExtractor = PropertyTypeExtractor<T>;
-						using UnderlyingType = PropertyTypeExtractor::UnderlyingType;
 						constexpr bool IsArray = PropertyTypeExtractor::IsArray;
 
 						// We have to use if constexpr here because the compiler will instantiate this lambda even for single types

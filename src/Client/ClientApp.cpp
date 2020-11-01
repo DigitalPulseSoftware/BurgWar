@@ -18,8 +18,8 @@ namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
 	ClientEditorApp(argc, argv, LogSide::Client, m_configFile),
-	m_configFile(*this),
 	m_stateMachine(nullptr),
+	m_configFile(*this),
 	m_networkReactors(GetLogger())
 	{
 		if (!m_configFile.LoadFromFile("clientconfig.lua"))

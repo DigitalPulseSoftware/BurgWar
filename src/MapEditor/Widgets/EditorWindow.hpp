@@ -160,7 +160,6 @@ namespace bw
 			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<LayerIndex> m_currentLayer;
-			PlayWindow* m_playWindow;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
 			std::shared_ptr<VirtualDirectory> m_assetFolder;
@@ -186,10 +185,11 @@ namespace bw
 			QTabWidget* m_centralTab;
 			QUndoStack m_undoStack;
 			EntityInfoDialog* m_entityInfoDialog;
+			MapCanvas* m_canvas;
+			PlayWindow* m_playWindow;
 			EditorAppConfig m_configFile;
 			EditorWindowPrefabs m_prefabs;
 			Map m_workingMap;
-			MapCanvas* m_canvas;
 			bool m_mapDirtyFlag;
 	};
 }

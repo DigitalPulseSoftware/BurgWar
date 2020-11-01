@@ -429,7 +429,7 @@ namespace bw
 		m_entityList.listWidget->clearSelection();
 		for (std::size_t entityIndex : entityIndices)
 		{
-			assert(entityIndex < m_entityList.listWidget->count());
+			assert(int(entityIndex) < m_entityList.listWidget->count());
 			m_entityList.listWidget->item(int(entityIndex))->setSelected(true);
 		}
 	}
@@ -459,9 +459,9 @@ namespace bw
 		m_entityIndices[firstCanvasId] = secondEntityIndex;
 		m_entityIndices[secondCanvasId] = firstEntityIndex;
 
-		if (m_entityList.listWidget->currentRow() == firstEntityIndex)
+		if (m_entityList.listWidget->currentRow() == int(firstEntityIndex))
 			m_entityList.listWidget->setCurrentRow(int(secondEntityIndex));
-		else if (m_entityList.listWidget->currentRow() == secondEntityIndex)
+		else if (m_entityList.listWidget->currentRow() == int(secondEntityIndex))
 			m_entityList.listWidget->setCurrentRow(int(firstEntityIndex));
 	}
 
