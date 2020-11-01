@@ -1633,6 +1633,7 @@ namespace bw
 		}
 
 		m_entityStore->LoadDirectory("entities");
+		m_entityStore->Resolve();
 
 		if (m_canvas)
 		{
