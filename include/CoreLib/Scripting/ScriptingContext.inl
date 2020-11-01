@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <cassert>
