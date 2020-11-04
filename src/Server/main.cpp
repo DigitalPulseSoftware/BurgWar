@@ -7,10 +7,12 @@
 #include <Server/ServerApp.hpp>
 #include <Main/Main.hpp>
 
-int BurgMain(int argc, char* argv[])
+int BurgWarServer(int argc, char* argv[])
 {
 	Nz::Initializer<Nz::Network> network;
 	bw::ServerApp app(argc, argv);
 
 	return app.Run();
 }
+
+BurgWarMain(BurgWarServer)

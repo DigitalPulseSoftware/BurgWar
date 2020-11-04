@@ -7,14 +7,14 @@
 #include <exception>
 #include <iostream>
 
-int main(int argc, char* argv[])
+int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 {
 	bw::CrashHandler crashHandler;
 	crashHandler.Install();
 
 	try
 	{
-		return BurgMain(argc, argv);
+		return mainFunc(argc, argv);
 	}
 	catch (const std::exception& e)
 	{

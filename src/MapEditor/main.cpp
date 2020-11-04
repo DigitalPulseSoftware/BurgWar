@@ -5,7 +5,7 @@
 #include <NDK/Application.hpp>
 #include <Main/Main.hpp>
 
-int BurgMain(int argc, char* argv[])
+int BurgWarMapEditor(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
 	app.setOrganizationName("DigitalPulseSoftware");
@@ -19,3 +19,5 @@ int BurgMain(int argc, char* argv[])
 
 	return app.exec();
 }
+
+BurgWarMain(BurgWarMapEditor)

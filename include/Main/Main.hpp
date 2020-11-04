@@ -7,7 +7,12 @@
 #ifndef BURGWAR_MAIN_HPP
 #define BURGWAR_MAIN_HPP
 
-extern int BurgMain(int argc, char* argv[]);
+extern int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]));
+
+#define BurgWarMain(FuncName) int main(int argc, char* argv[]) \
+{ \
+	return BurgMain(argc, argv, &FuncName);\
+}
 
 #include <Main/Main.inl>
 

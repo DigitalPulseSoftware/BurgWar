@@ -8,7 +8,7 @@
 #include <Client/ClientApp.hpp>
 #include <Main/Main.hpp>
 
-int BurgMain(int argc, char* argv[])
+int BurgWarGame(int argc, char* argv[])
 {
 	Nz::Initializer<Nz::Network> network;
 	bw::ClientApp app(argc, argv);
@@ -23,3 +23,5 @@ int BurgMain(int argc, char* argv[])
 
 	return app.Run();
 }
+
+BurgWarMain(BurgWarGame)
