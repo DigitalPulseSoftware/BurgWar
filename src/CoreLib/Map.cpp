@@ -351,7 +351,8 @@ namespace bw
 		for (auto&& [propertyName, propertyData] : entityInfo["properties"].items())
 		{
 			bool isArray = propertyData.value<bool>("isArray", false);
-			PropertyType propertyType = ParsePropertyType(propertyData.at("type"));
+			std::string type = propertyData.at("type");
+			PropertyType propertyType = ParsePropertyType(type);
 			auto&& value = propertyData.at("value");
 
 			// Waiting for template lambda in C++20
