@@ -23,6 +23,10 @@ if (SERVER) then
 		end
 	end)
 
+	weapon:On("switchoff", function (self)
+		self:Release()
+	end)
+
 	function weapon:Launch()
 		local startOffset = Vec2(85 * self.Scale, 0)
 
