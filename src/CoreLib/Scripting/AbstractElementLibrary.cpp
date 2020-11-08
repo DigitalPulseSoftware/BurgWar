@@ -41,7 +41,7 @@ namespace bw
 	{
 		sol::object entityObject = entityTable["_Entity"];
 		if (!entityObject)
-			throw std::runtime_error("Invalid entity");
+			return Ndk::EntityHandle::InvalidHandle;
 
 		return entityObject.as<Ndk::EntityHandle>();
 	}
