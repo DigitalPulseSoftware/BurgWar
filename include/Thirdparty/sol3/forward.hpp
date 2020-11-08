@@ -9,7 +9,7 @@
 	#pragma warning( disable : 4996) // inheriting std::iterator warning
 #endif
 
-#include <sol3/forward.hpp>
+#include <sol/forward.hpp>
 
 #ifdef _MSC_VER
 	#pragma warning( pop ) 
