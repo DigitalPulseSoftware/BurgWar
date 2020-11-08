@@ -132,7 +132,7 @@ namespace bw
 				return;
 			}
 
-			LogStack stackLogger();
+			LogStack stackLogger;
 			stackLogger.ShowCallstack(GetCurrentThread(), e->ContextRecord);
 
 			if (WriteFile(dumpFile.get(), stackLogger.stack.data(), stackLogger.stack.size(), nullptr, nullptr))
