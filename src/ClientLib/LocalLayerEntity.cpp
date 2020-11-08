@@ -327,7 +327,18 @@ namespace bw
 
 	void LocalLayerEntity::UpdateScale(float newScale)
 	{
-		m_entity->GetComponent<Ndk::NodeComponent>().SetScale(newScale, Nz::CoordSys_Local);
+		if (m_entity->HasComponent<ScriptComponent>())
+		{
+			auto& scriptComponent = m_entity->GetComponent<ScriptComponent>();
+			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
+		}
+
+		auto& node = m_entity->GetComponent<Ndk::NodeComponent>();
+		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
+		scale.x = std::copysign(newScale, scale.x);
+		scale.y = std::copysign(newScale, scale.y);
+
+		node.SetScale(scale, Nz::CoordSys_Local);
 
 		if (m_entity->HasComponent<CollisionDataComponent>())
 		{

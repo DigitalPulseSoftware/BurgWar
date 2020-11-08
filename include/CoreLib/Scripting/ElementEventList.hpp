@@ -19,6 +19,7 @@ BURGWAR_EVENT(Destroyed)
 BURGWAR_EVENT(Died)
 BURGWAR_EVENT(HealthUpdate)
 BURGWAR_EVENT(Init)
+BURGWAR_EVENT(ScaleUpdate)
 BURGWAR_EVENT(Tick)
 
 // Client element events

@@ -19,6 +19,9 @@ namespace bw
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
+		protected:
+			virtual void SetScale(const Ndk::EntityHandle& entity, float newScale) = 0;
+
 		private:
 			void RegisterCommonLibrary(sol::table& elementMetatable);
 			void RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async);

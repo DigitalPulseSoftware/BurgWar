@@ -23,6 +23,7 @@ namespace bw
 
 		protected:
 			virtual void RegisterClientLibrary(sol::table& elementTable);
+			void SetScale(const Ndk::EntityHandle& entity, float newScale) override;
 
 		private:
 			ClientAssetStore& m_assetStore;

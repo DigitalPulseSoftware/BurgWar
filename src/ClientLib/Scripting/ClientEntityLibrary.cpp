@@ -40,12 +40,6 @@ namespace bw
 		entity->AddComponent<VisualInterpolationComponent>();
 	}
 
-	void ClientEntityLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
-	{
-		auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-		layerEntityComponent.GetLayerEntity()->UpdateScale(newScale);
-	}
-
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
 		elementMetatable["AddLayer"] = [](const sol::table& entityTable, const sol::table& parameters)

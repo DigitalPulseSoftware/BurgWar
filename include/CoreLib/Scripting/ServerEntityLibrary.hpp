@@ -24,7 +24,6 @@ namespace bw
 
 			void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia) override;
 			void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia) override;
-			void SetScale(const Ndk::EntityHandle& entity, float newScale) override;
 			void UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost) override;
 			void UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed) override;
 	};

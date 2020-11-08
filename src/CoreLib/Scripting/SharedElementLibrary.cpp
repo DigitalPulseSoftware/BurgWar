@@ -73,6 +73,18 @@ namespace bw
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
 		};
 
+		elementMetatable["GetScale"] = [](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+
+			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys_Global));
+			scale.x = std::abs(scale.x);
+			scale.y = std::abs(scale.y);
+
+			return scale;
+		};
+
 		elementMetatable["IsEnabled"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
@@ -105,8 +117,14 @@ namespace bw
 
 		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
+		};
+
+		elementMetatable["SetScale"] = [&](const sol::table& entityTable, float scale)
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			SetScale(entity, scale);
 		};
 
 		elementMetatable["ToLocalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
@@ -161,8 +179,17 @@ namespace bw
 			return eventData.index;
 		};
 
-		if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
+		if (Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable))
 		{
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
+
+			entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
+		}
+		else
+		{
+			auto element = AbstractElementLibrary::AssertScriptElement(entityTable);
+
 			std::size_t eventIndex = RetrieveEventIndex(element);
 
 			if (element->customEventCallbacks.size() <= eventIndex)
@@ -171,15 +198,6 @@ namespace bw
 			auto& callbackData = element->customEventCallbacks[eventIndex].emplace_back();
 			callbackData.async = async;
 			callbackData.callback = std::move(callback);
-		}
-		else
-		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
-			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
-
-			entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
 		}
 	}
 
@@ -195,18 +213,18 @@ namespace bw
 		if (async && HasReturnValue(scriptingEvent))
 			throw std::runtime_error("events returning a value cannot be async");
 
-		if (auto element = AbstractElementLibrary::RetrieveScriptElement(entityTable))
+		if (Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable))
 		{
-			auto& callbackData = element->eventCallbacks[eventIndex].emplace_back();
-			callbackData.async = async;
-			callbackData.callback = std::move(callback);
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
 		}
 		else
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			auto element = AbstractElementLibrary::AssertScriptElement(entityTable);
 
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
-			entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
+			auto& callbackData = element->eventCallbacks[eventIndex].emplace_back();
+			callbackData.async = async;
+			callbackData.callback = std::move(callback);
 		}
 	}
 }

@@ -158,14 +158,14 @@ namespace bw
 			}
 		};
 
-		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage)
+		elementMetatable["Damage"] = [](const sol::table& entityTable, Nz::UInt16 damage, std::optional<sol::table> attackerEntity)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
-			entityHealth.Damage(damage, Ndk::EntityHandle::InvalidHandle);
+			entityHealth.Damage(damage, (attackerEntity) ? AbstractElementLibrary::RetrieveScriptEntity(*attackerEntity) : Ndk::EntityHandle::InvalidHandle);
 		};
 
 		elementMetatable["EnableCollisionCallbacks"] = [](const sol::table& entityTable, bool enable)
@@ -259,12 +259,6 @@ namespace bw
 			float jumpBoostHeigh = movementComponent.GetJumpBoostHeight();
 
 			return std::make_pair(jumpHeight, jumpBoostHeigh);
-		};
-
-		elementMetatable["GetScale"] = [](const sol::table& entityTable)
-		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
-			return entity->GetComponent<Ndk::NodeComponent>().GetScale(Nz::CoordSys_Local).y; //< .x can be negative
 		};
 
 		elementMetatable["GetUpVector"] = [](const sol::table& entityTable)
@@ -516,12 +510,6 @@ namespace bw
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			nodeComponent.SetRotation(rotation);
-		};
-
-		elementMetatable["SetScale"] = [&](const sol::table& entityTable, float scale)
-		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
-			SetScale(entity, scale);
 		};
 
 		elementMetatable["SetVelocity"] = [](const sol::table& entityTable, const Nz::Vector2f& velocity)

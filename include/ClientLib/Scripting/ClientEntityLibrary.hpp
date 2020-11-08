@@ -24,7 +24,6 @@ namespace bw
 
 		protected:
 			void InitRigidBody(const Ndk::EntityHandle& entity, float mass) override;
-			void SetScale(const Ndk::EntityHandle& entity, float newScale) override;
 
 		private:
 			void RegisterClientLibrary(sol::table& elementMetatable);

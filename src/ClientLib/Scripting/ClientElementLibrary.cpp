@@ -231,4 +231,10 @@ namespace bw
 			return Sound(layerSound.CreateHandle(), soundIndex);
 		};
 	}
+
+	void ClientElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
+	{
+		auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+		layerEntityComponent.GetLayerEntity()->UpdateScale(newScale);
+	}
 }

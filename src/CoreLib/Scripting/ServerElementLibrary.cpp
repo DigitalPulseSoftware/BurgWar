@@ -3,15 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerElementLibrary.hpp>
+#include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Components/CollisionComponent2D.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <Thirdparty/sol3/sol.hpp>
@@ -105,5 +108,32 @@ namespace bw
 			if (entity->HasComponent<NetworkSyncComponent>())
 				entity->GetComponent<NetworkSyncComponent>().UpdateParent(parent);
 		};
+	}
+
+	void ServerElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
+	{
+		if (entity->HasComponent<ScriptComponent>())
+		{
+			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
+		}
+
+		auto& node = entity->GetComponent<Ndk::NodeComponent>();
+		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
+		scale.x = std::copysign(newScale, scale.x);
+		scale.y = std::copysign(newScale, scale.y);
+
+		node.SetScale(scale, Nz::CoordSys_Local);
+
+		if (entity->HasComponent<CollisionDataComponent>())
+		{
+			auto& entityCollData = entity->GetComponent<CollisionDataComponent>();
+			auto& entityCollider = entity->GetComponent<Ndk::CollisionComponent2D>();
+
+			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
+		}
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyScaleUpdate(entity);
 	}
 }
