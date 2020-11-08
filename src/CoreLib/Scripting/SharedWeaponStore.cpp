@@ -59,9 +59,6 @@ namespace bw
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
 	{
-		if (!ScriptStore::InitializeEntity(weaponClass, entity))
-			return false;
-
 		entity->AddComponent<CooldownComponent>(weaponClass.cooldown);
 
 		entity->AddComponent<WeaponComponent>(parent, weaponClass.attackMode);
@@ -101,6 +98,9 @@ namespace bw
 				});
 			}
 		}
+
+		if (!ScriptStore::InitializeEntity(weaponClass, entity))
+			return false;
 
 		return true;
 	}
