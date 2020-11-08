@@ -457,6 +457,24 @@ namespace bw
 		}
 	}
 
+	void LocalLayer::HandlePacket(const Packets::EntitiesScale::Entity* entities, std::size_t entityCount)
+	{
+		assert(m_isEnabled);
+
+		for (std::size_t i = 0; i < entityCount; ++i)
+		{
+			Nz::UInt32 entityId = entities[i].id;
+			float newScale = entities[i].newScale;
+
+			auto entityOpt = GetEntityByServerId(entityId);
+			if (!entityOpt)
+				continue;
+
+			LocalLayerEntity& localEntity = entityOpt.value();
+			localEntity.UpdateScale(newScale);
+		}
+	}
+
 	void LocalLayer::HandlePacket(const Packets::EntityPhysics& packet)
 	{
 		assert(packet.entityId.layerId == GetLayerIndex());
@@ -490,18 +508,6 @@ namespace bw
 				}
 			}
 		}
-	}
-
-	void LocalLayer::HandlePacket(const Packets::EntityScale& packet)
-	{
-		assert(packet.entityId.layerId == GetLayerIndex());
-
-		auto entityOpt = GetEntityByServerId(packet.entityId.entityId);
-		if (!entityOpt)
-			return;
-
-		LocalLayerEntity& localEntity = *entityOpt;
-		localEntity.UpdateScale(packet.newScale);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::EntityWeapon& packet)

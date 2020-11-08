@@ -27,16 +27,20 @@ if (SERVER) then
 			rotation = rotation + 180
 		end
 
+		local scale = self:GetScale()
+
 		local projectile = match.CreateEntity({
 			Type = "entity_potato",
 			LayerIndex = self:GetLayerIndex(),
 			Owner = self:GetOwner(),
-			Position = self:GetPosition() + self:GetDirection() * 360 * self.Scale,
+			Position = self:GetPosition() + self:GetDirection() * 360 * self.Scale * scale,
 			Rotation = rotation,
 			Properties = {}
 		})
 
-		projectile:SetVelocity(self:GetDirection() * 1500 * chargeFactor)
+		projectile:SetScale(scale)
+
+		projectile:SetVelocity(self:GetDirection() * scale * 1500 * chargeFactor)
 	end)
 else
 	weapon.ChargeBarFullsize = Vec2(60, 10)

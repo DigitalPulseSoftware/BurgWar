@@ -79,10 +79,7 @@ namespace bw
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys_Global));
-			scale.x = std::abs(scale.x);
-			scale.y = std::abs(scale.y);
-
-			return scale;
+			return std::abs(scale.y);
 		};
 
 		elementMetatable["IsEnabled"] = [](const sol::table& entityTable)

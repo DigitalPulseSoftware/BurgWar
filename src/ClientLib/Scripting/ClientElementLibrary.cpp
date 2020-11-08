@@ -4,6 +4,7 @@
 
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
@@ -236,5 +237,12 @@ namespace bw
 	{
 		auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
 		layerEntityComponent.GetLayerEntity()->UpdateScale(newScale);
+
+		if (entity->HasComponent<WeaponWielderComponent>())
+		{
+			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
+			for (const Ndk::EntityHandle& weapon : wielderComponent.GetWeapons())
+				SetScale(weapon, newScale);
+		}
 	}
 }

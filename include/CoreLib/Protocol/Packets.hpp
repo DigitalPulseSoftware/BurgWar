@@ -46,8 +46,8 @@ namespace bw
 		EntitiesAnimation,
 		EntitiesDeath,
 		EntitiesInputs,
+		EntitiesScale,
 		EntityPhysics,
-		EntityScale,
 		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
@@ -304,6 +304,25 @@ namespace bw
 			std::vector<Layer> layers;
 		};
 
+		DeclarePacket(EntitiesScale)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				float newScale;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
+			std::vector<Layer> layers;
+		};
+
 		DeclarePacket(EntitiesInputs)
 		{
 			struct Entity
@@ -338,13 +357,6 @@ namespace bw
 			float mass;
 			float momentOfInertia;
 			std::optional<PlayerMovement> playerMovement;
-		};
-
-		DeclarePacket(EntityScale)
-		{
-			Nz::UInt16 stateTick;
-			Helper::EntityId entityId;
-			float newScale;
 		};
 
 		DeclarePacket(EntityWeapon)
@@ -560,8 +572,8 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
 		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
 		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
+		void Serialize(PacketSerializer& serializer, EntitiesScale& data);
 		void Serialize(PacketSerializer& serializer, EntityPhysics& data);
-		void Serialize(PacketSerializer& serializer, EntityScale& data);
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
 		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);

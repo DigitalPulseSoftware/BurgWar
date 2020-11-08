@@ -158,6 +158,7 @@ namespace bw
 			Packets::EntitiesAnimation m_entitiesAnimationPacket;
 			Packets::EntitiesDeath     m_entitiesDeathPacket;
 			Packets::EntitiesInputs    m_inputUpdatePacket;
+			Packets::EntitiesScale     m_scaleUpdatePacket;
 			Packets::MatchState        m_matchStatePacket;
 	};
 }

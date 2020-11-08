@@ -78,8 +78,8 @@ namespace bw
 			void HandlePacket(const Packets::EntitiesAnimation::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EntitiesDeath::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EntitiesInputs::Entity* entities, std::size_t entityCount);
+			void HandlePacket(const Packets::EntitiesScale::Entity* entities, std::size_t entityCount);
 			void HandlePacket(const Packets::EntityPhysics& packet);
-			void HandlePacket(const Packets::EntityScale& packet);
 			void HandlePacket(const Packets::EntityWeapon& packet);
 			void HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount);
 

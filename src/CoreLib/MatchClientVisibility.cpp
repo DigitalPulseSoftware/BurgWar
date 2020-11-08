@@ -564,6 +564,11 @@ namespace bw
 
 		if (m_pendingEvents.Test(VisibilityEventType::ScaleUpdate))
 		{
+			m_scaleUpdatePacket.stateTick = networkTick;
+
+			m_scaleUpdatePacket.entities.clear();
+			m_scaleUpdatePacket.layers.clear();
+
 			for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 			{
 				auto& layer = *it.value();
@@ -572,19 +577,21 @@ namespace bw
 
 				LayerIndex layerIndex = it.key();
 
+				auto& layerData = m_scaleUpdatePacket.layers.emplace_back();
+				layerData.layerIndex = layerIndex;
+				layerData.entityCount = static_cast<Nz::UInt32>(layer.scaleEvents.size());
+
 				for (auto&& pair : layer.scaleEvents)
 				{
-					Packets::EntityScale scalePacket;
-					scalePacket.entityId.layerId = layerIndex;
-					scalePacket.entityId.entityId = pair.first;
-					scalePacket.stateTick = networkTick;
-					scalePacket.newScale = pair.second.newScale;
-
-					m_session.SendPacket(scalePacket);
+					auto& entityData = m_scaleUpdatePacket.entities.emplace_back();
+					entityData.id = pair.first;
+					entityData.newScale = pair.second.newScale;
 				}
 
 				layer.scaleEvents.clear();
 			}
+
+			m_session.SendPacket(m_scaleUpdatePacket);
 
 			m_pendingEvents.Clear(VisibilityEventType::ScaleUpdate);
 		}

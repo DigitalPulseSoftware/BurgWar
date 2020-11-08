@@ -682,16 +682,16 @@ namespace bw
 			PushTickPacket(inputs.stateTick, inputs);
 		});
 
+		m_session.OnEntitiesScale.Connect([this](ClientSession* /*session*/, const Packets::EntitiesScale& scale)
+		{
+			PushTickPacket(scale.stateTick, scale);
+		});
+
 		m_session.OnEntityPhysics.Connect([this](ClientSession* /*session*/, const Packets::EntityPhysics& physics)
 		{
 			PushTickPacket(physics.stateTick, physics);
 		});
 		
-		m_session.OnEntityScale.Connect([this](ClientSession* /*session*/, const Packets::EntityScale& scale)
-		{
-			PushTickPacket(scale.stateTick, scale);
-		});
-
 		m_session.OnEntityWeapon.Connect([this](ClientSession* /*session*/, const Packets::EntityWeapon& weapon)
 		{
 			PushTickPacket(weapon.stateTick, weapon);
@@ -1075,14 +1075,19 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
+	void LocalMatch::HandleTickPacket(Packets::EntitiesScale&& packet)
 	{
-		assert(packet.entityId.layerId < m_layers.size());
-		auto& layer = m_layers[packet.entityId.layerId];
-		layer->HandlePacket(packet);
+		std::size_t offset = 0;
+		for (auto&& layerData : packet.layers)
+		{
+			assert(layerData.layerIndex < m_layers.size());
+			auto& layer = m_layers[layerData.layerIndex];
+			layer->HandlePacket(&packet.entities[offset], layerData.entityCount);
+			offset += layerData.entityCount;
+		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntityScale&& packet)
+	void LocalMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
 	{
 		assert(packet.entityId.layerId < m_layers.size());
 		auto& layer = m_layers[packet.entityId.layerId];

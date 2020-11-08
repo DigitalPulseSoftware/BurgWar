@@ -9,6 +9,7 @@
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
@@ -135,5 +136,12 @@ namespace bw
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyScaleUpdate(entity);
+
+		if (entity->HasComponent<WeaponWielderComponent>())
+		{
+			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
+			for (const Ndk::EntityHandle& weapon : wielderComponent.GetWeapons())
+				SetScale(weapon, newScale);
+		}
 	}
 }

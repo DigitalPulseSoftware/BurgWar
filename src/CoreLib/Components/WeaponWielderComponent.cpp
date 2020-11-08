@@ -16,6 +16,8 @@ namespace bw
 		if (!weapon)
 			return false;
 
+		//FIXME: New weapons should be resized to match the player size
+
 		assert(weapon->HasComponent<WeaponComponent>());
 
 		std::size_t weaponIndex = m_weapons.size();

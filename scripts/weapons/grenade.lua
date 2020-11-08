@@ -14,17 +14,21 @@ RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
 	weapon:On("attack", function (self)
+		local scale = self:GetScale()
+
 		local projectile = match.CreateEntity({
 			Type = "entity_grenade",
 			LayerIndex = self:GetLayerIndex(),
 			Owner = self:GetOwner(),
-			Position = self:GetPosition() + self:GetDirection() * 32,
+			Position = self:GetPosition() + self:GetDirection() * 32 * scale,
+			--Scale = scale, -- TODO: Handle scale when creating entity
 			Properties = {
-				lifetime = math.random(1, 2)
+				lifetime = math.random(1, 2),
 			}
 		})
+		projectile:SetScale(scale)
 
-		projectile:SetVelocity(self:GetDirection() * 1000)
+		projectile:SetVelocity(self:GetDirection() * scale * 1000)
 		self:GetOwner():RemoveWeapon(self.FullName)
 	end)
 end

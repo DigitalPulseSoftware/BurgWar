@@ -14,17 +14,34 @@ local weapon = ScriptedWeapon({
 RegisterClientAssets(weapon.Sprite)
 
 if (SERVER) then
+	local rectSize = 64
+	local halfRectSize = rectSize / 2
+
 	weapon:On("attack", function (self)
 		local pos = self:GetPosition()
-		local maxs = Vec2(128, 66)
-		local mins = Vec2(28, -76)
+		local dir = self:GetDirection()
+		local scale = self:GetScale()
 
-		if (not self:IsLookingRight()) then
-			maxs = maxs * -1
-			mins = mins * -1
-		end
+		local width = rectSize + halfRectSize * math.abs(dir.x)
+		local height = rectSize + halfRectSize * math.abs(dir.y)
 
-		self:DealDamage(pos, 100, Rect(pos + mins, pos + maxs), 20000)
+		local maxs = Vec2(width, height)
+		local mins = Vec2(-width, -height)
+	
+		local origin = pos + dir * scale * 75
+		local rect = Rect(origin + mins * scale, origin + maxs * scale)
+
+		local ownerEntity = self:GetOwnerEntity()
+		physics.RegionQuery(self:GetLayerIndex(), rect, function (entity)
+			if (entity == ownerEntity) then
+				return
+			end
+
+			entity:ApplyImpulse(dir * 10000)
+			entity:Damage(math.random(50, 150))
+		end)
+		--debug.DrawRect(self:GetLayerIndex(), Rect(pos + Vec2(-10, -10), pos + Vec2(10, 10)), 2)
+		debug.DrawRect(self:GetLayerIndex(), rect, 2)
 	end)
 end
 

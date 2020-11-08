@@ -290,6 +290,31 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, EntitiesScale& data)
+		{
+			Nz::UInt32 entityCount = 0;
+
+			serializer.SerializeArraySize(data.layers);
+			for (auto& layer : data.layers)
+			{
+				serializer &= layer.layerIndex;
+				serializer &= layer.entityCount;
+
+				entityCount += layer.entityCount;
+			}
+
+			if (serializer.IsWriting())
+				assert(data.entities.size() == entityCount);
+			else
+				data.entities.resize(entityCount);
+
+			for (auto& entity : data.entities)
+			{
+				serializer &= entity.id;
+				serializer &= entity.newScale;
+			}
+		}
+
 		void Serialize(PacketSerializer& serializer, EntityPhysics& data)
 		{
 			Serialize(serializer, data.entityId);
@@ -316,13 +341,6 @@ namespace bw
 				serializer &= playerMovement.jumpHeightBoost;
 				serializer &= playerMovement.movementSpeed;
 			}
-		}
-
-		void Serialize(PacketSerializer& serializer, EntityScale& data)
-		{
-			Serialize(serializer, data.entityId);
-			serializer &= data.stateTick;
-			serializer &= data.newScale;
 		}
 
 		void Serialize(PacketSerializer& serializer, EntityWeapon& data)

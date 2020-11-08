@@ -57,6 +57,8 @@ function entity:Explode()
 
 	self.Exploded = true
 
+	local scale = self:GetScale()
+
 	if (CLIENT) then
 		self:PlaySound(self.ExplosionSounds[math.random(1, #self.ExplosionSounds)], false, false, true)
 
@@ -75,13 +77,14 @@ function entity:Explode()
 			LayerIndex = self:GetLayerIndex(),
 			Position = self:GetPosition(),
 			Properties = {
-				lifetime = math.random() + 0.5
+				lifetime = math.random() + 0.5,
+				size = scale * 30
 			}
 		})
 	else
 		local pos = self:GetPosition()
-		local maxs = Vec2(256, 256)
-		local mins = Vec2(-256, -256)
+		local maxs = Vec2(256, 256) * scale
+		local mins = Vec2(-256, -256) * scale
 
 		self:DealDamage(self:GetPosition(), math.random(500, 1000), Rect(pos + mins, pos + maxs), 100000)
 	end
