@@ -33,6 +33,8 @@ BURGWAR_EVENT(InputUpdate)
 
 // Shared weapon events
 BURGWAR_EVENT(Attack)
+BURGWAR_EVENT(SwitchOn)
+BURGWAR_EVENT(SwitchOff)
 BURGWAR_EVENT_LAST(AttackFinish)
 
 #undef BURGWAR_EVENT

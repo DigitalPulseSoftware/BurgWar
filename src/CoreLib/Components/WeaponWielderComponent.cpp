@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 
 namespace bw
@@ -66,8 +67,15 @@ namespace bw
 		{
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				auto& oldWeapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
-				oldWeapon.SetActive(false);
+				const Ndk::EntityHandle& previousWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = previousWeapon->GetComponent<WeaponComponent>();
+				weaponComponent.SetActive(false);
+
+				if (previousWeapon->HasComponent<ScriptComponent>())
+				{
+					auto& weaponScript = previousWeapon->GetComponent<ScriptComponent>();
+					weaponScript.ExecuteCallback<ElementEvent::SwitchOff>();
+				}
 			}
 
 			OnNewWeaponSelection(this, weaponId);
@@ -75,8 +83,15 @@ namespace bw
 
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				auto& oldWeapon = m_weapons[m_activeWeaponIndex]->GetComponent<WeaponComponent>();
-				oldWeapon.SetActive(true);
+				const Ndk::EntityHandle& newWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = newWeapon->GetComponent<WeaponComponent>();
+				weaponComponent.SetActive(true);
+
+				if (newWeapon->HasComponent<ScriptComponent>())
+				{
+					auto& weaponScript = newWeapon->GetComponent<ScriptComponent>();
+					weaponScript.ExecuteCallback<ElementEvent::SwitchOn>();
+				}
 			}
 		}
 	}
