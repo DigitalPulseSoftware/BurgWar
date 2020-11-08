@@ -40,8 +40,6 @@ if (SERVER) then
 			entity:ApplyImpulse(dir * 10000)
 			entity:Damage(math.random(50, 150))
 		end)
-		--debug.DrawRect(self:GetLayerIndex(), Rect(pos + Vec2(-10, -10), pos + Vec2(10, 10)), 2)
-		debug.DrawRect(self:GetLayerIndex(), rect, 2)
 	end)
 end
 
