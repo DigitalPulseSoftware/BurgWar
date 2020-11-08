@@ -23,6 +23,7 @@ namespace bw
 
 			void HandleIncomingPacket(Nz::NetPacket& packet) override;
 			inline bool IsServer() const;
+			bool IsLocal() const override;
 
 			void QueryInfo(std::function<void(const SessionInfo& info)> callback) const override;
 

@@ -43,6 +43,7 @@ namespace bw
 
 			inline Nz::UInt16 GetLastInputTick() const;
 			inline Nz::UInt32 GetPing() const;
+			inline const SessionBridge& GetSessionBridge() const;
 			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;

@@ -35,6 +35,11 @@ namespace bw
 		m_sessionManager.DisconnectPeer(m_peerId);
 	}
 
+	bool LocalSessionBridge::IsLocal() const
+	{
+		return true;
+	}
+
 	void LocalSessionBridge::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
 		BurgApp& app = m_sessionManager.GetOwner()->GetMatch().GetApp();

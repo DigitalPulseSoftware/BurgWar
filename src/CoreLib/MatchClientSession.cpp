@@ -119,6 +119,10 @@ namespace bw
 				return;
 			}
 
+			// If local bridge (local player), set admin by default
+			if (m_bridge->IsLocal())
+				player->SetAdmin(true);
+
 			players.emplace_back(player);
 			
 			auto& packetPlayer = authSuccessPacket.players.emplace_back();

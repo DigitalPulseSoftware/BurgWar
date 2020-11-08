@@ -27,6 +27,7 @@ namespace bw
 			inline MatchClientSession* GetSession();
 
 			inline bool IsConnected() const;
+			virtual bool IsLocal() const = 0;
 
 			virtual void HandleConnection(Nz::UInt32 data);
 			virtual void HandleDisconnection(Nz::UInt32 data);

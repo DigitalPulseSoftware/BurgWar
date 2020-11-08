@@ -27,6 +27,11 @@ namespace bw
 		return m_ping;
 	}
 
+	inline const SessionBridge& MatchClientSession::GetSessionBridge() const
+	{
+		return *m_bridge;
+	}
+
 	inline std::size_t MatchClientSession::GetSessionId() const
 	{
 		return m_sessionId;

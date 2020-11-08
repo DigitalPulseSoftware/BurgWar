@@ -14,6 +14,11 @@ namespace bw
 		m_reactor.DisconnectPeer(m_peerId);
 	}
 
+	bool NetworkSessionBridge::IsLocal() const
+	{
+		return false;
+	}
+
 	void NetworkSessionBridge::QueryInfo(std::function<void(const SessionInfo& info)> callback) const
 	{
 		m_reactor.QueryInfo(m_peerId, [callback = std::move(callback)](NetworkReactor::PeerInfo& peerInfo)

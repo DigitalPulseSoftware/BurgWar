@@ -23,6 +23,8 @@ namespace bw
 
 			inline std::size_t GetPeerId() const;
 
+			bool IsLocal() const override;
+
 			void QueryInfo(std::function<void(const SessionInfo& info)> callback) const override;
 
 			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
