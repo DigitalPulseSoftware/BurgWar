@@ -3,8 +3,9 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.1.0")
 
-add_requires("concurrentqueue", "libcurl", "nlohmann_json")
+add_requires("concurrentqueue", "nlohmann_json")
 add_requires("fmt", { debug = is_mode("debug"), config = { header_only = false, vs_runtime = "MD" } })
+add_requires("libcurl", { debug = is_mode("debug"), config = { vs_runtime = "MD" } })
 
 if (is_plat("windows")) then
 	add_requires("stackwalker")
@@ -21,9 +22,14 @@ add_includedirs("thirdparty/include")
 set_languages("c89", "cxx17")
 
 add_packages("concurrentqueue", "fmt", "nlohmann_json")
+add_cxflags("-Wall", "-Wextra")
 
-if (is_plat("windows")) then 
-	add_cxflags(is_mode("debug") and "-MDd" or "-MD")
+if (is_mode("release")) then
+    set_optimize("fastest")
+end
+
+if (is_plat("windows")) then
+	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
 	add_cxxflags("/EHsc", "/bigobj")
 end
 
