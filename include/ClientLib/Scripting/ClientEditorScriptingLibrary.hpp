@@ -23,7 +23,8 @@ namespace bw
 			void RegisterLibrary(ScriptingContext& context) override;
 
 		private:
-			void RegisterAssetLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterAssetLibrary(ScriptingContext& context, sol::table& library);
+			virtual void RegisterRenderLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterSpriteClass(ScriptingContext& context);
 			void RegisterTextureClass(ScriptingContext& context);
 			void RegisterTilemapClass(ScriptingContext& context);

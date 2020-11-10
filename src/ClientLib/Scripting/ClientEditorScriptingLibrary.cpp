@@ -21,8 +21,10 @@ namespace bw
 	{
 		sol::state& luaState = context.GetLuaState();
 		sol::table assetTable = luaState.create_named_table("assets");
+		sol::table renderTable = luaState.create_named_table("render");
 
 		RegisterAssetLibrary(context, assetTable);
+		RegisterRenderLibrary(context, renderTable);
 		RegisterSpriteClass(context);
 		RegisterTilemapClass(context);
 		RegisterTextureClass(context);
@@ -37,6 +39,14 @@ namespace bw
 				return Texture(texture);
 			else
 				return {};
+		};
+	}
+
+	void ClientEditorScriptingLibrary::RegisterRenderLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["GetFrametime"] = []()
+		{
+			return 1.f / 60.f; //< FIXME
 		};
 	}
 

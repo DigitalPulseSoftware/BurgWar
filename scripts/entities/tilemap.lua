@@ -139,6 +139,6 @@ entity:On("init", function (self)
 		local tiles = GenerateTiles(textures, textureCells)
 		local renderOrder = self:GetProperty("renderOrder")
 
-		self:AddTilemap(mapSize, cellSize, content, tiles, renderOrder)
+		self.Tilemap = self:AddTilemap(mapSize, cellSize, content, tiles, renderOrder)
 	end
 end)

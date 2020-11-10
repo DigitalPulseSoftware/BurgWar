@@ -743,6 +743,232 @@
 					"uniqueId": 5
 				},
 				{
+					"entityType": "entity_tilemap_fade",
+					"name": "world (Clone)",
+					"position": {
+						"x": 0.0,
+						"y": 768.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								1,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								2,
+								3,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								6,
+								4,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5,
+								5
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 12,
+								"y": 7
+							}
+						},
+						"physical": {
+							"type": "Bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 1000000
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 6
+				},
+				{
 					"entityType": "entity_tilemap",
 					"name": "world",
 					"position": {
@@ -761,7 +987,6 @@
 							"isArray": true,
 							"type": "Integer",
 							"value": [
-								6,
 								0,
 								0,
 								0,
@@ -811,14 +1036,6 @@
 								0,
 								0,
 								0,
-								0,
-								0,
-								13,
-								14,
-								14,
-								14,
-								14,
-								15,
 								0,
 								0,
 								0,
@@ -829,6 +1046,15 @@
 								14,
 								15,
 								0,
+								0,
+								0,
+								13,
+								14,
+								14,
+								14,
+								14,
+								15,
+								0,
 								14,
 								0,
 								0,
@@ -840,8 +1066,8 @@
 								0,
 								0,
 								0,
-								4,
-								6,
+								0,
+								0,
 								0,
 								0,
 								0,
@@ -920,8 +1146,8 @@
 								0,
 								0,
 								0,
-								4,
-								6,
+								0,
+								0,
 								0,
 								0,
 								0,
@@ -1000,8 +1226,8 @@
 								0,
 								0,
 								0,
-								4,
-								6,
+								0,
+								0,
 								0,
 								0,
 								0,
@@ -1080,8 +1306,6 @@
 								0,
 								0,
 								0,
-								4,
-								6,
 								0,
 								0,
 								0,
@@ -1160,8 +1384,10 @@
 								0,
 								0,
 								0,
-								4,
-								6,
+								0,
+								0,
+								0,
+								0,
 								0,
 								0,
 								0,
@@ -1240,7 +1466,7 @@
 								0,
 								0,
 								0,
-								4,
+								0,
 								10,
 								14,
 								14,
@@ -1320,7 +1546,7 @@
 								0,
 								0,
 								0,
-								4,
+								0,
 								6,
 								0,
 								0,
@@ -1400,7 +1626,7 @@
 								0,
 								0,
 								0,
-								4,
+								0,
 								6,
 								0,
 								0,
@@ -1480,7 +1706,7 @@
 								0,
 								0,
 								0,
-								4,
+								0,
 								6,
 								0,
 								0,
@@ -1560,7 +1786,7 @@
 								0,
 								0,
 								0,
-								4,
+								0,
 								10,
 								0,
 								0,
@@ -1914,7 +2140,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 6
+					"uniqueId": 7
 				},
 				{
 					"entityType": "entity_box",
@@ -1930,7 +2156,7 @@
 						}
 					},
 					"rotation": 45.0,
-					"uniqueId": 7
+					"uniqueId": 8
 				},
 				{
 					"entityType": "entity_box",
@@ -1946,7 +2172,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 8
+					"uniqueId": 9
 				},
 				{
 					"entityType": "entity_powerup",
@@ -1962,7 +2188,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 9
+					"uniqueId": 10
 				},
 				{
 					"entityType": "entity_powerup",
@@ -1982,7 +2208,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 10
+					"uniqueId": 11
 				},
 				{
 					"entityType": "entity_powerup",
@@ -1998,7 +2224,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 11
+					"uniqueId": 12
 				},
 				{
 					"entityType": "entity_powerup",
@@ -2018,7 +2244,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 12
+					"uniqueId": 13
 				},
 				{
 					"entityType": "entity_powerup",
@@ -2038,7 +2264,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 13
+					"uniqueId": 14
 				},
 				{
 					"entityType": "entity_powerup",
@@ -2058,7 +2284,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 14
+					"uniqueId": 15
 				},
 				{
 					"entityType": "entity_box",
@@ -2078,7 +2304,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 15
+					"uniqueId": 16
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2109,7 +2335,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 16
+					"uniqueId": 17
 				},
 				{
 					"entityType": "entity_trigger_teleport",
@@ -2128,11 +2354,11 @@
 						},
 						"target": {
 							"type": "Entity",
-							"value": 59
+							"value": 60
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 17
+					"uniqueId": 18
 				},
 				{
 					"entityType": "entity_position",
@@ -2143,7 +2369,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 18
+					"uniqueId": 19
 				},
 				{
 					"entityType": "entity_visible_layer",
@@ -2177,7 +2403,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 19
+					"uniqueId": 20
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2217,7 +2443,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 20
+					"uniqueId": 21
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2257,7 +2483,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 21
+					"uniqueId": 22
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2297,7 +2523,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 22
+					"uniqueId": 23
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2337,7 +2563,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 23
+					"uniqueId": 24
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2384,7 +2610,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 24
+					"uniqueId": 25
 				},
 				{
 					"entityType": "entity_tilemap",
@@ -2447,7 +2673,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 25
+					"uniqueId": 26
 				},
 				{
 					"entityType": "entity_trigger_kill",
@@ -2466,7 +2692,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 26
+					"uniqueId": 27
 				},
 				{
 					"entityType": "entity_sprite",
@@ -2506,7 +2732,7 @@
 						}
 					},
 					"rotation": 200.0,
-					"uniqueId": 27
+					"uniqueId": 28
 				},
 				{
 					"entityType": "entity_position",
@@ -2517,7 +2743,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 28
+					"uniqueId": 29
 				},
 				{
 					"entityType": "entity_camera_rect",
@@ -2536,7 +2762,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 29
+					"uniqueId": 30
 				},
 				{
 					"entityType": "entity_visible_layer",
@@ -2570,7 +2796,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 30
+					"uniqueId": 31
 				},
 				{
 					"entityType": "entity_clove_mine",
@@ -2586,7 +2812,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 31
+					"uniqueId": 32
 				},
 				{
 					"entityType": "entity_clove_mine",
@@ -2602,7 +2828,7 @@
 						}
 					},
 					"rotation": 90.0,
-					"uniqueId": 32
+					"uniqueId": 33
 				},
 				{
 					"entityType": "entity_clove_mine",
@@ -2618,7 +2844,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 33
+					"uniqueId": 34
 				},
 				{
 					"entityType": "entity_clove_mine",
@@ -2629,7 +2855,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 34
+					"uniqueId": 35
 				},
 				{
 					"entityType": "entity_box",
@@ -2645,7 +2871,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 35
+					"uniqueId": 36
 				},
 				{
 					"entityType": "entity_box",
@@ -2661,7 +2887,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 36
+					"uniqueId": 37
 				},
 				{
 					"entityType": "entity_burger_ai",
@@ -2677,18 +2903,18 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 37
+					"uniqueId": 38
 				},
 				{
 					"entityType": "entity_spawnpoint",
 					"name": " (Clone)",
 					"position": {
-						"x": 223.0,
-						"y": 315.0
+						"x": 6307.0,
+						"y": 570.0
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 38
+					"uniqueId": 39
 				},
 				{
 					"entityType": "entity_spawnpoint",
@@ -2699,43 +2925,47 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 39
+					"uniqueId": 40
 				},
 				{
 					"entityType": "entity_spawnpoint",
 					"name": "",
 					"position": {
-						"x": 227.0,
-						"y": 186.0
+						"x": 7371.0,
+						"y": -50.0
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 40
+					"uniqueId": 41
 				},
 				{
 					"entityType": "entity_powerup2",
 					"name": "",
 					"position": {
-						"x": 678.0,
-						"y": 639.0
+						"x": 1023.0,
+						"y": 1024.0
 					},
 					"properties": {
 						"powerup_entity": {
 							"type": "Entity",
-							"value": 42
+							"value": 43
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 41
+					"uniqueId": 42
 				},
 				{
 					"entityType": "entity_powerup_movement",
 					"name": "",
 					"position": {
-						"x": 674.0,
-						"y": 651.0
+						"x": 1019.0,
+						"y": 1036.0
 					},
 					"properties": {
+						"duration": {
+							"type": "Float",
+							"value": 30.0
+						},
 						"effect_jump_height": {
 							"type": "Float",
 							"value": 1.5
@@ -2768,27 +2998,31 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 42
+					"uniqueId": 43
 				},
 				{
 					"entityType": "entity_spawnpoint",
 					"name": " (Clone) (Clone) (Clone)",
 					"position": {
-						"x": 225.0,
-						"y": 441.0
+						"x": 3185.0,
+						"y": 1443.0
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 43
+					"uniqueId": 44
 				},
 				{
 					"entityType": "entity_powerup_scale",
 					"name": " (Clone)",
 					"position": {
-						"x": 477.0,
-						"y": 654.0
+						"x": 8275.0,
+						"y": -110.0
 					},
 					"properties": {
+						"duration": {
+							"type": "Float",
+							"value": 10.0
+						},
 						"effect_scale": {
 							"type": "Float",
 							"value": 2.0
@@ -2813,23 +3047,23 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 44
+					"uniqueId": 45
 				},
 				{
 					"entityType": "entity_powerup2",
 					"name": " (Clone)",
 					"position": {
-						"x": 479.0,
-						"y": 639.0
+						"x": 8277.0,
+						"y": -125.0
 					},
 					"properties": {
 						"powerup_entity": {
 							"type": "Entity",
-							"value": 44
+							"value": 45
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 45
+					"uniqueId": 46
 				},
 				{
 					"entityType": "entity_a_testeditor",
@@ -2989,7 +3223,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 46
+					"uniqueId": 47
 				}
 			],
 			"name": "Layer #1"
@@ -3533,7 +3767,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 47
+					"uniqueId": 48
 				},
 				{
 					"entityType": "entity_tilemap",
@@ -4067,7 +4301,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 48
+					"uniqueId": 49
 				},
 				{
 					"entityType": "entity_powerup",
@@ -4083,7 +4317,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 49
+					"uniqueId": 50
 				},
 				{
 					"entityType": "entity_powerup",
@@ -4099,7 +4333,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 50
+					"uniqueId": 51
 				},
 				{
 					"entityType": "entity_box_spawner",
@@ -4115,7 +4349,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 51
+					"uniqueId": 52
 				},
 				{
 					"entityType": "entity_trigger_kill",
@@ -4134,7 +4368,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 52
+					"uniqueId": 53
 				},
 				{
 					"entityType": "entity_sprite",
@@ -4174,7 +4408,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 53
+					"uniqueId": 54
 				},
 				{
 					"entityType": "entity_sprite",
@@ -4214,7 +4448,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 54
+					"uniqueId": 55
 				},
 				{
 					"entityType": "entity_sprite",
@@ -4254,7 +4488,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 55
+					"uniqueId": 56
 				},
 				{
 					"entityType": "entity_sprite",
@@ -4290,7 +4524,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 56
+					"uniqueId": 57
 				},
 				{
 					"entityType": "entity_collider_box",
@@ -4309,7 +4543,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 57
+					"uniqueId": 58
 				},
 				{
 					"entityType": "entity_sprite",
@@ -4347,7 +4581,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 58
+					"uniqueId": 59
 				},
 				{
 					"entityType": "entity_position",
@@ -4358,7 +4592,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 59
+					"uniqueId": 60
 				},
 				{
 					"entityType": "entity_visible_layer",
@@ -4392,7 +4626,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 60
+					"uniqueId": 61
 				},
 				{
 					"entityType": "entity_trigger_teleport",
@@ -4411,11 +4645,11 @@
 						},
 						"target": {
 							"type": "Entity",
-							"value": 28
+							"value": 29
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 61
+					"uniqueId": 62
 				},
 				{
 					"entityType": "entity_camera_rect",
@@ -4434,7 +4668,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 62
+					"uniqueId": 63
 				},
 				{
 					"entityType": "entity_camera_rect",
@@ -4460,7 +4694,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 63
+					"uniqueId": 64
 				},
 				{
 					"entityType": "entity_model",
@@ -4496,7 +4730,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 64
+					"uniqueId": 65
 				},
 				{
 					"entityType": "entity_spawnpoint",
@@ -4507,7 +4741,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 65
+					"uniqueId": 66
 				},
 				{
 					"entityType": "entity_spawnpoint",
@@ -4518,7 +4752,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 66
+					"uniqueId": 67
 				},
 				{
 					"entityType": "entity_spawnpoint",
@@ -4529,7 +4763,7 @@
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 67
+					"uniqueId": 68
 				}
 			],
 			"name": "Îles flottantes"
@@ -4573,7 +4807,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 68
+					"uniqueId": 69
 				}
 			],
 			"name": "Background"
@@ -4767,7 +5001,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 69
+					"uniqueId": 70
 				},
 				{
 					"entityType": "entity_box",
@@ -4783,7 +5017,7 @@
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 70
+					"uniqueId": 71
 				}
 			],
 			"name": "Layer #3"

@@ -28,6 +28,7 @@
         "DummyInputController",
         "ScriptedEntity",
         "ScriptedWeapon",
-        "ScriptedGamemode"
+        "ScriptedGamemode",
+        "render"
     ]
 }
