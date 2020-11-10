@@ -31,6 +31,6 @@ namespace bw
 		}
 
 		assert(!"Unhandled gamemode event");
-		return nullptr;
+		return {};
 	}
 }
