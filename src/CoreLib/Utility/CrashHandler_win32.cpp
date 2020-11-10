@@ -79,7 +79,7 @@ namespace bw
 				fprintf(stderr, "CrashDump: MiniDumpWriteDump failed: %u (%s)\n", GetLastError(), Nz::Error::GetLastSystemError().GetConstBuffer());
 		}
 
-		void GenerateCrashlog(const wchar_t* filename, EXCEPTION_POINTERS* e, DWORD crashedThread)
+		void GenerateCrashlog(const wchar_t* filename, EXCEPTION_POINTERS* e, DWORD /*crashedThread*/)
 		{
 			/*
 			WinHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD | TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, 0));
@@ -135,7 +135,7 @@ namespace bw
 			LogStack stackLogger;
 			stackLogger.ShowCallstack(GetCurrentThread(), e->ContextRecord);
 
-			if (WriteFile(dumpFile.get(), stackLogger.stack.data(), stackLogger.stack.size(), nullptr, nullptr))
+			if (WriteFile(dumpFile.get(), stackLogger.stack.data(), DWORD(stackLogger.stack.size()), nullptr, nullptr))
 				fwprintf(stderr, L"Unhandled exception triggered: Callstack file %ls generated\n", filename);
 			else
 				fprintf(stderr, "Crashlog: Failed to dump stack\n");
