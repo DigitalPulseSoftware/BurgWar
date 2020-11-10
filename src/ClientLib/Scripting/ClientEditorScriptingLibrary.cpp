@@ -7,6 +7,7 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
+#include <ClientLib/Scripting/Tilemap.hpp>
 
 namespace bw
 {
@@ -23,6 +24,7 @@ namespace bw
 
 		RegisterAssetLibrary(context, assetTable);
 		RegisterSpriteClass(context);
+		RegisterTilemapClass(context);
 		RegisterTextureClass(context);
 	}
 
@@ -72,6 +74,30 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"GetSize", &Texture::GetSize
+		);
+	}
+
+	void ClientEditorScriptingLibrary::RegisterTilemapClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Tilemap>("Tilemap",
+			"new", sol::no_constructor,
+
+			"GetMapSize",  &Tilemap::GetMapSize,
+			"GetSize",     &Tilemap::GetSize,
+			"GetTileSize", &Tilemap::GetTileSize,
+
+			"Hide", &Tilemap::Hide,
+
+			"IsValid", &Tilemap::IsValid,
+			"IsVisible", &Tilemap::IsVisible,
+
+			"SetOffset", &Tilemap::SetOffset,
+			"SetRotation", &Tilemap::SetRotation,
+			"SetTileColor", &Tilemap::SetTileColor,
+
+			"Show", sol::overload(&Tilemap::Show, [](Tilemap* tilemap) { return tilemap->Show(); })
 		);
 	}
 }

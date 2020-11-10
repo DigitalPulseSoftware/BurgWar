@@ -14,6 +14,7 @@
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
+#include <ClientLib/Scripting/Tilemap.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -60,7 +61,7 @@ namespace bw
 			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		};
 
-		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0)
+		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 
@@ -74,7 +75,7 @@ namespace bw
 			}
 
 			if (materials.empty())
-				return;
+				return {};
 
 			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
@@ -121,14 +122,24 @@ namespace bw
 				}
 			}
 
+			Nz::Matrix4f transformMatrix = Nz::Matrix4f::Identity();
+
 			//FIXME: Map editor is currently unable to show multiple layers
 			if (entity->HasComponent<LayerEntityComponent>())
 			{
 				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-				layerEntityComponent.GetLayerEntity()->AttachRenderable(tileMap, Nz::Matrix4f::Identity(), renderOrder);
+
+				Tilemap scriptTilemap(layerEntityComponent.GetLayerEntity(), std::move(tileMap), transformMatrix, renderOrder);
+				scriptTilemap.Show();
+
+				return scriptTilemap;
 			}
 			else
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, Nz::Matrix4f::Identity(), renderOrder);
+			{
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, transformMatrix, renderOrder);
+
+				return Tilemap({}, std::move(tileMap), transformMatrix, renderOrder);
+			}
 		};
 
 		elementMetatable["ClearLayers"] = [](const sol::table& entityTable)
