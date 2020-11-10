@@ -134,6 +134,8 @@ namespace bw
 	auto Map::EmplaceEntity(LayerIndex layerIndex, std::size_t entityIndex, Args&&... args) -> Entity&
 	{
 		auto& layer = GetLayer(layerIndex);
+
+		assert(entityIndex <= layer.entities.size());
 		auto& entity = *layer.entities.emplace(layer.entities.begin() + entityIndex, std::forward<Args>(args)...);
 
 		// If unique id is still in use, set a new one
