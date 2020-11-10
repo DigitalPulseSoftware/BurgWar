@@ -24,13 +24,13 @@ namespace bw
 			inline float GetHealthPct() const;
 			inline Nz::UInt16 GetMaxHealth() const;
 
-			inline void Heal(Nz::UInt16 heal);
+			inline void Heal(Nz::UInt16 heal, const Ndk::EntityHandle& healer);
 
 			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnDying, HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
 			NazaraSignal(OnDied, const HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
-			NazaraSignal(OnHealthChange, HealthComponent* /*emitter*/);
+			NazaraSignal(OnHealthChange, HealthComponent* /*emitter*/, Nz::UInt16 /*newHealth*/, const Ndk::EntityHandle& /*source*/);
 
 		private:
 			Nz::UInt16 m_currentHealth;

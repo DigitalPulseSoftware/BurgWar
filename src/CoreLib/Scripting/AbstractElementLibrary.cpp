@@ -46,4 +46,12 @@ namespace bw
 		return entityObject.as<Ndk::EntityHandle>();
 	}
 
+	sol::object AbstractElementLibrary::TranslateEntity(const Ndk::EntityHandle& entity)
+	{
+		if (!entity || !entity->HasComponent<ScriptComponent>())
+			return sol::nil;
+
+		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		return entityScript.GetTable();
+	}
 }

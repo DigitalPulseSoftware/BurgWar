@@ -37,11 +37,11 @@ namespace bw
 		if (entityClass->maxHealth > 0)
 		{
 			auto& healthComponent = entity->AddComponent<HealthComponent>(entityClass->maxHealth);
-			healthComponent.OnHealthChange.Connect([](HealthComponent* health)
+			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, const Ndk::EntityHandle& source)
 			{
 				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>();
+				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, AbstractElementLibrary::TranslateEntity(source));
 			});
 
 			healthComponent.OnDying.Connect([&](HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -49,7 +49,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Death>(attacker);
+				entityScript.ExecuteCallback<ElementEvent::Death>(AbstractElementLibrary::TranslateEntity(attacker));
 			});
 
 			healthComponent.OnDied.Connect([&](const HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -57,7 +57,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Died>(attacker);
+				entityScript.ExecuteCallback<ElementEvent::Died>(AbstractElementLibrary::TranslateEntity(attacker));
 			});
 		}
 

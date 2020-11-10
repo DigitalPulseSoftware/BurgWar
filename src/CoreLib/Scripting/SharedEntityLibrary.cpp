@@ -278,14 +278,14 @@ namespace bw
 			return physComponent.GetVelocity();
 		};
 
-		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value)
+		elementMetatable["Heal"] = [](const sol::table& entityTable, Nz::UInt16 value, std::optional<sol::table> healerEntity)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
 				return;
 
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
-			entityHealth.Heal(value);
+			entityHealth.Heal(value, (healerEntity) ? AbstractElementLibrary::RetrieveScriptEntity(*healerEntity) : Ndk::EntityHandle::InvalidHandle);
 		};
 
 		elementMetatable["InitWeaponWielder"] = [](const sol::table& entityTable, const sol::table& wielderData)

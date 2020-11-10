@@ -31,6 +31,8 @@ namespace bw
 			static std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
 			static Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
 
+			static sol::object TranslateEntity(const Ndk::EntityHandle& entity);
+
 		private:
 			const Logger& m_logger;
 	};

@@ -28,9 +28,9 @@ namespace bw
 
 		if (m_currentHealth != newHealth)
 		{
-			m_currentHealth = newHealth;
+			OnHealthChange(this, newHealth, attacker);
 
-			OnHealthChange(this);
+			m_currentHealth = newHealth;
 
 			if (m_currentHealth == 0)
 			{
@@ -61,7 +61,7 @@ namespace bw
 		return m_maxHealth;
 	}
 
-	inline void HealthComponent::Heal(Nz::UInt16 heal)
+	inline void HealthComponent::Heal(Nz::UInt16 heal, const Ndk::EntityHandle& healer)
 	{
 		Nz::UInt16 newHealth = m_currentHealth + heal;
 		if (newHealth < m_currentHealth)
@@ -73,8 +73,8 @@ namespace bw
 
 		if (m_currentHealth != newHealth)
 		{
+			OnHealthChange(this, newHealth, healer);
 			m_currentHealth = newHealth;
-			OnHealthChange(this);
 		}
 	}
 }

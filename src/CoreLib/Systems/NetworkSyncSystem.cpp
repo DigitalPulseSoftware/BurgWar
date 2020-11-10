@@ -286,7 +286,7 @@ namespace bw
 		{
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 
-			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle&)
+			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle& /*attacker*/)
 			{
 				EntityDeath deathEvent;
 				BuildEvent(deathEvent, health->GetEntity());
@@ -294,7 +294,7 @@ namespace bw
 				OnEntityDeath(this, deathEvent);
 			});
 
-			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health)
+			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health, Nz::UInt16 /*newHealth*/, const Ndk::EntityHandle& /*dealer*/)
 			{
 				m_healthUpdateEntities.Insert(health->GetEntity());
 			});
