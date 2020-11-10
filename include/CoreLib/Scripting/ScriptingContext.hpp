@@ -49,6 +49,7 @@ namespace bw
 
 			struct FileLoadCoroutine
 			{
+				sol::thread thread;
 				sol::coroutine coroutine;
 				std::filesystem::path filePath;
 			};

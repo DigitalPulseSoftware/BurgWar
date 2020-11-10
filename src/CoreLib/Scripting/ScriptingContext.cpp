@@ -224,8 +224,12 @@ namespace bw
 			return {};
 		}
 
+		sol::thread thread = sol::thread::create(state.lua_state());
+		sol::state_view threadState = thread.state();
+
 		return FileLoadCoroutine{
-			sol::coroutine(sol::thread::create(state.lua_state()).state(), sol::protected_function(result)),
+			std::move(thread),
+			sol::coroutine(threadState, sol::protected_function(result)),
 			std::move(path)
 		};
 	}
