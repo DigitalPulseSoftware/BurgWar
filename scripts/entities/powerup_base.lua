@@ -30,7 +30,6 @@ local entity = ScriptedEntity({
 			Name = "apply",
 			ReturnType = "any",
 			Combinator = function (a, b) 
-				print("combinator")
 				return a
 			end
 		},
