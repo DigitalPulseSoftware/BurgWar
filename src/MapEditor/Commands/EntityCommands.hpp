@@ -34,7 +34,7 @@ namespace bw
 			public:
 				struct EntityData;
 
-				using EntitiesCommand::EntitiesCommand;
+				EntityCreationDelete(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const QString& label);
 				EntityCreationDelete(EditorWindow& editor, const QString& label, std::vector<EntityData> entitiesData);
 				~EntityCreationDelete() = default;
 
@@ -51,7 +51,7 @@ namespace bw
 				static inline EntityData BuildData(Map::EntityIndices entityIndices, Map::Entity entity);
 
 			private:
-				static inline std::vector<EntityId> GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData);
+				static std::vector<EntityId> BuildEntitiesUniqueId(EditorWindow& editor, std::vector<EntityData>& entitiesData);
 
 				std::vector<EntityData> m_entitiesData;
 		};

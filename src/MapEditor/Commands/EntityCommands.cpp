@@ -16,8 +16,26 @@ namespace bw::Commands
 		setText(label);
 	}
 
+	EntityCreationDelete::EntityCreationDelete(EditorWindow& editor, std::vector<EntityId> entityUniqueIds, const QString& label) :
+	EntitiesCommand(editor, std::move(entityUniqueIds), label)
+	{
+		// Sort entities by their entity index, ascending (in order to prevent issues when recreating them)
+		const Map& map = m_editor.GetWorkingMap();
+		std::sort(m_entitiesUniqueId.begin(), m_entitiesUniqueId.end(), [&](const EntityId& lhs, const EntityId& rhs)
+		{
+			const auto& lhsIndices = map.GetEntityIndices(lhs);
+			const auto& rhsIndices = map.GetEntityIndices(rhs);
+
+			// Order by layer and by entity index
+			if (lhsIndices.layerIndex == rhsIndices.layerIndex)
+				return lhsIndices.entityIndex < rhsIndices.entityIndex;
+			else
+				return lhsIndices.layerIndex < rhsIndices.layerIndex;
+		});
+	}
+
 	EntityCreationDelete::EntityCreationDelete(EditorWindow& editor, const QString& label, std::vector<EntityData> entitiesData) :
-	EntitiesCommand(editor, GetEntitiesUniqueId(entitiesData), label),
+	EntitiesCommand(editor, BuildEntitiesUniqueId(editor, entitiesData), label),
 	m_entitiesData(std::move(entitiesData))
 	{
 	}
@@ -40,16 +58,50 @@ namespace bw::Commands
 	{
 		const Map& map = m_editor.GetWorkingMap();
 
+		// Extract real indices first (as deleting entities while doing so will change them)
 		for (EntityId entityUniqueId : m_entitiesUniqueId)
 		{
 			const auto& indices = map.GetEntityIndices(entityUniqueId);
 
 			EntityData& entityData = m_entitiesData.emplace_back();
 			entityData.indices = indices;
-			entityData.entity = m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex);
-			assert(entityData.entity.uniqueId == entityUniqueId);
+		}
+
+		auto entityDataIt = m_entitiesData.begin();
+		for (EntityId entityUniqueId : m_entitiesUniqueId)
+		{
+			// Retrieve indices as they may not be the same as step #1
+			const auto& indices = map.GetEntityIndices(entityUniqueId);
+
+			entityDataIt->entity = m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex);
+			assert(entityDataIt->entity.uniqueId == entityUniqueId);
+
+			++entityDataIt;
 		}
 	}
+
+	std::vector<EntityId> EntityCreationDelete::BuildEntitiesUniqueId(EditorWindow& editor, std::vector<EntityData>& entitiesData)
+	{
+		// Sort entities by their entity index, ascending (in order to prevent issues when recreating them)
+		const Map& map = editor.GetWorkingMap();
+		std::sort(entitiesData.begin(), entitiesData.end(), [&](const EntityData& lhs, const EntityData& rhs)
+		{
+			// Order by layer and by entity index
+			if (lhs.indices.layerIndex == rhs.indices.layerIndex)
+				return lhs.indices.entityIndex < rhs.indices.entityIndex;
+			else
+				return lhs.indices.layerIndex < rhs.indices.layerIndex;
+		});
+
+		std::vector<EntityId> entitiesId;
+		entitiesId.reserve(entitiesData.size());
+
+		for (const auto& entityData : entitiesData)
+			entitiesId.push_back(entityData.entity.uniqueId);
+
+		return entitiesId;
+	}
+
 
 	EntityClone::EntityClone(EditorWindow& editor, const Map::EntityIndices& sourceEntityIndices, const Map::EntityIndices& targetEntityIndices) :
 	EntityCreationDelete(editor, "clone entity", { BuildClone(editor, sourceEntityIndices, targetEntityIndices) })

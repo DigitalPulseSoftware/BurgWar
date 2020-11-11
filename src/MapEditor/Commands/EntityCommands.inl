@@ -15,15 +15,4 @@ namespace bw::Commands
 
 		return entityData;
 	}
-
-	std::vector<EntityId> EntityCreationDelete::GetEntitiesUniqueId(const std::vector<EntityData>& entitiesData)
-	{
-		std::vector<EntityId> entitiesId;
-		entitiesId.reserve(entitiesData.size());
-
-		for (const auto& entityData : entitiesData)
-			entitiesId.push_back(entityData.entity.uniqueId);
-
-		return entitiesId;
-	}
 }
