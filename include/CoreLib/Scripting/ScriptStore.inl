@@ -211,6 +211,9 @@ namespace bw
 
 					for (auto&& pendingElement : elements)
 					{
+						if (!RegisterElement(pendingElement.element))
+							continue;
+
 						if (!m_context->Exec(pendingElement.fileCoro, pendingElement.element->elementTable))
 						{
 							bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath.generic_u8string());
@@ -228,8 +231,7 @@ namespace bw
 							}
 						}
 
-						if (RegisterElement(std::move(pendingElement.element)))
-							continueResolving = true;
+						continueResolving = true;
 					}
 
 					it = m_pendingElements.erase(it);
