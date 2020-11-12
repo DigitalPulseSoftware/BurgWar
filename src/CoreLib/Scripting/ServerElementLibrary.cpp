@@ -59,6 +59,47 @@ namespace bw
 		elementTable["DealDamage"] = sol::overload(DealDamage,
 			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); });
 
+		elementTable["DumpCreationInfo"] = [](sol::this_state L, const sol::table& entityTable) -> sol::object
+		{
+			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			if (!entity->HasComponent<ScriptComponent>() || !entity->HasComponent<MatchComponent>() || !entity->HasComponent<Ndk::NodeComponent>())
+				return sol::nil;
+
+			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityMatch = entity->GetComponent<MatchComponent>();
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			
+			Match& match = entityMatch.GetMatch();
+			const auto& element = entityScript.GetElement();
+
+			sol::state_view state(L);
+
+			sol::table resultTable = state.create_table(6, 0);
+			resultTable["Type"] = element->fullName;
+			resultTable["LayerIndex"] = entityMatch.GetLayerIndex();
+			resultTable["Position"] = Nz::Vector2f(entityNode.GetPosition());
+			resultTable["Rotation"] = AngleFromQuaternion(entityNode.GetRotation());
+
+			if (entity->HasComponent<OwnerComponent>())
+			{
+				if (Player* owner = entity->GetComponent<OwnerComponent>().GetOwner())
+					resultTable["Owner"] = owner->CreateHandle();
+			}
+
+			const auto& entityProperties = entityScript.GetProperties();
+			if (!entityProperties.empty())
+			{
+				sol::table propertyTable = state.create_table(int(entityProperties.size()), 0);
+
+				for (const auto& [name, value] : entityProperties)
+					propertyTable[name] = TranslatePropertyToLua(&match, state, value);
+
+				resultTable["Properties"] = propertyTable;
+			}
+
+			return resultTable;
+		};
+
 		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
