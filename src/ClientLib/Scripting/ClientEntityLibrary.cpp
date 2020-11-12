@@ -50,6 +50,9 @@ namespace bw
 			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
 
 			LayerIndex layerIndex = parameters["LayerIndex"];
+			if (layerIndex >= localMatch.GetLayerCount())
+				throw std::runtime_error("Layer index out of bounds");
+
 			int renderOrder = parameters.get_or("RenderOrder", 0);
 			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());

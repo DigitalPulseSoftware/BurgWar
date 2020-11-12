@@ -354,6 +354,9 @@ namespace bw
 	{
 		MatchClientVisibility& visibility = GetSession().GetVisibility();
 
+		if (layerIndex >= m_match.GetTerrain().GetLayerCount())
+			throw std::runtime_error("Layer index out of bounds");
+
 		if (isVisible)
 			visibility.ShowLayer(layerIndex);
 		else

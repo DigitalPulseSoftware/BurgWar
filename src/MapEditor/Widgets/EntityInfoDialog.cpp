@@ -1640,6 +1640,9 @@ namespace bw
 			return tr("<No layer>");
 		else
 		{
+			if (value >= m_map.GetLayerCount())
+				return tr("<Invalid layer> (%1)").arg(value + 1);
+
 			auto& layer = m_map.GetLayer(value);
 			return tr("%1 (%2)").arg(QString::fromStdString(layer.name)).arg(value + 1);
 		}
