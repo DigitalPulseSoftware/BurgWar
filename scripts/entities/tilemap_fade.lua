@@ -6,6 +6,10 @@ local entity = ScriptedEntity({
 })
 
 if (CLIENT) then
+	local maxAlpha = 255
+	local minAlpha = 120
+	local alphaRate = 200
+
 	entity.Alpha = 255
 	entity.IsVisible = true
 
@@ -17,15 +21,15 @@ if (CLIENT) then
 	end)
 
 	entity:On("frame", function (self)
-		if (self.IsVisible and self.Alpha ~= 255) then
-			self:UpdateAlpha(self.Alpha + 200 * render.GetFrametime())
-		elseif (not self.IsVisible and self.Alpha ~= 127) then
-			self:UpdateAlpha(self.Alpha - 200 * render.GetFrametime())
+		if (self.IsVisible and self.Alpha ~= maxAlpha) then
+			self:UpdateAlpha(self.Alpha + alphaRate * render.GetFrametime())
+		elseif (not self.IsVisible and self.Alpha ~= minAlpha) then
+			self:UpdateAlpha(self.Alpha - alphaRate * render.GetFrametime())
 		end
 	end)
 
 	function entity:UpdateAlpha(value)
-		self.Alpha = math.floor(math.clamp(value, 0, 255))
+		self.Alpha = math.floor(math.clamp(value, minAlpha, maxAlpha))
 
 		local color = { r = 255, g = 255, b = 255, a = self.Alpha }
 
