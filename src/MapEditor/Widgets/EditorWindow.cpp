@@ -1110,7 +1110,6 @@ namespace bw
 			fileName += ".bmap";
 
 		BuildAssetList();
-		RebuildUniqueIds();
 
 		if (m_workingMap.Compile(fileName.toStdString()))
 			QMessageBox::information(this, tr("Compilation succeeded"), tr("Map has been successfully compiled"), QMessageBox::Ok);
@@ -1687,8 +1686,6 @@ namespace bw
 			AddToRecentFileList(workingPath);
 		}
 
-		RebuildUniqueIds();
-
 		if (m_workingMap.Save(m_workingMapPath))
 		{
 			m_mapDirtyFlag = false;
@@ -1705,51 +1702,6 @@ namespace bw
 
 			return false;
 		}
-	}
-
-	void EditorWindow::RebuildUniqueIds()
-	{
-		// Since we have no guarantee on current unique ids, use a secure hashmap
-		tsl::bhopscotch_map<EntityId /* from */, EntityId /* to */> uniqueIds;
-
-		EntityId uniqueId = 1;
-
-		Map& map = GetWorkingMapMut();
-
-		std::size_t layerCount = map.GetLayerCount();
-		for (std::size_t i = 0; i < layerCount; ++i)
-		{
-			auto& layer = map.GetLayer(LayerIndex(i));
-			for (auto& entity : layer.entities)
-			{
-				EntityId previousId = entity.uniqueId;
-				entity.uniqueId = uniqueId++;
-
-				if (previousId >= 0)
-					uniqueIds.emplace(previousId, entity.uniqueId);
-			}
-		}
-
-		auto UpdateEntityIndex = [=](EntityId& entityIndex)
-		{
-			if (entityIndex >= 0)
-			{
-				auto it = uniqueIds.find(entityIndex);
-				if (it != uniqueIds.end())
-					entityIndex = it.value();
-			}
-		};
-
-		// Update entities pointing to this entity
-		map.ForeachEntityPropertyValue<PropertyType::Entity>([&](Map::Entity& /*entity*/, const std::string& /*name*/, EntityId& entityIndex)
-		{
-			if (entityIndex >= 0)
-			{
-				auto it = uniqueIds.find(entityIndex);
-				if (it != uniqueIds.end())
-					entityIndex = it->second;
-			}
-		});
 	}
 
 	void EditorWindow::RefreshLayerList()

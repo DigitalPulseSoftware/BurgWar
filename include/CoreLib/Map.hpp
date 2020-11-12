@@ -79,7 +79,9 @@ namespace bw
 
 			inline bool IsValid() const;
 
-			Entity& MoveEntity(LayerIndex sourceLayerIndex, std::size_t sourceEntityIndex, LayerIndex targetLayerIndex, std::size_t targetEntityIndex);
+			inline Entity& MoveEntity(LayerIndex sourceLayerIndex, std::size_t sourceEntityIndex, LayerIndex targetLayerIndex, std::size_t targetEntityIndex);
+
+			void RebuildEntityIndices();
 
 			bool Save(const std::filesystem::path& mapFolderPath) const;
 

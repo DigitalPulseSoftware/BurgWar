@@ -199,6 +199,28 @@ namespace bw
 		return true;
 	}
 
+	void Map::RebuildEntityIndices()
+	{
+		m_entitiesByUniqueId.clear();
+
+		LayerIndex layerIndex = 0;
+		for (auto& layer : m_layers)
+		{
+			std::size_t entityIndex = 0;
+			for (auto& entity : layer.entities)
+			{
+				if (entity.uniqueId > 0)
+					RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
+
+				entityIndex++;
+			}
+
+			layerIndex++;
+		}
+
+		assert(CheckEntityIndices());
+	}
+
 	bool Map::Save(const std::filesystem::path& mapFolderPath) const
 	{
 		assert(IsValid());
@@ -334,6 +356,7 @@ namespace bw
 				layer.entities.emplace_back(UnserializeEntity(entityInfo));
 		}
 
+		map.RebuildEntityIndices();
 		map.Sanitize();
 
 		return map;
@@ -541,7 +564,9 @@ namespace bw
 			stream.Read(asset.sha1Checksum.data(), asset.sha1Checksum.size());
 		}
 
+		RebuildEntityIndices();
 		Sanitize();
+
 		m_isValid = true;
 	}
 
@@ -549,11 +574,11 @@ namespace bw
 	{
 		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
 		if (!infoFile.IsOpen())
-			throw std::runtime_error("Failed to open info.json file");
+			throw std::runtime_error("failed to open info.json file");
 
 		std::vector<Nz::UInt8> content(infoFile.GetSize());
 		if (infoFile.Read(content.data(), content.size()) != content.size())
-			throw std::runtime_error("Failed to read info.json file");
+			throw std::runtime_error("failed to read info.json file");
 
 		nlohmann::json json = nlohmann::json::parse(content.begin(), content.end());
 		operator=(Unserialize(json));
@@ -561,6 +586,8 @@ namespace bw
 
 	void Map::Sanitize()
 	{
+		assert(CheckEntityIndices());
+
 		// Ensures every entity gets an unique id
 		EntityId biggestId = 0;
 		for (const auto& layer : m_layers)
@@ -569,6 +596,25 @@ namespace bw
 				biggestId = std::max(biggestId, entity.uniqueId);
 		}
 
+		// Reuse free unique ids
+		EntityId lowestId = 0;
+		auto GetUniqueId = [&]() -> EntityId
+		{
+			// We can't make a set out of free unique ids up until the biggest id, as this would cause problems if the biggest id is huge
+			// so we do it using an optimized for loop (keeping the lower bound from one call to the other)
+
+			if (lowestId < biggestId)
+			{
+				for (++lowestId; lowestId < biggestId; ++lowestId)
+				{
+					if (m_entitiesByUniqueId.find(lowestId) == m_entitiesByUniqueId.end())
+						return lowestId;
+				}
+			}
+
+			return ++biggestId;
+		};
+
 		LayerIndex layerIndex = 0;
 		for (auto& layer : m_layers)
 		{
@@ -576,9 +622,10 @@ namespace bw
 			for (auto& entity : layer.entities)
 			{
 				if (entity.uniqueId <= 0)
-					entity.uniqueId = ++biggestId;
-
-				RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
+				{
+					entity.uniqueId = GetUniqueId();
+					RegisterEntity(entity.uniqueId, layerIndex, entityIndex);
+				}
 
 				entityIndex++;
 			}
@@ -587,5 +634,7 @@ namespace bw
 		}
 
 		m_freeUniqueId = ++biggestId;
+
+		assert(CheckEntityIndices());
 	}
 }
