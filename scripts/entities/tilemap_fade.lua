@@ -16,8 +16,9 @@ if (CLIENT) then
 	entity:On("tick", function (self)
 		local origin = self:GetPosition()
 		local rect = Rect(origin, origin + self.Tilemap:GetSize())
-		
-		self.IsVisible = not rect:Contains(engine_GetPlayerPosition(0))
+
+		local playerPos = engine_GetPlayerPosition(0)
+		self.IsVisible = not playerPos or not rect:Contains(playerPos)
 	end)
 
 	entity:On("frame", function (self)

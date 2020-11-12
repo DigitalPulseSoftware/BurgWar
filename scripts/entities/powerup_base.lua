@@ -53,7 +53,7 @@ entity:On("init", function (self)
 
 	if (CLIENT) then
 		self.Sprite = self:AddSprite({
-			RenderOrder = 1000,
+			RenderOrder = 100,
 			Scale = scale,
 			Size = size,
 			TextureCoords = self:GetProperty("textureCoords"),
@@ -76,9 +76,17 @@ if (SERVER) then
 				if (other:IsValid()) then
 					self:Trigger("unapply", other, data)
 				end
+
+				if (not self.Parent) then
+					self:Kill()
+				end
 			end)
 
-			self.Parent:OnPowerupConsumed()
+			if (self.Parent) then
+				self.Parent:OnPowerupConsumed()
+			else
+				self:Disable()
+			end
 		end
 
 		return false

@@ -20,7 +20,6 @@ entity:On("init", function (self)
 end)
 
 entity:On("collisionstart", function (self, other)
-	other:Kill()
+	other:Damage(other:GetHealth())
 	return true
 end)
-

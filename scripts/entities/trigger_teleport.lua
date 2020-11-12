@@ -1,7 +1,7 @@
 local entity = ScriptedEntity({
 	Properties = {
 		{ Name = "size", Type = PropertyType.FloatSize },
-		{ Name = "target", Type = PropertyType.Entity },
+		{ Name = "target", Type = PropertyType.Entity, Default = NoEntity },
 	}
 })
 
