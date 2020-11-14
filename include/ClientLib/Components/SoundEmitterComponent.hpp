@@ -21,12 +21,17 @@ namespace bw
 
 		public:
 			SoundEmitterComponent() = default;
+			inline SoundEmitterComponent(const SoundEmitterComponent&);
+			SoundEmitterComponent(SoundEmitterComponent&&) = default;
 			~SoundEmitterComponent() = default;
 
 			Nz::UInt32 PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
 			void StopSound(Nz::UInt32 soundId);
 
 			static Ndk::ComponentIndex componentIndex;
+
+			SoundEmitterComponent& operator=(const SoundEmitterComponent&) = delete;
+			SoundEmitterComponent& operator=(SoundEmitterComponent&&) = default;
 
 		private:
 			inline const Nz::Vector3f& GetLastPosition() const;

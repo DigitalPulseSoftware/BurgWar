@@ -6,6 +6,12 @@
 
 namespace bw
 {
+	inline SoundEmitterComponent::SoundEmitterComponent(const SoundEmitterComponent& soundEmitter) :
+	// Do not copy sounds
+	m_lastPosition(soundEmitter.m_lastPosition)
+	{
+	}
+
 	inline const Nz::Vector3f& SoundEmitterComponent::GetLastPosition() const
 	{
 		return m_lastPosition;
