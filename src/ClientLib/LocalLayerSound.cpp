@@ -26,11 +26,11 @@ namespace bw
 		if (soundIndex == m_playingSounds.size())
 			m_playingSounds.emplace_back();
 
-		auto& playingSound = m_playingSounds[soundIndex];
-		playingSound->duration = soundBuffer->GetDuration() / 1000.f;
-		playingSound->isLooping = isLooping;
-		playingSound->isSpatialized = isSpatialized;
-		playingSound->soundBuffer = soundBuffer;
+		auto& playingSound = m_playingSounds[soundIndex].emplace();
+		playingSound.duration = soundBuffer->GetDuration() / 1000.f;
+		playingSound.isLooping = isLooping;
+		playingSound.isSpatialized = isSpatialized;
+		playingSound.soundBuffer = soundBuffer;
 
 		for (SoundEntity* soundEntity : m_soundEntities)
 			soundEntity->PlaySound(soundIndex, soundBuffer, isLooping, isSpatialized);

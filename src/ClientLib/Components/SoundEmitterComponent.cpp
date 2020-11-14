@@ -28,7 +28,7 @@ namespace bw
 	{
 		auto it = m_sounds.find(soundId);
 		if (it == m_sounds.end())
-			throw std::runtime_error("This sound doesn't belong to this entity");
+			return; //< Sound can have been removed by the sound system
 
 		const Ndk::EntityHandle& entity = GetEntity();
 		if (entity)
