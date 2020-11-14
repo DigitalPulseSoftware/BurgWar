@@ -258,23 +258,10 @@ namespace bw
 			match.RegisterEntity(uniqueId, weapon);
 
 			if (owner->HasComponent<OwnerComponent>())
-				weapon->AddComponent<OwnerComponent>(owner->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
-
-			// HAX
-			Packets::EntityWeapon weaponPacket;
-			weaponPacket.entityId.layerId = layerIndex;
-			weaponPacket.entityId.entityId = owner->GetId();
-			weaponPacket.weaponEntityId = weapon->GetId();
-
-			Nz::Bitset<Nz::UInt64> entityIds;
-			entityIds.UnboundedSet(weaponPacket.entityId.entityId);
-			entityIds.UnboundedSet(weaponPacket.weaponEntityId);
-
-			match.ForEachPlayer([&](Player* ply)
 			{
-				MatchClientSession& session = ply->GetSession();
-				session.GetVisibility().PushEntitiesPacket(layerIndex, entityIds, weaponPacket);
-			});
+				if (Player* ownerPlayer = owner->GetComponent<OwnerComponent>().GetOwner())
+					weapon->AddComponent<OwnerComponent>(ownerPlayer->CreateHandle());
+			}
 
 			return true;
 		};
@@ -334,8 +321,6 @@ namespace bw
 			"GetLayerIndex", &Player::GetLayerIndex,
 			"GetPlayerIndex", &Player::GetPlayerIndex,
 			"GetName", &Player::GetName,
-			"GiveWeapon", &Player::GiveWeapon,
-			"HasWeapon", &Player::HasWeapon,
 			"IsAdmin", &Player::IsAdmin,
 			"MoveToLayer", [](Player& player, std::optional<LayerIndex> layerIndex)
 			{
@@ -345,7 +330,6 @@ namespace bw
 					player.MoveToLayer(Player::NoLayer);
 			},
 			"PrintChatMessage", &Player::PrintChatMessage,
-			"RemoveWeapon", &Player::RemoveWeapon,
 			"SendPacket", [this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
 			{
 				const NetworkStringStore& networkStringStore = GetSharedMatch().GetNetworkStringStore();

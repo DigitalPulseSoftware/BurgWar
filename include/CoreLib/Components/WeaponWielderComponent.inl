@@ -63,6 +63,16 @@ namespace bw
 		return m_weaponByName.find(weaponClass) != m_weaponByName.end();
 	}
 
+	inline bool WeaponWielderComponent::SelectWeapon(const std::string& weaponClass)
+	{
+		auto it = m_weaponByName.find(weaponClass);
+		if (it == m_weaponByName.end())
+			return false;
+
+		SelectWeapon(it->second);
+		return true;
+	}
+
 	inline void WeaponWielderComponent::SetWeaponOffset(const Nz::Vector2f& weaponOffset)
 	{
 		m_weaponOffset = weaponOffset;

@@ -8,10 +8,8 @@ entity.DetectionRange = 500
 
 if (SERVER) then
 	entity:On("init", function (self)
-		match.CreateWeapon({
-			Type = "weapon_sword_emmentalibur",
-			Owner = self
-		})
+		self:GiveWeapon("weapon_sword_emmentalibur")
+		self:SelectWeapon("weapon_sword_emmentalibur")
 	end)
 
 	entity:On("tick", function (self)

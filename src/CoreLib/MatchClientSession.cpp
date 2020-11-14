@@ -12,6 +12,7 @@
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
+#include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <cassert>
 
 namespace bw
@@ -220,10 +221,16 @@ namespace bw
 
 		Player* player = m_players[packet.localIndex];
 
-		if (packet.newWeaponIndex != packet.NoWeapon && packet.newWeaponIndex >= player->GetWeaponCount())
+		const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+		if (!controlledEntity)
 			return;
 
-		player->SelectWeapon((packet.newWeaponIndex != packet.NoWeapon) ? packet.newWeaponIndex : Player::NoWeapon);
+		auto& entityWeapons = controlledEntity->GetComponent<WeaponWielderComponent>();
+
+		if (packet.newWeaponIndex >= entityWeapons.GetWeaponCount() && packet.newWeaponIndex != packet.NoWeapon)
+			return;
+
+		entityWeapons.SelectWeapon((packet.newWeaponIndex != packet.NoWeapon) ? packet.newWeaponIndex : Player::NoWeapon);
 	}
 
 	void MatchClientSession::HandleIncomingPacket(const Packets::Ready& /*packet*/)

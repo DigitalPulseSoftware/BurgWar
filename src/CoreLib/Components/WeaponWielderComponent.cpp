@@ -8,14 +8,14 @@
 
 namespace bw
 {
-	bool WeaponWielderComponent::GiveWeapon(std::string weaponClass, const WeaponInitCallback& callback)
+	std::size_t WeaponWielderComponent::GiveWeapon(std::string weaponClass, const WeaponInitCallback& callback)
 	{
 		if (HasWeapon(weaponClass))
-			return false;
+			return NoWeapon;
 
 		Ndk::EntityHandle weapon = callback(weaponClass);
 		if (!weapon)
-			return false;
+			return NoWeapon;
 
 		//FIXME: New weapons should be resized to match the player size
 
@@ -26,7 +26,7 @@ namespace bw
 		auto it = m_weaponByName.emplace(std::move(weaponClass), weaponIndex).first;
 
 		OnWeaponAdded(this, it->first, weaponIndex);
-		return true;
+		return weaponIndex;
 	}
 
 	void WeaponWielderComponent::OverrideEntities(const std::function<void(Ndk::EntityOwner& owner)>& callback)

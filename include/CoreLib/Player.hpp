@@ -46,13 +46,8 @@ namespace bw
 			inline std::size_t GetPlayerIndex() const;
 			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
-			std::size_t GetWeaponCount() const;
-
-			bool GiveWeapon(std::string weaponClass);
 
 			void HandleConsoleCommand(const std::string& str);
-
-			bool HasWeapon(const std::string& weaponClass) const;
 
 			inline bool IsAdmin() const;
 			inline bool IsReady() const;
@@ -63,9 +58,6 @@ namespace bw
 
 			void OnTick(bool lastTick);
 
-			void RemoveWeapon(const std::string& weaponClass);
-
-			void SelectWeapon(std::size_t weaponIndex);
 			template<typename T> void SendPacket(const T& packet);
 			void SetAdmin(bool isAdmin);
 

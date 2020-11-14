@@ -19,9 +19,8 @@ end)
 
 entity:On("collisionstart", function (self, other)
 	if (SERVER and other.Name == "burger") then
-		local owner = other:GetOwner()
-		if (not owner:HasWeapon("weapon_grenade")) then
-			owner:GiveWeapon("weapon_grenade")
+		if (not other:HasWeapon("weapon_grenade")) then
+			other:GiveWeapon("weapon_grenade")
 			self:Kill()
 
 			if (self.Parent) then

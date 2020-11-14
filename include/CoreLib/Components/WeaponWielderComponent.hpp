@@ -32,7 +32,7 @@ namespace bw
 			inline std::size_t GetWeaponCount() const;
 			inline const Nz::Vector2f& GetWeaponOffset() const;
 
-			bool GiveWeapon(std::string weaponClass, const WeaponInitCallback& callback);
+			std::size_t GiveWeapon(std::string weaponClass, const WeaponInitCallback& callback);
 
 			inline bool HasActiveWeapon() const;
 			inline bool HasWeapon(const std::string& weaponClass) const;
@@ -42,6 +42,7 @@ namespace bw
 			void RemoveWeapon(const std::string& weaponClass);
 
 			void SelectWeapon(std::size_t weaponId);
+			inline bool SelectWeapon(const std::string& weaponClass);
 			inline void SetWeaponOffset(const Nz::Vector2f& weaponOffset);
 
 			static Ndk::ComponentIndex componentIndex;

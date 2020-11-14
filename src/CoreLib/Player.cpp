@@ -51,48 +51,6 @@ namespace bw
 			visibility.HideLayer(static_cast<LayerIndex>(layerIndex));
 	}
 
-	std::size_t Player::GetWeaponCount() const
-	{
-		if (!m_playerEntity || !m_playerEntity->HasComponent<WeaponWielderComponent>())
-			return 0;
-
-		auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-		return weaponWielder.GetWeaponCount();
-	}
-
-	bool Player::GiveWeapon(std::string weaponClass)
-	{
-		if (m_layerIndex == NoLayer)
-			return false;
-
-		if (!m_playerEntity || !m_playerEntity->HasComponent<WeaponWielderComponent>())
-			return false;
-
-		auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-		return weaponWielder.GiveWeapon(std::move(weaponClass), [this] (const std::string& weaponClass) -> Ndk::EntityHandle
-		{
-			Terrain& terrain = m_match.GetTerrain();
-
-			ServerWeaponStore& weaponStore = m_match.GetWeaponStore();
-
-			// Create weapon
-			std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); 
-			if (weaponEntityIndex == ServerEntityStore::InvalidIndex)
-				return Ndk::EntityHandle::InvalidHandle;
-			
-			EntityId uniqueId = m_match.AllocateUniqueId();
-
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(m_layerIndex), weaponEntityIndex, uniqueId, {}, m_playerEntity);
-			if (!weapon)
-				return Ndk::EntityHandle::InvalidHandle;
-
-			m_match.RegisterEntity(uniqueId, weapon);
-			weapon->AddComponent<OwnerComponent>(CreateHandle());
-
-			return weapon;
-		});
-	}
-
 	void Player::HandleConsoleCommand(const std::string& str)
 	{
 		if (!m_isAdmin)
@@ -118,15 +76,6 @@ namespace bw
 		}
 
 		m_scriptingEnvironment->Execute(str);
-	}
-
-	bool Player::HasWeapon(const std::string& weaponClass) const
-	{
-		if (!m_playerEntity || !m_playerEntity->HasComponent<WeaponWielderComponent>())
-			return 0;
-
-		auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-		return weaponWielder.HasWeapon(weaponClass);
 	}
 
 	void Player::MoveToLayer(LayerIndex layerIndex)
@@ -233,27 +182,6 @@ namespace bw
 
 			m_shouldSendWeapons = false;
 		}
-	}
-
-	void Player::RemoveWeapon(const std::string& weaponClass)
-	{
-		if (m_layerIndex == NoLayer)
-			return;
-
-		if (!m_playerEntity || !m_playerEntity->HasComponent<WeaponWielderComponent>())
-			return;
-
-		auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-		weaponWielder.RemoveWeapon(weaponClass);
-	}
-
-	void Player::SelectWeapon(std::size_t weaponIndex)
-	{
-		if (!m_playerEntity || !m_playerEntity->HasComponent<WeaponWielderComponent>())
-			return;
-
-		auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-		weaponWielder.SelectWeapon(weaponIndex);
 	}
 
 	void Player::SetAdmin(bool isAdmin)
