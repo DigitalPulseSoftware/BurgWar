@@ -38,7 +38,7 @@ if (SERVER) then
 			end
 
 			entity:ApplyImpulse(dir * 10000)
-			entity:Damage(math.random(50, 150))
+			entity:Damage(math.random(50, 150), self)
 		end)
 	end)
 end
