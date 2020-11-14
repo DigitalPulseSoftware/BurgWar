@@ -901,7 +901,7 @@ namespace bw
 
 		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName);
 
-		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>("OnPlayerJoined", newPlayer.CreateHandle());
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer.CreateHandle());
 	}
 
 	void LocalMatch::HandlePlayerLeaving(const Packets::PlayerLeaving& packet)
