@@ -158,9 +158,8 @@ namespace bw
 				throw std::runtime_error("Missing or invalid value for LayerIndex");
 
 			LayerIndex layerIndex = layerIndexObj.as<LayerIndex>();
-
-			if (layerIndex > match.GetLayerCount())
-				throw std::runtime_error("Layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
+			if (layerIndex >= match.GetLayerCount())
+				throw std::runtime_error("Layer out of range (" + std::to_string(layerIndex) + " >= " + std::to_string(match.GetLayerCount()) + ")");
 
 			PlayerHandle owner = parameters.get_or<PlayerHandle>("Owner", PlayerHandle::InvalidHandle);
 
