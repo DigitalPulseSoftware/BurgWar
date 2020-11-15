@@ -873,7 +873,7 @@ namespace bw
 				return;
 
 			std::string playerName;
-			if (auto& playerOpt = m_matchPlayers[packet.playerIndex])
+			if (const auto& playerOpt = m_matchPlayers[packet.playerIndex])
 				playerName = playerOpt->GetName();
 			else
 				playerName = "<disconnected>";

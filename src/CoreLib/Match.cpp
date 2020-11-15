@@ -44,7 +44,7 @@ namespace bw
 
 		BuildMatchData();
 
-		m_gamemode->ExecuteCallback<GamemodeEvent::Init>("OnInit");
+		m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}

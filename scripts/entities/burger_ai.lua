@@ -37,12 +37,10 @@ if (SERVER) then
 			inputs.aimDirection = delta
 			inputs.isAttacking = (distance < 200)
 
-			if (delta.x < 0) then
-				inputs.isMovingLeft = true
-				inputs.isLookingRight = false
-			else
-				inputs.isMovingRight = true
-			end
+			local movingLeft = delta.x < 0
+			inputs.isMovingLeft = movingLeft
+			inputs.isMovingRight = not movingLeft
+			inputs.isLookingRight = not movingLeft
 		end
 
 		self:UpdateInputs(inputs)
