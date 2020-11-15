@@ -67,8 +67,8 @@ namespace bw
 				m_players[playerIndex]->UpdateInputs(*inputOpt);
 			}
 		}
-		else
-			bwLog(m_match.GetLogger(), LogLevel::Warning, "Player session #{} has no input for this tick", m_sessionId);
+		/*else
+			bwLog(m_match.GetLogger(), LogLevel::Warning, "Player session #{} has no input for this tick", m_sessionId);*/
 	}
 
 	void MatchClientSession::Update(float elapsedTime)
