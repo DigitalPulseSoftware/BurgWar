@@ -73,7 +73,7 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> dir;
 		std::string_view entryName;
 		if (!RetrieveDirectory(path, true, dir, entryName))
-			throw std::runtime_error("Invalid path");
+			throw std::runtime_error("invalid path");
 
 		return dir->StoreDirectoryInternal(std::string(entryName), std::move(directory));
 	}
@@ -83,7 +83,7 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> dir;
 		std::string_view entryName;
 		if (!RetrieveDirectory(path, true, dir, entryName))
-			throw std::runtime_error("Invalid path");
+			throw std::runtime_error("invalid path");
 
 		return dir->StoreDirectoryInternal(std::string(entryName), std::move(directoryPath));
 	}
@@ -93,7 +93,7 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> dir;
 		std::string_view entryName;
 		if (!RetrieveDirectory(path, true, dir, entryName))
-			throw std::runtime_error("Invalid path");
+			throw std::runtime_error("invalid path");
 
 		return dir->StoreFileInternal(std::string(entryName), std::move(file));
 	}
@@ -103,7 +103,7 @@ namespace bw
 		std::shared_ptr<VirtualDirectory> dir;
 		std::string_view entryName;
 		if (!RetrieveDirectory(path, true, dir, entryName))
-			throw std::runtime_error("Invalid path");
+			throw std::runtime_error("invalid path");
 
 		return dir->StoreFileInternal(std::string(entryName), std::move(filePath));
 	}

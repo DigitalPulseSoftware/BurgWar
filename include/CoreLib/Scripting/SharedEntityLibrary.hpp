@@ -20,11 +20,11 @@ namespace bw
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		protected:
-			virtual void InitRigidBody(const Ndk::EntityHandle& entity, float mass);
-			virtual void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia);
-			virtual void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia);
-			virtual void UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost);
-			virtual void UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed);
+			virtual void InitRigidBody(lua_State* L, const Ndk::EntityHandle& entity, float mass);
+			virtual void SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia);
+			virtual void SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia);
+			virtual void UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost);
+			virtual void UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed);
 
 		private:
 			void RegisterSharedLibrary(sol::table& elementMetatable);

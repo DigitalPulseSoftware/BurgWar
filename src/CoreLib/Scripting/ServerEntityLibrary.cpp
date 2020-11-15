@@ -22,21 +22,21 @@ namespace bw
 
 	void ServerEntityLibrary::RegisterServerLibrary(sol::table& entityMetatable)
 	{
-		entityMetatable["GetWeaponCount"] = [](const sol::table& entityTable) -> std::size_t
+		entityMetatable["GetWeaponCount"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> std::size_t
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
-				throw std::runtime_error("Entity is not a weapon wielder");
+				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
 			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
 			return weaponWielder.GetWeaponCount();
-		};
+		});
 
-		entityMetatable["GiveWeapon"] = [this](const sol::table& entityTable, std::string weaponClass) -> bool
+		entityMetatable["GiveWeapon"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, std::string weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
-				throw std::runtime_error("Entity is not a weapon wielder");
+				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
 			assert(entity->HasComponent<MatchComponent>()); //< All scripted entities have a match component
 			auto& entityMatch = entity->GetComponent<MatchComponent>();
@@ -71,66 +71,66 @@ namespace bw
 			});
 
 			return weaponIndex != WeaponWielderComponent::NoWeapon;
-		};
+		});
 
-		entityMetatable["HasWeapon"] = [](const sol::table& entityTable, const std::string& weaponClass) -> bool
+		entityMetatable["HasWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
-				throw std::runtime_error("Entity is not a weapon wielder");
+				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
 			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
 			return weaponWielder.HasWeapon(weaponClass);
-		};
+		});
 
-		entityMetatable["RemoveWeapon"] = [](const sol::table& entityTable, const std::string& weaponClass)
+		entityMetatable["RemoveWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
-				throw std::runtime_error("Entity is not a weapon wielder");
+				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
 			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
 			weaponWielder.RemoveWeapon(weaponClass);
-		};
+		});
 
-		entityMetatable["SelectWeapon"] = [](const sol::table& entityTable, const std::string& weaponClass) -> bool
+		entityMetatable["SelectWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
-				throw std::runtime_error("Entity is not a weapon wielder");
+				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
 			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
 			return weaponWielder.SelectWeapon(weaponClass);
-		};
+		});
 	}
 	
-	void ServerEntityLibrary::SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
+	void ServerEntityLibrary::SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
 	{
-		SharedEntityLibrary::SetMass(entity, mass, recomputeMomentOfInertia);
+		SharedEntityLibrary::SetMass(L, entity, mass, recomputeMomentOfInertia);
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 	
-	void ServerEntityLibrary::SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia)
+	void ServerEntityLibrary::SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia)
 	{
-		SharedEntityLibrary::SetMomentOfInertia(entity, momentOfInertia);
+		SharedEntityLibrary::SetMomentOfInertia(L, entity, momentOfInertia);
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 
-	void ServerEntityLibrary::UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
+	void ServerEntityLibrary::UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
 	{
-		SharedEntityLibrary::UpdatePlayerJumpHeight(entity, jumpHeight, jumpHeightBoost);
+		SharedEntityLibrary::UpdatePlayerJumpHeight(L, entity, jumpHeight, jumpHeightBoost);
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 
-	void ServerEntityLibrary::UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed)
+	void ServerEntityLibrary::UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed)
 	{
-		SharedEntityLibrary::UpdatePlayerMovement(entity, movementSpeed);
+		SharedEntityLibrary::UpdatePlayerMovement(L, entity, movementSpeed);
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);

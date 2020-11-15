@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
@@ -29,9 +30,9 @@ namespace bw
 
 	void ClientElementLibrary::RegisterClientLibrary(sol::table& elementTable)
 	{
-		elementTable["AddSprite"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		elementTable["AddSprite"] = ExceptToLuaErr([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -119,11 +120,11 @@ namespace bw
 
 				return Sprite({}, sprite, transformMatrix, renderOrder);
 			}
-		};
+		});
 
-		elementTable["AddModel"] = [this](const sol::table& entityTable, const sol::table& parameters)
+		elementTable["AddModel"] = ExceptToLuaErr([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			std::string modelPath = parameters["ModelPath"];
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -144,7 +145,7 @@ namespace bw
 			}
 			else
 				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
-		};
+		});
 
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
@@ -152,7 +153,7 @@ namespace bw
 			if (Nz::NumberEquals(pushbackForce, 0.f))
 				return;
 
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -173,19 +174,21 @@ namespace bw
 			});
 		};
 
-		elementTable["DealDamage"] = sol::overload(DealDamage,
-			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); });
+		elementTable["DealDamage"] = sol::overload(
+			ExceptToLuaErr(DealDamage),
+			ExceptToLuaErr([=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); })
+		);
 
-		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
+		elementTable["GetLayerIndex"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
-		};
+		});
 		
-		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		elementTable["GetProperty"] = ExceptToLuaErr([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -205,16 +208,16 @@ namespace bw
 			}
 			else
 				return sol::nil;
-		};
+		});
 
-		elementTable["PlaySound"] = [this](const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
+		elementTable["PlaySound"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<LocalMatchComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
-				throw std::runtime_error("failed to load " + soundPath);
+				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
 
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
@@ -230,7 +233,7 @@ namespace bw
 
 			std::size_t soundIndex = layerSound.PlaySound(soundBuffer, isLooping, isSpatialized);
 			return Sound(layerSound.CreateHandle(), soundIndex);
-		};
+		});
 	}
 
 	void ClientElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)

@@ -83,7 +83,6 @@ namespace bw::Commands
 	std::vector<EntityId> EntityCreationDelete::BuildEntitiesUniqueId(EditorWindow& editor, std::vector<EntityData>& entitiesData)
 	{
 		// Sort entities by their entity index, ascending (in order to prevent issues when recreating them)
-		const Map& map = editor.GetWorkingMap();
 		std::sort(entitiesData.begin(), entitiesData.end(), [&](const EntityData& lhs, const EntityData& rhs)
 		{
 			// Order by layer and by entity index

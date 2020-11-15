@@ -22,10 +22,10 @@ namespace bw
 		private:
 			void RegisterServerLibrary(sol::table& elementMetatable);
 
-			void SetMass(const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia) override;
-			void SetMomentOfInertia(const Ndk::EntityHandle& entity, float momentOfInertia) override;
-			void UpdatePlayerJumpHeight(const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost) override;
-			void UpdatePlayerMovement(const Ndk::EntityHandle& entity, float movementSpeed) override;
+			void SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia) override;
+			void SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia) override;
+			void UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost) override;
+			void UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed) override;
 	};
 }
 

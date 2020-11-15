@@ -12,6 +12,7 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 
@@ -41,7 +42,7 @@ namespace bw
 			{
 				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, AbstractElementLibrary::TranslateEntity(source));
+				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, TranslateEntityToLua(source));
 			});
 
 			healthComponent.OnDying.Connect([&](HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -49,7 +50,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Death>(AbstractElementLibrary::TranslateEntity(attacker));
+				entityScript.ExecuteCallback<ElementEvent::Death>(TranslateEntityToLua(attacker));
 			});
 
 			healthComponent.OnDied.Connect([&](const HealthComponent* health, const Ndk::EntityHandle& attacker)
@@ -57,7 +58,7 @@ namespace bw
 				const Ndk::EntityHandle& entity = health->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Died>(AbstractElementLibrary::TranslateEntity(attacker));
+				entityScript.ExecuteCallback<ElementEvent::Died>(TranslateEntityToLua(attacker));
 			});
 		}
 

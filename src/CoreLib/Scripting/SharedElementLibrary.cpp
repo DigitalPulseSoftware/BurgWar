@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -21,32 +22,32 @@ namespace bw
 
 	void SharedElementLibrary::RegisterCommonLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["DeleteOnRemove"] = [](const sol::table& entityTable, const sol::table& targetEntityTable)
+		elementMetatable["DeleteOnRemove"] = ExceptToLuaErr([](const sol::table& entityTable, const sol::table& targetEntityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
 
 			if (!entity->HasComponent<EntityOwnerComponent>())
 				entity->AddComponent<EntityOwnerComponent>();
 
 			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
-		};
+		});
 
-		elementMetatable["Disable"] = [](const sol::table& entityTable)
+		elementMetatable["Disable"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Disable();
-		};
+		});
 
-		elementMetatable["Enable"] = [](const sol::table& entityTable)
+		elementMetatable["Enable"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Enable();
-		};
+		});
 
-		elementMetatable["GetDirection"] = [](const sol::table& entityTable)
+		elementMetatable["GetDirection"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
@@ -55,94 +56,94 @@ namespace bw
 				direction = -direction;
 
 			return direction;
-		};
+		});
 
-		elementMetatable["GetPosition"] = [](const sol::table& entityTable)
+		elementMetatable["GetPosition"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
-		};
+		});
 
-		elementMetatable["GetRotation"] = [](const sol::table& entityTable)
+		elementMetatable["GetRotation"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
-		};
+		});
 
-		elementMetatable["GetScale"] = [](const sol::table& entityTable)
+		elementMetatable["GetScale"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys_Global));
 			return std::abs(scale.y);
-		};
+		});
 
-		elementMetatable["IsEnabled"] = [](const sol::table& entityTable)
+		elementMetatable["IsEnabled"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			return entity->IsEnabled();
-		};
+		});
 
-		elementMetatable["IsLookingRight"] = [](const sol::table& entityTable)
+		elementMetatable["IsLookingRight"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetScale().x > 0.f;
-		};
+		});
 
-		elementMetatable["IsValid"] = [](const sol::table& entityTable)
+		elementMetatable["IsValid"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable);
+			Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
-		};
+		});
 
-		elementMetatable["On"] = [&](const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
+		elementMetatable["On"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(entityTable, event, std::move(callback), false);
-		};
+			RegisterEvent(L, entityTable, event, std::move(callback), false);
+		});
 
-		elementMetatable["OnAsync"] = [&](const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
+		elementMetatable["OnAsync"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(entityTable, event, std::move(callback), true);
-		};
+			RegisterEvent(L, entityTable, event, std::move(callback), true);
+		});
 
-		elementMetatable["SetLifeTime"] = [](const sol::table& entityTable, float lifetime)
+		elementMetatable["SetLifeTime"] = ExceptToLuaErr([](const sol::table& entityTable, float lifetime)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
-		};
+		});
 
-		elementMetatable["SetScale"] = [&](const sol::table& entityTable, float scale)
+		elementMetatable["SetScale"] = ExceptToLuaErr([&](const sol::table& entityTable, float scale)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			SetScale(entity, scale);
-		};
+		});
 
-		elementMetatable["ToLocalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
+		elementMetatable["ToLocalPosition"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
-		};
+		});
 
-		elementMetatable["ToGlobalPosition"] = [](const sol::table& entityTable, const Nz::Vector2f& localPosition)
+		elementMetatable["ToGlobalPosition"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& localPosition)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
-		};
+		});
 
-		elementMetatable["Trigger"] = [](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
+		elementMetatable["Trigger"] = ExceptToLuaErr([](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			const auto& element = entityScript.GetElement();
@@ -155,7 +156,7 @@ namespace bw
 			const auto& eventData = element->customEvents[it->second];
 
 			return entityScript.ExecuteCustomCallback(eventData.index, parameters);
-		};
+		});
 	}
 
 	void SharedElementLibrary::RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
@@ -176,7 +177,7 @@ namespace bw
 			return eventData.index;
 		};
 
-		if (Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable))
+		if (Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable))
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
@@ -185,7 +186,7 @@ namespace bw
 		}
 		else
 		{
-			auto element = AbstractElementLibrary::AssertScriptElement(entityTable);
+			auto element = AssertScriptElement(entityTable);
 
 			std::size_t eventIndex = RetrieveEventIndex(element);
 
@@ -198,7 +199,7 @@ namespace bw
 		}
 	}
 
-	void SharedElementLibrary::RegisterEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	void SharedElementLibrary::RegisterEvent(lua_State* L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<ElementEvent> scriptingEventOpt = RetrieveElementEvent(event);
 		if (!scriptingEventOpt)
@@ -208,16 +209,16 @@ namespace bw
 		std::size_t eventIndex = static_cast<std::size_t>(scriptingEvent);
 
 		if (async && HasReturnValue(scriptingEvent))
-			throw std::runtime_error("events returning a value cannot be async");
+			TriggerLuaArgError(L, 2, "events returning a value cannot be async");
 
-		if (Ndk::EntityHandle entity = AbstractElementLibrary::RetrieveScriptEntity(entityTable))
+		if (Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable))
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
 		}
 		else
 		{
-			auto element = AbstractElementLibrary::AssertScriptElement(entityTable);
+			auto element = AssertScriptElement(entityTable);
 
 			auto& callbackData = element->eventCallbacks[eventIndex].emplace_back();
 			callbackData.async = async;

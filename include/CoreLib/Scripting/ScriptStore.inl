@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/ScriptStore.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
@@ -120,7 +121,7 @@ namespace bw
 		m_currentElementData = &elementData;
 		Nz::CallOnExit resetOnExit([&] { m_currentElementData = nullptr; });
 
-		bwLog(m_logger, LogLevel::Info, "Loading {0} {1}", m_elementTypeName, elementData.name);
+		bwLog(m_logger, LogLevel::Info, "loading {0} {1}", m_elementTypeName, elementData.name);
 
 		std::optional<ScriptingContext::FileLoadCoroutine> fileLoadCoOpt;
 
@@ -183,7 +184,7 @@ namespace bw
 		state["Scripted" + m_elementName] = [this](sol::this_state L, std::optional<sol::table> parameters)
 		{
 			if (!m_currentElementData)
-				throw std::runtime_error("you can only call this function in a scripted " + m_elementTypeName + " file");
+				TriggerLuaError(L, "you can only call this function in a scripted " + m_elementTypeName + " file");
 
 			if (parameters.has_value())
 				return CreateElement(L, std::move(parameters.value()));
@@ -245,7 +246,7 @@ namespace bw
 		for (const auto& [dependency, elements] : m_pendingElements)
 		{
 			for (auto&& pendingElement : elements)
-				bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: dependency {2} does not exist", m_elementTypeName, pendingElement.element->name, dependency);
+				bwLog(m_logger, LogLevel::Error, "failed to initialize {0} {1}: dependency {2} does not exist", m_elementTypeName, pendingElement.element->name, dependency);
 		}
 		m_pendingElements.clear();
 	}
@@ -337,7 +338,7 @@ namespace bw
 		assert(initTable.valid());
 
 		if (m_currentElementData->element)
-			throw std::runtime_error("you can only initialize an " + m_elementTypeName + " once");
+			TriggerLuaError(L, "you can only initialize an " + m_elementTypeName + " once");
 
 		std::shared_ptr<Element>& element = m_currentElementData->element;
 		element = CreateElement();
@@ -437,12 +438,12 @@ namespace bw
 						element->customEvents.emplace_back(std::move(event));
 					}
 					else
-						throw std::runtime_error("Custom event " + event.name + " already exists");
+						throw std::runtime_error("custom event " + event.name + " already exists");
 				}
 				catch (const std::exception& e)
 				{
 					std::string_view eventName = propertyTable.get_or<std::string_view>("Name", "<No name set>");
-					bwLog(m_logger, LogLevel::Error, "Failed to load custom event {0} for {1} {2}: {3}", eventName, m_elementName, element->name, e.what());
+					bwLog(m_logger, LogLevel::Error, "failed to load custom event {0} for {1} {2}: {3}", eventName, m_elementName, element->name, e.what());
 				}
 			}
 		}
@@ -472,7 +473,7 @@ namespace bw
 		}
 		catch (const std::exception& e)
 		{
-			bwLog(m_logger, LogLevel::Error, "Failed to initialize {0} {1}: {2}", m_elementTypeName, element->name, e.what());
+			bwLog(m_logger, LogLevel::Error, "failed to initialize {0} {1}: {2}", m_elementTypeName, element->name, e.what());
 			return false;
 		}
 
@@ -514,11 +515,11 @@ namespace bw
 					if (it == element->properties.end())
 						element->properties.emplace(std::move(propertyName), std::move(property));
 					else
-						throw std::runtime_error("Property " + propertyName + " already exists");
+						throw std::runtime_error("property " + propertyName + " already exists");
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_logger, LogLevel::Error, "Failed to load property {0} for {1} {2}: {3}", propertyName, m_elementName, element->name, e.what());
+					bwLog(m_logger, LogLevel::Error, "failed to load property {0} for {1} {2}: {3}", propertyName, m_elementName, element->name, e.what());
 				}
 			}
 		}

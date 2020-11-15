@@ -5,6 +5,7 @@
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/DummyInputController.hpp>
 #include <ClientLib/LocalMatch.hpp>
@@ -58,29 +59,28 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["CreateEntity"] = [&](const sol::table& parameters)
+		library["CreateEntity"] = [&](sol::this_state L, const sol::table& parameters)
 		{
 			LocalMatch& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
 
 			sol::object entityTypeObj = parameters["Type"];
 			if (!entityTypeObj.is<std::string>())
-				throw std::runtime_error("Missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
 
 			std::string entityType = entityTypeObj.as<std::string>();
 
 			std::size_t elementIndex = entityStore.GetElementIndex(entityType);
 			if (elementIndex == ClientEntityStore::InvalidIndex)
-				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+				TriggerLuaArgError(L, 1, "entity type \"" + entityType + "\" doesn't exist");
 
 			sol::object layerIndexObj = parameters["LayerIndex"];
 			if (!layerIndexObj.is<LayerIndex>())
-				throw std::runtime_error("Missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
 
 			LayerIndex layerIndex = layerIndexObj.as<LayerIndex>();
-
-			if (layerIndex > match.GetLayerCount())
-				throw std::runtime_error("Layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
+			if (layerIndex >= match.GetLayerCount())
+				TriggerLuaArgError(L, 1, "layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
 
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
@@ -88,7 +88,7 @@ namespace bw
 
 			Ndk::EntityHandle lifeOwner;
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
-				lifeOwner = AbstractElementLibrary::AssertScriptEntity(*lifeOwnerEntitytable);
+				lifeOwner = AssertScriptEntity(*lifeOwnerEntitytable);
 
 			const auto& entityPtr = entityStore.GetElement(elementIndex);
 
@@ -107,27 +107,34 @@ namespace bw
 
 			Ndk::EntityHandle parentEntity;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
-				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
+				parentEntity = AssertScriptEntity(propertyTableOpt.value());
 
 			EntityId clientUniqueId = match.AllocateClientUniqueId();
 
-			LocalLayer& layer = match.GetLayer(layerIndex);
-			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
-			if (!entityOpt)
-				throw std::runtime_error("failed to create \"" + entityType + "\"");
-
-			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
-
-			if (lifeOwner)
+			try
 			{
-				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
-					lifeOwner->AddComponent<EntityOwnerComponent>();
+				LocalLayer& layer = match.GetLayer(layerIndex);
+				auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
+				if (!entityOpt)
+					TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
-				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
+				const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
+
+				if (lifeOwner)
+				{
+					if (!lifeOwner->HasComponent<EntityOwnerComponent>())
+						lifeOwner->AddComponent<EntityOwnerComponent>();
+
+					lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
+				}
+
+				auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+				return scriptComponent.GetTable();
 			}
-
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-			return scriptComponent.GetTable();
+			catch (const std::exception& e)
+			{
+				TriggerLuaError(L, e.what());
+			}
 		};
 
 		library["GetCamera"] = [&]() -> CameraHandle
@@ -166,14 +173,14 @@ namespace bw
 
 	void ClientScriptingLibrary::RegisterParticleLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateGroup"] = [&](unsigned int maxParticleCount, const std::string& particleType)
+		library["CreateGroup"] = [&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
 		{
 			LocalMatch& match = GetMatch();
 
 			const ParticleRegistry& registry = match.GetParticleRegistry();
 			const auto& layout = registry.GetLayout(particleType);
 			if (!layout)
-				throw std::runtime_error("Invalid particle type \"" + particleType + "\"");
+				TriggerLuaArgError(L, 2, "Invalid particle type \"" + particleType + "\"");
 
 			Ndk::World& world = match.GetRenderWorld();
 			const Ndk::EntityHandle& particleGroupEntity = world.CreateEntity();
@@ -192,9 +199,9 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = []()
+		library["ReloadAll"] = [](sol::this_state L)
 		{
-			throw std::runtime_error("Only the server can reload scripts");
+			TriggerLuaError(L, "only the server can reload scripts");
 		};
 	}
 	
@@ -205,34 +212,41 @@ namespace bw
 		state.new_usertype<Camera>("Camera",
 			"new", sol::no_constructor,
 
-			"GetFOV",         &Camera::GetFOV,
-			"GetPosition",    &Camera::GetPosition,
-			"GetZoomFactor",  &Camera::GetZoomFactor,
-			"GetViewport",    &Camera::GetViewport,
+			"GetFOV",         ExceptToLuaErr(&Camera::GetFOV),
+			"GetPosition",    ExceptToLuaErr(&Camera::GetPosition),
+			"GetZoomFactor",  ExceptToLuaErr(&Camera::GetZoomFactor),
+			"GetViewport",    ExceptToLuaErr(&Camera::GetViewport),
 
-			"MoveBy",         &Camera::MoveBy,
-			"MoveToPosition", &Camera::MoveToPosition,
+			"MoveBy",         ExceptToLuaErr(&Camera::MoveBy),
+			"MoveToPosition", ExceptToLuaErr(&Camera::MoveToPosition),
 
-			"SetFOV",         &Camera::SetFOV,
-			"SetZoomFactor",  &Camera::SetZoomFactor,
+			"SetFOV",         ExceptToLuaErr(&Camera::SetFOV),
+			"SetZoomFactor",  ExceptToLuaErr(&Camera::SetZoomFactor),
 
-			"Project",   sol::overload(Overload<const Nz::Vector2f&>(&Camera::Project), Overload<const Nz::Vector3f&>(&Camera::Project)),
-			"Unproject", sol::overload(Overload<const Nz::Vector2f&>(&Camera::Unproject), Overload<const Nz::Vector3f&>(&Camera::Unproject))
+			"Project",   sol::overload(
+				ExceptToLuaErr(Overload<const Nz::Vector2f&>(&Camera::Project)),
+				ExceptToLuaErr(Overload<const Nz::Vector3f&>(&Camera::Project))
+			),
+
+			"Unproject", sol::overload(
+				ExceptToLuaErr(Overload<const Nz::Vector2f&>(&Camera::Unproject)),
+				ExceptToLuaErr(Overload<const Nz::Vector3f&>(&Camera::Unproject))
+			)
 		);
 	}
 
 	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
 	{
 #define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
-		[](DummyInputController& input) { return input.GetInputs(). name ; }, \
-		[](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; })
+		ExceptToLuaErr([](DummyInputController& input) { return input.GetInputs(). name ; }), \
+		ExceptToLuaErr([](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; }))
 
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<InputController>("InputController");
 
 		state.new_usertype<DummyInputController>("DummyInputController",
 			sol::base_classes, sol::bases<InputController>(),
-			"new", sol::factories(&std::make_shared<DummyInputController>),
+			"new", sol::factories(ExceptToLuaErr(&std::make_shared<DummyInputController>)),
 
 			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
 			BW_INPUT_PROPERTY(isAttacking, bool),
@@ -252,17 +266,17 @@ namespace bw
 		state.new_usertype<LocalPlayer>("LocalPlayer",
 			"new", sol::no_constructor,
 
-			"GetName", &LocalPlayer::GetName,
+			"GetName", ExceptToLuaErr(&LocalPlayer::GetName),
 
-			"GetPing", [](sol::this_state L, LocalPlayer& localPlayer) -> sol::object
+			"GetPing", ExceptToLuaErr([](sol::this_state L, LocalPlayer& localPlayer) -> sol::object
 			{
 				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
 					return sol::make_object(L, ping);
 				else
 					return sol::nil;
-			},
+			}),
 
-			"GetPlayerIndex", &LocalPlayer::GetPlayerIndex
+			"GetPlayerIndex", ExceptToLuaErr(&LocalPlayer::GetPlayerIndex)
 		);
 	}
 
@@ -276,22 +290,22 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"AddController", sol::overload(
-				[=](ParticleGroup& group, const std::string& name) { group.AddController(name, emptyTable); },
-				&ParticleGroup::AddController),
+				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.AddController(name, emptyTable); }),
+				ExceptToLuaErr(&ParticleGroup::AddController)),
 
 			"AddGenerator", sol::overload(
-				[=](ParticleGroup& group, const std::string& name) { group.AddGenerator(name, emptyTable); },
-				&ParticleGroup::AddGenerator),
+				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.AddGenerator(name, emptyTable); }),
+				ExceptToLuaErr(&ParticleGroup::AddGenerator)),
 
-			"GenerateParticles", &ParticleGroup::GenerateParticles,
+			"GenerateParticles", ExceptToLuaErr(&ParticleGroup::GenerateParticles),
 
-			"GetParticleCount", &ParticleGroup::GetParticleCount,
+			"GetParticleCount", ExceptToLuaErr(&ParticleGroup::GetParticleCount),
 
-			"Kill", &ParticleGroup::Kill,
+			"Kill", ExceptToLuaErr(&ParticleGroup::Kill),
 
 			"SetRenderer", sol::overload(
-				[=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); },
-				&ParticleGroup::SetRenderer)
+				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); }),
+				ExceptToLuaErr(&ParticleGroup::SetRenderer))
 		);
 	}
 
@@ -302,14 +316,14 @@ namespace bw
 		state.new_usertype<Scoreboard>("Scoreboard",
 			"new", sol::no_constructor,
 
-			"AddColumn", &Scoreboard::AddColumn,
-			"AddTeam", &Scoreboard::AddTeam,
+			"AddColumn", ExceptToLuaErr(&Scoreboard::AddColumn),
+			"AddTeam", ExceptToLuaErr(&Scoreboard::AddTeam),
 
-			"RegisterPlayer", &Scoreboard::RegisterPlayer,
+			"RegisterPlayer", ExceptToLuaErr(&Scoreboard::RegisterPlayer),
 
-			"UnregisterPlayer", &Scoreboard::UnregisterPlayer,
+			"UnregisterPlayer", ExceptToLuaErr(&Scoreboard::UnregisterPlayer),
 
-			"UpdatePlayerValue", &Scoreboard::UpdatePlayerValue
+			"UpdatePlayerValue", ExceptToLuaErr(&Scoreboard::UpdatePlayerValue)
 		);
 	}
 
@@ -320,7 +334,7 @@ namespace bw
 		state.new_usertype<Sound>("Sound",
 			"new", sol::no_constructor,
 
-			"Stop", &Sound::Stop
+			"Stop", ExceptToLuaErr(&Sound::Stop)
 		);
 	}
 

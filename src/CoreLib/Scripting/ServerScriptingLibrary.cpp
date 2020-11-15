@@ -12,6 +12,7 @@
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/ServerTexture.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 
 namespace bw
@@ -46,14 +47,14 @@ namespace bw
 
 	void ServerScriptingLibrary::RegisterAssetLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["GetTexture"] = [this](const std::string& texturePath) -> std::optional<ServerTexture>
+		library["GetTexture"] = ExceptToLuaErr([this](const std::string& texturePath) -> std::optional<ServerTexture>
 		{
 			const Nz::ImageRef& image = m_assetStore.GetImage(texturePath);
 			if (image)
 				return ServerTexture(image);
 			else
 				return {};
-		};
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
@@ -64,7 +65,7 @@ namespace bw
 		state["CLIENT"] = false;
 		state["SERVER"] = true;
 
-		state["RegisterClientAssets"] = [&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
+		state["RegisterClientAssets"] = ExceptToLuaErr([&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
 		{
 			try
 			{
@@ -93,11 +94,11 @@ namespace bw
 			}
 			catch (const ParameterError& err)
 			{
-				throw std::runtime_error(err.msg);
+				TriggerLuaError(L, err.msg);
 			}
-		};
+		});
 
-		state["RegisterClientScript"] = [&](sol::this_state L, const sol::optional<std::string_view>& path) -> std::pair<bool, sol::object>
+		state["RegisterClientScript"] = ExceptToLuaErr([&](sol::this_state L, const sol::optional<std::string_view>& path) -> std::pair<bool, sol::object>
 		{
 			try
 			{
@@ -123,43 +124,43 @@ namespace bw
 			{
 				throw std::runtime_error(err.msg);
 			}
-		};
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["BroadcastPacket"] = [&](const OutgoingNetworkPacket& outgoingPacket)
+		library["BroadcastPacket"] = ExceptToLuaErr([&](const OutgoingNetworkPacket& outgoingPacket)
 		{
 			Match& match = GetMatch();
 
 			const NetworkStringStore& networkStringStore = match.GetNetworkStringStore();
 			match.BroadcastPacket(outgoingPacket.ToPacket(networkStringStore));
-		};
+		});
 
-		library["CreateEntity"] = [&](const sol::table& parameters)
+		library["CreateEntity"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& parameters)
 		{
 			Match& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
 
 			sol::object entityTypeObj = parameters["Type"];
 			if (!entityTypeObj.is<std::string>())
-				throw std::runtime_error("Missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
 
 			std::string entityType = entityTypeObj.as<std::string>();
 
 			std::size_t elementIndex = entityStore.GetElementIndex(entityType);
 			if (elementIndex == ServerEntityStore::InvalidIndex)
-				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+				TriggerLuaArgError(L, 1, "entity type \"" + entityType + "\" doesn't exist");
 
 			sol::object layerIndexObj = parameters["LayerIndex"];
 			if (!layerIndexObj.is<LayerIndex>())
-				throw std::runtime_error("Missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
 
 			LayerIndex layerIndex = layerIndexObj.as<LayerIndex>();
 			if (layerIndex >= match.GetLayerCount())
-				throw std::runtime_error("Layer out of range (" + std::to_string(layerIndex) + " >= " + std::to_string(match.GetLayerCount()) + ")");
+				TriggerLuaArgError(L, 1, "layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
 
 			PlayerHandle owner = parameters.get_or<PlayerHandle>("Owner", PlayerHandle::InvalidHandle);
 
@@ -168,7 +169,7 @@ namespace bw
 
 			Ndk::EntityHandle lifeOwner;
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
-				lifeOwner = AbstractElementLibrary::AssertScriptEntity(*lifeOwnerEntitytable);
+				lifeOwner = AssertScriptEntity(*lifeOwnerEntitytable);
 
 			PropertyValueMap entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
@@ -186,13 +187,13 @@ namespace bw
 
 			Ndk::EntityHandle parentEntity;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
-				parentEntity = AbstractElementLibrary::AssertScriptEntity(propertyTableOpt.value());
+				parentEntity = AssertScriptEntity(propertyTableOpt.value());
 
 			EntityId uniqueId = match.AllocateUniqueId();
 
 			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
-				throw std::runtime_error("failed to create \"" + entityType + "\"");
+				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
 			if (owner)
 				entity->AddComponent<OwnerComponent>(std::move(owner));
@@ -209,22 +210,22 @@ namespace bw
 
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			return scriptComponent.GetTable();
-		};
+		});
 
-		library["CreateWeapon"] = [&](const sol::table& parameters)
+		library["CreateWeapon"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& parameters)
 		{
 			Match& match = GetMatch();
 			auto& weaponStore = match.GetWeaponStore();
 
 			sol::object entityTypeObj = parameters["Type"];
 			if (!entityTypeObj.is<std::string>())
-				throw std::runtime_error("Missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
 
 			std::string entityType = entityTypeObj.as<std::string>();
 
 			std::size_t elementIndex = weaponStore.GetElementIndex(entityType);
 			if (elementIndex == ServerEntityStore::InvalidIndex)
-				throw std::runtime_error("Entity type \"" + entityType + "\" doesn't exist");
+				TriggerLuaArgError(L, 1, "entity type \"" + entityType + "\" doesn't exist");
 
 			PropertyValueMap entityProperties;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Properties", std::nullopt); propertyTableOpt)
@@ -240,7 +241,7 @@ namespace bw
 				}
 			}
 
-			Ndk::EntityHandle owner = AbstractElementLibrary::AssertScriptEntity(parameters["Owner"]);
+			Ndk::EntityHandle owner = AssertScriptEntity(parameters["Owner"]);
 			auto& ownerMatchComponent = owner->GetComponent<MatchComponent>();
 
 			LayerIndex layerIndex = ownerMatchComponent.GetLayerIndex();
@@ -251,7 +252,7 @@ namespace bw
 
 			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
 			if (!weapon)
-				return false;
+				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
 			weapon->GetComponent<WeaponComponent>().SetActive(true);
 
@@ -263,15 +264,16 @@ namespace bw
 					weapon->AddComponent<OwnerComponent>(ownerPlayer->CreateHandle());
 			}
 
-			return true;
-		};
+			auto& scriptComponent = weapon->GetComponent<ScriptComponent>();
+			return scriptComponent.GetTable();
+		});
 
-		library["GetLocalTick"] = [&]()
+		library["GetLocalTick"] = ExceptToLuaErr([&]()
 		{
 			return GetMatch().GetCurrentTick();
-		};
+		});
 		
-		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
+		library["GetPlayers"] = ExceptToLuaErr([&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);
 
@@ -286,22 +288,22 @@ namespace bw
 			});
 
 			return playerTable;
-		};
+		});
 
-		library["GetTick"] = [&]()
+		library["GetTick"] = ExceptToLuaErr([&]()
 		{
 			return GetMatch().GetCurrentTick();
-		};
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterNetworkLibrary(context, library);
 
-		library["RegisterPacket"] = [&](std::string packetName)
+		library["RegisterPacket"] = ExceptToLuaErr([&](std::string packetName)
 		{
 			GetMatch().RegisterNetworkString(std::move(packetName));
-		};
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterPlayerClass(ScriptingContext& context)
@@ -309,7 +311,7 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<Player>("Player", 
 			"new", sol::no_constructor,
-			"GetControlledEntity", [](const Player& player) -> sol::object
+			"GetControlledEntity", ExceptToLuaErr([](const Player& player) -> sol::object
 			{
 				const Ndk::EntityHandle& controlledEntity = player.GetControlledEntity();
 				if (!controlledEntity)
@@ -317,37 +319,37 @@ namespace bw
 
 				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
 				return scriptComponent.GetTable();
-			},
-			"GetLayerIndex", &Player::GetLayerIndex,
-			"GetPlayerIndex", &Player::GetPlayerIndex,
-			"GetName", &Player::GetName,
-			"IsAdmin", &Player::IsAdmin,
-			"MoveToLayer", [](Player& player, std::optional<LayerIndex> layerIndex)
+			}),
+			"GetLayerIndex", ExceptToLuaErr(&Player::GetLayerIndex),
+			"GetPlayerIndex", ExceptToLuaErr(&Player::GetPlayerIndex),
+			"GetName", ExceptToLuaErr(&Player::GetName),
+			"IsAdmin", ExceptToLuaErr(&Player::IsAdmin),
+			"MoveToLayer", ExceptToLuaErr([](Player& player, std::optional<LayerIndex> layerIndex)
 			{
 				if (layerIndex)
 					player.MoveToLayer(layerIndex.value());
 				else
 					player.MoveToLayer(Player::NoLayer);
-			},
-			"PrintChatMessage", &Player::PrintChatMessage,
-			"SendPacket", [this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
+			}),
+			"PrintChatMessage", ExceptToLuaErr(&Player::PrintChatMessage),
+			"SendPacket", ExceptToLuaErr([this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
 			{
 				const NetworkStringStore& networkStringStore = GetSharedMatch().GetNetworkStringStore();
 				player.SendPacket(outgoingPacket.ToPacket(networkStringStore));
-			},
-			"SetAdmin", &Player::SetAdmin,
-			"UpdateControlledEntity", [](Player& player, sol::optional<sol::table> entityTable)
+			}),
+			"SetAdmin", ExceptToLuaErr(&Player::SetAdmin),
+			"UpdateControlledEntity", ExceptToLuaErr([](Player& player, sol::optional<sol::table> entityTable)
 			{
 				if (entityTable)
 				{
-					const Ndk::EntityHandle& entity = SharedElementLibrary::AssertScriptEntity(entityTable.value());
+					const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable.value());
 
 					player.UpdateControlledEntity(entity);
 				}
 				else
 					player.UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle);
-			},
-			"UpdateLayerVisibility", &Player::UpdateLayerVisibility
+			}),
+			"UpdateLayerVisibility", ExceptToLuaErr(&Player::UpdateLayerVisibility)
 		);
 	}
 
@@ -355,11 +357,11 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = [this]()
+		library["ReloadAll"] = ExceptToLuaErr([this]()
 		{
 			Match& match = GetMatch();
 			match.ReloadScripts();
-		};
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterServerTextureClass(ScriptingContext& context)
@@ -369,7 +371,7 @@ namespace bw
 		state.new_usertype<ServerTexture>("Texture",
 			"new", sol::no_constructor,
 
-			"GetSize", &ServerTexture::GetSize
+			"GetSize", ExceptToLuaErr(&ServerTexture::GetSize)
 		);
 	}
 

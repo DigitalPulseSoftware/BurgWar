@@ -7,6 +7,7 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
@@ -29,7 +30,7 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -81,6 +82,8 @@ namespace bw
 			entityLocalMatch.GetLayer().RegisterEntity(std::move(layerEntity));
 		};
 
-		elementMetatable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
+		elementMetatable["Shoot"] = sol::overload(
+			ExceptToLuaErr(shootFunc),
+			ExceptToLuaErr([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); }));
 	}
 }

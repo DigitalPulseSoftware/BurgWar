@@ -7,6 +7,7 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -23,18 +24,18 @@ namespace bw
 
 	void ServerWeaponLibrary::RegisterServerLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["IsPlayingAnimation"] = [](const sol::table& weaponTable)
+		elementMetatable["IsPlayingAnimation"] = ExceptToLuaErr([](const sol::table& weaponTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
 				return false;
 
 			return entity->GetComponent<AnimationComponent>().IsPlaying();
-		};
+		});
 
-		elementMetatable["PlayAnim"] = [&](const sol::table& weaponTable, const std::string& animationName)
+		elementMetatable["PlayAnim"] = ExceptToLuaErr([&](const sol::table& weaponTable, const std::string& animationName)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
 				throw std::runtime_error("Entity has no animations");
 
@@ -45,11 +46,11 @@ namespace bw
 				entityAnimation.Play(animId, m_match.GetCurrentTime());
 			else
 				throw std::runtime_error("Entity has no animation \"" + animationName + "\"");
-		};
+		});
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(weaponTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -72,6 +73,9 @@ namespace bw
 			}
 		};
 
-		elementMetatable["Shoot"] = sol::overload(shootFunc, [=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); });
+		elementMetatable["Shoot"] = sol::overload(
+			ExceptToLuaErr(shootFunc),
+			ExceptToLuaErr([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); })
+		);
 	}
 }

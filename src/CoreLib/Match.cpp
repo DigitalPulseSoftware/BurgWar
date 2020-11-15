@@ -670,7 +670,6 @@ namespace bw
 		{
 			session->Update(elapsedTime);
 		});
-
 	}
 	
 	void Match::SendPingUpdate()

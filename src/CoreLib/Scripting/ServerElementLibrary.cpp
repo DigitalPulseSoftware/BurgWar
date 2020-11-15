@@ -33,7 +33,7 @@ namespace bw
 	{
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -56,12 +56,13 @@ namespace bw
 			});
 		};
 
-		elementTable["DealDamage"] = sol::overload(DealDamage,
-			[=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); });
+		elementTable["DealDamage"] = sol::overload(
+			ExceptToLuaErr(DealDamage),
+			ExceptToLuaErr([=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); }));
 
-		elementTable["DumpCreationInfo"] = [](sol::this_state L, const sol::table& entityTable) -> sol::object
+		elementTable["DumpCreationInfo"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<ScriptComponent>() || !entity->HasComponent<MatchComponent>() || !entity->HasComponent<Ndk::NodeComponent>())
 				return sol::nil;
 
@@ -98,18 +99,18 @@ namespace bw
 			}
 
 			return resultTable;
-		};
+		});
 
-		elementTable["GetLayerIndex"] = [](const sol::table& entityTable)
+		elementTable["GetLayerIndex"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<MatchComponent>().GetLayerIndex();
-		};
+		});
 
-		elementTable["GetProperty"] = [](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		elementTable["GetProperty"] = ExceptToLuaErr([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -129,27 +130,27 @@ namespace bw
 			}
 			else
 				return sol::nil;
-		};
+		});
 
-		elementTable["GetOwner"] = [](sol::this_state s, const sol::table& table) -> sol::object
+		elementTable["GetOwner"] = ExceptToLuaErr([](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(table);
+			Ndk::EntityHandle entity = AssertScriptEntity(table);
 
 			if (!entity->HasComponent<OwnerComponent>())
 				return sol::nil;
 
 			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
-		};
+		});
 
-		elementTable["SetParent"] = [](const sol::table& entityTable, const sol::table& parentTable)
+		elementTable["SetParent"] = ExceptToLuaErr([](const sol::table& entityTable, const sol::table& parentTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			const Ndk::EntityHandle& parent = AssertScriptEntity(parentTable);
 
 			entity->GetComponent<Ndk::NodeComponent>().SetParent(parent, true);
 			if (entity->HasComponent<NetworkSyncComponent>())
 				entity->GetComponent<NetworkSyncComponent>().UpdateParent(parent);
-		};
+		});
 	}
 
 	void ServerElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)

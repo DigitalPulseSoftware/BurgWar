@@ -33,9 +33,9 @@ namespace bw
 		RegisterClientLibrary(elementMetatable);
 	}
 
-	void ClientEntityLibrary::InitRigidBody(const Ndk::EntityHandle& entity, float mass)
+	void ClientEntityLibrary::InitRigidBody(lua_State* L, const Ndk::EntityHandle& entity, float mass)
 	{
-		SharedEntityLibrary::InitRigidBody(entity, mass);
+		SharedEntityLibrary::InitRigidBody(L, entity, mass);
 
 		entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
 		entity->AddComponent<VisualInterpolationComponent>();
@@ -43,15 +43,15 @@ namespace bw
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["AddLayer"] = [](const sol::table& entityTable, const sol::table& parameters)
+		elementMetatable["AddLayer"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
 
 			LayerIndex layerIndex = parameters["LayerIndex"];
 			if (layerIndex >= localMatch.GetLayerCount())
-				throw std::runtime_error("Layer index out of bounds");
+				TriggerLuaArgError(L, 2, "layer index out of bounds");
 
 			int renderOrder = parameters.get_or("RenderOrder", 0);
 			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
@@ -62,11 +62,11 @@ namespace bw
 
 			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
 			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
-		};
+		});
 
-		elementMetatable["AddTilemap"] = [this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
+		elementMetatable["AddTilemap"] = ExceptToLuaErr([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -143,14 +143,14 @@ namespace bw
 
 				return Tilemap({}, std::move(tileMap), transformMatrix, renderOrder);
 			}
-		};
+		});
 
-		elementMetatable["ClearLayers"] = [](const sol::table& entityTable)
+		elementMetatable["ClearLayers"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<VisibleLayerComponent>())
 				entity->GetComponent<VisibleLayerComponent>().Clear();
-		};
+		});
 	}
 }

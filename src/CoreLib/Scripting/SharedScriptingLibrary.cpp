@@ -12,6 +12,7 @@
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
 #include <NDK/Components/ConstraintComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -57,17 +58,17 @@ namespace bw
 		state.new_usertype<Constraint>("Constraint",
 			"new", sol::no_constructor,
 
-			"EnableBodyCollision", &Constraint::EnableBodyCollision,
+			"EnableBodyCollision", ExceptToLuaErr(&Constraint::EnableBodyCollision),
 
-			"GetErrorBias", &Constraint::GetErrorBias,
-			"GetMaxForce", &Constraint::GetMaxForce,
+			"GetErrorBias", ExceptToLuaErr(&Constraint::GetErrorBias),
+			"GetMaxForce", ExceptToLuaErr(&Constraint::GetMaxForce),
 
-			"IsBodyCollisionEnabled", &Constraint::IsBodyCollisionEnabled,
+			"IsBodyCollisionEnabled", ExceptToLuaErr(&Constraint::IsBodyCollisionEnabled),
 
-			"Remove", &Constraint::Remove,
+			"Remove", ExceptToLuaErr(&Constraint::Remove),
 
-			"SetErrorBias", &Constraint::SetErrorBias,
-			"SetMaxForce",  &Constraint::SetMaxForce
+			"SetErrorBias", ExceptToLuaErr(&Constraint::SetErrorBias),
+			"SetMaxForce", ExceptToLuaErr(&Constraint::SetMaxForce)
 		);
 
 		state.new_usertype<DampedSpringConstraint>("SpringConstraint",
@@ -79,8 +80,8 @@ namespace bw
 		state.new_usertype<PinConstraint>("PinConstraint",
 			"new", sol::no_constructor,
 
-			"GetDistance", &PinConstraint::GetDistance,
-			"SetDistance", &PinConstraint::SetDistance,
+			"GetDistance", ExceptToLuaErr(&PinConstraint::GetDistance),
+			"SetDistance", ExceptToLuaErr(&PinConstraint::SetDistance),
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
@@ -94,10 +95,10 @@ namespace bw
 		state.new_usertype<RotaryLimitConstraint>("RotaryLimitConstraint",
 			"new", sol::no_constructor,
 
-			"GetMaxAngle", &RotaryLimitConstraint::GetMaxAngle,
-			"GetMinAngle", &RotaryLimitConstraint::GetMinAngle,
-			"SetMaxAngle", &RotaryLimitConstraint::SetMaxAngle,
-			"SetMinAngle", &RotaryLimitConstraint::SetMinAngle,
+			"GetMaxAngle", ExceptToLuaErr(&RotaryLimitConstraint::GetMaxAngle),
+			"GetMinAngle", ExceptToLuaErr(&RotaryLimitConstraint::GetMinAngle),
+			"SetMaxAngle", ExceptToLuaErr(&RotaryLimitConstraint::SetMaxAngle),
+			"SetMinAngle", ExceptToLuaErr(&RotaryLimitConstraint::SetMinAngle),
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
@@ -109,14 +110,14 @@ namespace bw
 		state.new_usertype<IncomingNetworkPacket>("IncomingNetworkPacket",
 			"new", sol::no_constructor,
 
-			"ReadCompressedInteger",  &IncomingNetworkPacket::ReadCompressedInteger,
-			"ReadCompressedUnsigned", &IncomingNetworkPacket::ReadCompressedUnsigned,
-			"ReadDouble",  &IncomingNetworkPacket::ReadDouble,
-			"ReadSingle",  &IncomingNetworkPacket::ReadSingle,
-			"ReadString",  &IncomingNetworkPacket::ReadString,
-			"ReadVector2", &IncomingNetworkPacket::ReadVector2,
+			"ReadCompressedInteger",  ExceptToLuaErr(&IncomingNetworkPacket::ReadCompressedInteger),
+			"ReadCompressedUnsigned", ExceptToLuaErr(&IncomingNetworkPacket::ReadCompressedUnsigned),
+			"ReadDouble",  ExceptToLuaErr(&IncomingNetworkPacket::ReadDouble),
+			"ReadSingle",  ExceptToLuaErr(&IncomingNetworkPacket::ReadSingle),
+			"ReadString",  ExceptToLuaErr(&IncomingNetworkPacket::ReadString),
+			"ReadVector2", ExceptToLuaErr(&IncomingNetworkPacket::ReadVector2),
 
-			"ReadEntity", [&](IncomingNetworkPacket& incomingPacket) -> sol::object
+			"ReadEntity", ExceptToLuaErr([&](IncomingNetworkPacket& incomingPacket) -> sol::object
 			{
 				Nz::Int64 entityId = incomingPacket.ReadCompressedInteger();
 				const Ndk::EntityHandle& entity = m_match.RetrieveEntityByUniqueId(entityId);
@@ -124,24 +125,24 @@ namespace bw
 					return entity->GetComponent<ScriptComponent>().GetTable();
 				else
 					return sol::nil;
-			}
+			})
 		);
 
 		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
 			"new", sol::no_constructor,
 
-			"WriteCompressedInteger",  &OutgoingNetworkPacket::WriteCompressedInteger,
-			"WriteCompressedUnsigned", &OutgoingNetworkPacket::WriteCompressedUnsigned,
-			"WriteDouble",  &OutgoingNetworkPacket::WriteDouble,
-			"WriteSingle",  &OutgoingNetworkPacket::WriteSingle,
-			"WriteString",  &OutgoingNetworkPacket::WriteString,
-			"WriteVector2", & OutgoingNetworkPacket::WriteVector2,
+			"WriteCompressedInteger", ExceptToLuaErr(&OutgoingNetworkPacket::WriteCompressedInteger),
+			"WriteCompressedUnsigned", ExceptToLuaErr (&OutgoingNetworkPacket::WriteCompressedUnsigned),
+			"WriteDouble",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteDouble),
+			"WriteSingle",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteSingle),
+			"WriteString",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteString),
+			"WriteVector2", ExceptToLuaErr(&OutgoingNetworkPacket::WriteVector2),
 
-			"WriteEntity", [&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
+			"WriteEntity", ExceptToLuaErr([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
 			{
-				const Ndk::EntityHandle& entity = SharedElementLibrary::AssertScriptEntity(entityTable);
+				const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 				outgoingPacket.WriteCompressedInteger(m_match.RetrieveUniqueIdByEntity(entity));
-			}
+			})
 		);
 	}
 
@@ -152,20 +153,20 @@ namespace bw
 
 		state.new_usertype<BasicPlayerMovementController>("BasicPlayerMovementController",
 			sol::base_classes, sol::bases<PlayerMovementController>(),
-			"new", sol::factories(&std::make_shared<BasicPlayerMovementController>)
+			"new", sol::factories(ExceptToLuaErr(&std::make_shared<BasicPlayerMovementController>))
 		);
 		
 		state.new_usertype<NoclipPlayerMovementController>("NoclipPlayerMovementController",
 			sol::base_classes, sol::bases<PlayerMovementController>(),
-			"new", sol::factories(&std::make_shared<NoclipPlayerMovementController>)
+			"new", sol::factories(ExceptToLuaErr(&std::make_shared<NoclipPlayerMovementController>))
 		);
 	}
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["GetEntitiesByClass"] = [&](sol::this_state s, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
+		library["GetEntitiesByClass"] = ExceptToLuaErr([&](sol::this_state L, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
-			sol::state_view state(s);
+			sol::state_view state(L);
 			sol::table result = state.create_table();
 
 			std::size_t index = 1;
@@ -183,7 +184,7 @@ namespace bw
 			{
 				LayerIndex layerIndex = layerIndexOpt.value();
 				if (layerIndex >= m_match.GetLayerCount())
-					throw std::runtime_error("Invalid layer index");
+					TriggerLuaArgError(L, 2, "invalid layer index");
 
 				m_match.GetLayer(layerIndex).ForEachEntity(entityFunc);
 			}
@@ -191,41 +192,41 @@ namespace bw
 				m_match.ForEachEntity(entityFunc);
 
 			return result;
-		};
+		});
 
-		library["GetGamemode"] = [this]()
+		library["GetGamemode"] = ExceptToLuaErr([this]()
 		{
 			return m_match.GetSharedGamemode()->GetTable();
-		};
+		});
 
-		library["GetMilliseconds"] = [this]()
+		library["GetMilliseconds"] = ExceptToLuaErr([this]()
 		{
 			return m_match.GetCurrentTime();
-		};
+		});
 
-		library["GetSeconds"] = [this]()
+		library["GetSeconds"] = ExceptToLuaErr([this]()
 		{
 			return m_match.GetCurrentTime() / 1000.f;
-		};
+		});
 
-		library["GetTickDuration"] = [&]()
+		library["GetTickDuration"] = ExceptToLuaErr([&]()
 		{
 			return m_match.GetTickDuration();
-		};
+		});
 	}
 
 	void SharedScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["NewPacket"] = [this](std::string name) -> OutgoingNetworkPacket
+		library["NewPacket"] = ExceptToLuaErr([this](std::string name) -> OutgoingNetworkPacket
 		{
 			const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 			if (networkStringStore.GetStringIndex(name) == networkStringStore.InvalidIndex)
 				throw std::runtime_error("Packet name \"" + name + "\" has not been registered");
 
 			return OutgoingNetworkPacket(std::move(name));
-		};
+		});
 
-		library["SetHandler"] = [this](std::string name, sol::main_protected_function handler)
+		library["SetHandler"] = ExceptToLuaErr([this](std::string name, sol::main_protected_function handler)
 		{
 			ScriptHandlerRegistry& packetHandlerRegistry = GetSharedMatch().GetScriptPacketHandlerRegistry();
 
@@ -233,15 +234,15 @@ namespace bw
 				packetHandlerRegistry.Register(std::move(name), std::move(handler));
 			else
 				packetHandlerRegistry.Unregister(name);
-		};
+		});
 	}
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateDampenedSpringConstraint"] = [](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
+		library["CreateDampenedSpringConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
-			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				throw std::runtime_error("Cannot apply a constraint to the same entity");
@@ -250,12 +251,12 @@ namespace bw
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
-		};
+		});
 
-		library["CreatePinConstraint"] = [](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePinConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				throw std::runtime_error("Cannot apply a constraint to the same entity");
@@ -264,12 +265,12 @@ namespace bw
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
-		};
+		});
 
-		library["CreatePivotConstraint"] = [](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePivotConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				throw std::runtime_error("Cannot apply a constraint to the same entity");
@@ -278,26 +279,26 @@ namespace bw
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
-		};
+		});
 
-		library["CreateRotaryLimitConstraint"] = [](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
+		library["CreateRotaryLimitConstraint"] = ExceptToLuaErr([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
 		{
-			const Ndk::EntityHandle& firstEntity = SharedElementLibrary::AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = SharedElementLibrary::AssertScriptEntity(secondEntityTable);
+			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
+			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
 
 			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
-		};
+		});
 
-		library["RegionQuery"] = [this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)
+		library["RegionQuery"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)
 		{
 			if (layer >= m_match.GetLayerCount())
-				throw std::runtime_error("Invalid layer index");
+				TriggerLuaArgError(L, 1, "invalid layer index");
 
 			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
@@ -324,12 +325,12 @@ namespace bw
 			};
 
 			physSystem.RegionQuery(rect, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
-		};
+		});
 
-		library["Trace"] = [this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
+		library["Trace"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
 		{
 			if (layer >= m_match.GetLayerCount())
-				throw std::runtime_error("Invalid layer index");
+				TriggerLuaArgError(L, 1, "invalid layer index");
 
 			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
@@ -351,12 +352,12 @@ namespace bw
 			}
 			else
 				return sol::nil;
-		};
+		});
 
-		library["TraceMultiple"] = [this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos, const sol::protected_function& callback)
+		library["TraceMultiple"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos, const sol::protected_function& callback)
 		{
 			if (layer >= m_match.GetLayerCount())
-				throw std::runtime_error("Invalid layer index");
+				TriggerLuaArgError(L, 1, "invalid layer index");
 
 			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
@@ -389,7 +390,7 @@ namespace bw
 			};
 
 			physSystem.RaycastQuery(startPos, endPos, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
-		};
+		});
 	}
 
 	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& /*context*/, sol::table& /*library*/)
@@ -399,7 +400,7 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["Create"] = [&](Nz::UInt64 time, sol::main_protected_function callback)
+		library["Create"] = ExceptToLuaErr([&](Nz::UInt64 time, sol::main_protected_function callback)
 		{
 			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callback = std::move(callback)]()
 			{
@@ -410,6 +411,6 @@ namespace bw
 					bwLog(GetLogger(), LogLevel::Error, "engine_SetTimer failed: {0}", err.what());
 				}
 			});
-		};
+		});
 	}
 }

@@ -10,6 +10,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
@@ -326,9 +327,9 @@ namespace bw
 		m_weaponStore->Resolve();
 
 		sol::state& state = m_scriptingContext->GetLuaState();
-		state["engine_AnimateRotation"] = [&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
+		state["engine_AnimateRotation"] = ExceptToLuaErr([&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -350,11 +351,11 @@ namespace bw
 				}
 			});
 			return 0;
-		};
+		});
 
-		state["engine_AnimatePositionByOffsetSq"] = [&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
+		state["engine_AnimatePositionByOffsetSq"] = ExceptToLuaErr([&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
 		{
-			Ndk::EntityHandle entity = AbstractElementLibrary::AssertScriptEntity(entityTable);
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -376,45 +377,45 @@ namespace bw
 				}
 			});
 			return 0;
-		};
+		});
 
-		state["engine_GetLocalPlayer_PlayerIndex"] = [&](Nz::UInt8 localIndex) -> Nz::UInt16
+		state["engine_GetLocalPlayer_PlayerIndex"] = ExceptToLuaErr([&](Nz::UInt8 localIndex) -> Nz::UInt16
 		{
 			return m_localPlayers[localIndex].playerIndex;
-		};
+		});
 
-		state["engine_GetLocalPlayerCount"] = [&]() -> std::size_t
+		state["engine_GetLocalPlayerCount"] = ExceptToLuaErr([&]() -> std::size_t
 		{
 			return m_localPlayers.size();
-		};
+		});
 
-		state["engine_GetPlayerPosition"] = [&](sol::this_state lua, Nz::UInt8 localIndex) -> sol::object
+		state["engine_GetPlayerPosition"] = ExceptToLuaErr([&](sol::this_state L, Nz::UInt8 localIndex) -> sol::object
 		{
 			if (localIndex >= m_localPlayers.size())
-				throw std::runtime_error("Invalid player index");
+				TriggerLuaArgError(L, 1, "invalid player index");
 
 			auto& playerData = m_localPlayers[localIndex];
 			if (playerData.controlledEntity)
-				return sol::make_object(lua, playerData.controlledEntity->GetPosition());
+				return sol::make_object(L, playerData.controlledEntity->GetPosition());
 			else
 				return sol::nil;
-		};
+		});
 
-		state["engine_GetActiveLayer"] = [&]()
+		state["engine_GetActiveLayer"] = ExceptToLuaErr([&]()
 		{
 			return m_activeLayerIndex;
-		};
+		});
 
-		state["engine_OverridePlayerInputController"] = [&](Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
+		state["engine_OverridePlayerInputController"] = ExceptToLuaErr([&](sol::this_state L, Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
 		{
 			if (localIndex >= m_localPlayers.size())
-				throw std::runtime_error("Invalid player index");
+				TriggerLuaArgError(L, 1, "invalid player index");
 
 			if (!inputController)
-				throw std::runtime_error("Invalid input controller");
+				TriggerLuaArgError(L, 2, "invalid input controller");
 
 			m_localPlayers[localIndex].inputController = std::move(inputController);
-		};
+		});
 
 		ForEachEntity([this](const Ndk::EntityHandle& entity)
 		{

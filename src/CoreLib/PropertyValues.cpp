@@ -7,6 +7,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 
 namespace bw
@@ -44,7 +45,7 @@ namespace bw
 					if (!match)
 						throw std::runtime_error("This context only accepts InvalidEntityId constant");
 
-					const Ndk::EntityHandle& entity = AbstractElementLibrary::RetrieveScriptEntity(value);
+					const Ndk::EntityHandle& entity = RetrieveScriptEntity(value);
 					return match->RetrieveUniqueIdByEntity(entity);
 				}
 			}
