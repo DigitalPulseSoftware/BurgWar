@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
 {
@@ -55,15 +56,18 @@ namespace bw
 	[[noreturn]] void TriggerLuaError(lua_State* L, const std::string& errMessage)
 	{
 		luaL_error(L, errMessage.c_str());
+		std::abort();
 	}
 
 	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage)
 	{
 		luaL_argerror(L, argIndex, errMessage);
+		std::abort();
 	}
 
 	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const std::string& errMessage)
 	{
 		luaL_argerror(L, argIndex, errMessage.c_str());
+		std::abort();
 	}
 }

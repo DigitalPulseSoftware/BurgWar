@@ -115,6 +115,7 @@ namespace bw
 	template<typename... Args> [[noreturn]] void TriggerLuaError(lua_State* L, const char* format, Args&&... args)
 	{
 		luaL_error(L, format, std::forward<Args>(args)...);
+		std::abort();
 	}
 
 	template<typename F> 

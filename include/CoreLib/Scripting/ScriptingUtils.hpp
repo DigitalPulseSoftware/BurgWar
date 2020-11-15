@@ -9,6 +9,7 @@
 
 #include <Thirdparty/sol3/forward.hpp>
 #include <NDK/Entity.hpp>
+#include <cstdlib>
 #include <memory>
 
 namespace bw
