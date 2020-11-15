@@ -121,6 +121,7 @@ namespace bw
 	template<typename F> 
 	auto ExceptToLuaErr(F funcPtr)
 	{
-		return Detail::LuaCallWrapper<F>::template WrapExceptions(funcPtr);
+		using Wrapper = Detail::LuaCallWrapper<F>;
+		return Wrapper::WrapExceptions(funcPtr);
 	}
 }
