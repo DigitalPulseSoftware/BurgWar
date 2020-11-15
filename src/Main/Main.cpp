@@ -9,8 +9,8 @@
 
 int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 {
-	bw::CrashHandler crashHandler;
-	crashHandler.Install();
+	std::unique_ptr<bw::CrashHandler> crashHandler = bw::CrashHandler::PlatformCrashHandler();
+	crashHandler->Install();
 
 	try
 	{

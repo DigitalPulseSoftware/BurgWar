@@ -14,16 +14,13 @@ namespace bw
 	class CrashHandler
 	{
 		public:
-			struct InternalData;
+			CrashHandler() = default;
+			virtual ~CrashHandler();
 
-			CrashHandler();
-			~CrashHandler();
+			virtual bool Install() = 0;
+			virtual void Uninstall() = 0;
 
-			bool Install();
-			void Uninstall();
-
-		private:
-			std::unique_ptr<InternalData> m_internalData;
+			static std::unique_ptr<CrashHandler> PlatformCrashHandler();
 	};
 }
 

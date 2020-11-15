@@ -2,29 +2,20 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#if defined(BURGWAR_CORELIB_CRASHHANDLER_CPP)
-
-#include <CoreLib/Utility/CrashHandler.hpp>
-#include <Nazara/Core/DynLib.hpp>
+#include <CoreLib/Utility/CrashHandlerWin32.hpp>
 #include <StackWalker/StackWalker.h>
 #include <array>
 #include <cstdio>
 #include <cwchar>
-#include <windows.h>
-#include <Dbghelp.h> //< Must be included after windows.h
 
 namespace bw
 {
-	using MiniDumpWriteDumpFn = BOOL(*)(HANDLE, DWORD, HANDLE, MINIDUMP_TYPE, PMINIDUMP_EXCEPTION_INFORMATION, PMINIDUMP_USER_STREAM_INFORMATION, PMINIDUMP_CALLBACK_INFORMATION);
-
-	struct CrashHandler::InternalData
-	{
-		Nz::DynLib windbg;
-		MiniDumpWriteDumpFn MiniDumpWriteDump = nullptr;
-	};
-
 	namespace
 	{
+		using MiniDumpWriteDumpFn = BOOL(*)(HANDLE, DWORD, HANDLE, MINIDUMP_TYPE, PMINIDUMP_EXCEPTION_INFORMATION, PMINIDUMP_USER_STREAM_INFORMATION, PMINIDUMP_CALLBACK_INFORMATION);
+
+		static MiniDumpWriteDumpFn MiniDumpWriteDump = nullptr;
+
 		struct HandleCloser
 		{
 			void operator()(HANDLE h) const
@@ -48,8 +39,6 @@ namespace bw
 
 		using WinHandle = std::unique_ptr<std::remove_pointer_t<HANDLE>, HandleCloser>;
 	
-		CrashHandler::InternalData* s_internalData = nullptr;
-
 		void GenerateCrashdump(const wchar_t* filename, EXCEPTION_POINTERS* e)
 		{
 			WinHandle dumpFile(CreateFileW(filename, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0));
@@ -64,7 +53,7 @@ namespace bw
 			exceptionInfo.ExceptionPointers = e;
 			exceptionInfo.ClientPointers = FALSE;
 
-			BOOL success = s_internalData->MiniDumpWriteDump(
+			BOOL success = MiniDumpWriteDump(
 				GetCurrentProcess(),
 				GetCurrentProcessId(),
 				dumpFile.get(),
@@ -193,47 +182,38 @@ namespace bw
 		}
 	}
 
-	CrashHandler::CrashHandler()
-	{
-	}
 
-	CrashHandler::~CrashHandler()
+	CrashHandlerWin32::~CrashHandlerWin32()
 	{
 		Uninstall();
+		MiniDumpWriteDump = nullptr;
 	}
 
-	bool CrashHandler::Install()
+	bool CrashHandlerWin32::Install()
 	{
-		if (!m_internalData)
+		if (!MiniDumpWriteDump)
 		{
-			auto internalData = std::make_unique<InternalData>();
-			if (!internalData->windbg.Load("Dbghelp.dll"))
+			if (!m_windbg.Load("Dbghelp.dll"))
 			{
-				fprintf(stderr, "failed to load Dbghelp.dll: %s\nCrashDump will not be generated.\n", internalData->windbg.GetLastError().GetConstBuffer());
+				fprintf(stderr, "failed to load Dbghelp.dll: %s\nCrashDump will not be generated.\n", m_windbg.GetLastError().GetConstBuffer());
 				return false;
 			}
 
-			internalData->MiniDumpWriteDump = reinterpret_cast<MiniDumpWriteDumpFn>(internalData->windbg.GetSymbol("MiniDumpWriteDump"));
-			if (!internalData->MiniDumpWriteDump)
+			MiniDumpWriteDump = reinterpret_cast<MiniDumpWriteDumpFn>(m_windbg.GetSymbol("MiniDumpWriteDump"));
+			if (!MiniDumpWriteDump)
 			{
 				fprintf(stderr, "failed to load MiniDumpWriteDump or StackWalk64 symbol from Dbghelp.dll\nCrashDump will not be generated.\n");
 				return false;
 			}
-
-			m_internalData = std::move(internalData);
 		}
 
-		s_internalData = m_internalData.get();
 		SetUnhandledExceptionFilter(HandleException);
 
 		return true;
 	}
 
-	void CrashHandler::Uninstall()
+	void CrashHandlerWin32::Uninstall()
 	{
 		SetUnhandledExceptionFilter(nullptr);
-		s_internalData = nullptr;
 	}
 }
-
-#endif
