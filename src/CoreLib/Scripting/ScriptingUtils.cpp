@@ -4,7 +4,6 @@
 
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
 {

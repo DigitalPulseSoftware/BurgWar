@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_UTILS_HPP
 #define BURGWAR_CORELIB_SCRIPTING_UTILS_HPP
 
-#include <Thirdparty/sol3/forward.hpp>
 #include <NDK/Entity.hpp>
+#include <Thirdparty/sol3/sol.hpp>
 #include <cstdlib>
 #include <memory>
 
