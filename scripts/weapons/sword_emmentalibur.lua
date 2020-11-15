@@ -33,12 +33,12 @@ if (SERVER) then
 
 		local ownerEntity = self:GetOwnerEntity()
 		physics.RegionQuery(self:GetLayerIndex(), rect, function (entity)
-			if (entity == ownerEntity) then
+			if (entity == ownerEntity or entity == self) then
 				return
 			end
 
 			entity:ApplyImpulse(dir * 10000)
-			entity:Damage(math.random(50, 150), self)
+			entity:Damage(math.random(15, 35), self)
 		end)
 	end)
 end

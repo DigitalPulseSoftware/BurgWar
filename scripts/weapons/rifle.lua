@@ -31,5 +31,5 @@ weapon:On("attack", function (self)
 	local shootDir = self:GetDirection()
 	local shootPos = self:GetPosition() + shootDir * 740 * self.Scale
 
-	self:Shoot(shootPos, shootDir, 20, 10000)
+	self:Shoot(shootPos, shootDir, 10, 10000)
 end)

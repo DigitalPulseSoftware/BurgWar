@@ -86,7 +86,7 @@ function entity:Explode()
 		local maxs = Vec2(256, 256) * scale
 		local mins = Vec2(-256, -256) * scale
 
-		self:DealDamage(self:GetPosition(), math.random(500, 1000), Rect(pos + mins, pos + maxs), 100000)
+		self:DealDamage(self:GetPosition(), math.random(50, 100), Rect(pos + mins, pos + maxs), 100000)
 	end
 end
 
