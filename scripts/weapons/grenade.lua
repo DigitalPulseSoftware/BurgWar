@@ -29,6 +29,6 @@ if (SERVER) then
 		projectile:SetScale(scale)
 
 		projectile:SetVelocity(self:GetDirection() * scale * 1000)
-		self:GetOwner():RemoveWeapon(self.FullName)
+		self:GetOwnerEntity():RemoveWeapon(self.FullName)
 	end)
 end
