@@ -2,6 +2,10 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include <Nazara/Prerequisites.hpp>
+
+#ifdef NAZARA_PLATFORM_WINDOWS
+
 #include <CoreLib/Utility/CrashHandlerWin32.hpp>
 #include <StackWalker/StackWalker.h>
 #include <array>
@@ -217,3 +221,5 @@ namespace bw
 		SetUnhandledExceptionFilter(nullptr);
 	}
 }
+
+#endif
