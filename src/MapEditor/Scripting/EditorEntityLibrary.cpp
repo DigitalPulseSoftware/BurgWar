@@ -15,7 +15,7 @@ namespace bw
 		RegisterEditorLibrary(elementMetatable);
 	}
 
-	void EditorEntityLibrary::InitRigidBody(const Ndk::EntityHandle& /*entity*/, float /*mass*/)
+	void EditorEntityLibrary::InitRigidBody(lua_State* /*L*/, const Ndk::EntityHandle& /*entity*/, float /*mass*/)
 	{
 		// Do nothing
 	}
