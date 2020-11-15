@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	class CrashHandlerFallback : CrashHandler
+	class CrashHandlerFallback : public CrashHandler
 	{
 		public:
 			CrashHandlerFallback() = default;
