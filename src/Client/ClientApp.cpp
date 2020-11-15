@@ -23,7 +23,7 @@ namespace bw
 	m_networkReactors(GetLogger())
 	{
 		if (!m_configFile.LoadFromFile("clientconfig.lua"))
-			throw std::runtime_error("Failed to load config file");
+			throw std::runtime_error("failed to load config file");
 
 		FillStores();
 

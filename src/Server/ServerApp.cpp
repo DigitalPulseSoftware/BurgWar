@@ -14,7 +14,7 @@ namespace bw
 	m_configFile(*this)
 	{
 		if (!m_configFile.LoadFromFile("serverconfig.lua"))
-			throw std::runtime_error("Failed to load config file");
+			throw std::runtime_error("failed to load config file");
 
 		Match::GamemodeSettings gamemodeSettings;
 		gamemodeSettings.name = m_configFile.GetStringValue("GameSettings.Gamemode");

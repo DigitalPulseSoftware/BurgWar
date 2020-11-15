@@ -149,7 +149,7 @@ namespace bw
 			int wideSize = MultiByteToWideChar(CP_UTF8, 0, content.data(), int(content.size()), &bufferPtr[offset], int(bufferLength) - offset);
 			if (wideSize == 0)
 			{
-				std::fputs("Failed to convert to wide char\n", stderr);
+				std::fputs("failed to convert to wide char\n", stderr);
 				return;
 			}
 			offset += wideSize;

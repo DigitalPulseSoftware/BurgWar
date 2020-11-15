@@ -67,7 +67,7 @@ namespace bw
 	m_mapDirtyFlag(false)
 	{
 		if (!m_configFile.LoadFromFile("editorconfig.lua"))
-			throw std::runtime_error("Failed to load config file");
+			throw std::runtime_error("failed to load config file");
 
 		FillStores();
 

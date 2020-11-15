@@ -18,7 +18,7 @@ namespace bw
 	inline void PacketSerializer::Read(void* ptr, std::size_t size)
 	{
 		if (m_buffer.Read(ptr, size) != size)
-			throw std::runtime_error("Failed to read");
+			throw std::runtime_error("failed to read");
 	}
 
 	inline bool PacketSerializer::IsWriting() const
@@ -29,7 +29,7 @@ namespace bw
 	inline void PacketSerializer::Write(const void* ptr, std::size_t size)
 	{
 		if (m_buffer.Write(ptr, size) != size)
-			throw std::runtime_error("Failed to write");
+			throw std::runtime_error("failed to write");
 	}
 
 	template<typename DataType>

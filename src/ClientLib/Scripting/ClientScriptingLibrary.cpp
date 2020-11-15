@@ -114,7 +114,7 @@ namespace bw
 			LocalLayer& layer = match.GetLayer(layerIndex);
 			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
 			if (!entityOpt)
-				throw std::runtime_error("Failed to create \"" + entityType + "\"");
+				throw std::runtime_error("failed to create \"" + entityType + "\"");
 
 			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
 

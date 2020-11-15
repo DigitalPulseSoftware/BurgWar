@@ -242,11 +242,11 @@ namespace bw
 
 		Nz::File file(filePath);
 		if (!file.Open(Nz::OpenMode_ReadOnly))
-			throw std::runtime_error("Failed to open " + filePath);
+			throw std::runtime_error("failed to open " + filePath);
 
 		std::vector<Nz::UInt8> content(file.GetSize());
 		if (file.Read(content.data(), content.size()) != content.size())
-			throw std::runtime_error("Failed to read " + filePath);
+			throw std::runtime_error("failed to read " + filePath);
 
 		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
 		hash->Begin();

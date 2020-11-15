@@ -224,7 +224,7 @@ namespace bw
 				if (!std::filesystem::is_directory(directory))
 				{
 					if (!std::filesystem::create_directories(directory))
-						throw std::runtime_error("Failed to create client script asset directory: " + directory.generic_u8string());
+						throw std::runtime_error("failed to create client script asset directory: " + directory.generic_u8string());
 				}
 
 				request.metadata->fileIndex = m_nextFileIndex;

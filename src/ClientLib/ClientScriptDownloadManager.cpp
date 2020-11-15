@@ -63,12 +63,12 @@ namespace bw
 		if (!std::filesystem::is_directory(clientFolderPath))
 		{
 			if (!std::filesystem::create_directories(clientFolderPath))
-				throw std::runtime_error("Failed to create client script cache directory: " + clientFolderPath.generic_u8string());
+				throw std::runtime_error("failed to create client script cache directory: " + clientFolderPath.generic_u8string());
 		}
 
 		Nz::File outputFile(filePath, Nz::OpenMode_Truncate | Nz::OpenMode_WriteOnly);
 		if (!outputFile.IsOpen())
-			throw std::runtime_error("Failed to open file " + filePath);
+			throw std::runtime_error("failed to open file " + filePath);
 
 		outputFile.Write(packet.fileContent.data(), packet.fileContent.size());
 		outputFile.Close();

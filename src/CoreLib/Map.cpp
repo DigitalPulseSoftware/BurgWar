@@ -440,7 +440,7 @@ namespace bw
 	{
 		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode_ReadOnly);
 		if (!infoFile.IsOpen())
-			throw std::runtime_error("Failed to open map file");
+			throw std::runtime_error("failed to open map file");
 
 		Nz::ErrorFlags errFlags(Nz::ErrorFlag_ThrowException);
 

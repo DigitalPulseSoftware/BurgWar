@@ -192,7 +192,7 @@ namespace bw
 
 			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
-				throw std::runtime_error("Failed to create \"" + entityType + "\"");
+				throw std::runtime_error("failed to create \"" + entityType + "\"");
 
 			if (owner)
 				entity->AddComponent<OwnerComponent>(std::move(owner));
