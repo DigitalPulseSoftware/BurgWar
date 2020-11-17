@@ -22,15 +22,19 @@ add_includedirs("thirdparty/include")
 set_languages("c89", "cxx17")
 
 add_packages("concurrentqueue", "fmt", "nlohmann_json")
-add_cxflags("-Wall", "-Wextra")
+set_symbols("debug", "hidden")
+set_warnings("allextra")
 
 if (is_mode("release")) then
+	set_fpmodels("fast")
     set_optimize("fastest")
+	add_vectorexts("sse", "sse2", "sse3", "ssse3")
 end
 
 if (is_plat("windows")) then
 	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
-	add_cxxflags("/EHsc", "/bigobj")
+	add_cxxflags("/bigobj", "/ZI", "/permissive-", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
+	add_cxxflags("/FC")
 end
 
 target("lua")
@@ -46,7 +50,7 @@ target("CoreLib")
 
 	add_deps("lua")
 	add_links("NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility")
-	add_headerfiles("include/CoreLib/**.hpp")
+	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 
 if (is_plat("windows")) then 
@@ -57,7 +61,8 @@ target("ClientLib")
 	set_kind("static")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/ClientLib/**.hpp")
+	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
+	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("libcurl", { public = true })
 
@@ -65,21 +70,31 @@ target("Main")
 	set_kind("static")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/Main/**.hpp")
+	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
+	add_headerfiles("src/Main/**.hpp", "src/Main/**.inl")
 	add_files("src/Main/**.cpp")
 
 target("BurgWar")
 	set_kind("binary")
 
 	add_deps("Main", "ClientLib", "CoreLib")
-	add_headerfiles("src/Client/**.hpp")
+	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
 
 target("BurgWarServer")
 	set_kind("binary")
 
 	add_deps("Main", "CoreLib")
-	add_headerfiles("src/Server/**.hpp")
+	add_headerfiles("src/Server/**.hpp", "src/Server/**.inl")
 	add_files("src/Server/**.cpp")
+
+target("BurgWarMapEditor")
+	set_kind("binary")
+	add_rules("qt.console", "qt.moc")
+
+	add_frameworks("QtCore", "QtGui", "QtWidgets")
+	add_deps("Main", "ClientLib", "CoreLib")
+	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
+	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
 
 target_end()
