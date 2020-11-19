@@ -51,7 +51,7 @@ namespace bw
 				static inline EntityData BuildData(Map::EntityIndices entityIndices, Map::Entity entity);
 
 			private:
-				static std::vector<EntityId> BuildEntitiesUniqueId(EditorWindow& editor, std::vector<EntityData>& entitiesData);
+				static std::vector<EntityId> BuildEntitiesUniqueId(std::vector<EntityData>& entitiesData);
 
 				std::vector<EntityData> m_entitiesData;
 		};

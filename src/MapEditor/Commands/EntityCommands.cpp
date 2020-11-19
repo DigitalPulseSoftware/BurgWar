@@ -35,7 +35,7 @@ namespace bw::Commands
 	}
 
 	EntityCreationDelete::EntityCreationDelete(EditorWindow& editor, const QString& label, std::vector<EntityData> entitiesData) :
-	EntitiesCommand(editor, BuildEntitiesUniqueId(editor, entitiesData), label),
+	EntitiesCommand(editor, BuildEntitiesUniqueId(entitiesData), label),
 	m_entitiesData(std::move(entitiesData))
 	{
 	}
@@ -80,7 +80,7 @@ namespace bw::Commands
 		}
 	}
 
-	std::vector<EntityId> EntityCreationDelete::BuildEntitiesUniqueId(EditorWindow& editor, std::vector<EntityData>& entitiesData)
+	std::vector<EntityId> EntityCreationDelete::BuildEntitiesUniqueId(std::vector<EntityData>& entitiesData)
 	{
 		// Sort entities by their entity index, ascending (in order to prevent issues when recreating them)
 		std::sort(entitiesData.begin(), entitiesData.end(), [&](const EntityData& lhs, const EntityData& rhs)
