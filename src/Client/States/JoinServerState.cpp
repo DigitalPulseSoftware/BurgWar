@@ -25,7 +25,8 @@ namespace bw
 {
 	JoinServerState::JoinServerState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
 	AbstractState(std::move(stateData)),
-	m_previousState(std::move(previousState))
+	m_previousState(std::move(previousState)),
+	m_isResolving(false)
 	{
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Hide();
@@ -76,6 +77,12 @@ namespace bw
 		});
 	}
 
+	JoinServerState::~JoinServerState()
+	{
+		if (m_resolvingThread.joinable())
+			m_resolvingThread.join();
+	}
+
 	void JoinServerState::Enter(Ndk::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
@@ -90,6 +97,17 @@ namespace bw
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
+
+		if (m_isResolving)
+		{
+			if (m_resolvingHasResult)
+			{
+				m_isResolving = false;
+
+				m_resolvingThread.join();
+				OnResolvingFinished();
+			}
+		}
 
 		if (m_nextGameState)
 			fsm.ResetState(std::move(m_nextGameState));
@@ -127,21 +145,37 @@ namespace bw
 			return;
 		}
 
-		Nz::ResolveError resolveError;
-		std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, serverHostname, Nz::String::Number(rawPort), &resolveError);
-		if (serverAddresses.empty())
-		{
-			UpdateStatus(std::string("Failed to resolve server address: ") + Nz::ErrorToString(resolveError), Nz::Color::Red);
-			return;
-		}
-
 		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
 		playerConfig.SetStringValue("JoinServer.Address", serverHostname.ToStdString());
 		playerConfig.SetIntegerValue("JoinServer.Port", rawPort);
 
 		GetStateData().app->SavePlayerConfig();
 
-		m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddresses.front().address);
+		m_isResolving = true;
+		m_resolvingHasResult = false;
+		m_resolvingThread = std::thread([=]
+		{
+			Nz::ResolveError resolveError;
+			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, serverHostname, Nz::String::Number(rawPort), &resolveError);
+			if (serverAddresses.empty())
+				m_resolvingResult = Nz::ErrorToString(resolveError);
+			else
+				m_resolvingResult = serverAddresses.front().address;
+
+			m_resolvingHasResult = true;
+		});
+
+		UpdateStatus("Resolving server adress...");
+	}
+
+	void JoinServerState::OnResolvingFinished()
+	{
+		assert(!std::holds_alternative<std::monostate>(m_resolvingResult));
+
+		if (std::holds_alternative<Nz::IpAddress>(m_resolvingResult))
+			m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::get<Nz::IpAddress>(m_resolvingResult));
+		else
+			UpdateStatus("Failed to resolve server address: " + std::get<std::string>(m_resolvingResult), Nz::Color::Red);
 	}
 
 	void JoinServerState::LayoutWidgets()
