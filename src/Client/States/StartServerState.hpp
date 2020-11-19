@@ -34,7 +34,6 @@ namespace bw
 
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextState;
-			std::shared_ptr<AbstractState> m_nextGameState;
 			Ndk::BoxLayout* m_serverConfigLayout;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_startServerButton;

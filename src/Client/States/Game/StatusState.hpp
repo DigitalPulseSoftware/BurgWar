@@ -28,6 +28,6 @@ namespace bw
 	};
 }
 
-#include <Client/States/Game/ConnectionState.inl>
+#include <Client/States/Game/StatusState.inl>
 
 #endif

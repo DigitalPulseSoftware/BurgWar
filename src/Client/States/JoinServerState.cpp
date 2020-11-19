@@ -173,7 +173,7 @@ namespace bw
 		assert(!std::holds_alternative<std::monostate>(m_resolvingResult));
 
 		if (std::holds_alternative<Nz::IpAddress>(m_resolvingResult))
-			m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::get<Nz::IpAddress>(m_resolvingResult));
+			m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::get<Nz::IpAddress>(m_resolvingResult), shared_from_this());
 		else
 			UpdateStatus("Failed to resolve server address: " + std::get<std::string>(m_resolvingResult), Nz::Color::Red);
 	}

@@ -9,26 +9,24 @@
 
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <Client/States/Game/StatusState.hpp>
+#include <Client/States/Game/CancelableState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <optional>
 
 namespace bw
 {
-	class AuthenticationState final : public StatusState
+	class AuthenticationState final : public CancelableState
 	{
 		public:
-			AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession);
+			AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, std::shared_ptr<AbstractState> originalState);
 			~AuthenticationState() = default;
 
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			void OnCancelled() override;
 
 			std::optional<Packets::AuthSuccess> m_authSuccessPacket;
-			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			float m_nextStateDelay;
 
 			NazaraSlot(ClientSession, OnAuthFailure, m_onAuthFailedSlot);
 			NazaraSlot(ClientSession, OnAuthSuccess, m_onAuthSucceededSlot);

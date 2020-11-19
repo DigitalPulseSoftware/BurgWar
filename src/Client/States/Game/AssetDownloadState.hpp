@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_ASSETDOWNLOADSTATE_HPP
 
 #include <ClientLib/HttpDownloadManager.hpp>
-#include <Client/States/Game/StatusState.hpp>
+#include <Client/States/Game/CancelableState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <optional>
 
@@ -16,22 +16,22 @@ namespace bw
 {
 	class ClientSession;
 
-	class AssetDownloadState final : public StatusState
+	class AssetDownloadState final : public CancelableState
 	{
 		public:
-			AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData);
+			AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<AbstractState> originalState);
 			~AssetDownloadState() = default;
 
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
+			void OnCancelled() override;
+
 			std::optional<HttpDownloadManager> m_httpDownloadManager;
-			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
 			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;
-			float m_nextStateDelay;
 	};
 }
 

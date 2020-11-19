@@ -15,25 +15,19 @@
 
 namespace bw
 {
-	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote) :
-	StatusState(std::move(stateData))
+	ConnectionState::ConnectionState(std::shared_ptr<StateData> stateData, std::variant<Nz::IpAddress, LocalSessionManager*> remote, std::shared_ptr<AbstractState> previousState) :
+	CancelableState(stateData, std::move(previousState))
 	{
 		ClientApp* app = GetStateData().app;
 		auto& networkManager = app->GetReactorManager();
 
 		m_clientSession = std::make_shared<ClientSession>(*app);
-
 		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this] (ClientSession*)
 		{
 			UpdateStatus("Connected, authenticating...", Nz::Color::White);
 
-			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession);
-
-			m_nextStateCallback = [this, authState = std::move(authState)](Ndk::StateMachine& fsm)
-			{
-				fsm.ChangeState(std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState)));
-			};
-			m_nextStateDelay = 0.5f;
+			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, GetOriginalState());
+			SwitchToState(std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState)), 0.5f);
 		});
 
 		m_clientSessionDisconnectedSlot.Connect(m_clientSession->OnDisconnected, [this](ClientSession*)
@@ -69,30 +63,12 @@ namespace bw
 	void ConnectionState::HandleConnectionFailure()
 	{
 		UpdateStatus("Failed to connect to server", Nz::Color::Red);
-
-		m_nextStateCallback = [this](Ndk::StateMachine& fsm)
-		{
-			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
-			fsm.PushState(std::make_shared<MainMenuState>(GetStateDataPtr()));
-		};
-
-		m_nextStateDelay = 3.f;
+		Cancel(3.f);
 	}
 
-	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	void ConnectionState::OnCancelled()
 	{
-		if (!AbstractState::Update(fsm, elapsedTime))
-			return false;
-
-		if (m_nextStateCallback)
-		{
-			if ((m_nextStateDelay -= elapsedTime) < 0.f)
-			{
-				m_nextStateCallback(fsm);
-				return true;
-			}
-		}
-
-		return true;
+		m_clientSessionDisconnectedSlot.Disconnect();
+		m_clientSession->Disconnect();
 	}
 }

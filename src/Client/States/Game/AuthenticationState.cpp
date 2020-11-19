@@ -9,16 +9,14 @@
 
 namespace bw
 {
-	AuthenticationState::AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession) :
-	StatusState(std::move(stateData)),
+	AuthenticationState::AuthenticationState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, std::shared_ptr<AbstractState> originalState) :
+	CancelableState(std::move(stateData), std::move(originalState)),
 	m_clientSession(std::move(clientSession))
 	{
 		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
 			UpdateStatus("Failed to authenticate", Nz::Color::Red);
-
-			m_nextState = std::make_shared<MainMenuState>(GetStateDataPtr());
-			m_nextStateDelay = 3.f;
+			Cancel(3.f);
 		});
 
 		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& data)
@@ -32,16 +30,13 @@ namespace bw
 			if (!m_authSuccessPacket)
 			{
 				UpdateStatus("Protocol error", Nz::Color::Red);
-
-				m_nextState = std::make_shared<MainMenuState>(GetStateDataPtr());
-				m_nextStateDelay = 3.f;
+				Cancel(3.f);
 				return;
 			}
 
 			UpdateStatus("Received match data", Nz::Color::White);
 
-			m_nextState = std::make_shared<AssetDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data);
-			m_nextStateDelay = 0.5f;
+			SwitchToState(std::make_shared<AssetDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), 0.5f);
 		});
 	}
 
@@ -57,20 +52,8 @@ namespace bw
 		m_clientSession->SendPacket(std::move(authPacket));
 	}
 
-	bool AuthenticationState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	void AuthenticationState::OnCancelled()
 	{
-		if (!StatusState::Update(fsm, elapsedTime))
-			return false;
-
-		if (m_nextState)
-		{
-			if ((m_nextStateDelay -= elapsedTime) < 0.f)
-			{
-				fsm.ChangeState(m_nextState);
-				return true;
-			}
-		}
-
-		return true;
+		m_clientSession->Disconnect();
 	}
 }

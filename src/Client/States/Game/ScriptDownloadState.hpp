@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_SCRIPTDOWNLOADSTATE_HPP
 
 #include <ClientLib/ClientScriptDownloadManager.hpp>
-#include <Client/States/Game/StatusState.hpp>
+#include <Client/States/Game/CancelableState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <optional>
 
@@ -17,22 +17,20 @@ namespace bw
 	class ClientSession;
 	class VirtualDirectory;
 
-	class ScriptDownloadState final : public StatusState
+	class ScriptDownloadState final : public CancelableState
 	{
 		public:
-			ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory);
+			ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<AbstractState> originalState);
 			~ScriptDownloadState() = default;
 
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			void OnCancelled() override;
 
 			std::optional<ClientScriptDownloadManager> m_downloadManager;
-			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
 			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;
-			float m_nextStateDelay;
 	};
 }
 

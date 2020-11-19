@@ -9,8 +9,8 @@
 
 namespace bw
 {
-	AssetDownloadState::AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData) :
-	StatusState(std::move(stateData)),
+	AssetDownloadState::AssetDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<AbstractState> originalState) :
+	CancelableState(std::move(stateData), std::move(originalState)),
 	m_clientSession(std::move(clientSession)),
 	m_authSuccess(std::move(authSuccess)),
 	m_matchData(std::move(matchData))
@@ -42,9 +42,7 @@ namespace bw
 		m_httpDownloadManager->OnFinished.Connect([this, targetResourceDirectory](HttpDownloadManager* /*downloadManager*/) mutable
 		{
 			UpdateStatus("Assets download finished", Nz::Color::White);
-
-			m_nextState = std::make_shared<ScriptDownloadState>(GetStateDataPtr(), m_clientSession, std::move(m_authSuccess), std::move(m_matchData), std::move(targetResourceDirectory));
-			m_nextStateDelay = 0.5f;
+			SwitchToState(std::make_shared<ScriptDownloadState>(GetStateDataPtr(), m_clientSession, std::move(m_authSuccess), std::move(m_matchData), std::move(targetResourceDirectory), GetOriginalState()), 0.5f);
 		});
 
 		for (const auto& asset : m_matchData.assets)
@@ -60,20 +58,16 @@ namespace bw
 
 	bool AssetDownloadState::Update(Ndk::StateMachine& fsm, float elapsedTime)
 	{
-		if (!StatusState::Update(fsm, elapsedTime))
+		if (!CancelableState::Update(fsm, elapsedTime))
 			return false;
-
-		if (m_nextState)
-		{
-			if ((m_nextStateDelay -= elapsedTime) < 0.f)
-			{
-				fsm.ChangeState(m_nextState);
-				return true;
-			}
-		}
 
 		m_httpDownloadManager->Update();
 
 		return true;
+	}
+
+	void AssetDownloadState::OnCancelled()
+	{
+		m_clientSession->Disconnect();
 	}
 }

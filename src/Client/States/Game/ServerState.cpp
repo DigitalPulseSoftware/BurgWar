@@ -10,8 +10,9 @@
 
 namespace bw
 {
-	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map) :
-	AbstractState(std::move(stateDataPtr))
+	ServerState::ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map, std::shared_ptr<AbstractState> originalState) :
+	AbstractState(std::move(stateDataPtr)),
+	m_originalState(std::move(originalState))
 	{
 		ClientApp& app = *GetStateData().app;
 		const ConfigFile& config = app.GetConfig();
@@ -41,7 +42,7 @@ namespace bw
 
 	void ServerState::Enter(Ndk::StateMachine& fsm)
 	{
-		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager));
+		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager, m_originalState));
 		/*Nz::IpAddress serverAddress = Nz::IpAddress::LoopbackIpV4;
 		serverAddress.SetPort(14768);
 

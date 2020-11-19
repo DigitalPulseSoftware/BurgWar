@@ -20,7 +20,7 @@ namespace bw
 	class ServerState final : public AbstractState
 	{
 		public:
-			ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map);
+			ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map, std::shared_ptr<AbstractState> originalState);
 			~ServerState() = default;
 
 			inline Match& GetMatch();
@@ -31,6 +31,7 @@ namespace bw
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
 			std::optional<Match> m_match;
+			std::shared_ptr<AbstractState> m_originalState;
 			LocalSessionManager* m_localSessionManager;
 			NetworkSessionManager* m_networkSessionManager;
 	};

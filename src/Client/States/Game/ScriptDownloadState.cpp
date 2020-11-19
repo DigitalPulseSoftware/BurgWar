@@ -10,8 +10,8 @@
 
 namespace bw
 {
-	ScriptDownloadState::ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory) :
-	StatusState(std::move(stateData)),
+	ScriptDownloadState::ScriptDownloadState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, Packets::AuthSuccess authSuccess, Packets::MatchData matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<AbstractState> originalState) :
+	CancelableState(std::move(stateData), std::move(originalState)),
 	m_clientSession(std::move(clientSession)),
 	m_authSuccess(std::move(authSuccess)),
 	m_matchData(std::move(matchData))
@@ -41,8 +41,7 @@ namespace bw
 			bwLog(app->GetLogger(), LogLevel::Info, "Creating match...");
 			UpdateStatus("Entering match...", Nz::Color::White);
 
-			m_nextState = std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(assetDirectory), std::move(scriptDirectory));
-			m_nextStateDelay = 0.5f;
+			SwitchToState(std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(assetDirectory), std::move(scriptDirectory)), 0.5f);
 		});
 
 		for (const auto& asset : m_matchData.scripts)
@@ -55,21 +54,9 @@ namespace bw
 
 		m_downloadManager->Start();
 	}
-
-	bool ScriptDownloadState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	
+	void ScriptDownloadState::OnCancelled()
 	{
-		if (!StatusState::Update(fsm, elapsedTime))
-			return false;
-
-		if (m_nextState)
-		{
-			if ((m_nextStateDelay -= elapsedTime) < 0.f)
-			{
-				fsm.ChangeState(m_nextState);
-				return true;
-			}
-		}
-
-		return true;
+		m_clientSession->Disconnect();
 	}
 }

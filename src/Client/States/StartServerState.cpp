@@ -110,9 +110,7 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		if (m_nextGameState)
-			fsm.ResetState(std::move(m_nextGameState));
-		else if (m_nextState)
+		if (m_nextState)
 			fsm.ChangeState(std::move(m_nextState));
 
 		return true;
@@ -162,7 +160,7 @@ namespace bw
 
 		try
 		{
-			m_nextGameState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), gamemode.ToStdString(), map.ToStdString());
+			m_nextState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), gamemode.ToStdString(), map.ToStdString(), shared_from_this());
 		}
 		catch (const std::exception& e)
 		{
