@@ -39,7 +39,7 @@ namespace bw
 		m_serverAddressArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
 		m_serverAddressArea->EnableBackground(true);
 		m_serverAddressArea->SetBackgroundColor(Nz::Color::White);
-		m_serverAddressArea->Resize({ 250.f, 36.f });
+		m_serverAddressArea->Resize({ 400.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
 		m_serverAddressArea->SetTextColor(Nz::Color::Black);
 
@@ -222,6 +222,7 @@ namespace bw
 	void JoinServerState::UpdateStatus(const std::string& status, const Nz::Color& color)
 	{
 		m_statusLabel->UpdateText(Nz::SimpleTextDrawer::Draw(status, 24, 0L, color));
+		m_statusLabel->Resize(m_statusLabel->GetPreferredSize()); //< FIXME
 		m_statusLabel->CenterHorizontal();
 		m_statusLabel->Show(true);
 	}
