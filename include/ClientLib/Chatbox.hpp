@@ -51,6 +51,8 @@ namespace bw
 
 			void PrintMessage(std::vector<Item> message);
 
+			void SendMessage();
+
 			Chatbox& operator=(const Chatbox&) = delete;
 			Chatbox& operator=(Chatbox&&) = delete;
 

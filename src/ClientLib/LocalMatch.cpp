@@ -776,7 +776,13 @@ namespace bw
 			{
 				case Nz::Keyboard::VKey::Escape:
 				{
-					m_escapeMenu.Show(!m_escapeMenu.IsVisible());
+					if (m_escapeMenu.IsVisible())
+						m_escapeMenu.Hide();
+					else if (m_chatBox.IsOpen())
+						m_chatBox.Close();
+					else
+						m_escapeMenu.Show();
+
 					break;
 				}
 
@@ -799,8 +805,17 @@ namespace bw
 					break;
 
 				case Nz::Keyboard::VKey::Return:
-					m_chatBox.Open(!m_chatBox.IsOpen());
+				{
+					if (m_chatBox.IsOpen())
+					{
+						m_chatBox.SendMessage();
+						m_chatBox.Close();
+					}
+					else
+						m_chatBox.Open();
+				
 					break;
+				}
 
 				case Nz::Keyboard::VKey::Tab:
 				{

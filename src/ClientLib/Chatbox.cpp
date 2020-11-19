@@ -74,14 +74,10 @@ namespace bw
 			}
 			else
 			{
-				Nz::String text = m_chatEnteringBox->GetText();
 				m_chatBox->EnableBackground(false);
 				m_chatboxScrollArea->EnableScrollbar(false);
 				m_chatEnteringBox->Clear();
 				m_chatEnteringBox->Hide();
-
-				if (!text.IsEmpty())
-					OnChatMessage(text.ToStdString());
 			}
 		}
 	}
@@ -114,6 +110,13 @@ namespace bw
 			m_chatLines.erase(m_chatLines.begin());
 
 		Refresh();
+	}
+
+	void Chatbox::SendMessage()
+	{
+		Nz::String text = m_chatEnteringBox->GetText();
+		if (!text.IsEmpty())
+			OnChatMessage(text.ToStdString());
 	}
 
 	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget)
