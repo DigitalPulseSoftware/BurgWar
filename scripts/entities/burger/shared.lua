@@ -172,41 +172,17 @@ entity:On("init", function (self)
 
 	-- Note that some positions are adjusted to prevent getting stuck
 
-	local colliderOffset = 2
+	local bottomColliderSize = 2
 
 	local colliders = {
 		{
-			-- Bottom
-			-- Adjust offsets to prevent
-			Collider = Segment(bottomLeft + Vec2(colliderOffset, 0), bottomRight - Vec2(colliderOffset, 0)),
-			Friction = 0,
-			FromNeighbor = topLeft,
-			ToNeighbor = topRight
+			-- Movement collider (bottom)
+			Collider = Rect(bottomLeft - Vec2(0, bottomColliderSize), bottomRight),
+			Friction = 0
 		},
 		{
-			-- Right side
-			Collider = Segment(bottomRight - Vec2(0, colliderOffset), topRight),
-			Friction = 0,
-			FromNeighbor = bottomLeft,
-			ToNeighbor = topLeft
-		},
-		{
-			-- Top
-			Collider = Segment(topRight - Vec2(colliderOffset, 0), topLeft + Vec2(colliderOffset, 0)),
-			Friction = 1,
-			FromNeighbor = bottomRight,
-			ToNeighbor = bottomLeft
-		},
-		{
-			-- Left side
-			Collider = Segment(topLeft, bottomLeft - Vec2(0, colliderOffset)),
-			Friction = 0,
-			FromNeighbor = topRight,
-			ToNeighbor = bottomRight
-		},
-		{
-			-- Internal cube (helps with high-speed collisions)
-			Collider = Rect(topLeft + Vec2(colliderOffset, colliderOffset) * 2, bottomRight - Vec2(colliderOffset, colliderOffset) * 2),
+			-- Main collider
+			Collider = Rect(topLeft, bottomRight - Vec2(0, bottomColliderSize)),
 			Friction = 0
 		}
 	}
