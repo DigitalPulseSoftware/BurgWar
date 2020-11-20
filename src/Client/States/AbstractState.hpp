@@ -42,9 +42,15 @@ namespace bw
 		private:
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
+			struct WidgetEntry
+			{
+				Ndk::BaseWidget* widget;
+				bool wasVisible = true;
+			};
+
 			std::shared_ptr<StateData> m_stateData;
 			std::vector<std::function<void()>> m_cleanupFunctions;
-			std::vector<Ndk::BaseWidget*> m_widgets;
+			std::vector<WidgetEntry> m_widgets;
 			std::vector<Ndk::EntityOwner> m_entities;
 			bool m_isVisible;
 	};

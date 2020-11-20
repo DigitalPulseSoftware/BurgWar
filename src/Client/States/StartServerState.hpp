@@ -33,6 +33,7 @@ namespace bw
 			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White);
 
 			std::shared_ptr<AbstractState> m_previousState;
+			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
 			Ndk::BoxLayout* m_serverConfigLayout;
 			Ndk::ButtonWidget* m_backButton;

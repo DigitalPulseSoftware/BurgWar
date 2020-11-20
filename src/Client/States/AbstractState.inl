@@ -17,8 +17,12 @@ namespace bw
 	T* AbstractState::CreateWidget(Args&&... args)
 	{
 		T* widget = m_stateData->canvas->Add<T>(std::forward<Args>(args)...);
-		widget->Show(m_isVisible);
-		m_widgets.push_back(widget);
+
+		auto& entry = m_widgets.emplace_back();
+		entry.widget = widget;
+
+		if (!m_isVisible)
+			entry.widget->Hide();
 
 		return widget;
 	}
@@ -34,7 +38,7 @@ namespace bw
 
 	inline void AbstractState::DestroyWidget(Ndk::BaseWidget* widget)
 	{
-		auto it = std::find(m_widgets.begin(), m_widgets.end(), widget);
+		auto it = std::find_if(m_widgets.begin(), m_widgets.end(), [&](const WidgetEntry& widgetEntity) { return widgetEntity.widget == widget; });
 		assert(it != m_widgets.end());
 
 		m_widgets.erase(it);

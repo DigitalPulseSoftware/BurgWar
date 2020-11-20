@@ -24,7 +24,7 @@ namespace bw
 			~JoinServerState();
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
+			void Leave(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
 			void LayoutWidgets() override;

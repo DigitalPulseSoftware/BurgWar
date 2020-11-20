@@ -10,6 +10,11 @@ namespace bw
 	m_stateData(std::move(stateData)),
 	m_isVisible(false)
 	{
+		m_onTargetChangeSizeSlot.Connect(m_stateData->window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*)
+		{
+			if (m_isVisible)
+				LayoutWidgets(); 
+		});
 	}
 
 	AbstractState::~AbstractState()
@@ -17,18 +22,19 @@ namespace bw
 		for (const auto& cleanupFunc : m_cleanupFunctions)
 			cleanupFunc();
 
-		for (Ndk::BaseWidget* widget : m_widgets)
-			widget->Destroy();
+		for (WidgetEntry& entry : m_widgets)
+			entry.widget->Destroy();
 	}
 
 	void AbstractState::Enter(Ndk::StateMachine& /*fsm*/)
 	{
 		m_isVisible = true;
 
-		m_onTargetChangeSizeSlot.Connect(m_stateData->window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*) { LayoutWidgets(); });
-
-		for (Ndk::BaseWidget* widget : m_widgets)
-			widget->Show(true);
+		for (WidgetEntry& entry : m_widgets)
+		{
+			if (entry.wasVisible)
+				entry.widget->Show();
+		}
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
@@ -48,10 +54,12 @@ namespace bw
 	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
 	{
 		m_isVisible = false;
-		m_onTargetChangeSizeSlot.Disconnect();
 
-		for (Ndk::BaseWidget* widget : m_widgets)
-			widget->Hide();
+		for (WidgetEntry& entry : m_widgets)
+		{
+			entry.wasVisible = entry.widget->IsVisible();
+			entry.widget->Hide();
+		}
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{

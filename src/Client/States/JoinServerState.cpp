@@ -75,6 +75,11 @@ namespace bw
 		{
 			OnBackPressed();
 		});
+
+		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+
+		m_serverAddressArea->SetText(playerConfig.GetStringValue("JoinServer.Address"));
+		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("JoinServer.Port")));
 	}
 
 	JoinServerState::~JoinServerState()
@@ -83,14 +88,11 @@ namespace bw
 			m_resolvingThread.join();
 	}
 
-	void JoinServerState::Enter(Ndk::StateMachine& fsm)
+	void JoinServerState::Leave(Ndk::StateMachine& fsm)
 	{
-		AbstractState::Enter(fsm);
+		m_statusLabel->Hide();
 
-		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-
-		m_serverAddressArea->SetText(playerConfig.GetStringValue("JoinServer.Address"));
-		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("JoinServer.Port")));
+		AbstractState::Leave(fsm);
 	}
 
 	bool JoinServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
@@ -165,7 +167,7 @@ namespace bw
 			m_resolvingHasResult = true;
 		});
 
-		UpdateStatus("Resolving server adress...");
+		UpdateStatus("Resolving server address...");
 	}
 
 	void JoinServerState::OnResolvingFinished()
