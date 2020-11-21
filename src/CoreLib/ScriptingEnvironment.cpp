@@ -13,28 +13,10 @@ namespace bw
 		m_scriptingContext = std::make_shared<ScriptingContext>(logger, scriptDir);
 		m_scriptingContext->LoadLibrary(std::move(scriptingLibrary));
 
-		sol::state& luaState = m_scriptingContext->GetLuaState();
-		luaState["print"] = [this](sol::this_state L, sol::variadic_args args)
+		m_scriptingContext->SetPrintFunction([this](const std::string& str, const Nz::Color& color)
 		{
-			if (!m_outputCallback)
-				return;
-
-			bool first = true;
-
-			std::ostringstream oss;
-			for (auto v : args)
-			{
-				std::size_t length;
-				const char* str = luaL_tolstring(L, v.stack_index(), &length);
-				oss << std::string(str, length);
-				if (!first)
-					oss << "\t";
-
-				first = false;
-			}
-
-			m_outputCallback(oss.str(), Nz::Color::White);
-		};
+			m_outputCallback(str, color);
+		});
 	}
 
 	bool ScriptingEnvironment::Execute(const std::string& command)

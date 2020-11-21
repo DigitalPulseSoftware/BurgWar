@@ -16,6 +16,16 @@ namespace bw
 	{
 		std::size_t MaxInactiveCoroutines = 20;
 	}
+	
+	ScriptingContext::ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir) :
+	m_scriptDirectory(std::move(scriptDir)),
+	m_logger(logger)
+	{
+		m_printFunction = [this](const std::string& str, const Nz::Color& /*color*/)
+		{
+			bwLog(m_logger, LogLevel::Info, str.data());
+		};
+	}
 
 	ScriptingContext::~ScriptingContext()
 	{

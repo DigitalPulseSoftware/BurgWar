@@ -12,12 +12,6 @@
 
 namespace bw
 {
-	ScriptingContext::ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir) :
-	m_scriptDirectory(std::move(scriptDir)),
-	m_logger(logger)
-	{
-	}
-
 	template<typename... Args>
 	sol::coroutine ScriptingContext::CreateCoroutine(Args&&... args)
 	{
@@ -73,7 +67,17 @@ namespace bw
 	{
 		return m_scriptDirectory;
 	}
-	
+
+	inline void ScriptingContext::Print(const std::string& str, const Nz::Color& color)
+	{
+		m_printFunction(str, color);
+	}
+
+	inline void ScriptingContext::SetPrintFunction(PrintFunction function)
+	{
+		m_printFunction = std::move(function);
+	}
+
 	inline void ScriptingContext::UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir)
 	{
 		m_scriptDirectory = std::move(scriptDir);

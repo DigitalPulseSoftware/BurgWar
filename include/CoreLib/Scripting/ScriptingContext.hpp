@@ -23,8 +23,9 @@ namespace bw
 		public:
 			struct Async {};
 			struct FileLoadCoroutine;
+			using PrintFunction = std::function<void(const std::string& str, const Nz::Color& color)>;
 
-			inline ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
+			ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
 			~ScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
@@ -42,7 +43,11 @@ namespace bw
 			bool LoadDirectory(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
+			inline void Print(const std::string& str, const Nz::Color& color = Nz::Color::White);
+
 			void ReloadLibraries();
+
+			inline void SetPrintFunction(PrintFunction function);
 
 			void Update();
 			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
@@ -68,6 +73,7 @@ namespace bw
 
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;
+			PrintFunction m_printFunction;
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			std::vector<std::shared_ptr<AbstractScriptingLibrary>> m_libraries;
 			std::vector<sol::thread> m_availableThreads;

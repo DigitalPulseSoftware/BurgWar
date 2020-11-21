@@ -41,8 +41,8 @@ namespace bw
 				first = false;
 			}
 
-			bwLog(GetLogger(), LogLevel::Info, oss.str());
 		};
+			context.Print(oss.str());
 	}
 
 	void AbstractScriptingLibrary::RegisterMetatableLibrary(ScriptingContext& context)
