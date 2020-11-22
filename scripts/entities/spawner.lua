@@ -18,7 +18,9 @@ entity:On("init", function (self)
 			self.SpawnData = self.SpawnedEntity:DumpCreationInfo()
 
 			self.SpawnedEntity:On("destroyed", function ()
-				self:OnSpawnedEntityDestroyed()
+				if (self:IsValid()) then
+					self:OnSpawnedEntityDestroyed()
+				end
 			end)
 		end
 	else
