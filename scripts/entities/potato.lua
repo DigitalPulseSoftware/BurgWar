@@ -44,6 +44,10 @@ end)
 
 if (SERVER) then
 	entity:On("collisionstart", function (self, other)
+		if (other.Passthrough) then
+			return false
+		end
+
 		self:Explode()
 		self:Kill()
 		return true

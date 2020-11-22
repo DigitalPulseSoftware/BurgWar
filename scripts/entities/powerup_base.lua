@@ -40,6 +40,8 @@ local entity = ScriptedEntity({
 	}
 })
 
+entity.Passthrough = true
+
 entity:On("init", function (self)
 	self.Duration = math.floor(self:GetProperty("duration") * 1000)
 

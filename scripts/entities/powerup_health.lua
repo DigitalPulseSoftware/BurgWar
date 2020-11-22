@@ -6,6 +6,8 @@ local entity = ScriptedEntity({
 	Properties = {}
 })
 
+entity.Passthrough = true
+
 entity:On("init", function (self)
 	local colliderSize = Vec2(400, 200) / 4 / 2
 	self:SetColliders({

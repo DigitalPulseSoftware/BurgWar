@@ -5,6 +5,8 @@ local entity = ScriptedEntity({
 	}
 })
 
+entity.Passthrough = true
+
 entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2

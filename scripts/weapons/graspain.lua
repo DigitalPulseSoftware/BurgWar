@@ -36,11 +36,16 @@ if (SERVER) then
 		local nearestFraction = math.huge
 		local nearestResult
 
-		local traceResult = physics.TraceMultiple(self:GetLayerIndex(), startPos, endPos, function (result)
+		physics.TraceMultiple(self:GetLayerIndex(), startPos, endPos, function (result)
 			if (result.fraction < nearestFraction) then
 				if (result.hitEntity) then
 					-- Ignore player
 					if (result.hitEntity == self:GetOwnerEntity()) then
+						return
+					end
+
+					-- Ignore entities with Passthrough flag
+					if (result.hitEntity.Passthrough) then
 						return
 					end
 				end
@@ -57,19 +62,14 @@ if (SERVER) then
 		local targetEntity
 		local targetOffset
 		local duration = 0.5
-		local hitPos
 
 		if (nearestResult) then
 			targetEntity = nearestResult.hitEntity
 			targetOffset = targetEntity:ToLocalPosition(nearestResult.hitPos)
 			duration = duration * nearestResult.fraction
-			hitPos = nearestResult.hitPos
 		else
-			hitPos = endPos
 			targetOffset = endPos
 		end
-
-		local direction = self:GetDirection()
 
 		self.GrappleSprite = match.CreateEntity({
 			Type = "entity_grapple_sprite",
