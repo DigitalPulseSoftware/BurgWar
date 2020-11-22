@@ -9,6 +9,7 @@
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/RandomEngine.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <CoreLib/Scripting/ScriptingUtils.hpp>
 
 namespace bw
 {
@@ -168,7 +169,7 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["include"] = [&](const std::string& scriptName)
+		luaState["include"] = ExceptToLuaErr([&](const std::string& scriptName)
 		{
 			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
 
@@ -219,7 +220,7 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterMetatableLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["RegisterMetatable"] = [](sol::this_state s, const char* metaname)
+		luaState["RegisterMetatable"] = ExceptToLuaErr([](sol::this_state s, const char* metaname)
 		{
 			if (luaL_newmetatable(s, metaname) == 0)
 			{
@@ -228,15 +229,15 @@ namespace bw
 			}
 
 			return sol::stack_table(s);
-		};
+		});
 
-		luaState["GetMetatable"] = [](sol::this_state s, const char* metaname)
+		luaState["GetMetatable"] = ExceptToLuaErr([](sol::this_state s, const char* metaname)
 		{
 			luaL_getmetatable(s, metaname);
 			return sol::stack_table(s);
-		};
+		});
 
-		luaState["AssertMetatable"] = [](sol::this_state s, sol::table tableRef, const char* metaname)
+		luaState["AssertMetatable"] = ExceptToLuaErr([](sol::this_state s, sol::table tableRef, const char* metaname)
 		{
 			sol::table metatable = tableRef[sol::metatable_key];
 			if (!metatable)
@@ -254,7 +255,7 @@ namespace bw
 				throw std::runtime_error("Table is not of type " + std::string(metaname));
 
 			return tableRef;
-		};
+		});
 	}
 
 	sol::usertype<RandomEngine> AbstractScriptingLibrary::RegisterRandomEngineClass(ScriptingContext& context)
@@ -265,7 +266,8 @@ namespace bw
 
 			"Generate", sol::overload(
 				[](RandomEngine& engine) { return engine.Generate(); },
-				[](RandomEngine& engine, Nz::Int64 a, Nz::Int64 b) { return engine.Generate(a, b); }),
+				[](RandomEngine& engine, Nz::Int64 a, Nz::Int64 b) { return engine.Generate(a, b); }
+			),
 
 			"Seed", &RandomEngine::Seed
 		);
