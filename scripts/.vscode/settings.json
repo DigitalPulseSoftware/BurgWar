@@ -29,6 +29,7 @@
         "ScriptedEntity",
         "ScriptedWeapon",
         "ScriptedGamemode",
-        "render"
+        "render",
+        "pprint"
     ]
 }
