@@ -2441,6 +2441,10 @@
 							"type": "Bool",
 							"value": false
 						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": -1000
+						},
 						"textureCells": {
 							"isArray": true,
 							"type": "IntegerSize",
@@ -2615,7 +2619,7 @@
 					"entityType": "entity_clove_mine",
 					"name": " (Clone)",
 					"position": {
-						"x": 1384.0,
+						"x": 1286.0,
 						"y": 763.0
 					},
 					"properties": {
@@ -2626,6 +2630,22 @@
 					},
 					"rotation": 0.0,
 					"uniqueId": 32
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": " (Clone) (Clone)",
+					"position": {
+						"x": 1384.0,
+						"y": 763.0
+					},
+					"properties": {
+						"free": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 60
 				},
 				{
 					"entityType": "entity_clove_mine",
@@ -5108,7 +5128,7 @@
 						},
 						"renderOrder": {
 							"type": "Integer",
-							"value": -100
+							"value": -1000
 						},
 						"textures": {
 							"isArray": true,
@@ -5213,8 +5233,8 @@
 					"entityType": "entity_sprite",
 					"name": "",
 					"position": {
-						"x": 6272.0,
-						"y": 2176.0
+						"x": 6317.0,
+						"y": 2148.0
 					},
 					"properties": {
 						"mass": {
@@ -5252,6 +5272,10 @@
 							"type": "Bool",
 							"value": false
 						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": -999
+						},
 						"size": {
 							"type": "FloatSize",
 							"value": {
@@ -5288,6 +5312,17 @@
 					"properties": {},
 					"rotation": 0.0,
 					"uniqueId": 58
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 9434.0,
+						"y": 2335.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 61
 				}
 			],
 			"name": "Layer #1"
