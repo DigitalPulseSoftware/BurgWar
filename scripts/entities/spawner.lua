@@ -51,7 +51,9 @@ if (SERVER) then
 
 			self.SpawnedEntity = match.CreateEntity(self.SpawnData)
 			self.SpawnedEntity:On("destroyed", function ()
-				self:OnSpawnedEntityDestroyed()
+				if (self:IsValid()) then
+					self:OnSpawnedEntityDestroyed()
+				end
 			end)
 		end
 	end)
