@@ -58,6 +58,8 @@ namespace bw
 							PushTableAsString(L);
 							break;
 						}
+
+						[[fallthrough]];
 					}
 
 					default:
