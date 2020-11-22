@@ -135,7 +135,7 @@ namespace bw
 				stream << entity.position.x << entity.position.y;
 				stream << entity.rotation.ToDegrees();
 
-				CompressedSigned<EntityId> compressedUniqueId;
+				CompressedSigned<EntityId> compressedUniqueId(entity.uniqueId);
 				stream << compressedUniqueId;
 
 				CompressedUnsigned<Nz::UInt16> propertyCount(Nz::UInt16(entity.properties.size()));
