@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_ELEMENTEVENTS_HPP
 #define BURGWAR_CORELIB_SCRIPTING_ELEMENTEVENTS_HPP
 
+#include <Nazara/Prerequisites.hpp>
 #include <CoreLib/Scripting/EventCombinator.hpp>
 #include <cstddef>
 #include <functional>
@@ -46,6 +47,15 @@ namespace bw
 		using ResultType = void;
 
 		static constexpr bool FatalError = true;
+	};
+
+	template<>
+	struct ElementEventData<ElementEvent::TakeDamage>
+	{
+		using ResultType = Nz::UInt16;
+
+		static constexpr bool FatalError = false;
+		static constexpr EventCombinator<Nz::UInt16, std::minus<Nz::UInt16>> Combinator = {};
 	};
 
 	constexpr std::size_t ElementEventCount = static_cast<std::size_t>(ElementEvent::Max) + 1;

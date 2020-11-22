@@ -20,6 +20,8 @@ namespace bw
 
 	inline void HealthComponent::Damage(Nz::UInt16 damage, const Ndk::EntityHandle& attacker)
 	{
+		OnDamage(this, damage, attacker);
+
 		Nz::UInt16 newHealth = m_currentHealth;
 		if (damage >= newHealth)
 			newHealth = 0;

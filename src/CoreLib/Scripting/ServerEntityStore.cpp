@@ -38,6 +38,14 @@ namespace bw
 		if (entityClass->maxHealth > 0)
 		{
 			auto& healthComponent = entity->AddComponent<HealthComponent>(entityClass->maxHealth);
+			healthComponent.OnDamage.Connect([](HealthComponent* health, Nz::UInt16& damageValue, const Ndk::EntityHandle& source)
+			{
+				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
+
+				if (auto ret = entityScript.ExecuteCallback<ElementEvent::TakeDamage>(damageValue, TranslateEntityToLua(source)); ret.has_value())
+					damageValue = *ret;
+			});
+
 			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, const Ndk::EntityHandle& source)
 			{
 				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();

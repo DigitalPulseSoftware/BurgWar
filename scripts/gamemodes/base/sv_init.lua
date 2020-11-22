@@ -25,9 +25,6 @@ gamemode:On("playerleave", function (self, player)
 end)
 
 function gamemode:OnPlayerSpawn(player)
-	local entity = player:GetControlledEntity()
-	entity:GiveWeapon("weapon_sword_emmentalibur")
-	entity:GiveWeapon("weapon_graspain")
 end
 
 function gamemode:GeneratePlayerEntityProperties(player)

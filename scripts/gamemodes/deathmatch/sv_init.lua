@@ -9,3 +9,19 @@ gamemode:On("playerdeath", function (self, player, attacker)
 		end
 	end
 end)
+
+function gamemode:OnPlayerSpawn(player)
+	local entity = player:GetControlledEntity()
+	entity:GiveWeapon("weapon_sword_emmentalibur")
+	entity:GiveWeapon("weapon_graspain")
+
+	local spawnImmunity = self:GetProperty("respawnimmunity")
+	if (spawnImmunity > 0) then
+		local immunityStart = match.GetSeconds()
+		entity:On("TakeDamage", function (self, damage, attacker)
+			if (match.GetSeconds() - immunityStart <= spawnImmunity) then
+				return 0 -- Cancel damage
+			end
+		end)
+	end
+end
