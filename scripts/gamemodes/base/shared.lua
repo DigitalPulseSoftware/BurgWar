@@ -5,3 +5,11 @@ RegisterClientScript("shared.lua")
 
 local gamemode = ScriptedGamemode()
 print("Mode de jeu: " .. gamemode.Name)
+
+gamemode.Musics = {
+    "Music/mushroomdance_0.ogg"
+}
+
+for _, music in pairs(gamemode.Musics) do
+    RegisterClientAssets(music)
+end

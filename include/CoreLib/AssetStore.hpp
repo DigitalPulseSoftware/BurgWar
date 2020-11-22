@@ -24,6 +24,7 @@ namespace bw
 
 			virtual void Clear();
 
+			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory() const;
 			const Nz::ImageRef& GetImage(const std::string& imagePath) const;
 
 			inline void UpdateAssetDirectory(std::shared_ptr<VirtualDirectory> assetDirectory);

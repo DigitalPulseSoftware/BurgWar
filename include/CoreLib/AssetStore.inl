@@ -14,6 +14,10 @@ namespace bw
 	m_assetDirectory(std::move(assetDirectory))
 	{
 	}
+	inline const std::shared_ptr<VirtualDirectory>& bw::AssetStore::GetAssetDirectory() const
+	{
+		return m_assetDirectory;
+	}
 
 	inline void AssetStore::UpdateAssetDirectory(std::shared_ptr<VirtualDirectory> assetDirectory)
 	{

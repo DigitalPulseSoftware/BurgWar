@@ -11,6 +11,7 @@
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
+#include <ClientLib/Scripting/Music.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 #include <Nazara/Graphics/ParticleFunctionRenderer.hpp>
@@ -33,12 +34,16 @@ namespace bw
 		RegisterDummyInputControllerClass(context);
 		RegisterGlobalLibrary(context);
 		RegisterLocalPlayerClass(context);
+		RegisterMusicClass(context);
 		RegisterParticleGroupClass(context);
 		RegisterScoreboardClass(context);
 		RegisterSoundClass(context);
 
 		sol::table particleTable = luaState.create_named_table("particle");
+		sol::table soundTable = luaState.create_named_table("sound");
+
 		RegisterParticleLibrary(context, particleTable);
+		RegisterSoundLibrary(context, soundTable);
 
 		context.LoadDirectory("autorun");
 	}
@@ -204,6 +209,47 @@ namespace bw
 			TriggerLuaError(L, "only the server can reload scripts");
 		};
 	}
+
+	void ClientScriptingLibrary::RegisterSoundLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["CreateMusicFromFile"] = [this](sol::this_state L, const std::string& musicPath) -> sol::object
+		{
+			LocalMatch& match = GetMatch();
+			const auto& assetDirectory = match.GetAssetStore().GetAssetDirectory();
+
+			VirtualDirectory::Entry entry;
+			if (!assetDirectory->GetEntry(musicPath, &entry))
+				return sol::make_object(L, std::make_pair(sol::nil, "file not found"));
+
+			Nz::Music music;
+
+			bool loaded = std::visit([&](auto&& arg)
+			{
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
+				{
+					bwLog(m_logger, LogLevel::Info, "Loading asset from memory");
+					return music.OpenFromMemory(arg.data(), arg.size());
+				}
+				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+				{
+					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.generic_u8string());
+					return music.OpenFromFile(arg.generic_u8string());
+				}
+				else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+				{
+					return false;
+				}
+				else
+					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+			}, entry);
+
+			if (!loaded)
+				return sol::make_object(L, std::make_pair(sol::nil, "failed to open music"));
+
+			return sol::make_object(L, Music(match.GetApplication(), std::move(music)));
+		};
+	}
 	
 	void ClientScriptingLibrary::RegisterCameraClass(ScriptingContext& context)
 	{
@@ -277,6 +323,32 @@ namespace bw
 			}),
 
 			"GetPlayerIndex", ExceptToLuaErr(&LocalPlayer::GetPlayerIndex)
+		);
+	}
+
+	void ClientScriptingLibrary::RegisterMusicClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Music>("Music",
+			"new", sol::no_constructor,
+
+			"EnableLooping", ExceptToLuaErr(&Music::EnableLooping),
+
+			"GetDuration",      ExceptToLuaErr(&Music::GetDuration),
+			"GetPlayingOffset", ExceptToLuaErr(&Music::GetPlayingOffset),
+			"GetSampleCount",   ExceptToLuaErr(&Music::GetSampleCount),
+			"GetSampleRate",    ExceptToLuaErr(&Music::GetSampleRate),
+
+			"IsLooping", ExceptToLuaErr(&Music::IsLooping),
+			"IsPlaying", ExceptToLuaErr(&Music::IsPlaying),
+
+			"Pause", ExceptToLuaErr(&Music::Pause),
+			"Play",  ExceptToLuaErr(&Music::Play),
+
+			"SetPlayingOffset", ExceptToLuaErr(&Music::SetPlayingOffset),
+
+			"Stop", ExceptToLuaErr(&Music::Stop)
 		);
 	}
 

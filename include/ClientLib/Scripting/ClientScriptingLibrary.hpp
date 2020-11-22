@@ -27,10 +27,12 @@ namespace bw
 			void RegisterMatchLibrary(ScriptingContext& context, sol::table& library) override;
 			virtual void RegisterParticleLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;
+			virtual void RegisterSoundLibrary(ScriptingContext& context, sol::table& library);
 
 			void RegisterCameraClass(ScriptingContext& context);
 			void RegisterDummyInputControllerClass(ScriptingContext& context);
 			void RegisterLocalPlayerClass(ScriptingContext& context);
+			void RegisterMusicClass(ScriptingContext& context);
 			void RegisterParticleGroupClass(ScriptingContext& context);
 			void RegisterScoreboardClass(ScriptingContext& context);
 			void RegisterSoundClass(ScriptingContext& context);

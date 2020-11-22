@@ -3,7 +3,14 @@ include("cl_scoreboard.lua")
 
 local gamemode = ScriptedGamemode()
 
-print("respawntime", gamemode:GetProperty("respawntime"))
+gamemode:On("init", function (self)
+	local musicName = self.Musics[math.random(1, #self.Musics)]
+	self.Music = sound.CreateMusicFromFile(musicName)
+	if (self.Music) then
+		self.Music:EnableLooping(true)
+		self.Music:Play()
+	end
+end)
 
 gamemode:On("changelayer", function (self, oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback

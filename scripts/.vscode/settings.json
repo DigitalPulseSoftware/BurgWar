@@ -30,6 +30,7 @@
         "ScriptedWeapon",
         "ScriptedGamemode",
         "render",
-        "pprint"
+        "pprint",
+        "sound"
     ]
 }
