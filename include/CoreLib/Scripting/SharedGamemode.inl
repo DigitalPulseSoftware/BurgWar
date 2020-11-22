@@ -74,7 +74,9 @@ namespace bw
 					return {};
 			}
 
-			combinedResult = EventData::Combinator(combinedResult, callbackResult.template get<ResultType>());
+			auto retOpt = callbackResult.template get<std::optional<ResultType>>();
+			if (retOpt)
+				combinedResult = EventData::Combinator(combinedResult, *retOpt);
 		}
 
 		return combinedResult;
