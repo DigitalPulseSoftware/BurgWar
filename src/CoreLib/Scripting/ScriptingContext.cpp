@@ -23,7 +23,7 @@ namespace bw
 	{
 		m_printFunction = [this](const std::string& str, const Nz::Color& /*color*/)
 		{
-			bwLog(m_logger, LogLevel::Info, str.data());
+			bwLog(m_logger, LogLevel::Info, "{}", str.data());
 		};
 	}
 
