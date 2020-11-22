@@ -19,6 +19,7 @@ namespace bw
 		float friction = 1.f;
 		Nz::Vector2f surfaceVelocity = Nz::Vector2f::Zero();
 		bool isTrigger = false;
+		unsigned int colliderId = 0;
 	};
 
 	struct CircleCollider

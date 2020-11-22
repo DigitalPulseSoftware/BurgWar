@@ -1,5 +1,6 @@
 RegisterClientScript()
 
+-- Table extension
 function table.count(tab)
 	local size = 0
 	for _, _ in pairs(tab) do
@@ -9,6 +10,7 @@ function table.count(tab)
 	return size
 end
 
+-- Utils table
 utils = {}
 function utils.OverrideFunction(originalFunc, newFunc)
 	if (not originalFunc) then

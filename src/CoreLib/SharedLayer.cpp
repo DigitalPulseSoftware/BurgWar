@@ -3,7 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/SharedLayer.hpp>
+#include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/SharedMatch.hpp>
+#include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
@@ -59,6 +61,28 @@ namespace bw
 		};
 
 		physics.RegisterCallbacks(1, triggerCallbacks);
+
+		triggerCallbacks.preSolveCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
+		{
+			bool shouldCollide = true;
+
+			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			{
+				if (first->HasComponent<PlayerMovementComponent>())
+				{
+					PlayerMovementComponent& playerMovement = first->GetComponent<PlayerMovementComponent>();
+					if (const auto& controller = playerMovement.GetController())
+						shouldCollide = shouldCollide && controller->PreSolveCollision(playerMovement, second, arbiter);
+				}
+			};
+
+			HandleCollision(bodyA, bodyB);
+			HandleCollision(bodyB, bodyA);
+
+			return shouldCollide;
+		};
+
+		physics.RegisterCallbacks(2, triggerCallbacks);
 
 		m_world.ForEachSystem([](Ndk::BaseSystem& system)
 		{

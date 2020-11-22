@@ -11,7 +11,12 @@ local entity = ScriptedEntity({
 })
 
 entity:On("init", function (self)
-	self:EnableCollisionCallbacks(true)
+	local colliders = self:GetColliders()
+	for _, collider in pairs(colliders) do
+		collider.ColliderType = ColliderType.Callback
+	end
+	self:SetColliders(colliders)
+	
 	self.DisappearTime = match.GetSeconds() + self:GetProperty("lifetime")
 end)
 

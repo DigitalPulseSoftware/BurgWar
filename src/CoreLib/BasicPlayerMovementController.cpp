@@ -10,6 +10,19 @@
 
 namespace bw
 {
+	bool BasicPlayerMovementController::PreSolveCollision(PlayerMovementComponent& playerMovement, const Ndk::EntityHandle& /*collisionBody*/, Nz::Arbiter2D& arbiter) const
+	{
+		Nz::Vector2f up = Nz::Vector2f::UnitY();
+
+		if (up.DotProduct(arbiter.GetNormal()) > 0.75f)
+		{
+			arbiter.SetFriction(playerMovement.GetGroundFriction());
+			arbiter.SetSurfaceVelocity(playerMovement.GetTargetVelocity());
+		}
+
+		return true;
+	}
+
 	void BasicPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const
 	{
 		bool isOnGround = playerMovement.IsOnGround();
@@ -54,8 +67,8 @@ namespace bw
 		if (inputs.isMovingRight)
 			targetVelocity += playerVelocity;
 
-		rigidBody.SetSurfaceVelocity(0, Nz::Vector2f(-targetVelocity, 0.f));
-		rigidBody.SetFriction(0, (isOnGround) ? groundAccel / gravity.y : 0.f);
+		playerMovement.UpdateTargetVelocity(Nz::Vector2f(targetVelocity, 0.f));
+		playerMovement.UpdateGroundFriction((isOnGround) ? groundAccel / gravity.y : 0.f);
 
 		Nz::Vector2f velocity = rigidBody.GetVelocity();
 

@@ -12,7 +12,7 @@ local entity = ScriptedEntity({
 entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
+	self:SetColliders(Rect(-colliderSize, colliderSize))
 	self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 
 	if (EDITOR) then

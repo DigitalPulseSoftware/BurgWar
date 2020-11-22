@@ -42,6 +42,7 @@ namespace bw
 				physics.friction = colliderData.get_or("Friction", physics.friction);
 				physics.isTrigger = colliderData.get_or("IsTrigger", physics.isTrigger);
 				physics.surfaceVelocity = colliderData.get_or("SurfaceVelocity", physics.surfaceVelocity);
+				physics.colliderId = colliderData.get_or("ColliderType", physics.colliderId);
 			}
 			else
 				colliderTable = colliderData;
@@ -91,6 +92,65 @@ namespace bw
 			else
 				throw std::runtime_error("invalid collider type " + typeName);
 		};
+
+		sol::table ColliderToTable(sol::state_view& state, const std::vector<Collider>& colliders)
+		{
+			sol::table colliderTable = state.create_table(int(colliders.size()), 0);
+
+			int index = 1;
+			for (const Collider& colliderInfo : colliders)
+			{
+				sol::table colliderData = state.create_table(0, 6);
+				std::visit([&](auto&& collider)
+				{
+					using T = std::decay_t<decltype(collider)>;
+
+					colliderData["Elasticity"] = collider.physics.elasticity;
+					colliderData["Friction"] = collider.physics.friction;
+					colliderData["IsTrigger"] = collider.physics.isTrigger;
+					colliderData["SurfaceVelocity"] = collider.physics.surfaceVelocity;
+					colliderData["ColliderType"] = collider.physics.colliderId;
+
+					if constexpr (std::is_same_v<T, CircleCollider>)
+					{
+						lua_createtable(state, 0, 2);
+						luaL_setmetatable(state, "circle");
+						sol::stack_table circle(state);
+						circle["origin"] = collider.offset;
+						circle["radius"] = collider.radius;
+
+						colliderData["Collider"] = circle;
+					}
+					else if constexpr (std::is_same_v<T, RectangleCollider>)
+					{
+						colliderData["Collider"] = collider.data;
+					}
+					else if constexpr (std::is_same_v<T, SegmentCollider>)
+					{
+						lua_createtable(state, 0, 2);
+						luaL_setmetatable(state, "segment");
+						sol::stack_table segment(state);
+						segment["from"] = collider.from;
+						segment["to"] = collider.to;
+
+						colliderData["Collider"] = segment;
+
+						if (collider.fromNeighbor != collider.from)
+							colliderData["FromNeighbor"] = collider.fromNeighbor;
+
+						if (collider.toNeighbor != collider.to)
+							colliderData["ToNeighbor"] = collider.toNeighbor;
+					}
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+
+				}, colliderInfo);
+
+				colliderTable[index++] = colliderData;
+			}
+
+			return colliderTable;
+		}
 	}
 
 	void SharedEntityLibrary::RegisterLibrary(sol::table& elementMetatable)
@@ -168,18 +228,6 @@ namespace bw
 			entityHealth.Damage(damage, (attackerEntity) ? RetrieveScriptEntity(*attackerEntity) : Ndk::EntityHandle::InvalidHandle);
 		});
 
-		elementMetatable["EnableCollisionCallbacks"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, bool enable)
-		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			if (!entity->HasComponent<CollisionDataComponent>())
-				TriggerLuaArgError(L, 1, "entity has no colliders");
-
-			auto& entityCollData = entity->GetComponent<CollisionDataComponent>();
-			entityCollData.EnableCollisionCallbacks(enable);
-
-			entity->GetComponent<Ndk::CollisionComponent2D>().SetGeom(entityCollData.BuildCollider(), false, false);
-		});
-
 		elementMetatable["ForceSleep"] = ExceptToLuaErr([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
@@ -189,6 +237,17 @@ namespace bw
 				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 				physComponent.ForceSleep();
 			}
+		});
+		
+		elementMetatable["GetColliders"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> sol::object
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			if (!entity->HasComponent<CollisionDataComponent>())
+				return sol::nil;
+
+			sol::state_view state(L);
+
+			return ColliderToTable(state, entity->GetComponent<CollisionDataComponent>().GetColliders());
 		});
 
 		elementMetatable["GetHealth"] = ExceptToLuaErr([](const sol::table& entityTable) -> Nz::UInt16
@@ -373,9 +432,7 @@ namespace bw
 					});
 				}
 				else
-				{
 					hitEntityPhys.SetVelocityFunction(nullptr);
-				}
 			}
 		});
 
@@ -395,7 +452,7 @@ namespace bw
 			physComponent.SetAngularVelocity(velocity);
 		});
 
-		elementMetatable["SetCollider"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
+		elementMetatable["SetColliders"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 

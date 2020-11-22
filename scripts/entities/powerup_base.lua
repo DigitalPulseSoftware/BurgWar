@@ -48,8 +48,10 @@ entity:On("init", function (self)
 	local spriteSize = scale * size
 
 	local colliderSize = spriteSize / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
-	self:EnableCollisionCallbacks(true)
+	self:SetColliders({
+		Collider = Rect(-colliderSize, colliderSize),
+		ColliderType = ColliderType.Callback
+	})
 
 	if (CLIENT) then
 		self.Sprite = self:AddSprite({

@@ -7,4 +7,9 @@
 namespace bw
 {
 	PlayerMovementController::~PlayerMovementController() = default;
+	
+	bool PlayerMovementController::PreSolveCollision(PlayerMovementComponent& /*playerMovement*/, const Ndk::EntityHandle& /*collisionBody*/, Nz::Arbiter2D& /*arbiter*/) const
+	{
+		return true;
+	}
 }

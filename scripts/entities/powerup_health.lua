@@ -8,8 +8,11 @@ local entity = ScriptedEntity({
 
 entity:On("init", function (self)
 	local colliderSize = Vec2(400, 200) / 4 / 2
-	self:SetCollider({ Collider = Rect(-colliderSize, colliderSize), IsTrigger = true })
-	self:EnableCollisionCallbacks(true)
+	self:SetColliders({
+		Collider = Rect(-colliderSize, colliderSize),
+		IsTrigger = true,
+		ColliderType = ColliderType.Callback
+	})
 
 	if (CLIENT) then
 		self:AddSprite({

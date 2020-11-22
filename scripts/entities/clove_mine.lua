@@ -23,20 +23,22 @@ entity.Status = "free"
 entity:On("init", function (self)
 	local centerOffset = -Vec2(96, 96) / 2
 	local colliders = {
-		Circle(Vec2(48, 27) + centerOffset, 21),
-		Rect(Vec2(41, 47) + centerOffset, Vec2(55, 94) + centerOffset)
+		{
+			Collider = Circle(Vec2(48, 27) + centerOffset, 21),
+			ColliderType = SERVER and ColliderType.Callback or ColliderType.Default
+		},
+		{
+			Collider = Rect(Vec2(41, 47) + centerOffset, Vec2(55, 94) + centerOffset),
+			ColliderType = ColliderType.Default
+		}
 	}
 
-	self:SetCollider(colliders)
+	self:SetColliders(colliders)
 	if (self:GetProperty("free")) then
 		self:InitRigidBody(10, 10)
 	else
 		self:InitRigidBody(0, 10)
 		self.Status = "digged"
-	end
-
-	if (SERVER) then
-		self:EnableCollisionCallbacks(true)
 	end
 
 	if (CLIENT) then

@@ -3,7 +3,9 @@ RegisterClientScript()
 local circlemeta = RegisterMetatable("circle")
 circlemeta.__index = circlemeta
 
-
+function circlemeta:__tostring()
+	return "circle(" .. tostring(self.origin) .. "; " .. tostring(self.radius) .. ")"
+end
 
 function Circle(center, radius)
 	AssertMetatable(center, "vec2")

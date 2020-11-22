@@ -128,7 +128,7 @@ entity:On("init", function (self)
 		end
 
 		if (#colliders > 0) then
-			self:SetCollider(colliders)
+			self:SetColliders(colliders)
 			self:InitRigidBody(self:GetProperty("mass"), self:GetProperty("friction"))
 		end
 	end

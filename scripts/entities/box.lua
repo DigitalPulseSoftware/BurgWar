@@ -14,7 +14,7 @@ entity:On("init", function (self)
 	local size = self:GetProperty("size")
 
 	local colliderSize = Vec2(0.2, 0.2) * size * 256 / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
+	self:SetColliders(Rect(-colliderSize, colliderSize))
 
 	if (self:GetProperty("dynamic")) then
 		self:InitRigidBody(size * 50, 10)

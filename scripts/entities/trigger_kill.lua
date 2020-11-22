@@ -7,8 +7,10 @@ local entity = ScriptedEntity({
 entity:On("init", function (self)
 	local size = self:GetProperty("size")
 	local colliderSize = size / 2
-	self:SetCollider(Rect(-colliderSize, colliderSize))
-	self:EnableCollisionCallbacks(true)
+	self:SetColliders({
+		Collider = Rect(-colliderSize, colliderSize),
+		ColliderType = ColliderType.Callback
+	})
 
 	if (EDITOR) then
 		self:AddSprite({

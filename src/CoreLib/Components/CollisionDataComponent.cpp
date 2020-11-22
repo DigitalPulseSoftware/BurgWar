@@ -17,7 +17,7 @@ namespace bw
 		else if (m_colliders.size() == 1)
 		{
 			// Single collider
-			return ToCollider(m_colliders.front(), scale, m_hasCollisionCallbacks);
+			return ToCollider(m_colliders.front(), scale);
 		}
 		else
 		{
@@ -27,7 +27,7 @@ namespace bw
 			simpleColliders.reserve(m_colliders.size());
 
 			for (const auto& collider : m_colliders)
-				simpleColliders.emplace_back(ToCollider(collider, scale, m_hasCollisionCallbacks));
+				simpleColliders.emplace_back(ToCollider(collider, scale));
 
 			Nz::CompoundCollider2DRef compound = Nz::CompoundCollider2D::New(std::move(simpleColliders));
 			compound->OverridesCollisionProperties(false);
@@ -36,7 +36,7 @@ namespace bw
 		}
 	}
 
-	Nz::Collider2DRef CollisionDataComponent::ToCollider(const Collider& collider, float scale, bool hasCollisionCallbacks)
+	Nz::Collider2DRef CollisionDataComponent::ToCollider(const Collider& collider, float scale)
 	{
 		return std::visit([&](auto&& arg) -> Nz::Collider2DRef
 		{
@@ -61,12 +61,11 @@ namespace bw
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
+			collider->SetCollisionId(arg.physics.colliderId);
 			collider->SetElasticity(arg.physics.elasticity);
 			collider->SetFriction(arg.physics.friction);
 			collider->SetSurfaceVelocity(arg.physics.surfaceVelocity);
 			collider->SetTrigger(arg.physics.isTrigger);
-
-			collider->SetCollisionId((hasCollisionCallbacks) ? 1 : 0);
 
 			return collider;
 

@@ -172,26 +172,17 @@ entity:On("init", function (self)
 
 	-- Note that some positions are adjusted to prevent getting stuck
 
-	local bottomColliderSize = 2
-
-	local colliders = {
-		{
-			-- Movement collider (bottom)
-			Collider = Rect(bottomLeft - Vec2(0, bottomColliderSize), bottomRight),
-			Friction = 0
-		},
-		{
-			-- Main collider
-			Collider = Rect(topLeft, bottomRight - Vec2(0, bottomColliderSize)),
-			Friction = 0
-		}
+	local collider = {
+		Collider = Rect(topLeft, bottomRight),
+		Friction = 0,
+		ColliderType = ColliderType.Player
 	}
 
 	if (controller) then
 		self:UpdatePlayerMovementController(controller)
 	end
 
-	self:SetCollider(colliders)
+	self:SetColliders(collider)
 	self:InitRigidBody(50)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation
 end)

@@ -19,28 +19,21 @@ namespace bw
 		friend class ColliderSystem;
 
 		public:
-			inline CollisionDataComponent();
+			CollisionDataComponent() = default;
 			~CollisionDataComponent() = default;
 
 			inline void AddCollider(Collider collider);
 
 			Nz::Collider2DRef BuildCollider(float scale = 1.f) const;
 
-			inline void DisableCollisionCallbacks();
-			inline void EnableCollisionCallbacks(bool enable = true);
-
 			inline const std::vector<Collider>& GetColliders() const;
-
-			inline bool HasCollisionCallbacks() const;
-
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			static Nz::Collider2DRef ToCollider(const Collider& collider, float scale, bool hasCollisionCallbacks);
+			static Nz::Collider2DRef ToCollider(const Collider& collider, float scale);
 
 			std::vector<Collider> m_colliders;
-			bool m_hasCollisionCallbacks;
 	};
 }
 

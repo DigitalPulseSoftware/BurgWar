@@ -27,6 +27,12 @@ end
 NoEntity = 0
 NoLayer = 0xFFFF
 
+ColliderType = enums.Create({
+	Default = 0,
+	Callback = 1,
+	Player = 2
+})
+
 PropertyType = enums.Create({
 	Boolean           = 0,
 	Entity            = 1,

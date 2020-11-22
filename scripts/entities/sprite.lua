@@ -38,7 +38,7 @@ entity:On("init", function (self)
 
 	if (self:GetProperty("physical")) then
 		local colliderSize = spriteSize / 2
-		self:SetCollider(Rect(-colliderSize, colliderSize))
+		self:SetColliders(Rect(-colliderSize, colliderSize))
 	end
 
 	if (mass > 0) then
