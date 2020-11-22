@@ -31,8 +31,14 @@ namespace bw
 						break;
 
 					case LUA_TSTRING:
-					case LUA_TNUMBER:
 						lua_pushvalue(L, idx);
+						break;
+
+					case LUA_TNUMBER:
+						if (lua_isinteger(L, idx))
+							lua_pushfstring(L, "%I", (LUAI_UACINT)lua_tointeger(L, idx));
+						else
+							lua_pushfstring(L, "%f", (LUAI_UACNUMBER)lua_tonumber(L, idx));
 						break;
 
 					case LUA_TBOOLEAN:
