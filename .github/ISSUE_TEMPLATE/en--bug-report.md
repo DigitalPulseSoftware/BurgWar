@@ -1,6 +1,6 @@
 ---
-name: Bug report (English)
-about: Create a report to help us improve
+name: (English) Bug report
+about: Create a report to help us improve the game
 title: "[BUG] "
 labels: bug, english
 assignees: SirLynix

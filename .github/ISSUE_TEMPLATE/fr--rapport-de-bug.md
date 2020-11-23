@@ -1,5 +1,5 @@
 ---
-name: Rapport de bug (Français)
+name: (Français) Rapport de bug
 about: Remontez un bug pour nous aider à améliorer le jeu
 title: "[BUG] "
 labels: bug, french
