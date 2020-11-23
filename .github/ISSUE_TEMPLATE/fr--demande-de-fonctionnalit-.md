@@ -1,5 +1,5 @@
 ---
-name: Demande de fonctionnalité (Français)
+name: (Français) Demande de fonctionnalité
 about: Suggérer une idée pour améliorer le jeu
 title: "[FEATURE] "
 labels: enhancement, french
