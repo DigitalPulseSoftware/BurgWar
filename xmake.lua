@@ -33,7 +33,7 @@ end
 
 if (is_plat("windows")) then
 	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
-	add_cxxflags("/bigobj", "/ZI", "/permissive-", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
+	add_cxxflags("/bigobj", "/ZI", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
 end
 
