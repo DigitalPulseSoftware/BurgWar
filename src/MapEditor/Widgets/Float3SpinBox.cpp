@@ -140,5 +140,3 @@ namespace bw
 		emit valueChanged(value());
 	}
 }
-
-#include "Float3SpinBox.moc"

@@ -117,5 +117,3 @@ namespace bw
 		emit valueChanged(value());
 	}
 }
-
-#include "Float2SpinBox.moc"
