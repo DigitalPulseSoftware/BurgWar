@@ -255,7 +255,7 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<Camera>("Camera",
+		state.new_usertype<CameraHandle>("Camera",
 			"new", sol::no_constructor,
 
 			"GetFOV",         LuaFunction(&Camera::GetFOV),
@@ -309,7 +309,7 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<LocalPlayer>("LocalPlayer",
+		state.new_usertype<LocalPlayerHandle>("LocalPlayer",
 			"new", sol::no_constructor,
 
 			"GetName", LuaFunction(&LocalPlayer::GetName),
@@ -385,7 +385,7 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<Scoreboard>("Scoreboard",
+		state.new_usertype<ScoreboardHandle>("Scoreboard",
 			"new", sol::no_constructor,
 
 			"AddColumn", LuaFunction(&Scoreboard::AddColumn),

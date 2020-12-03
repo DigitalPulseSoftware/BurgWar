@@ -273,8 +273,8 @@ namespace bw
 			sol::constructors<RandomEngine(), RandomEngine(std::uint_fast64_t)>(),
 
 			"Generate", sol::overload(
-				[](RandomEngine& engine) { return engine.Generate(); },
-				[](RandomEngine& engine, Nz::Int64 a, Nz::Int64 b) { return engine.Generate(a, b); }
+				LuaFunction([](RandomEngine& engine) { return engine.Generate(); }),
+				LuaFunction([](RandomEngine& engine, Nz::Int64 a, Nz::Int64 b) { return engine.Generate(a, b); })
 			),
 
 			"Seed", &RandomEngine::Seed

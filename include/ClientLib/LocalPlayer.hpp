@@ -27,6 +27,8 @@ namespace bw
 			inline Nz::UInt16 GetPing() const;
 			inline Nz::UInt16 GetPlayerIndex() const;
 
+			inline const std::string& ToString() const;
+
 			inline void UpdateName(std::string name);
 			inline void UpdatePing(Nz::UInt16 ping);
 
