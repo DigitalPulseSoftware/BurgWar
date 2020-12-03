@@ -207,7 +207,7 @@ namespace bw
 
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["ApplyImpulse"] = ExceptToLuaErr([this](const sol::table& entityTable, const Nz::Vector2f& force)
+		elementMetatable["ApplyImpulse"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2f& force)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -218,7 +218,7 @@ namespace bw
 			}
 		});
 
-		elementMetatable["Damage"] = ExceptToLuaErr([](const sol::table& entityTable, Nz::UInt16 damage, std::optional<sol::table> attackerEntity)
+		elementMetatable["Damage"] = LuaFunction([](const sol::table& entityTable, Nz::UInt16 damage, std::optional<sol::table> attackerEntity)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
@@ -228,7 +228,7 @@ namespace bw
 			entityHealth.Damage(damage, (attackerEntity) ? RetrieveScriptEntity(*attackerEntity) : Ndk::EntityHandle::InvalidHandle);
 		});
 
-		elementMetatable["ForceSleep"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["ForceSleep"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -239,7 +239,7 @@ namespace bw
 			}
 		});
 		
-		elementMetatable["GetColliders"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> sol::object
+		elementMetatable["GetColliders"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<CollisionDataComponent>())
@@ -250,7 +250,7 @@ namespace bw
 			return ColliderToTable(state, entity->GetComponent<CollisionDataComponent>().GetColliders());
 		});
 
-		elementMetatable["GetHealth"] = ExceptToLuaErr([](const sol::table& entityTable) -> Nz::UInt16
+		elementMetatable["GetHealth"] = LuaFunction([](const sol::table& entityTable) -> Nz::UInt16
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
@@ -260,7 +260,7 @@ namespace bw
 			return entityHealth.GetHealth();
 		});
 
-		elementMetatable["GetMass"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> sol::object
+		elementMetatable["GetMass"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -273,7 +273,7 @@ namespace bw
 				return sol::nil;
 		});
 
-		elementMetatable["GetMomentOfInertia"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> sol::object
+		elementMetatable["GetMomentOfInertia"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -286,7 +286,7 @@ namespace bw
 				return sol::nil;
 		});
 
-		elementMetatable["GetPlayerMovementController"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable)
+		elementMetatable["GetPlayerMovementController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -296,7 +296,7 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().GetController();
 		});
 
-		elementMetatable["GetPlayerMovementSpeed"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable)
+		elementMetatable["GetPlayerMovementSpeed"] = LuaFunction([](sol::this_state L, const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -306,7 +306,7 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().GetMovementSpeed();
 		});
 
-		elementMetatable["GetPlayerJumpHeight"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable)
+		elementMetatable["GetPlayerJumpHeight"] = LuaFunction([](sol::this_state L, const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -320,14 +320,14 @@ namespace bw
 			return std::make_pair(jumpHeight, jumpBoostHeigh);
 		});
 
-		elementMetatable["GetUpVector"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetUpVector"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetUp());
 		});
 
-		elementMetatable["GetVelocity"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetVelocity"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -337,7 +337,7 @@ namespace bw
 			return physComponent.GetVelocity();
 		});
 
-		elementMetatable["Heal"] = ExceptToLuaErr([](const sol::table& entityTable, Nz::UInt16 value, std::optional<sol::table> healerEntity)
+		elementMetatable["Heal"] = LuaFunction([](const sol::table& entityTable, Nz::UInt16 value, std::optional<sol::table> healerEntity)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
@@ -347,7 +347,7 @@ namespace bw
 			entityHealth.Heal(value, (healerEntity) ? RetrieveScriptEntity(*healerEntity) : Ndk::EntityHandle::InvalidHandle);
 		});
 
-		elementMetatable["InitWeaponWielder"] = ExceptToLuaErr([](const sol::table& entityTable, const sol::table& wielderData)
+		elementMetatable["InitWeaponWielder"] = LuaFunction([](const sol::table& entityTable, const sol::table& wielderData)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -355,7 +355,7 @@ namespace bw
 			wielderComponent.SetWeaponOffset(wielderData["WeaponOffset"]);
 		});
 
-		elementMetatable["IsFullHealth"] = ExceptToLuaErr([](const sol::table& entityTable) -> bool
+		elementMetatable["IsFullHealth"] = LuaFunction([](const sol::table& entityTable) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<HealthComponent>())
@@ -365,14 +365,14 @@ namespace bw
 			return entityHealth.GetHealth() >= entityHealth.GetMaxHealth();
 		});
 
-		elementMetatable["InitRigidBody"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, float mass)
+		elementMetatable["InitRigidBody"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, float mass)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			this->InitRigidBody(L, entity, mass);
 		});
 
-		elementMetatable["IsPlayerOnGround"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable)
+		elementMetatable["IsPlayerOnGround"] = LuaFunction([](sol::this_state L, const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -382,7 +382,7 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().IsOnGround();
 		});
 
-		elementMetatable["IsSleeping"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["IsSleeping"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -391,7 +391,7 @@ namespace bw
 				return false;
 		});
 
-		elementMetatable["Kill"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["Kill"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (entity->HasComponent<HealthComponent>())
@@ -403,7 +403,7 @@ namespace bw
 				entity->Kill();
 		});
 
-		elementMetatable["OverrideMovementController"] = ExceptToLuaErr([this](const sol::table& entityTable, sol::main_protected_function fn)
+		elementMetatable["OverrideMovementController"] = LuaFunction([this](const sol::table& entityTable, sol::main_protected_function fn)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -436,13 +436,13 @@ namespace bw
 			}
 		});
 
-		elementMetatable["Remove"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["Remove"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Kill();
 		});
 
-		elementMetatable["SetAngularVelocity"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::DegreeAnglef& velocity)
+		elementMetatable["SetAngularVelocity"] = LuaFunction([](const sol::table& entityTable, const Nz::DegreeAnglef& velocity)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -452,7 +452,7 @@ namespace bw
 			physComponent.SetAngularVelocity(velocity);
 		});
 
-		elementMetatable["SetColliders"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
+		elementMetatable["SetColliders"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const sol::table& colliderTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -496,7 +496,7 @@ namespace bw
 			entity->AddComponent<Ndk::CollisionComponent2D>(entityCollData.BuildCollider(entityNode.GetScale().y));
 		});
 
-		elementMetatable["SetDirection"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& upVector)
+		elementMetatable["SetDirection"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& upVector)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
@@ -522,14 +522,14 @@ namespace bw
 		};
 
 		elementMetatable["SetMass"] = sol::overload(
-			ExceptToLuaErr([=](sol::this_state L, const sol::table& entityTable, float mass)
+			LuaFunction([=](sol::this_state L, const sol::table& entityTable, float mass)
 			{
 				SetMass(L, entityTable, mass); 
 			}),
-			ExceptToLuaErr(SetMass)
+			LuaFunction(SetMass)
 		);
 
-		elementMetatable["SetMomentOfInertia"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, float momentum)
+		elementMetatable["SetMomentOfInertia"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, float momentum)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -539,7 +539,7 @@ namespace bw
 			SetMomentOfInertia(L, entity, momentum);
 		});
 
-		elementMetatable["SetPosition"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& position)
+		elementMetatable["SetPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& position)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
@@ -555,7 +555,7 @@ namespace bw
 			nodeComponent.SetPosition(position);
 		});
 
-		elementMetatable["SetRotation"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::DegreeAnglef& rotation)
+		elementMetatable["SetRotation"] = LuaFunction([](const sol::table& entityTable, const Nz::DegreeAnglef& rotation)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
@@ -571,7 +571,7 @@ namespace bw
 			nodeComponent.SetRotation(rotation);
 		});
 
-		elementMetatable["SetVelocity"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& velocity)
+		elementMetatable["SetVelocity"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& velocity)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity || !entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -581,7 +581,7 @@ namespace bw
 			physComponent.SetVelocity(velocity);
 		});
 
-		elementMetatable["UpdateInputs"] = ExceptToLuaErr([](const sol::table& entityTable, const PlayerInputData& inputs)
+		elementMetatable["UpdateInputs"] = LuaFunction([](const sol::table& entityTable, const PlayerInputData& inputs)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity || !entity->HasComponent<InputComponent>())
@@ -591,7 +591,7 @@ namespace bw
 			entityInputs.UpdateInputs(inputs);
 		});
 
-		elementMetatable["UpdatePlayerMovementController"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
+		elementMetatable["UpdatePlayerMovementController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<PlayerMovementComponent>())
@@ -600,13 +600,13 @@ namespace bw
 			return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(controller));
 		});
 
-		elementMetatable["UpdatePlayerMovementSpeed"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, float newSpeed)
+		elementMetatable["UpdatePlayerMovementSpeed"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, float newSpeed)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			return UpdatePlayerMovement(L, entity, newSpeed);
 		});
 
-		elementMetatable["UpdatePlayerJumpHeight"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, float newJumpHeight, float newJumpBoostHeight)
+		elementMetatable["UpdatePlayerJumpHeight"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, float newJumpHeight, float newJumpBoostHeight)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			return UpdatePlayerJumpHeight(L, entity, newJumpHeight, newJumpBoostHeight);

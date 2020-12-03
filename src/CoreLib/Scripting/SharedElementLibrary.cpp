@@ -22,7 +22,7 @@ namespace bw
 
 	void SharedElementLibrary::RegisterCommonLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["DeleteOnRemove"] = ExceptToLuaErr([](const sol::table& entityTable, const sol::table& targetEntityTable)
+		elementMetatable["DeleteOnRemove"] = LuaFunction([](const sol::table& entityTable, const sol::table& targetEntityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
@@ -33,19 +33,19 @@ namespace bw
 			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
 		});
 
-		elementMetatable["Disable"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["Disable"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Disable();
 		});
 
-		elementMetatable["Enable"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["Enable"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Enable();
 		});
 
-		elementMetatable["GetDirection"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetDirection"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -58,7 +58,7 @@ namespace bw
 			return direction;
 		});
 
-		elementMetatable["GetPosition"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetPosition"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -66,7 +66,7 @@ namespace bw
 			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
 		});
 
-		elementMetatable["GetRotation"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetRotation"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -74,7 +74,7 @@ namespace bw
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
 		});
 
-		elementMetatable["GetScale"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["GetScale"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -83,13 +83,13 @@ namespace bw
 			return std::abs(scale.y);
 		});
 
-		elementMetatable["IsEnabled"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["IsEnabled"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			return entity->IsEnabled();
 		});
 
-		elementMetatable["IsLookingRight"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["IsLookingRight"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -97,35 +97,35 @@ namespace bw
 			return nodeComponent.GetScale().x > 0.f;
 		});
 
-		elementMetatable["IsValid"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["IsValid"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
 		});
 
-		elementMetatable["On"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
+		elementMetatable["On"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(L, entityTable, event, std::move(callback), false);
 		});
 
-		elementMetatable["OnAsync"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
+		elementMetatable["OnAsync"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
 			RegisterEvent(L, entityTable, event, std::move(callback), true);
 		});
 
-		elementMetatable["SetLifeTime"] = ExceptToLuaErr([](const sol::table& entityTable, float lifetime)
+		elementMetatable["SetLifeTime"] = LuaFunction([](const sol::table& entityTable, float lifetime)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
 		});
 
-		elementMetatable["SetScale"] = ExceptToLuaErr([&](const sol::table& entityTable, float scale)
+		elementMetatable["SetScale"] = LuaFunction([&](const sol::table& entityTable, float scale)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			SetScale(entity, scale);
 		});
 
-		elementMetatable["ToLocalPosition"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
+		elementMetatable["ToLocalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -133,7 +133,7 @@ namespace bw
 			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
 		});
 
-		elementMetatable["ToGlobalPosition"] = ExceptToLuaErr([](const sol::table& entityTable, const Nz::Vector2f& localPosition)
+		elementMetatable["ToGlobalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& localPosition)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -141,7 +141,7 @@ namespace bw
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
 		});
 
-		elementMetatable["Trigger"] = ExceptToLuaErr([](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
+		elementMetatable["Trigger"] = LuaFunction([](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 

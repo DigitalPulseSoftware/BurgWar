@@ -83,7 +83,7 @@ namespace bw
 		};
 
 		elementMetatable["Shoot"] = sol::overload(
-			ExceptToLuaErr(shootFunc),
-			ExceptToLuaErr([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); }));
+			LuaFunction(shootFunc),
+			LuaFunction([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); }));
 	}
 }

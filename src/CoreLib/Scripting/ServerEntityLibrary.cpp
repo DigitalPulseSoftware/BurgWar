@@ -22,7 +22,7 @@ namespace bw
 
 	void ServerEntityLibrary::RegisterServerLibrary(sol::table& entityMetatable)
 	{
-		entityMetatable["GetWeaponCount"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable) -> std::size_t
+		entityMetatable["GetWeaponCount"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> std::size_t
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
@@ -32,7 +32,7 @@ namespace bw
 			return weaponWielder.GetWeaponCount();
 		});
 
-		entityMetatable["GiveWeapon"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, std::string weaponClass) -> bool
+		entityMetatable["GiveWeapon"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, std::string weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
@@ -73,7 +73,7 @@ namespace bw
 			return weaponIndex != WeaponWielderComponent::NoWeapon;
 		});
 
-		entityMetatable["HasWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
+		entityMetatable["HasWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
@@ -83,7 +83,7 @@ namespace bw
 			return weaponWielder.HasWeapon(weaponClass);
 		});
 
-		entityMetatable["RemoveWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass)
+		entityMetatable["RemoveWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
@@ -93,7 +93,7 @@ namespace bw
 			weaponWielder.RemoveWeapon(weaponClass);
 		});
 
-		entityMetatable["SelectWeapon"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
+		entityMetatable["SelectWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())

@@ -27,7 +27,7 @@ namespace bw
 	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage);
 	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const std::string& errMessage);
 
-	template<typename F> auto ExceptToLuaErr(F funcPtr);
+	template<typename F> auto LuaFunction(F funcPtr);
 }
 
 #include <CoreLib/Scripting/ScriptingUtils.inl>

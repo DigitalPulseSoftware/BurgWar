@@ -119,7 +119,7 @@ namespace bw
 	}
 
 	template<typename F> 
-	auto ExceptToLuaErr(F funcPtr)
+	auto LuaFunction(F funcPtr)
 	{
 		using Wrapper = Detail::LuaCallWrapper<F>;
 		return Wrapper::WrapExceptions(funcPtr);

@@ -177,7 +177,7 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["include"] = ExceptToLuaErr([&](const std::string& scriptName)
+		luaState["include"] = LuaFunction([&](const std::string& scriptName)
 		{
 			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
 
@@ -214,12 +214,12 @@ namespace bw
 			context.Print(oss.str());
 		};
 
-		luaState["pprint"] = ExceptToLuaErr([=](sol::this_state L, sol::variadic_args args)
+		luaState["pprint"] = LuaFunction([=](sol::this_state L, sol::variadic_args args)
 		{
 			PrintExt(L, args, true);
 		});
 
-		luaState["print"] = ExceptToLuaErr([=](sol::this_state L, sol::variadic_args args)
+		luaState["print"] = LuaFunction([=](sol::this_state L, sol::variadic_args args)
 		{
 			PrintExt(L, args, false);
 		});
@@ -228,7 +228,7 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterMetatableLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["RegisterMetatable"] = ExceptToLuaErr([](sol::this_state s, const char* metaname)
+		luaState["RegisterMetatable"] = LuaFunction([](sol::this_state s, const char* metaname)
 		{
 			if (luaL_newmetatable(s, metaname) == 0)
 			{
@@ -239,13 +239,13 @@ namespace bw
 			return sol::stack_table(s);
 		});
 
-		luaState["GetMetatable"] = ExceptToLuaErr([](sol::this_state s, const char* metaname)
+		luaState["GetMetatable"] = LuaFunction([](sol::this_state s, const char* metaname)
 		{
 			luaL_getmetatable(s, metaname);
 			return sol::stack_table(s);
 		});
 
-		luaState["AssertMetatable"] = ExceptToLuaErr([](sol::this_state s, sol::table tableRef, const char* metaname)
+		luaState["AssertMetatable"] = LuaFunction([](sol::this_state s, sol::table tableRef, const char* metaname)
 		{
 			sol::table metatable = tableRef[sol::metatable_key];
 			if (!metatable)

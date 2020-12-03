@@ -30,7 +30,7 @@ namespace bw
 
 	void ClientElementLibrary::RegisterClientLibrary(sol::table& elementTable)
 	{
-		elementTable["AddSprite"] = ExceptToLuaErr([this](const sol::table& entityTable, const sol::table& parameters)
+		elementTable["AddSprite"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -122,7 +122,7 @@ namespace bw
 			}
 		});
 
-		elementTable["AddModel"] = ExceptToLuaErr([this](const sol::table& entityTable, const sol::table& parameters)
+		elementTable["AddModel"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -175,18 +175,18 @@ namespace bw
 		};
 
 		elementTable["DealDamage"] = sol::overload(
-			ExceptToLuaErr(DealDamage),
-			ExceptToLuaErr([=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); })
+			LuaFunction(DealDamage),
+			LuaFunction([=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); })
 		);
 
-		elementTable["GetLayerIndex"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
 		});
 		
-		elementTable["GetProperty"] = ExceptToLuaErr([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(table);
 
@@ -210,7 +210,7 @@ namespace bw
 				return sol::nil;
 		});
 
-		elementTable["PlaySound"] = ExceptToLuaErr([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
+		elementTable["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<LocalMatchComponent>();

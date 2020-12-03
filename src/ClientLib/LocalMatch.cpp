@@ -327,7 +327,7 @@ namespace bw
 		m_weaponStore->Resolve();
 
 		sol::state& state = m_scriptingContext->GetLuaState();
-		state["engine_AnimateRotation"] = ExceptToLuaErr([&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
+		state["engine_AnimateRotation"] = LuaFunction([&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -353,7 +353,7 @@ namespace bw
 			return 0;
 		});
 
-		state["engine_AnimatePositionByOffsetSq"] = ExceptToLuaErr([&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
+		state["engine_AnimatePositionByOffsetSq"] = LuaFunction([&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -379,17 +379,17 @@ namespace bw
 			return 0;
 		});
 
-		state["engine_GetLocalPlayer_PlayerIndex"] = ExceptToLuaErr([&](Nz::UInt8 localIndex) -> Nz::UInt16
+		state["engine_GetLocalPlayer_PlayerIndex"] = LuaFunction([&](Nz::UInt8 localIndex) -> Nz::UInt16
 		{
 			return m_localPlayers[localIndex].playerIndex;
 		});
 
-		state["engine_GetLocalPlayerCount"] = ExceptToLuaErr([&]() -> std::size_t
+		state["engine_GetLocalPlayerCount"] = LuaFunction([&]() -> std::size_t
 		{
 			return m_localPlayers.size();
 		});
 
-		state["engine_GetPlayerPosition"] = ExceptToLuaErr([&](sol::this_state L, Nz::UInt8 localIndex) -> sol::object
+		state["engine_GetPlayerPosition"] = LuaFunction([&](sol::this_state L, Nz::UInt8 localIndex) -> sol::object
 		{
 			if (localIndex >= m_localPlayers.size())
 				TriggerLuaArgError(L, 1, "invalid player index");
@@ -401,12 +401,12 @@ namespace bw
 				return sol::nil;
 		});
 
-		state["engine_GetActiveLayer"] = ExceptToLuaErr([&]()
+		state["engine_GetActiveLayer"] = LuaFunction([&]()
 		{
 			return m_activeLayerIndex;
 		});
 
-		state["engine_OverridePlayerInputController"] = ExceptToLuaErr([&](sol::this_state L, Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
+		state["engine_OverridePlayerInputController"] = LuaFunction([&](sol::this_state L, Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
 		{
 			if (localIndex >= m_localPlayers.size())
 				TriggerLuaArgError(L, 1, "invalid player index");

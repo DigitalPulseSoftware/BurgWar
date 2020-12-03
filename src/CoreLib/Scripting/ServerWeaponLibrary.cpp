@@ -24,7 +24,7 @@ namespace bw
 
 	void ServerWeaponLibrary::RegisterServerLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["IsPlayingAnimation"] = ExceptToLuaErr([](const sol::table& weaponTable)
+		elementMetatable["IsPlayingAnimation"] = LuaFunction([](const sol::table& weaponTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
@@ -33,7 +33,7 @@ namespace bw
 			return entity->GetComponent<AnimationComponent>().IsPlaying();
 		});
 
-		elementMetatable["PlayAnim"] = ExceptToLuaErr([&](const sol::table& weaponTable, const std::string& animationName)
+		elementMetatable["PlayAnim"] = LuaFunction([&](const sol::table& weaponTable, const std::string& animationName)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			if (!entity->HasComponent<AnimationComponent>())
@@ -74,8 +74,8 @@ namespace bw
 		};
 
 		elementMetatable["Shoot"] = sol::overload(
-			ExceptToLuaErr(shootFunc),
-			ExceptToLuaErr([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); })
+			LuaFunction(shootFunc),
+			LuaFunction([=](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage) { shootFunc(weaponTable, startPos, direction, damage); })
 		);
 	}
 }

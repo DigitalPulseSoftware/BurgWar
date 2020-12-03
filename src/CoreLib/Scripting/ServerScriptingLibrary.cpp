@@ -47,7 +47,7 @@ namespace bw
 
 	void ServerScriptingLibrary::RegisterAssetLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["GetTexture"] = ExceptToLuaErr([this](const std::string& texturePath) -> std::optional<ServerTexture>
+		library["GetTexture"] = LuaFunction([this](const std::string& texturePath) -> std::optional<ServerTexture>
 		{
 			const Nz::ImageRef& image = m_assetStore.GetImage(texturePath);
 			if (image)
@@ -65,7 +65,7 @@ namespace bw
 		state["CLIENT"] = false;
 		state["SERVER"] = true;
 
-		state["RegisterClientAssets"] = ExceptToLuaErr([&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
+		state["RegisterClientAssets"] = LuaFunction([&](sol::this_state L, const sol::object& paths) -> std::pair<bool, sol::object>
 		{
 			try
 			{
@@ -98,7 +98,7 @@ namespace bw
 			}
 		});
 
-		state["RegisterClientScript"] = ExceptToLuaErr([&](sol::this_state L, const sol::optional<std::string_view>& path) -> std::pair<bool, sol::object>
+		state["RegisterClientScript"] = LuaFunction([&](sol::this_state L, const sol::optional<std::string_view>& path) -> std::pair<bool, sol::object>
 		{
 			try
 			{
@@ -131,7 +131,7 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["BroadcastPacket"] = ExceptToLuaErr([&](const OutgoingNetworkPacket& outgoingPacket)
+		library["BroadcastPacket"] = LuaFunction([&](const OutgoingNetworkPacket& outgoingPacket)
 		{
 			Match& match = GetMatch();
 
@@ -139,7 +139,7 @@ namespace bw
 			match.BroadcastPacket(outgoingPacket.ToPacket(networkStringStore));
 		});
 
-		library["CreateEntity"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& parameters)
+		library["CreateEntity"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)
 		{
 			Match& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
@@ -212,7 +212,7 @@ namespace bw
 			return scriptComponent.GetTable();
 		});
 
-		library["CreateWeapon"] = ExceptToLuaErr([&](sol::this_state L, const sol::table& parameters)
+		library["CreateWeapon"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)
 		{
 			Match& match = GetMatch();
 			auto& weaponStore = match.GetWeaponStore();
@@ -268,12 +268,12 @@ namespace bw
 			return scriptComponent.GetTable();
 		});
 
-		library["GetLocalTick"] = ExceptToLuaErr([&]()
+		library["GetLocalTick"] = LuaFunction([&]()
 		{
 			return GetMatch().GetCurrentTick();
 		});
 		
-		library["GetPlayers"] = ExceptToLuaErr([&](sol::this_state L) -> sol::table
+		library["GetPlayers"] = LuaFunction([&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);
 
@@ -290,7 +290,7 @@ namespace bw
 			return playerTable;
 		});
 
-		library["GetTick"] = ExceptToLuaErr([&]()
+		library["GetTick"] = LuaFunction([&]()
 		{
 			return GetMatch().GetCurrentTick();
 		});
@@ -300,7 +300,7 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterNetworkLibrary(context, library);
 
-		library["RegisterPacket"] = ExceptToLuaErr([&](std::string packetName)
+		library["RegisterPacket"] = LuaFunction([&](std::string packetName)
 		{
 			GetMatch().RegisterNetworkString(std::move(packetName));
 		});
@@ -309,9 +309,9 @@ namespace bw
 	void ServerScriptingLibrary::RegisterPlayerClass(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
-		state.new_usertype<Player>("Player", 
+		state.new_usertype<PlayerHandle>("Player", 
 			"new", sol::no_constructor,
-			"GetControlledEntity", ExceptToLuaErr([](const Player& player) -> sol::object
+			"GetControlledEntity", LuaFunction([](const Player& player) -> sol::object
 			{
 				const Ndk::EntityHandle& controlledEntity = player.GetControlledEntity();
 				if (!controlledEntity)
@@ -320,25 +320,25 @@ namespace bw
 				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
 				return scriptComponent.GetTable();
 			}),
-			"GetLayerIndex", ExceptToLuaErr(&Player::GetLayerIndex),
-			"GetPlayerIndex", ExceptToLuaErr(&Player::GetPlayerIndex),
-			"GetName", ExceptToLuaErr(&Player::GetName),
-			"IsAdmin", ExceptToLuaErr(&Player::IsAdmin),
-			"MoveToLayer", ExceptToLuaErr([](Player& player, std::optional<LayerIndex> layerIndex)
+			"GetLayerIndex", LuaFunction(&Player::GetLayerIndex),
+			"GetPlayerIndex", LuaFunction(&Player::GetPlayerIndex),
+			"GetName", LuaFunction(&Player::GetName),
+			"IsAdmin", LuaFunction(&Player::IsAdmin),
+			"MoveToLayer", LuaFunction([](Player& player, std::optional<LayerIndex> layerIndex)
 			{
 				if (layerIndex)
 					player.MoveToLayer(layerIndex.value());
 				else
 					player.MoveToLayer(Player::NoLayer);
 			}),
-			"PrintChatMessage", ExceptToLuaErr(&Player::PrintChatMessage),
-			"SendPacket", ExceptToLuaErr([this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
+			"PrintChatMessage", LuaFunction(&Player::PrintChatMessage),
+			"SendPacket", LuaFunction([this](Player& player, const OutgoingNetworkPacket& outgoingPacket)
 			{
 				const NetworkStringStore& networkStringStore = GetSharedMatch().GetNetworkStringStore();
 				player.SendPacket(outgoingPacket.ToPacket(networkStringStore));
 			}),
-			"SetAdmin", ExceptToLuaErr(&Player::SetAdmin),
-			"UpdateControlledEntity", ExceptToLuaErr([](Player& player, sol::optional<sol::table> entityTable)
+			"SetAdmin", LuaFunction(&Player::SetAdmin),
+			"UpdateControlledEntity", LuaFunction([](Player& player, sol::optional<sol::table> entityTable)
 			{
 				if (entityTable)
 				{
@@ -349,7 +349,7 @@ namespace bw
 				else
 					player.UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle);
 			}),
-			"UpdateLayerVisibility", ExceptToLuaErr(&Player::UpdateLayerVisibility)
+			"UpdateLayerVisibility", LuaFunction(&Player::UpdateLayerVisibility)
 		);
 	}
 
@@ -357,7 +357,7 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = ExceptToLuaErr([this]()
+		library["ReloadAll"] = LuaFunction([this]()
 		{
 			Match& match = GetMatch();
 			match.ReloadScripts();
@@ -371,7 +371,7 @@ namespace bw
 		state.new_usertype<ServerTexture>("Texture",
 			"new", sol::no_constructor,
 
-			"GetSize", ExceptToLuaErr(&ServerTexture::GetSize)
+			"GetSize", LuaFunction(&ServerTexture::GetSize)
 		);
 	}
 
