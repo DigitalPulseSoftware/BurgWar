@@ -217,11 +217,11 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["NewPacket"] = LuaFunction([this](std::string name) -> OutgoingNetworkPacket
+		library["NewPacket"] = LuaFunction([this](sol::this_state L, std::string name) -> OutgoingNetworkPacket
 		{
 			const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 			if (networkStringStore.GetStringIndex(name) == networkStringStore.InvalidIndex)
-				throw std::runtime_error("Packet name \"" + name + "\" has not been registered");
+				TriggerLuaError(L, "Packet name \"" + name + "\" has not been registered");
 
 			return OutgoingNetworkPacket(std::move(name));
 		});
@@ -239,13 +239,13 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateDampenedSpringConstraint"] = LuaFunction([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
+		library["CreateDampenedSpringConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -253,13 +253,13 @@ namespace bw
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		});
 
-		library["CreatePinConstraint"] = LuaFunction([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePinConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -267,13 +267,13 @@ namespace bw
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
-		library["CreatePivotConstraint"] = LuaFunction([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePivotConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -408,7 +408,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					bwLog(GetLogger(), LogLevel::Error, "engine_SetTimer failed: {0}", err.what());
+					bwLog(GetLogger(), LogLevel::Error, "timer.Create callback failed: {0}", err.what());
 				}
 			});
 		});

@@ -56,15 +56,15 @@ namespace bw
 		state["CLIENT"] = true;
 		state["SERVER"] = false;
 
-		state["RegisterClientAssets"] = []() { return true; }; // Dummy function
-		state["RegisterClientScript"] = []() { return true; }; // Dummy function
+		state["RegisterClientAssets"] = LuaFunction([]() { return true; }); // Dummy function
+		state["RegisterClientScript"] = LuaFunction([]() { return true; }); // Dummy function
 	}
 
 	void ClientScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["CreateEntity"] = [&](sol::this_state L, const sol::table& parameters)
+		library["CreateEntity"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)
 		{
 			LocalMatch& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
@@ -140,15 +140,15 @@ namespace bw
 			{
 				TriggerLuaError(L, e.what());
 			}
-		};
+		});
 
-		library["GetCamera"] = [&]() -> CameraHandle
+		library["GetCamera"] = LuaFunction([&]() -> CameraHandle
 		{
 			LocalMatch& match = GetMatch();
 			return match.GetCamera().CreateHandle();
-		};
+		});
 
-		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
+		library["GetPlayers"] = LuaFunction([&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);
 
@@ -163,22 +163,22 @@ namespace bw
 			});
 
 			return playerTable;
-		};
+		});
 
-		library["GetLocalTick"] = [&]()
+		library["GetLocalTick"] = LuaFunction([&]()
 		{
 			return GetMatch().GetCurrentTick();
-		};
+		});
 
-		library["GetTick"] = [&]()
+		library["GetTick"] = LuaFunction([&]()
 		{
 			return GetMatch().AdjustServerTick(GetMatch().EstimateServerTick());
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterParticleLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateGroup"] = [&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
+		library["CreateGroup"] = LuaFunction([&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
 		{
 			LocalMatch& match = GetMatch();
 
@@ -197,22 +197,22 @@ namespace bw
 			}));
 
 			return ParticleGroup(registry, particleGroupEntity);
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = [](sol::this_state L)
+		library["ReloadAll"] = LuaFunction([](sol::this_state L)
 		{
 			TriggerLuaError(L, "only the server can reload scripts");
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterSoundLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateMusicFromFile"] = [this](sol::this_state L, const std::string& musicPath) -> sol::object
+		library["CreateMusicFromFile"] = LuaFunction([this](sol::this_state L, const std::string& musicPath) -> sol::object
 		{
 			LocalMatch& match = GetMatch();
 			const auto& assetDirectory = match.GetAssetStore().GetAssetDirectory();
@@ -248,7 +248,7 @@ namespace bw
 				return sol::make_object(L, std::make_pair(sol::nil, "failed to open music"));
 
 			return sol::make_object(L, Music(match.GetApplication(), std::move(music)));
-		};
+		});
 	}
 	
 	void ClientScriptingLibrary::RegisterCameraClass(ScriptingContext& context)

@@ -177,12 +177,12 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["include"] = LuaFunction([&](const std::string& scriptName)
+		luaState["include"] = LuaFunction([&](sol::this_state L, const std::string& scriptName)
 		{
 			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
 
 			if (!context.Load(scriptPath.generic_u8string()))
-				throw std::runtime_error("TODO");
+				TriggerLuaError(L, "TODO");
 		});
 
 		luaState["tostring"] = [](lua_State* L) -> int
@@ -228,39 +228,39 @@ namespace bw
 	void AbstractScriptingLibrary::RegisterMetatableLibrary(ScriptingContext& context)
 	{
 		sol::state& luaState = context.GetLuaState();
-		luaState["RegisterMetatable"] = LuaFunction([](sol::this_state s, const char* metaname)
+		luaState["RegisterMetatable"] = LuaFunction([](sol::this_state L, const char* metaname)
 		{
-			if (luaL_newmetatable(s, metaname) == 0)
+			if (luaL_newmetatable(L, metaname) == 0)
 			{
-				lua_pop(s, 1);
-				throw std::runtime_error("Metatable " + std::string(metaname) + " already exists");
+				lua_pop(L, 1);
+				TriggerLuaError(L, "Metatable %s already exists", metaname);
 			}
 
-			return sol::stack_table(s);
+			return sol::stack_table(L);
 		});
 
-		luaState["GetMetatable"] = LuaFunction([](sol::this_state s, const char* metaname)
+		luaState["GetMetatable"] = LuaFunction([](sol::this_state L, const char* metaname)
 		{
-			luaL_getmetatable(s, metaname);
-			return sol::stack_table(s);
+			luaL_getmetatable(L, metaname);
+			return sol::stack_table(L);
 		});
 
-		luaState["AssertMetatable"] = LuaFunction([](sol::this_state s, sol::table tableRef, const char* metaname)
+		luaState["AssertMetatable"] = LuaFunction([](sol::this_state L, sol::table tableRef, const char* metaname)
 		{
 			sol::table metatable = tableRef[sol::metatable_key];
 			if (!metatable)
 				throw std::runtime_error("Table has no metatable");
 
-			luaL_getmetatable(s, metaname);
+			luaL_getmetatable(L, metaname);
 			sol::stack_table expectedMetatable;
 
 			metatable.push();
-			bool equal = lua_rawequal(s, expectedMetatable.stack_index(), -1);
+			bool equal = lua_rawequal(L, expectedMetatable.stack_index(), -1);
 
-			lua_pop(s, 2);
+			lua_pop(L, 2);
 
 			if (!equal)
-				throw std::runtime_error("Table is not of type " + std::string(metaname));
+				TriggerLuaError(L, "Table is not of type %s", metaname);
 
 			return tableRef;
 		});
