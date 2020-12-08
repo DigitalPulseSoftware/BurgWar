@@ -15,15 +15,17 @@ add_rules("mode.debug", "mode.release")
 
 --FIXME: Use packages
 add_includedirs("../NazaraEngine/package/include")
+add_linkdirs("../NazaraEngine/package/bin/x64/")
 add_linkdirs("../NazaraEngine/package/lib/x64/")
 
 add_includedirs("include", "src")
 add_includedirs("thirdparty/include")
 set_languages("c89", "cxx17")
 
-add_packages("concurrentqueue", "fmt", "nlohmann_json")
 set_symbols("debug", "hidden")
 set_warnings("allextra")
+set_targetdir("./bin/$(os)_$(arch)_$(mode)")
+set_rundir("./bin/$(os)_$(arch)_$(mode)")
 
 if (is_mode("release")) then
 	set_fpmodels("fast")
@@ -58,9 +60,9 @@ target("CoreLib")
 	set_kind("static")
 
 	add_deps("lua")
-	add_links("NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
+	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 
 if (is_plat("windows")) then 
 	add_packages("stackwalker")
@@ -74,6 +76,7 @@ target("ClientLib")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("libcurl", { public = true })
+	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 
 target("Main")
 	set_kind("static")
@@ -86,24 +89,47 @@ target("Main")
 target("BurgWar")
 	set_kind("binary")
 
+	if (is_mode("debug")) then
+		add_links("NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d")
+	else
+		add_links("NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility")
+	end
+
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
+	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 
 target("BurgWarServer")
 	set_kind("binary")
 
+	add_defines("NDK_SERVER")
+
+	if (is_mode("debug")) then
+		add_links("NazaraCore-d", "NazaraLua-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraSDKServer-d", "NazaraUtility-d")
+	else
+		add_links("NazaraCore", "NazaraLua", "NazaraNetwork", "NazaraNoise", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraSDKServer", "NazaraUtility")
+	end
+
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/Server/**.hpp", "src/Server/**.inl")
 	add_files("src/Server/**.cpp")
+	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 
 target("BurgWarMapEditor")
 	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
 
+	if (is_mode("debug")) then
+		add_links("NazaraAudio-d", "NazaraCore-d", "NazaraLua-d", "NazaraGraphics-d", "NazaraNetwork-d", "NazaraNoise-d", "NazaraRenderer-d", "NazaraPhysics2D-d", "NazaraPhysics3D-d", "NazaraPlatform-d", "NazaraSDK-d", "NazaraUtility-d")
+	else
+		add_links("NazaraAudio", "NazaraCore", "NazaraLua", "NazaraGraphics", "NazaraNetwork", "NazaraNoise", "NazaraRenderer", "NazaraPhysics2D", "NazaraPhysics3D", "NazaraPlatform", "NazaraSDK", "NazaraUtility")
+	end
+
 	add_frameworks("QtCore", "QtGui", "QtWidgets")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
+	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 
 target_end()

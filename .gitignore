@@ -1,5 +1,8 @@
 # Build
 .xmake
+Xmake.Custom.items
+Xmake.Custom.props
+Xmake.Custom.targets
 build
 
 # Game binaries
@@ -11,53 +14,53 @@ lib/*
 
 # Codeblocks
 *.save-failed
-build/**/*.cbp
-build/**/*.cbp
-build/**/*.cbTemp
-build/**/*.cscope_file_list
-build/**/*.depend
-build/**/*.layout
-build/**/*.workspace
+*.cbp
+*.cbp
+*.cbTemp
+*.cscope_file_list
+*.depend
+*.layout
+*.workspace
 
 # CodeLite
-build/**/*.project
+*.project
 
 # GMake
-build/**/*.make
-build/**/*.d
-build/**/Makefile
+*.make
+*.d
+Makefile
 
 # Visual Studio
-build/**/*.pdb
-build/**/*.filters
-build/**/*.vcxproj
-build/**/*.vcxproj.FileListAbsolute.txt
-build/**/*.tlog
-build/**/*.sln
-build/**/*.recipe
-build/**/*.vcxprojResolveAssemblyReference.cache
-build/**/*.nativecodeanalysis.all.xml
-build/**/*.nativecodeanalysis.xml
-build/**/*.VC.opendb
-build/**/*.VC.db*
-build/**/*.leu
+*.pdb
+*.filters
+*.vcxproj
+*.vcxproj.FileListAbsolute.txt
+*.tlog
+*.sln
+*.recipe
+*.vcxprojResolveAssemblyReference.cache
+*.nativecodeanalysis.all.xml
+*.nativecodeanalysis.xml
+*.VC.opendb
+*.VC.db*
+*.leu
 
 # Compiled Object files
-build/**/*.slo
-build/**/*.lo
-build/**/*.o
-build/**/*.obj
-build/**/*.obj.enc
+*.slo
+*.lo
+*.o
+*.obj
+*.obj.enc
 
 # Compiled Dynamic libraries
-build/**/*.so
+*.so
 
 # Compiled Static libraries
-build/**/*.lai
-build/**/*.la
+*.lai
+*.la
 
 # Object files
-build/**/*.o
+*.o
 
 # Windows image file caches
 Thumbs.db
