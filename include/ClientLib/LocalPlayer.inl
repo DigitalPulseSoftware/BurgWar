@@ -27,6 +27,11 @@ namespace bw
 	{
 		return m_playerIndex;
 	}
+
+	inline const std::string& LocalPlayer::ToString() const
+	{
+		return m_name;
+	}
 	
 	inline void LocalPlayer::UpdateName(std::string name)
 	{

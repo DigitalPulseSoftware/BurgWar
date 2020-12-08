@@ -56,15 +56,15 @@ namespace bw
 		state["CLIENT"] = true;
 		state["SERVER"] = false;
 
-		state["RegisterClientAssets"] = []() { return true; }; // Dummy function
-		state["RegisterClientScript"] = []() { return true; }; // Dummy function
+		state["RegisterClientAssets"] = LuaFunction([]() { return true; }); // Dummy function
+		state["RegisterClientScript"] = LuaFunction([]() { return true; }); // Dummy function
 	}
 
 	void ClientScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["CreateEntity"] = [&](sol::this_state L, const sol::table& parameters)
+		library["CreateEntity"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)
 		{
 			LocalMatch& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
@@ -140,15 +140,15 @@ namespace bw
 			{
 				TriggerLuaError(L, e.what());
 			}
-		};
+		});
 
-		library["GetCamera"] = [&]() -> CameraHandle
+		library["GetCamera"] = LuaFunction([&]() -> CameraHandle
 		{
 			LocalMatch& match = GetMatch();
 			return match.GetCamera().CreateHandle();
-		};
+		});
 
-		library["GetPlayers"] = [&](sol::this_state L) -> sol::table
+		library["GetPlayers"] = LuaFunction([&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);
 
@@ -163,22 +163,22 @@ namespace bw
 			});
 
 			return playerTable;
-		};
+		});
 
-		library["GetLocalTick"] = [&]()
+		library["GetLocalTick"] = LuaFunction([&]()
 		{
 			return GetMatch().GetCurrentTick();
-		};
+		});
 
-		library["GetTick"] = [&]()
+		library["GetTick"] = LuaFunction([&]()
 		{
 			return GetMatch().AdjustServerTick(GetMatch().EstimateServerTick());
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterParticleLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateGroup"] = [&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
+		library["CreateGroup"] = LuaFunction([&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
 		{
 			LocalMatch& match = GetMatch();
 
@@ -197,22 +197,22 @@ namespace bw
 			}));
 
 			return ParticleGroup(registry, particleGroupEntity);
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterScriptLibrary(ScriptingContext& context, sol::table& library)
 	{
 		SharedScriptingLibrary::RegisterScriptLibrary(context, library);
 
-		library["ReloadAll"] = [](sol::this_state L)
+		library["ReloadAll"] = LuaFunction([](sol::this_state L)
 		{
 			TriggerLuaError(L, "only the server can reload scripts");
-		};
+		});
 	}
 
 	void ClientScriptingLibrary::RegisterSoundLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateMusicFromFile"] = [this](sol::this_state L, const std::string& musicPath) -> sol::object
+		library["CreateMusicFromFile"] = LuaFunction([this](sol::this_state L, const std::string& musicPath) -> sol::object
 		{
 			LocalMatch& match = GetMatch();
 			const auto& assetDirectory = match.GetAssetStore().GetAssetDirectory();
@@ -248,35 +248,35 @@ namespace bw
 				return sol::make_object(L, std::make_pair(sol::nil, "failed to open music"));
 
 			return sol::make_object(L, Music(match.GetApplication(), std::move(music)));
-		};
+		});
 	}
 	
 	void ClientScriptingLibrary::RegisterCameraClass(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<Camera>("Camera",
+		state.new_usertype<CameraHandle>("Camera",
 			"new", sol::no_constructor,
 
-			"GetFOV",         ExceptToLuaErr(&Camera::GetFOV),
-			"GetPosition",    ExceptToLuaErr(&Camera::GetPosition),
-			"GetZoomFactor",  ExceptToLuaErr(&Camera::GetZoomFactor),
-			"GetViewport",    ExceptToLuaErr(&Camera::GetViewport),
+			"GetFOV",         LuaFunction(&Camera::GetFOV),
+			"GetPosition",    LuaFunction(&Camera::GetPosition),
+			"GetZoomFactor",  LuaFunction(&Camera::GetZoomFactor),
+			"GetViewport",    LuaFunction(&Camera::GetViewport),
 
-			"MoveBy",         ExceptToLuaErr(&Camera::MoveBy),
-			"MoveToPosition", ExceptToLuaErr(&Camera::MoveToPosition),
+			"MoveBy",         LuaFunction(&Camera::MoveBy),
+			"MoveToPosition", LuaFunction(&Camera::MoveToPosition),
 
-			"SetFOV",         ExceptToLuaErr(&Camera::SetFOV),
-			"SetZoomFactor",  ExceptToLuaErr(&Camera::SetZoomFactor),
+			"SetFOV",         LuaFunction(&Camera::SetFOV),
+			"SetZoomFactor",  LuaFunction(&Camera::SetZoomFactor),
 
 			"Project",   sol::overload(
-				ExceptToLuaErr(Overload<const Nz::Vector2f&>(&Camera::Project)),
-				ExceptToLuaErr(Overload<const Nz::Vector3f&>(&Camera::Project))
+				LuaFunction(Overload<const Nz::Vector2f&>(&Camera::Project)),
+				LuaFunction(Overload<const Nz::Vector3f&>(&Camera::Project))
 			),
 
 			"Unproject", sol::overload(
-				ExceptToLuaErr(Overload<const Nz::Vector2f&>(&Camera::Unproject)),
-				ExceptToLuaErr(Overload<const Nz::Vector3f&>(&Camera::Unproject))
+				LuaFunction(Overload<const Nz::Vector2f&>(&Camera::Unproject)),
+				LuaFunction(Overload<const Nz::Vector3f&>(&Camera::Unproject))
 			)
 		);
 	}
@@ -284,15 +284,15 @@ namespace bw
 	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
 	{
 #define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
-		ExceptToLuaErr([](DummyInputController& input) { return input.GetInputs(). name ; }), \
-		ExceptToLuaErr([](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; }))
+		LuaFunction([](DummyInputController& input) { return input.GetInputs(). name ; }), \
+		LuaFunction([](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; }))
 
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<InputController>("InputController");
 
 		state.new_usertype<DummyInputController>("DummyInputController",
 			sol::base_classes, sol::bases<InputController>(),
-			"new", sol::factories(ExceptToLuaErr(&std::make_shared<DummyInputController>)),
+			"new", sol::factories(LuaFunction(&std::make_shared<DummyInputController>)),
 
 			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
 			BW_INPUT_PROPERTY(isAttacking, bool),
@@ -309,12 +309,12 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<LocalPlayer>("LocalPlayer",
+		state.new_usertype<LocalPlayerHandle>("LocalPlayer",
 			"new", sol::no_constructor,
 
-			"GetName", ExceptToLuaErr(&LocalPlayer::GetName),
+			"GetName", LuaFunction(&LocalPlayer::GetName),
 
-			"GetPing", ExceptToLuaErr([](sol::this_state L, LocalPlayer& localPlayer) -> sol::object
+			"GetPing", LuaFunction([](LocalPlayer& localPlayer, sol::this_state L) -> sol::object
 			{
 				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
 					return sol::make_object(L, ping);
@@ -322,7 +322,7 @@ namespace bw
 					return sol::nil;
 			}),
 
-			"GetPlayerIndex", ExceptToLuaErr(&LocalPlayer::GetPlayerIndex)
+			"GetPlayerIndex", LuaFunction(&LocalPlayer::GetPlayerIndex)
 		);
 	}
 
@@ -333,22 +333,22 @@ namespace bw
 		state.new_usertype<Music>("Music",
 			"new", sol::no_constructor,
 
-			"EnableLooping", ExceptToLuaErr(&Music::EnableLooping),
+			"EnableLooping", LuaFunction(&Music::EnableLooping),
 
-			"GetDuration",      ExceptToLuaErr(&Music::GetDuration),
-			"GetPlayingOffset", ExceptToLuaErr(&Music::GetPlayingOffset),
-			"GetSampleCount",   ExceptToLuaErr(&Music::GetSampleCount),
-			"GetSampleRate",    ExceptToLuaErr(&Music::GetSampleRate),
+			"GetDuration",      LuaFunction(&Music::GetDuration),
+			"GetPlayingOffset", LuaFunction(&Music::GetPlayingOffset),
+			"GetSampleCount",   LuaFunction(&Music::GetSampleCount),
+			"GetSampleRate",    LuaFunction(&Music::GetSampleRate),
 
-			"IsLooping", ExceptToLuaErr(&Music::IsLooping),
-			"IsPlaying", ExceptToLuaErr(&Music::IsPlaying),
+			"IsLooping", LuaFunction(&Music::IsLooping),
+			"IsPlaying", LuaFunction(&Music::IsPlaying),
 
-			"Pause", ExceptToLuaErr(&Music::Pause),
-			"Play",  ExceptToLuaErr(&Music::Play),
+			"Pause", LuaFunction(&Music::Pause),
+			"Play",  LuaFunction(&Music::Play),
 
-			"SetPlayingOffset", ExceptToLuaErr(&Music::SetPlayingOffset),
+			"SetPlayingOffset", LuaFunction(&Music::SetPlayingOffset),
 
-			"Stop", ExceptToLuaErr(&Music::Stop)
+			"Stop", LuaFunction(&Music::Stop)
 		);
 	}
 
@@ -362,22 +362,22 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"AddController", sol::overload(
-				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.AddController(name, emptyTable); }),
-				ExceptToLuaErr(&ParticleGroup::AddController)),
+				LuaFunction([=](ParticleGroup& group, const std::string& name) { group.AddController(name, emptyTable); }),
+				LuaFunction(&ParticleGroup::AddController)),
 
 			"AddGenerator", sol::overload(
-				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.AddGenerator(name, emptyTable); }),
-				ExceptToLuaErr(&ParticleGroup::AddGenerator)),
+				LuaFunction([=](ParticleGroup& group, const std::string& name) { group.AddGenerator(name, emptyTable); }),
+				LuaFunction(&ParticleGroup::AddGenerator)),
 
-			"GenerateParticles", ExceptToLuaErr(&ParticleGroup::GenerateParticles),
+			"GenerateParticles", LuaFunction(&ParticleGroup::GenerateParticles),
 
-			"GetParticleCount", ExceptToLuaErr(&ParticleGroup::GetParticleCount),
+			"GetParticleCount", LuaFunction(&ParticleGroup::GetParticleCount),
 
-			"Kill", ExceptToLuaErr(&ParticleGroup::Kill),
+			"Kill", LuaFunction(&ParticleGroup::Kill),
 
 			"SetRenderer", sol::overload(
-				ExceptToLuaErr([=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); }),
-				ExceptToLuaErr(&ParticleGroup::SetRenderer))
+				LuaFunction([=](ParticleGroup& group, const std::string& name) { group.SetRenderer(name, emptyTable); }),
+				LuaFunction(&ParticleGroup::SetRenderer))
 		);
 	}
 
@@ -385,17 +385,17 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<Scoreboard>("Scoreboard",
+		state.new_usertype<ScoreboardHandle>("Scoreboard",
 			"new", sol::no_constructor,
 
-			"AddColumn", ExceptToLuaErr(&Scoreboard::AddColumn),
-			"AddTeam", ExceptToLuaErr(&Scoreboard::AddTeam),
+			"AddColumn", LuaFunction(&Scoreboard::AddColumn),
+			"AddTeam", LuaFunction(&Scoreboard::AddTeam),
 
-			"RegisterPlayer", ExceptToLuaErr(&Scoreboard::RegisterPlayer),
+			"RegisterPlayer", LuaFunction(&Scoreboard::RegisterPlayer),
 
-			"UnregisterPlayer", ExceptToLuaErr(&Scoreboard::UnregisterPlayer),
+			"UnregisterPlayer", LuaFunction(&Scoreboard::UnregisterPlayer),
 
-			"UpdatePlayerValue", ExceptToLuaErr(&Scoreboard::UpdatePlayerValue)
+			"UpdatePlayerValue", LuaFunction(&Scoreboard::UpdatePlayerValue)
 		);
 	}
 
@@ -406,7 +406,7 @@ namespace bw
 		state.new_usertype<Sound>("Sound",
 			"new", sol::no_constructor,
 
-			"Stop", ExceptToLuaErr(&Sound::Stop)
+			"Stop", LuaFunction(&Sound::Stop)
 		);
 	}
 

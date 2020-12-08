@@ -806,6 +806,7 @@ namespace bw
 		m_matchStatePacket.stateTick = m_match.GetNetworkTick();
 		m_matchStatePacket.lastInputTick = m_session.GetLastInputTick();
 
+		std::size_t handledEntities = 0;
 		for (PriorityMovementData& movementData : m_priorityMovementData)
 		{
 			std::size_t entityIndex = 0;
@@ -837,7 +838,7 @@ namespace bw
 			auto entityIt = m_matchStatePacket.entities.emplace(m_matchStatePacket.entities.begin() + entityIndex);
 			BuildMovementPacket(*entityIt, movementData.movementData);
 
-			if (HasExceededPacketSize())
+			if (handledEntities != 0 && HasExceededPacketSize()) //< Allow at least one entity in the packet
 			{
 				// Remove last inserted entity
 				m_matchStatePacket.entities.erase(entityIt);
@@ -849,8 +850,19 @@ namespace bw
 					m_matchStatePacket.layers.pop_back();
 				}
 
+				handledEntities--;
+
 				break;
 			}
+
+			handledEntities++;
+		}
+
+		// Reset priority only once we're sure entities are being sent
+		// TODO: Reset priority accumulator only once a client acknowledge the packet? (Or maybe reset priority / events if the packet is lost)
+		for (std::size_t i = 0; i < handledEntities; ++i)
+		{
+			const PriorityMovementData& movementData = m_priorityMovementData[i];
 
 			auto layerIt = m_layers.find(movementData.layerIndex);
 			assert(layerIt != m_layers.end());

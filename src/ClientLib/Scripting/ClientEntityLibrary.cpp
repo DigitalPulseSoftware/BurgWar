@@ -43,7 +43,7 @@ namespace bw
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["AddLayer"] = ExceptToLuaErr([](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
+		elementMetatable["AddLayer"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -64,7 +64,7 @@ namespace bw
 			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		});
 
-		elementMetatable["AddTilemap"] = ExceptToLuaErr([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
+		elementMetatable["AddTilemap"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
@@ -145,7 +145,7 @@ namespace bw
 			}
 		});
 
-		elementMetatable["ClearLayers"] = ExceptToLuaErr([](const sol::table& entityTable)
+		elementMetatable["ClearLayers"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 

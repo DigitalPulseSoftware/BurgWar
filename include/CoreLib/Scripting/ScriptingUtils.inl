@@ -9,12 +9,15 @@ namespace bw
 	namespace Detail
 	{
 		template<typename L>
+		struct LuaLambdaWrapper;
+
+		template<typename L>
 		struct LuaCallWrapper
 		{
 			template<typename F>
-			static auto WrapExceptions(F func)
+			static auto Wrap(F func)
 			{
-				return LuaCallWrapper<decltype(&F::operator())>::template WrapExceptionsForLambda(std::forward<F>(func));
+				return LuaLambdaWrapper<decltype(&F::operator())>::template Wrap(std::forward<F>(func));
 			}
 		};
 
@@ -23,13 +26,60 @@ namespace bw
 		{
 			using FuncPtr = Ret(*)(Args...);
 
-			static auto WrapExceptions(FuncPtr funcPtr)
+			static auto Wrap(FuncPtr funcPtr)
 			{
 				return [funcPtr](sol::this_state L, Args... args)
 				{
 					try
 					{
 						return std::invoke(funcPtr, args...);
+					}
+					catch (const std::exception& e)
+					{
+						TriggerLuaError(L, e.what());
+					}
+				};
+			}
+		};
+
+		template<typename O, typename Ret, typename... Args>
+		struct LuaWrapper
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return [funcPtr](sol::this_state L, Args... args)
+				{
+					try
+					{
+						return std::invoke(funcPtr, args...);
+					}
+					catch (const std::exception& e)
+					{
+						TriggerLuaError(L, e.what());
+					}
+				};
+			}
+
+			template<typename F>
+			static auto WrapMethod(F funcPtr)
+			{
+				static constexpr bool IsHandledObject = std::is_base_of_v<Nz::HandledObject<std::decay_t<O>>, std::decay_t<O>>;
+				using ObjectParam = std::conditional_t<IsHandledObject, const Nz::ObjectHandle<std::remove_const_t<O>>&, O&>;
+
+				return [funcPtr](sol::this_state L, ObjectParam object, Args... args)
+				{
+					try
+					{
+						if constexpr (IsHandledObject)
+						{
+							if (!object.IsValid())
+								TriggerLuaError(L, "invalid object");
+
+							return std::invoke(funcPtr, *object, args...);
+						}
+						else
+							return std::invoke(funcPtr, object, args...);
 					}
 					catch (const std::exception& e)
 					{
@@ -43,35 +93,9 @@ namespace bw
 		struct LuaCallWrapper<Ret(O::*)(Args...)>
 		{
 			template<typename F>
-			static auto WrapExceptions(F funcPtr)
+			static auto Wrap(F funcPtr)
 			{
-				return [funcPtr](sol::this_state L, O& object, Args... args)
-				{
-					try
-					{
-						return std::invoke(funcPtr, object, args...);
-					}
-					catch (const std::exception& e)
-					{
-						TriggerLuaError(L, e.what());
-					}
-				};
-			}
-
-			template<typename F>
-			static auto WrapExceptionsForLambda(F funcPtr)
-			{
-				return [funcPtr](sol::this_state L, Args... args)
-				{
-					try
-					{
-						return std::invoke(funcPtr, args...);
-					}
-					catch (const std::exception& e)
-					{
-						TriggerLuaError(L, e.what());
-					}
-				};
+				return LuaWrapper<O, Ret, Args...>::template WrapMethod(funcPtr);
 			}
 		};
 
@@ -79,35 +103,69 @@ namespace bw
 		struct LuaCallWrapper<Ret(O::*)(Args...) const>
 		{
 			template<typename F>
-			static auto WrapExceptions(F funcPtr)
+			static auto Wrap(F funcPtr)
 			{
-				return [funcPtr](sol::this_state L, O& object, Args... args)
-				{
-					try
-					{
-						return std::invoke(funcPtr, object, args...);
-					}
-					catch (const std::exception& e)
-					{
-						TriggerLuaError(L, e.what());
-					}
-				};
+				return LuaWrapper<O, Ret, Args...>::template WrapMethod(funcPtr);
 			}
+		};
 
+		template<typename T, typename O, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(O&, Args...)>
+		{
 			template<typename F>
-			static auto WrapExceptionsForLambda(F funcPtr)
+			static auto Wrap(F funcPtr)
 			{
-				return [funcPtr](sol::this_state L, Args... args)
-				{
-					try
-					{
-						return std::invoke(funcPtr, args...);
-					}
-					catch (const std::exception& e)
-					{
-						TriggerLuaError(L, e.what());
-					}
-				};
+				return LuaWrapper<O, Ret, Args...>::template WrapMethod(funcPtr);
+			}
+		};
+
+		template<typename T, typename O, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(O&, Args...) const>
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return LuaWrapper<O, Ret, Args...>::template WrapMethod(funcPtr);
+			}
+		};
+
+		template<typename T, typename O, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(const O&, Args...)>
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return LuaWrapper<const O, Ret, Args...>::template WrapMethod(funcPtr);
+			}
+		};
+
+		template<typename T, typename O, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(const O&, Args...) const>
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return LuaWrapper<const O, Ret, Args...>::template WrapMethod(funcPtr);
+			}
+		};
+
+		template<typename T, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(Args...)>
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return LuaWrapper<T, Ret, Args...>::template Wrap(funcPtr);
+			}
+		};
+
+		template<typename T, typename Ret, typename... Args>
+		struct LuaLambdaWrapper<Ret(T::*)(Args...) const>
+		{
+			template<typename F>
+			static auto Wrap(F funcPtr)
+			{
+				return LuaWrapper<T, Ret, Args...>::template Wrap(funcPtr);
 			}
 		};
 	}
@@ -119,9 +177,9 @@ namespace bw
 	}
 
 	template<typename F> 
-	auto ExceptToLuaErr(F funcPtr)
+	auto LuaFunction(F funcPtr)
 	{
 		using Wrapper = Detail::LuaCallWrapper<F>;
-		return Wrapper::WrapExceptions(funcPtr);
+		return Wrapper::Wrap(funcPtr);
 	}
 }

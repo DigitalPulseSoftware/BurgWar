@@ -34,7 +34,7 @@ function gamemode:GeneratePlayerEntityProperties(player)
 end
 
 function gamemode:SpawnPlayer(player)
-	local spawnPosition, layerIndex = self:ChoosePlayerSpawnPosition(player)
+	local spawnPosition, layerIndex = self:ChoosePlayerSpawnPosition()
 	local properties = self:GeneratePlayerEntityProperties(player)
 	local entity = match.CreateEntity({
 		Type = self.PlayerEntity,

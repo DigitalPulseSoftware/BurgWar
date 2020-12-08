@@ -22,7 +22,7 @@ namespace bw
 
 	void SharedWeaponLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
-		elementMetatable["GetOwnerEntity"] = ExceptToLuaErr([](const sol::table& weaponTable) -> sol::object
+		elementMetatable["GetOwnerEntity"] = LuaFunction([](const sol::table& weaponTable) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 
@@ -33,7 +33,7 @@ namespace bw
 			return ownerEntity->GetComponent<ScriptComponent>().GetTable();
 		});
 
-		elementMetatable["SetNextTriggerTime"] = ExceptToLuaErr([](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
+		elementMetatable["SetNextTriggerTime"] = LuaFunction([](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
 			

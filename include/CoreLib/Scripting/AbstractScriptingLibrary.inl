@@ -48,6 +48,10 @@ namespace sol
 	template <>
 	struct is_automagical<bw::RandomEngine> : std::false_type {};
 
+	// Force ObjectHandle to be passed by value
+	template<typename T>
+	struct is_lua_primitive<Nz::ObjectHandle<T>> : std::true_type {};
+
 	template <>
 	struct is_to_stringable<bw::RandomEngine> : std::false_type{};
 
@@ -89,22 +93,6 @@ namespace sol
 
 	template<typename T>
 	struct lua_type_of<Nz::Vector3<T>> : std::integral_constant<sol::type, sol::type::table> {};
-
-	template <typename T>
-	struct unique_usertype_traits<Nz::ObjectHandle<T>>
-	{
-		using type = T;
-		using actual_type = Nz::ObjectHandle<T>;
-		static const bool value = true;
-
-		static bool is_null(const actual_type& ptr) {
-			return !ptr.IsValid();
-		}
-
-		static type* get(const actual_type& ptr) {
-			return ptr.GetObject();
-		}
-	};
 
 	template <typename T, typename Handler>
 	bool sol_lua_check(sol::types<Nz::Vector2<T>>, lua_State* L, int index, Handler&& handler, sol::stack::record& tracking)

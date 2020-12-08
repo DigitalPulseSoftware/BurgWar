@@ -1,5 +1,5 @@
 ---
-name: Feature request (English)
+name: (English) Feature request
 about: Suggest an idea to improve the game
 title: "[FEATURE] "
 labels: english, enhancement

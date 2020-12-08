@@ -58,17 +58,17 @@ namespace bw
 		state.new_usertype<Constraint>("Constraint",
 			"new", sol::no_constructor,
 
-			"EnableBodyCollision", ExceptToLuaErr(&Constraint::EnableBodyCollision),
+			"EnableBodyCollision", LuaFunction(&Constraint::EnableBodyCollision),
 
-			"GetErrorBias", ExceptToLuaErr(&Constraint::GetErrorBias),
-			"GetMaxForce", ExceptToLuaErr(&Constraint::GetMaxForce),
+			"GetErrorBias", LuaFunction(&Constraint::GetErrorBias),
+			"GetMaxForce", LuaFunction(&Constraint::GetMaxForce),
 
-			"IsBodyCollisionEnabled", ExceptToLuaErr(&Constraint::IsBodyCollisionEnabled),
+			"IsBodyCollisionEnabled", LuaFunction(&Constraint::IsBodyCollisionEnabled),
 
-			"Remove", ExceptToLuaErr(&Constraint::Remove),
+			"Remove", LuaFunction(&Constraint::Remove),
 
-			"SetErrorBias", ExceptToLuaErr(&Constraint::SetErrorBias),
-			"SetMaxForce", ExceptToLuaErr(&Constraint::SetMaxForce)
+			"SetErrorBias", LuaFunction(&Constraint::SetErrorBias),
+			"SetMaxForce", LuaFunction(&Constraint::SetMaxForce)
 		);
 
 		state.new_usertype<DampedSpringConstraint>("SpringConstraint",
@@ -80,8 +80,8 @@ namespace bw
 		state.new_usertype<PinConstraint>("PinConstraint",
 			"new", sol::no_constructor,
 
-			"GetDistance", ExceptToLuaErr(&PinConstraint::GetDistance),
-			"SetDistance", ExceptToLuaErr(&PinConstraint::SetDistance),
+			"GetDistance", LuaFunction(&PinConstraint::GetDistance),
+			"SetDistance", LuaFunction(&PinConstraint::SetDistance),
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
@@ -95,10 +95,10 @@ namespace bw
 		state.new_usertype<RotaryLimitConstraint>("RotaryLimitConstraint",
 			"new", sol::no_constructor,
 
-			"GetMaxAngle", ExceptToLuaErr(&RotaryLimitConstraint::GetMaxAngle),
-			"GetMinAngle", ExceptToLuaErr(&RotaryLimitConstraint::GetMinAngle),
-			"SetMaxAngle", ExceptToLuaErr(&RotaryLimitConstraint::SetMaxAngle),
-			"SetMinAngle", ExceptToLuaErr(&RotaryLimitConstraint::SetMinAngle),
+			"GetMaxAngle", LuaFunction(&RotaryLimitConstraint::GetMaxAngle),
+			"GetMinAngle", LuaFunction(&RotaryLimitConstraint::GetMinAngle),
+			"SetMaxAngle", LuaFunction(&RotaryLimitConstraint::SetMaxAngle),
+			"SetMinAngle", LuaFunction(&RotaryLimitConstraint::SetMinAngle),
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
@@ -110,14 +110,14 @@ namespace bw
 		state.new_usertype<IncomingNetworkPacket>("IncomingNetworkPacket",
 			"new", sol::no_constructor,
 
-			"ReadCompressedInteger",  ExceptToLuaErr(&IncomingNetworkPacket::ReadCompressedInteger),
-			"ReadCompressedUnsigned", ExceptToLuaErr(&IncomingNetworkPacket::ReadCompressedUnsigned),
-			"ReadDouble",  ExceptToLuaErr(&IncomingNetworkPacket::ReadDouble),
-			"ReadSingle",  ExceptToLuaErr(&IncomingNetworkPacket::ReadSingle),
-			"ReadString",  ExceptToLuaErr(&IncomingNetworkPacket::ReadString),
-			"ReadVector2", ExceptToLuaErr(&IncomingNetworkPacket::ReadVector2),
+			"ReadCompressedInteger",  LuaFunction(&IncomingNetworkPacket::ReadCompressedInteger),
+			"ReadCompressedUnsigned", LuaFunction(&IncomingNetworkPacket::ReadCompressedUnsigned),
+			"ReadDouble",  LuaFunction(&IncomingNetworkPacket::ReadDouble),
+			"ReadSingle",  LuaFunction(&IncomingNetworkPacket::ReadSingle),
+			"ReadString",  LuaFunction(&IncomingNetworkPacket::ReadString),
+			"ReadVector2", LuaFunction(&IncomingNetworkPacket::ReadVector2),
 
-			"ReadEntity", ExceptToLuaErr([&](IncomingNetworkPacket& incomingPacket) -> sol::object
+			"ReadEntity", LuaFunction([&](IncomingNetworkPacket& incomingPacket) -> sol::object
 			{
 				Nz::Int64 entityId = incomingPacket.ReadCompressedInteger();
 				const Ndk::EntityHandle& entity = m_match.RetrieveEntityByUniqueId(entityId);
@@ -131,14 +131,14 @@ namespace bw
 		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
 			"new", sol::no_constructor,
 
-			"WriteCompressedInteger", ExceptToLuaErr(&OutgoingNetworkPacket::WriteCompressedInteger),
-			"WriteCompressedUnsigned", ExceptToLuaErr (&OutgoingNetworkPacket::WriteCompressedUnsigned),
-			"WriteDouble",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteDouble),
-			"WriteSingle",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteSingle),
-			"WriteString",  ExceptToLuaErr(&OutgoingNetworkPacket::WriteString),
-			"WriteVector2", ExceptToLuaErr(&OutgoingNetworkPacket::WriteVector2),
+			"WriteCompressedInteger", LuaFunction(&OutgoingNetworkPacket::WriteCompressedInteger),
+			"WriteCompressedUnsigned", LuaFunction (&OutgoingNetworkPacket::WriteCompressedUnsigned),
+			"WriteDouble",  LuaFunction(&OutgoingNetworkPacket::WriteDouble),
+			"WriteSingle",  LuaFunction(&OutgoingNetworkPacket::WriteSingle),
+			"WriteString",  LuaFunction(&OutgoingNetworkPacket::WriteString),
+			"WriteVector2", LuaFunction(&OutgoingNetworkPacket::WriteVector2),
 
-			"WriteEntity", ExceptToLuaErr([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
+			"WriteEntity", LuaFunction([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
 			{
 				const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
 				outgoingPacket.WriteCompressedInteger(m_match.RetrieveUniqueIdByEntity(entity));
@@ -153,18 +153,18 @@ namespace bw
 
 		state.new_usertype<BasicPlayerMovementController>("BasicPlayerMovementController",
 			sol::base_classes, sol::bases<PlayerMovementController>(),
-			"new", sol::factories(ExceptToLuaErr(&std::make_shared<BasicPlayerMovementController>))
+			"new", sol::factories(LuaFunction(&std::make_shared<BasicPlayerMovementController>))
 		);
 		
 		state.new_usertype<NoclipPlayerMovementController>("NoclipPlayerMovementController",
 			sol::base_classes, sol::bases<PlayerMovementController>(),
-			"new", sol::factories(ExceptToLuaErr(&std::make_shared<NoclipPlayerMovementController>))
+			"new", sol::factories(LuaFunction(&std::make_shared<NoclipPlayerMovementController>))
 		);
 	}
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["GetEntitiesByClass"] = ExceptToLuaErr([&](sol::this_state L, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
+		library["GetEntitiesByClass"] = LuaFunction([&](sol::this_state L, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
 			sol::state_view state(L);
 			sol::table result = state.create_table();
@@ -194,22 +194,22 @@ namespace bw
 			return result;
 		});
 
-		library["GetGamemode"] = ExceptToLuaErr([this]()
+		library["GetGamemode"] = LuaFunction([this]()
 		{
 			return m_match.GetSharedGamemode()->GetTable();
 		});
 
-		library["GetMilliseconds"] = ExceptToLuaErr([this]()
+		library["GetMilliseconds"] = LuaFunction([this]()
 		{
 			return m_match.GetCurrentTime();
 		});
 
-		library["GetSeconds"] = ExceptToLuaErr([this]()
+		library["GetSeconds"] = LuaFunction([this]()
 		{
 			return m_match.GetCurrentTime() / 1000.f;
 		});
 
-		library["GetTickDuration"] = ExceptToLuaErr([&]()
+		library["GetTickDuration"] = LuaFunction([&]()
 		{
 			return m_match.GetTickDuration();
 		});
@@ -217,16 +217,16 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["NewPacket"] = ExceptToLuaErr([this](std::string name) -> OutgoingNetworkPacket
+		library["NewPacket"] = LuaFunction([this](sol::this_state L, std::string name) -> OutgoingNetworkPacket
 		{
 			const NetworkStringStore& networkStringStore = m_match.GetNetworkStringStore();
 			if (networkStringStore.GetStringIndex(name) == networkStringStore.InvalidIndex)
-				throw std::runtime_error("Packet name \"" + name + "\" has not been registered");
+				TriggerLuaError(L, "Packet name \"" + name + "\" has not been registered");
 
 			return OutgoingNetworkPacket(std::move(name));
 		});
 
-		library["SetHandler"] = ExceptToLuaErr([this](std::string name, sol::main_protected_function handler)
+		library["SetHandler"] = LuaFunction([this](std::string name, sol::main_protected_function handler)
 		{
 			ScriptHandlerRegistry& packetHandlerRegistry = GetSharedMatch().GetScriptPacketHandlerRegistry();
 
@@ -239,13 +239,13 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["CreateDampenedSpringConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
+		library["CreateDampenedSpringConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -253,13 +253,13 @@ namespace bw
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		});
 
-		library["CreatePinConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePinConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -267,13 +267,13 @@ namespace bw
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
-		library["CreatePivotConstraint"] = ExceptToLuaErr([](const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
+		library["CreatePivotConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
-				throw std::runtime_error("Cannot apply a constraint to the same entity");
+				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
 			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
 			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
@@ -281,7 +281,7 @@ namespace bw
 			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
-		library["CreateRotaryLimitConstraint"] = ExceptToLuaErr([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
+		library["CreateRotaryLimitConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
 		{
 			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
 			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
@@ -295,7 +295,7 @@ namespace bw
 			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		});
 
-		library["RegionQuery"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)
+		library["RegionQuery"] = LuaFunction([this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)
 		{
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
@@ -327,7 +327,7 @@ namespace bw
 			physSystem.RegionQuery(rect, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
 		});
 
-		library["Trace"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
+		library["Trace"] = LuaFunction([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos) -> sol::object
 		{
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
@@ -354,7 +354,7 @@ namespace bw
 				return sol::nil;
 		});
 
-		library["TraceMultiple"] = ExceptToLuaErr([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos, const sol::protected_function& callback)
+		library["TraceMultiple"] = LuaFunction([this](sol::this_state L, LayerIndex layer, Nz::Vector2f startPos, Nz::Vector2f endPos, const sol::protected_function& callback)
 		{
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
@@ -400,7 +400,7 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterTimerLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
-		library["Create"] = ExceptToLuaErr([&](Nz::UInt64 time, sol::main_protected_function callback)
+		library["Create"] = LuaFunction([&](Nz::UInt64 time, sol::main_protected_function callback)
 		{
 			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callback = std::move(callback)]()
 			{
@@ -408,7 +408,7 @@ namespace bw
 				if (!result.valid())
 				{
 					sol::error err = result;
-					bwLog(GetLogger(), LogLevel::Error, "engine_SetTimer failed: {0}", err.what());
+					bwLog(GetLogger(), LogLevel::Error, "timer.Create callback failed: {0}", err.what());
 				}
 			});
 		});
