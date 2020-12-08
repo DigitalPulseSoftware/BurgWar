@@ -37,13 +37,22 @@ if (is_plat("windows")) then
 	add_cxxflags("/FC")
 end
 
+--[[
+target("autoupdate")
+    set_kind("binary")
+    on_build(function (target)
+        if os.getenv("XMAKE_IN_VSTUDIO") then
+            os.execv("xmake", {"project", "-k", "vsxmake"}, {detach = true, envs = {XMAKE_CONFIGDIR = os.tmpfile() .. ".xmake"}})
+        end
+    end)
+]]
+
 target("lua")
 	set_kind("static")
 
 	add_includedirs("contrib/lua/include", { public = true })
 	add_headerfiles("contrib/lua/include/**.h")
 	add_files("contrib/lua/src/**.c")
-
 
 target("CoreLib")
 	set_kind("static")
