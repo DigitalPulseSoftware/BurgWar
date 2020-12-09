@@ -6,8 +6,8 @@ set_version("0.1.0")
 add_requires("concurrentqueue", "nlohmann_json")
 add_requires("fmt", { debug = is_mode("debug"), config = { header_only = false, vs_runtime = "MD" } })
 add_requires("libcurl", { debug = is_mode("debug"), config = { vs_runtime = "MD" } })
-add_requires("nazaraengine", { alias = "nazara", config = { server = false, shared = true, vs_runtime = "MD" } })
-add_requires("nazaraengine~server", { alias = "nazaraserver", config = { server = true, shared = true, vs_runtime = "MD" } })
+add_requires("nazaraengine", { alias = "nazara", debug = is_mode("debug"), config = { server = false, shared = true, vs_runtime = "MD" } })
+add_requires("nazaraengine~server", { alias = "nazaraserver", debug = is_mode("debug"), config = { server = true, shared = true, vs_runtime = "MD" } })
 
 if (is_plat("windows")) then
 	add_requires("stackwalker")
