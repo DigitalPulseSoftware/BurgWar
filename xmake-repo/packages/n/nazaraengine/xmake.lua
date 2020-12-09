@@ -129,83 +129,87 @@ package("nazaraengine")
         end
 
         if has_platform(package) then
-            package:add("deps", "libsdl")
+            if package:is_plat("linux") then
+                package:add("deps", "libsdl")
+            end
+
             package:add("links", prefix .. "Platform" .. suffix)
         end
 
         if has_utility(package) then
+            if package:is_plat("linux") then
+                package:add("deps", "freetype")
+            end
+
             package:add("links", prefix .. "Utility" .. suffix)
-            package:add("deps", "freetype")
         end
 
         if has_assimp_plugin(package) then
-            package:add("deps", "assimp")
+            if package:is_plat("linux") then
+                package:add("deps", "assimp")
+            end
         end
 
         package:add("links", prefix .. "Core" .. suffix)
     end)
 
-    on_install("linux", function (package)
-        local configs = {"--verbose", "--excludes-examples"}
+    on_install("windows", "linux", function (package)
+        local premakeOptions = {"--verbose", "--excludes-examples"}
         if not has_audio(package) then
-            table.insert(configs, "--excludes-module-audio")
+            table.insert(premakeOptions, "--excludes-module-audio")
         end
 
         if not has_graphics(package) then
-            table.insert(configs, "--excludes-module-graphics")
+            table.insert(premakeOptions, "--excludes-module-graphics")
         end
 
         if not has_lua(package) then
-            table.insert(configs, "--excludes-externlib-lua")
-            table.insert(configs, "--excludes-module-lua")
+            table.insert(premakeOptions, "--excludes-externlib-lua")
+            table.insert(premakeOptions, "--excludes-module-lua")
         end
 
         if not has_network(package) then
-            table.insert(configs, "--excludes-module-network")
+            table.insert(premakeOptions, "--excludes-module-network")
         end
 
         if not has_noise(package) then
-            table.insert(configs, "--excludes-module-noise")
+            table.insert(premakeOptions, "--excludes-module-noise")
         end
 
         if not has_platform(package) then
-            table.insert(configs, "--excludes-module-platform")
+            table.insert(premakeOptions, "--excludes-module-platform")
         end
 
         if not has_physics2d(package) then
-            table.insert(configs, "--excludes-externlib-chipmunk")
-            table.insert(configs, "--excludes-module-physics2d")
+            table.insert(premakeOptions, "--excludes-externlib-chipmunk")
+            table.insert(premakeOptions, "--excludes-module-physics2d")
         end
 
         if not has_physics3d(package) then
-            table.insert(configs, "--excludes-externlib-newton")
-            table.insert(configs, "--excludes-module-physics3d")
+            table.insert(premakeOptions, "--excludes-externlib-newton")
+            table.insert(premakeOptions, "--excludes-module-physics3d")
         end
 
         if not has_renderer(package) then
-            table.insert(configs, "--excludes-module-renderer")
+            table.insert(premakeOptions, "--excludes-module-renderer")
         end
 
         if not has_utility(package) then
-            table.insert(configs, "--excludes-externlib-stb_image")
-            table.insert(configs, "--excludes-module-utility")
+            table.insert(premakeOptions, "--excludes-externlib-stb_image")
+            table.insert(premakeOptions, "--excludes-module-utility")
         end
 
         if not has_assimp_plugin(package) then
-            table.insert(configs, "--excludes-tool-assimp")
+            table.insert(premakeOptions, "--excludes-tool-assimp")
         end
 
         if not has_sdk(package) or package:config("server") then
-            table.insert(configs, "--excludes-tool-sdk")
+            table.insert(premakeOptions, "--excludes-tool-sdk")
         end
 
         if not has_sdk(package) or not package:config("server") then
-            table.insert(configs, "--excludes-tool-sdkserver")
+            table.insert(premakeOptions, "--excludes-tool-sdkserver")
         end
-
-        os.cd("build")
-        os.vrun("./premake5-linux64 " .. table.concat(configs, " ") .. " gmake2")
-        os.cd("gmake2")
 
         local archName = {
             x86 = "x86",
@@ -214,18 +218,38 @@ package("nazaraengine")
         }
 
         local premakeArch = assert(archName[package:arch()])
+        local libDir
 
-        local configName = (package:debug() and "debug" or "release") .. (package:config("shared") and "dynamic" or "static") .. "_" .. premakeArch
+        os.cd("build")
+        if package:is_plat("windows") then
+            os.vrun("./premake5.exe " .. table.concat(premakeOptions, " ") .. " vs2019")
+            os.cd("vs2019")
 
-        os.vrun("make config=" .. configName .. " -j4")
+            local configs = {}
+            local arch = package:is_arch("x86") and "Win32" or "x64"
+            local mode = (package:debug() and "Debug" or "Release") .. (package:config("shared") and "Dynamic" or "Static")
+
+            table.insert(configs, "/property:Configuration=" .. mode)
+            table.insert(configs, "/property:Platform=" .. arch)
+
+            import("package.tools.msbuild").build(package, configs)
+
+            libDir = "msvc"
+        elseif package:is_plat("linux") then
+            os.vrun("./premake5-linux64 " .. table.concat(premakeOptions, " ") .. " gmake2")
+            os.cd("gmake2")
+            
+            local configName = (package:debug() and "debug" or "release") .. (package:config("shared") and "dynamic" or "static") .. "_" .. premakeArch
+
+            os.vrun("make config=" .. configName .. " -j4")
+
+            libDir = "gmake"
+        end
+
         os.cd("../../")
         os.cp("include/Nazara", package:installdir("include"))
         os.cp("SDK/include/NDK", package:installdir("include"))
-        if (package:config("shared")) then
-            os.cp("lib/gmake/" .. premakeArch .. "/*.so", package:installdir("lib"))
-        else
-            os.cp("lib/gmake/" .. premakeArch .. "/*.lib", package:installdir("lib"))
-        end
+        os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
     end)
 
     on_test(function (package)
