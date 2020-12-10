@@ -31,7 +31,7 @@ jobs:
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
-      run: xmake config --arch ${{ matrix.arch }} --mode ${{ matrix.mode }} --yes --verbose
+      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --verbose
 
     # Build the game
     - name: Build BurgWar
