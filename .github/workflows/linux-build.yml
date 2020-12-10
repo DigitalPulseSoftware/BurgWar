@@ -37,8 +37,12 @@ jobs:
     - name: Build BurgWar
       run: xmake
 
+    # Install the result files
+    - name: Install BurgWar
+      run: xmake install -o package
+
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-        path: bin/linux_${{ matrix.arch }}_${{ matrix.mode }}
+        path: package/bin
