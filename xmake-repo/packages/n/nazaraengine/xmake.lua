@@ -129,17 +129,17 @@ package("nazaraengine")
         end
 
         if has_platform(package) then
-            if package:is_plat("linux") then
-                package:add("deps", "libsdl")
-            end
+            --if package:is_plat("linux") then
+            --    package:add("deps", "libsdl")
+            --end
 
             package:add("links", prefix .. "Platform" .. suffix)
         end
 
         if has_utility(package) then
-            if package:is_plat("linux") then
-                package:add("deps", "freetype")
-            end
+            --if package:is_plat("linux") then
+            --    package:add("deps", "freetype")
+            --end
 
             package:add("links", prefix .. "Utility" .. suffix)
         end
