@@ -35,4 +35,4 @@ jobs:
 
     # Build the game
     - name: Build BurgWar
-      run: xmake --verbose
+      run: xmake
