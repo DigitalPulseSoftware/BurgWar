@@ -25,4 +25,4 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: xmake.exe
+      run: xmake.exe -y
