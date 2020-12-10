@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         arch: [x64]
-        mode: [Debug, Release]
+        mode: [debug, release]
 
     runs-on: ${{ matrix.os }}
 
@@ -36,3 +36,9 @@ jobs:
     # Build the game
     - name: Build BurgWar
       run: xmake
+
+    # Upload artifacts
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
+        path: bin/linux_${{ matrix.arch }}-${{ matrix.mode }}
