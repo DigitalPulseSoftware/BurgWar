@@ -7,7 +7,7 @@
 #ifdef NAZARA_PLATFORM_WINDOWS
 
 #include <CoreLib/Utility/CrashHandlerWin32.hpp>
-#include <StackWalker/StackWalker.h>
+#include <StackWalker.h>
 #include <array>
 #include <cstdio>
 #include <cwchar>

@@ -144,5 +144,3 @@ namespace bw
 		emit valueChanged(value());
 	}
 }
-
-#include "Float4SpinBox.moc"

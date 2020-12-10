@@ -137,5 +137,3 @@ namespace bw
 		emit valueChanged(value());
 	}
 }
-
-#include "Integer3SpinBox.moc"

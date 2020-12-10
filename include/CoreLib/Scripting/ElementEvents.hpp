@@ -18,10 +18,12 @@ namespace bw
 {
 	enum class ElementEvent
 	{
+#ifndef Q_MOC_RUN
 #define BURGWAR_EVENT(X) X,
 #define BURGWAR_EVENT_LAST(X) X, Max = X
 
 #include <CoreLib/Scripting/ElementEventList.hpp>
+#endif
 	};
 
 	template<ElementEvent E>

@@ -140,5 +140,3 @@ namespace bw
 		emit valueChanged(value());
 	}
 }
-
-#include "Integer4SpinBox.moc"

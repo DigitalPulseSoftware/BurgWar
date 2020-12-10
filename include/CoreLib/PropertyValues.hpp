@@ -28,10 +28,12 @@ namespace bw
 
 	enum class PropertyType
 	{
+#ifndef Q_MOC_RUN
 #define BURGWAR_PROPERTYTYPE(V, T, IT) T = V,
 #define BURGWAR_PROPERTYTYPE_LAST(V, T, IT) T = V
 
 #include <CoreLib/PropertyTypeList.hpp>
+#endif
 	};
 
 	template<PropertyType P>
