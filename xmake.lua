@@ -115,4 +115,66 @@ target("BurgWarMapEditor")
 	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazara")
 
+	after_install("windows", function (target, opt)
+		import("core.base.option")
+		import("core.project.config")
+		import("core.project.depend")
+		import("detect.sdks.find_vstudio")
+
+    	local installfile = path.join(target:installdir(), "bin", target:basename() .. ".exe")
+
+		-- need re-generate this app?
+		local targetfile = target:targetfile()
+		local dependfile = target:dependfile(targetfile)
+		local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+		if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+			return
+		end
+
+		-- get qt sdk
+		local qt = target:data("qt")
+
+		-- get windeployqt
+		local windeployqt = path.join(qt.bindir, "windeployqt.exe")
+		assert(os.isexec(windeployqt), "windeployqt.exe not found!")
+
+		-- find qml directory
+		local qmldir = nil
+		for _, sourcebatch in pairs(target:sourcebatches()) do
+			if sourcebatch.rulename == "qt.qrc" then
+				for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+					qmldir = find_path("*.qml", path.directory(sourcefile))
+					if qmldir then
+						break
+					end
+				end
+			end
+		end
+
+		-- do deploy
+		local vs_studio = find_vstudio()
+
+		local installDir = path.join(vs_studio["2019"].vcvarsall[target:arch()].VSInstallDir, "VC")
+		os.addenv("VCINSTALLDIR", installDir)
+
+		local argv = {"--force"}
+		if option.get("diagnosis") then
+			table.insert(argv, "--verbose=2")
+		elseif option.get("verbose") then
+			table.insert(argv, "--verbose=1")
+		else
+			table.insert(argv, "--verbose=0")
+		end
+		if qmldir then
+			table.insert(argv, "--qmldir=" .. qmldir)
+		end
+		table.insert(argv, installfile)
+
+		os.vrunv(windeployqt, argv)
+
+		-- update files and values to the dependent file
+		dependinfo.files = {targetfile}
+		depend.save(dependinfo, dependfile)
+	end)
+
 target_end()
