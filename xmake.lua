@@ -38,15 +38,18 @@ elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
 
-
 --[[
-target("autoupdate")
-    set_kind("binary")
-    on_build(function (target)
-        if os.getenv("XMAKE_IN_VSTUDIO") then
-            os.execv("xmake", {"project", "-k", "vsxmake"}, {detach = true, envs = {XMAKE_CONFIGDIR = os.tmpfile() .. ".xmake"}})
-        end
-    end)
+target("xmake_update")
+	set_kind("binary") -- or use phony
+	on_install(function() end)
+	on_build(function (target)
+		import("core.project.depend")
+		if os.getenv("XMAKE_IN_VSTUDIO") then
+			depend.on_changed(function ()
+				os.execv("xmake", {"project", "-k", "vsxmake"}, {detach = true, envs = {XMAKE_CONFIGDIR = os.tmpfile() .. ".xmake"}})
+			end, {files = path.join(os.projectdir(), "vsxmake2019", "xxx.sln")}) -- this file is changed?
+		end
+	end)
 ]]
 
 target("lua")
