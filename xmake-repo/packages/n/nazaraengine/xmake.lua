@@ -71,7 +71,7 @@ package("nazaraengine")
     local function has_assimp_plugin(package)
         return package:config("plugin-assimp")
     end
-    
+
     on_load("windows", "linux", "macosx", "mingw", function (package)
         local prefix = "Nazara"
         local suffix = package:config("shared") and "" or "-s"
@@ -154,6 +154,9 @@ package("nazaraengine")
     end)
 
     on_install("windows", "linux", function (package)
+        -- Remove potential leftovers from previous build
+        os.rm("lib")
+
         local premakeOptions = {"--verbose", "--excludes-examples"}
         if not has_audio(package) then
             table.insert(premakeOptions, "--excludes-module-audio")
@@ -250,6 +253,24 @@ package("nazaraengine")
         os.cp("include/Nazara", package:installdir("include"))
         os.cp("SDK/include/NDK", package:installdir("include"))
         os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
+
+        if package:is_plat("windows") then
+            if has_audio(package) then
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/soft_oal.dll", package:installdir("lib"))
+            end
+
+            if has_platform(package) then
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/SDL2.dll", package:installdir("lib"))
+            end
+
+            if has_utility(package) then
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/libsndfile-1.dll", package:installdir("lib"))
+            end
+
+            if has_assimp_plugin(package) then
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/assimp.dll", package:installdir("lib"))
+            end
+        end
     end)
 
     on_test(function (package)
