@@ -36,7 +36,7 @@ jobs:
 
     # Install the result files
     - name: Install BurgWar
-      run: xmake.exe install -o package
+      run: xmake.exe install -vo package
 
     # Upload artifacts
     - uses: actions/upload-artifact@v2

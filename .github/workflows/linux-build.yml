@@ -40,7 +40,7 @@ jobs:
 
     # Install the result files
     - name: Install BurgWar
-      run: xmake install -o package
+      run: xmake install -vo package
 
     # Upload artifacts
     - uses: actions/upload-artifact@v2
