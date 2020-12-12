@@ -29,8 +29,10 @@ jobs:
     # Try to cache xmake dependencies
     - uses: actions/cache@v2
       with:
-        path: C:\Users\runneradmin\AppData\Local\.xmake
-        key: ${{ runner.os }}-${{ hashFiles('xmake.lua', 'C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf') }}
+        path: | 
+          C:\Users\runneradmin\AppData\Local\.xmake\cache
+          C:\Users\runneradmin\AppData\Local\.xmake\packages
+        key: ${{ runner.os }}-${{ hashFiles('xmake.lua', 'C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf', 'C:\Users\runneradmin\AppData\Local\.xmake\repositories\**') }}
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
