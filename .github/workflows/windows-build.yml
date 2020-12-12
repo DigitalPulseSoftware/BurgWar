@@ -21,6 +21,7 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
+      run: xmake.exe repo --update
 
     # Install Qt (required for map editor)
     - name: Install Qt
