@@ -48,6 +48,13 @@ jobs:
     - name: Install BurgWar
       run: xmake.exe install -vo package
 
+    # Copy scripts to install directly
+    - name: Copy scripts
+      uses: canastro/copy-file-action@master
+      with:
+        source: scripts
+        target: package/bin/scripts
+
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:
