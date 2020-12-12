@@ -26,6 +26,12 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
 
+    # Try to cache xmake dependencies
+    - uses: actions/cache@v2
+      with:
+        path: C:\Users\runneradmin\AppData\Local\.xmake
+        key: ${{ runner.os }}-${{ hashFiles('xmake.lua', 'C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf') }}
+
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
       run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --verbose
