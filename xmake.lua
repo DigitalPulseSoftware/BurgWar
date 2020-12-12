@@ -38,20 +38,6 @@ elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
 
---[[
-target("xmake_update")
-	set_kind("binary") -- or use phony
-	on_install(function() end)
-	on_build(function (target)
-		import("core.project.depend")
-		if os.getenv("XMAKE_IN_VSTUDIO") then
-			depend.on_changed(function ()
-				os.execv("xmake", {"project", "-k", "vsxmake"}, {detach = true, envs = {XMAKE_CONFIGDIR = os.tmpfile() .. ".xmake"}})
-			end, {files = path.join(os.projectdir(), "vsxmake2019", "xxx.sln")}) -- this file is changed?
-		end
-	end)
-]]
-
 target("lua")
 	set_kind("static")
 
@@ -66,7 +52,7 @@ target("CoreLib")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json")
-	add_packages("nazara", {links = {}})
+	add_packages("nazaraserver", {links = {}})
 
 if (is_plat("windows")) then 
 	add_packages("stackwalker")
