@@ -50,10 +50,7 @@ jobs:
 
     # Copy scripts to install directly
     - name: Copy scripts
-      uses: canastro/copy-file-action@master
-      with:
-        source: scripts
-        target: package/bin/scripts
+      run: xcopy /I /E /Y /F scripts package\bin\scripts
 
     # Upload artifacts
     - uses: actions/upload-artifact@v2
