@@ -33,9 +33,7 @@ jobs:
     # Cache xmake dependencies
     - uses: actions/cache@v2
       with:
-        path: |
-          /home/runner/.xmake/cache
-          /home/runner/.xmake/packages
+        path: /home/runner/.xmake/packages
         key: ${{ runner.os }}-${{ hashFiles('xmake.lua') }}-${{ hashFiles('/home/runner/.xmake/xmake.conf') }}-${{ hashFiles('/home/runner/.xmake/repositories/**') }}
 
     # Setup compilation mode and install project dependencies
