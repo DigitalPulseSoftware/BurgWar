@@ -157,7 +157,7 @@ package("nazaraengine")
         -- Remove potential leftovers from previous build
         os.rm("lib")
 
-        local premakeOptions = {"--verbose", "--excludes-examples"}
+        local premakeOptions = {"--verbose", "--excludes-examples", " --excludes-tests"}
         if not has_audio(package) then
             table.insert(premakeOptions, "--excludes-module-audio")
         end
