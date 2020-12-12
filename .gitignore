@@ -184,3 +184,4 @@ luac.out
 # Sublime Text
 *.sublime-project
 *.sublime-workspace
+.vscode/compile_commands.json
