@@ -4,12 +4,14 @@
 
 #include <CoreLib/Map.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
+#include <CoreLib/Version.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Math/Rect.hpp>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -105,7 +107,7 @@ namespace bw
 		if (!infoFile.IsOpen())
 			return false;
 
-		constexpr Nz::UInt16 FileVersion = 0;
+		constexpr Nz::UInt16 FileVersion = 1;
 
 		Nz::ByteStream stream(&infoFile);
 		stream.SetDataEndianness(Nz::Endianness_LittleEndian);
@@ -115,6 +117,9 @@ namespace bw
 
 		// Map header
 		stream << m_mapInfo.name << m_mapInfo.author << m_mapInfo.description;
+
+		// Game version
+		stream << BURGWAR_VERSION;
 
 		// Map layers
 		CompressedUnsigned<Nz::UInt16> layerCount(Nz::UInt16(m_layers.size()));
@@ -247,6 +252,7 @@ namespace bw
 		mapJson["name"] = mapInfo.name;
 		mapJson["author"] = mapInfo.author;
 		mapJson["description"] = mapInfo.description;
+		mapJson["gameVersion"] = fmt::format("{}.{}.{}", BURGWAR_VERSION_MAJOR, BURGWAR_VERSION_MINOR, BURGWAR_VERSION_PATCH);
 
 		auto assetArray = nlohmann::json::array();
 		for (const auto& mapAsset : map.GetAssets())
@@ -457,11 +463,17 @@ namespace bw
 		Nz::UInt16 fileVersion;
 		stream >> fileVersion;
 
-		if (fileVersion != 0)
+		if (fileVersion != 1)
 			throw std::runtime_error("Unhandled file version");
 
 		// Map header
 		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
+
+		// For debugging purpose
+		Nz::UInt32 gameVersion;
+		stream >> gameVersion;
+
+		NazaraUnused(gameVersion);
 
 		CompressedUnsigned<Nz::UInt16> layerCount;
 		stream >> layerCount;
