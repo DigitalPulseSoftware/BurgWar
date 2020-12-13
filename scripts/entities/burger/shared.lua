@@ -159,8 +159,6 @@ entity:On("init", function (self)
 		WeaponOffset = Vec2(maxWidth * 0.65 - maxWidth / 2, cursor * 0.65)
 	})
 	local size = Vec2(maxWidth, -cursor)
-	print(size)
---	local size = Vec2(277, 253) / 3
 
 	local widthOffset = -10 -- reduce a bit
 	local heightOffset = 60 * self.Scale -- for hopping animation
