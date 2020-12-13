@@ -50,6 +50,7 @@ target("CoreLib")
 
 	add_deps("lua")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
+	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 	add_packages("nazaraserver", {links = {}})
@@ -57,6 +58,48 @@ target("CoreLib")
 if (is_plat("windows")) then 
 	add_packages("stackwalker")
 end
+
+	before_build(function (target)
+		local host = os.host()
+		local subhost = os.subhost()
+
+		local system
+		if (host ~= subhost) then
+			system = host .. "/" .. subhost
+		else
+			system = host
+		end
+
+		local branch = "unknown-branch"
+		local commitHash = "unknown-commit"
+		try
+		{
+			function ()
+				import("detect.tools.find_git")
+				local git = find_git()
+				if (git) then
+					branch = os.iorunv(git, {"rev-parse", "--abbrev-ref", "HEAD"}):trim()
+					commitHash = os.iorunv(git, {"rev-parse", "--short", "HEAD"}):trim()
+				else
+					error("git not found")
+				end
+			end,
+
+			catch
+			{
+				function (err)
+					print(string.format("Failed to retrieve git data: %s", err))
+				end
+			}
+		}
+
+		io.writefile("src/CoreLib/VersionData.hpp", string.format([[
+const char* BuildSystem = "%s";
+const char* BuildBranch = "%s";
+const char* BuildCommit = "%s";
+const char* BuildDate = "%s";
+]], system, branch, commitHash, os.date("%Y-%m-%d %H:%M:%S")))
+	end)
 
 target("ClientLib")
 	set_kind("static")

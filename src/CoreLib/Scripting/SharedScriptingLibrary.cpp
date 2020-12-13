@@ -6,11 +6,12 @@
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/BasicPlayerMovementController.hpp>
 #include <CoreLib/NoclipPlayerMovementController.hpp>
-#include <CoreLib/Scripting/SharedGamemode.hpp>
+#include <CoreLib/Version.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/Constraint.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
+#include <CoreLib/Scripting/SharedGamemode.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
@@ -33,6 +34,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState.open_libraries();
 
+		sol::table gameTable = luaState.create_named_table("game");
 		sol::table matchTable = luaState.create_named_table("match");
 		sol::table networkTable = luaState.create_named_table("network");
 		sol::table physicsTable = luaState.create_named_table("physics");
@@ -40,6 +42,7 @@ namespace bw
 		sol::table timerTable = luaState.create_named_table("timer");
 
 		RegisterConstraintClass(context);
+		RegisterGameLibrary(context, gameTable);
 		RegisterGlobalLibrary(context);
 		RegisterMatchLibrary(context, matchTable);
 		RegisterMetatableLibrary(context);
@@ -160,6 +163,30 @@ namespace bw
 			sol::base_classes, sol::bases<PlayerMovementController>(),
 			"new", sol::factories(LuaFunction(&std::make_shared<NoclipPlayerMovementController>))
 		);
+	}
+
+	void SharedScriptingLibrary::RegisterGameLibrary(ScriptingContext& /*context*/, sol::table& library)
+	{
+		library["GetVersions"] = LuaFunction([]
+		{
+			return std::make_tuple(BURGWAR_VERSION_MAJOR, BURGWAR_VERSION_MINOR, BURGWAR_VERSION_PATCH);
+		});
+
+		library["GetVersionNumber"] = LuaFunction([]
+		{
+			return BURGWAR_VERSION;
+		});
+	}
+
+	void SharedScriptingLibrary::RegisterGlobalLibrary(ScriptingContext& context)
+	{
+		AbstractScriptingLibrary::RegisterGlobalLibrary(context);
+
+		sol::state& state = context.GetLuaState();
+		state["BuildVersion"] = LuaFunction([](Nz::UInt32 major, Nz::UInt32 minor, std::optional<Nz::UInt32> patch)
+		{
+			return BURGWAR_BUILD_VERSION(major, minor, patch.value_or(0));
+		});
 	}
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)

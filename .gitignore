@@ -4,6 +4,7 @@ Xmake.Custom.items
 Xmake.Custom.props
 Xmake.Custom.targets
 build
+src/CoreLib/VersionData.hpp
 
 # Game binaries
 Assets/*
@@ -44,6 +45,9 @@ Makefile
 *.VC.opendb
 *.VC.db*
 *.leu
+
+# VS Code
+.vscode
 
 # Compiled Object files
 *.slo
@@ -184,4 +188,3 @@ luac.out
 # Sublime Text
 *.sublime-project
 *.sublime-workspace
-.vscode/compile_commands.json
