@@ -55,7 +55,7 @@ namespace bw
 			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
-			~Match() = default;
+			~Match();
 
 			inline EntityId AllocateUniqueId();
 

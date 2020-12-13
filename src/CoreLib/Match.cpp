@@ -49,6 +49,8 @@ namespace bw
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}
 
+	Match::~Match() = default;
+
 	void Match::BroadcastChatMessage(Player* player, std::string message)
 	{
 		Packets::ChatMessage chatPacket;
