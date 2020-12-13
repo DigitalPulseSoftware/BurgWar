@@ -55,7 +55,7 @@ namespace bw
 			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
-			~Match();
+			~Match() = default;
 
 			inline EntityId AllocateUniqueId();
 
@@ -160,13 +160,13 @@ namespace bw
 				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
 			};
 
+			std::shared_ptr<ScriptingContext> m_scriptingContext; //< Must be over script based classes
 			std::optional<AssetStore> m_assetStore;
 			std::optional<Debug> m_debug;
 			std::optional<ServerEntityStore> m_entityStore;
 			std::optional<ServerWeaponStore> m_weaponStore;
 			std::size_t m_maxPlayerCount;
 			std::shared_ptr<ServerGamemode> m_gamemode;
-			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;

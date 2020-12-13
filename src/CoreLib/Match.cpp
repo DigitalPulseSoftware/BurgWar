@@ -49,22 +49,6 @@ namespace bw
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}
 
-	Match::~Match()
-	{
-		// Destroy players before scripting context
-		m_sessions.Clear();
-
-		// Clear timer manager before scripting context gets deleted
-		GetScriptPacketHandlerRegistry().Clear();
-		GetTimerManager().Clear();
-
-		// Release scripts classes before scripting context
-		m_entityStore.reset();
-		m_weaponStore.reset();
-		m_gamemode.reset();
-		m_scriptingLibrary.reset();
-	}
-
 	void Match::BroadcastChatMessage(Player* player, std::string message)
 	{
 		Packets::ChatMessage chatPacket;
