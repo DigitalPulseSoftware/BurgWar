@@ -101,19 +101,19 @@ namespace Nz
 
 namespace bw
 {
+	constexpr Nz::UInt16 MapFileVersion = 1;
+
 	bool Map::Compile(const std::filesystem::path& outputPath)
 	{
 		Nz::File infoFile(outputPath.generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
-		constexpr Nz::UInt16 FileVersion = 1;
-
 		Nz::ByteStream stream(&infoFile);
 		stream.SetDataEndianness(Nz::Endianness_LittleEndian);
 
 		stream.Write("Burgrmap", 8);
-		stream << FileVersion;
+		stream << MapFileVersion;
 
 		// Map header
 		stream << m_mapInfo.name << m_mapInfo.author << m_mapInfo.description;
@@ -463,17 +463,19 @@ namespace bw
 		Nz::UInt16 fileVersion;
 		stream >> fileVersion;
 
-		if (fileVersion != 1)
+		if (fileVersion > 1)
 			throw std::runtime_error("Unhandled file version");
 
 		// Map header
 		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
 
 		// For debugging purpose
-		Nz::UInt32 gameVersion;
-		stream >> gameVersion;
-
-		NazaraUnused(gameVersion);
+		if (fileVersion >= 1)
+		{
+			Nz::UInt32 gameVersion;
+			stream >> gameVersion;
+			NazaraUnused(gameVersion);
+		}
 
 		CompressedUnsigned<Nz::UInt16> layerCount;
 		stream >> layerCount;
