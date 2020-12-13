@@ -110,7 +110,7 @@ target("BurgWarMapEditor")
 		import("core.project.depend")
 		import("detect.sdks.find_vstudio")
 
-    	local installfile = path.join(target:installdir(), "bin", target:basename() .. ".exe")
+		local installfile = path.join(target:installdir(), "bin", target:basename() .. ".exe")
 
 		-- need re-generate this app?
 		local targetfile = target:targetfile()
@@ -167,3 +167,9 @@ target("BurgWarMapEditor")
 	end)
 
 target_end()
+
+after_install(function (target)
+	if (target:targetkind() == "binary") then
+		os.vcp("scripts", path.join(target:installdir(), "bin"))
+	end
+end)

@@ -52,10 +52,6 @@ jobs:
     - name: Install BurgWar
       run: xmake install -vo package
 
-    # Copy scripts to install directly
-    - name: Copy scripts
-      run: cp -avr scripts package/bin
-
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:
