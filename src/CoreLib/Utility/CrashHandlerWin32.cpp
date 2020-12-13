@@ -7,10 +7,14 @@
 #ifdef NAZARA_PLATFORM_WINDOWS
 
 #include <CoreLib/Utility/CrashHandlerWin32.hpp>
+#include <CoreLib/Version.hpp>
+#include <Nazara/Core/HardwareInfo.hpp>
 #include <StackWalker.h>
 #include <array>
 #include <cstdio>
 #include <cwchar>
+#include <functional>
+#include <sstream>
 
 namespace bw
 {
@@ -29,16 +33,45 @@ namespace bw
 			}
 		};
 
-		struct LogStack : StackWalker
+		struct CallbackWalker : StackWalker
 		{
 			using StackWalker::StackWalker;
+			using StackWalker::CallstackEntryType;
+			using StackWalker::CallstackEntry;
 
-			void OnOutput(const char* text) override
+			using SymInitCallback = std::function<void(const char* searchPath, DWORD symOptions, const char* userName)>;
+			using LoadModuleCallback = std::function<void(const char* img, const char* mod, DWORD64 baseAddr, DWORD size, DWORD result, const char* symType, const char* pdbName, ULONGLONG fileVersion)>;
+			using CallstackEntryCallback = std::function<void(CallstackEntryType eType, CallstackEntry& entry)>;
+			using DbgHelpErrCallback = std::function<void(const char* szFuncName, DWORD gle, DWORD64 addr)>;
+
+			void OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUserName) override
 			{
-				stack += text;
+				if (symInitCallback)
+					symInitCallback(szSearchPath, symOptions, szUserName);
 			}
 
-			std::string stack;
+			void OnLoadModule(LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size, DWORD result, LPCSTR symType, LPCSTR pdbName, ULONGLONG fileVersion) override
+			{
+				if (loadModuleCallback)
+					loadModuleCallback(img, mod, baseAddr, size, result, symType, pdbName, fileVersion);
+			}
+
+			void OnCallstackEntry(CallstackEntryType eType, CallstackEntry& entry) override
+			{
+				if (callstackEntryCallback)
+					callstackEntryCallback(eType, entry);
+			}
+
+			void OnDbgHelpErr(LPCSTR szFuncName, DWORD gle, DWORD64 addr) override
+			{
+				if (dbgHelpErrCallback)
+					dbgHelpErrCallback(szFuncName, gle, addr);
+			}
+
+			SymInitCallback symInitCallback;
+			LoadModuleCallback loadModuleCallback;
+			CallstackEntryCallback callstackEntryCallback;
+			DbgHelpErrCallback dbgHelpErrCallback;
 		};
 
 		using WinHandle = std::unique_ptr<std::remove_pointer_t<HANDLE>, HandleCloser>;
@@ -125,10 +158,89 @@ namespace bw
 				return;
 			}
 
-			LogStack stackLogger;
+			std::ostringstream ss;
+			ss << std::fixed;
+
+			ss << "Game version: " << BURGWAR_VERSION_MAJOR << "." << BURGWAR_VERSION_MINOR << "." << BURGWAR_VERSION_PATCH << " (" << BURGWAR_VERSION << ")" << "\n";
+			ss << "Build info: " << GetBuildInfo() << "\n";
+
+			ss << "CPU: " << Nz::HardwareInfo::GetProcessorBrandString().ToStdString() << "\n";
+
+			ss << "\n";
+
+			std::ostringstream callstackStream;
+			callstackStream << std::fixed;
+
+			std::ostringstream moduleStream;
+			moduleStream << std::fixed;
+
+			CallbackWalker stackLogger;
+			stackLogger.symInitCallback = [&](const char* searchPath, DWORD symOptions, const char* /*userName*/)
+			{
+				moduleStream << "SymInit:\n";
+				moduleStream << " - SearchPath: " << searchPath << "\n";
+				moduleStream << " - SymOptions: " << symOptions << "\n";
+				moduleStream << "\n";
+				moduleStream << "Modules:\n";
+			};
+
+			stackLogger.loadModuleCallback = [&](const char* img, const char* mod, DWORD64 baseAddr, DWORD size, DWORD result, const char* symType, const char* pdbName, ULONGLONG fileVersion)
+			{
+				moduleStream << " - " << img << ":" << mod << " (" << reinterpret_cast<void*>(static_cast<std::uintptr_t>(baseAddr)) << ")";
+				moduleStream << ", size: " << size << " (result: " << result << "), SymType: " << symType << ", PDB: " << pdbName;
+
+				if (fileVersion != 0)
+				{
+					DWORD v4 = ((fileVersion >>  0) & 0xFFFF);
+					DWORD v3 = ((fileVersion >> 16) & 0xFFFF);
+					DWORD v2 = ((fileVersion >> 32) & 0xFFFF);
+					DWORD v1 = ((fileVersion >> 48) & 0xFFFF);
+					moduleStream << "fileVersion: " << v1 << "." << v2 << "." << v3 << "." << v4;
+				}
+
+				moduleStream << "\n";
+			};
+
+			stackLogger.callstackEntryCallback = [&](CallbackWalker::CallstackEntryType /*eType*/, CallbackWalker::CallstackEntry& entry)
+			{
+				const char* functionName;
+				if (entry.undFullName[0])
+					functionName = entry.undFullName;
+				else if (entry.undName[0])
+					functionName = entry.undName;
+				else if (entry.name[0])
+					functionName = entry.name;
+				else
+					functionName = nullptr;
+
+				callstackStream << " - " << entry.moduleName << "!";
+				if (functionName)
+					callstackStream << functionName << '+' << std::hex << entry.offsetFromSmybol;
+				else
+					callstackStream << std::hex << entry.offset;
+
+				if (entry.lineFileName[0])
+					callstackStream << " (" << entry.lineFileName << ":" << std::dec << entry.lineNumber << ")";
+
+				callstackStream << "\n";
+			};
+
+			/*stackLogger.dbgHelpErrCallback = [&](LPCSTR szFuncName, DWORD gle, DWORD64 addr)
+			{
+				callstackStream << "ERROR: " << szFuncName << ", GetLastError: " << std::hex << gle << " (Address: " << reinterpret_cast<void*>(static_cast<std::uintptr_t>(addr)) << ")\n";
+			};*/
+
 			stackLogger.ShowCallstack(GetCurrentThread(), e->ContextRecord);
 
-			if (WriteFile(dumpFile.get(), stackLogger.stack.data(), DWORD(stackLogger.stack.size()), nullptr, nullptr))
+			ss << "Callstack:\n";
+			ss << callstackStream.str();
+			ss << "\n";
+			ss << "Modules info:\n";
+			ss << moduleStream.str();
+
+			std::string crashlog = std::move(ss).str();
+
+			if (WriteFile(dumpFile.get(), crashlog.data(), DWORD(crashlog.size()), nullptr, nullptr))
 				fwprintf(stderr, L"Unhandled exception triggered: Callstack file %ls generated\n", filename);
 			else
 				fprintf(stderr, "Crashlog: Failed to dump stack\n");
@@ -136,8 +248,6 @@ namespace bw
 
 		LONG CALLBACK HandleException(EXCEPTION_POINTERS* e)
 		{
-			fprintf(stderr, "NANI?");
-
 			if (IsDebuggerPresent())
 				return EXCEPTION_CONTINUE_SEARCH;
 
