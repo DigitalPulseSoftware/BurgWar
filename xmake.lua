@@ -34,6 +34,7 @@ if (is_plat("windows")) then
 	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
 	add_cxxflags("/bigobj", "/ZI", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
+	add_cxflags("/w44062") -- Switch case not handled warning
 elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
