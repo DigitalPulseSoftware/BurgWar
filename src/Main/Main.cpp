@@ -3,12 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Main/Main.hpp>
+#include <CoreLib/Version.hpp>
 #include <CoreLib/Utility/CrashHandler.hpp>
 #include <exception>
 #include <iostream>
 
 int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 {
+	std::cout << "BurgWar ";
+	std::cout << bw::MajorVersion << "." << bw::MinorVersion << "." << bw::PatchVersion << " ";
+	std::cout << bw::BuildBranch << " (" << bw::BuildCommit << ") - " << bw::BuildDate;
+	std::cout << std::endl;
+
 	std::unique_ptr<bw::CrashHandler> crashHandler = bw::CrashHandler::PlatformCrashHandler();
 	crashHandler->Install();
 
