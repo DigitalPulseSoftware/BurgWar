@@ -234,7 +234,7 @@ namespace bw
 
 			ss << "Callstack:\n";
 			ss << callstackStream.str();
-			ss << "\n";
+			ss << "\n\n";
 			ss << "Modules info:\n";
 			ss << moduleStream.str();
 
