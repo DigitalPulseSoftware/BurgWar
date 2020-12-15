@@ -6,6 +6,7 @@
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
 #include <CoreLib/Match.hpp>
+#include <CoreLib/Version.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMouseController.hpp>
 #include <ClientLib/LocalMatch.hpp>
@@ -70,14 +71,30 @@ namespace bw
 
 		camera2D->AddComponent<Ndk::NodeComponent>();
 
+		Nz::EventHandler& eventHandler = m_mainWindow->GetEventHandler();
+
 		m_stateData = std::make_shared<StateData>();
 		m_stateData->app = this;
 		m_stateData->window = m_mainWindow;
 		m_stateData->world = &world;
-		m_stateData->canvas.emplace(world.CreateHandle(), m_mainWindow->GetEventHandler(), m_mainWindow->GetCursorController().CreateHandle());
+		m_stateData->canvas.emplace(world.CreateHandle(), eventHandler, m_mainWindow->GetCursorController().CreateHandle());
 		m_stateData->canvas->Resize(Nz::Vector2f(m_mainWindow->GetSize()));
 
-		m_mainWindow->GetEventHandler().OnResized.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
+		if (m_config.GetBoolValue("Debug.ShowVersion"))
+		{
+			Ndk::LabelWidget* versionLabel = m_stateData->canvas->Add<Ndk::LabelWidget>();
+			versionLabel->UpdateText(Nz::SimpleTextDrawer::Draw(std::to_string(MajorVersion) + "." + std::to_string(MinorVersion) + "." + std::to_string(PatchVersion), 14));
+			versionLabel->Resize(versionLabel->GetPreferredSize());
+
+			versionLabel->SetPosition(m_stateData->canvas->GetWidth() - versionLabel->GetWidth(), m_stateData->canvas->GetHeight() - versionLabel->GetHeight());
+
+			eventHandler.OnResized.Connect([=](const Nz::EventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
+			{
+				versionLabel->SetPosition(sizeEvent.width - versionLabel->GetWidth(), sizeEvent.height - versionLabel->GetHeight());
+			});
+		}
+
+		eventHandler.OnResized.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
 		{
 			m_stateData->canvas->Resize(Nz::Vector2f(Nz::Vector2ui(sizeEvent.width, sizeEvent.height)));
 		});
