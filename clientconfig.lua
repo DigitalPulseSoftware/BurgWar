@@ -5,7 +5,8 @@ Assets = {
 Debug = {
 	SendServerState = false,
 	ShowConnectionData = "ping", -- ping|download|upload|usage
-	ShowServerGhosts = false
+	ShowServerGhosts = false,
+	ShowVersion = true
 }
 GameSettings = {
 	TickRate = 33,
