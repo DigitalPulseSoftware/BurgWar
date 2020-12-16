@@ -49,7 +49,12 @@ namespace bw
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}
 
-	Match::~Match() = default;
+	Match::~Match()
+	{
+		// Clear timer manager before scripting context gets deleted
+		GetScriptPacketHandlerRegistry().Clear();
+		GetTimerManager().Clear();
+	}
 
 	void Match::BroadcastChatMessage(Player* player, std::string message)
 	{
