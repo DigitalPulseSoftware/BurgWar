@@ -128,6 +128,10 @@ target("BurgWar")
 	add_files("src/Client/**.cpp")
 	add_packages("concurrentqueue", "fmt", "libcurl", "nlohmann_json", "nazara")
 
+	after_install(function (target)
+		os.vcp("clientconfig.lua", path.join(target:installdir(), "bin"))
+	end)
+
 target("BurgWarServer")
 	set_kind("binary")
 
@@ -138,6 +142,10 @@ target("BurgWarServer")
 	add_files("src/Server/**.cpp")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
+	after_install(function (target)
+		os.vcp("serverconfig.lua", path.join(target:installdir(), "bin"))
+	end)
+
 target("BurgWarMapEditor")
 	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
@@ -147,6 +155,10 @@ target("BurgWarMapEditor")
 	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazara")
+
+	after_install(function (target)
+		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
+	end)
 
 	after_install("windows", function (target, opt)
 		import("core.base.option")
