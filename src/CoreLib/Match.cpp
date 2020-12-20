@@ -20,6 +20,7 @@
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
+#include <tsl/hopscotch_set.h>
 #include <cassert>
 #include <fstream>
 
@@ -68,6 +69,52 @@ namespace bw
 
 			player->SendPacket(chatPacket);
 		});
+	}
+
+	void Match::BuildClientAssetListPacket(Packets::MatchData& clientAsset) const
+	{
+		const std::string& fastDownloadUrls = m_app.GetConfig().GetStringValue("GameSettings.FastDownloadURLs");
+
+		// Make sure url are only present once
+		tsl::hopscotch_set<std::string> urls;
+		SplitStringAny(fastDownloadUrls, "\f\n\r\t\v ", [&](const std::string_view& url)
+		{
+			if (!url.empty())
+				urls.emplace(url);
+
+			return true;
+		});
+
+		for (auto it = urls.begin(); it != urls.end(); ++it)
+			clientAsset.fastDownloadUrls.emplace_back(std::move(it.key()));
+
+		for (const auto& pair : m_assets)
+		{
+			auto& assetData = clientAsset.assets.emplace_back();
+			assetData.path = pair.second.path;
+			assetData.size = pair.second.size;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(assetData.sha1Checksum.size() == checksum.size());
+			std::memcpy(assetData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientAsset.assets.begin(), clientAsset.assets.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
+	}
+
+	void Match::BuildClientScriptListPacket(Packets::MatchData& clientScript) const
+	{
+		for (const auto& pair : m_clientScripts)
+		{
+			auto& scriptData = clientScript.scripts.emplace_back();
+			scriptData.path = pair.first;
+
+			const Nz::ByteArray& checksum = pair.second.checksum;
+			assert(scriptData.sha1Checksum.size() == checksum.size());
+			std::memcpy(scriptData.sha1Checksum.data(), checksum.GetConstBuffer(), checksum.GetSize());
+		}
+
+		std::sort(clientScript.scripts.begin(), clientScript.scripts.end(), [](const auto& first, const auto& second) { return first.path < second.path; });
 	}
 
 	Player* Match::CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name)

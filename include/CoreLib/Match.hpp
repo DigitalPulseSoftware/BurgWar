@@ -18,6 +18,7 @@
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
+#include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
@@ -62,8 +63,8 @@ namespace bw
 			void BroadcastChatMessage(Player* player, std::string message);
 			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true);
 
-			template<typename T> void BuildClientAssetListPacket(T& clientAsset) const;
-			template<typename T> void BuildClientScriptListPacket(T& clientScript) const;
+			void BuildClientAssetListPacket(Packets::MatchData& clientAsset) const;
+			void BuildClientScriptListPacket(Packets::MatchData& clientScript) const;
 
 			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 

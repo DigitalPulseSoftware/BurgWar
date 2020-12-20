@@ -12,6 +12,7 @@ namespace bw
 		RegisterStringOption("Assets.ResourceFolder");
 		RegisterStringOption("Assets.ScriptFolder");
 		RegisterBoolOption("Debug.SendServerState");
+		RegisterStringOption("GameSettings.FastDownloadURLs", "");
 		RegisterFloatOption("GameSettings.TickRate");
 	}
 }
