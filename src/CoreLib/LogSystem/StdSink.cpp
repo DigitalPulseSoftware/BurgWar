@@ -76,6 +76,28 @@ namespace bw
 
 			return 0;
 		}
+#elif defined(NAZARA_PLATFORM_LINUX)
+		const char* GetColorCode(const LogContext& context)
+		{
+			switch (context.level)
+			{
+				case LogLevel::Debug:
+					return (context.side != LogSide::Server) ? "\033[1;32m" : "\033[0;32m";
+
+				case LogLevel::Info:
+					return (context.side != LogSide::Server) ? "\033[1;37m" : "\033[0;37m";
+
+				case LogLevel::Warning:
+					return (context.side != LogSide::Server) ? "\033[1;33m" : "\033[0;33m";
+
+				case LogLevel::Error:
+					return (context.side != LogSide::Server) ? "\033[1;31m" : "\033[0;31m";
+			}
+
+			return 0;
+		}
+
+		constexpr const char* ResetColorCode = "\033[0m";
 #endif
 
 		const char* ToString(LogLevel level)
@@ -167,6 +189,8 @@ namespace bw
 			std::fprintf(output, "[%s] %.*s\n", levelStr, int(content.size()), content.data());
 
 		SetConsoleTextAttribute(console, oldColor);
+#elif defined(NAZARA_PLATFORM_LINUX)
+		std::fprintf(output, "%s[%s] %.*s\n%s", GetColorCode(context), levelStr, int(content.size()), content.data(), ResetColorCode);
 #else
 		std::fprintf(output, "[%s] %.*s\n", levelStr, int(content.size()), content.data());
 #endif
