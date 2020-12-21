@@ -61,7 +61,8 @@ namespace bw
 			NazaraSignal(OnCreateEntities,               ClientSession* /*session*/, const Packets::CreateEntities&               /*data*/);
 			NazaraSignal(OnDeleteEntities,               ClientSession* /*session*/, const Packets::DeleteEntities&               /*data*/);
 			NazaraSignal(OnDisableLayer,                 ClientSession* /*session*/, const Packets::DisableLayer&                 /*data*/);
-			NazaraSignal(OnDownloadClientScriptResponse, ClientSession* /*session*/, const Packets::DownloadClientScriptResponse& /*data*/);
+			NazaraSignal(OnDownloadClientFileFragment,   ClientSession* /*session*/, const Packets::DownloadClientFileFragment&  /*data*/);
+			NazaraSignal(OnDownloadClientFileResponse,   ClientSession* /*session*/, const Packets::DownloadClientFileResponse&  /*data*/);
 			NazaraSignal(OnEnableLayer,                  ClientSession* /*session*/, const Packets::EnableLayer&                  /*data*/);
 			NazaraSignal(OnEntitiesAnimation,            ClientSession* /*session*/, const Packets::EntitiesAnimation&            /*data*/);
 			NazaraSignal(OnEntitiesDeath,                ClientSession* /*session*/, const Packets::EntitiesDeath&                /*data*/);

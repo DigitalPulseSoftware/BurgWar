@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/ClientScriptDownloadManager.hpp>
+#include <ClientLib/HttpDownloadManager.hpp>
 
 namespace bw
 {

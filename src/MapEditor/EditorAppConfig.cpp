@@ -10,6 +10,9 @@ namespace bw
 	EditorAppConfig::EditorAppConfig(EditorWindow& app) :
 	SharedAppConfig(app)
 	{
+		// Cache folders shouldn't be needed, but just in case...
+		RegisterStringOption("Assets.AssetCacheFolder", ".assetCache");
+		RegisterStringOption("Assets.ScriptCacheFolder", ".scriptCache");
 		RegisterStringOption("Assets.EditorFolder");
 	}
 }

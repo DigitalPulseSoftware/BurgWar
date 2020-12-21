@@ -7,7 +7,7 @@
 #ifndef BURGWAR_STATES_GAME_SCRIPTDOWNLOADSTATE_HPP
 #define BURGWAR_STATES_GAME_SCRIPTDOWNLOADSTATE_HPP
 
-#include <ClientLib/ClientScriptDownloadManager.hpp>
+#include <ClientLib/ClientFileDownloadManager.hpp>
 #include <Client/States/Game/CancelableState.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <optional>
@@ -27,7 +27,7 @@ namespace bw
 			void Enter(Ndk::StateMachine& fsm) override;
 			void OnCancelled() override;
 
-			std::optional<ClientScriptDownloadManager> m_downloadManager;
+			std::optional<ClientFileDownloadManager> m_downloadManager;
 			std::shared_ptr<ClientSession> m_clientSession;
 			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;

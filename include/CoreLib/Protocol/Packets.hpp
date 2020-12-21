@@ -40,8 +40,9 @@ namespace bw
 		CreateEntities,
 		DeleteEntities,
 		DisableLayer,
-		DownloadClientScriptRequest,
-		DownloadClientScriptResponse,
+		DownloadClientFileFragment,
+		DownloadClientFileRequest,
+		DownloadClientFileResponse,
 		EnableLayer,
 		EntitiesAnimation,
 		EntitiesDeath,
@@ -244,14 +245,38 @@ namespace bw
 			CompressedUnsigned<LayerIndex> layerIndex;
 		};
 
-		DeclarePacket(DownloadClientScriptRequest)
+		DeclarePacket(DownloadClientFileFragment)
+		{
+			CompressedUnsigned<Nz::UInt32> fragmentIndex;
+			std::vector<Nz::UInt8> fragmentContent;
+		};
+
+		DeclarePacket(DownloadClientFileRequest)
 		{
 			std::string path;
 		};
 
-		DeclarePacket(DownloadClientScriptResponse)
+		DeclarePacket(DownloadClientFileResponse)
 		{
-			std::vector<Nz::UInt8> fileContent;
+			enum class Error : Nz::UInt8
+			{
+				FileNotFound
+			};
+
+			struct Success
+			{
+				CompressedUnsigned<Nz::UInt32> fragmentCount;
+				CompressedUnsigned<Nz::UInt64> fragmentSize;
+			};
+
+			struct Failure
+			{
+				Error error;
+			};
+
+			using SuccessFailureVariant = std::variant<Success, Failure>; //< TODO: bw::Option?
+
+			SuccessFailureVariant content;
 		};
 
 		DeclarePacket(EnableLayer)
@@ -566,8 +591,9 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, CreateEntities& data);
 		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
 		void Serialize(PacketSerializer& serializer, DisableLayer& data);
-		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data);
-		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data);
+		void Serialize(PacketSerializer& serializer, DownloadClientFileFragment& data);
+		void Serialize(PacketSerializer& serializer, DownloadClientFileRequest& data);
+		void Serialize(PacketSerializer& serializer, DownloadClientFileResponse& data);
 		void Serialize(PacketSerializer& serializer, EnableLayer& data);
 		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
 		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);

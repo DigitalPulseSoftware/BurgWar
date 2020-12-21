@@ -19,7 +19,7 @@ namespace bw
 
 		// Incoming commands
 		IncomingCommand(Auth);
-		IncomingCommand(DownloadClientScriptRequest);
+		IncomingCommand(DownloadClientFileRequest);
 		IncomingCommand(PlayerChat);
 		IncomingCommand(PlayerConsoleCommand);
 		IncomingCommand(PlayersInput);
@@ -39,7 +39,8 @@ namespace bw
 		OutgoingCommand(CreateEntities,               Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(DeleteEntities,               Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(DisableLayer,                 Nz::ENetPacketFlag_Reliable,    1);
-		OutgoingCommand(DownloadClientScriptResponse, Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(DownloadClientFileFragment,   Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(DownloadClientFileResponse,   Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(EnableLayer,                  Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(EntitiesAnimation,            Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(EntitiesDeath,                Nz::ENetPacketFlag_Reliable,    1);

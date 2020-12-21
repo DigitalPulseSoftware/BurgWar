@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MatchClientSession.hpp>
+#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
 #include <CoreLib/NetworkReactor.hpp>
@@ -14,6 +16,11 @@
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <cassert>
+
+namespace
+{
+	constexpr Nz::UInt64 MaxFragmentSize = 1200;
+}
 
 namespace bw
 {
@@ -138,18 +145,16 @@ namespace bw
 		SendPacket(m_match.GetMatchData());
 	}
 
-	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet)
+	void MatchClientSession::HandleIncomingPacket(const Packets::DownloadClientFileRequest& packet)
 	{
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Client asked for client script {0}", packet.path);
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Client requested client asset {0}", packet.path);
 
+		const Match::ClientAsset* clientAsset;
 		const Match::ClientScript* clientScript;
-		if (m_match.GetClientScript(packet.path, &clientScript))
-		{
-			Packets::DownloadClientScriptResponse response;
-			response.fileContent = clientScript->content;
-
-			SendPacket(response);
-		}
+		if (m_match.GetClientAsset(packet.path, &clientAsset))
+			SendClientFile(clientAsset->realPath);
+		else if (m_match.GetClientScript(packet.path, &clientScript))
+			SendClientFile(clientScript->content);
 		else
 			Disconnect();
 	}
@@ -260,6 +265,80 @@ namespace bw
 			return;
 
 		m_players[packet.localIndex]->UpdateName(std::move(packet.newName));
+	}
+
+	void MatchClientSession::SendClientFile(const std::filesystem::path& filePath)
+	{
+		if (!std::filesystem::is_regular_file(filePath))
+		{
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Client asset {} does not exist", filePath.generic_u8string());
+
+			Packets::DownloadClientFileResponse response;
+			auto& failure = response.content.emplace<Packets::DownloadClientFileResponse::Failure>();
+			failure.error = Packets::DownloadClientFileResponse::Error::FileNotFound;
+
+			SendPacket(response);
+			return;
+		}
+
+		//FIXME: Use fragments instead of sending the whole file at once
+		Nz::File file(filePath.generic_u8string(), Nz::OpenMode_ReadOnly);
+		if (!file.IsOpen())
+		{
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to open {}", filePath.generic_u8string());
+
+			// An error occurred, send 0 fragment to notify the issue
+			Packets::DownloadClientFileResponse response;
+			auto& failure = response.content.emplace<Packets::DownloadClientFileResponse::Failure>();
+			failure.error = Packets::DownloadClientFileResponse::Error::FileNotFound;
+
+			SendPacket(response);
+			return;
+		}
+
+		std::vector<Nz::UInt8> content(file.GetSize());
+		if (file.Read(content.data(), content.size()) != content.size())
+		{
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to read {}", filePath.generic_u8string());
+
+			// An error occurred, send 0 fragment to notify the issue
+			Packets::DownloadClientFileResponse response;
+			auto& failure = response.content.emplace<Packets::DownloadClientFileResponse::Failure>();
+			failure.error = Packets::DownloadClientFileResponse::Error::FileNotFound;
+
+			SendPacket(response);
+			return;
+		}
+
+		file.Close();
+
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Sending asset {}", filePath.generic_u8string());
+		SendClientFile(content);
+	}
+
+	void MatchClientSession::SendClientFile(const std::vector<Nz::UInt8>& content)
+	{
+		//std::size_t fragmentCount = clientAsset->size / MaxFragmentSize + ((clientAsset->size % MaxFragmentSize != 0) ? 1 : 0);
+
+		/*auto& pendingRequest = m_pendingAssetRequest.emplace_back();
+		pendingRequest.currentFragmentIndex = 0;
+		pendingRequest.filePath = clientAsset->path;
+		pendingRequest.fragmentCount = fragmentCount;
+		pendingRequest.fragmentSize = MaxFragmentSize;*/
+
+		Packets::DownloadClientFileResponse response;
+		auto& success = response.content.emplace<Packets::DownloadClientFileResponse::Success>();
+		//success.fragmentCount = static_cast<Nz::UInt32>(fragmentCount);
+		success.fragmentCount = 1;
+		success.fragmentSize = content.size();
+
+		SendPacket(response);
+
+		Packets::DownloadClientFileFragment fragment;
+		fragment.fragmentIndex = 0;
+		fragment.fragmentContent = std::move(content);
+
+		SendPacket(fragment);
 	}
 	
 	void MatchClientSession::UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo)

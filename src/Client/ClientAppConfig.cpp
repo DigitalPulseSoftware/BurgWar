@@ -10,6 +10,8 @@ namespace bw
 	ClientAppConfig::ClientAppConfig(ClientApp& app) :
 	SharedAppConfig(app)
 	{
+		RegisterStringOption("Assets.AssetCacheFolder", ".assetCache");
+		RegisterStringOption("Assets.ScriptCacheFolder", ".scriptCache");
 		RegisterStringOption("Debug.ShowConnectionData");
 		RegisterBoolOption("Debug.ShowServerGhosts");
 		RegisterBoolOption("Debug.ShowVersion", true);

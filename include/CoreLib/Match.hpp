@@ -48,7 +48,7 @@ namespace bw
 		friend class MatchClientSession;
 
 		public:
-			struct Asset;
+			struct ClientAsset;
 			struct ClientScript;
 			struct MatchSettings;
 			struct GamemodeSettings;
@@ -73,6 +73,7 @@ namespace bw
 
 			inline BurgApp& GetApp();
 			inline AssetStore& GetAssetStore();
+			bool GetClientAsset(const std::string& filePath, const ClientAsset** clientScriptData);
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
 			ServerEntityStore& GetEntityStore() override;
 			const ServerEntityStore& GetEntityStore() const override;
@@ -94,9 +95,8 @@ namespace bw
 
 			void InitDebugGhosts();
 
-			void RegisterAsset(const std::filesystem::path& assetPath);
-			void RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum);
-			void RegisterClientScript(const std::filesystem::path& clientScript);
+			void RegisterClientAsset(std::string assetPath);
+			void RegisterClientScript(std::string scriptPath);
 			void RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity);
 			void RegisterNetworkString(std::string string);
 
@@ -113,11 +113,11 @@ namespace bw
 			Match& operator=(const Match&) = delete;
 			Match& operator=(Match&&) = delete;
 
-			struct Asset
+			struct ClientAsset
 			{
 				Nz::ByteArray checksum;
 				Nz::UInt64 size;
-				std::string path;
+				std::filesystem::path realPath;
 			};
 
 			struct ClientScript
@@ -144,6 +144,7 @@ namespace bw
 			void BuildMatchData();
 			void OnPlayerReady(Player* player);
 			void OnTick(bool lastTick) override;
+			void RegisterClientAssetInternal(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum, std::filesystem::path realPath);
 			void SendPingUpdate();
 
 			struct Debug
@@ -173,7 +174,7 @@ namespace bw
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::unique_ptr<Player>> m_players;
 			mutable Packets::MatchData m_matchData;
-			tsl::hopscotch_map<std::string, Asset> m_assets;
+			tsl::hopscotch_map<std::string, ClientAsset> m_clientAssets;
 			tsl::hopscotch_map<std::string, ClientScript> m_clientScripts;
 			tsl::hopscotch_map<EntityId, Entity> m_entitiesByUniqueId;
 			Nz::Bitset<> m_freePlayerId;

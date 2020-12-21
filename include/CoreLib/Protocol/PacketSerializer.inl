@@ -101,6 +101,20 @@ namespace bw
 		Serialize(arraySize);
 	}
 
+	template<typename E, typename UT>
+	void PacketSerializer::SerializeEnum(E& enumValue)
+	{
+		if (IsWriting())
+			m_buffer << static_cast<UT>(enumValue);
+		else
+		{
+			UT v;
+			m_buffer >> v;
+
+			enumValue = static_cast<E>(v);
+		}
+	}
+
 	template<typename DataType>
 	void PacketSerializer::operator&=(DataType& data)
 	{

@@ -75,12 +75,12 @@ namespace bw
 					for (auto&& [k, v] : pathTable)
 					{
 						if (v.is<std::string>())
-							GetMatch().RegisterAsset(v.as<std::string>());
+							GetMatch().RegisterClientAsset(v.as<std::string>());
 					}
 				}
 				else if (paths.is<std::string>())
 				{
-					GetMatch().RegisterAsset(paths.as<std::string>());
+					GetMatch().RegisterClientAsset(paths.as<std::string>());
 				}
 				else
 					throw ParameterError{ "expected table or string" };
@@ -103,14 +103,17 @@ namespace bw
 			try
 			{
 				if (path)
-					GetMatch().RegisterClientScript(context.GetCurrentFolder() / *path);
+				{
+					std::filesystem::path fullPath = context.GetCurrentFolder() / *path;
+					GetMatch().RegisterClientScript(fullPath.generic_u8string());
+				}
 				else
 				{
 					const auto& currentFilepath = context.GetCurrentFile();
 					if (currentFilepath.empty())
 						throw ParameterError{ "RegisterClientScript cannot be called without argument outside of a file" };
 
-					GetMatch().RegisterClientScript(currentFilepath);
+					GetMatch().RegisterClientScript(currentFilepath.generic_u8string());
 				}
 
 				return { true, sol::nil };

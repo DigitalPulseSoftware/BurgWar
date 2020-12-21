@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <stdexcept>
 
+#ifdef NAZARA_PLATFORM_WINDOWS
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
+#endif
 
 #include <curl/curl.h>
 #include <curl/multi.h>
@@ -18,10 +20,8 @@
 
 namespace bw
 {
-	HttpDownloadManager::HttpDownloadManager(const Logger& logger, std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultaneousDownload) :
-	m_targetFolder(std::move(targetFolder)),
+	HttpDownloadManager::HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultaneousDownload) :
 	m_nextFileIndex(0),
-	m_sourceDirectory(std::move(resourceFolder)),
 	m_baseDownloadUrls(std::move(baseDownloadUrls)),
 	m_curlRequests(maxSimultaneousDownload),
 	m_curlMulti(nullptr),
@@ -61,92 +61,14 @@ namespace bw
 		curl_global_cleanup();
 	}
 
-	void HttpDownloadManager::RegisterFile(const std::string& filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize)
+	void HttpDownloadManager::RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath)
 	{
-		Nz::ByteArray expectedChecksum;
-		expectedChecksum.Assign(checksum.begin(), checksum.end());
-		std::string hexChecksum = expectedChecksum.ToHex().ToStdString();
-
-		VirtualDirectory::Entry entry;
-
-		bool shouldDownload = true;
-
-		// Try to find file in resource directory
-		if (m_sourceDirectory->GetEntry(filePath, &entry))
-		{
-			bool isFilePresent = std::visit([&](auto&& arg)
-			{
-				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
-				{
-					std::size_t fileSize = arg.size();
-					if (fileSize != expectedSize)
-						return false;
-				
-					auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
-					hash->Begin();
-					hash->Append(arg.data(), arg.size());
-
-					if (expectedChecksum != hash->End())
-						return false;
-
-					OnFileCheckedMemory(this, filePath, arg);
-					return true;
-				}
-				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
-				{
-					std::size_t fileSize = std::filesystem::file_size(arg);
-					if (fileSize != expectedSize)
-						return false;
-
-					if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType_SHA1, arg.generic_u8string()))
-						return false;
-
-					OnFileChecked(this, filePath, arg);
-					return true;
-				}
-				else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
-				{
-					return false;
-				}
-				else
-					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-
-			}, entry);
-
-			if (isFilePresent)
-				shouldDownload = false;
-		}
-
-		// Try to find file in cache
-		std::filesystem::path cachePath = m_targetFolder / std::filesystem::u8path(filePath);
-		cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
-
-		if (shouldDownload)
-		{
-			if (std::filesystem::is_regular_file(cachePath))
-			{
-				std::size_t fileSize = std::filesystem::file_size(cachePath);
-				if (fileSize == expectedSize)
-				{
-					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType_SHA1, cachePath.generic_u8string()))
-					{
-						shouldDownload = false;
-						OnFileChecked(this, filePath, cachePath);
-					}
-				}
-			}
-		}
-
-		if (shouldDownload)
-		{
-			PendingFile& newFile = m_downloadList.emplace_back();
-			newFile.downloadUrlIndex = 0;
-			newFile.resourcePath = filePath;
-			newFile.expectedChecksum = std::move(expectedChecksum);
-			newFile.expectedSize = expectedSize;
-			newFile.outputPath = std::move(cachePath);
-		}
+		PendingFile& newFile = m_downloadList.emplace_back();
+		newFile.downloadUrlIndex = 0; //< FIXME: Not implemented
+		newFile.downloadPath = std::move(filePath);
+		newFile.expectedChecksum.Assign(checksum.begin(), checksum.end());
+		newFile.expectedSize = expectedSize;
+		newFile.outputPath = std::move(outputPath);
 	}
 
 	void HttpDownloadManager::Start()
@@ -211,12 +133,11 @@ namespace bw
 				curl_easy_setopt(request.handle, CURLOPT_WRITEFUNCTION, callback);
 				curl_easy_setopt(request.handle, CURLOPT_WRITEDATA, request.metadata.get());
 
-				std::string downloadUrl = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.resourcePath;
+				std::string downloadUrl = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.downloadPath;
 
 				curl_off_t maxFileSize = pendingDownload.expectedSize;
 				curl_easy_setopt(request.handle, CURLOPT_MAXFILESIZE_LARGE, maxFileSize);
 				curl_easy_setopt(request.handle, CURLOPT_URL, downloadUrl.c_str());
-				
 
 				std::filesystem::path directory = pendingDownload.outputPath.parent_path();
 				std::string filePath = pendingDownload.outputPath.generic_u8string();
@@ -231,8 +152,8 @@ namespace bw
 				request.metadata->hash->Begin();
 				request.metadata->file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
 				
-				bwLog(m_logger, LogLevel::Info, "[HTTP] Downloading {0} (size: {1})", pendingDownload.resourcePath, pendingDownload.expectedSize);
-				OnDownloadStarted(this, pendingDownload.resourcePath);
+				bwLog(m_logger, LogLevel::Info, "[HTTP] Downloading {0} (size: {1})", pendingDownload.downloadPath, pendingDownload.expectedSize);
+				OnDownloadStarted(this, pendingDownload.downloadPath);
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)
@@ -301,22 +222,24 @@ namespace bw
 							if (pendingDownload.expectedChecksum == byteArray)
 							{
 								downloadError = false;
-								OnFileChecked(this, pendingDownload.resourcePath, pendingDownload.outputPath);
+								OnFileChecked(this, pendingDownload.downloadPath, pendingDownload.outputPath);
 							}
 							else
-								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", pendingDownload.resourcePath);
+								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", pendingDownload.downloadPath);
 						}
 						else
-							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", pendingDownload.resourcePath, downloadedSize, pendingDownload.expectedSize);
+							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", pendingDownload.downloadPath, downloadedSize, pendingDownload.expectedSize);
 					}
 					else
-						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", pendingDownload.resourcePath, responseCode);
+						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", pendingDownload.downloadPath, responseCode);
 				}
 				else
-					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", pendingDownload.resourcePath, m->data.result, curl_easy_strerror(m->data.result));
+					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", pendingDownload.downloadPath, m->data.result, curl_easy_strerror(m->data.result));
 
 				if (downloadError)
 				{
+					OnFileError(this, pendingDownload.downloadPath);
+
 					if (!metadata.file.Delete())
 						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
 				}

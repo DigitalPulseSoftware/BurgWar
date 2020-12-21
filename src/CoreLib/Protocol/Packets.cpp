@@ -183,18 +183,66 @@ namespace bw
 			serializer &= data.layerIndex;
 		}
 
-		void Serialize(PacketSerializer& serializer, DownloadClientScriptRequest& data)
+		void Serialize(PacketSerializer& serializer, DownloadClientFileFragment& data)
+		{
+			serializer &= data.fragmentIndex;
+			serializer.SerializeArraySize(data.fragmentContent);
+			if (serializer.IsWriting())
+				serializer.Write(data.fragmentContent.data(), data.fragmentContent.size());
+			else
+				serializer.Read(data.fragmentContent.data(), data.fragmentContent.size());
+		}
+
+		void Serialize(PacketSerializer& serializer, DownloadClientFileRequest& data)
 		{
 			serializer &= data.path;
 		}
 
-		void Serialize(PacketSerializer& serializer, DownloadClientScriptResponse& data)
+		void Serialize(PacketSerializer& serializer, DownloadClientFileResponse& data)
 		{
-			serializer.SerializeArraySize(data.fileContent);
+			static_assert(std::is_same_v<std::variant_alternative_t<0, DownloadClientFileResponse::SuccessFailureVariant>, DownloadClientFileResponse::Success>);
+			static_assert(std::is_same_v<std::variant_alternative_t<1, DownloadClientFileResponse::SuccessFailureVariant>, DownloadClientFileResponse::Failure>);
+
+			Nz::UInt8 type;
 			if (serializer.IsWriting())
-				serializer.Write(data.fileContent.data(), data.fileContent.size());
-			else
-				serializer.Read(data.fileContent.data(), data.fileContent.size());
+				type = static_cast<Nz::UInt8>(data.content.index());
+
+			serializer &= type;
+			if (!serializer.IsWriting())
+			{
+				switch (type)
+				{
+					case 0:
+					{
+						data.content.emplace<DownloadClientFileResponse::Success>();
+						break;
+					}
+
+					case 1:
+					{
+						data.content.emplace<DownloadClientFileResponse::Failure>();
+						break;
+					}
+				}
+			}
+			
+			switch (type)
+			{
+				case 0:
+				{
+					auto& success = std::get<DownloadClientFileResponse::Success>(data.content);
+					serializer &= success.fragmentCount;
+					serializer &= success.fragmentSize;
+					break;
+				}
+
+				case 1:
+				{
+					auto& failure = std::get<DownloadClientFileResponse::Failure>(data.content);
+					serializer.SerializeEnum(failure.error);
+					break;
+				}
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, EnableLayer& data)

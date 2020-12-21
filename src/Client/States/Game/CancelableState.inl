@@ -10,4 +10,9 @@ namespace bw
 	{
 		return m_originalState;
 	}
+	
+	inline bool CancelableState::IsSwitching() const
+	{
+		return m_nextStateCallback != nullptr;
+	}
 }

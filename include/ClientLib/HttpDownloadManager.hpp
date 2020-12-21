@@ -7,7 +7,6 @@
 #ifndef BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 #define BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 
-#include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
@@ -25,10 +24,10 @@ namespace bw
 	class HttpDownloadManager
 	{
 		public:
-			HttpDownloadManager(const Logger& logger, std::filesystem::path targetFolder, std::vector<std::string> baseDownloadUrls, std::shared_ptr<VirtualDirectory> resourceFolder, std::size_t maxSimultanousDownload = 2);
+			HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
 			~HttpDownloadManager();
 
-			void RegisterFile(const std::string& filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize);
+			void RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath);
 
 			void Start();
 
@@ -36,7 +35,7 @@ namespace bw
 
 			NazaraSignal(OnDownloadStarted, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/);
 			NazaraSignal(OnFileChecked, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/, const std::filesystem::path& /*realPath*/);
-			NazaraSignal(OnFileCheckedMemory, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/, const std::vector<Nz::UInt8>& /*content*/);
+			NazaraSignal(OnFileError, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/);
 			NazaraSignal(OnFinished, HttpDownloadManager* /*downloadManager*/);
 
 		private:
@@ -45,7 +44,7 @@ namespace bw
 			struct PendingFile
 			{
 				std::size_t downloadUrlIndex;
-				std::string resourcePath;
+				std::string downloadPath;
 				std::filesystem::path outputPath;
 				Nz::ByteArray expectedChecksum;
 				Nz::UInt64 expectedSize;
@@ -69,7 +68,6 @@ namespace bw
 
 			std::filesystem::path m_targetFolder;
 			std::size_t m_nextFileIndex;
-			std::shared_ptr<VirtualDirectory> m_sourceDirectory;
 			std::vector<std::string> m_baseDownloadUrls;
 			std::vector<PendingFile> m_downloadList;
 			std::vector<Request> m_curlRequests;

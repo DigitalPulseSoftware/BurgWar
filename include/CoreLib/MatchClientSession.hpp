@@ -13,6 +13,7 @@
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Utility/CircularBuffer.hpp>
+#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -61,7 +62,7 @@ namespace bw
 
 		private:
 			void HandleIncomingPacket(const Packets::Auth& packet);
-			void HandleIncomingPacket(const Packets::DownloadClientScriptRequest& packet);
+			void HandleIncomingPacket(const Packets::DownloadClientFileRequest& packet);
 			void HandleIncomingPacket(Packets::PlayerChat&& packet);
 			void HandleIncomingPacket(const Packets::PlayerConsoleCommand& packet);
 			void HandleIncomingPacket(const Packets::PlayersInput& packet);
@@ -69,6 +70,8 @@ namespace bw
 			void HandleIncomingPacket(const Packets::Ready& packet);
 			void HandleIncomingPacket(const Packets::ScriptPacket& packet);
 			void HandleIncomingPacket(Packets::UpdatePlayerName&& packet);
+			void SendClientFile(const std::filesystem::path& filePath);
+			void SendClientFile(const std::vector<Nz::UInt8>& content);
 			void UpdatePeerInfo(const SessionBridge::SessionInfo& sessionInfo);
 
 			struct Input
@@ -77,12 +80,21 @@ namespace bw
 				Nz::UInt16 inputTick;
 			};
 
+			/*struct PendingAssetRequest
+			{
+				std::size_t fragmentCount;
+				std::size_t currentFragmentIndex;
+				std::filesystem::path filePath;
+				Nz::UInt64 fragmentSize;
+			};*/
+
 			CircularBuffer<Input> m_queuedInputs;
 			Match& m_match;
 			PlayerCommandStore& m_commandStore;
 			std::size_t m_sessionId;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
+			//std::vector<PendingAssetRequest> m_pendingAssetRequest;
 			std::vector<PlayerHandle> m_players;
 			Nz::UInt16 m_lastInputTick;
 			Nz::UInt32 m_ping;

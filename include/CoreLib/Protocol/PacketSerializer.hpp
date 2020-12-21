@@ -33,6 +33,8 @@ namespace bw
 			template<typename T> void SerializeArraySize(T& array);
 			template<typename T> void SerializeArraySize(const T& array);
 
+			template<typename E, typename UT = std::underlying_type_t<E>> void SerializeEnum(E& enumValue);
+
 			template<typename DataType> void operator&=(DataType& data);
 			template<typename DataType> void operator&=(const DataType& data) const;
 

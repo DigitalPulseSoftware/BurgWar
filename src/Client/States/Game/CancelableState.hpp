@@ -24,6 +24,7 @@ namespace bw
 		protected:
 			void Cancel(float delay = 0.f);
 			inline const std::shared_ptr<AbstractState>& GetOriginalState();
+			inline bool IsSwitching() const;
 			void SwitchToState(std::shared_ptr<AbstractState> state, float delay = 0.f);
 			void UpdateState(std::function<void(Ndk::StateMachine& fsm)> stateUpdate, float delay = 0.f);
 

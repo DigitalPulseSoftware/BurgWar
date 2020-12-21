@@ -88,10 +88,10 @@ namespace bw
 		for (auto it = urls.begin(); it != urls.end(); ++it)
 			clientAsset.fastDownloadUrls.emplace_back(std::move(it.key()));
 
-		for (const auto& pair : m_assets)
+		for (const auto& pair : m_clientAssets)
 		{
 			auto& assetData = clientAsset.assets.emplace_back();
-			assetData.path = pair.second.path;
+			assetData.path = pair.first;
 			assetData.size = pair.second.size;
 
 			const Nz::ByteArray& checksum = pair.second.checksum;
@@ -150,6 +150,16 @@ namespace bw
 			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
 				func(entity);
 		}
+	}
+
+	bool Match::GetClientAsset(const std::string& filePath, const ClientAsset** clientAssetData)
+	{
+		auto it = m_clientAssets.find(filePath);
+		if (it == m_clientAssets.end())
+			return false;
+
+		*clientAssetData = &it->second;
+		return true;
 	}
 
 	bool Match::GetClientScript(const std::string& filePath, const ClientScript** clientScriptData)
@@ -221,60 +231,33 @@ namespace bw
 		}
 	}
 
-	void Match::RegisterAsset(const std::filesystem::path& assetPath)
+	void Match::RegisterClientAsset(std::string assetPath)
 	{
-		std::string relativePath = assetPath.generic_u8string();
-
-		if (m_assets.find(relativePath) != m_assets.end())
+		if (m_clientAssets.find(assetPath) != m_clientAssets.end())
 			return;
 
 		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Assets.ResourceFolder");
 
-		std::string filePath = resourceFolder + "/" + relativePath;
+		std::filesystem::path filePath = resourceFolder;
+		filePath /= assetPath;
+
 		if (!std::filesystem::is_regular_file(filePath))
-			throw std::runtime_error(filePath + " is not a file");
+			throw std::runtime_error(filePath.generic_u8string() + " is not a file");
 
-		RegisterAsset(std::move(relativePath), std::filesystem::file_size(filePath), Nz::File::ComputeHash(Nz::HashType_SHA1, filePath));
+		Nz::UInt64 assetSize = std::filesystem::file_size(filePath);
+		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType_SHA1, filePath.generic_u8string());
+
+		RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), std::move(filePath));
 	}
 
-	void Match::RegisterAsset(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum)
+	void Match::RegisterClientScript(std::string scriptPath)
 	{
-		if (auto it = m_assets.find(assetPath); it != m_assets.end())
-		{
-			const Asset& asset = it->second;
-			if (asset.size != assetSize)
-			{
-				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and size doesn't match", assetPath);
-				return;
-			}
-
-			if (asset.checksum != assetChecksum)
-			{
-				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and checksum doesn't match", assetPath);
-				return;
-			}
-		}
-		else
-		{
-			Asset asset;
-			asset.checksum = std::move(assetChecksum);
-			asset.path = assetPath;
-			asset.size = assetSize;
-
-			m_assets.emplace(std::move(assetPath), std::move(asset));
-		}
-	}
-
-	void Match::RegisterClientScript(const std::filesystem::path& clientScript)
-	{
-		std::string relativePath = clientScript.generic_u8string();
-
-		if (m_clientScripts.find(relativePath) != m_clientScripts.end())
+		if (m_clientScripts.find(scriptPath) != m_clientScripts.end())
 			return;
 
 		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
 
-		std::string filePath = scriptFolder + "/" + relativePath;
+		std::string filePath = scriptFolder + "/" + scriptPath;
 		if (!std::filesystem::is_regular_file(filePath))
 			throw std::runtime_error(filePath + " is not a file");
 
@@ -294,7 +277,7 @@ namespace bw
 		clientScriptData.checksum = hash->End();
 		clientScriptData.content = std::move(content);
 
-		m_clientScripts.emplace(std::move(relativePath), std::move(clientScriptData));
+		m_clientScripts.emplace(std::move(scriptPath), std::move(clientScriptData));
 	}
 
 	void Match::RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity)
@@ -337,10 +320,33 @@ namespace bw
 		assert(m_map.IsValid());
 		for (const auto& asset : m_map.GetAssets())
 		{
-			Nz::ByteArray checksum(asset.sha1Checksum.size(), 0);
-			std::memcpy(checksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
+			std::filesystem::path assetPath = resourceFolder;
+			assetPath /= asset.filepath;
 
-			RegisterAsset(asset.filepath, asset.size, std::move(checksum));
+			if (!std::filesystem::is_regular_file(assetPath))
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Map asset file not found ({})", asset.filepath);
+				continue;
+			}
+
+			Nz::UInt64 fileSize = std::filesystem::file_size(assetPath);
+			if (fileSize != asset.size)
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({}): size doesn't match (expected {}, got {})", asset.filepath, asset.size, fileSize);
+				continue;
+			}
+
+			Nz::ByteArray expectedChecksum(asset.sha1Checksum.size(), 0);
+			std::memcpy(expectedChecksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
+
+			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType_SHA1, assetPath.generic_u8string());
+			if (fileChecksum != expectedChecksum)
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({}): checksum doesn't match", asset.filepath, asset.size, fileSize);
+				continue;
+			}
+
+			RegisterClientAssetInternal(asset.filepath, fileSize, fileChecksum, std::move(assetPath));
 		}
 	}
 
@@ -708,6 +714,34 @@ namespace bw
 		{
 			session->Update(elapsedTime);
 		});
+	}
+
+	void Match::RegisterClientAssetInternal(std::string assetPath, Nz::UInt64 assetSize, Nz::ByteArray assetChecksum, std::filesystem::path realPath)
+	{
+		if (auto it = m_clientAssets.find(assetPath); it != m_clientAssets.end())
+		{
+			const ClientAsset& asset = it->second;
+			if (asset.size != assetSize)
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and size doesn't match", assetPath);
+				return;
+			}
+
+			if (asset.checksum != assetChecksum)
+			{
+				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and checksum doesn't match", assetPath);
+				return;
+			}
+		}
+		else
+		{
+			ClientAsset asset;
+			asset.checksum = std::move(assetChecksum);
+			asset.realPath = std::move(realPath);
+			asset.size = assetSize;
+
+			m_clientAssets.emplace(std::move(assetPath), std::move(asset));
+		}
 	}
 	
 	void Match::SendPingUpdate()

@@ -29,9 +29,6 @@ namespace bw
 		context->Load(gamemodePath / "shared.lua");
 		context->Load(gamemodePath / "sv_init.lua");
 
-		std::filesystem::path gamemodeFile = gamemodePath;
-		gamemodeFile.replace_extension("lua");
-
-		m_match.RegisterClientScript(gamemodeFile);
+		m_match.RegisterClientScript(gamemodePath.generic_u8string() + ".lua");
 	}
 }
