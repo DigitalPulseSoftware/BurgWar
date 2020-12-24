@@ -9,12 +9,16 @@
 #include <CoreLib/Utility/CrashHandlerWin32.hpp>
 #include <CoreLib/Version.hpp>
 #include <Nazara/Core/HardwareInfo.hpp>
-#include <StackWalker.h>
 #include <array>
 #include <cstdio>
 #include <cwchar>
 #include <functional>
 #include <sstream>
+
+#if __has_include(<StackWalker.h>)
+#define BW_HAS_STACKWALKER
+#include <StackWalker.h>
+#endif
 
 namespace bw
 {
@@ -33,6 +37,7 @@ namespace bw
 			}
 		};
 
+#ifdef BW_HAS_STACKWALKER
 		struct CallbackWalker : StackWalker
 		{
 			using StackWalker::StackWalker;
@@ -73,6 +78,7 @@ namespace bw
 			CallstackEntryCallback callstackEntryCallback;
 			DbgHelpErrCallback dbgHelpErrCallback;
 		};
+#endif
 
 		using WinHandle = std::unique_ptr<std::remove_pointer_t<HANDLE>, HandleCloser>;
 	
@@ -107,6 +113,7 @@ namespace bw
 
 		void GenerateCrashlog(const wchar_t* filename, EXCEPTION_POINTERS* e, DWORD /*crashedThread*/)
 		{
+#ifdef BW_HAS_STACKWALKER
 			/*
 			WinHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD | TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, 0));
 			if (snapshot.get() == INVALID_HANDLE_VALUE)
@@ -244,6 +251,10 @@ namespace bw
 				fwprintf(stderr, L"Unhandled exception triggered: Callstack file %ls generated\n", filename);
 			else
 				fprintf(stderr, "Crashlog: Failed to dump stack\n");
+#else
+			NazaraUnused(filename);
+			NazaraUnused(e);
+#endif
 		}
 
 		LONG CALLBACK HandleException(EXCEPTION_POINTERS* e)

@@ -9,7 +9,7 @@ add_requires("libcurl", { debug = is_mode("debug"), config = { shared = true, vs
 add_requires("nazaraengine", { alias = "nazara", debug = is_mode("debug"), config = { server = false, shared = true, vs_runtime = "MD" } })
 add_requires("nazaraengine~server", { alias = "nazaraserver", debug = is_mode("debug"), config = { server = true, shared = true, vs_runtime = "MD" } })
 
-if (is_plat("windows")) then
+if (is_plat("windows") and not is_arch("x86")) then
 	add_requires("stackwalker")
 end
 
@@ -56,7 +56,7 @@ target("CoreLib")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json")
 	add_packages("nazaraserver", {links = {}})
 
-if (is_plat("windows")) then 
+if (is_plat("windows") and not is_arch("x86")) then
 	add_packages("stackwalker")
 end
 
