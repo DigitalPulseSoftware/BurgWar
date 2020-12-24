@@ -3,30 +3,35 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.1.0")
 
+local packageConf = { debug = is_mode("debug") }
+
 add_requires("concurrentqueue", "nlohmann_json")
-add_requires("fmt", { debug = is_mode("debug"), config = { header_only = false, vs_runtime = "MD" } })
-add_requires("libcurl", { debug = is_mode("debug"), config = { shared = true, vs_runtime = "MD" } })
-add_requires("nazaraengine", { alias = "nazara", debug = is_mode("debug"), config = { server = false, shared = true, vs_runtime = "MD" } })
-add_requires("nazaraengine~server", { alias = "nazaraserver", debug = is_mode("debug"), config = { server = true, shared = true, vs_runtime = "MD" } })
+add_requires("fmt", { config = table.join(packageConf, { header_only = false }) })
+
+packageConf.shared = true
+
+add_requires("libcurl", { config = packageConf })
+add_requires("nazaraengine", { alias = "nazara", config = table.join(packageConf, { server = false }) })
+add_requires("nazaraengine~server", { alias = "nazaraserver", config = table.join(packageConf, { server = true }) })
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_requires("stackwalker")
 end
 
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug", "mode.releasedbg")
 
 add_includedirs("include", "src")
 add_includedirs("thirdparty/include")
+
 set_languages("c89", "cxx17")
-
-set_symbols("debug", "hidden")
-set_warnings("allextra")
-set_targetdir("./bin/$(os)_$(arch)_$(mode)")
 set_rundir("./bin/$(os)_$(arch)_$(mode)")
+set_runtimes(is_mode("releasedbg") and "MD" or "MDd")
+set_symbols("debug", "hidden")
+set_targetdir("./bin/$(os)_$(arch)_$(mode)")
+set_warnings("allextra")
 
-if (is_mode("release")) then
+if (is_mode("releasedbg")) then
 	set_fpmodels("fast")
-	set_optimize("fastest")
 	add_vectorexts("sse", "sse2", "sse3", "ssse3")
 end
 
@@ -158,68 +163,6 @@ target("BurgWarMapEditor")
 
 	after_install(function (target)
 		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
-	end)
-
-	after_install("windows", function (target, opt)
-		import("core.base.option")
-		import("core.project.config")
-		import("core.project.depend")
-		import("detect.sdks.find_vstudio")
-
-		local installfile = path.join(target:installdir(), "bin", target:basename() .. ".exe")
-
-		-- need re-generate this app?
-		local targetfile = target:targetfile()
-		local dependfile = target:dependfile(targetfile)
-		local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-		if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-			return
-		end
-
-		-- get qt sdk
-		local qt = target:data("qt")
-
-		-- get windeployqt
-		local windeployqt = path.join(qt.bindir, "windeployqt.exe")
-		assert(os.isexec(windeployqt), "windeployqt.exe not found!")
-
-		-- find qml directory
-		local qmldir = nil
-		for _, sourcebatch in pairs(target:sourcebatches()) do
-			if sourcebatch.rulename == "qt.qrc" then
-				for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-					qmldir = find_path("*.qml", path.directory(sourcefile))
-					if qmldir then
-						break
-					end
-				end
-			end
-		end
-
-		-- do deploy
-		local vs_studio = find_vstudio()
-
-		local installDir = path.join(vs_studio["2019"].vcvarsall[target:arch()].VSInstallDir, "VC")
-		os.addenv("VCINSTALLDIR", installDir)
-
-		local argv = {"--force"}
-		if option.get("diagnosis") then
-			table.insert(argv, "--verbose=2")
-		elseif option.get("verbose") then
-			table.insert(argv, "--verbose=1")
-		else
-			table.insert(argv, "--verbose=0")
-		end
-		if qmldir then
-			table.insert(argv, "--qmldir=" .. qmldir)
-		end
-		table.insert(argv, installfile)
-
-		os.vrunv(windeployqt, argv)
-
-		-- update files and values to the dependent file
-		dependinfo.files = {targetfile}
-		depend.save(dependinfo, dependfile)
 	end)
 
 target_end()
