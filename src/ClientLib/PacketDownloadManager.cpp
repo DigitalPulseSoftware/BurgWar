@@ -80,6 +80,8 @@ namespace bw
 			std::memcpy(&m_fileContent[offset], packet.fragmentContent.data(), packet.fragmentContent.size());
 		}
 
+		OnDownloadProgress(this, currentFileIndex, downloadedSize);
+
 		pendingFileData.receivedFragment.Set(packet.fragmentIndex, true);
 		if (pendingFileData.receivedFragment.TestAll())
 		{
