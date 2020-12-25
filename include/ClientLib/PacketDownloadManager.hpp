@@ -36,8 +36,6 @@ namespace bw
 			void HandlePacket(const Packets::DownloadClientFileResponse& packet);
 			void RequestNextFile();
 
-			static constexpr std::size_t InvalidFileIndex = std::numeric_limits<std::size_t>::max();
-
 			struct PendingFile : FileEntry
 			{
 				Nz::Bitset<Nz::UInt64> receivedFragment;
@@ -49,7 +47,7 @@ namespace bw
 			std::unique_ptr<Nz::AbstractHash> m_hash;
 			std::filesystem::path m_clientFileCache;
 			std::shared_ptr<ClientSession> m_clientSession;
-			std::size_t m_currentFileIndex;
+			std::size_t m_nextFileIndex;
 			std::vector<Nz::UInt8> m_fileContent;
 			std::vector<PendingFile> m_downloadList;
 

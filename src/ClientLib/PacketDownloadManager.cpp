@@ -9,7 +9,7 @@ namespace bw
 {
 	PacketDownloadManager::PacketDownloadManager(std::shared_ptr<ClientSession> clientSession) :
 	m_clientSession(std::move(clientSession)),
-	m_currentFileIndex(InvalidFileIndex)
+	m_nextFileIndex(0)
 	{
 		m_hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
 
@@ -32,10 +32,18 @@ namespace bw
 
 	bool PacketDownloadManager::IsFinished() const
 	{
-		if (m_currentFileIndex == InvalidFileIndex && !m_downloadList.empty())
+		if (m_nextFileIndex < m_downloadList.size())
 			return false;
 
-		return m_currentFileIndex >= m_downloadList.size();
+		// Check download completion
+		if (m_nextFileIndex > 0)
+		{
+			std::size_t currentFileIndex = m_nextFileIndex - 1;
+			if (m_downloadList[currentFileIndex].receivedFragment.GetSize() == 0 || !m_downloadList[currentFileIndex].receivedFragment.TestAll())
+				return false;
+		}
+
+		return true;
 	}
 
 	void PacketDownloadManager::RegisterFile(std::string downloadPath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath, bool keepInMemory)
@@ -50,8 +58,10 @@ namespace bw
 
 	void PacketDownloadManager::HandlePacket(const Packets::DownloadClientFileFragment& packet)
 	{
-		assert(m_currentFileIndex < m_downloadList.size());
-		PendingFile& pendingFileData = m_downloadList[m_currentFileIndex];
+		assert(m_nextFileIndex > 0 && m_nextFileIndex <= m_downloadList.size());
+		std::size_t currentFileIndex = m_nextFileIndex - 1;
+
+		PendingFile& pendingFileData = m_downloadList[currentFileIndex];
 		if (packet.fragmentIndex >= pendingFileData.receivedFragment.GetSize())
 			throw std::runtime_error("unexpected fragment " + std::to_string(packet.fragmentIndex) + " from server");
 
@@ -61,11 +71,11 @@ namespace bw
 
 		m_hash->Append(packet.fragmentContent.data(), packet.fragmentContent.size());
 
+		std::size_t downloadedSize = (packet.fragmentIndex + 1) * pendingFileData.fragmentSize;
 		if (pendingFileData.keepInMemory)
 		{
-			std::size_t minSize = (packet.fragmentIndex + 1) * pendingFileData.fragmentSize;
-			if (m_fileContent.size() < minSize)
-				m_fileContent.resize(minSize);
+			if (m_fileContent.size() < downloadedSize)
+				m_fileContent.resize(downloadedSize);
 
 			std::memcpy(&m_fileContent[offset], packet.fragmentContent.data(), packet.fragmentContent.size());
 		}
@@ -91,8 +101,10 @@ namespace bw
 
 	void PacketDownloadManager::HandlePacket(const Packets::DownloadClientFileResponse& packet)
 	{
-		assert(m_currentFileIndex < m_downloadList.size());
-		PendingFile& pendingFileData = m_downloadList[m_currentFileIndex];
+		assert(m_nextFileIndex > 0 && m_nextFileIndex <= m_downloadList.size());
+		std::size_t currentFileIndex = m_nextFileIndex - 1;
+
+		PendingFile& pendingFileData = m_downloadList[currentFileIndex];
 		std::visit([&](auto&& arg)
 		{
 			using T = std::decay_t<decltype(arg)>;
@@ -146,32 +158,21 @@ namespace bw
 			return;
 		}
 
-		if (m_currentFileIndex == InvalidFileIndex)
-			m_currentFileIndex = 0;
-		else
-		{
-			// Wait until current download is finished
-			if (m_downloadList[m_currentFileIndex].receivedFragment.GetSize() == 0 || !m_downloadList[m_currentFileIndex].receivedFragment.TestAll())
-				return;
-
-			m_currentFileIndex++;
-			if (IsFinished())
-			{
-				OnFinished(this);
-				return;
-			}
-		}
+		if (m_nextFileIndex >= m_downloadList.size())
+			return; //< All remaining files are being processed
 
 		m_fileContent.clear();
 		m_hash->Begin();
 
-		const std::string& downloadPath = m_downloadList[m_currentFileIndex].downloadPath;
+		const std::string& downloadPath = m_downloadList[m_nextFileIndex].downloadPath;
 
 		Packets::DownloadClientFileRequest requestPacket;
 		requestPacket.path = downloadPath;
 
 		m_clientSession->SendPacket(requestPacket);
 
-		OnDownloadStarted(this, m_currentFileIndex);
+		OnDownloadStarted(this, m_nextFileIndex);
+
+		m_nextFileIndex++;
 	}
 }
