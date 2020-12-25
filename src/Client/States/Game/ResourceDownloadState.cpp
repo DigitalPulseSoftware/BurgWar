@@ -57,7 +57,7 @@ namespace bw
 				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloading {}... ({})", fileEntry.downloadPath, ByteToString(fileEntry.expectedSize));
 			});
 
-			downloadManagerPtr->OnFileChecked.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::filesystem::path& realPath, Nz::UInt64 downloadSpeed)
+			downloadManagerPtr->OnDownloadFinished.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::filesystem::path& realPath, Nz::UInt64 downloadSpeed)
 			{
 				const auto& fileEntry = downloadManager->GetEntry(fileIndex);
 
@@ -75,7 +75,7 @@ namespace bw
 				UpdateStatus();
 			});
 
-			downloadManagerPtr->OnFileCheckedMemory.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::vector<Nz::UInt8>& content, Nz::UInt64 downloadSpeed)
+			downloadManagerPtr->OnDownloadFinishedMemory.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::vector<Nz::UInt8>& content, Nz::UInt64 downloadSpeed)
 			{
 				const auto& fileEntry = downloadManager->GetEntry(fileIndex);
 
@@ -93,7 +93,7 @@ namespace bw
 				UpdateStatus();
 			});
 
-			downloadManagerPtr->OnFileError.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, DownloadManager::Error error)
+			downloadManagerPtr->OnDownloadError.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, DownloadManager::Error error)
 			{
 				const auto& fileEntry = downloadManager->GetEntry(fileIndex);
 

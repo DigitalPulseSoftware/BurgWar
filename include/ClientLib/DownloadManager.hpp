@@ -50,11 +50,11 @@ namespace bw
 				bool keepInMemory;
 			};
 
+			NazaraSignal(OnDownloadError, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, Error /*error*/);
+			NazaraSignal(OnDownloadFinished, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::filesystem::path& /*realPath*/, Nz::UInt64 /*downloadSpeed*/);
+			NazaraSignal(OnDownloadFinishedMemory, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::vector<Nz::UInt8>& /*content*/, Nz::UInt64 /*downloadSpeed*/);
 			NazaraSignal(OnDownloadProgress, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, Nz::UInt64 /*downloadedSize*/);
 			NazaraSignal(OnDownloadStarted, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/);
-			NazaraSignal(OnFileChecked, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::filesystem::path& /*realPath*/, Nz::UInt64 /*downloadSpeed*/);
-			NazaraSignal(OnFileCheckedMemory, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::vector<Nz::UInt8>& /*content*/, Nz::UInt64 /*downloadSpeed*/);
-			NazaraSignal(OnFileError, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, Error /*error*/);
 			NazaraSignal(OnFinished, DownloadManager* /*downloadManager*/);
 	};
 }

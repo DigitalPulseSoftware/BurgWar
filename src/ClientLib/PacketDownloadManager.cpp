@@ -92,12 +92,12 @@ namespace bw
 			if (m_byteArray == m_hash->End())
 			{
 				if (pendingFileData.keepInMemory)
-					OnFileCheckedMemory(this, m_currentFileIndex, m_fileContent, 0);
+					OnDownloadFinishedMemory(this, currentFileIndex, m_fileContent, 0);
 				else
-					OnFileChecked(this, m_currentFileIndex, pendingFileData.outputPath, 0);
+					OnDownloadFinished(this, currentFileIndex, pendingFileData.outputPath, 0);
 			}
 			else
-				OnFileError(this, m_currentFileIndex, Error::ChecksumMismatch);
+				OnDownloadError(this, currentFileIndex, Error::ChecksumMismatch);
 		}
 	}
 
@@ -139,7 +139,7 @@ namespace bw
 						break;
 				}
 
-				OnFileError(this, m_currentFileIndex, error);
+				OnDownloadError(this, currentFileIndex, error);
 			}
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");

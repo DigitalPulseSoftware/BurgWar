@@ -76,18 +76,16 @@ namespace bw
 
 	bool HttpDownloadManager::IsFinished() const
 	{
-		if (m_nextFileIndex >= m_downloadList.size())
-		{
-			for (const Request& request : m_curlRequests)
-			{
-				if (request.isActive)
-					return false; //< Prevent OnFinished call, downloads are still actives
-			}
+		if (m_nextFileIndex < m_downloadList.size())
+			return false;
 
-			return true;
+		for (const Request& request : m_curlRequests)
+		{
+			if (request.isActive)
+				return false; //< Prevent OnFinished call, downloads are still actives
 		}
 
-		return false;
+		return true;
 	}
 
 	void HttpDownloadManager::RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath, bool keepInMemory)
@@ -260,9 +258,9 @@ namespace bw
 								curl_easy_getinfo(handle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
 
 								if (pendingDownload.keepInMemory)
-									OnFileCheckedMemory(this, requestIt->fileIndex, metadata.fileContent, downloadSpeed);
+									OnDownloadFinishedMemory(this, requestIt->fileIndex, metadata.fileContent, downloadSpeed);
 								else
-									OnFileChecked(this, requestIt->fileIndex, pendingDownload.outputPath, downloadSpeed);
+									OnDownloadFinished(this, requestIt->fileIndex, pendingDownload.outputPath, downloadSpeed);
 							
 								downloadError = false;
 							}
@@ -286,7 +284,7 @@ namespace bw
 
 				if (downloadError)
 				{
-					OnFileError(this, requestIt->fileIndex, errorCode);
+					OnDownloadError(this, requestIt->fileIndex, errorCode);
 
 					if (!metadata.file.Delete())
 						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
