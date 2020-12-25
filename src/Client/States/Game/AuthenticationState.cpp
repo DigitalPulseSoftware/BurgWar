@@ -5,7 +5,7 @@
 #include <Client/States/Game/AuthenticationState.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/MainMenuState.hpp>
-#include <Client/States/Game/AssetDownloadState.hpp>
+#include <Client/States/Game/ResourceDownloadState.hpp>
 
 namespace bw
 {
@@ -36,7 +36,7 @@ namespace bw
 
 			UpdateStatus("Received match data", Nz::Color::White);
 
-			SwitchToState(std::make_shared<AssetDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), 0.5f);
+			SwitchToState(std::make_shared<ResourceDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), 0.5f);
 		});
 	}
 

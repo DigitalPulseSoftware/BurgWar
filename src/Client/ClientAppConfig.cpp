@@ -10,11 +10,11 @@ namespace bw
 	ClientAppConfig::ClientAppConfig(ClientApp& app) :
 	SharedAppConfig(app)
 	{
-		RegisterStringOption("Assets.AssetCacheFolder", ".assetCache");
-		RegisterStringOption("Assets.ScriptCacheFolder", ".scriptCache");
 		RegisterStringOption("Debug.ShowConnectionData");
 		RegisterBoolOption("Debug.ShowServerGhosts");
 		RegisterBoolOption("Debug.ShowVersion", true);
+		RegisterStringOption("Resources.AssetCacheDirectory", ".assetCache");
+		RegisterStringOption("Resources.ScriptCacheDirectory", ".scriptCache");
 		RegisterIntegerOption("WindowSettings.AntialiasingLevel", 0, 16);
 		RegisterBoolOption("WindowSettings.Fullscreen");
 		RegisterBoolOption("WindowSettings.VSync");

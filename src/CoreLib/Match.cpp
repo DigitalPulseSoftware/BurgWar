@@ -108,6 +108,7 @@ namespace bw
 		{
 			auto& scriptData = clientScript.scripts.emplace_back();
 			scriptData.path = pair.first;
+			scriptData.size = pair.second.content.size();
 
 			const Nz::ByteArray& checksum = pair.second.checksum;
 			assert(scriptData.sha1Checksum.size() == checksum.size());
@@ -236,7 +237,7 @@ namespace bw
 		if (m_clientAssets.find(assetPath) != m_clientAssets.end())
 			return;
 
-		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Assets.ResourceFolder");
+		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
 		std::filesystem::path filePath = resourceFolder;
 		filePath /= assetPath;
@@ -255,7 +256,7 @@ namespace bw
 		if (m_clientScripts.find(scriptPath) != m_clientScripts.end())
 			return;
 
-		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
+		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
 		std::string filePath = scriptFolder + "/" + scriptPath;
 		if (!std::filesystem::is_regular_file(filePath))
@@ -305,7 +306,7 @@ namespace bw
 
 	void Match::ReloadAssets()
 	{
-		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Assets.ResourceFolder");
+		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
 		std::shared_ptr<VirtualDirectory> assetDir = std::make_shared<VirtualDirectory>(resourceFolder);
 
@@ -354,7 +355,7 @@ namespace bw
 	{
 		assert(m_assetStore);
 
-		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Assets.ScriptFolder");
+		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
 		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
 

@@ -420,7 +420,7 @@ namespace bw
 
 		DeclarePacket(MatchData)
 		{
-			struct Asset
+			struct ClientFile
 			{
 				std::array<Nz::UInt8, 20> sha1Checksum;
 				std::string path;
@@ -432,18 +432,12 @@ namespace bw
 				Nz::Color backgroundColor;
 			};
 
-			struct Script
-			{
-				std::array<Nz::UInt8, 20> sha1Checksum;
-				std::string path;
-			};
-
 			std::string gamemode;
 			std::vector<std::string> fastDownloadUrls;
-			std::vector<Asset> assets;
 			std::vector<Layer> layers;
 			std::vector<Helper::Property> gamemodeProperties;
-			std::vector<Script> scripts;
+			std::vector<ClientFile> assets;
+			std::vector<ClientFile> scripts;
 			Nz::UInt16 currentTick;
 			float tickDuration;
 		};

@@ -1,7 +1,3 @@
-Assets = {
-	ResourceFolder = "resources",
-	ScriptFolder  = "scripts"
-}
 Debug = {
 	SendServerState = false,
 	ShowConnectionData = "ping", -- ping|download|upload|usage
@@ -10,6 +6,10 @@ Debug = {
 }
 GameSettings = {
 	TickRate = 33,
+}
+Resources = {
+	AssetDirectory = "resources",
+	ScriptDirectory  = "scripts"
 }
 WindowSettings = {
 	AntialiasingLevel = 8,

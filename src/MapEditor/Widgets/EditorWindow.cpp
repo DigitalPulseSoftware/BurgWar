@@ -72,8 +72,8 @@ namespace bw
 		FillStores();
 
 		const std::string& editorAssetsFolder = m_config.GetStringValue("Assets.EditorFolder");
-		const std::string& gameResourceFolder = m_config.GetStringValue("Assets.ResourceFolder");
-		const std::string& scriptFolder = m_config.GetStringValue("Assets.ScriptFolder");
+		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
+		const std::string& scriptFolder = m_config.GetStringValue("Resources.ScriptDirectory");
 
 		m_assetFolder = std::make_shared<VirtualDirectory>(gameResourceFolder);
 		m_scriptFolder = std::make_shared<VirtualDirectory>(scriptFolder);
@@ -679,7 +679,7 @@ namespace bw
 			textures.insert(texturePath);
 		});
 
-		std::filesystem::path gameResourceFolder = std::filesystem::u8path(m_config.GetStringValue("Assets.ResourceFolder"));
+		std::filesystem::path gameResourceFolder = std::filesystem::u8path(m_config.GetStringValue("Resources.AssetDirectory"));
 
 		std::vector<Map::Asset>& assets = m_workingMap.GetAssets();
 		assets.clear();

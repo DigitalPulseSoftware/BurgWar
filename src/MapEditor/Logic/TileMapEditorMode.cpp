@@ -31,7 +31,7 @@ namespace bw
 
 		// Compute tilemap and load materials
 
-		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Assets.ResourceFolder");
+		const std::string& gameAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Resources.AssetDirectory");
 
 		tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> matPathToIndex;
 

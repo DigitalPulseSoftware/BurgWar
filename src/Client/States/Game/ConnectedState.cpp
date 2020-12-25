@@ -75,7 +75,7 @@ namespace bw
 	{
 		if (!m_connectionLostSprite)
 		{
-			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringValue("Assets.ResourceFolder");
+			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringValue("Resources.AssetDirectory");
 
 			Nz::MaterialRef connectionLostMat = Nz::Material::New("Translucent2D");
 			connectionLostMat->SetDiffuseMap(assetsFolder + "/gui/connection.png");

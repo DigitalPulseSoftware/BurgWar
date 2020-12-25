@@ -27,6 +27,8 @@ namespace bw
 	m_curlMulti(nullptr),
 	m_logger(logger)
 	{
+		assert(s_isInitialized);
+
 		assert(!m_baseDownloadUrls.empty());
 		for (std::string& downloadUrl : m_baseDownloadUrls)
 		{
@@ -36,7 +38,14 @@ namespace bw
 
 		assert(maxSimultaneousDownload > 0);
 
-		curl_global_init(CURL_GLOBAL_NOTHING);
+		m_curlMulti = curl_multi_init();
+		for (Request& request : m_curlRequests)
+		{
+			request.metadata = std::make_unique<Request::Metadata>();
+			request.metadata->hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+
+			request.isActive = false;
+		}
 	}
 
 	HttpDownloadManager::~HttpDownloadManager()
@@ -57,58 +66,51 @@ namespace bw
 
 		if (m_curlMulti)
 			curl_multi_cleanup(m_curlMulti);
-
-		curl_global_cleanup();
 	}
 
-	void HttpDownloadManager::RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath)
+	auto HttpDownloadManager::GetEntry(std::size_t fileIndex) const -> const FileEntry&
+	{
+		assert(fileIndex < m_downloadList.size());
+		return m_downloadList[fileIndex];
+	}
+
+	bool HttpDownloadManager::IsFinished() const
+	{
+		if (m_nextFileIndex >= m_downloadList.size())
+		{
+			for (const Request& request : m_curlRequests)
+			{
+				if (request.isActive)
+					return false; //< Prevent OnFinished call, downloads are still actives
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void HttpDownloadManager::RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath, bool keepInMemory)
 	{
 		PendingFile& newFile = m_downloadList.emplace_back();
 		newFile.downloadUrlIndex = 0; //< FIXME: Not implemented
 		newFile.downloadPath = std::move(filePath);
-		newFile.expectedChecksum.Assign(checksum.begin(), checksum.end());
+		newFile.expectedChecksum = checksum;
 		newFile.expectedSize = expectedSize;
+		newFile.keepInMemory = keepInMemory;
 		newFile.outputPath = std::move(outputPath);
-	}
-
-	void HttpDownloadManager::Start()
-	{
-		assert(!m_curlMulti);
-
-		m_curlMulti = curl_multi_init();
-
-		std::size_t maxSimultaenousRequest = std::min(m_curlRequests.size(), m_downloadList.size());
-		if (maxSimultaenousRequest == 0)
-		{
-			OnFinished(this);
-			return;
-		}
-
-		for (std::size_t i = 0; i < maxSimultaenousRequest; ++i)
-		{
-			m_curlRequests[i].metadata = std::make_unique<Request::Metadata>();
-			m_curlRequests[i].metadata->downloadManager = this;
-			m_curlRequests[i].metadata->hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
-
-			m_curlRequests[i].isActive = false;
-		}
-
-		RequestNextFiles();
 	}
 
 	void HttpDownloadManager::RequestNextFiles()
 	{
-		if (m_nextFileIndex >= m_downloadList.size())
+		if (IsFinished())
 		{
-			for (Request& request : m_curlRequests)
-			{
-				if (request.isActive)
-					return; //< Prevent OnFinished call, downloads are still actives
-			}
-
 			OnFinished(this);
 			return;
 		}
+
+		if (m_nextFileIndex >= m_downloadList.size())
+			return; //< All remaining files are being processed
 
 		for (Request& request : m_curlRequests)
 		{
@@ -116,21 +118,20 @@ namespace bw
 			{
 				PendingFile& pendingDownload = m_downloadList[m_nextFileIndex];
 
-				using CurlCallback = size_t(*)(char* ptr, size_t size, size_t nmemb, void* userdata);
+				using CurlWriteCallback = size_t(*)(char* ptr, size_t size, size_t nmemb, void* userdata);
 
-				CurlCallback callback = [](char* ptr, std::size_t size, std::size_t nmemb, void* userdata) -> std::size_t
+				CurlWriteCallback writeCallback = [](char* ptr, std::size_t size, std::size_t nmemb, void* userdata) -> std::size_t
 				{
 					Request::Metadata* metadata = static_cast<Request::Metadata*>(userdata);
 
 					std::size_t totalSize = size * nmemb;
-					metadata->hash->Append(reinterpret_cast<const Nz::UInt8*>(ptr), totalSize);
-					metadata->file.Write(ptr, totalSize);
+					metadata->dataCallback(ptr, totalSize);
 
 					return totalSize;
 				};
 
 				request.handle = curl_easy_init();
-				curl_easy_setopt(request.handle, CURLOPT_WRITEFUNCTION, callback);
+				curl_easy_setopt(request.handle, CURLOPT_WRITEFUNCTION, writeCallback);
 				curl_easy_setopt(request.handle, CURLOPT_WRITEDATA, request.metadata.get());
 
 				std::string downloadUrl = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.downloadPath;
@@ -142,18 +143,35 @@ namespace bw
 				std::filesystem::path directory = pendingDownload.outputPath.parent_path();
 				std::string filePath = pendingDownload.outputPath.generic_u8string();
 
-				if (!std::filesystem::is_directory(directory))
+				if (!directory.empty() && !std::filesystem::is_directory(directory))
 				{
 					if (!std::filesystem::create_directories(directory))
 						throw std::runtime_error("failed to create client script asset directory: " + directory.generic_u8string());
 				}
 
-				request.metadata->fileIndex = m_nextFileIndex;
+				request.fileIndex = m_nextFileIndex;
 				request.metadata->hash->Begin();
 				request.metadata->file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
-				
-				bwLog(m_logger, LogLevel::Info, "[HTTP] Downloading {0} (size: {1})", pendingDownload.downloadPath, pendingDownload.expectedSize);
-				OnDownloadStarted(this, pendingDownload.downloadPath);
+				request.metadata->keepInMemory = pendingDownload.keepInMemory;
+
+				request.metadata->dataCallback = [this, fileIndex = request.fileIndex, md = request.metadata.get()](const void* data, std::size_t size)
+				{
+					auto& fileData = m_downloadList[fileIndex];
+
+					md->hash->Append(reinterpret_cast<const Nz::UInt8*>(data), size);
+					md->file.Write(data, size);
+
+					if (md->keepInMemory)
+					{
+						std::size_t offset = md->fileContent.size();
+						md->fileContent.resize(offset + size);
+						std::memcpy(&md->fileContent[offset], data, size);
+					}
+
+					OnDownloadProgress(this, fileIndex, fileData.downloadedSize);
+				};
+
+				OnDownloadStarted(this, m_nextFileIndex);
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)
@@ -170,8 +188,21 @@ namespace bw
 		}
 	}
 
+	bool HttpDownloadManager::Initialize()
+	{
+		return (s_isInitialized = (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK));
+	}
+
+	void HttpDownloadManager::Uninitialize()
+	{
+		assert(s_isInitialized);
+		curl_global_cleanup();
+	}
+
 	void HttpDownloadManager::Update()
 	{
+		RequestNextFiles();
+
 		assert(m_curlMulti);
 
 		int reportedActiveRequest;
@@ -198,11 +229,13 @@ namespace bw
 
 				// Handle download end
 				Request::Metadata& metadata = *requestIt->metadata;
-				PendingFile& pendingDownload = m_downloadList[metadata.fileIndex];
+				PendingFile& pendingDownload = m_downloadList[requestIt->fileIndex];
 
 				metadata.file.Close();
 
 				bool downloadError = true;
+
+				Error errorCode = DownloadManager::Error::FileNotFound;
 
 				if (m->data.result == CURLE_OK)
 				{
@@ -219,16 +252,31 @@ namespace bw
 						if (pendingDownload.expectedSize == static_cast<Nz::UInt64>(downloadedSize))
 						{
 							Nz::ByteArray byteArray = metadata.hash->End();
-							if (pendingDownload.expectedChecksum == byteArray)
+							m_byteArray.Assign(pendingDownload.expectedChecksum.begin(), pendingDownload.expectedChecksum.end());
+
+							if (m_byteArray == byteArray)
 							{
+								curl_off_t downloadSpeed = 0;
+								curl_easy_getinfo(handle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
+
+								if (pendingDownload.keepInMemory)
+									OnFileCheckedMemory(this, requestIt->fileIndex, metadata.fileContent, downloadSpeed);
+								else
+									OnFileChecked(this, requestIt->fileIndex, pendingDownload.outputPath, downloadSpeed);
+							
 								downloadError = false;
-								OnFileChecked(this, pendingDownload.downloadPath, pendingDownload.outputPath);
 							}
 							else
+							{
 								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", pendingDownload.downloadPath);
+								errorCode = DownloadManager::Error::ChecksumMismatch;
+							}
 						}
 						else
+						{
 							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", pendingDownload.downloadPath, downloadedSize, pendingDownload.expectedSize);
+							errorCode = DownloadManager::Error::SizeMismatch;
+						}
 					}
 					else
 						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", pendingDownload.downloadPath, responseCode);
@@ -238,7 +286,7 @@ namespace bw
 
 				if (downloadError)
 				{
-					OnFileError(this, pendingDownload.downloadPath);
+					OnFileError(this, requestIt->fileIndex, errorCode);
 
 					if (!metadata.file.Delete())
 						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
@@ -254,8 +302,12 @@ namespace bw
 			}
 		}
 		while (m);
-
-		if (hasFreeHandles)
-			RequestNextFiles();
 	}
+	
+	bool HttpDownloadManager::IsInitialized()
+	{
+		return s_isInitialized;
+	}
+
+	bool HttpDownloadManager::s_isInitialized = false;
 }

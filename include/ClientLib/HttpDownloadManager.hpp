@@ -8,10 +8,10 @@
 #define BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 
 #include <CoreLib/Protocol/Packets.hpp>
+#include <ClientLib/DownloadManager.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
-#include <Nazara/Core/Signal.hpp>
-#include <filesystem>
+#include <functional>
 #include <vector>
 
 using CURL = void;
@@ -21,47 +21,49 @@ namespace bw
 {
 	class Logger;
 
-	class HttpDownloadManager
+	class HttpDownloadManager : public DownloadManager
 	{
+		friend class ClientEditorApp;
+
 		public:
 			HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
 			~HttpDownloadManager();
 
-			void RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath);
+			const FileEntry& GetEntry(std::size_t fileIndex) const override;
 
-			void Start();
+			bool IsFinished() const override;
 
-			void Update();
+			void RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath, bool keepInMemory) override;
 
-			NazaraSignal(OnDownloadStarted, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/);
-			NazaraSignal(OnFileChecked, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/, const std::filesystem::path& /*realPath*/);
-			NazaraSignal(OnFileError, HttpDownloadManager* /*downloadManager*/, const std::string& /*filePath*/);
-			NazaraSignal(OnFinished, HttpDownloadManager* /*downloadManager*/);
+			void Update() override;
+
+			static bool IsInitialized();
 
 		private:
 			void RequestNextFiles();
 
-			struct PendingFile
+			static bool Initialize();
+			static void Uninitialize();
+
+			struct PendingFile : FileEntry
 			{
 				std::size_t downloadUrlIndex;
-				std::string downloadPath;
-				std::filesystem::path outputPath;
-				Nz::ByteArray expectedChecksum;
-				Nz::UInt64 expectedSize;
+				Nz::UInt64 downloadedSize = 0;
 			};
 
 			struct Request
 			{
 				struct Metadata
 				{
-					std::unique_ptr<Nz::AbstractHash> hash;
-					std::size_t downloadIndex;
-					std::size_t fileIndex;
-					HttpDownloadManager* downloadManager;
 					Nz::File file;
+					std::function<void(const void* /*data*/, std::size_t /*size*/)> dataCallback;
+					std::unique_ptr<Nz::AbstractHash> hash;
+					std::vector<Nz::UInt8> fileContent;
+					bool keepInMemory;
 				};
 
 				Nz::MovablePtr<CURL> handle = nullptr;
+				std::size_t fileIndex;
 				std::unique_ptr<Metadata> metadata;
 				bool isActive = false;
 			};
@@ -71,8 +73,11 @@ namespace bw
 			std::vector<std::string> m_baseDownloadUrls;
 			std::vector<PendingFile> m_downloadList;
 			std::vector<Request> m_curlRequests;
+			Nz::ByteArray m_byteArray;
 			CURLM* m_curlMulti;
 			const Logger& m_logger;
+
+			static bool s_isInitialized;
 	};
 }
 

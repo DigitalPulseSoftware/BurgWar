@@ -4,6 +4,7 @@
 
 #include <ClientLib/ClientEditorApp.hpp>
 #include <CoreLib/SharedAppConfig.hpp>
+#include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
@@ -50,10 +51,16 @@ namespace bw
 		Ndk::InitializeSystem<PostFrameCallbackSystem>();
 		Ndk::InitializeSystem<SoundSystem>();
 		Ndk::InitializeSystem<VisualInterpolationSystem>();
+
+		if (!HttpDownloadManager::Initialize())
+			bwLog(GetLogger(), LogLevel::Warning, "Failed to initialize HTTP, http download are disabled");
 	}
 
 	ClientEditorApp::~ClientEditorApp()
 	{
+		if (HttpDownloadManager::IsInitialized())
+			HttpDownloadManager::Uninitialize();
+
 		Nz::FontLibrary::Clear();
 		Nz::MaterialLibrary::Clear();
 		Nz::SpriteLibrary::Clear();
@@ -62,7 +69,7 @@ namespace bw
 
 	void ClientEditorApp::FillStores()
 	{
-		const std::string& gameResourceFolder = m_config.GetStringValue("Assets.ResourceFolder");
+		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
 
 		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
 		spriteNoDepthMat->EnableDepthBuffer(false);

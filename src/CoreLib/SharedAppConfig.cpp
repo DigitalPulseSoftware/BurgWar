@@ -9,8 +9,8 @@ namespace bw
 	SharedAppConfig::SharedAppConfig(BurgApp& app) :
 	ConfigFile(app)
 	{
-		RegisterStringOption("Assets.ResourceFolder");
-		RegisterStringOption("Assets.ScriptFolder");
+		RegisterStringOption("Resources.AssetDirectory");
+		RegisterStringOption("Resources.ScriptDirectory");
 		RegisterBoolOption("Debug.SendServerState");
 		RegisterStringOption("GameSettings.FastDownloadURLs", "");
 		RegisterFloatOption("GameSettings.TickRate");

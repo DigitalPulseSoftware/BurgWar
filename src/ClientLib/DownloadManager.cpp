@@ -2,8 +2,9 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/States/Game/AssetDownloadState.hpp>
+#include <ClientLib/DownloadManager.hpp>
 
 namespace bw
 {
+	DownloadManager::~DownloadManager() = default;
 }

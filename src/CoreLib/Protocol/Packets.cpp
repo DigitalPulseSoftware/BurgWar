@@ -437,11 +437,20 @@ namespace bw
 			serializer &= data.tickDuration;
 			serializer &= data.gamemode;
 
-			serializer.SerializeArraySize(data.assets);
 			serializer.SerializeArraySize(data.fastDownloadUrls);
 
 			for (auto& downloadUrl : data.fastDownloadUrls)
 				serializer &= downloadUrl;
+
+			serializer.SerializeArraySize(data.layers);
+			for (auto& layer : data.layers)
+				serializer &= layer.backgroundColor;
+
+			serializer.SerializeArraySize(data.gamemodeProperties);
+			for (auto& property : data.gamemodeProperties)
+				Serialize(serializer, property);
+
+			serializer.SerializeArraySize(data.assets);
 
 			for (auto& script : data.assets)
 			{
@@ -454,19 +463,12 @@ namespace bw
 					serializer.Read(script.sha1Checksum.data(), script.sha1Checksum.size());
 			}
 
-			serializer.SerializeArraySize(data.layers);
-			for (auto& layer : data.layers)
-				serializer &= layer.backgroundColor;
-
-			serializer.SerializeArraySize(data.gamemodeProperties);
-			for (auto& property : data.gamemodeProperties)
-				Serialize(serializer, property);
-
 			serializer.SerializeArraySize(data.scripts);
 
 			for (auto& script : data.scripts)
 			{
 				serializer &= script.path;
+				serializer &= script.size;
 
 				if (serializer.IsWriting())
 					serializer.Write(script.sha1Checksum.data(), script.sha1Checksum.size());
