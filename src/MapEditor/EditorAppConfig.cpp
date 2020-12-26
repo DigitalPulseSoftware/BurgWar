@@ -11,8 +11,5 @@ namespace bw
 	SharedAppConfig(app)
 	{
 		RegisterStringOption("Resources.EditorDirectory");
-		// Cache folders shouldn't be needed, but just in case...
-		RegisterStringOption("Resources.AssetCacheDirectory", ".resourceCache");
-		RegisterStringOption("Resources.ScriptCacheDirectory", ".scriptCache");
 	}
 }

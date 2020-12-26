@@ -463,8 +463,8 @@ namespace bw
 		Nz::UInt16 fileVersion;
 		stream >> fileVersion;
 
-		if (fileVersion > 1)
-			throw std::runtime_error("Unhandled file version");
+		if (fileVersion > MapFileVersion)
+			throw std::runtime_error("Unhandled file version (more recent than game)");
 
 		// Map header
 		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
