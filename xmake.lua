@@ -85,7 +85,7 @@ end
 				local git = find_git()
 				if (git) then
 					branch = os.iorunv(git, {"rev-parse", "--abbrev-ref", "HEAD"}):trim()
-					commitHash = os.iorunv(git, {"rev-parse", "--short", "HEAD"}):trim()
+					commitHash = os.iorunv(git, {"describe", "--tags", "--long"}):trim()
 				else
 					error("git not found")
 				end
