@@ -44,6 +44,25 @@ elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
 
+rule("copy_symbolfile")
+	after_install(function(target)
+		local symbolfile = target:symbolfile()
+		if os.isfile(symbolfile) then
+			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
+		end
+	end)
+rule_end()
+
+rule("install_scripts")
+	local scriptsInstalled = false
+	after_install(function(target)
+		if (not scriptsInstalled) then
+			os.vcp("scripts", path.join(target:installdir(), "bin"))
+			scriptsInstalled = true
+		end
+	end)
+rule_end()
+
 target("lua")
 	set_kind("static")
 
@@ -127,6 +146,7 @@ target("Main")
 
 target("BurgWar")
 	set_kind("binary")
+	add_rules("copy_symbolfile", "install_scripts")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -139,6 +159,7 @@ target("BurgWar")
 
 target("BurgWarServer")
 	set_kind("binary")
+	add_rules("copy_symbolfile", "install_scripts")
 
 	add_defines("NDK_SERVER")
 
@@ -154,6 +175,7 @@ target("BurgWarServer")
 target("BurgWarMapEditor")
 	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
+	add_rules("copy_symbolfile", "install_scripts")
 
 	add_frameworks("QtCore", "QtGui", "QtWidgets")
 	add_deps("Main", "ClientLib", "CoreLib")
@@ -166,9 +188,3 @@ target("BurgWarMapEditor")
 	end)
 
 target_end()
-
-after_install(function (target)
-	if (target:targetkind() == "binary") then
-		os.vcp("scripts", path.join(target:installdir(), "bin"))
-	end
-end)
