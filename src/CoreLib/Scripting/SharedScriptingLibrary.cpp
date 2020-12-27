@@ -115,6 +115,7 @@ namespace bw
 
 			"ReadCompressedInteger",  LuaFunction(&IncomingNetworkPacket::ReadCompressedInteger),
 			"ReadCompressedUnsigned", LuaFunction(&IncomingNetworkPacket::ReadCompressedUnsigned),
+			"ReadColor",   LuaFunction(&IncomingNetworkPacket::ReadColor),
 			"ReadDouble",  LuaFunction(&IncomingNetworkPacket::ReadDouble),
 			"ReadSingle",  LuaFunction(&IncomingNetworkPacket::ReadSingle),
 			"ReadString",  LuaFunction(&IncomingNetworkPacket::ReadString),
@@ -134,8 +135,9 @@ namespace bw
 		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
 			"new", sol::no_constructor,
 
-			"WriteCompressedInteger", LuaFunction(&OutgoingNetworkPacket::WriteCompressedInteger),
+			"WriteCompressedInteger",  LuaFunction(&OutgoingNetworkPacket::WriteCompressedInteger),
 			"WriteCompressedUnsigned", LuaFunction (&OutgoingNetworkPacket::WriteCompressedUnsigned),
+			"WriteColor",   LuaFunction(&OutgoingNetworkPacket::WriteColor),
 			"WriteDouble",  LuaFunction(&OutgoingNetworkPacket::WriteDouble),
 			"WriteSingle",  LuaFunction(&OutgoingNetworkPacket::WriteSingle),
 			"WriteString",  LuaFunction(&OutgoingNetworkPacket::WriteString),

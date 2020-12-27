@@ -77,6 +77,14 @@ namespace bw
 		return *m_particleRegistry;
 	}
 
+	inline LocalPlayer* LocalMatch::GetPlayerByIndex(Nz::UInt16 playerIndex)
+	{
+		if (playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerIndex].has_value())
+			return nullptr;
+
+		return &m_matchPlayers[playerIndex].value();
+	}
+
 	inline Ndk::World& LocalMatch::GetRenderWorld()
 	{
 		return m_renderWorld;

@@ -59,6 +59,17 @@ namespace bw
 		return m_matchData;
 	}
 
+	inline Player* Match::GetPlayerByIndex(Nz::UInt16 playerIndex)
+	{
+		if (playerIndex >= m_players.size() || m_freePlayerId.Test(playerIndex))
+			return nullptr;
+
+		Player* player = m_players[playerIndex].get();
+		assert(player);
+
+		return player;
+	}
+
 	inline MatchSessions& Match::GetSessions()
 	{
 		return m_sessions;

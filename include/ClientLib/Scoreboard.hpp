@@ -9,6 +9,7 @@
 
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
+#include <NDK/Widgets/ImageWidget.hpp>
 #include <NDK/Widgets/ScrollAreaWidget.hpp>
 #include <optional>
 
@@ -42,6 +43,8 @@ namespace bw
 			Scoreboard& operator=(const Scoreboard&) = delete;
 			Scoreboard& operator=(Scoreboard&&) = delete;
 
+			static constexpr std::size_t InvalidTeam = std::numeric_limits<std::size_t>::max();
+
 		private:
 			void Layout() override;
 
@@ -69,6 +72,7 @@ namespace bw
 				std::string name;
 				Nz::Color color;
 				Ndk::BaseWidget* background;
+				Ndk::ImageWidget* line;
 				Ndk::LabelWidget* widget;
 			};
 

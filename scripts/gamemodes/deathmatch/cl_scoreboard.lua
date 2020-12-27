@@ -14,7 +14,8 @@ function gamemode:RegisterScoreboardPlayer(player)
 		end
 	end
 
-	scoreboard:RegisterPlayer(playerIndex, 0, {
+	local playerTeam = self:GetPlayerTeam(player)
+	scoreboard:RegisterPlayer(playerIndex, playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or -1, {
 		player:GetName(),
 		tostring(self:GetPlayerKills(player)),
 		tostring(self:GetPlayerDeaths(player)),
@@ -25,6 +26,7 @@ end
 function gamemode:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
+		print("no scoreboard")
 		return
 	end
 

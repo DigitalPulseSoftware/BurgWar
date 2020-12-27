@@ -17,11 +17,11 @@ namespace bw
 	{
 		m_backgroundWidget = Add<Ndk::BaseWidget>();
 		m_backgroundWidget->EnableBackground(true);
-		m_backgroundWidget->SetBackgroundColor(Nz::Color(43, 68, 63, 200));
+		m_backgroundWidget->SetBackgroundColor(Nz::Color(80, 80, 80, 200));
 
 		m_columnBackgroundWidget = Add<Ndk::BaseWidget>();
 		m_columnBackgroundWidget->EnableBackground(true);
-		m_columnBackgroundWidget->SetBackgroundColor(Nz::Color(50, 50, 200, 127));
+		m_columnBackgroundWidget->SetBackgroundColor(Nz::Color(20, 20, 20, 127));
 
 		m_contentWidget = Add<Ndk::BaseWidget>();
 	
@@ -64,8 +64,12 @@ namespace bw
 		teamData.name = std::move(name);
 
 		teamData.background = m_contentWidget->Add<Ndk::BaseWidget>();
+
+		teamData.line = m_contentWidget->Add<Ndk::ImageWidget>();
+		teamData.line->SetColor(teamData.color);
+
 		teamData.widget = m_contentWidget->Add<Ndk::LabelWidget>();
-		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, teamData.name, 36, Nz::TextStyle_Bold));
+		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, teamData.name, 24, 0, teamData.color));
 		teamData.widget->Resize(teamData.widget->GetPreferredSize());
 
 		Layout();
@@ -82,10 +86,13 @@ namespace bw
 
 		auto& playerData = m_players[playerIndex].emplace();
 		playerData.background = m_contentWidget->Add<Ndk::BaseWidget>();
-		playerData.background->EnableBackground(true);
-		playerData.background->SetBackgroundColor((isLocalPlayer) ? Nz::Color(80, 80, 180) : Nz::Color(0, 0, 80, 127));
-
+		playerData.background->EnableBackground(isLocalPlayer);
+		playerData.background->SetBackgroundColor(Nz::Color(255, 255, 255, 60));
 		playerData.teamId = teamId;
+
+		Nz::Color teamColor = Nz::Color::White;
+		if (teamId < m_teams.size())
+			teamColor = m_teams[teamId].color;
 
 		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
@@ -95,7 +102,7 @@ namespace bw
 			auto& columnData = playerData.values.emplace_back();
 			columnData.value = std::move(value);
 			columnData.label = m_contentWidget->Add<Ndk::LabelWidget>();
-			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0));
+			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, teamColor));
 			columnData.label->Resize(columnData.label->GetPreferredSize());
 		}
 
@@ -124,6 +131,33 @@ namespace bw
 		Layout();
 	}
 
+	void Scoreboard::UpdatePlayerTeam(std::size_t playerIndex, std::size_t teamId)
+	{
+		if (playerIndex >= m_players.size() || !m_players[playerIndex].has_value())
+			return;
+
+		auto& playerData = m_players[playerIndex];
+		if (playerData->teamId != teamId)
+		{
+			playerData->teamId = teamId;
+
+			Nz::Color teamColor = Nz::Color::White;
+			if (teamId < m_teams.size())
+				teamColor = m_teams[teamId].color;
+
+			Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+			assert(scoreMenuFont);
+
+			for (auto& playerColumn : playerData->values)
+			{
+				playerColumn.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, playerColumn.value, 18, 0, teamColor));
+				playerColumn.label->Resize(playerColumn.label->GetPreferredSize());
+			}
+
+			Layout();
+		}
+	}
+
 	void Scoreboard::UpdatePlayerValue(std::size_t playerIndex, std::size_t valueIndex, std::string value)
 	{
 		if (playerIndex >= m_players.size() || !m_players[playerIndex].has_value())
@@ -133,12 +167,16 @@ namespace bw
 		if (valueIndex >= playerData->values.size())
 			return;
 
+		Nz::Color teamColor = Nz::Color::White;
+		if (playerData->teamId < m_teams.size())
+			teamColor = m_teams[playerData->teamId].color;
+
 		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
 
 		auto& columnData = playerData->values[valueIndex];
 		columnData.value = std::move(value);
-		columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0));
+		columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, teamColor));
 		columnData.label->Resize(columnData.label->GetPreferredSize());
 
 		Layout();
@@ -179,18 +217,13 @@ namespace bw
 		constexpr float playerMargin = 6.f;
 
 		cursor = 0.f;
-		for (auto& playerOpt : m_players)
+		auto HandlePlayer = [&](PlayerData& playerData)
 		{
-			if (!playerOpt)
-				continue;
-
-			auto& playerData = playerOpt.value();
-
 			height = 0.f;
-			for (std::size_t i = 0; i < playerData.values.size(); ++i)
+			for (std::size_t columnIndex = 0; columnIndex < playerData.values.size(); ++columnIndex)
 			{
-				auto& columnData = playerData.values[i];
-				float offset = columnOffsets[i];
+				auto& columnData = playerData.values[columnIndex];
+				float offset = columnOffsets[columnIndex];
 				columnData.label->SetPosition(offset, cursor);
 
 				height = std::max(height, columnData.label->GetHeight());
@@ -200,6 +233,37 @@ namespace bw
 			playerData.background->SetPosition(0.f, cursor);
 
 			cursor += height + playerMargin;
+		};
+
+		for (auto& playerOpt : m_players)
+		{
+			if (!playerOpt)
+				continue;
+
+			if (playerOpt->teamId < m_teams.size())
+				continue;
+
+			HandlePlayer(playerOpt.value());
+		}
+
+		for (std::size_t teamIndex = 0; teamIndex < m_teams.size(); ++teamIndex)
+		{
+			auto& teamData = m_teams[teamIndex];
+
+			teamData.widget->SetPosition(0.f, cursor);
+			cursor += teamData.widget->GetHeight();
+
+			teamData.line->SetPosition(0.f, cursor);
+			teamData.line->Resize({ size.x, 2.f });
+			cursor += teamData.line->GetHeight() + 5.f;
+
+			for (auto& playerOpt : m_players)
+			{
+				if (!playerOpt || playerOpt->teamId != teamIndex)
+					continue;
+
+				HandlePlayer(playerOpt.value());
+			}
 		}
 
 		m_contentWidget->Resize({ scoreboardWidth, cursor + playerMargin });

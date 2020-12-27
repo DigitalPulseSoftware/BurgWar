@@ -6,21 +6,22 @@ gamemode.PlayerSeeds = {}
 
 math.randomseed(os.time())
 
-gamemode:OnAsync("playerdeath", function (self, player, attacker)
+gamemode:OnAsync("PlayerDeath", function (self, player, attacker)
 	print(player:GetName() .. " died")
 	timer.Sleep(self:GetProperty("respawntime") * 1000)
-	self:SpawnPlayer(player)
+
+	match.GetGamemode():SpawnPlayer(player)
 end)
 
-gamemode:On("playerjoined", function (self, player)
+gamemode:On("PlayerJoined", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = math.random(0, math.maxinteger)
 
 	print(player:GetName() .. " joined")
 
-	self:SpawnPlayer(player)
+	match.GetGamemode():SpawnPlayer(player)
 end)
 
-gamemode:On("playerleave", function (self, player)
+gamemode:On("PlayerLeave", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = nil
 end)
 
@@ -59,7 +60,7 @@ password = table.concat(password)
 
 print("Admin password: " .. password)
 
-gamemode:On("playerchat", function (self, player, message)
+gamemode:On("PlayerChat", function (self, player, message)
 	if (message:sub(1,1) == "/") then
 		local commandName, commandArgs = message:match("/(%w+)%s*(.*)")
 		if (not commandName) then
@@ -116,7 +117,7 @@ end)
 
 gamemode.NextSpawnTime = 0
 
-gamemode:On("tick", function (self)
+gamemode:On("Tick", function (self)
 	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
 		local pos = burger:GetPosition()
 		if (pos.y > 10000) then
@@ -144,7 +145,7 @@ function gamemode:ChoosePlayerSpawnPosition()
 	return spawnpointEntity:GetPosition(), spawnpointEntity:GetLayerIndex()
 end
 
-gamemode:On("playerlayerupdate", function (self, player, oldLayer, newLayer)
+gamemode:On("PlayerLayerUpdate", function (self, player, oldLayer, newLayer)
 	print("Player " .. player:GetName() .. " change layer (", oldLayer .. " => " ..  newLayer .. ")")
 	if (oldLayer ~= NoLayer) then
 		for _, ent in pairs(match.GetEntitiesByClass("entity_visible_layer", oldLayer)) do

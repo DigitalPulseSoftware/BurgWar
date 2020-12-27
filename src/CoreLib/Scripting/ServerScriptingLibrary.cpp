@@ -276,6 +276,14 @@ namespace bw
 			return GetMatch().GetCurrentTick();
 		});
 		
+		library["GetPlayerByIndex"] = LuaFunction([&](sol::this_state L, Nz::UInt16 playerIndex) -> sol::object
+		{
+			if (Player* player = GetMatch().GetPlayerByIndex(playerIndex))
+				return sol::make_object(L, player->CreateHandle());
+			else
+				return sol::nil;
+		});
+
 		library["GetPlayers"] = LuaFunction([&](sol::this_state L) -> sol::table
 		{
 			sol::state_view lua(L);

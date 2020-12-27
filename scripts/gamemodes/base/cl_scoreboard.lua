@@ -1,26 +1,36 @@
 local gamemode = ScriptedGamemode()
 gamemode.ScoreboardColumns = { "Name", "Ping" }
 
-gamemode:On("initscoreboard", function (self, scoreboard)
+gamemode:On("InitScoreboard", function (self, scoreboard)
 	self.Scoreboard = scoreboard
 	self.ScoreboardColumnIndexes = {}
+	self.ScoreboardTeamIndexes = {}
 
-	for _, columnName in pairs(self.ScoreboardColumns) do
+	-- Retrieve active gamemode instead of base gamemode
+	local bottomGamemode = match.GetGamemode()
+
+	for _, columnName in pairs(bottomGamemode.ScoreboardColumns) do
 		self.ScoreboardColumnIndexes[columnName] = scoreboard:AddColumn(columnName)
 	end
 
+	for _, team in pairs(self:GetTeams()) do
+		local teamName = team:GetName()
+		self.ScoreboardTeamIndexes[teamName] = scoreboard:AddTeam(teamName, team:GetColor())
+	end
+
 	for _, player in pairs(match.GetPlayers()) do
-		self:RegisterScoreboardPlayer(player)
+		bottomGamemode:RegisterScoreboardPlayer(player)
 	end
 end)
 
-gamemode:On("playerjoined", function (self, player)
+gamemode:On("PlayerJoined", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
 	end
 
-	self:RegisterScoreboardPlayer(player)
+	-- Retrieve active gamemode instead of base gamemode
+	match.GetGamemode():RegisterScoreboardPlayer(player)
 end)
 
 function gamemode:RegisterScoreboardPlayer(player)
@@ -36,13 +46,14 @@ function gamemode:RegisterScoreboardPlayer(player)
 		end
 	end
 
-	scoreboard:RegisterPlayer(playerIndex, 0, {
+	local playerTeam = self:GetPlayerTeam(player)
+	scoreboard:RegisterPlayer(playerIndex, playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or -1, {
 		player:GetName(),
 		tostring(player:GetPing() or ""),
 	}, isLocalPlayer)
 end
 
-gamemode:On("playerleave", function (self, player)
+gamemode:On("PlayerLeave", function (self, player)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -51,7 +62,7 @@ gamemode:On("playerleave", function (self, player)
 	scoreboard:UnregisterPlayer(player:GetPlayerIndex())
 end)
 
-gamemode:On("playernameupdate", function (self, player, newName)
+gamemode:On("PlayerNameUpdate", function (self, player, newName)
 	print(player:GetName() .. " has changed name to " .. newName)
 
 	local scoreboard = self.Scoreboard
@@ -62,7 +73,7 @@ gamemode:On("playernameupdate", function (self, player, newName)
 	scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumnIndexes.Name, newName)
 end)
 
-gamemode:On("playerpingupdate", function (self, player, newName)
+gamemode:On("PlayerPingUpdate", function (self, player, newName)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
 		return
@@ -71,4 +82,13 @@ gamemode:On("playerpingupdate", function (self, player, newName)
 	for _, player in pairs(match.GetPlayers()) do
 		scoreboard:UpdatePlayerValue(player:GetPlayerIndex(), self.ScoreboardColumnIndexes.Ping, tostring(player:GetPing() or ""))
 	end
+end)
+
+gamemode:On("PlayerTeamUpdate", function (self, player, team)
+	local scoreboard = self.Scoreboard
+	if (not scoreboard) then
+		return
+	end
+
+	scoreboard:UpdatePlayerTeam(player:GetPlayerIndex(), team and self.ScoreboardTeamIndexes[team:GetName()] or -1)
 end)

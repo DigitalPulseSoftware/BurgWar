@@ -18,11 +18,11 @@ function gamemode:SetCameraScale(scale)
 	camera:SetZoomFactor(1.0 / scale)
 end
 
-gamemode:On("init", function (self)
+gamemode:On("Init", function (self)
 	self.CameraRect = nil
 end)
 
-gamemode:On("frame", function (self, elapsedTime)
+gamemode:On("Frame", function (self, elapsedTime)
 	local camera = match.GetCamera()
 
 	local playerPosition = engine_GetPlayerPosition(0)

@@ -3,7 +3,7 @@ include("cl_scoreboard.lua")
 
 local gamemode = ScriptedGamemode()
 
-gamemode:On("init", function (self)
+gamemode:On("Init", function (self)
 	local musicName = self.Musics[math.random(1, #self.Musics)]
 	self.Music = sound.CreateMusicFromFile(musicName)
 	if (self.Music) then
@@ -12,7 +12,7 @@ gamemode:On("init", function (self)
 	end
 end)
 
-gamemode:On("changelayer", function (self, oldLayer, newLayer)
+gamemode:On("ChangeLayer", function (self, oldLayer, newLayer)
 	-- FIXME: This shouldn't be handled by this callback
 
 	if (oldLayer ~= NoLayer) then

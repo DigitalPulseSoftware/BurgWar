@@ -84,6 +84,7 @@ namespace bw
 			inline sol::state& GetLuaState();
 			inline const Packets::MatchData& GetMatchData() const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
+			inline Player* GetPlayerByIndex(Nz::UInt16 playerIndex);
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;

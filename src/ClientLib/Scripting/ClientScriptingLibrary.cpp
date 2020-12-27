@@ -399,9 +399,23 @@ namespace bw
 			"AddColumn", LuaFunction(&Scoreboard::AddColumn),
 			"AddTeam", LuaFunction(&Scoreboard::AddTeam),
 
-			"RegisterPlayer", LuaFunction(&Scoreboard::RegisterPlayer),
+			"RegisterPlayer", sol::overload(
+				LuaFunction([](Scoreboard& scoreboard, std::size_t playerIndex, Nz::Int64 teamId, std::vector<std::string> values)
+				{ 
+					scoreboard.RegisterPlayer(playerIndex, (teamId >= 0) ? static_cast<std::size_t>(teamId) : Scoreboard::InvalidTeam, values);
+				}),
+				LuaFunction([](Scoreboard& scoreboard, std::size_t playerIndex, Nz::Int64 teamId, std::vector<std::string> values, bool isLocalPlayer)
+				{ 
+					scoreboard.RegisterPlayer(playerIndex, (teamId >= 0) ? static_cast<std::size_t>(teamId) : Scoreboard::InvalidTeam, values, isLocalPlayer);
+				})
+			),
 
 			"UnregisterPlayer", LuaFunction(&Scoreboard::UnregisterPlayer),
+
+			"UpdatePlayerTeam", LuaFunction([](Scoreboard& scoreboard, std::size_t playerIndex, Nz::Int64 teamId)
+			{
+				scoreboard.UpdatePlayerTeam(playerIndex, (teamId >= 0) ? static_cast<std::size_t>(teamId) : Scoreboard::InvalidTeam);
+			}),
 
 			"UpdatePlayerValue", LuaFunction(&Scoreboard::UpdatePlayerValue)
 		);

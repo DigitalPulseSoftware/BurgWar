@@ -82,6 +82,7 @@ namespace bw
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
+			inline LocalPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
 			inline Ndk::World& GetRenderWorld();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;

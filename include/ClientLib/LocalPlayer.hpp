@@ -21,6 +21,8 @@ namespace bw
 	{
 		public:
 			inline LocalPlayer(Nz::UInt16 playerIndex, std::string name);
+			LocalPlayer(const LocalPlayer&) = delete;
+			LocalPlayer(LocalPlayer&&) noexcept = default;
 			~LocalPlayer() = default;
 
 			inline const std::string& GetName() const;
@@ -31,6 +33,9 @@ namespace bw
 
 			inline void UpdateName(std::string name);
 			inline void UpdatePing(Nz::UInt16 ping);
+
+			LocalPlayer& operator=(const LocalPlayer&) = delete;
+			LocalPlayer& operator=(LocalPlayer&&) noexcept = default;
 
 			static constexpr Nz::UInt16 InvalidPing = std::numeric_limits<Nz::UInt16>::max();
 

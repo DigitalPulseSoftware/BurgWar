@@ -11,7 +11,7 @@ function gamemode:GetPlayerKills(player)
 	return self.ScoreKills[player:GetPlayerIndex()] or 0
 end
 
-gamemode:On("playerleave", function (self, player)
+gamemode:On("PlayerLeave", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
 	self.ScoreDeaths[playerIndex] = nil
 	self.ScoreKills[playerIndex] = nil
@@ -39,7 +39,7 @@ if (SERVER) then
 
 	gamemode.ScoreUpdated = false
 
-	gamemode:On("playerjoined", function (self, player)
+	gamemode:On("PlayerJoined", function (self, player)
 		player:SendPacket(BuildScorePacket())
 	end)
 
@@ -65,7 +65,7 @@ if (SERVER) then
 		self.ScoreUpdated = false
 	end
 
-	gamemode:On("tick", function (self)
+	gamemode:On("Tick", function (self)
 		if (not self.ScoreUpdated) then
 			-- Send score to players
 			match.BroadcastPacket(BuildScorePacket())
