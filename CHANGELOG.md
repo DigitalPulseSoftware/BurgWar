@@ -7,7 +7,8 @@
 ## Scripting
 
 * Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
-* Added IncomingNetworkPacket::ReadColor and OutgoingNetworkPacket::WriteColor
+* Added IncomingNetworkPacket:ReadColor() and OutgoingNetworkPacket:WriteColor()
+* Added match.GetPlayerByIndex()
 
 ## Beta 1.1
 
