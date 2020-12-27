@@ -673,10 +673,6 @@ namespace bw
 		joinedPacket.playerName = newPlayer->GetName();
 		BroadcastPacket(joinedPacket);
 
-		newPlayer->SetReady();
-
-		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
-
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = newPlayer->GetName() + " has joined.";
 
@@ -693,6 +689,10 @@ namespace bw
 
 			player->SendPacket(chatPacket);
 		});
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
+
+		newPlayer->SetReady();
 	}
 
 	void Match::OnTick(bool lastTick)
