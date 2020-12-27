@@ -57,7 +57,7 @@ namespace bw
 		OutgoingCommand(PlayerLayer,                  Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerLeaving,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerNameUpdate,             Nz::ENetPacketFlag_Reliable,    1);
-		OutgoingCommand(PlayerPingUpdate,             Nz::ENetPacketFlag_Reliable,    0);
+		OutgoingCommand(PlayerPingUpdate,             Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(PlayerWeapons,                Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(ScriptPacket,                 Nz::ENetPacketFlag_Reliable,    1);
 
