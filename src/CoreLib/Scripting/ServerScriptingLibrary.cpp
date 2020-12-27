@@ -134,12 +134,12 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
-		library["BroadcastPacket"] = LuaFunction([&](const OutgoingNetworkPacket& outgoingPacket)
+		library["BroadcastPacket"] = LuaFunction([&](const OutgoingNetworkPacket& outgoingPacket, std::optional<bool> onlyReady)
 		{
 			Match& match = GetMatch();
 
 			const NetworkStringStore& networkStringStore = match.GetNetworkStringStore();
-			match.BroadcastPacket(outgoingPacket.ToPacket(networkStringStore));
+			match.BroadcastPacket(outgoingPacket.ToPacket(networkStringStore), onlyReady.value_or(true));
 		});
 
 		library["CreateEntity"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)

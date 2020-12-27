@@ -9,6 +9,7 @@
 * Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
 * Added IncomingNetworkPacket:ReadColor() and OutgoingNetworkPacket:WriteColor()
 * Added match.GetPlayerByIndex()
+* match.BroadcastPacket now has a second optional parameter to disable ready check
 
 ## Beta 1.1
 
