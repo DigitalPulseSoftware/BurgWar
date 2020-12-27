@@ -55,6 +55,8 @@ namespace bw
 		// Clear timer manager before scripting context gets deleted
 		GetScriptPacketHandlerRegistry().Clear();
 		GetTimerManager().Clear();
+
+		m_sessions.Clear();
 	}
 
 	void Match::BroadcastChatMessage(Player* player, std::string message)
