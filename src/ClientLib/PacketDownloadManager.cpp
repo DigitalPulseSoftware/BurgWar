@@ -160,6 +160,14 @@ namespace bw
 			return;
 		}
 
+		// Don't request next file if current hasn't been downloaded yet
+		if (m_nextFileIndex > 0)
+		{
+			std::size_t currentFileIndex = m_nextFileIndex - 1;
+			if (m_downloadList[currentFileIndex].receivedFragment.GetSize() == 0 || !m_downloadList[currentFileIndex].receivedFragment.TestAll())
+				return;
+		}
+
 		if (m_nextFileIndex >= m_downloadList.size())
 			return; //< All remaining files are being processed
 
