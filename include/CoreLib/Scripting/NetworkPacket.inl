@@ -27,6 +27,14 @@ namespace bw
 	{
 	}
 
+	inline Nz::Color IncomingNetworkPacket::ReadColor()
+	{
+		Nz::Color color;
+		m_stream >> color.r >> color.g >> color.b >> color.a;
+
+		return color;
+	}
+
 	inline double IncomingNetworkPacket::ReadDouble()
 	{
 		double output;
@@ -90,6 +98,11 @@ namespace bw
 		return packet;
 	}
 	
+	inline void OutgoingNetworkPacket::WriteColor(Nz::Color color)
+	{
+		m_stream << color.r << color.g << color.b << color.a;
+	}
+
 	inline void OutgoingNetworkPacket::WriteCompressedInteger(Nz::Int64 number)
 	{
 		CompressedSigned<Nz::Int64> input(number);

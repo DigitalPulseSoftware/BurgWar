@@ -7,6 +7,7 @@
 ## Scripting
 
 * Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
+* Added IncomingNetworkPacket::ReadColor and OutgoingNetworkPacket::WriteColor
 
 ## Beta 1.1
 

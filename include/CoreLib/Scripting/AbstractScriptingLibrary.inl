@@ -249,6 +249,19 @@ namespace sol
 		return 1;
 	}
 
+	inline int sol_lua_push(sol::types<Nz::Color>, lua_State* L, const Nz::Color& color)
+	{
+		lua_createtable(L, 0, 4);
+
+		sol::stack_table vec(L);
+		vec["r"] = color.r;
+		vec["g"] = color.g;
+		vec["b"] = color.b;
+		vec["a"] = color.a;
+
+		return 1;
+	}
+
 	template<typename T>
 	int sol_lua_push(sol::types<Nz::DegreeAngle<T>>, lua_State* L, const Nz::DegreeAngle<T>& angle)
 	{

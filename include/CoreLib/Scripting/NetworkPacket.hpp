@@ -38,6 +38,7 @@ namespace bw
 		public:
 			inline IncomingNetworkPacket(const NetworkStringStore& stringStore, const Packets::ScriptPacket& packet);
 
+			inline Nz::Color ReadColor();
 			inline double ReadDouble();
 			inline Nz::Int64 ReadCompressedInteger();
 			inline Nz::UInt64 ReadCompressedUnsigned();
@@ -53,6 +54,7 @@ namespace bw
 
 			Packets::ScriptPacket ToPacket(const NetworkStringStore& stringStore) const;
 			
+			inline void WriteColor(Nz::Color color);
 			inline void WriteCompressedInteger(Nz::Int64 number);
 			inline void WriteCompressedUnsigned(Nz::UInt64 number);
 			inline void WriteDouble(double number);
