@@ -163,7 +163,7 @@ namespace bw
 		};
 	}
 
-	void SharedGamemode::RegisterCustomEvent(const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::main_protected_function callback, bool async)
+	void SharedGamemode::RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::string eventName(event);
 		auto it = m_customEventByName.find(eventName);
@@ -182,6 +182,7 @@ namespace bw
 		auto& callbackData = m_customEventCallbacks[eventIndex].emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.gamemodeTable = gamemodeTable;
 	}
 
 	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
@@ -199,5 +200,6 @@ namespace bw
 		auto& callbackData = m_eventCallbacks[eventIndex].emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.gamemodeTable = gamemodeTable;
 	}
 }

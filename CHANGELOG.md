@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+* 
+
+## Scripting
+
+* Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
+
 ## Beta 1.1
 
 ### General

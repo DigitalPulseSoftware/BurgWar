@@ -65,6 +65,7 @@ namespace bw
 			struct Callback
 			{
 				sol::main_protected_function callback;
+				sol::table gamemodeTable;
 				bool async = false;
 			};
 

@@ -27,10 +27,10 @@ namespace bw
 			if (callbackData.async)
 			{
 				auto co = m_context->CreateCoroutine(callbackData.callback);
-				callbackResult = co(m_gamemodeTable, args...);
+				callbackResult = co(callbackData.gamemodeTable, args...);
 			}
 			else
-				callbackResult = callbackData.callback(m_gamemodeTable, args...);
+				callbackResult = callbackData.callback(callbackData.gamemodeTable, args...);
 
 			if (!callbackResult.valid())
 			{
@@ -62,7 +62,7 @@ namespace bw
 		{
 			assert(!callbackData.async);
 
-			auto callbackResult = callbackData.callback(m_gamemodeTable, args...);
+			auto callbackResult = callbackData.callback(callbackData.gamemodeTable, args...);
 			if (!callbackResult.valid())
 			{
 				sol::error err = callbackResult;
@@ -105,10 +105,10 @@ namespace bw
 				if (callbackData.async)
 				{
 					auto co = m_context->CreateCoroutine(callbackData.callback);
-					callbackResult = co(m_gamemodeTable, args...);
+					callbackResult = co(callbackData.gamemodeTable, args...);
 				}
 				else
-					callbackResult = callbackData.callback(m_gamemodeTable, args...);
+					callbackResult = callbackData.callback(callbackData.gamemodeTable, args...);
 
 				if (!callbackResult.valid())
 				{
@@ -134,7 +134,7 @@ namespace bw
 			{
 				assert(!callbackData.async);
 
-				auto callbackResult = callbackData.callback(m_gamemodeTable, args...);
+				auto callbackResult = callbackData.callback(callbackData.gamemodeTable, args...);
 				if (!callbackResult.valid())
 				{
 					sol::error err = callbackResult;
