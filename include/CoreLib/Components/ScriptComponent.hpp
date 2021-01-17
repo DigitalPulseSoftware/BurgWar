@@ -47,10 +47,13 @@ namespace bw
 
 			inline bool HasCallbacks(ElementEvent event) const;
 
-			inline void RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async);
-			inline void RegisterCallbackCustom(std::size_t eventIndex, sol::main_protected_function callback, bool async);
+			inline std::size_t RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async);
+			inline std::size_t RegisterCallbackCustom(std::size_t eventIndex, sol::main_protected_function callback, bool async);
 
 			inline void SetNextTick(float seconds);
+
+			inline bool UnregisterCallback(ElementEvent event, std::size_t callbackId);
+			inline bool UnregisterCallbackCustom(std::size_t eventIndex, std::size_t callbackId);
 
 			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
 			void UpdateEntity(const Ndk::EntityHandle& entity);
@@ -65,6 +68,7 @@ namespace bw
 			std::vector<std::vector<ScriptedElement::Callback>> m_customEventCallbacks;
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<ScriptingContext> m_context;
+			std::size_t m_nextCallbackId;
 			sol::table m_entityTable;
 			EntityLogger m_logger;
 			PropertyValueMap m_properties;

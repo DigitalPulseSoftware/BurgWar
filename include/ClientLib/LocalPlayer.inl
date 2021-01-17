@@ -32,7 +32,7 @@ namespace bw
 	{
 		return m_name;
 	}
-	
+
 	inline void LocalPlayer::UpdateName(std::string name)
 	{
 		m_name = std::move(name);

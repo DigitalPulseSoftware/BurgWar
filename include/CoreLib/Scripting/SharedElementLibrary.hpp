@@ -11,6 +11,8 @@
 
 namespace bw
 {
+	struct ElementEventConnection;
+
 	class SharedElementLibrary : public AbstractElementLibrary
 	{
 		public:
@@ -24,8 +26,8 @@ namespace bw
 
 		private:
 			void RegisterCommonLibrary(sol::table& elementMetatable);
-			void RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async);
-			void RegisterEvent(lua_State* L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async);
+			ElementEventConnection RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async);
+			ElementEventConnection RegisterEvent(lua_State* L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async);
 	};
 }
 

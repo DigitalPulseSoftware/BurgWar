@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <CoreLib/Scripting/GamemodeEventConnection.hpp>
 #include <CoreLib/Scripting/GamemodeEvents.hpp>
 #include <CoreLib/Scripting/ScriptedEvent.hpp>
 #include <CoreLib/Scripting/ScriptedProperty.hpp>
@@ -17,6 +18,7 @@
 
 namespace bw
 {
+	struct GamemodeEventConnection;
 	class SharedMatch;
 
 	class SharedGamemode
@@ -59,11 +61,13 @@ namespace bw
 		private:
 			sol::table LoadGamemode(const std::string& gamemodeName);
 			void InitializeMetatable();
-			void RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
-			void RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
+			GamemodeEventConnection RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
+			GamemodeEventConnection RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async);
+			bool UnregisterEvent(const sol::table& gamemodeTable, const GamemodeEventConnection& connection);
 
 			struct Callback
 			{
+				std::size_t callbackId;
 				sol::main_protected_function callback;
 				sol::table gamemodeTable;
 				bool async = false;
@@ -71,6 +75,7 @@ namespace bw
 
 			std::array<std::vector<Callback>, GamemodeEventCount> m_eventCallbacks;
 			std::shared_ptr<ScriptingContext> m_context;
+			std::size_t m_nextCallbackId;
 			std::string m_gamemodeName;
 			std::vector<std::vector<Callback>> m_customEventCallbacks;
 			std::vector<ScriptedEvent> m_customEvents;

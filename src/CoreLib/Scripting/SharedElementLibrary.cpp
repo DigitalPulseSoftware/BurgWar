@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <CoreLib/Scripting/ElementEventConnection.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
@@ -37,6 +38,24 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			entity->Disable();
+		});
+
+		elementMetatable["Disconnect"] = LuaFunction([&](const sol::table& entityTable, const ElementEventConnection& eventConnection)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			return std::visit([&](auto&& arg)
+			{
+				using T = std::decay_t<decltype(arg)>;
+
+				if constexpr (std::is_same_v<T, ElementEvent>)
+					return entityScript.UnregisterCallback(arg, eventConnection.callbackId);
+				else if constexpr (std::is_same_v<T, std::size_t>)
+					return entityScript.UnregisterCallbackCustom(arg, eventConnection.callbackId);
+				else
+					static_assert(AlwaysFalse<T>(), "non-exhaustive visitor");
+			}, eventConnection.event);
 		});
 
 		elementMetatable["Enable"] = LuaFunction([](const sol::table& entityTable)
@@ -105,12 +124,12 @@ namespace bw
 
 		elementMetatable["On"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(L, entityTable, event, std::move(callback), false);
+			return RegisterEvent(L, entityTable, event, std::move(callback), false);
 		});
 
 		elementMetatable["OnAsync"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(L, entityTable, event, std::move(callback), true);
+			return RegisterEvent(L, entityTable, event, std::move(callback), true);
 		});
 
 		elementMetatable["SetLifeTime"] = LuaFunction([](const sol::table& entityTable, float lifetime)
@@ -159,7 +178,7 @@ namespace bw
 		});
 	}
 
-	void SharedElementLibrary::RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	ElementEventConnection SharedElementLibrary::RegisterCustomEvent(const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		auto RetrieveEventIndex = [&](const std::shared_ptr<const ScriptedElement>& element) -> std::size_t
 		{
@@ -182,7 +201,8 @@ namespace bw
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
 
-			entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
+			std::size_t callbackId = entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
+			return ElementEventConnection{ eventIndex, callbackId };
 		}
 		else
 		{
@@ -196,10 +216,13 @@ namespace bw
 			auto& callbackData = element->customEventCallbacks[eventIndex].emplace_back();
 			callbackData.async = async;
 			callbackData.callback = std::move(callback);
+			callbackData.callbackId = element->nextCallbackId++;
+
+			return ElementEventConnection{ eventIndex, callbackData.callbackId };
 		}
 	}
 
-	void SharedElementLibrary::RegisterEvent(lua_State* L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	ElementEventConnection SharedElementLibrary::RegisterEvent(lua_State* L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<ElementEvent> scriptingEventOpt = RetrieveElementEvent(event);
 		if (!scriptingEventOpt)
@@ -214,7 +237,9 @@ namespace bw
 		if (Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable))
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
-			entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
+			std::size_t callbackId = entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
+
+			return ElementEventConnection{ scriptingEvent, callbackId };
 		}
 		else
 		{
@@ -223,6 +248,9 @@ namespace bw
 			auto& callbackData = element->eventCallbacks[eventIndex].emplace_back();
 			callbackData.async = async;
 			callbackData.callback = std::move(callback);
+			callbackData.callbackId = element->nextCallbackId++;
+
+			return ElementEventConnection{ scriptingEvent, callbackData.callbackId };
 		}
 	}
 }

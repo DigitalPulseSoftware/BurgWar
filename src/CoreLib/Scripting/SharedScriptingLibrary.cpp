@@ -9,6 +9,8 @@
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/Constraint.hpp>
+#include <CoreLib/Scripting/ElementEventConnection.hpp>
+#include <CoreLib/Scripting/GamemodeEventConnection.hpp>
 #include <CoreLib/Scripting/NetworkPacket.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Scripting/SharedGamemode.hpp>
@@ -42,6 +44,7 @@ namespace bw
 		sol::table timerTable = luaState.create_named_table("timer");
 
 		RegisterConstraintClass(context);
+		RegisterEventConnectionClass(context);
 		RegisterGameLibrary(context, gameTable);
 		RegisterGlobalLibrary(context);
 		RegisterMatchLibrary(context, matchTable);
@@ -105,6 +108,13 @@ namespace bw
 
 			sol::base_classes, sol::bases<Constraint>()
 		);
+	}
+
+	void SharedScriptingLibrary::RegisterEventConnectionClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<ElementEventConnection>("ElementEventConnection", "new", sol::no_constructor);
+		state.new_usertype<GamemodeEventConnection>("GamemodeEventConnection", "new", sol::no_constructor);
 	}
 
 	void SharedScriptingLibrary::RegisterNetworkPacketClasses(ScriptingContext& context)
@@ -193,6 +203,35 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
+		library["GetEntities"] = LuaFunction([&](sol::this_state L, std::optional<LayerIndex> layerIndexOpt)
+		{
+			sol::state_view state(L);
+			sol::table result = state.create_table();
+
+			std::size_t index = 1;
+			auto entityFunc = [&](const Ndk::EntityHandle& entity)
+			{
+				if (!entity->HasComponent<ScriptComponent>())
+					return;
+
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				result[index++] = entityScript.GetTable();
+			};
+
+			if (layerIndexOpt)
+			{
+				LayerIndex layerIndex = layerIndexOpt.value();
+				if (layerIndex >= m_match.GetLayerCount())
+					TriggerLuaArgError(L, 2, "invalid layer index");
+
+				m_match.GetLayer(layerIndex).ForEachEntity(entityFunc);
+			}
+			else
+				m_match.ForEachEntity(entityFunc);
+
+			return result;
+		});
+
 		library["GetEntitiesByClass"] = LuaFunction([&](sol::this_state L, const std::string& entityClass, std::optional<LayerIndex> layerIndexOpt)
 		{
 			sol::state_view state(L);

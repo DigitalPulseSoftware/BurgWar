@@ -27,6 +27,7 @@ namespace bw
 
 			// Classes
 			void RegisterConstraintClass(ScriptingContext& context);
+			void RegisterEventConnectionClass(ScriptingContext& context);
 			void RegisterNetworkPacketClasses(ScriptingContext& context);
 			void RegisterPlayerMovementControllerClass(ScriptingContext& context);
 

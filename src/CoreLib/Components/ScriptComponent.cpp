@@ -11,6 +11,7 @@ namespace bw
 	m_customEventCallbacks(element->customEventCallbacks),
 	m_element(std::move(element)),
 	m_context(std::move(context)),
+	m_nextCallbackId(m_element->nextCallbackId),
 	m_entityTable(std::move(entityTable)),
 	m_logger(Ndk::EntityHandle::InvalidHandle, logger),
 	m_properties(std::move(properties)),

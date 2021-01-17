@@ -17,10 +17,15 @@ function gamemode:OnPlayerSpawn(player)
 
 	local spawnImmunity = self:GetProperty("respawnimmunity")
 	if (spawnImmunity > 0) then
-		local immunityStart = match.GetSeconds()
-		entity:On("TakeDamage", function (self, damage, attacker)
-			if (match.GetSeconds() - immunityStart <= spawnImmunity) then
+		local conn = entity:On("TakeDamage", function (self, damage, attacker)
+			if (attacker and attacker:GetOwner()) then
 				return 0 -- Cancel damage
+			end
+		end)
+
+		timer.Create(math.floor(spawnImmunity * 1000), function()
+			if (entity:IsValid()) then
+				entity:Disconnect(conn)
 			end
 		end)
 	end

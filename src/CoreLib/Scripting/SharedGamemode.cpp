@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/SharedGamemode.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
+#include <CoreLib/Scripting/GamemodeEventConnection.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>
@@ -15,6 +16,7 @@ namespace bw
 {
 	SharedGamemode::SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues) :
 	m_context(std::move(scriptingContext)),
+	m_nextCallbackId(1),
 	m_gamemodeName(std::move(gamemodeName)),
 	m_propertyValues(std::move(propertyValues)),
 	m_sharedMatch(match)
@@ -109,6 +111,7 @@ namespace bw
 			}
 		}
 
+		// Initialize gamemode
 		sol::state& state = m_context->GetLuaState();
 		state["ScriptedGamemode"] = [&]()
 		{
@@ -116,6 +119,15 @@ namespace bw
 		};
 
 		InitializeGamemode(gamemodeName);
+
+		// Initialize gamemode entities
+		SharedEntityStore& entityStore = m_sharedMatch.GetEntityStore();
+		entityStore.LoadDirectory("gamemodes/" + gamemodeName + "/entities");
+		entityStore.Resolve();
+
+		SharedWeaponStore& weaponStore = m_sharedMatch.GetWeaponStore();
+		weaponStore.LoadDirectory("gamemodes/" + gamemodeName + "/weapons");
+		weaponStore.Resolve();
 
 		state["ScriptedGamemode"] = sol::nil;
 
@@ -128,14 +140,19 @@ namespace bw
 		m_gamemodeMetatable = state.create_table();
 		m_gamemodeMetatable["__index"] = m_gamemodeMetatable;
 
+		m_gamemodeMetatable["Disconnect"] = [&](const sol::table& gamemodeTable, const GamemodeEventConnection& connection)
+		{
+			return UnregisterEvent(gamemodeTable, connection);
+		};
+
 		m_gamemodeMetatable["On"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(gamemodeTable, event, std::move(callback), false);
+			return RegisterEvent(gamemodeTable, event, std::move(callback), false);
 		};
 
 		m_gamemodeMetatable["OnAsync"] = [&](const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback)
 		{
-			RegisterEvent(gamemodeTable, event, std::move(callback), true);
+			return RegisterEvent(gamemodeTable, event, std::move(callback), true);
 		};
 
 		m_gamemodeMetatable["Trigger"] = [&](const sol::table& /*gamemodeTable*/, const std::string_view& event, sol::variadic_args parameters)
@@ -163,7 +180,7 @@ namespace bw
 		};
 	}
 
-	void SharedGamemode::RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	GamemodeEventConnection SharedGamemode::RegisterCustomEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::string eventName(event);
 		auto it = m_customEventByName.find(eventName);
@@ -182,10 +199,13 @@ namespace bw
 		auto& callbackData = m_customEventCallbacks[eventIndex].emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.callbackId = m_nextCallbackId++;
 		callbackData.gamemodeTable = gamemodeTable;
+
+		return GamemodeEventConnection{ eventIndex, callbackData.callbackId };
 	}
 
-	void SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
+	GamemodeEventConnection SharedGamemode::RegisterEvent(const sol::table& gamemodeTable, const std::string_view& event, sol::main_protected_function callback, bool async)
 	{
 		std::optional<GamemodeEvent> gamemodeEventOpt = RetrieveGamemodeEvent(event);
 		if (!gamemodeEventOpt)
@@ -200,6 +220,54 @@ namespace bw
 		auto& callbackData = m_eventCallbacks[eventIndex].emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.callbackId = m_nextCallbackId++;
 		callbackData.gamemodeTable = gamemodeTable;
+
+		return GamemodeEventConnection{ scriptingEvent, callbackData.callbackId };
+	}
+
+	bool SharedGamemode::UnregisterEvent(const sol::table& /*gamemodeTable*/, const GamemodeEventConnection& connection)
+	{
+		return std::visit([&](auto&& arg)
+		{
+			using T = std::decay_t<decltype(arg)>;
+
+			if constexpr (std::is_same_v<T, GamemodeEvent>)
+			{
+				std::size_t eventIndex = static_cast<std::size_t>(arg);
+				auto& callbacks = m_eventCallbacks[eventIndex];
+
+				for (auto it = callbacks.begin(); it != callbacks.end(); ++it)
+				{
+					if (it->callbackId == connection.callbackId)
+					{
+						callbacks.erase(it);
+						return true;
+					}
+				}
+
+				return false;
+			}
+			else if constexpr (std::is_same_v<T, std::size_t>)
+			{
+				if (m_customEventCallbacks.size() <= arg)
+					return false;
+
+				auto& callbacks = m_customEventCallbacks[arg];
+
+				for (auto it = callbacks.begin(); it != callbacks.end(); ++it)
+				{
+					if (it->callbackId == connection.callbackId)
+					{
+						callbacks.erase(it);
+						return true;
+					}
+				}
+
+				return false;
+			}
+			else
+				static_assert(AlwaysFalse<T>(), "non-exhaustive visitor");
+		}, connection.event);
 	}
 }

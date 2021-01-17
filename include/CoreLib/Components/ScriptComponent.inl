@@ -206,15 +206,18 @@ namespace bw
 		return !callbacks.empty();
 	}
 
-	inline void ScriptComponent::RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async)
+	inline std::size_t ScriptComponent::RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async)
 	{
 		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
 		auto& callbackData = callbacks.emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.callbackId = m_nextCallbackId++;
+
+		return callbackData.callbackId;
 	}
 
-	inline void ScriptComponent::RegisterCallbackCustom(std::size_t eventIndex, sol::main_protected_function callback, bool async)
+	inline std::size_t ScriptComponent::RegisterCallbackCustom(std::size_t eventIndex, sol::main_protected_function callback, bool async)
 	{
 		if (m_customEventCallbacks.size() <= eventIndex)
 			m_customEventCallbacks.resize(eventIndex + 1);
@@ -222,11 +225,49 @@ namespace bw
 		auto& callbackData = m_customEventCallbacks[eventIndex].emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
+		callbackData.callbackId = m_nextCallbackId++;
+
+		return callbackData.callbackId;
 	}
 
 	inline void ScriptComponent::SetNextTick(float seconds)
 	{
 		m_timeBeforeTick = seconds;
+	}
+
+	inline bool ScriptComponent::UnregisterCallback(ElementEvent event, std::size_t callbackId)
+	{
+		auto& callbacks = m_eventCallbacks[UnderlyingCast(event)];
+
+		for (auto it = callbacks.begin(); it != callbacks.end(); ++it)
+		{
+			if (it->callbackId == callbackId)
+			{
+				callbacks.erase(it);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	inline bool ScriptComponent::UnregisterCallbackCustom(std::size_t eventIndex, std::size_t callbackId)
+	{
+		if (m_customEventCallbacks.size() <= eventIndex)
+			return false;
+
+		auto& callbacks = m_customEventCallbacks[eventIndex];
+
+		for (auto it = callbacks.begin(); it != callbacks.end(); ++it)
+		{
+			if (it->callbackId == callbackId)
+			{
+				callbacks.erase(it);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	inline void ScriptComponent::UpdateElement(std::shared_ptr<const ScriptedElement> element)
