@@ -71,7 +71,7 @@ namespace bw
 
 		FillStores();
 
-		const std::string& editorAssetsFolder = m_config.GetStringValue("Assets.EditorFolder");
+		const std::string& editorAssetsFolder = m_config.GetStringValue("Resources.EditorDirectory");
 		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
 		const std::string& scriptFolder = m_config.GetStringValue("Resources.ScriptDirectory");
 
