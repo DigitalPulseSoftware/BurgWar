@@ -18,12 +18,20 @@ gamemode:On("PlayerJoined", function (self, player)
 
 	print(player:GetName() .. " joined")
 
+	local team = match.GetGamemode():ChoosePlayerTeam(player)
+	if (team) then
+		team:AddPlayer(player)
+	end
+
 	match.GetGamemode():SpawnPlayer(player)
 end)
 
 gamemode:On("PlayerLeave", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = nil
 end)
+
+function gamemode:ChoosePlayerTeam(player)
+end
 
 function gamemode:OnPlayerSpawn(player)
 end
