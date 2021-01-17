@@ -73,7 +73,7 @@ entity:On("tick", function (self)
 
 	local closestPlayerDistSq
 	physics.RegionQuery(self:GetLayerIndex(), rect, function (entity)
-		if (entity.Name == "burger") then
+		if (entity.IsPlayerEntity) then
 			local distSq = pos:SquaredDistance(entity:GetPosition())
 			closestPlayerDistSq = closestPlayerDistSq and math.min(closestPlayerDistSq, distSq) or distSq
 		end

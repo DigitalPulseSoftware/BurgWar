@@ -118,10 +118,10 @@ end)
 gamemode.NextSpawnTime = 0
 
 gamemode:On("Tick", function (self)
-	for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
-		local pos = burger:GetPosition()
+	for _, entity in pairs(match.GetEntities()) do
+		local pos = entity:GetPosition()
 		if (pos.y > 10000) then
-			burger:Kill()
+			entity:Kill()
 		end
 	end
 

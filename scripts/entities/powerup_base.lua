@@ -73,7 +73,7 @@ if (SERVER) then
 			return false
 		end
 
-		if (other.Name == "burger") then
+		if (other.IsPlayerEntity) then
 			local data = self:Trigger("apply", other)
 
 			timer.Create(self.Duration, function ()

@@ -33,7 +33,7 @@ entity:On("collisionstart", function (self, other)
 	local targetLayer = targetEntity:GetLayerIndex()
 	local targetPosition = targetEntity:GetPosition()
 
-	if (other.Name == "burger") then
+	if (other.IsPlayerEntity) then
 		local playerOwner = other:GetOwner()
 		other:SetPosition(targetPosition)
 		playerOwner:MoveToLayer(targetLayer)
@@ -41,4 +41,3 @@ entity:On("collisionstart", function (self, other)
 
 	return false
 end)
-

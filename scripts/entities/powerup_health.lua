@@ -26,7 +26,7 @@ end)
 
 if (SERVER) then
 	entity:On("collisionstart", function (self, other)
-		if (other.Name == "burger") then
+		if (other.IsPlayerEntity) then
 			if (not other:IsFullHealth()) then
 				other:Heal(250)
 				self:Kill()

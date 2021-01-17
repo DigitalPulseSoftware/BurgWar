@@ -8,6 +8,7 @@ local entity = ScriptedEntity({
 	}
 })
 
+entity.IsPlayerEntity = true
 entity.Sprite = "burger2.png"
 entity.Scale = 0.33
 entity.Faces = {
@@ -110,16 +111,7 @@ end
 
 local controller = BasicPlayerMovementController and BasicPlayerMovementController.new() or nil
 
-function entity:ForEachElement(callback)
-	local randomEngine = RandomEngine.new(self:GetProperty("seed"))
-
-	local function AddElement(elementType)
-		local elementData = self.Elements[elementType]
-		local randomSprite = elementData.Sprites[randomEngine:Generate(1, #elementData.Sprites)]
-
-		callback(elementData, randomSprite)
-	end
-
+function entity:BuildBurger(AddElement)
 	AddElement("Bottoms")
 	AddElement("Vegetables")
 	AddElement("Sauces")
@@ -128,6 +120,30 @@ function entity:ForEachElement(callback)
 	AddElement("Vegetables")
 	AddElement("Cheeses")
 	AddElement("Tops")
+end
+
+function entity:ForEachElement(callback)
+	local randomEngine
+
+	local function AddElement(elementType, index)
+		local elementData = self.Elements[elementType]
+
+		local randomSprite
+		if (index) then
+			assert(index >= 1 and index <= #elementData.Sprites, "out of bounds index")
+			randomSprite = elementData.Sprites[index]
+		else
+			if (not randomEngine) then
+				randomEngine = RandomEngine.new(self:GetProperty("seed"))
+			end
+
+			randomSprite = elementData.Sprites[randomEngine:Generate(1, #elementData.Sprites)]
+		end
+
+		callback(elementData, randomSprite)
+	end
+
+	self.Derived:BuildBurger(AddElement)
 end
 
 entity:On("init", function (self)

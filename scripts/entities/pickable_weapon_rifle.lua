@@ -21,7 +21,7 @@ entity:On("init", function (self)
 end)
 
 entity:On("collisionstart", function (self, other)
-	if (SERVER and other.Name == "burger") then
+	if (SERVER and other.IsPlayerEntity) then
 		if (not other:HasWeapon("weapon_rifle")) then
 			other:GiveWeapon("weapon_rifle")
 			self:Kill()
@@ -31,4 +31,3 @@ entity:On("collisionstart", function (self, other)
 
 	return false
 end)
-
