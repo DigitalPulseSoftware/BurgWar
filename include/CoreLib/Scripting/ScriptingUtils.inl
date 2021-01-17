@@ -173,7 +173,7 @@ namespace bw
 	template<typename... Args> [[noreturn]] void TriggerLuaError(lua_State* L, const char* format, Args&&... args)
 	{
 		luaL_error(L, format, std::forward<Args>(args)...);
-		std::abort();
+		std::abort(); //< Will never be triggered as luaL_error will never returns, it's there because luaL_error isn't tagged noreturn
 	}
 
 	template<typename F> 

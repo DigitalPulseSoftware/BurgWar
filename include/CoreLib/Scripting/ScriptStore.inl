@@ -309,6 +309,7 @@ namespace bw
 		sol::state& state = scriptingContext->GetLuaState();
 
 		sol::table entityTable = state.create_table();
+		entityTable["Derived"] = entityTable;
 		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 

@@ -4,6 +4,5 @@ RegisterClientScript("sh_scores.lua")
 RegisterClientScript("shared.lua")
 
 local gamemode = ScriptedGamemode()
-print("Mode de jeu: " .. gamemode.Name)
 
 include("sh_scores.lua")

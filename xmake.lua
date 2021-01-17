@@ -19,6 +19,7 @@ if (is_plat("windows") and not is_arch("x86")) then
 end
 
 add_rules("mode.debug", "mode.releasedbg")
+--add_rules("plugin.vsxmake.autoupdate")
 
 add_includedirs("include", "src")
 add_includedirs("thirdparty/include")
@@ -37,7 +38,7 @@ end
 
 if (is_plat("windows")) then
 	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
-	add_cxxflags("/bigobj", "/ZI", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
+	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
 	add_cxflags("/w44062") -- Switch case not handled warning
 elseif is_plat("linux") then
