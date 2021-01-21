@@ -19,7 +19,7 @@ if (is_plat("windows") and not is_arch("x86")) then
 end
 
 add_rules("mode.debug", "mode.releasedbg")
---add_rules("plugin.vsxmake.autoupdate")
+add_rules("plugin.vsxmake.autoupdate")
 
 add_includedirs("include", "src")
 add_includedirs("thirdparty/include")
