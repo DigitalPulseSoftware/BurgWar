@@ -61,6 +61,25 @@ rule("install_scripts")
 	end)
 rule_end()
 
+rule("install_nazara")
+	-- This is already handled by xmake on Windows
+	after_install("linux", function (target)
+		local outputdir = path.join(target:installdir(), "bin")
+		local nazara = target:pkg("nazara") or target:pkg("nazaraserver")
+		if (nazara) then
+			local libfiles = nazara:get("libfiles")
+			if (libfiles) then
+				for _, libpath in ipairs(table.wrap(libfiles)) do
+					if (libpath:endswith(".so")) then
+						os.vcp(libpath, outputdir)
+					end
+				end
+			end
+		end
+	end)
+rule_end()
+
+
 target("lua")
 	set_kind("static")
 	set_group("3rdparties")
@@ -148,8 +167,8 @@ target("Main")
 
 target("BurgWar")
 	set_kind("binary")
-	add_rules("copy_symbolfile", "install_scripts")
 	set_group("Executable")
+	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -162,8 +181,8 @@ target("BurgWar")
 
 target("BurgWarServer")
 	set_kind("binary")
-	add_rules("copy_symbolfile", "install_scripts")
 	set_group("Executable")
+	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
 
 	add_defines("NDK_SERVER")
 
@@ -182,7 +201,7 @@ target("BurgWarMapEditor")
 	set_kind("binary")
 	set_group("Executable")
 	add_rules("qt.console", "qt.moc")
-	add_rules("copy_symbolfile", "install_scripts")
+	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
 
 	add_frameworks("QtCore", "QtGui", "QtWidgets")
 	add_deps("Main", "ClientLib", "CoreLib")
