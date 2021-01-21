@@ -3,17 +3,17 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.1.0")
 
-add_requires("concurrentqueue", "nlohmann_json")
-add_requires("fmt", { config = { header_only = false } })
-add_requires("libcurl", { config = { shared = true }})
-add_requires("nazaraengine", { alias = "nazara", config = { server = false, shared = true } })
-add_requires("nazaraengine~server", { alias = "nazaraserver", config = { server = true, shared = true } })
+add_requires("concurrentqueue", "libcurl", "nlohmann_json")
+add_requires("fmt", { configs = { header_only = false } })
+add_requires("nazaraengine", { alias = "nazara", configs = { server = false } })
+add_requires("nazaraengine~server", { alias = "nazaraserver", configs = { server = true } })
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_requires("stackwalker")
 end
 
-add_requireconfs("fmt", "libcurl", "stackwalker", "nazaraengine", "nazaraengine~server", { debug = is_mode("debug") })
+add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
+add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
 
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
