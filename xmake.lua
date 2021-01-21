@@ -3,20 +3,17 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.1.0")
 
-local packageConf = { debug = is_mode("debug") }
-
 add_requires("concurrentqueue", "nlohmann_json")
-add_requires("fmt", { config = table.join(packageConf, { header_only = false }) })
-
-packageConf.shared = true
-
-add_requires("libcurl", { config = packageConf })
-add_requires("nazaraengine", { alias = "nazara", config = table.join(packageConf, { server = false }) })
-add_requires("nazaraengine~server", { alias = "nazaraserver", config = table.join(packageConf, { server = true }) })
+add_requires("fmt", { config = { header_only = false } })
+add_requires("libcurl", { config = { shared = true }})
+add_requires("nazaraengine", { alias = "nazara", config = { server = false, shared = true } })
+add_requires("nazaraengine~server", { alias = "nazaraserver", config = { server = true, shared = true } })
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_requires("stackwalker")
 end
+
+add_requireconfs("fmt", "libcurl", "stackwalker", "nazaraengine", "nazaraengine~server", { debug = is_mode("debug") })
 
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
@@ -37,13 +34,13 @@ if (is_mode("releasedbg")) then
 end
 
 if (is_plat("windows")) then
-	add_cxflags(is_mode("debug") and "/MDd" or "/MD")
 	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
 	add_cxflags("/w44062") -- Switch case not handled warning
 elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
+
 
 rule("copy_symbolfile")
 	after_install(function(target)
@@ -66,6 +63,7 @@ rule_end()
 
 target("lua")
 	set_kind("static")
+	set_group("3rdparties")
 
 	add_includedirs("contrib/lua/include", { public = true })
 	add_headerfiles("contrib/lua/include/**.h")
@@ -73,6 +71,7 @@ target("lua")
 
 target("CoreLib")
 	set_kind("static")
+	set_group("Common")
 
 	add_deps("lua")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
@@ -129,6 +128,7 @@ const char* BuildDate = "%s";
 
 target("ClientLib")
 	set_kind("static")
+	set_group("Common")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
@@ -139,6 +139,7 @@ target("ClientLib")
 
 target("Main")
 	set_kind("static")
+	set_group("Common")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
@@ -148,6 +149,7 @@ target("Main")
 target("BurgWar")
 	set_kind("binary")
 	add_rules("copy_symbolfile", "install_scripts")
+	set_group("Executable")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -161,6 +163,7 @@ target("BurgWar")
 target("BurgWarServer")
 	set_kind("binary")
 	add_rules("copy_symbolfile", "install_scripts")
+	set_group("Executable")
 
 	add_defines("NDK_SERVER")
 
@@ -170,11 +173,14 @@ target("BurgWarServer")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
 	after_install(function (target)
+		print("install")
+		print(target:pkg("nazaraserver"):get("libfiles"))
 		os.vcp("serverconfig.lua", path.join(target:installdir(), "bin"))
 	end)
 
 target("BurgWarMapEditor")
 	set_kind("binary")
+	set_group("Executable")
 	add_rules("qt.console", "qt.moc")
 	add_rules("copy_symbolfile", "install_scripts")
 
