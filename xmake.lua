@@ -192,8 +192,6 @@ target("BurgWarServer")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
 	after_install(function (target)
-		print("install")
-		print(target:pkg("nazaraserver"):get("libfiles"))
 		os.vcp("serverconfig.lua", path.join(target:installdir(), "bin"))
 	end)
 
