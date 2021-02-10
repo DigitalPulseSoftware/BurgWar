@@ -17,19 +17,4 @@ namespace bw
 		for (auto& hoveringRenderable : m_hoveringRenderables)
 			hoveringRenderable.entity->Enable(enable);
 	}
-
-	inline void VisualEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, float hoverOffset, int renderOrder)
-	{
-		return AttachHoveringRenderables({ renderable }, { offsetMatrix }, hoverOffset, { renderOrder });
-	}
-
-	inline void VisualEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, int renderOrder)
-	{
-		return AttachRenderable(std::move(renderable), Nz::Matrix4f::Identity(), renderOrder);
-	}
-
-	inline void VisualEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
-	{
-		return DetachHoveringRenderables({ renderable });
-	}
 }

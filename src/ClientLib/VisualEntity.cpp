@@ -75,36 +75,76 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::AttachHoveringRenderables(std::initializer_list<Nz::InstancedRenderableRef> renderables, std::initializer_list<Nz::Matrix4f> offsetMatrices, float hoverOffset, std::initializer_list<int> renderOrders)
+	void VisualEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset)
 	{
-		std::size_t renderableCount = renderables.size();
-		assert(renderableCount == offsetMatrices.size());
-		assert(renderableCount == renderOrders.size());
-		assert(renderables.size() > 0);
-
 		auto& hoveringRenderable = m_hoveringRenderables.emplace_back();
 		hoveringRenderable.entity = m_entity->GetWorld()->CreateEntity();
 		hoveringRenderable.entity->AddComponent<Ndk::NodeComponent>();
 		hoveringRenderable.offset = hoverOffset;
+		hoveringRenderable.renderable = std::move(renderable);
 
 		auto& gfxComponent = hoveringRenderable.entity->AddComponent<Ndk::GraphicsComponent>();
-		
-		auto renderableIt = renderables.begin();
-		auto renderOrderIt = renderOrders.begin();
-		auto matrixIt = offsetMatrices.begin();
-
-		for (std::size_t i = 0; i < renderableCount; ++i)
-			gfxComponent.Attach(*renderableIt++, *matrixIt++, m_baseRenderOrder + *renderOrderIt++);
+		gfxComponent.Attach(hoveringRenderable.renderable, offsetMatrix, renderOrder);
 	}
 
 	void VisualEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().Attach(std::move(renderable), offsetMatrix, m_baseRenderOrder + renderOrder);
 	}
+
+	void VisualEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
+	{
+		for (auto it = m_hoveringRenderables.begin(); it != m_hoveringRenderables.end(); ++it)
+		{
+			auto& hoveringRenderable = *it;
+
+			if (hoveringRenderable.renderable == renderable)
+			{
+				m_hoveringRenderables.erase(it);
+				break;
+			}
+		}
+	}
 	
 	void VisualEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().Detach(renderable);
+	}
+
+	void VisualEntity::UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight)
+	{
+		for (auto& hoveringRenderable : m_hoveringRenderables)
+		{
+			if (hoveringRenderable.renderable == renderable)
+			{
+				hoveringRenderable.offset = newHoveringHeight;
+				break;
+			}
+		}
+	}
+
+	void VisualEntity::UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	{
+		for (auto& hoveringRenderable : m_hoveringRenderables)
+		{
+			if (hoveringRenderable.renderable == renderable)
+			{
+				hoveringRenderable.entity->GetComponent<Ndk::GraphicsComponent>().UpdateLocalMatrix(renderable, offsetMatrix);
+				break;
+			}
+		}
+	}
+
+	void VisualEntity::UpdateHoveringRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder)
+	{
+		for (auto& hoveringRenderable : m_hoveringRenderables)
+		{
+			if (hoveringRenderable.renderable == renderable)
+			{
+				hoveringRenderable.entity->GetComponent<Ndk::GraphicsComponent>().UpdateRenderOrder(renderable, renderOrder);
+				break;
+			}
+		}
 	}
 
 	void VisualEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
@@ -115,19 +155,5 @@ namespace bw
 	void VisualEntity::UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().UpdateRenderOrder(renderable, m_baseRenderOrder + renderOrder);
-	}
-
-	void VisualEntity::DetachHoveringRenderables(std::initializer_list<Nz::InstancedRenderableRef> renderables)
-	{
-		for (auto it = m_hoveringRenderables.begin(); it != m_hoveringRenderables.end(); ++it)
-		{
-			auto& hoveringRenderable = *it;
-
-			if (std::equal(hoveringRenderable.renderables.begin(), hoveringRenderable.renderables.end(), renderables.begin(), renderables.end()))
-			{
-				m_hoveringRenderables.erase(it);
-				break;
-			}
-		}
 	}
 }

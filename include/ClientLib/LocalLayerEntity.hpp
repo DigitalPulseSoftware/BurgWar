@@ -37,7 +37,9 @@ namespace bw
 			LocalLayerEntity(LocalLayerEntity&& entity) noexcept;
 			~LocalLayerEntity();
 
+			void AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight);
 			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
+			void DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable);
 			void DetachRenderable(const Nz::InstancedRenderableRef& renderable);
 
 			inline void Disable();
@@ -74,6 +76,9 @@ namespace bw
 			void UpdateHealth(Nz::UInt16 newHealth);
 			void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateParent(const LocalLayerEntity* newParent);
+
+			void UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight);
+			void UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
 			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
 			void UpdateScale(float newScale);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
@@ -115,14 +120,21 @@ namespace bw
 			struct RenderableData
 			{
 				Nz::InstancedRenderableRef renderable;
-				Nz::Matrix4f offset;
+				Nz::Matrix4f offsetMatrix;
 				int renderOrder;
+			};
+
+			struct HoveringRenderableData
+			{
+				RenderableData data;
+				float hoveringHeight;
 			};
 
 			std::unique_ptr<LocalLayerEntity> m_ghostEntity;
 			std::optional<DebugEntityIdData> m_entityId;
 			std::optional<HealthData> m_health;
 			std::optional<NameData> m_name;
+			std::vector<HoveringRenderableData> m_attachedHoveringRenderables;
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
