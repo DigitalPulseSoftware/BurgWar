@@ -12,6 +12,7 @@
 
 // Shared gamemode events
 BURGWAR_EVENT(Init)
+BURGWAR_EVENT(PlayerControlledEntityUpdate)
 BURGWAR_EVENT(PlayerJoined)
 BURGWAR_EVENT(PlayerLeave)
 BURGWAR_EVENT(PlayerNameUpdate)

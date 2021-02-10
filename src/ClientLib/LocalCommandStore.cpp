@@ -42,6 +42,7 @@ namespace bw
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);
+		IncomingCommand(PlayerControlEntity);
 		IncomingCommand(PlayerJoined);
 		IncomingCommand(PlayerLayer);
 		IncomingCommand(PlayerLeaving);

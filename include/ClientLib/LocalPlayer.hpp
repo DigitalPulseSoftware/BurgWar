@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_LOCALPLAYER_HPP
 #define BURGWAR_CLIENTLIB_LOCALPLAYER_HPP
 
+#include <CoreLib/EntityId.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <string>
@@ -25,12 +26,14 @@ namespace bw
 			LocalPlayer(LocalPlayer&&) noexcept = default;
 			~LocalPlayer() = default;
 
+			inline EntityId GetControlledEntityId() const;
 			inline const std::string& GetName() const;
 			inline Nz::UInt16 GetPing() const;
 			inline Nz::UInt16 GetPlayerIndex() const;
 
 			inline const std::string& ToString() const;
 
+			inline void UpdateControlledEntityId(EntityId controlledEntityId);
 			inline void UpdateName(std::string name);
 			inline void UpdatePing(Nz::UInt16 ping);
 
@@ -43,6 +46,7 @@ namespace bw
 			std::string m_name;
 			Nz::UInt16 m_ping;
 			Nz::UInt16 m_playerIndex;
+			EntityId m_controlledEntityId;
 	};
 }
 

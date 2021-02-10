@@ -81,7 +81,18 @@ namespace bw
 
 		LayerIndex layerIndex = 0;
 		for (auto&& layerData : matchData.layers)
-			m_layers.emplace_back(std::make_unique<LocalLayer>(*this, layerIndex++, layerData.backgroundColor));
+		{
+			auto& layer = m_layers.emplace_back(std::make_unique<LocalLayer>(*this, layerIndex++, layerData.backgroundColor));
+			layer->OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& entity)
+			{
+				HandleEntityCreated(layer, entity);
+			});
+
+			layer->OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& entity)
+			{
+				HandleEntityDeletion(layer, entity);
+			});
+		}
 
 		auto& playerSettings = burgApp.GetPlayerSettings();
 
@@ -713,6 +724,11 @@ namespace bw
 			PushTickPacket(matchState.stateTick, matchState);
 		});
 
+		m_session.OnPlayerControlEntity.Connect([this](ClientSession* /*session*/, const Packets::PlayerControlEntity& playerControlEntity)
+		{
+			HandlePlayerControlEntity(playerControlEntity);
+		});
+
 		m_session.OnPlayerLayer.Connect([this](ClientSession* /*session*/, const Packets::PlayerLayer& layerUpdate)
 		{
 			PushTickPacket(layerUpdate.stateTick, layerUpdate);
@@ -910,6 +926,85 @@ namespace bw
 			m_remoteConsole->Print(packet.response, packet.color);
 	}
 
+	void LocalMatch::HandleEntityCreated(LocalLayer* /*layer*/, LocalLayerEntity& entity)
+	{
+		// Check if entity is a pending player entity
+		auto playerIt = m_playerEntitiesByUniqueId.find(entity.GetUniqueId());
+		if (playerIt != m_playerEntitiesByUniqueId.end())
+		{
+			std::size_t playerIndex = playerIt->second;
+
+			assert(playerIndex < m_matchPlayers.size());
+			assert(m_matchPlayers[playerIndex].has_value());
+
+			LocalPlayer& localPlayer = m_matchPlayers[playerIndex].value();
+			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(localPlayer.CreateHandle(), sol::nil, TranslateEntityToLua(entity.GetEntity()));
+		}
+	}
+
+	void LocalMatch::HandleEntityDeletion(LocalLayer* /*layer*/, LocalLayerEntity& entity)
+	{
+		// Check if entity is a (visible) player entity
+		auto playerIt = m_playerEntitiesByUniqueId.find(entity.GetUniqueId());
+		if (playerIt != m_playerEntitiesByUniqueId.end())
+		{
+			std::size_t playerIndex = playerIt->second;
+
+			assert(playerIndex < m_matchPlayers.size());
+			assert(m_matchPlayers[playerIndex].has_value());
+
+			LocalPlayer& localPlayer = m_matchPlayers[playerIndex].value();
+			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(localPlayer.CreateHandle(), TranslateEntityToLua(entity.GetEntity()), sol::nil);
+		}
+	}
+
+	void LocalMatch::HandlePlayerControlEntity(const Packets::PlayerControlEntity& packet)
+	{
+		if (packet.playerIndex >= m_matchPlayers.size() || !m_matchPlayers[packet.playerIndex])
+		{
+			bwLog(GetLogger(), LogLevel::Error, "Received control entity update for unknown player {}", packet.playerIndex);
+			return;
+		}
+
+		HandlePlayerControlEntity(packet.playerIndex, static_cast<EntityId>(packet.controlledEntityId));
+	}
+
+	void LocalMatch::HandlePlayerControlEntity(std::size_t playerIndex, EntityId newControlledEntityId)
+	{
+		assert(playerIndex < m_matchPlayers.size());
+		auto& matchPlayer = m_matchPlayers[playerIndex];
+		assert(matchPlayer.has_value());
+
+		EntityId previousControlledEntityId = matchPlayer->GetControlledEntityId();
+		if (newControlledEntityId == previousControlledEntityId)
+			return;
+
+		matchPlayer->UpdateControlledEntityId(newControlledEntityId);
+
+		std::optional<sol::object> previousEntity;
+		if (previousControlledEntityId != InvalidEntityId)
+		{
+			m_playerEntitiesByUniqueId.erase(previousControlledEntityId);
+
+			auto it = m_entitiesByUniqueId.find(previousControlledEntityId);
+			if (it != m_entitiesByUniqueId.end())
+				previousEntity = TranslateEntityToLua(it->second->GetEntity());
+		}
+
+		std::optional<sol::object> newEntity;
+		if (newControlledEntityId != InvalidEntityId)
+		{
+			m_playerEntitiesByUniqueId[newControlledEntityId] = playerIndex;
+
+			auto it = m_entitiesByUniqueId.find(newControlledEntityId);
+			if (it != m_entitiesByUniqueId.end())
+				newEntity = TranslateEntityToLua(it->second->GetEntity());
+		}
+
+		if (previousEntity != newEntity)
+			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(matchPlayer->CreateHandle(), previousEntity, newEntity);
+	}
+
 	void LocalMatch::HandlePlayerJoined(const Packets::PlayerJoined& packet)
 	{
 		if (packet.playerIndex >= m_matchPlayers.size())
@@ -930,6 +1025,16 @@ namespace bw
 			return;
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerLeave>(playerOpt->CreateHandle());
+
+		// Remove corresponding controlled entity entry
+		for (auto it = m_playerEntitiesByUniqueId.begin(); it != m_playerEntitiesByUniqueId.end(); ++it)
+		{
+			if (it->second == packet.playerIndex)
+			{
+				m_playerEntitiesByUniqueId.erase(it);
+				break;
+			}
+		}
 
 		playerOpt.reset();
 	}
@@ -983,22 +1088,32 @@ namespace bw
 		assert(packet.layerIndex < m_layers.size());
 		auto& layerPtr = m_layers[packet.layerIndex];
 
-		auto layerEntityOpt = layerPtr->GetEntityByServerId(packet.entityId);
-		if (!layerEntityOpt)
-			return;
+		LocalPlayerData& localPlayer = m_localPlayers[packet.localIndex];
 
-		LocalLayerEntity& layerEntity = layerEntityOpt.value();
-
-		if (m_localPlayers[packet.localIndex].controlledEntity)
+		// If we were controlling an entity, disable prediction on its layer (it will be re-enabled later in this function)
+		if (localPlayer.controlledEntity)
 		{
-			auto& controlledEntity = m_localPlayers[packet.localIndex].controlledEntity;
+			auto& controlledEntity = localPlayer.controlledEntity;
 			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
 
 			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
 		}
 
-		m_localPlayers[packet.localIndex].controlledEntity = layerEntity.CreateHandle();
-		m_localPlayers[packet.localIndex].controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+		auto layerEntityOpt = layerPtr->GetEntityByServerId(packet.entityId);
+		if (layerEntityOpt)
+		{
+			LocalLayerEntity& layerEntity = layerEntityOpt.value();
+
+			localPlayer.controlledEntity = layerEntity.CreateHandle();
+			localPlayer.controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+
+			HandlePlayerControlEntity(localPlayer.playerIndex, layerEntity.GetUniqueId());
+		}
+		else
+		{
+			localPlayer.controlledEntity.Reset();
+			HandlePlayerControlEntity(localPlayer.playerIndex, InvalidEntityId);
+		}
 
 		// Ensure prediction is enabled on all player-controlled layers
 		for (auto& playerData : m_localPlayers)

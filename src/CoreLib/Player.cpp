@@ -213,11 +213,14 @@ namespace bw
 		m_onWeaponAdded.Disconnect();
 		m_onWeaponRemove.Disconnect();
 
+		EntityId entityUniqueId = InvalidEntityId;
 		if (entity)
 		{
 			auto& matchComponent = entity->GetComponent<MatchComponent>();
 			if (!ignoreLayerUpdate)
 				MoveToLayer(matchComponent.GetLayerIndex());
+
+			entityUniqueId = matchComponent.GetUniqueId();
 
 			m_playerEntity = entity; //< FIXME (deferred because of MoveToLayer)
 
@@ -276,6 +279,13 @@ namespace bw
 				SendPacket(controlEntity);
 			}
 		}
+
+		// Send a packet to everyone to notify of the new controlled entity
+		Packets::PlayerControlEntity controlledEntityUpdate;
+		controlledEntityUpdate.playerIndex = Nz::UInt16(m_playerIndex);
+		controlledEntityUpdate.controlledEntityId = entityUniqueId;
+
+		m_match.BroadcastPacket(controlledEntityUpdate, true, this);
 	}
 
 	void Player::UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible)
