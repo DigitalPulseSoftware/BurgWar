@@ -69,7 +69,7 @@ namespace bw
 			for (auto& hoveringRenderable : m_hoveringRenderables)
 			{
 				auto& node = hoveringRenderable.entity->GetComponent<Ndk::NodeComponent>();
-				node.SetPosition(center.x, center.y - (halfHeight + hoveringRenderable.offset) * absoluteScale.y);
+				node.SetPosition(center.x, center.y - halfHeight - absoluteScale.y * hoveringRenderable.offset);
 				node.SetScale(positiveScale);
 			}
 		}
