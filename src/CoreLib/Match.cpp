@@ -691,6 +691,25 @@ namespace bw
 		});
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
+		
+		// Send a packet for every player associating them with the entity they control
+		ForEachPlayer([&](Player* player)
+		{
+			if (player == newPlayer)
+				return;
+
+			const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+			if (!controlledEntity)
+				return;
+
+			auto& entityMatch = controlledEntity->GetComponent<MatchComponent>();
+
+			Packets::PlayerControlEntity controlledEntityUpdate;
+			controlledEntityUpdate.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
+			controlledEntityUpdate.controlledEntityId = entityMatch.GetUniqueId();
+
+			newPlayer->SendPacket(controlledEntityUpdate);
+		});
 
 		newPlayer->SetReady();
 	}

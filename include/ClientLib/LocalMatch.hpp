@@ -138,6 +138,10 @@ namespace bw
 			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
+			void HandleEntityCreated(LocalLayer* layer, LocalLayerEntity& entity);
+			void HandleEntityDeletion(LocalLayer* layer, LocalLayerEntity& entity);
+			void HandlePlayerControlEntity(const Packets::PlayerControlEntity& packet);
+			void HandlePlayerControlEntity(std::size_t playerIndex, EntityId newControlledEntityId);
 			void HandlePlayerJoined(const Packets::PlayerJoined& packet);
 			void HandlePlayerLeaving(const Packets::PlayerLeaving& packet);
 			void HandlePlayerNameUpdate(const Packets::PlayerNameUpdate& packet);
@@ -276,6 +280,7 @@ namespace bw
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			tsl::hopscotch_map<EntityId, LocalLayerEntityHandle> m_entitiesByUniqueId;
+			tsl::hopscotch_map<EntityId, std::size_t> m_playerEntitiesByUniqueId;
 			tsl::hopscotch_set<EntityId> m_inactiveEntities;
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;

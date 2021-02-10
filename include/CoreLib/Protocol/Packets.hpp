@@ -57,6 +57,7 @@ namespace bw
 		NetworkStrings,
 		PlayerChat,
 		PlayerConsoleCommand,
+		PlayerControlEntity,
 		PlayerJoined,
 		PlayerLayer,
 		PlayerLeaving,
@@ -493,6 +494,12 @@ namespace bw
 			std::string command;
 		};
 
+		DeclarePacket(PlayerControlEntity)
+		{
+			CompressedUnsigned<Nz::UInt16> playerIndex;
+			CompressedUnsigned<Nz::UInt64> controlledEntityId;
+		};
+
 		DeclarePacket(PlayerJoined)
 		{
 			CompressedUnsigned<Nz::UInt16> playerIndex;
@@ -601,6 +608,7 @@ namespace bw
 		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		void Serialize(PacketSerializer& serializer, PlayerChat& data);
 		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
+		void Serialize(PacketSerializer& serializer, PlayerControlEntity& data);
 		void Serialize(PacketSerializer& serializer, PlayerJoined& data);
 		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
 		void Serialize(PacketSerializer& serializer, PlayerLeaving& data);

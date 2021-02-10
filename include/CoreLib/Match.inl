@@ -13,11 +13,11 @@ namespace bw
 	}
 
 	template<typename T>
-	void Match::BroadcastPacket(const T& packet, bool onlyReady)
+	void Match::BroadcastPacket(const T& packet, bool onlyReady, Player* except)
 	{
-		ForEachPlayer([&packet, onlyReady](Player* player)
+		ForEachPlayer([&packet, onlyReady, except](Player* player)
 		{
-			if (!onlyReady || player->IsReady())
+			if ((!onlyReady || player->IsReady()) && player != except)
 				player->SendPacket(packet);
 		});
 	}

@@ -9,10 +9,16 @@ namespace bw
 	inline LocalPlayer::LocalPlayer(Nz::UInt16 playerIndex, std::string name) :
 	m_name(std::move(name)),
 	m_ping(InvalidPing),
-	m_playerIndex(playerIndex)
+	m_playerIndex(playerIndex),
+	m_controlledEntityId(InvalidEntityId)
 	{
 	}
 	
+	inline EntityId LocalPlayer::GetControlledEntityId() const
+	{
+		return m_controlledEntityId;
+	}
+
 	inline const std::string& LocalPlayer::GetName() const
 	{
 		return m_name;
@@ -31,6 +37,11 @@ namespace bw
 	inline const std::string& LocalPlayer::ToString() const
 	{
 		return m_name;
+	}
+
+	inline void LocalPlayer::UpdateControlledEntityId(EntityId controlledEntityId)
+	{
+		m_controlledEntityId = controlledEntityId;
 	}
 
 	inline void LocalPlayer::UpdateName(std::string name)

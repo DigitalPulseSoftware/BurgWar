@@ -565,6 +565,12 @@ namespace bw
 			serializer &= data.command;
 		}
 
+		void Serialize(PacketSerializer& serializer, PlayerControlEntity& data)
+		{
+			serializer &= data.playerIndex;
+			serializer &= data.controlledEntityId;
+		}
+
 		void Serialize(PacketSerializer& serializer, PlayerLayer& data)
 		{
 			serializer &= data.stateTick;

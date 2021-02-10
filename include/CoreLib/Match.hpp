@@ -61,7 +61,7 @@ namespace bw
 			inline EntityId AllocateUniqueId();
 
 			void BroadcastChatMessage(Player* player, std::string message);
-			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true);
+			template<typename T> void BroadcastPacket(const T& packet, bool onlyReady = true, Player* except = nullptr);
 
 			void BuildClientAssetListPacket(Packets::MatchData& clientAsset) const;
 			void BuildClientScriptListPacket(Packets::MatchData& clientScript) const;
