@@ -1,5 +1,6 @@
 RegisterClientScript("cl_camera.lua")
 RegisterClientScript("cl_init.lua")
+RegisterClientScript("cl_nicknames.lua")
 RegisterClientScript("cl_scoreboard.lua")
 RegisterClientScript("shared.lua")
 

@@ -12,6 +12,7 @@
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
+#include <ClientLib/Scripting/Text.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -30,6 +31,58 @@ namespace bw
 
 	void ClientElementLibrary::RegisterClientLibrary(sol::table& elementTable)
 	{
+		elementTable["AddModel"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+
+			std::string modelPath = parameters["ModelPath"];
+			int renderOrder = parameters.get_or("RenderOrder", 0);
+			Nz::Vector3f offset = parameters.get_or("Offset", Nz::Vector3f::Zero());
+			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
+			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
+
+			Nz::ModelRef model = m_assetStore.GetModel(modelPath);
+			if (!model)
+				return;
+
+			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
+
+			if (entity->HasComponent<LayerEntityComponent>())
+			{
+				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+				layerEntityComponent.GetLayerEntity()->AttachRenderable(model, transformMatrix, renderOrder);
+			}
+			else
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
+		});
+
+		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
+		{
+			// Client-side this function only applies push-back forces
+			if (Nz::NumberEquals(pushbackForce, 0.f))
+				return;
+
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			Ndk::World* world = entity->GetWorld();
+			assert(world);
+
+			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
+
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
+			{
+				if (hitEntities.Has(hitEntity))
+					return;
+
+				hitEntities.Insert(hitEntity);
+
+				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
+				{
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
+				}
+			});
+		};
+		
 		elementTable["AddSprite"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
@@ -50,6 +103,7 @@ namespace bw
 			else
 				color = Nz::Color::White;
 
+			//TODO: Don't create a material everytime
 			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			if (!texturePath.empty())
 				mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
@@ -122,57 +176,70 @@ namespace bw
 			}
 		});
 
-		elementTable["AddModel"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
+		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
-			std::string modelPath = parameters["ModelPath"];
+			std::string fontName = parameters.get_or("Font", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
-			Nz::Vector3f offset = parameters.get_or("Offset", Nz::Vector3f::Zero());
-			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
-			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
+			Nz::Vector2f offset = parameters.get_or("Offset", Nz::Vector2f(0.f, 0.f));
+			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
+			std::string text = parameters["Text"];
+			bool isHovering = parameters.get_or("Hovering", false);
 
-			Nz::ModelRef model = m_assetStore.GetModel(modelPath);
-			if (!model)
-				return;
+			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
-			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
+			Nz::Color color;
+			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("Color", std::nullopt); colorParameter)
+				color = colorParameter.value();
+			else
+				color = Nz::Color::White;
 
+			float outlineThickness = parameters.get_or("OutlineThickness", 0.f);
+
+			Nz::Color outlineColor;
+			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("OutlineColor", std::nullopt); colorParameter)
+				outlineColor = colorParameter.value();
+			else
+				outlineColor = Nz::Color::Black;
+
+			Nz::FontRef font;
+			if (!fontName.empty())
+			{
+				font = Nz::FontLibrary::Get(fontName);
+				if (!font)
+					bwLog(GetLogger(), LogLevel::Warning, "unknown font \"{}\"", fontName);
+			}
+
+			Nz::SimpleTextDrawer drawer;
+			drawer.SetColor(color);
+			drawer.SetOutlineColor(outlineColor);
+			drawer.SetOutlineThickness(outlineThickness);
+			drawer.SetText(text);
+
+			if (font)
+				drawer.SetFont(font);
+
+			Nz::TextSpriteRef textSprite = Nz::TextSprite::New();
+			textSprite->Update(drawer);
+
+			//FIXME (FIXME (FIXME))
 			if (entity->HasComponent<LayerEntityComponent>())
 			{
 				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-				layerEntityComponent.GetLayerEntity()->AttachRenderable(model, transformMatrix, renderOrder);
+
+				Text scriptText(layerEntityComponent.GetLayerEntity(), std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
+				scriptText.Show();
+
+				return scriptText;
 			}
 			else
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
-		});
-
-		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
-		{
-			// Client-side this function only applies push-back forces
-			if (Nz::NumberEquals(pushbackForce, 0.f))
-				return;
-
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
-
-			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
-
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
 			{
-				if (hitEntities.Has(hitEntity))
-					return;
+				entity->GetComponent<Ndk::GraphicsComponent>().Attach(textSprite, transformMatrix, renderOrder);
 
-				hitEntities.Insert(hitEntity);
-
-				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
-				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
-				}
-			});
-		};
+				return Text({}, std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
+			}
+		});
 
 		elementTable["DealDamage"] = sol::overload(
 			LuaFunction(DealDamage),
