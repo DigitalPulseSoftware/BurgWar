@@ -30,13 +30,13 @@ namespace bw
 			~ScriptComponent();
 
 			template<ElementEvent Event, typename... Args>
-			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(const Args&... args);
+			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(Args... args);
 
 			template<ElementEvent Event, typename... Args>
-			std::enable_if_t<HasReturnValue(Event), std::optional<typename ElementEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
+			std::enable_if_t<HasReturnValue(Event), std::optional<typename ElementEventData<Event>::ResultType>> ExecuteCallback(Args... args);
 
 			template<typename... Args>
-			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, const Args&... args);
+			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, Args... args);
 
 			inline const std::shared_ptr<ScriptingContext>& GetContext();
 			inline const std::shared_ptr<const ScriptedElement>& GetElement() const;

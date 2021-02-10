@@ -43,10 +43,10 @@ namespace bw
 		return entityObject.as<Ndk::EntityHandle>();
 	}
 
-	sol::object TranslateEntityToLua(const Ndk::EntityHandle& entity)
+	std::optional<sol::object> TranslateEntityToLua(const Ndk::EntityHandle& entity)
 	{
 		if (!entity || !entity->HasComponent<ScriptComponent>())
-			return sol::nil;
+			return std::nullopt;
 
 		auto& entityScript = entity->GetComponent<ScriptComponent>();
 		return entityScript.GetTable();

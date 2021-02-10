@@ -29,13 +29,13 @@ namespace bw
 			virtual ~SharedGamemode();
 
 			template<GamemodeEvent Event, typename... Args>
-			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(const Args&... args);
+			std::enable_if_t<!HasReturnValue(Event), bool> ExecuteCallback(Args... args);
 
 			template<GamemodeEvent Event, typename... Args>
-			std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> ExecuteCallback(const Args&... args);
+			std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> ExecuteCallback(Args... args);
 
 			template<typename... Args>
-			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, const Args&... args);
+			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, Args... args);
 
 			inline const tsl::hopscotch_map<std::string /*key*/, ScriptedProperty>& GetProperties() const;
 			inline const PropertyValueMap& GetPropertyValues() const;
