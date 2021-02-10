@@ -1,4 +1,5 @@
 include("cl_camera.lua")
+include("cl_nicknames.lua")
 include("cl_scoreboard.lua")
 
 local gamemode = ScriptedGamemode()

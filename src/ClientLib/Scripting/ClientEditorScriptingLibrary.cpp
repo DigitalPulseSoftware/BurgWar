@@ -6,6 +6,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
+#include <ClientLib/Scripting/Text.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
 #include <ClientLib/Scripting/Tilemap.hpp>
 
@@ -27,6 +28,7 @@ namespace bw
 		RegisterRenderLibrary(context, renderTable);
 		RegisterSpriteClass(context);
 		RegisterTilemapClass(context);
+		RegisterTextClass(context);
 		RegisterTextureClass(context);
 	}
 
@@ -84,6 +86,31 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"GetSize", &Texture::GetSize
+		);
+	}
+
+	void ClientEditorScriptingLibrary::RegisterTextClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		state.new_usertype<Text>("Text",
+			"new", sol::no_constructor,
+
+			"GetSize", &Text::GetSize,
+			"GetText", &Text::GetText,
+
+			"Hide", &Text::Hide,
+
+			"IsValid", &Text::IsValid,
+			"IsVisible", &Text::IsVisible,
+
+			"SetColor", &Text::SetColor,
+			"SetHoveringHeight", &Text::SetHoveringHeight,
+			"SetOffset", &Text::SetOffset,
+			"SetRotation", &Text::SetRotation,
+			"SetText",  &Text::SetText,
+
+			"Show", sol::overload(&Text::Show, [](Sprite* sprite) { return sprite->Show(); })
 		);
 	}
 
