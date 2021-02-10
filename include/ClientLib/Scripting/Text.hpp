@@ -22,7 +22,7 @@ namespace bw
 		public:
 			inline Text(LocalLayerEntityHandle entity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering);
 			Text(const Text&) = delete;
-			Text(Text&&) noexcept = default;
+			Text(Text&&) = default;
 			~Text() = default;
 
 			inline Nz::Vector2f GetSize() const;
@@ -41,7 +41,7 @@ namespace bw
 			void Show(bool show = true);
 
 			Text& operator=(const Text&) = delete;
-			Text& operator=(Text&&) noexcept = default;
+			Text& operator=(Text&&) = default;
 
 		private:
 			void UpdateTextSprite();

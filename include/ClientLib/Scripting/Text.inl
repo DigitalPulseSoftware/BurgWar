@@ -2,8 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Scripting/Sprite.hpp>
-#include "Text.hpp"
+#include <ClientLib/Scripting/Text.hpp>
 
 namespace bw
 {
