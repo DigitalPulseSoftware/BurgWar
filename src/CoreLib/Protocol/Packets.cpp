@@ -684,7 +684,6 @@ namespace bw
 			bool hasParent;
 			bool hasMovementData;
 			bool hasPhysicsProps;
-			bool hasName;
 
 			if (serializer.IsWriting())
 			{
@@ -694,7 +693,6 @@ namespace bw
 				hasParent = data.parentId.has_value();
 				hasMovementData = data.playerMovement.has_value();
 				hasPhysicsProps = data.physicsProperties.has_value();
-				hasName = data.name.has_value();
 			}
 
 			serializer &= hasScale;
@@ -703,7 +701,6 @@ namespace bw
 			serializer &= hasParent;
 			serializer &= hasMovementData;
 			serializer &= hasPhysicsProps;
-			serializer &= hasName;
 
 			if (!serializer.IsWriting())
 			{
@@ -724,9 +721,6 @@ namespace bw
 
 				if (hasPhysicsProps)
 					data.physicsProperties.emplace();
-
-				if (hasName)
-					data.name.emplace();
 			}
 
 			serializer &= data.entityClass;
@@ -746,9 +740,6 @@ namespace bw
 
 			if (data.inputs)
 				Serialize(serializer, data.inputs.value());
-
-			if (data.name)
-				serializer &= data.name.value();
 
 			if (data.parentId)
 				serializer &= data.parentId.value();

@@ -33,7 +33,6 @@ namespace bw
 	m_ghostEntity(std::move(entity.m_ghostEntity)),
 	m_entityId(std::move(entity.m_entityId)),
 	m_health(std::move(entity.m_health)),
-	m_name(std::move(entity.m_name)),
 	m_attachedHoveringRenderables(std::move(entity.m_attachedHoveringRenderables)),
 	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
 	m_visualEntities(std::move(entity.m_visualEntities)),
@@ -234,22 +233,6 @@ namespace bw
 			for (VisualEntity* visualEntity : m_visualEntities)
 				ShowHealthBar(visualEntity);
 		}
-	}
-
-	void LocalLayerEntity::InitializeName(const std::string& name)
-	{
-		Nz::FontRef nicknameFont = Nz::FontLibrary::Get("BW_Names");
-		assert(nicknameFont);
-
-		auto& nameData = m_name.emplace();
-
-		nameData.nameSprite = Nz::TextSprite::New();
-		nameData.nameSprite->Update(Nz::SimpleTextDrawer::Draw(nicknameFont, name, 20, Nz::TextStyle_Regular, Nz::Color::White, 2.f, Nz::Color::Black));
-
-		Nz::Boxf textBox = nameData.nameSprite->GetBoundingVolume().obb.localBox;
-
-		for (VisualEntity* visualEntity : m_visualEntities)
-			ShowName(visualEntity, textBox);
 	}
 
 	bool LocalLayerEntity::IsFacingRight() const
@@ -498,14 +481,6 @@ namespace bw
 
 		if (m_health && m_health->currentHealth != m_health->maxHealth)
 			ShowHealthBar(visualEntity);
-
-		if (m_name)
-		{
-			auto& nameData = m_name.value();
-			const Nz::Boxf& textBox = nameData.nameSprite->GetBoundingVolume().obb.localBox;
-
-			ShowName(visualEntity, textBox);
-		}
 	}
 
 	void LocalLayerEntity::ShowHealthBar(VisualEntity* visualEntity)

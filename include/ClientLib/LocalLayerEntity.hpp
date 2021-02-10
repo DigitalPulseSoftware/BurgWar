@@ -59,10 +59,8 @@ namespace bw
 			inline const LocalLayerEntityHandle& GetWeaponEntity() const;
 
 			inline bool HasHealth() const;
-			inline bool HasName() const;
 
 			void InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth);
-			void InitializeName(const std::string& name);
 			
 			inline bool IsClientside() const;
 			inline bool IsEnabled() const;
@@ -95,7 +93,6 @@ namespace bw
 			void NotifyVisualEntityMoved(VisualEntity* oldPointer, VisualEntity* newPointer);
 			void RegisterVisualEntity(VisualEntity* visualEntity);
 			void ShowHealthBar(VisualEntity* visualEntity);
-			void ShowName(VisualEntity* visualEntity, const Nz::Boxf& textBox);
 			void UnregisterVisualEntity(VisualEntity* visualEntity);
 
 			struct DebugEntityIdData
@@ -110,11 +107,6 @@ namespace bw
 				Nz::UInt16 maxHealth;
 				Nz::SpriteRef healthSprite;
 				Nz::SpriteRef lostHealthSprite;
-			};
-
-			struct NameData
-			{
-				Nz::TextSpriteRef nameSprite;
 			};
 
 			struct RenderableData
@@ -133,7 +125,6 @@ namespace bw
 			std::unique_ptr<LocalLayerEntity> m_ghostEntity;
 			std::optional<DebugEntityIdData> m_entityId;
 			std::optional<HealthData> m_health;
-			std::optional<NameData> m_name;
 			std::vector<HoveringRenderableData> m_attachedHoveringRenderables;
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;

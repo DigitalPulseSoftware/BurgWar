@@ -85,7 +85,6 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				float scale;
-				std::string name;
 				std::optional<Ndk::EntityId> parent;
 				std::optional<Ndk::EntityId> weapon;
 				std::optional<HealthProperties> healthProperties;

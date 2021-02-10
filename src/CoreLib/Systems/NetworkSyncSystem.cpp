@@ -9,7 +9,6 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
-#include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Utils.hpp>
@@ -138,12 +137,6 @@ namespace bw
 
 			creationEvent.playerMovement.emplace();
 			creationEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
-		}
-
-		if (entity->HasComponent<PlayerControlledComponent>())
-		{
-			if (Player* player = entity->GetComponent<PlayerControlledComponent>().GetOwner())
-				creationEvent.name = player->GetName();
 		}
 
 		if (entity->HasComponent<ScriptComponent>())
