@@ -137,7 +137,7 @@ namespace bw
 			// Warning: "this" is potentially destroyed at this point
 		});
 
-		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Assets.EditorFolder");
+		const std::string& editorAssetsFolder = GetEditorWindow().GetConfig().GetStringValue("Resources.EditorDirectory");
 
 		TileSelectionWidget* tileWidget = new TileSelectionWidget(editorAssetsFolder, m_tilesetGroups);
 		tileWidget->OnClearMode.Connect([this](TileSelectionWidget* /*tileSelection*/)
