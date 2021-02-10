@@ -4,7 +4,9 @@ include("cl_scoreboard.lua")
 local gamemode = ScriptedGamemode()
 
 gamemode:On("Init", function (self)
-	local musicName = self.Musics[math.random(1, #self.Musics)]
+	local derivedGamemode = match.GetGamemode()
+
+	local musicName = derivedGamemode.Musics[math.random(1, #derivedGamemode.Musics)]
 	self.Music = sound.CreateMusicFromFile(musicName)
 	if (self.Music) then
 		self.Music:EnableLooping(true)
