@@ -8,7 +8,7 @@
 namespace bw
 {
 	template<ElementEvent Event, typename... Args>
-	std::enable_if_t<!HasReturnValue(Event), bool> ScriptComponent::ExecuteCallback(const Args&... args)
+	std::enable_if_t<!HasReturnValue(Event), bool> ScriptComponent::ExecuteCallback(Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		using EventData = ElementEventData<Event>;
 
@@ -47,7 +47,7 @@ namespace bw
 	}
 
 	template<ElementEvent Event, typename... Args>
-	std::enable_if_t<HasReturnValue(Event), std::optional<typename ElementEventData<Event>::ResultType>> ScriptComponent::ExecuteCallback(const Args&... args)
+	std::enable_if_t<HasReturnValue(Event), std::optional<typename ElementEventData<Event>::ResultType>> ScriptComponent::ExecuteCallback(Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		using EventData = ElementEventData<Event>;
 		using ResultType = typename EventData::ResultType;
@@ -80,7 +80,7 @@ namespace bw
 	}
 
 	template<typename... Args>
-	std::optional<sol::object> ScriptComponent::ExecuteCustomCallback(std::size_t eventIndex, const Args& ...args)
+	std::optional<sol::object> ScriptComponent::ExecuteCustomCallback(std::size_t eventIndex, Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		if (eventIndex >= m_customEventCallbacks.size())
 			return sol::nil;

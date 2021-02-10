@@ -58,7 +58,7 @@ namespace bw
 		assert(m_isEnabled);
 
 		EntityId uniqueId = GetUniqueIdByServerId(serverId);
-		if (uniqueId == 0)
+		if (uniqueId == InvalidEntityId)
 			return std::nullopt;
 
 		auto entityOpt = GetEntity(uniqueId);
@@ -73,7 +73,7 @@ namespace bw
 
 		auto it = m_serverEntityIds.find(serverId);
 		if (it == m_serverEntityIds.end())
-			return 0;
+			return InvalidEntityId;
 
 		return it->second;
 	}

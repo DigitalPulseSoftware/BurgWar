@@ -11,6 +11,7 @@
 #include <Thirdparty/sol3/sol.hpp>
 #include <cstdlib>
 #include <memory>
+#include <optional>
 
 namespace bw
 {
@@ -21,7 +22,7 @@ namespace bw
 	std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
 	Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
 
-	sol::object TranslateEntityToLua(const Ndk::EntityHandle& entity);
+	std::optional<sol::object> TranslateEntityToLua(const Ndk::EntityHandle& entity);
 	template<typename... Args> [[noreturn]] void TriggerLuaError(lua_State* L, const char* format, Args&&... args);
 	[[noreturn]] void TriggerLuaError(lua_State* L, const std::string& errMessage);
 	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage);

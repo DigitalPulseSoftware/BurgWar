@@ -11,7 +11,7 @@
 namespace bw
 {
 	template<GamemodeEvent Event, typename... Args>
-	std::enable_if_t<!HasReturnValue(Event), bool> SharedGamemode::ExecuteCallback(const Args&... args)
+	std::enable_if_t<!HasReturnValue(Event), bool> SharedGamemode::ExecuteCallback(Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		using EventData = GamemodeEventData<Event>;
 
@@ -50,7 +50,7 @@ namespace bw
 	}
 
 	template<GamemodeEvent Event, typename... Args>
-	std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> SharedGamemode::ExecuteCallback(const Args&... args)
+	std::enable_if_t<HasReturnValue(Event), std::optional<typename GamemodeEventData<Event>::ResultType>> SharedGamemode::ExecuteCallback(Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		using EventData = GamemodeEventData<Event>;
 		using ResultType = typename EventData::ResultType;
@@ -83,7 +83,7 @@ namespace bw
 	}
 
 	template<typename ...Args>
-	std::optional<sol::object> bw::SharedGamemode::ExecuteCustomCallback(std::size_t eventIndex, const Args & ...args)
+	std::optional<sol::object> bw::SharedGamemode::ExecuteCustomCallback(std::size_t eventIndex, Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		if (eventIndex >= m_customEventCallbacks.size())
 			return sol::nil;

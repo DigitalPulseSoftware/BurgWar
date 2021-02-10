@@ -116,30 +116,23 @@ namespace bw
 
 			EntityId clientUniqueId = match.AllocateClientUniqueId();
 
-			try
+			LocalLayer& layer = match.GetLayer(layerIndex);
+			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
+			if (!entityOpt)
+				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
+
+			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
+
+			if (lifeOwner)
 			{
-				LocalLayer& layer = match.GetLayer(layerIndex);
-				auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
-				if (!entityOpt)
-					TriggerLuaError(L, "failed to create \"" + entityType + "\"");
+				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
+					lifeOwner->AddComponent<EntityOwnerComponent>();
 
-				const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
-
-				if (lifeOwner)
-				{
-					if (!lifeOwner->HasComponent<EntityOwnerComponent>())
-						lifeOwner->AddComponent<EntityOwnerComponent>();
-
-					lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
-				}
-
-				auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-				return scriptComponent.GetTable();
+				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
 			}
-			catch (const std::exception& e)
-			{
-				TriggerLuaError(L, e.what());
-			}
+
+			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			return scriptComponent.GetTable();
 		});
 
 		library["GetCamera"] = LuaFunction([&]() -> CameraHandle
@@ -147,7 +140,7 @@ namespace bw
 			LocalMatch& match = GetMatch();
 			return match.GetCamera().CreateHandle();
 		});
-		
+
 		library["GetPlayerByIndex"] = LuaFunction([&](sol::this_state L, Nz::UInt16 playerIndex) -> sol::object
 		{
 			if (LocalPlayer* player = GetMatch().GetPlayerByIndex(playerIndex))
