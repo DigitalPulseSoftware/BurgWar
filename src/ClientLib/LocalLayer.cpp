@@ -318,9 +318,6 @@ namespace bw
 		if (entityData.health)
 			layerEntity->InitializeHealth(entityData.health->maxHealth, entityData.health->currentHealth);
 
-		if (entityData.name)
-			layerEntity->InitializeName(entityData.name.value());
-
 		if (entityData.physicsProperties)
 		{
 			auto& physProperties = *entityData.physicsProperties;

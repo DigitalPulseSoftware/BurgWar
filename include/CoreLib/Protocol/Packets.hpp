@@ -118,7 +118,6 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<float> scale;
-				std::optional<std::string> name;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
 				std::optional<PlayerInputData> inputs;

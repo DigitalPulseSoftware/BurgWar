@@ -933,9 +933,6 @@ namespace bw
 			entityData.health->maxHealth = creationEvent.healthProperties->maxHealth;
 		}
 
-		if (!creationEvent.name.empty())
-			entityData.name = creationEvent.name;
-
 		if (creationEvent.playerMovement.has_value())
 		{
 			entityData.playerMovement.emplace();

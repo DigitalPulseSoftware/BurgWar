@@ -45,9 +45,4 @@ namespace bw
 	{
 		return m_health.has_value();
 	}
-	
-	inline bool LocalLayerEntity::HasName() const
-	{
-		return m_name.has_value();
-	}
 }
