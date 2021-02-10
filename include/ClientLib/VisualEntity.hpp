@@ -37,15 +37,16 @@ namespace bw
 			VisualEntity& operator=(VisualEntity&& entity) = delete;
 
 		private:
-			inline void AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, float hoverOffset, int renderOrder = 0);
-			void AttachHoveringRenderables(std::initializer_list<Nz::InstancedRenderableRef> renderables, std::initializer_list<Nz::Matrix4f> offsetMatrices, float hoverOffset, std::initializer_list<int> renderOrders);
-			inline void AttachRenderable(Nz::InstancedRenderableRef renderable, int renderOrder = 0);
+			void AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset);
 			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
-			inline void DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable);
-			void DetachHoveringRenderables(std::initializer_list<Nz::InstancedRenderableRef> renderables);
+			void DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable);
 			void DetachRenderable(const Nz::InstancedRenderableRef& renderable);
 
 			inline void Enable(bool enable);
+
+			void UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight);
+			void UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateHoveringRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder);
 
 			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
 			void UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder);
@@ -54,7 +55,7 @@ namespace bw
 			{
 				float offset;
 				Ndk::EntityOwner entity;
-				std::vector<Nz::InstancedRenderableRef> renderables;
+				Nz::InstancedRenderableRef renderable;
 			};
 
 			std::vector<HoveringRenderable> m_hoveringRenderables;

@@ -34,6 +34,7 @@ namespace bw
 	m_entityId(std::move(entity.m_entityId)),
 	m_health(std::move(entity.m_health)),
 	m_name(std::move(entity.m_name)),
+	m_attachedHoveringRenderables(std::move(entity.m_attachedHoveringRenderables)),
 	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
 	m_visualEntities(std::move(entity.m_visualEntities)),
 	m_entity(std::move(entity.m_entity)),
@@ -54,15 +55,43 @@ namespace bw
 			m_layer.GetLocalMatch().UnregisterEntity(m_uniqueId);
 	}
 
+	void LocalLayerEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
+	{
+		auto& renderableData = m_attachedHoveringRenderables.emplace_back();
+		renderableData.hoveringHeight = hoveringHeight;
+		renderableData.data.offsetMatrix = offsetMatrix;
+		renderableData.data.renderable = std::move(renderable);
+		renderableData.data.renderOrder = renderOrder;
+
+		for (VisualEntity* visualEntity : m_visualEntities)
+			visualEntity->AttachHoveringRenderable(renderableData.data.renderable, renderableData.data.offsetMatrix, renderableData.data.renderOrder, hoveringHeight);
+	}
+
 	void LocalLayerEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		auto& renderableData = m_attachedRenderables.emplace_back();
-		renderableData.offset = offsetMatrix;
+		renderableData.offsetMatrix = offsetMatrix;
 		renderableData.renderable = std::move(renderable);
 		renderableData.renderOrder = renderOrder;
 
 		for (VisualEntity* visualEntity : m_visualEntities)
-			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.renderOrder);
+			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
+	}
+
+	void LocalLayerEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
+	{
+		for (auto it = m_attachedHoveringRenderables.begin(); it != m_attachedHoveringRenderables.end(); ++it)
+		{
+			auto& hoveringRenderable = *it;
+			if (hoveringRenderable.data.renderable == renderable)
+			{
+				for (VisualEntity* visualEntity : m_visualEntities)
+					visualEntity->DetachHoveringRenderable(renderable);
+
+				m_attachedHoveringRenderables.erase(it);
+				break;
+			}
+		}
 	}
 
 	void LocalLayerEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
@@ -119,7 +148,7 @@ namespace bw
 						clonedRenderable->SetMaterial(i, ghostMaterial);
 					}
 
-					m_ghostEntity->AttachRenderable(clonedRenderable.release(), renderable.offset, -1);
+					m_ghostEntity->AttachRenderable(clonedRenderable.release(), renderable.offsetMatrix, -1);
 				}
 			}
 
@@ -312,13 +341,43 @@ namespace bw
 			entityNode.SetParent(static_cast<Nz::Node*>(nullptr));
 	}
 
+	void LocalLayerEntity::UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight)
+	{
+		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
+		{
+			if (hoveringRenderable.data.renderable == renderable)
+			{
+				for (VisualEntity* visualEntity : m_visualEntities)
+					visualEntity->UpdateHoveringRenderableHoveringHeight(renderable, newHoveringHeight);
+
+				hoveringRenderable.hoveringHeight = newHoveringHeight;
+				break;
+			}
+		}
+	}
+
+	void LocalLayerEntity::UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	{
+		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
+		{
+			if (hoveringRenderable.data.renderable == renderable)
+			{
+				for (VisualEntity* visualEntity : m_visualEntities)
+					visualEntity->UpdateHoveringRenderableMatrix(renderable, offsetMatrix);
+
+				hoveringRenderable.data.offsetMatrix = offsetMatrix;
+				break;
+			}
+		}
+	}
+
 	void LocalLayerEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())
 		{
 			RenderableData& renderableData = *it;
-			renderableData.offset = offsetMatrix;
+			renderableData.offsetMatrix = offsetMatrix;
 
 			for (VisualEntity* visualEntity : m_visualEntities)
 				visualEntity->UpdateRenderableMatrix(renderable, offsetMatrix);
@@ -405,7 +464,8 @@ namespace bw
 
 	void LocalLayerEntity::HideHealthBar(VisualEntity* visualEntity)
 	{
-		visualEntity->DetachHoveringRenderables({ m_health->healthSprite, m_health->lostHealthSprite });
+		visualEntity->DetachHoveringRenderable(m_health->healthSprite);
+		visualEntity->DetachHoveringRenderable(m_health->lostHealthSprite);
 	}
 
 	void LocalLayerEntity::NotifyVisualEntityMoved(VisualEntity* oldPointer, VisualEntity* newPointer)
@@ -431,7 +491,10 @@ namespace bw
 		visualEntity->Update(position, rotation, scale);
 
 		for (auto& renderableData : m_attachedRenderables)
-			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.renderOrder);
+			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
+
+		for (auto& hoveringRenderableData : m_attachedHoveringRenderables)
+			visualEntity->AttachHoveringRenderable(hoveringRenderableData.data.renderable, hoveringRenderableData.data.offsetMatrix, hoveringRenderableData.data.renderOrder, hoveringRenderableData.hoveringHeight);
 
 		if (m_health && m_health->currentHealth != m_health->maxHealth)
 			ShowHealthBar(visualEntity);
@@ -447,12 +510,8 @@ namespace bw
 
 	void LocalLayerEntity::ShowHealthBar(VisualEntity* visualEntity)
 	{
-		visualEntity->AttachHoveringRenderables({ m_health->healthSprite, m_health->lostHealthSprite }, { Nz::Matrix4f::Identity(), Nz::Matrix4f::Identity() }, 10.f, { 2, 1 });
-	}
-
-	void LocalLayerEntity::ShowName(VisualEntity* visualEntity, const Nz::Boxf& textBox)
-	{
-		visualEntity->AttachHoveringRenderable(m_name->nameSprite, Nz::Matrix4f::Translate(Nz::Vector2f(-textBox.width / 2.f, -textBox.height)), 20.f);
+		visualEntity->AttachHoveringRenderable(m_health->healthSprite, Nz::Matrix4f::Identity(), 2, 10.f);
+		visualEntity->AttachHoveringRenderable(m_health->lostHealthSprite, Nz::Matrix4f::Identity(), 1, 10.f);
 	}
 
 	void LocalLayerEntity::UnregisterVisualEntity(VisualEntity* visualEntity)
