@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_CLIENTWEAPONLIBRARY_HPP
 
 #include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class ClientAssetStore;
 
-	class ClientWeaponLibrary : public SharedWeaponLibrary
+	class BURGWAR_CLIENTLIB_API ClientWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
 			inline ClientWeaponLibrary(const Logger& logger, ClientAssetStore& assetStore);

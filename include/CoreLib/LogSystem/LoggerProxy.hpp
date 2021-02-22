@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_LOGGERPROXY_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_LOGGERPROXY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 
 namespace bw
 {
-	class LoggerProxy : public AbstractLogger
+	class BURGWAR_CORELIB_API LoggerProxy : public AbstractLogger
 	{
 		friend class LogContextPtr;
 

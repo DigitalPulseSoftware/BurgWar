@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_NETWORKSTRINGSTORE_HPP
 #define BURGWAR_CORELIB_NETWORK_NETWORKSTRINGSTORE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
@@ -15,7 +16,7 @@
 
 namespace bw
 {
-	class NetworkStringStore
+	class BURGWAR_CORELIB_API NetworkStringStore
 	{
 		public:
 			inline NetworkStringStore();

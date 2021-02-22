@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_NETWORK_PACKETSERIALIZER_HPP
 #define BURGWAR_CORELIB_NETWORK_PACKETSERIALIZER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <vector>
 
 namespace bw
 {
-	class PacketSerializer
+	class BURGWAR_CORELIB_API PacketSerializer
 	{
 		public:
 			inline PacketSerializer(Nz::ByteStream& packetBuffer, bool isWriting);

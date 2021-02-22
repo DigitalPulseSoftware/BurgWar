@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_CLIENTGAMEMODE_HPP
 
 #include <CoreLib/Scripting/SharedGamemode.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class LocalMatch;
 
-	class ClientGamemode : public SharedGamemode
+	class BURGWAR_CLIENTLIB_API ClientGamemode : public SharedGamemode
 	{
 		public:
 			ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);

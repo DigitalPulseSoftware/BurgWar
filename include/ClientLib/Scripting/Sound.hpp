@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_SOUND_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_SOUND_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerSound.hpp>
 
 namespace bw
 {
-	class Sound
+	class BURGWAR_CLIENTLIB_API Sound
 	{
 		public:
 			inline Sound(LocalLayerSoundHandle sound, std::size_t soundIndex);

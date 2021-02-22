@@ -8,12 +8,13 @@
 #define BURGWAR_CORELIB_PLAYERCOMMANDSTORE_HPP
 
 #include <CoreLib/CommandStore.hpp>
+#include <CoreLib/Export.hpp>
 
 namespace bw
 {
 	class MatchClientSession;
 
-	class PlayerCommandStore : public CommandStore<MatchClientSession>
+	class BURGWAR_CORELIB_API PlayerCommandStore : public CommandStore<MatchClientSession>
 	{
 		public:
 			PlayerCommandStore(const Logger& logger);

@@ -8,13 +8,14 @@
 #define BURGWAR_CORELIB_CLIENTEDITORSCRIPTINGLIBRARY_HPP
 
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class ClientAssetStore;
 	class Logger;
 
-	class ClientEditorScriptingLibrary : public AbstractScriptingLibrary
+	class BURGWAR_CLIENTLIB_API ClientEditorScriptingLibrary : public AbstractScriptingLibrary
 	{
 		public:
 			ClientEditorScriptingLibrary(const Logger& logger, ClientAssetStore& assetStore);

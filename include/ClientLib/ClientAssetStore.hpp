@@ -8,13 +8,14 @@
 #define BURGWAR_CLIENTLIB_CLIENTASSETSTORE_HPP
 
 #include <CoreLib/AssetStore.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Renderer/Texture.hpp>
 
 namespace bw
 {
-	class ClientAssetStore : public AssetStore
+	class BURGWAR_CLIENTLIB_API ClientAssetStore : public AssetStore
 	{
 		public:
 			using AssetStore::AssetStore;

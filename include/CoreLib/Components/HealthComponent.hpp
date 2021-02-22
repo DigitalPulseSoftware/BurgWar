@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_HEALTHCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_HEALTHCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
 {
-	class HealthComponent : public Ndk::Component<HealthComponent>
+	class BURGWAR_CORELIB_API HealthComponent : public Ndk::Component<HealthComponent>
 	{
 		public:
 			inline HealthComponent(Nz::UInt16 maxHealth);

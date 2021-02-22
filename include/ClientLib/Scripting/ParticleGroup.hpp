@@ -7,14 +7,15 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEGROUP_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEGROUP_HPP
 
-#include <NDK/EntityOwner.hpp>
+#include <ClientLib/Export.hpp>
 #include <Thirdparty/sol3/forward.hpp>
+#include <NDK/EntityOwner.hpp>
 
 namespace bw
 {
 	class ParticleRegistry;
 
-	class ParticleGroup
+	class BURGWAR_CLIENTLIB_API ParticleGroup
 	{
 		public:
 			ParticleGroup(const ParticleRegistry& particleRegistry, const Ndk::EntityHandle& particleGroup);

@@ -18,6 +18,7 @@
 #include <ClientLib/Chatbox.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/EscapeMenu.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalConsole.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/LocalPlayer.hpp>
@@ -48,7 +49,7 @@ namespace bw
 	class Scoreboard;
 	class VirtualDirectory;
 
-	class LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
+	class BURGWAR_CLIENTLIB_API LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
 	{
 		friend ClientSession;
 

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SHAREDLAYER_HPP
 #define BURGWAR_CORELIB_SHAREDLAYER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <NDK/World.hpp>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class SharedLayer
+	class BURGWAR_CORELIB_API SharedLayer
 	{
 		public:
 			SharedLayer(SharedMatch& match, LayerIndex layerIndex);

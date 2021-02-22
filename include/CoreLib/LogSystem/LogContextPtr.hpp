@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_LOGCONTEXTPTR_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_LOGCONTEXTPTR_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class Logger;
 
-	class LogContextPtr
+	class BURGWAR_CORELIB_API LogContextPtr
 	{
 		friend Logger;
 

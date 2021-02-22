@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_MUSIC_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_MUSIC_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Music.hpp>
 #include <Nazara/Core/Signal.hpp>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class ClientEditorApp;
 
-	class Music
+	class BURGWAR_CLIENTLIB_API Music
 	{
 		public:
 			Music(ClientEditorApp& app, Nz::Music music);

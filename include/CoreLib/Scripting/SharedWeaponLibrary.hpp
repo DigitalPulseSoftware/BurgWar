@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDWEAPONLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDWEAPONLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 
 namespace bw
 {
-	class SharedWeaponLibrary : public AbstractElementLibrary
+	class BURGWAR_CORELIB_API SharedWeaponLibrary : public AbstractElementLibrary
 	{
 		public:
 			using AbstractElementLibrary::AbstractElementLibrary;

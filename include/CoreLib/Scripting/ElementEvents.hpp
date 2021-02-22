@@ -7,8 +7,9 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_ELEMENTEVENTS_HPP
 #define BURGWAR_CORELIB_SCRIPTING_ELEMENTEVENTS_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/EventCombinator.hpp>
+#include <Nazara/Prerequisites.hpp>
 #include <cstddef>
 #include <functional>
 #include <optional>
@@ -63,8 +64,8 @@ namespace bw
 	constexpr std::size_t ElementEventCount = static_cast<std::size_t>(ElementEvent::Max) + 1;
 
 	constexpr bool HasReturnValue(ElementEvent event);
-	std::optional<ElementEvent> RetrieveElementEvent(const std::string_view& eventName);
-	std::string_view ToString(ElementEvent event);
+	BURGWAR_CORELIB_API std::optional<ElementEvent> RetrieveElementEvent(const std::string_view& eventName);
+	BURGWAR_CORELIB_API std::string_view ToString(ElementEvent event);
 }
 
 #include <CoreLib/Scripting/ElementEvents.inl>

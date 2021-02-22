@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_VISUALENTITY_HPP
 #define BURGWAR_CLIENTLIB_VISUALENTITY_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/InstancedRenderable.hpp>
 #include <Nazara/Utility/Node.hpp>
@@ -18,7 +19,7 @@ namespace bw
 	class LocalLayerEntity;
 	using LocalLayerEntityHandle = Nz::ObjectHandle<LocalLayerEntity>;
 
-	class VisualEntity
+	class BURGWAR_CLIENTLIB_API VisualEntity
 	{
 		friend LocalLayerEntity;
 

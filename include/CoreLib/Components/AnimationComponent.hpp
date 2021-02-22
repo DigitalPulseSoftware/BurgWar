@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_ANIMATIONCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_ANIMATIONCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
@@ -16,7 +17,7 @@ namespace bw
 {
 	class AnimationStore;
 
-	class AnimationComponent : public Ndk::Component<AnimationComponent>
+	class BURGWAR_CORELIB_API AnimationComponent : public Ndk::Component<AnimationComponent>
 	{
 		friend class AnimationSystem;
 

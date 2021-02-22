@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SERVER_SESSIONMANAGER_HPP
 #define BURGWAR_SERVER_SESSIONMANAGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/NetworkReactor.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
@@ -21,7 +22,7 @@ namespace bw
 	class Match;
 	class MatchClientSession;
 
-	class MatchSessions
+	class BURGWAR_CORELIB_API MatchSessions
 	{
 		public:
 			MatchSessions(Match& match);

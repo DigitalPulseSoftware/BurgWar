@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_COMPONENTS_MATCHCOMPONENT_HPP
 
 #include <CoreLib/EntityId.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <NDK/Component.hpp>
 
@@ -15,7 +16,7 @@ namespace bw
 {
 	class Match;
 
-	class MatchComponent : public Ndk::Component<MatchComponent>
+	class BURGWAR_CORELIB_API MatchComponent : public Ndk::Component<MatchComponent>
 	{
 		public:
 			inline MatchComponent(Match& match, LayerIndex layerIndex, EntityId uniqueId);

@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_MATCHLOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_MATCHLOGGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/LogSystem/MatchLogContext.hpp>
 
 namespace bw
 {
-	class MatchLogger : public Logger
+	class BURGWAR_CORELIB_API MatchLogger : public Logger
 	{
 		public:
 			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));

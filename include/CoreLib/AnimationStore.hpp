@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 #define BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <chrono>
 #include <limits>
@@ -14,7 +15,7 @@
 
 namespace bw
 {
-	class AnimationStore
+	class BURGWAR_CORELIB_API AnimationStore
 	{
 		public:
 			struct AnimationData;

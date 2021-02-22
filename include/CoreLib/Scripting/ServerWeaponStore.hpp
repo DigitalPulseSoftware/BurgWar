@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONSTORE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
 #include <NDK/Entity.hpp>
 
@@ -15,7 +16,7 @@ namespace bw
 	class BurgApp;
 	class TerrainLayer;
 
-	class ServerWeaponStore : public SharedWeaponStore
+	class BURGWAR_CORELIB_API ServerWeaponStore : public SharedWeaponStore
 	{
 		public:
 			inline ServerWeaponStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);

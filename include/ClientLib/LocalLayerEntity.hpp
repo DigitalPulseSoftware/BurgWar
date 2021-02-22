@@ -10,6 +10,7 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -27,7 +28,7 @@ namespace bw
 
 	using LocalLayerEntityHandle = Nz::ObjectHandle<LocalLayerEntity>;
 
-	class LocalLayerEntity final : public Nz::HandledObject<LocalLayerEntity>
+	class BURGWAR_CLIENTLIB_API LocalLayerEntity final : public Nz::HandledObject<LocalLayerEntity>
 	{
 		friend VisualEntity;
 

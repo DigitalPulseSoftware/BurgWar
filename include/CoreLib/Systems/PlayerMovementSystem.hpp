@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 #define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/System.hpp>
 #include <vector>
 
 namespace bw
 {
-	class PlayerMovementSystem : public Ndk::System<PlayerMovementSystem>
+	class BURGWAR_CORELIB_API PlayerMovementSystem : public Ndk::System<PlayerMovementSystem>
 	{
 		public:
 			PlayerMovementSystem();

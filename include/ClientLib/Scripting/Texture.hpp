@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_TEXTURE_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_TEXTURE_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Renderer/Texture.hpp>
 
 namespace bw
 {
-	class Texture
+	class BURGWAR_CLIENTLIB_API Texture
 	{
 		public:
 			inline Texture(Nz::TextureRef texture);

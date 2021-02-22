@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_UTILS_HPP
 #define BURGWAR_CORELIB_SCRIPTING_UTILS_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/Entity.hpp>
 #include <Thirdparty/sol3/sol.hpp>
 #include <cstdlib>
@@ -17,16 +18,16 @@ namespace bw
 {
 	struct ScriptedElement;
 
-	std::shared_ptr<ScriptedElement> AssertScriptElement(const sol::table& entityTable);
-	Ndk::EntityHandle AssertScriptEntity(const sol::table& entityTable);
-	std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
-	Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
+	BURGWAR_CORELIB_API std::shared_ptr<ScriptedElement> AssertScriptElement(const sol::table& entityTable);
+	BURGWAR_CORELIB_API Ndk::EntityHandle AssertScriptEntity(const sol::table& entityTable);
+	BURGWAR_CORELIB_API std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
+	BURGWAR_CORELIB_API Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable);
 
-	std::optional<sol::object> TranslateEntityToLua(const Ndk::EntityHandle& entity);
+	BURGWAR_CORELIB_API std::optional<sol::object> TranslateEntityToLua(const Ndk::EntityHandle& entity);
 	template<typename... Args> [[noreturn]] void TriggerLuaError(lua_State* L, const char* format, Args&&... args);
-	[[noreturn]] void TriggerLuaError(lua_State* L, const std::string& errMessage);
-	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage);
-	[[noreturn]] void TriggerLuaArgError(lua_State* L, int argIndex, const std::string& errMessage);
+	[[noreturn]] BURGWAR_CORELIB_API void TriggerLuaError(lua_State* L, const std::string& errMessage);
+	[[noreturn]] BURGWAR_CORELIB_API void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage);
+	[[noreturn]] BURGWAR_CORELIB_API void TriggerLuaArgError(lua_State* L, int argIndex, const std::string& errMessage);
 
 	template<typename F> auto LuaFunction(F funcPtr);
 }

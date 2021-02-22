@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_LOGCONTEXT_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_LOGCONTEXT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 
 namespace bw
 {
-	struct LogContext
+	struct BURGWAR_CORELIB_API LogContext
 	{
 		virtual ~LogContext();
 

@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_PROPERTYVALUES_HPP
 
 #include <CoreLib/EntityId.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Math/Rect.hpp>
@@ -117,14 +118,14 @@ namespace bw
 	
 	using PropertyValueMap = tsl::hopscotch_map<std::string /*propertyName*/, PropertyValue /*property*/>;
 
-	std::pair<PropertyType, bool> ExtractPropertyType(const PropertyValue& value);
+	BURGWAR_CORELIB_API std::pair<PropertyType, bool> ExtractPropertyType(const PropertyValue& value);
 
-	PropertyType ParsePropertyType(const std::string_view& str);
+	BURGWAR_CORELIB_API PropertyType ParsePropertyType(const std::string_view& str);
 
-	const char* ToString(PropertyType propertyType);
+	BURGWAR_CORELIB_API const char* ToString(PropertyType propertyType);
 
-	PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
-	sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property);
+	BURGWAR_CORELIB_API PropertyValue TranslatePropertyFromLua(SharedMatch* match, const sol::object& value, PropertyType expectedType, bool isArray);
+	BURGWAR_CORELIB_API sol::object TranslatePropertyToLua(SharedMatch* match, sol::state_view& lua, const PropertyValue& property);
 
 	template<typename T> Nz::Vector4<T> TranslateRectToVec(const Nz::Rect<T>& value);
 	template<typename T> Nz::Rect<T> TranslateVecToRect(const Nz::Vector4<T>& value);

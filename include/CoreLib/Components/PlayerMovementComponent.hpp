@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_PLAYERMOVEMENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_PLAYERMOVEMENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
@@ -16,7 +17,7 @@ namespace bw
 {
 	class PlayerMovementController;
 
-	class PlayerMovementComponent : public Ndk::Component<PlayerMovementComponent>
+	class BURGWAR_CORELIB_API PlayerMovementComponent : public Ndk::Component<PlayerMovementComponent>
 	{
 		public:
 			PlayerMovementComponent();

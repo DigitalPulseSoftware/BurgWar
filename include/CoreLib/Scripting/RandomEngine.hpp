@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_RANDOMENGINE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_RANDOMENGINE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <random>
 
 namespace bw
 {
-	class RandomEngine
+	class BURGWAR_CORELIB_API RandomEngine
 	{
 		public:
 			inline RandomEngine(std::uint_fast64_t seed = std::ranlux48_base::default_seed);

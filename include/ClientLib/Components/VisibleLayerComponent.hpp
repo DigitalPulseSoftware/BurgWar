@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 
 #include <ClientLib/Camera.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
@@ -19,7 +20,7 @@ namespace bw
 {
 	class LocalLayerEntity;
 
-	class VisibleLayerComponent : public Ndk::Component<VisibleLayerComponent>
+	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public Ndk::Component<VisibleLayerComponent>
 	{
 		public:
 			inline VisibleLayerComponent(Ndk::World& renderWorld);

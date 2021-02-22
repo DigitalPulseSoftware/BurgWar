@@ -7,6 +7,7 @@
 #ifndef BURGWAR_SERVER_NETWORKSESSIONMANAGER_HPP
 #define BURGWAR_SERVER_NETWORKSESSIONMANAGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/NetworkReactor.hpp>
 #include <CoreLib/SessionManager.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
@@ -17,7 +18,7 @@ namespace bw
 	class MatchClientSession;
 	class MatchSessions;
 
-	class NetworkSessionManager : public SessionManager
+	class BURGWAR_CORELIB_API NetworkSessionManager : public SessionManager
 	{
 		public:
 			NetworkSessionManager(MatchSessions* owner, Nz::UInt16 port, std::size_t maxClient);

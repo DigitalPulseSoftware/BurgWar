@@ -9,6 +9,7 @@
 
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/DownloadManager.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 #include <functional>
@@ -21,12 +22,14 @@ namespace bw
 {
 	class Logger;
 
-	class HttpDownloadManager : public DownloadManager
+	class BURGWAR_CLIENTLIB_API HttpDownloadManager : public DownloadManager
 	{
 		friend class ClientEditorApp;
 
 		public:
 			HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
+			HttpDownloadManager(const HttpDownloadManager&) = delete;
+			HttpDownloadManager(HttpDownloadManager&&) = delete;
 			~HttpDownloadManager();
 
 			const FileEntry& GetEntry(std::size_t fileIndex) const override;
@@ -38,6 +41,9 @@ namespace bw
 			void Update() override;
 
 			static bool IsInitialized();
+
+			HttpDownloadManager& operator=(const HttpDownloadManager&) = delete;
+			HttpDownloadManager& operator=(HttpDownloadManager&&) = delete;
 
 		private:
 			void RequestNextFiles();

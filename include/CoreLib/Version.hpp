@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_VERSION_HPP
 #define BURGWAR_CORELIB_VERSION_HPP
 
+#include <CoreLib/Export.hpp>
 #include <cstdint>
 #include <string>
 
@@ -19,16 +20,16 @@
 
 namespace bw
 {
-	extern std::uint32_t MajorVersion;
-	extern std::uint32_t MinorVersion;
-	extern std::uint32_t PatchVersion;
+	BURGWAR_CORELIB_API extern std::uint32_t MajorVersion;
+	BURGWAR_CORELIB_API extern std::uint32_t MinorVersion;
+	BURGWAR_CORELIB_API extern std::uint32_t PatchVersion;
 
-	extern const char* BuildSystem;
-	extern const char* BuildBranch;
-	extern const char* BuildCommit;
-	extern const char* BuildDate;
+	BURGWAR_CORELIB_API extern const char* BuildSystem;
+	BURGWAR_CORELIB_API extern const char* BuildBranch;
+	BURGWAR_CORELIB_API extern const char* BuildCommit;
+	BURGWAR_CORELIB_API extern const char* BuildDate;
 
-	std::string GetBuildInfo();
+	BURGWAR_CORELIB_API std::string GetBuildInfo();
 }
 
 #endif

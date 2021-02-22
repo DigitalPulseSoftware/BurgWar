@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_PLAYERCONFIG_HPP
 
 #include <CoreLib/ConfigFile.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class BurgApp;
 
-	class PlayerConfig : public ConfigFile
+	class BURGWAR_CLIENTLIB_API PlayerConfig : public ConfigFile
 	{
 		public:
 			PlayerConfig(BurgApp& app);

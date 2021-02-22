@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_TILEMAP_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_TILEMAP_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	class Tilemap
+	class BURGWAR_CLIENTLIB_API Tilemap
 	{
 		public:
 			inline Tilemap(LocalLayerEntityHandle entity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);

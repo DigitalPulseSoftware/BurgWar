@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_SOUNDEMITTERCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_SOUNDEMITTERCOMPONENT_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Component.hpp>
@@ -15,7 +16,7 @@
 
 namespace bw
 {
-	class SoundEmitterComponent : public Ndk::Component<SoundEmitterComponent>
+	class BURGWAR_CLIENTLIB_API SoundEmitterComponent : public Ndk::Component<SoundEmitterComponent>
 	{
 		friend class SoundSystem;
 

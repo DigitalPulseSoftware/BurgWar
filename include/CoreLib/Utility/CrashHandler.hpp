@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_CRASHHANDLER_HPP
 #define BURGWAR_CORELIB_CRASHHANDLER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <memory>
 
 namespace bw
 {
-	class CrashHandler
+	class BURGWAR_CORELIB_API CrashHandler
 	{
 		public:
 			CrashHandler() = default;

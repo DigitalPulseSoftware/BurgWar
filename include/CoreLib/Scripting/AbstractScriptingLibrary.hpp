@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/Entity.hpp>
 #include <Thirdparty/sol3/forward.hpp>
 #include <memory>
@@ -17,7 +18,7 @@ namespace bw
 	class RandomEngine;
 	class ScriptingContext;
 
-	class AbstractScriptingLibrary
+	class BURGWAR_CORELIB_API AbstractScriptingLibrary
 	{
 		public:
 			inline AbstractScriptingLibrary(const Logger& logger);

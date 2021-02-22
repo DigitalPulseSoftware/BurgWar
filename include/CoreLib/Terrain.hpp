@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_TERRAIN_HPP
 #define BURGWAR_CORELIB_TERRAIN_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <vector>
@@ -15,7 +16,7 @@ namespace bw
 {
 	class Match;
 
-	class Terrain
+	class BURGWAR_CORELIB_API Terrain
 	{
 		public:
 			Terrain(Map& map);

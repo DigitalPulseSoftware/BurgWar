@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CLIENTLIB_SYSTEMS_POSTFRAMECALLBACKSYSTEM_HPP
 #define BURGWAR_CLIENTLIB_SYSTEMS_POSTFRAMECALLBACKSYSTEM_HPP
 
+#include <ClientLib/Export.hpp>
 #include <NDK/EntityList.hpp>
 #include <NDK/System.hpp>
 #include <vector>
 
 namespace bw
 {
-	class PostFrameCallbackSystem : public Ndk::System<PostFrameCallbackSystem>
+	class BURGWAR_CLIENTLIB_API PostFrameCallbackSystem : public Ndk::System<PostFrameCallbackSystem>
 	{
 		public:
 			PostFrameCallbackSystem();

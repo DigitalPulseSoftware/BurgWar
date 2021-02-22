@@ -7,14 +7,15 @@
 #ifndef BURGWAR_CLIENTLIB_PLAYER_HPP
 #define BURGWAR_CLIENTLIB_PLAYER_HPP
 
-#include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Core/MovablePtr.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
+#include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Core/MovablePtr.hpp>
+#include <NDK/EntityOwner.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
@@ -28,8 +29,7 @@ namespace bw
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
-	class Player : public Nz::HandledObject<Player>
-	{
+	class BURGWAR_CORELIB_API Player : public Nz::HandledObject<Player>	{
 		friend Match;
 
 		public:

@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_LAYERENTITYCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_LAYERENTITYCOMPONENT_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
 {
-	class LayerEntityComponent : public Ndk::Component<LayerEntityComponent>
+	class BURGWAR_CLIENTLIB_API LayerEntityComponent : public Ndk::Component<LayerEntityComponent>
 	{
 		public:
 			inline LayerEntityComponent(LocalLayerEntityHandle layerEntity);

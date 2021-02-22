@@ -9,6 +9,7 @@
 
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/SharedEntityStore.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/World.hpp>
@@ -18,7 +19,7 @@ namespace bw
 	class ClientAssetStore;
 	class LocalLayer;
 
-	class ClientEditorEntityStore : public SharedEntityStore
+	class BURGWAR_CLIENTLIB_API ClientEditorEntityStore : public SharedEntityStore
 	{
 		public:
 			inline ClientEditorEntityStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);

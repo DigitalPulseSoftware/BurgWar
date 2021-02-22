@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_ABSTRACTLOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_ABSTRACTLOGGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <string_view>
 
 namespace bw
 {
-	class AbstractLogger
+	class BURGWAR_CORELIB_API AbstractLogger
 	{
 		public:
 			inline AbstractLogger(LogSide logSide);

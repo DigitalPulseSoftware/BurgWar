@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEREGISTRY_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEREGISTRY_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Graphics/ParticleController.hpp>
 #include <Nazara/Graphics/ParticleDeclaration.hpp>
 #include <Nazara/Graphics/ParticleGenerator.hpp>
@@ -19,7 +20,7 @@ namespace bw
 {
 	class ClientAssetStore;
 
-	class ParticleRegistry
+	class BURGWAR_CLIENTLIB_API ParticleRegistry
 	{
 		public:
 			using ControllerFactory = std::function<Nz::ParticleControllerRef(const sol::table & parameters)>;

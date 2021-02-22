@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_NETWORKPACKET_HPP
 #define BURGWAR_CORELIB_SCRIPTING_NETWORKPACKET_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Nazara/Core/ByteArray.hpp>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	class NetworkPacket
+	class BURGWAR_CORELIB_API NetworkPacket
 	{
 		public:
 			inline NetworkPacket(std::string packetName); //< output
@@ -27,13 +28,14 @@ namespace bw
 
 			NetworkPacket& operator=(const NetworkPacket&) = delete;
 			NetworkPacket& operator=(NetworkPacket&&) = delete;
+
 		protected:
 			std::unique_ptr<Nz::ByteArray> m_content;
 			Nz::ByteStream m_stream;
 			std::string m_packetName;
 	};
 
-	class IncomingNetworkPacket : public NetworkPacket
+	class BURGWAR_CORELIB_API IncomingNetworkPacket : public NetworkPacket
 	{
 		public:
 			inline IncomingNetworkPacket(const NetworkStringStore& stringStore, const Packets::ScriptPacket& packet);
@@ -47,7 +49,7 @@ namespace bw
 			inline Nz::Vector2f ReadVector2();
 	};
 
-	class OutgoingNetworkPacket : public NetworkPacket
+	class BURGWAR_CORELIB_API OutgoingNetworkPacket : public NetworkPacket
 	{
 		public:
 			inline OutgoingNetworkPacket(std::string packetName);

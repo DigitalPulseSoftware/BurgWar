@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_ESCAPEMENU_HPP
 #define BURGWAR_CLIENTLIB_ESCAPEMENU_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
@@ -19,7 +20,7 @@ namespace bw
 	class ClientEditorApp;
 	class OptionWidget;
 
-	class EscapeMenu
+	class BURGWAR_CLIENTLIB_API EscapeMenu
 	{
 		public:
 			EscapeMenu(ClientEditorApp& clientEditorApp, Ndk::Canvas* canvas);

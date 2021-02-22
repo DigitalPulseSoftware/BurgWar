@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SYSTEMS_TICKCALLBACKSYSTEM_HPP
 #define BURGWAR_CORELIB_SYSTEMS_TICKCALLBACKSYSTEM_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/EntityList.hpp>
 #include <NDK/System.hpp>
 #include <vector>
@@ -15,7 +16,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class TickCallbackSystem : public Ndk::System<TickCallbackSystem>
+	class BURGWAR_CORELIB_API TickCallbackSystem : public Ndk::System<TickCallbackSystem>
 	{
 		public:
 			TickCallbackSystem(SharedMatch& match);

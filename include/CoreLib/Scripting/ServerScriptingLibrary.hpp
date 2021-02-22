@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
 #define BURGWAR_CORELIB_SERVERSCRIPTINGLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 
 namespace bw
@@ -14,7 +15,7 @@ namespace bw
 	class AssetStore;
 	class Match;
 
-	class ServerScriptingLibrary : public SharedScriptingLibrary
+	class BURGWAR_CORELIB_API ServerScriptingLibrary : public SharedScriptingLibrary
 	{
 		public:
 			ServerScriptingLibrary(Match& match, AssetStore& assetStore);

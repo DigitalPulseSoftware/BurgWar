@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CLIENTLIB_SYSTEMS_VISUALINTERPOLATIONSYSTEM_HPP
 #define BURGWAR_CLIENTLIB_SYSTEMS_VISUALINTERPOLATIONSYSTEM_HPP
 
+#include <ClientLib/Export.hpp>
 #include <NDK/System.hpp>
 
 namespace bw
 {
-	class VisualInterpolationSystem : public Ndk::System<VisualInterpolationSystem>
+	class BURGWAR_CLIENTLIB_API VisualInterpolationSystem : public Ndk::System<VisualInterpolationSystem>
 	{
 		public:
 			VisualInterpolationSystem();

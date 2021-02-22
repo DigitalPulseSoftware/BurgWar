@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERENTITYLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERENTITYLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
 
 namespace bw
 {
-	class ServerEntityLibrary : public SharedEntityLibrary
+	class BURGWAR_CORELIB_API ServerEntityLibrary : public SharedEntityLibrary
 	{
 		public:
 			using SharedEntityLibrary::SharedEntityLibrary;

@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	class VirtualDirectory : public std::enable_shared_from_this<VirtualDirectory>
+	class BURGWAR_CORELIB_API VirtualDirectory : public std::enable_shared_from_this<VirtualDirectory>
 	{
 		public:
 			using FileContentEntry = std::vector<Nz::UInt8>;

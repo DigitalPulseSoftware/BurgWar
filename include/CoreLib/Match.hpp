@@ -7,11 +7,8 @@
 #ifndef BURGWAR_CORELIB_MATCH_HPP
 #define BURGWAR_CORELIB_MATCH_HPP
 
-#include <Nazara/Core/Bitset.hpp>
-#include <Nazara/Core/ByteArray.hpp>
-#include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Network/UdpSocket.hpp>
 #include <CoreLib/AssetStore.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/Player.hpp>
@@ -23,6 +20,10 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
+#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Core/ByteArray.hpp>
+#include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Network/UdpSocket.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <memory>
 #include <optional>
@@ -43,7 +44,7 @@ namespace bw
 		TimedOut
 	};
 
-	class Match : public SharedMatch
+	class BURGWAR_CORELIB_API Match : public SharedMatch
 	{
 		friend class MatchClientSession;
 

@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CLIENTLIB_DUMMYINPUTCONTROLLER_HPP
 #define BURGWAR_CLIENTLIB_DUMMYINPUTCONTROLLER_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/InputController.hpp>
 #include <Thirdparty/sol3/forward.hpp>
 
 namespace bw
 {
-	class DummyInputController : public InputController
+	class BURGWAR_CLIENTLIB_API DummyInputController : public InputController
 	{
 		public:
 			DummyInputController() = default;

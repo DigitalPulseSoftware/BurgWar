@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_LOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_LOGGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/AbstractLogger.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
@@ -31,7 +32,7 @@ namespace bw
 	class BurgApp;
 	class LogSink;
 
-	class Logger : public AbstractLogger
+	class BURGWAR_CORELIB_API Logger : public AbstractLogger
 	{
 		friend class LogContextPtr;
 		friend class LoggerProxy;

@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_CLIENTWEAPONSTORE_HPP
 
 #include <CoreLib/Scripting/SharedWeaponStore.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
@@ -15,7 +16,7 @@ namespace bw
 	class LocalLayer;
 	class LocalLayerEntity;
 
-	class ClientWeaponStore : public SharedWeaponStore
+	class BURGWAR_CLIENTLIB_API ClientWeaponStore : public SharedWeaponStore
 	{
 		public:
 			inline ClientWeaponStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);

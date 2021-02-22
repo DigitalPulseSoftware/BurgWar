@@ -7,16 +7,17 @@
 #ifndef BURGWAR_SERVER_CLIENTVISIBILITY_HPP
 #define BURGWAR_SERVER_CLIENTVISIBILITY_HPP
 
-#include <Nazara/Core/Bitset.hpp>
-#include <Nazara/Core/Flags.hpp>
-#include <Nazara/Core/Signal.hpp>
-#include <NDK/EntityList.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
+#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Core/Flags.hpp>
+#include <Nazara/Core/Signal.hpp>
+#include <NDK/EntityList.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
 #include <Thirdparty/tsl/hopscotch_set.h>
 #include <limits>
@@ -53,10 +54,12 @@ namespace bw
 {
 	class MatchClientSession;
 
-	class MatchClientVisibility final
+	class BURGWAR_CORELIB_API MatchClientVisibility final
 	{
 		public:
 			inline MatchClientVisibility(Match& match, MatchClientSession& session);
+			MatchClientVisibility(const MatchClientVisibility&) = delete;
+			MatchClientVisibility(MatchClientVisibility&&) noexcept = default;
 			~MatchClientVisibility() = default;
 
 			inline void ClearLayers();
@@ -74,6 +77,9 @@ namespace bw
 			void ShowLayer(LayerIndex layerIndex);
 
 			void Update();
+
+			MatchClientVisibility& operator=(const MatchClientVisibility&) = delete;
+			MatchClientVisibility& operator=(MatchClientVisibility&&) = delete;
 
 		private:
 			struct PriorityMovementData

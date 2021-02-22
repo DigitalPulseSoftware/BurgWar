@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 #define BURGWAR_CORELIB_SYSTEMS_NETWORKSYNCSYSTEM_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
@@ -28,7 +29,7 @@ namespace bw
 {
 	class TerrainLayer;
 
-	class NetworkSyncSystem : public Ndk::System<NetworkSyncSystem>
+	class BURGWAR_CORELIB_API NetworkSyncSystem : public Ndk::System<NetworkSyncSystem>
 	{
 		public:
 			struct EntityCreation;

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_TERRAINLAYER_HPP
 #define BURGWAR_CORELIB_TERRAINLAYER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/SharedLayer.hpp>
 
@@ -15,7 +16,7 @@ namespace bw
 	class BurgApp;
 	class Match;
 
-	class TerrainLayer : public SharedLayer
+	class BURGWAR_CORELIB_API TerrainLayer : public SharedLayer
 	{
 		friend class Terrain;
 

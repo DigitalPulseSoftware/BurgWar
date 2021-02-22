@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_NETWORKREACTORMANAGER_HPP
 
 #include <CoreLib/NetworkReactor.hpp>
+#include <ClientLib/Export.hpp>
 #include <memory>
 #include <vector>
 
@@ -16,10 +17,12 @@ namespace bw
 	class Logger;
 	class NetworkSessionBridge;
 
-	class NetworkReactorManager
+	class BURGWAR_CLIENTLIB_API NetworkReactorManager
 	{
 		public:
 			inline NetworkReactorManager(const Logger& logger);
+			NetworkReactorManager(const NetworkReactorManager&) = delete;
+			NetworkReactorManager(NetworkReactorManager&&) noexcept = default;
 			~NetworkReactorManager() = default;
 
 			inline std::size_t AddReactor(std::unique_ptr<NetworkReactor> reactor);
@@ -31,6 +34,9 @@ namespace bw
 			inline std::size_t GetReactorCount() const;
 
 			void Update();
+
+			NetworkReactorManager& operator=(const NetworkReactorManager&) = delete;
+			NetworkReactorManager& operator=(NetworkReactorManager&&) = delete;
 
 		private:
 			void HandlePeerConnection(bool outgoing, std::size_t peerId, Nz::UInt32 data);
