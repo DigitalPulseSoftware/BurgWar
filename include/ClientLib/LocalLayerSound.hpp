@@ -9,6 +9,7 @@
 
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
@@ -24,7 +25,7 @@ namespace bw
 
 	using LocalLayerSoundHandle = Nz::ObjectHandle<LocalLayerSound>;
 
-	class LocalLayerSound final : public Nz::HandledObject<LocalLayerSound>
+	class BURGWAR_CLIENTLIB_API LocalLayerSound final : public Nz::HandledObject<LocalLayerSound>
 	{
 		friend SoundEntity;
 

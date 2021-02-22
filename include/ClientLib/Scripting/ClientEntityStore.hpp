@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_CLIENTENTITYSTORE_HPP
 
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/Scripting/ClientEditorEntityStore.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -19,7 +20,7 @@ namespace bw
 	class LocalLayer;
 	class LocalLayerEntity;
 
-	class ClientEntityStore : public ClientEditorEntityStore
+	class BURGWAR_CLIENTLIB_API ClientEntityStore : public ClientEditorEntityStore
 	{
 		public:
 			using ClientEditorEntityStore::ClientEditorEntityStore;

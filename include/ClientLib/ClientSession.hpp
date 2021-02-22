@@ -9,6 +9,7 @@
 
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
@@ -19,7 +20,7 @@ namespace bw
 {
 	class BurgApp;
 
-	class ClientSession
+	class BURGWAR_CLIENTLIB_API ClientSession
 	{
 		friend class LocalCommandStore;
 

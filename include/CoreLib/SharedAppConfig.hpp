@@ -8,12 +8,13 @@
 #define BURGWAR_CORELIB_SHAREDAPPCONFIG_HPP
 
 #include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/Export.hpp>
 
 namespace bw
 {
 	class BurgApp;
 
-	class SharedAppConfig : public ConfigFile
+	class BURGWAR_CORELIB_API SharedAppConfig : public ConfigFile
 	{
 		public:
 			SharedAppConfig(BurgApp& app);

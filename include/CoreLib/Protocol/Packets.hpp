@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 #define BURGWAR_CORELIB_NETWORK_PACKETS_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/PropertyValues.hpp>
@@ -577,55 +578,55 @@ namespace bw
 #undef DeclarePacket
 
 		// Compute size
-		std::size_t EstimateSize(const MatchState& matchState);
+		BURGWAR_CORELIB_API std::size_t EstimateSize(const MatchState& matchState);
 
 		// Packets serializer
-		void Serialize(PacketSerializer& serializer, Auth& data);
-		void Serialize(PacketSerializer& serializer, AuthFailure& data);
-		void Serialize(PacketSerializer& serializer, AuthSuccess& data);
-		void Serialize(PacketSerializer& serializer, ChatMessage& data);
-		void Serialize(PacketSerializer& serializer, ClientAssetList& data);
-		void Serialize(PacketSerializer& serializer, ClientScriptList& data);
-		void Serialize(PacketSerializer& serializer, ConsoleAnswer& data);
-		void Serialize(PacketSerializer& serializer, ControlEntity& data);
-		void Serialize(PacketSerializer& serializer, CreateEntities& data);
-		void Serialize(PacketSerializer& serializer, DeleteEntities& data);
-		void Serialize(PacketSerializer& serializer, DisableLayer& data);
-		void Serialize(PacketSerializer& serializer, DownloadClientFileFragment& data);
-		void Serialize(PacketSerializer& serializer, DownloadClientFileRequest& data);
-		void Serialize(PacketSerializer& serializer, DownloadClientFileResponse& data);
-		void Serialize(PacketSerializer& serializer, EnableLayer& data);
-		void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
-		void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
-		void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
-		void Serialize(PacketSerializer& serializer, EntitiesScale& data);
-		void Serialize(PacketSerializer& serializer, EntityPhysics& data);
-		void Serialize(PacketSerializer& serializer, EntityWeapon& data);
-		void Serialize(PacketSerializer& serializer, HealthUpdate& data);
-		void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
-		void Serialize(PacketSerializer& serializer, MatchData& data);
-		void Serialize(PacketSerializer& serializer, MatchState& data);
-		void Serialize(PacketSerializer& serializer, NetworkStrings& data);
-		void Serialize(PacketSerializer& serializer, PlayerChat& data);
-		void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
-		void Serialize(PacketSerializer& serializer, PlayerControlEntity& data);
-		void Serialize(PacketSerializer& serializer, PlayerJoined& data);
-		void Serialize(PacketSerializer& serializer, PlayerLayer& data);
-		void Serialize(PacketSerializer& serializer, PlayerLeaving& data);
-		void Serialize(PacketSerializer& serializer, PlayerNameUpdate& data);
-		void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data);
-		void Serialize(PacketSerializer& serializer, PlayersInput& data);
-		void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
-		void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
-		void Serialize(PacketSerializer& serializer, Ready& data);
-		void Serialize(PacketSerializer& serializer, ScriptPacket& data);
-		void Serialize(PacketSerializer& serializer, UpdatePlayerName& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, Auth& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, AuthFailure& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, AuthSuccess& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ChatMessage& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ClientAssetList& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ClientScriptList& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ConsoleAnswer& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ControlEntity& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, CreateEntities& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, DeleteEntities& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, DisableLayer& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, DownloadClientFileFragment& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, DownloadClientFileRequest& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, DownloadClientFileResponse& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EnableLayer& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntitiesAnimation& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntitiesDeath& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntitiesInputs& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntitiesScale& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntityPhysics& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, EntityWeapon& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, HealthUpdate& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, MatchData& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, MatchState& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, NetworkStrings& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerChat& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerConsoleCommand& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerControlEntity& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerJoined& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerLayer& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerLeaving& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerNameUpdate& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayersInput& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerSelectWeapon& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerWeapons& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, Ready& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, ScriptPacket& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, UpdatePlayerName& data);
 
 		// Helpers
-		void Serialize(PacketSerializer& serializer, PlayerInputData& data);
-		void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
-		void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
-		void Serialize(PacketSerializer& serializer, Helper::Property& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerInputData& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, Helper::EntityData& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, Helper::EntityId& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, Helper::Property& data);
 	}
 }
 

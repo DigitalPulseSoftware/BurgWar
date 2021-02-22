@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_MAP_HPP
 
 #include <CoreLib/EntityId.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/Color.hpp>
@@ -28,7 +29,7 @@ namespace bw
 		std::string name;
 	};
 
-	class Map
+	class BURGWAR_CORELIB_API Map
 	{
 		public:
 			struct Asset;

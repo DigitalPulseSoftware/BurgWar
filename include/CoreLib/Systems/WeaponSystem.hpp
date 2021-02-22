@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SYSTEMS_WEAPONSYSTEM_HPP
 #define BURGWAR_CORELIB_SYSTEMS_WEAPONSYSTEM_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/EntityList.hpp>
 #include <NDK/System.hpp>
 #include <vector>
@@ -15,7 +16,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class WeaponSystem : public Ndk::System<WeaponSystem>
+	class BURGWAR_CORELIB_API WeaponSystem : public Ndk::System<WeaponSystem>
 	{
 		public:
 			WeaponSystem(SharedMatch& match);

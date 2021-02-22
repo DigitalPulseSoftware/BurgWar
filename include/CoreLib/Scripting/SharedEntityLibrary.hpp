@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 
 namespace bw
 {
-	class SharedEntityLibrary : public AbstractElementLibrary
+	class BURGWAR_CORELIB_API SharedEntityLibrary : public AbstractElementLibrary
 	{
 		public:
 			using AbstractElementLibrary::AbstractElementLibrary;

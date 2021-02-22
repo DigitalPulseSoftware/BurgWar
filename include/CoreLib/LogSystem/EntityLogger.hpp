@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGGER_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LoggerProxy.hpp>
 #include <CoreLib/LogSystem/EntityLogContext.hpp>
 
 namespace bw
 {
-	class EntityLogger : public LoggerProxy
+	class BURGWAR_CORELIB_API EntityLogger : public LoggerProxy
 	{
 		public:
 			inline EntityLogger(Ndk::EntityHandle entity, const Logger& logParent);

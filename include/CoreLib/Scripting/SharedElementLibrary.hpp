@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDELEMENTLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDELEMENTLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 
 namespace bw
 {
 	struct ElementEventConnection;
 
-	class SharedElementLibrary : public AbstractElementLibrary
+	class BURGWAR_CORELIB_API SharedElementLibrary : public AbstractElementLibrary
 	{
 		public:
 			using AbstractElementLibrary::AbstractElementLibrary;

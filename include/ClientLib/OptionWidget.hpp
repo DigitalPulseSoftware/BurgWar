@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_OPTIONMENU_HPP
 #define BURGWAR_CLIENTLIB_OPTIONMENU_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Widgets/ButtonWidget.hpp>
@@ -19,7 +20,7 @@ namespace bw
 {
 	class ConfigFile;
 
-	class OptionWidget : public Ndk::BaseWidget
+	class BURGWAR_CLIENTLIB_API OptionWidget : public Ndk::BaseWidget
 	{
 		public:
 			OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig);

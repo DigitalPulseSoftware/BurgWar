@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SHAREDMATCH_HPP
 #define BURGWAR_CORELIB_SHAREDMATCH_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/TimerManager.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
@@ -23,7 +24,7 @@ namespace bw
 	class SharedGamemode;
 	class SharedWeaponStore;
 
-	class SharedMatch
+	class BURGWAR_CORELIB_API SharedMatch
 	{
 		public:
 			SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration);

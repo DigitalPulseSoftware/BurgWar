@@ -9,6 +9,7 @@
 
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/DownloadManager.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/AbstractHash.hpp>
@@ -17,7 +18,7 @@
 
 namespace bw
 {
-	class PacketDownloadManager : public DownloadManager
+	class BURGWAR_CLIENTLIB_API PacketDownloadManager : public DownloadManager
 	{
 		public:
 			PacketDownloadManager(std::shared_ptr<ClientSession> clientSession);

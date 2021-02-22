@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGCONTEXT_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_ENTITYLOGCONTEXT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/MatchLogContext.hpp>
 #include <NDK/Entity.hpp>
 

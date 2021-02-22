@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_LOCALSESSIONMANAGER_HPP
 
 #include <CoreLib/SessionManager.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
 #include <optional>
 #include <vector>
@@ -18,17 +19,22 @@ namespace bw
 	class MatchClientSession;
 	class MatchSessions;
 
-	class LocalSessionManager : public SessionManager
+	class BURGWAR_CLIENTLIB_API LocalSessionManager : public SessionManager
 	{
 		friend LocalSessionBridge;
 
 		public:
 			using SessionManager::SessionManager;
+			LocalSessionManager(const LocalSessionManager&) = delete;
+			LocalSessionManager(LocalSessionManager&&) = delete;
 			~LocalSessionManager();
 
 			std::shared_ptr<LocalSessionBridge> CreateSession();
 
 			void Poll() override;
+
+			LocalSessionManager& operator=(const LocalSessionManager&) = delete;
+			LocalSessionManager& operator=(LocalSessionManager&&) = delete;
 
 		private:
 			void DisconnectPeer(std::size_t peerId);

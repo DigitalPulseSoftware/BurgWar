@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_LOCALCOMMANDSTORE_HPP
 
 #include <CoreLib/CommandStore.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class ClientSession;
 
-	class LocalCommandStore : public CommandStore<ClientSession*>
+	class BURGWAR_CLIENTLIB_API LocalCommandStore : public CommandStore<ClientSession*>
 	{
 		public:
 			LocalCommandStore(const Logger& logger);

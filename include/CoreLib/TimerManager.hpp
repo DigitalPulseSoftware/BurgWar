@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_TIMERMANAGER_HPP
 #define BURGWAR_CORELIB_TIMERMANAGER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <functional>
 #include <vector>
@@ -15,7 +16,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class TimerManager
+	class BURGWAR_CORELIB_API TimerManager
 	{
 		public:
 			using Callback = std::function<void()>;

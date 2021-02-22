@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_OWNER_HPP
 #define BURGWAR_CORELIB_COMPONENTS_OWNER_HPP
 
-#include <NDK/Component.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Player.hpp>
+#include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class OwnerComponent : public Ndk::Component<OwnerComponent>
+	class BURGWAR_CORELIB_API OwnerComponent : public Ndk::Component<OwnerComponent>
 	{
 		public:
 			OwnerComponent(PlayerHandle owner);

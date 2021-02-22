@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_WEAPONWIELDERCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_WEAPONWIELDERCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Component.hpp>
 #include <NDK/EntityOwner.hpp>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	class WeaponWielderComponent : public Ndk::Component<WeaponWielderComponent>
+	class BURGWAR_CORELIB_API WeaponWielderComponent : public Ndk::Component<WeaponWielderComponent>
 	{
 		public:
 			using WeaponInitCallback = std::function<Ndk::EntityHandle (const std::string& /*weaponName*/)>;

@@ -7,12 +7,13 @@
 #ifndef BURGWAR_SERVER_CLIENTSESSION_HPP
 #define BURGWAR_SERVER_CLIENTSESSION_HPP
 
-#include <Nazara/Core/HandledObject.hpp>
-#include <Nazara/Core/ObjectHandle.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Utility/CircularBuffer.hpp>
+#include <Nazara/Core/HandledObject.hpp>
+#include <Nazara/Core/ObjectHandle.hpp>
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -28,7 +29,7 @@ namespace bw
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	// Match client session
-	class MatchClientSession final : public Nz::HandledObject<MatchClientSession>
+	class BURGWAR_CORELIB_API MatchClientSession final : public Nz::HandledObject<MatchClientSession>
 	{
 		friend PlayerCommandStore;
 

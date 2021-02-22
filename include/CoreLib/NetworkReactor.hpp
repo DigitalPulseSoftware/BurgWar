@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_NETWORK_REACTOR_HPP
 #define BURGWAR_CORELIB_NETWORK_REACTOR_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/Thread.hpp>
 #include <Nazara/Network/ENetHost.hpp>
 #include <Thirdparty/concurrentqueue/concurrentqueue.h>
@@ -24,7 +25,7 @@ namespace bw
 		Normal  // Disconnect
 	};
 
-	class NetworkReactor
+	class BURGWAR_CORELIB_API NetworkReactor
 	{
 		public:
 			struct PeerInfo;

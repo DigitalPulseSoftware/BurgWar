@@ -15,7 +15,7 @@ namespace bw
 {
 	class SharedAppConfig;
 
-	class ClientEditorApp : public Ndk::ClientApplication, public BurgApp
+	class BURGWAR_CLIENTLIB_API ClientEditorApp : public Ndk::ClientApplication, public BurgApp
 	{
 		public:
 			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);

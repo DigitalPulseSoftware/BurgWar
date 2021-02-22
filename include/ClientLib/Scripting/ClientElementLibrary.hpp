@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_CLIENTELEMENTLIBRARY_HPP
 
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class ClientAssetStore;
 
-	class ClientElementLibrary : public SharedElementLibrary
+	class BURGWAR_CLIENTLIB_API ClientElementLibrary : public SharedElementLibrary
 	{
 		public:
 			inline ClientElementLibrary(const Logger& logger, ClientAssetStore& assetStore);

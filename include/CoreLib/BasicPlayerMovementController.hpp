@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_BASICPLAYERMOVEMENTCONTROLLER_HPP
 #define BURGWAR_CORELIB_BASICPLAYERMOVEMENTCONTROLLER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
 
 namespace bw
 {
-	class BasicPlayerMovementController : public PlayerMovementController
+	class BURGWAR_CORELIB_API BasicPlayerMovementController : public PlayerMovementController
 	{
 		public:
 			BasicPlayerMovementController() = default;

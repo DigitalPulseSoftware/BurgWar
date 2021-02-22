@@ -8,12 +8,13 @@
 #define BURGWAR_CLIENTLIB_LOCALPLAYERBRIDGE_HPP
 
 #include <CoreLib/SessionBridge.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class LocalSessionManager;
 
-	class LocalSessionBridge : public SessionBridge
+	class BURGWAR_CLIENTLIB_API LocalSessionBridge : public SessionBridge
 	{
 		public:
 			LocalSessionBridge(LocalSessionManager& sessionManager, std::size_t peerId, bool isServer);

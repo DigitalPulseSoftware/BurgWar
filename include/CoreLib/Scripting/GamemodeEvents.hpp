@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_GAMEMODEEVENTS_HPP
 #define BURGWAR_CORELIB_SCRIPTING_GAMEMODEEVENTS_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/EventCombinator.hpp>
 #include <Thirdparty/sol3/sol.hpp>
 #include <cstddef>
@@ -67,8 +68,8 @@ namespace bw
 	constexpr std::size_t GamemodeEventCount = static_cast<std::size_t>(GamemodeEvent::Max) + 1;
 
 	constexpr bool HasReturnValue(GamemodeEvent event);
-	std::optional<GamemodeEvent> RetrieveGamemodeEvent(const std::string_view& eventName);
-	std::string_view ToString(GamemodeEvent event);
+	BURGWAR_CORELIB_API std::optional<GamemodeEvent> RetrieveGamemodeEvent(const std::string_view& eventName);
+	BURGWAR_CORELIB_API std::string_view ToString(GamemodeEvent event);
 }
 
 #include <CoreLib/Scripting/GamemodeEvents.inl>

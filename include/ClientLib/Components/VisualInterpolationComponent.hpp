@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_VISUALINTERPOLATIONCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISUALINTERPOLATIONCOMPONENT_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
 {
-	class VisualInterpolationComponent : public Ndk::Component<VisualInterpolationComponent>
+	class BURGWAR_CLIENTLIB_API VisualInterpolationComponent : public Ndk::Component<VisualInterpolationComponent>
 	{
 		friend class VisualInterpolationSystem;
 

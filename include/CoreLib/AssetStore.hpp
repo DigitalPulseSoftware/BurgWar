@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_ASSETSTORE_HPP
 #define BURGWAR_CORELIB_ASSETSTORE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Nazara/Core/ObjectRef.hpp>
 #include <Nazara/Utility/Image.hpp>
@@ -16,7 +17,7 @@ namespace bw
 {
 	class Logger;
 
-	class AssetStore
+	class BURGWAR_CORELIB_API AssetStore
 	{
 		public:
 			inline AssetStore(const Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory);

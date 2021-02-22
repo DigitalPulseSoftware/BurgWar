@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_STDSINK_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_STDSINK_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <CoreLib/LogSystem/LogSink.hpp>
 
 namespace bw
 {
-	class StdSink : public LogSink
+	class BURGWAR_CORELIB_API StdSink : public LogSink
 	{
 		public:
 			StdSink() = default;

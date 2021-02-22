@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SOUNDENTITY_HPP
 #define BURGWAR_CLIENTLIB_SOUNDENTITY_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Utility/Node.hpp>
@@ -17,7 +18,7 @@ namespace bw
 	class LocalLayerSound;
 	using LocalLayerSoundHandle = Nz::ObjectHandle<LocalLayerSound>;
 
-	class SoundEntity
+	class BURGWAR_CLIENTLIB_API SoundEntity
 	{
 		friend LocalLayerSound;
 

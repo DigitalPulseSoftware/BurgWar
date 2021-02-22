@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTINGCONTEXT_HPP
 #define BURGWAR_CORELIB_SCRIPTINGCONTEXT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Thirdparty/sol3/sol.hpp>
@@ -18,7 +19,7 @@ namespace bw
 {
 	class Logger;
 
-	class ScriptingContext
+	class BURGWAR_CORELIB_API ScriptingContext
 	{
 		public:
 			struct Async {};

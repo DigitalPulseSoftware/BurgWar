@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERGAMEMODE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERGAMEMODE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedGamemode.hpp>
 
 namespace bw
 {
 	class Match;
 
-	class ServerGamemode : public SharedGamemode
+	class BURGWAR_CORELIB_API ServerGamemode : public SharedGamemode
 	{
 		public:
 			ServerGamemode(Match& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);

@@ -7,15 +7,16 @@
 #ifndef BURGWAR_CORELIB_BURGAPP_HPP
 #define BURGWAR_CORELIB_BURGAPP_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <Nazara/Prerequisites.hpp>
 
 namespace bw
 {
 	class ConfigFile;
 
-	class BurgApp
+	class BURGWAR_CORELIB_API BurgApp
 	{
 		public:
 			BurgApp(LogSide side, const ConfigFile& config);

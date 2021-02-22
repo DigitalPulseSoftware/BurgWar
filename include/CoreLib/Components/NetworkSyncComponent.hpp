@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class NetworkSyncComponent : public Ndk::Component<NetworkSyncComponent>
+	class BURGWAR_CORELIB_API NetworkSyncComponent : public Ndk::Component<NetworkSyncComponent>
 	{
 		public:
 			inline NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle);

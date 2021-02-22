@@ -10,13 +10,14 @@
 #include <CoreLib/ScriptingEnvironment.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <ClientLib/Console.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class AbstractScriptingLibrary;
 	class Logger;
 
-	class LocalConsole : public Console
+	class BURGWAR_CLIENTLIB_API LocalConsole : public Console
 	{
 		public:
 			LocalConsole(const Logger& logger, Nz::RenderTarget* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir);

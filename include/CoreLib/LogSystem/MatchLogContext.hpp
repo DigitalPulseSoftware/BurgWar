@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_LOGSYSTEM_MATCHLOGCONTEXT_HPP
 #define BURGWAR_CORELIB_LOGSYSTEM_MATCHLOGCONTEXT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 
 namespace bw
 {
 	class SharedMatch;
 
-	struct MatchLogContext : LogContext
+	struct BURGWAR_CORELIB_API MatchLogContext : LogContext
 	{
 		SharedMatch* match;
 		Nz::UInt64 tick;

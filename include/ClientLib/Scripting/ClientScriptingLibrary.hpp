@@ -9,12 +9,13 @@
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <ClientLib/Export.hpp>
 
 namespace bw
 {
 	class LocalMatch;
 
-	class ClientScriptingLibrary : public SharedScriptingLibrary
+	class BURGWAR_CLIENTLIB_API ClientScriptingLibrary : public SharedScriptingLibrary
 	{
 		public:
 			ClientScriptingLibrary(LocalMatch& match);

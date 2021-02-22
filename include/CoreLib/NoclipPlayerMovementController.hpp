@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_NOCLIPPLAYERMOVEMENTCONTROLLER_HPP
 #define BURGWAR_CORELIB_NOCLIPPLAYERMOVEMENTCONTROLLER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
 
 namespace bw
 {
-	class NoclipPlayerMovementController : public PlayerMovementController
+	class BURGWAR_CORELIB_API NoclipPlayerMovementController : public PlayerMovementController
 	{
 		public:
 			NoclipPlayerMovementController() = default;

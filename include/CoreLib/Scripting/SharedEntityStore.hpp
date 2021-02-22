@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDENTITYSTORE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/ScriptStore.hpp>
 #include <NDK/Entity.hpp>
@@ -14,7 +15,7 @@
 
 namespace bw
 {
-	class SharedEntityStore : public ScriptStore<ScriptedEntity>
+	class BURGWAR_CORELIB_API SharedEntityStore : public ScriptStore<ScriptedEntity>
 	{
 		public:
 			SharedEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context, bool isServer);

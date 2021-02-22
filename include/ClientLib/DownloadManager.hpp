@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_DOWNLOADMANAGER_HPP
 #define BURGWAR_CLIENTLIB_DOWNLOADMANAGER_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <array>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	class DownloadManager
+	class BURGWAR_CLIENTLIB_API DownloadManager
 	{
 		public:
 			using Checksum = std::array<Nz::UInt8, 20>; //< SHA1 output

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_CONSOLE_HPP
 #define BURGWAR_CLIENTLIB_CONSOLE_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
@@ -16,7 +17,7 @@
 
 namespace bw
 {
-	class Console
+	class BURGWAR_CLIENTLIB_API Console
 	{
 		public:
 			using ExecuteCallback = std::function<bool(const std::string& command)>;

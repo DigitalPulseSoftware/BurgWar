@@ -36,7 +36,8 @@ end
 if (is_plat("windows")) then
 	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
-	add_cxflags("/w44062") -- Switch case not handled warning
+	add_cxflags("/w44062") -- Enable warning: switch case not handled
+	add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
 elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
@@ -49,7 +50,6 @@ rule("copy_symbolfile")
 			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
 		end
 	end)
-rule_end()
 
 rule("install_metadata")
 	local metadataInstalled = false
@@ -60,7 +60,21 @@ rule("install_metadata")
 			metadataInstalled = true
 		end
 	end)
-rule_end()
+
+-- Custom rule to package nazaraserver without server SDK (for Core)
+rule("nazaraserver_nosdk")
+	on_load(function (target)
+		target:add("packages", "nazaraserver", {links = {}})
+	end)
+
+	after_load(function (target)
+		local libs = target:pkg("nazaraserver"):get("links")
+		for _, lib in ipairs(libs) do
+			if (not lib:startswith("NazaraSDKServer")) then
+				target:add("links", lib)
+			end
+		end
+	end)
 
 rule("install_nazara")
 	-- This is already handled by xmake on Windows
@@ -78,8 +92,16 @@ rule("install_nazara")
 			end
 		end
 	end)
-rule_end()
 
+option("corelib_static")
+    set_default(true)
+    set_showmenu(true)
+	add_defines("BURGWAR_CORELIB_STATIC")
+
+option("clientlib_static")
+    set_default(true)
+    set_showmenu(true)
+	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
 target("lua")
 	set_kind("static")
@@ -90,8 +112,14 @@ target("lua")
 	add_files("contrib/lua/src/**.c")
 
 target("CoreLib")
-	set_kind("static")
+	on_load(function (target)
+		target:set("kind", target:opt("corelib_static") and "static" or "shared")
+	end)
+
 	set_group("Common")
+
+	add_defines("BURGWAR_CORELIB_BUILD")
+	add_options("corelib_static")
 
 	add_deps("lua")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
@@ -158,8 +186,14 @@ const char* BuildDate = "%s";
 	end)
 
 target("ClientLib")
-	set_kind("static")
+	on_load(function (target)
+		target:set("kind", target:dep("clientlib_static") and "static" or "shared")
+	end)
+
 	set_group("Common")
+
+	add_defines("BURGWAR_CLIENTLIB_BUILD")
+	add_options("clientlib_static")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
@@ -176,6 +210,7 @@ target("Main")
 	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
 	add_headerfiles("src/Main/**.hpp", "src/Main/**.inl")
 	add_files("src/Main/**.cpp")
+	add_packages("nazaraserver")
 
 target("BurgWar")
 	set_kind("binary")

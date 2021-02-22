@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTPACKETREGISTRY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTPACKETREGISTRY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Thirdparty/sol3/sol.hpp>
 #include <tsl/hopscotch_map.h>
@@ -14,7 +15,7 @@
 
 namespace bw
 {
-	class ScriptHandlerRegistry
+	class BURGWAR_CORELIB_API ScriptHandlerRegistry
 	{
 		public:
 			inline ScriptHandlerRegistry(Logger& logger);

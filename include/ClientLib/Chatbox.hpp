@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_CHATBOX_HPP
 #define BURGWAR_CLIENTLIB_CHATBOX_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
@@ -21,7 +22,7 @@ namespace bw
 {
 	class Logger;
 
-	class Chatbox
+	class BURGWAR_CLIENTLIB_API Chatbox
 	{
 		public:
 			struct ColorItem

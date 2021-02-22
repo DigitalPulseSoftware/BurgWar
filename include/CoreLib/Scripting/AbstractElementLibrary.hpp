@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_ABSTRACTELEMENTLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTELEMENTLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <NDK/Entity.hpp>
 #include <Thirdparty/sol3/forward.hpp>
@@ -16,7 +17,7 @@ namespace bw
 {
 	class Logger;
 
-	class AbstractElementLibrary
+	class BURGWAR_CORELIB_API AbstractElementLibrary
 	{
 		public:
 			inline AbstractElementLibrary(const Logger& logger);

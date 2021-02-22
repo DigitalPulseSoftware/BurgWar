@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SYSTEMS_ANIMATIONSYSTEM_HPP
 #define BURGWAR_CLIENTLIB_SYSTEMS_ANIMATIONSYSTEM_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/System.hpp>
 #include <vector>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class AnimationSystem : public Ndk::System<AnimationSystem>
+	class BURGWAR_CORELIB_API AnimationSystem : public Ndk::System<AnimationSystem>
 	{
 		public:
 			AnimationSystem(SharedMatch& match);

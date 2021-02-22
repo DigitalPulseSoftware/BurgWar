@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_COOLDOWNCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_COOLDOWNCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
 {
-	class CooldownComponent : public Ndk::Component<CooldownComponent>
+	class BURGWAR_CORELIB_API CooldownComponent : public Ndk::Component<CooldownComponent>
 	{
 		public:
 			inline CooldownComponent(Nz::UInt32 cooldown);

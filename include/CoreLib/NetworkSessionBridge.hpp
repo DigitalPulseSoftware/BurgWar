@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_NETWORKSESSIONBRIDGE_HPP
 #define BURGWAR_CORELIB_NETWORKSESSIONBRIDGE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/SessionBridge.hpp>
 
 namespace bw
 {
 	class NetworkReactor;
 
-	class NetworkSessionBridge : public SessionBridge
+	class BURGWAR_CORELIB_API NetworkSessionBridge : public SessionBridge
 	{
 		public:
 			inline NetworkSessionBridge(NetworkReactor& reactor, std::size_t peerId);

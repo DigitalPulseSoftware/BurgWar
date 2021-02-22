@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_LOCALPLAYER_HPP
 
 #include <CoreLib/EntityId.hpp>
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <string>
@@ -18,7 +19,7 @@ namespace bw
 
 	using LocalPlayerHandle = Nz::ObjectHandle<LocalPlayer>;
 
-	class LocalPlayer : public Nz::HandledObject<LocalPlayer>
+	class BURGWAR_CLIENTLIB_API LocalPlayer : public Nz::HandledObject<LocalPlayer>
 	{
 		public:
 			inline LocalPlayer(Nz::UInt16 playerIndex, std::string name);

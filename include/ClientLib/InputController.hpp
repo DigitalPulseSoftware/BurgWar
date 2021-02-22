@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
 
 #include <CoreLib/PlayerInputData.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Entity.hpp>
@@ -16,7 +17,7 @@ namespace bw
 {
 	class LocalMatch;
 
-	class InputController
+	class BURGWAR_CLIENTLIB_API InputController
 	{
 		public:
 			InputController() = default;

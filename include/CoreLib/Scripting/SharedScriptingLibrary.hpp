@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTINGLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTINGLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <memory>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class SharedMatch;
 
-	class SharedScriptingLibrary : public AbstractScriptingLibrary
+	class BURGWAR_CORELIB_API SharedScriptingLibrary : public AbstractScriptingLibrary
 	{
 		public:
 			SharedScriptingLibrary(SharedMatch& sharedMatch);

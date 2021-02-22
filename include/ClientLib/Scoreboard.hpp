@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SCOREBOARD_HPP
 #define BURGWAR_CLIENTLIB_SCOREBOARD_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <NDK/Widgets/LabelWidget.hpp>
 #include <NDK/Widgets/ImageWidget.hpp>
@@ -20,7 +21,7 @@ namespace bw
 
 	using ScoreboardHandle = Nz::ObjectHandle<Scoreboard>;
 
-	class Scoreboard : public Ndk::BaseWidget, public Nz::HandledObject<Scoreboard>
+	class BURGWAR_CLIENTLIB_API Scoreboard : public Ndk::BaseWidget, public Nz::HandledObject<Scoreboard>
 	{
 		public:
 			Scoreboard(Ndk::BaseWidget* parent, const Logger& logger);

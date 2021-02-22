@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_CONFIGFILE_HPP
 #define BURGWAR_CORELIB_CONFIGFILE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <filesystem>
 #include <fstream>
@@ -19,10 +20,12 @@ namespace bw
 {
 	class BurgApp;
 
-	class ConfigFile
+	class BURGWAR_CORELIB_API ConfigFile
 	{
 		public:
 			ConfigFile(BurgApp& app);
+			ConfigFile(const ConfigFile&) = delete;
+			ConfigFile(ConfigFile&&) noexcept = default;
 			~ConfigFile() = default;
 
 			inline bool GetBoolValue(const std::string& optionName) const;
@@ -43,6 +46,9 @@ namespace bw
 			bool SetFloatValue(const std::string& optionName, double value);
 			bool SetIntegerValue(const std::string& optionName, long long value);
 			inline bool SetStringValue(const std::string& optionName, std::string value);
+
+			ConfigFile& operator=(const ConfigFile&) = delete;
+			ConfigFile& operator=(ConfigFile&&) = delete;
 
 		protected:
 			inline void RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue = std::nullopt);

@@ -8,13 +8,14 @@
 #define BURGWAR_CORELIB_COMPONENTS_COLLISIONDATA_HPP
 
 #include <CoreLib/Colliders.hpp>
+#include <CoreLib/Export.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 #include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class CollisionDataComponent : public Ndk::Component<CollisionDataComponent>
+	class BURGWAR_CORELIB_API CollisionDataComponent : public Ndk::Component<CollisionDataComponent>
 	{
 		friend class ColliderSystem;
 

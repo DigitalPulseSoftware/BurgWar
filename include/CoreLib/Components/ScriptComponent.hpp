@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_SCRIPTCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_SCRIPTCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LogSystem/EntityLogger.hpp>
 #include <CoreLib/Scripting/ElementEvents.hpp>
@@ -21,7 +22,7 @@
 
 namespace bw
 {
-	class ScriptComponent : public Ndk::Component<ScriptComponent>
+	class BURGWAR_CORELIB_API ScriptComponent : public Ndk::Component<ScriptComponent>
 	{
 		friend class TickCallbackSystem;
 

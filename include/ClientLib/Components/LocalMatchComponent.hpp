@@ -9,6 +9,7 @@
 
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
+#include <ClientLib/Export.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
@@ -16,7 +17,7 @@ namespace bw
 	class LocalLayer;
 	class LocalMatch;
 
-	class LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
+	class BURGWAR_CLIENTLIB_API LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
 	{
 		public:
 			inline LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, EntityId uniqueId);

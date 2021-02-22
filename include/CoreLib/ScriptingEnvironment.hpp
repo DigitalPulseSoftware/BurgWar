@@ -7,8 +7,9 @@
 #ifndef BURGWAR_CORELIB_SCRIPTINGENVIRONMENT_HPP
 #define BURGWAR_CORELIB_SCRIPTINGENVIRONMENT_HPP
 
-#include <Nazara/Core/Color.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <Nazara/Core/Color.hpp>
 #include <functional>
 #include <memory>
 
@@ -17,7 +18,7 @@ namespace bw
 	class AbstractScriptingLibrary;
 	class Logger;
 
-	class ScriptingEnvironment
+	class BURGWAR_CORELIB_API ScriptingEnvironment
 	{
 		public:
 			using OutputCallback = std::function<void(const std::string& str, Nz::Color color)>;

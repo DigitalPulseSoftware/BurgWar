@@ -7,14 +7,15 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_INPUTCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_INPUTCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
+#include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Components.hpp>
-#include <CoreLib/PlayerInputData.hpp>
 #include <array>
 
 namespace bw
 {
-	class InputComponent : public Ndk::Component<InputComponent>
+	class BURGWAR_CORELIB_API InputComponent : public Ndk::Component<InputComponent>
 	{
 		public:
 			inline InputComponent();

@@ -11,6 +11,7 @@
 #include <Nazara/Core/Signal.hpp>
 #include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <ClientLib/LocalLayerSound.hpp>
 #include <Thirdparty/tsl/hopscotch_map.h>
@@ -22,7 +23,7 @@ namespace bw
 {
 	class LocalMatch;
 
-	class LocalLayer : public SharedLayer
+	class BURGWAR_CLIENTLIB_API LocalLayer : public SharedLayer
 	{
 		friend LocalMatch;
 

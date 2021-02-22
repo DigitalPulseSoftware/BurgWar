@@ -7,16 +7,17 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERENTITYSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERENTITYSTORE_HPP
 
-#include <Nazara/Math/Angle.hpp>
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/SharedEntityStore.hpp>
+#include <Nazara/Math/Angle.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
 {
 	class TerrainLayer;
 
-	class ServerEntityStore : public SharedEntityStore
+	class BURGWAR_CORELIB_API ServerEntityStore : public SharedEntityStore
 	{
 		public:
 			inline ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);

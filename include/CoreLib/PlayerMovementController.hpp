@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_PLAYERMOVEMENTCONTROLLER_HPP
 #define BURGWAR_CORELIB_PLAYERMOVEMENTCONTROLLER_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <NDK/Entity.hpp>
 
@@ -21,7 +22,7 @@ namespace bw
 	class PlayerMovementComponent;
 	struct PlayerInputData;
 
-	class PlayerMovementController
+	class BURGWAR_CORELIB_API PlayerMovementController
 	{
 		public:
 			PlayerMovementController() = default;

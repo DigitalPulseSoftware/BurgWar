@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SESSIONBRIDGE_HPP
 #define BURGWAR_CORELIB_SESSIONBRIDGE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 
@@ -14,7 +15,7 @@ namespace bw
 {
 	class MatchClientSession;
 
-	class SessionBridge
+	class BURGWAR_CORELIB_API SessionBridge
 	{
 		public:
 			struct SessionInfo;

@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERWEAPONLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedWeaponLibrary.hpp>
 
 namespace bw
 {
 	class Match;
 
-	class ServerWeaponLibrary : public SharedWeaponLibrary
+	class BURGWAR_CORELIB_API ServerWeaponLibrary : public SharedWeaponLibrary
 	{
 		public:
 			inline ServerWeaponLibrary(const Logger& logger, Match& match);

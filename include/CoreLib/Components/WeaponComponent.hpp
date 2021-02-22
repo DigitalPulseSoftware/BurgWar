@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_WEAPONCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_WEAPONCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
@@ -19,7 +20,7 @@ namespace bw
 		Max = SingleShotRepeat
 	};
 
-	class WeaponComponent : public Ndk::Component<WeaponComponent>
+	class BURGWAR_CORELIB_API WeaponComponent : public Ndk::Component<WeaponComponent>
 	{
 		public:
 			inline WeaponComponent(Ndk::EntityHandle owner, WeaponAttackMode attackMode);

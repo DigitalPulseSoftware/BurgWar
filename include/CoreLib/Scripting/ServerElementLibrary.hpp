@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERELEMENTLIBRARY_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERELEMENTLIBRARY_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 
 namespace bw
 {
-	class ServerElementLibrary : public SharedElementLibrary
+	class BURGWAR_CORELIB_API ServerElementLibrary : public SharedElementLibrary
 	{
 		public:
 			using SharedElementLibrary::SharedElementLibrary;

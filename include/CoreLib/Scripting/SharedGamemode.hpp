@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SHAREDGAMEMODE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/GamemodeEventConnection.hpp>
 #include <CoreLib/Scripting/GamemodeEvents.hpp>
@@ -21,7 +22,7 @@ namespace bw
 	struct GamemodeEventConnection;
 	class SharedMatch;
 
-	class SharedGamemode
+	class BURGWAR_CORELIB_API SharedGamemode
 	{
 		public:
 			SharedGamemode(SharedMatch& match, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);

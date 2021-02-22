@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CORELIB_COMPONENTS_ENTITYOWNERCOMPONENT_HPP
 #define BURGWAR_CORELIB_COMPONENTS_ENTITYOWNERCOMPONENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <NDK/Component.hpp>
 #include <NDK/EntityOwner.hpp>
 
 namespace bw
 {
-	class EntityOwnerComponent : public Ndk::Component<EntityOwnerComponent>
+	class BURGWAR_CORELIB_API EntityOwnerComponent : public Ndk::Component<EntityOwnerComponent>
 	{
 		public:
 			EntityOwnerComponent() = default;

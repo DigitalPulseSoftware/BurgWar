@@ -7,11 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SERVERTEXTURE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SERVERTEXTURE_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Nazara/Utility/Image.hpp>
 
 namespace bw
 {
-	class ServerTexture
+	class BURGWAR_CORELIB_API ServerTexture
 	{
 		public:
 			inline ServerTexture(Nz::ImageRef image);

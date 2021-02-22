@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SYSTEMS_FRAMECALLBACKSYSTEM_HPP
 #define BURGWAR_CLIENTLIB_SYSTEMS_FRAMECALLBACKSYSTEM_HPP
 
+#include <ClientLib/Export.hpp>
 #include <NDK/EntityList.hpp>
 #include <NDK/System.hpp>
 #include <vector>
@@ -15,7 +16,7 @@ namespace bw
 {
 	class LocalMatch;
 
-	class FrameCallbackSystem : public Ndk::System<FrameCallbackSystem>
+	class BURGWAR_CLIENTLIB_API FrameCallbackSystem : public Ndk::System<FrameCallbackSystem>
 	{
 		public:
 			FrameCallbackSystem();
