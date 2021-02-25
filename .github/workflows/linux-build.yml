@@ -56,6 +56,11 @@ jobs:
     - name: Install BurgWar
       run: xmake install -vo package
 
+    # Compile the map to the package
+    - name: Compile map
+      run: ./maptool --compile beta_map.bmap ../../maps/beta_map
+      working-directory: package/bin
+  
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:
