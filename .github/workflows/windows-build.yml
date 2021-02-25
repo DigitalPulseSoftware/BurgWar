@@ -50,7 +50,7 @@ jobs:
 
     # Compile the map to the package
     - name: Compile map
-      run: maptool.exe --compile beta_map.bmap ../../maps/beta_map
+      run: ./maptool.exe --compile beta_map.bmap ../../maps/beta_map
       working-directory: package/bin
   
     # Upload artifacts
