@@ -47,7 +47,7 @@ namespace bw
 
 			struct PendingFile : FileEntry
 			{
-				std::size_t downloadUrlIndex;
+				std::size_t downloadUrlIndex = 0;
 				Nz::UInt64 downloadedSize = 0;
 			};
 

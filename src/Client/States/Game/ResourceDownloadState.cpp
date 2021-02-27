@@ -51,10 +51,10 @@ namespace bw
 				UpdateStatus();
 			});
 
-			downloadManagerPtr->OnDownloadStarted.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex)
+			downloadManagerPtr->OnDownloadStarted.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::string& downloadPath)
 			{
 				const auto& fileEntry = downloadManager->GetEntry(fileIndex);
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloading {}... ({})", fileEntry.downloadPath, ByteToString(fileEntry.expectedSize));
+				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloading {}... ({})", downloadPath, ByteToString(fileEntry.expectedSize));
 			});
 
 			downloadManagerPtr->OnDownloadFinished.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::filesystem::path& realPath, Nz::UInt64 downloadSpeed)

@@ -54,7 +54,7 @@ namespace bw
 			NazaraSignal(OnDownloadFinished, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::filesystem::path& /*realPath*/, Nz::UInt64 /*downloadSpeed*/);
 			NazaraSignal(OnDownloadFinishedMemory, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::vector<Nz::UInt8>& /*content*/, Nz::UInt64 /*downloadSpeed*/);
 			NazaraSignal(OnDownloadProgress, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, Nz::UInt64 /*downloadedSize*/);
-			NazaraSignal(OnDownloadStarted, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/);
+			NazaraSignal(OnDownloadStarted, DownloadManager* /*downloadManager*/, std::size_t /*fileIndex*/, const std::string& /*downloadPath*/);
 			NazaraSignal(OnFinished, DownloadManager* /*downloadManager*/);
 	};
 }

@@ -181,7 +181,7 @@ namespace bw
 
 		m_clientSession->SendPacket(requestPacket);
 
-		OnDownloadStarted(this, m_nextFileIndex);
+		OnDownloadStarted(this, m_nextFileIndex, downloadPath);
 
 		m_nextFileIndex++;
 	}

@@ -91,7 +91,6 @@ namespace bw
 	void HttpDownloadManager::RegisterFile(std::string filePath, const std::array<Nz::UInt8, 20>& checksum, Nz::UInt64 expectedSize, std::filesystem::path outputPath, bool keepInMemory)
 	{
 		PendingFile& newFile = m_downloadList.emplace_back();
-		newFile.downloadUrlIndex = 0; //< FIXME: Not implemented
 		newFile.downloadPath = std::move(filePath);
 		newFile.expectedChecksum = checksum;
 		newFile.expectedSize = expectedSize;
@@ -116,9 +115,7 @@ namespace bw
 			{
 				PendingFile& pendingDownload = m_downloadList[m_nextFileIndex];
 
-				using CurlWriteCallback = size_t(*)(char* ptr, size_t size, size_t nmemb, void* userdata);
-
-				CurlWriteCallback writeCallback = [](char* ptr, std::size_t size, std::size_t nmemb, void* userdata) -> std::size_t
+				curl_write_callback writeCallback = [](char* ptr, std::size_t size, std::size_t nmemb, void* userdata) -> std::size_t
 				{
 					Request::Metadata* metadata = static_cast<Request::Metadata*>(userdata);
 
@@ -169,7 +166,7 @@ namespace bw
 					OnDownloadProgress(this, fileIndex, fileData.downloadedSize);
 				};
 
-				OnDownloadStarted(this, m_nextFileIndex);
+				OnDownloadStarted(this, m_nextFileIndex, downloadUrl);
 
 				CURLMcode err = curl_multi_add_handle(m_curlMulti, request.handle);
 				if (err != CURLM_OK)
@@ -235,6 +232,8 @@ namespace bw
 
 				Error errorCode = DownloadManager::Error::FileNotFound;
 
+				std::string downloadPath = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.downloadPath;
+
 				if (m->data.result == CURLE_OK)
 				{
 					long responseCode;
@@ -266,28 +265,41 @@ namespace bw
 							}
 							else
 							{
-								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", pendingDownload.downloadPath);
+								bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: checksums don't match", downloadPath);
 								errorCode = DownloadManager::Error::ChecksumMismatch;
 							}
 						}
 						else
 						{
-							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", pendingDownload.downloadPath, downloadedSize, pendingDownload.expectedSize);
+							bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: sizes don't match (received {1}, expected {2})", downloadPath, downloadedSize, pendingDownload.expectedSize);
 							errorCode = DownloadManager::Error::SizeMismatch;
 						}
 					}
 					else
-						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", pendingDownload.downloadPath, responseCode);
+						bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: expected code 200, got {1}", downloadPath, responseCode);
 				}
 				else
-					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", pendingDownload.downloadPath, m->data.result, curl_easy_strerror(m->data.result));
+					bwLog(m_logger, LogLevel::Error, "[HTTP] Failed to download {0}: curl failed with {1}: {2}", downloadPath, m->data.result, curl_easy_strerror(m->data.result));
 
 				if (downloadError)
 				{
-					OnDownloadError(this, requestIt->fileIndex, errorCode);
+					// Can we try another URL to download this file?
+					if (pendingDownload.downloadUrlIndex + 1 < m_baseDownloadUrls.size())
+					{
+						bwLog(m_logger, LogLevel::Info, "[HTTP] {0} download will be retried from {1}", pendingDownload.downloadPath, m_baseDownloadUrls[pendingDownload.downloadUrlIndex + 1]);
 
-					if (!metadata.file.Delete())
-						bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
+						PendingFile& newFile = m_downloadList.emplace_back(pendingDownload);
+						newFile.downloadUrlIndex++;
+
+						// pendingDownload is no longer valid from here
+					}
+					else
+					{
+						OnDownloadError(this, requestIt->fileIndex, errorCode);
+
+						if (!metadata.file.Delete())
+							bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
+					}
 				}
 
 				// Cleanup
