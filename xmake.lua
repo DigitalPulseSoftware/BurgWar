@@ -216,6 +216,12 @@ target("BurgWarMapEditor")
 	add_rules("qt.console", "qt.moc")
 	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
+	-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
+	-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
+	if (not is_plat("windows")) then
+		add_cxxflags("-fno-sized-deallocation")
+	end
+
 	add_frameworks("QtCore", "QtGui", "QtWidgets")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
