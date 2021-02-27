@@ -673,15 +673,17 @@ namespace bw
 
 	void EditorWindow::BuildAssetList()
 	{
+		Map& map = GetWorkingMapMut();
+
 		tsl::hopscotch_set<std::string> textures;
-		m_workingMap.ForeachEntityPropertyValue<PropertyType::Texture>([&](Map::Entity& /*entity*/, const std::string& /*name*/, const std::string& texturePath)
+		map.ForeachEntityPropertyValue<PropertyType::Texture>([&](Map::Entity& /*entity*/, const std::string& /*name*/, const std::string& texturePath)
 		{
 			textures.insert(texturePath);
 		});
 
 		std::filesystem::path gameResourceFolder = std::filesystem::u8path(m_config.GetStringValue("Resources.AssetDirectory"));
 
-		std::vector<Map::Asset>& assets = m_workingMap.GetAssets();
+		std::vector<Map::Asset>& assets = map.GetAssets();
 		assets.clear();
 
 		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
@@ -900,6 +902,9 @@ namespace bw
 			QMenu* layerMenu = m_mapMenu->addMenu("Layers");
 			QAction* addLayer = layerMenu->addAction(tr("Add layer"));
 			connect(addLayer, &QAction::triggered, this, &EditorWindow::OnCreateLayer);
+
+			QAction* rebuildAssetList = editorMenu->addAction(tr("Rebuild asset list"));
+			connect(rebuildAssetList, &QAction::triggered, this, &EditorWindow::BuildAssetList);
 
 			QAction* playMap = m_mapMenu->addAction(tr("Play map"));
 			connect(playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
