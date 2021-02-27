@@ -708,6 +708,11 @@ namespace bw
 				bwLog(GetLogger(), LogLevel::Error, "Texture not found: {0}", fullPath.generic_u8string());
 		}
 
+		std::sort(assets.begin(), assets.end(), [&](const Map::Asset& lhs, const Map::Asset& rhs)
+		{
+			return lhs.filepath < rhs.filepath;
+		});
+
 		bwLog(GetLogger(), LogLevel::Info, "Finished building assets");
 	}
 
