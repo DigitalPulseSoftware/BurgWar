@@ -135,10 +135,10 @@ namespace bw
 		m_selectionEntity->Disable();
 
 		QToolBar* toolbar = new QToolBar;
-		QAction* tileAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/gui/icons/cloth-24.png").c_str())), tr("Tile mode"));
+		QAction* tileAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/cloth-24.png").c_str())), tr("Tile mode"));
 		connect(tileAction, &QAction::triggered, [this](bool) { EnableTileMode(); });
 
-		QAction* clearAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/gui/icons/remove_image-24.png").c_str())), tr("Clear mode"));
+		QAction* clearAction = toolbar->addAction(QIcon(QPixmap((editorResourceFolder + "/remove_image-24.png").c_str())), tr("Clear mode"));
 		connect(clearAction, &QAction::triggered, [this](bool) { EnableClearMode(); });
 
 		QVBoxLayout* layout = new QVBoxLayout;

@@ -737,12 +737,12 @@ namespace bw
 		connect(m_entityList.listWidget, &QListWidget::itemSelectionChanged, this, &EditorWindow::OnEntitySelectionUpdate);
 
 		m_entityList.upArrowButton = new QPushButton;
-		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
+		m_entityList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/up-24.png").c_str())));
 		m_entityList.upArrowButton->setEnabled(false);
 		connect(m_entityList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedUp);
 
 		m_entityList.downArrowButton = new QPushButton;
-		m_entityList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
+		m_entityList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/down-24.png").c_str())));
 		m_entityList.downArrowButton->setEnabled(false);
 		connect(m_entityList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnEntityMovedDown);
 
@@ -819,12 +819,12 @@ namespace bw
 		});
 
 		m_layerList.upArrowButton = new QPushButton;
-		m_layerList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/up-24.png").c_str())));
+		m_layerList.upArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/up-24.png").c_str())));
 		m_layerList.upArrowButton->setEnabled(false);
 		connect(m_layerList.upArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedUp);
 
 		m_layerList.downArrowButton = new QPushButton;
-		m_layerList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/down-24.png").c_str())));
+		m_layerList.downArrowButton->setIcon(QIcon(QPixmap((editorAssetsFolder + "/down-24.png").c_str())));
 		m_layerList.downArrowButton->setEnabled(false);
 		connect(m_layerList.downArrowButton, &QPushButton::released, this, &EditorWindow::OnLayerMovedDown);
 
@@ -966,29 +966,29 @@ namespace bw
 	void EditorWindow::BuildToolbar(const std::string& editorAssetsFolder)
 	{
 		QToolBar* toolBar = new QToolBar;
-		QAction* createMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/file-48.png").c_str())), tr("Create map..."));
+		QAction* createMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/file-48.png").c_str())), tr("Create map..."));
 		connect(createMap, &QAction::triggered, this, &EditorWindow::OnCreateMap);
 
-		QAction* openMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/opened_folder-48.png").c_str())), tr("Open map..."));
+		QAction* openMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/opened_folder-48.png").c_str())), tr("Open map..."));
 		connect(openMap, &QAction::triggered, this, &EditorWindow::OnOpenMap);
 
-		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/icons8-save-48.png").c_str())), tr("Save map..."));
+		m_saveMapToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/icons8-save-48.png").c_str())), tr("Save map..."));
 		connect(m_saveMapToolbar, &QAction::triggered, this, &EditorWindow::OnSaveMap);
 
 		toolBar->addSeparator();
 
-		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/idea-48.png").c_str())), tr("Create entity"));
+		m_createEntityActionToolbar = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/idea-48.png").c_str())), tr("Create entity"));
 		connect(m_createEntityActionToolbar, &QAction::triggered, this, &EditorWindow::OnCreateEntity);
 
 		toolBar->addSeparator();
 
-		m_perspectiveAction = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/perspective-48.png").c_str())), tr("Switch between perspective/orthogonal view"));
+		m_perspectiveAction = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/perspective-48.png").c_str())), tr("Switch between perspective/orthogonal view"));
 		m_perspectiveAction->setCheckable(true);
 		connect(m_perspectiveAction, &QAction::toggled, this, &EditorWindow::OnPerspectiveSwitch);
 
 		toolBar->addSeparator();
 
-		m_playMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/gui/icons/start-48.png").c_str())), tr("Play map"));
+		m_playMap = toolBar->addAction(QIcon(QPixmap((editorAssetsFolder + "/start-48.png").c_str())), tr("Play map"));
 		connect(m_playMap, &QAction::triggered, this, &EditorWindow::OnPlayMap);
 
 		QDockWidget* toolbarDock = new QDockWidget("Toolbar", this);

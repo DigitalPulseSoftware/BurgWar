@@ -5,7 +5,7 @@ GameSettings = {
 	TickRate = 33,
 }
 Resources = {
-	AssetDirectory = "resources",
-	EditorDirectory = "resources",
+	AssetDirectory = "assets",
+	EditorDirectory = "assets/editor",
 	ScriptDirectory  = "scripts"
 }

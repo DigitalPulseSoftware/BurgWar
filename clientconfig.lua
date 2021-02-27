@@ -8,7 +8,7 @@ GameSettings = {
 	TickRate = 33,
 }
 Resources = {
-	AssetDirectory = "resources",
+	AssetDirectory = "assets",
 	ScriptDirectory  = "scripts"
 }
 WindowSettings = {

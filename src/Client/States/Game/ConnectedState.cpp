@@ -78,7 +78,7 @@ namespace bw
 			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringValue("Resources.AssetDirectory");
 
 			Nz::MaterialRef connectionLostMat = Nz::Material::New("Translucent2D");
-			connectionLostMat->SetDiffuseMap(assetsFolder + "/gui/connection.png");
+			connectionLostMat->SetDiffuseMap(assetsFolder + "/connection.png");
 
 			m_connectionLostSprite = Nz::Sprite::New();
 			m_connectionLostSprite->SetMaterial(std::move(connectionLostMat));
