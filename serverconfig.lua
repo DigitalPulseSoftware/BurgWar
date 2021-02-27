@@ -3,7 +3,7 @@ Debug = {
 }
 GameSettings = {
 	Gamemode = "deathmatch",
-	MapFile = "mapdetest.bmap",
+	MapFile = "beta_map.bmap",
 	TickRate = 33,
 }
 Resources = {
