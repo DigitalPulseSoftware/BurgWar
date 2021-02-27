@@ -51,12 +51,13 @@ rule("copy_symbolfile")
 	end)
 rule_end()
 
-rule("install_scripts")
-	local scriptsInstalled = false
+rule("install_metadata")
+	local metadataInstalled = false
 	after_install(function(target)
 		if (not scriptsInstalled) then
+			os.vcp("maps", path.join(target:installdir(), "bin"))
 			os.vcp("scripts", path.join(target:installdir(), "bin"))
-			scriptsInstalled = true
+			metadataInstalled = true
 		end
 	end)
 rule_end()
@@ -168,7 +169,7 @@ target("Main")
 target("BurgWar")
 	set_kind("binary")
 	set_group("Executable")
-	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
+	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -183,7 +184,7 @@ target("BurgWar")
 target("BurgWarServer")
 	set_kind("binary")
 	set_group("Executable")
-	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
+	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
 	add_defines("NDK_SERVER")
 
@@ -213,7 +214,7 @@ target("BurgWarMapEditor")
 	set_kind("binary")
 	set_group("Executable")
 	add_rules("qt.console", "qt.moc")
-	add_rules("copy_symbolfile", "install_scripts", "install_nazara")
+	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
 	add_frameworks("QtCore", "QtGui", "QtWidgets")
 	add_deps("Main", "ClientLib", "CoreLib")
