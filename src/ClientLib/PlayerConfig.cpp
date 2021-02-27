@@ -11,8 +11,8 @@ namespace bw
 	{
 		RegisterStringOption("Player.Name", "mingebag");
 		RegisterStringOption("JoinServer.Address", "localhost");
-		RegisterStringOption("StartServer.Gamemode", "test");
-		RegisterStringOption("StartServer.Map", "mapdetest");
+		RegisterStringOption("StartServer.Gamemode", "deathmatch");
+		RegisterStringOption("StartServer.Map", "beta_map");
 		RegisterIntegerOption("JoinServer.Port", 0, 0xFFFF, 14768);
 		RegisterIntegerOption("StartServer.Port", 0, 0xFFFF, 14768);
 		RegisterIntegerOption("Sound.GlobalVolume", 0, 100, 80);
