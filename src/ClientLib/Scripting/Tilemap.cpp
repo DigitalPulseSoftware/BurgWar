@@ -12,16 +12,16 @@ namespace bw
 {
 	void Tilemap::Show(bool show)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
 
 		if (show == m_isVisible)
 			return;
 
 		if (show)
-			m_entity->AttachRenderable(m_tilemap, m_transformMatrix, m_renderOrder);
+			m_visualEntity->AttachRenderable(m_tilemap, m_transformMatrix, m_renderOrder);
 		else
-			m_entity->DetachRenderable(m_tilemap);
+			m_visualEntity->DetachRenderable(m_tilemap);
 
 		m_isVisible = show;
 	}
@@ -43,6 +43,6 @@ namespace bw
 
 	void Tilemap::UpdateTransformMatrix()
 	{
-		m_entity->UpdateRenderableMatrix(m_tilemap, m_transformMatrix);
+		m_visualEntity->UpdateRenderableMatrix(m_tilemap, m_transformMatrix);
 	}
 }

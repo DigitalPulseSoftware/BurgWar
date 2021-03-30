@@ -4,36 +4,27 @@
 
 #include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
+#include <MapEditor/Components/CanvasComponent.hpp>
 #include <MapEditor/Scripting/EditorScriptedEntity.hpp>
+#include <NDK/Components/GraphicsComponent.hpp>
 
 namespace bw
 {
-	const Ndk::EntityHandle& EditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent) const
+	std::optional<LayerVisualEntity> EditorEntityStore::Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent) const
 	{
-		try
-		{
-			const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
-			if (!entity)
-				return Ndk::EntityHandle::InvalidHandle;
+		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
+		if (!entity)
+			return std::nullopt;
 
-			entity->AddComponent<Ndk::GraphicsComponent>();
+		LayerVisualEntity visualEntity(entity, uniqueId);
+		entity->AddComponent<CanvasComponent>(layerIndex, uniqueId);
+		entity->AddComponent<VisualComponent>(visualEntity.CreateHandle());
 
-			if (!InitializeEntity(entity))
-			{
-				entity->Kill();
-				return Ndk::EntityHandle::InvalidHandle;
-			}
+		if (!InitializeEntity(entity))
+			return std::nullopt;
 
-			return entity;
-		}
-		catch (const std::exception& e)
-		{
-			const auto& entityClass = GetElement(entityIndex);
-
-			bwLog(GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {0}: {1}", entityClass->fullName, e.what());
-			return Ndk::EntityHandle::InvalidHandle;
-		}
+		return visualEntity;
 	}
 
 	void EditorEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& /*entity*/) const

@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline Text::Text(LocalLayerEntityHandle entity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering) :
-	m_entity(std::move(entity)),
+	inline Text::Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering) :
+	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_drawer(std::move(drawer)),
 	m_textSprite(std::move(textSprite)),
@@ -36,7 +36,7 @@ namespace bw
 
 	inline bool Text::IsValid() const
 	{
-		return m_entity;
+		return m_visualEntity;
 	}
 
 	inline bool Text::IsVisible() const
@@ -60,7 +60,7 @@ namespace bw
 	
 	inline void Text::SetText(const std::string& text)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid text");
 
 		m_drawer.SetText(text);

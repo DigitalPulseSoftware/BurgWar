@@ -36,7 +36,7 @@ namespace bw
 			Ndk::Entity* bestEntity = nullptr;
 			float bestEntityArea = std::numeric_limits<float>::infinity();
 
-			for (const Ndk::EntityHandle& entity : canvas->GetMapEntities())
+			/*canvas->ForEachMapEntity([&](const Ndk::EntityHandle& entity)
 			{
 				assert(entity->HasComponent<Ndk::GraphicsComponent>());
 
@@ -53,7 +53,7 @@ namespace bw
 						bestEntityArea = entityArea;
 					}
 				}
-			}
+			});*/
 
 			OnEntitySelected(bestEntity);
 			if (mouseButton.button == Nz::Mouse::Right)

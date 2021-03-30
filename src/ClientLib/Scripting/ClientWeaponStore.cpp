@@ -8,7 +8,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -38,7 +38,7 @@ namespace bw
 		LocalLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
 
-		weapon->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());
+		weapon->AddComponent<VisualComponent>(layerEntity.CreateHandle());
 		weapon->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex(), uniqueId);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);

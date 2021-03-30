@@ -12,6 +12,7 @@
 #include <ClientLib/LocalLayer.hpp>
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <ClientLib/VisualLayer.hpp>
 #include <Nazara/Utility/Node.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
@@ -28,7 +29,8 @@ namespace bw
 
 			void Clear();
 
-			void RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
+			void RegisterLocalLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
+			void RegisterVisibleLayer(Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 
 			static Ndk::ComponentIndex componentIndex;
 
@@ -36,25 +38,30 @@ namespace bw
 			struct VisibleLayer;
 
 			void CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
-			void CreateVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity);
+			void CreateVisual(VisibleLayer* layer, Nz::Int64 uniqueId, LayerVisualEntity& layerEntity);
 
 			void DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
-			void DeleteVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity);
+			void DeleteVisual(VisibleLayer* layer, Nz::Int64 uniqueId);
+
+			void RegisterLayer(std::shared_ptr<VisibleLayer> visibleLayer, Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 
 			struct VisibleLayer
 			{
 				Nz::Node baseNode;
 				int baseRenderOrder;
 
-				tsl::hopscotch_map<Nz::UInt32 /*clientId*/, VisualEntity> localEntities;
-				tsl::hopscotch_map<Nz::UInt32 /*serverId*/, VisualEntity> visualEntities;
 				tsl::hopscotch_map<std::size_t /*sound*/, SoundEntity> soundEntities;
+				tsl::hopscotch_map<Nz::Int64 /*uniqueId*/, VisualEntity> visualEntities;
 
 				NazaraSlot(Camera, OnCameraMove, onCameraMove);
-				NazaraSlot(LocalLayer, OnDisabled, onDisabled);
-				NazaraSlot(LocalLayer, OnEnabled, onEnabled);
-				NazaraSlot(LocalLayer, OnEntityCreated, onEntityCreated);
-				NazaraSlot(LocalLayer, OnEntityDelete, onEntityDelete);
+				NazaraSlot(VisualLayer, OnDisabled, onDisabled);
+				NazaraSlot(VisualLayer, OnEnabled, onEnabled);
+				NazaraSlot(VisualLayer, OnEntityVisualCreated, onVisualCreated);
+				NazaraSlot(VisualLayer, OnEntityVisualDelete, onVisualDelete);
+			};
+
+			struct VisibleLocalLayer : VisibleLayer
+			{
 				NazaraSlot(LocalLayer, OnSoundCreated, onSoundCreated);
 				NazaraSlot(LocalLayer, OnSoundDelete, onSoundDelete);
 			};

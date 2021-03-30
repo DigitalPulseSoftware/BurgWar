@@ -4,7 +4,17 @@
 
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
+#include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
+#include <ClientLib/Scripting/ClientElementLibrary.hpp>
+#include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <MapEditor/Gizmos/PositionGizmo.hpp>
+#include <MapEditor/Components/CanvasComponent.hpp>
+#include <MapEditor/Scripting/EditorElementLibrary.hpp>
+#include <MapEditor/Scripting/EditorEntityLibrary.hpp>
+#include <MapEditor/Scripting/EditorGamemode.hpp>
+#include <MapEditor/Scripting/EditorScriptedEntity.hpp>
+#include <MapEditor/Scripting/EditorScriptingLibrary.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -19,6 +29,7 @@
 namespace bw
 {
 	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
+	SharedMatch(editor, LogSide::Editor, "editor", std::numeric_limits<float>::max()),
 	WorldCanvas(parent),
 	m_editor(editor)
 	{
@@ -39,14 +50,41 @@ namespace bw
 			OnCameraZoomFactorUpdated(this, controller->ComputeZoomFactor());
 			UpdateGrid();
 		});
+
+		m_currentLayerEntity = GetWorld().CreateEntity();
+		m_currentLayerEntity->AddComponent<Ndk::NodeComponent>();
+		m_currentLayerEntity->AddComponent<VisibleLayerComponent>(GetWorld());
+
+		const ConfigFile& config = editor.GetConfig();
+		const std::string& assetDir = config.GetStringValue("Resources.AssetDirectory");
+		const std::string& scriptDir = config.GetStringValue("Resources.ScriptDirectory");
+
+		m_assetDirectory = std::make_shared<VirtualDirectory>(assetDir);
+		m_scriptDirectory = std::make_shared<VirtualDirectory>(scriptDir);
+
+		m_assetStore.emplace(GetLogger(), m_assetDirectory);
+		ReloadScripts();
 	}
 
-	void MapCanvas::ClearEntities()
+	MapCanvas::~MapCanvas()
 	{
-		for (const Ndk::EntityHandle& entity : m_mapEntities)
-			entity->Kill();
+		// Clear timer manager before scripting context gets deleted
+		GetScriptPacketHandlerRegistry().Clear();
+		GetTimerManager().Clear();
 
-		m_mapEntities.Clear();
+		m_layers.clear();
+
+		// Release scripts classes before scripting context
+		m_entityStore.reset();
+		m_weaponStore.reset();
+		m_gamemode.reset();
+	}
+
+	void MapCanvas::Clear()
+	{
+		m_currentLayer.reset();
+		m_entitiesByUniqueId.clear();
+		m_layers.clear();
 
 		ClearEntitySelection(); //< Force disconnection because entity destruction does not occur until the world next update
 	}
@@ -58,50 +96,21 @@ namespace bw
 		m_entityGizmo.reset();
 	}
 
-	const Ndk::EntityHandle& MapCanvas::CreateEntity(const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties)
+	const Ndk::EntityHandle& MapCanvas::CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties)
 	{
-		const EditorEntityStore& entityStore = m_editor.GetEntityStore();
-
-		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
-
-		try
-		{
-			if (classIndex == entityStore.InvalidIndex)
-				throw std::runtime_error("entity class is not registered");
-
-			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(GetWorld(), classIndex, position, rotation, 1.f, std::move(properties));
-			if (!entity)
-				throw std::runtime_error("failed to instantiate entity");
-
-			assert(entity);
-				
-			m_mapEntities.Insert(entity);
-
-			return entity;
-		}
-		catch (const std::exception& e)
-		{
-			bwLog(m_editor.GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {}: {}", entityClass, e.what());
-
-			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
-			dummyEntity->AddComponent<Ndk::GraphicsComponent>();
-			dummyEntity->AddComponent<Ndk::NodeComponent>();
-
-			m_mapEntities.Insert(dummyEntity);
-
-			return dummyEntity;
-		}
+		assert(layerIndex < m_layers.size());
+		auto& layer = m_layers[layerIndex];
+		return layer.CreateEntity(uniqueId, entityClass, position, rotation, properties).GetEntity();
 	}
 
-	void MapCanvas::DeleteEntity(Ndk::EntityId entityId)
+	void MapCanvas::DeleteEntity(LayerIndex layerIndex, EntityId entityId)
 	{
-		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
-		assert(entity);
-
-		entity->Kill();
+		assert(layerIndex < m_layers.size());
+		auto& layer = m_layers[layerIndex];
+		layer.DeleteEntity(entityId);
 	}
 
-	void MapCanvas::EditEntitiesPosition(const std::vector<Ndk::EntityId>& entityIds)
+	void MapCanvas::EditEntitiesPosition(const std::vector<EntityId>& entityIds)
 	{
 		const Map& mapData = m_editor.GetWorkingMap();
 		const auto& currentLayerOpt = m_editor.GetCurrentLayer();
@@ -110,7 +119,7 @@ namespace bw
 		const Map::Layer& layerData = mapData.GetLayer(*currentLayerOpt);
 
 		std::vector<Ndk::EntityHandle> entities;
-		for (Ndk::EntityId entityId : entityIds)
+		for (EntityId entityId : entityIds)
 		{
 			const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 			if (!entity)
@@ -125,7 +134,7 @@ namespace bw
 		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), std::move(entities), layerData.positionAlignment);
 		positionGizmo->OnPositionUpdated.Connect([this](PositionGizmo* emitter, Nz::Vector2f offset)
 		{
-			std::vector<Ndk::EntityId> ids = BuildEntityIds(emitter->GetTargetEntities());
+			std::vector<EntityId> ids = BuildEntityIds(emitter->GetTargetEntities());
 			OnEntitiesPositionUpdated(this, ids.data(), ids.size(), offset);
 		});
 
@@ -148,6 +157,148 @@ namespace bw
 		});*/
 	}
 
+	void MapCanvas::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	{
+		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
+			func(visualEntityHandle->GetEntity());
+	}
+
+	EditorEntityStore& MapCanvas::GetEntityStore()
+	{
+		return *m_entityStore;
+	}
+
+	const EditorEntityStore& MapCanvas::GetEntityStore() const
+	{
+		return *m_entityStore;
+	}
+
+	MapCanvasLayer& MapCanvas::GetLayer(LayerIndex layerIndex)
+	{
+		assert(layerIndex < m_layers.size());
+		return m_layers[layerIndex];
+	}
+
+	const MapCanvasLayer& MapCanvas::GetLayer(LayerIndex layerIndex) const
+	{
+		assert(layerIndex < m_layers.size());
+		return m_layers[layerIndex];
+	}
+
+	LayerIndex MapCanvas::GetLayerCount() const
+	{
+		return LayerIndex(m_layers.size());
+	}
+
+	const NetworkStringStore& MapCanvas::GetNetworkStringStore() const
+	{
+		throw std::runtime_error("map editor has no network string store");
+	}
+
+	std::shared_ptr<const SharedGamemode> MapCanvas::GetSharedGamemode() const
+	{
+		return m_gamemode;
+	}
+
+	ClientWeaponStore& MapCanvas::GetWeaponStore()
+	{
+		return *m_weaponStore;
+	}
+
+	const ClientWeaponStore& MapCanvas::GetWeaponStore() const
+	{
+		return *m_weaponStore;
+	}
+
+	void MapCanvas::ReloadScripts()
+	{
+		if (!m_scriptingContext)
+		{
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), m_scriptDirectory);
+			m_scriptingContext->LoadLibrary(std::make_shared<EditorScriptingLibrary>(*this));
+			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
+		}
+		else
+			m_scriptingContext->ReloadLibraries();
+
+		sol::state& lua = m_scriptingContext->GetLuaState();
+		lua["Editor"] = this;
+
+		lua["engine_GetActiveLayer"] = [&]()
+		{
+			return m_editor.GetCurrentLayer();
+		};
+
+		if (!m_entityStore)
+		{
+			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
+			m_entityStore->LoadLibrary(std::make_shared<EditorElementLibrary>(GetLogger(), *m_assetStore));
+			m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(m_editor, GetLogger(), *m_assetStore));
+		}
+		else
+		{
+			m_entityStore->ClearElements();
+			m_entityStore->ReloadLibraries();
+		}
+
+		m_entityStore->LoadDirectory("entities");
+		m_entityStore->Resolve();
+
+		if (!m_weaponStore)
+		{
+			m_weaponStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
+			m_weaponStore->LoadLibrary(std::make_shared<EditorElementLibrary>(GetLogger(), *m_assetStore));
+			m_weaponStore->LoadLibrary(std::make_shared<ClientWeaponLibrary>(GetLogger(), *m_assetStore));
+		}
+		else
+		{
+			m_weaponStore->ClearElements();
+			m_weaponStore->ReloadLibraries();
+		}
+
+		m_weaponStore->LoadDirectory("weapons");
+		m_weaponStore->Resolve();
+
+		ForEachEntity([this](const Ndk::EntityHandle& entity)
+		{
+			if (entity->HasComponent<ScriptComponent>())
+				m_entityStore->UpdateEntityElement(entity);
+		});
+
+		if (!m_gamemode)
+		{
+			m_gamemode = std::make_shared<EditorGamemode>(*this, m_scriptingContext, PropertyValueMap{});
+			m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
+		}
+		else
+			m_gamemode->Reload();
+	}
+
+	void MapCanvas::ResetLayers(std::size_t layerCount)
+	{
+		assert(m_layers.empty());
+		m_layers.reserve(layerCount);
+		for (std::size_t i = 0; i < layerCount; ++i)
+			m_layers.emplace_back(*this, LayerIndex(i));
+	}
+
+	const Ndk::EntityHandle& MapCanvas::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		if (it == m_entitiesByUniqueId.end())
+			return Ndk::EntityHandle::InvalidHandle;
+
+		return it.value()->GetEntity();
+	}
+
+	EntityId MapCanvas::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	{
+		if (!entity || !entity->HasComponent<CanvasComponent>())
+			return InvalidEntityId;
+
+		return entity->GetComponent<CanvasComponent>().GetUniqueId();
+	}
+
 	void MapCanvas::ShowGrid(bool show)
 	{
 		if (show)
@@ -165,7 +316,25 @@ namespace bw
 			m_gridEntity.Reset();
 	}
 
-	void MapCanvas::UpdateEntityPositionAndRotation(Ndk::EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
+	void MapCanvas::UpdateActiveLayer(std::optional<LayerIndex> layerIndex)
+	{
+		if (m_currentLayer != layerIndex)
+		{
+			auto& visibleLayer = m_currentLayerEntity->GetComponent<VisibleLayerComponent>();
+			visibleLayer.Clear();
+
+			if (layerIndex)
+			{
+				assert(layerIndex < m_layers.size());
+				visibleLayer.RegisterVisibleLayer(GetCamera(), m_layers[*layerIndex], 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
+			}
+
+			m_gamemode->ExecuteCallback<GamemodeEvent::ChangeLayer>(m_currentLayer, layerIndex);
+			m_currentLayer = layerIndex;
+		}
+	}
+
+	void MapCanvas::UpdateEntityPositionAndRotation(EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
 	{
 		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
 		assert(entity);
@@ -191,7 +360,7 @@ namespace bw
 			{
 				if (m_entityGizmo)
 				{
-					std::vector<Ndk::EntityId> ids = BuildEntityIds(m_entityGizmo->GetTargetEntities());
+					std::vector<EntityId> ids = BuildEntityIds(m_entityGizmo->GetTargetEntities());
 					OnDeleteEntities(this, ids.data(), ids.size());
 				}
 
@@ -274,7 +443,12 @@ namespace bw
 
 		OnCanvasMouseMoved(this, mouseMoved);
 	}
-	
+
+	void MapCanvas::OnTick(bool /*lastTick*/)
+	{
+		/* Nothing to do (yet) */
+	}
+
 	void MapCanvas::UpdateGrid()
 	{
 		if (!m_gridEntity)
@@ -374,9 +548,9 @@ namespace bw
 		}
 	}
 
-	std::vector<Ndk::EntityId> MapCanvas::BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities)
+	std::vector<EntityId> MapCanvas::BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities)
 	{
-		std::vector<Ndk::EntityId> ids;
+		std::vector<EntityId> ids;
 		ids.reserve(entities.size());
 
 		for (const Ndk::EntityHandle& entity : entities)

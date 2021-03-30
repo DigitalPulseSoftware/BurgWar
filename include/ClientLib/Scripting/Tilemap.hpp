@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_TILEMAP_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/LayerVisualEntity.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
@@ -20,7 +20,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Tilemap
 	{
 		public:
-			inline Tilemap(LocalLayerEntityHandle entity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Tilemap(LayerVisualEntityHandle visualEntity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);
 			Tilemap(const Tilemap&) = delete;
 			Tilemap(Tilemap&&) noexcept = default;
 			~Tilemap() = default;
@@ -45,7 +45,7 @@ namespace bw
 		private:
 			void UpdateTransformMatrix();
 
-			LocalLayerEntityHandle m_entity;
+			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::TileMapRef m_tilemap;
 			int m_renderOrder;

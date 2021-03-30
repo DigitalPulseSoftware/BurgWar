@@ -8,7 +8,7 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -47,13 +47,8 @@ namespace bw
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
 
-			if (entity->HasComponent<LayerEntityComponent>())
-			{
-				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-				layerEntityComponent.GetLayerEntity()->AttachRenderable(model, transformMatrix, renderOrder);
-			}
-			else
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(model, transformMatrix, renderOrder);
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			visualComponent.GetLayerVisual()->AttachRenderable(model, transformMatrix, renderOrder);
 		});
 
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
@@ -158,22 +153,12 @@ namespace bw
 			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
-			//FIXME (FIXME (FIXME))
-			if (entity->HasComponent<LayerEntityComponent>())
-			{
-				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
 
-				Sprite scriptSprite(layerEntityComponent.GetLayerEntity(), sprite, transformMatrix, renderOrder);
-				scriptSprite.Show();
+			Sprite scriptSprite(visualComponent.GetLayerVisual(), sprite, transformMatrix, renderOrder);
+			scriptSprite.Show();
 
-				return scriptSprite;
-			}
-			else
-			{
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(sprite, transformMatrix, renderOrder);
-
-				return Sprite({}, sprite, transformMatrix, renderOrder);
-			}
+			return scriptSprite;
 		});
 
 		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
@@ -223,22 +208,12 @@ namespace bw
 			Nz::TextSpriteRef textSprite = Nz::TextSprite::New();
 			textSprite->Update(drawer);
 
-			//FIXME (FIXME (FIXME))
-			if (entity->HasComponent<LayerEntityComponent>())
-			{
-				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
 
-				Text scriptText(layerEntityComponent.GetLayerEntity(), std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
-				scriptText.Show();
+			Text scriptText(visualComponent.GetLayerVisual(), std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
+			scriptText.Show();
 
-				return scriptText;
-			}
-			else
-			{
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(textSprite, transformMatrix, renderOrder);
-
-				return Text({}, std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
-			}
+			return scriptText;
 		});
 
 		elementTable["DealDamage"] = sol::overload(
@@ -305,8 +280,8 @@ namespace bw
 
 	void ClientElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
 	{
-		auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
-		layerEntityComponent.GetLayerEntity()->UpdateScale(newScale);
+		auto& visualComponent = entity->GetComponent<VisualComponent>();
+		visualComponent.GetLayerVisual()->UpdateScale(newScale);
 
 		if (entity->HasComponent<WeaponWielderComponent>())
 		{

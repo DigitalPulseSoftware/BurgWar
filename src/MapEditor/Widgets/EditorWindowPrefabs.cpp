@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/EditorWindowPrefabs.hpp>
+#include <CoreLib/Utils.hpp>
 #include <MapEditor/Commands/EntityCommands.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/FileDescDialog.hpp>

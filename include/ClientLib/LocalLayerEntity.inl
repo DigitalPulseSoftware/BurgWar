@@ -6,24 +6,9 @@
 
 namespace bw
 {
-	inline void LocalLayerEntity::Disable()
-	{
-		return Enable(false);
-	}
-
-	inline const Ndk::EntityHandle& LocalLayerEntity::GetEntity() const
-	{
-		return m_entity;
-	}
-
 	inline Nz::UInt32 LocalLayerEntity::GetServerId() const
 	{
 		return m_serverEntityId;
-	}
-
-	inline EntityId LocalLayerEntity::GetUniqueId() const
-	{
-		return m_uniqueId;
 	}
 
 	inline const LocalLayerEntityHandle& LocalLayerEntity::GetWeaponEntity() const
@@ -34,11 +19,6 @@ namespace bw
 	inline bool LocalLayerEntity::IsClientside() const
 	{
 		return m_serverEntityId == ClientsideId;
-	}
-
-	inline bool LocalLayerEntity::IsEnabled() const
-	{
-		return m_entity->IsEnabled();
 	}
 
 	inline bool LocalLayerEntity::HasHealth() const

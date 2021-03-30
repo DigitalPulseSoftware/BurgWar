@@ -5,7 +5,7 @@
 #include <ClientLib/ClientEditorApp.hpp>
 #include <CoreLib/SharedAppConfig.hpp>
 #include <ClientLib/HttpDownloadManager.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
@@ -42,7 +42,7 @@ namespace bw
 			Nz::Audio::SetGlobalVolume(float(newValue));
 		});
 
-		Ndk::InitializeComponent<LayerEntityComponent>("LayrEnt");
+		Ndk::InitializeComponent<VisualComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");

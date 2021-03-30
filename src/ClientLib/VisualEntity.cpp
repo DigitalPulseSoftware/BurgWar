@@ -3,26 +3,26 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/VisualEntity.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/LayerVisualEntity.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	VisualEntity::VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, int baseRenderOrder) :
+	VisualEntity::VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder) :
 	m_entity(renderWorld.CreateEntity()),
-	m_layerEntity(std::move(layerEntityHandle)),
+	m_visualEntity(std::move(visualEntityHandle)),
 	m_baseRenderOrder(baseRenderOrder)
 	{
 		m_entity->AddComponent<Ndk::NodeComponent>();
 		m_entity->AddComponent<Ndk::GraphicsComponent>();
 
-		m_layerEntity->RegisterVisualEntity(this);
+		m_visualEntity->RegisterVisualEntity(this);
 	}
 	
-	VisualEntity::VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, const Nz::Node& parentNode, int baseRenderOrder) :
-	VisualEntity(renderWorld, std::move(layerEntityHandle), baseRenderOrder)
+	VisualEntity::VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder) :
+	VisualEntity(renderWorld, std::move(visualEntityHandle), baseRenderOrder)
 	{
 		m_entity->GetComponent<Ndk::NodeComponent>().SetParent(parentNode);
 	}
@@ -30,17 +30,17 @@ namespace bw
 	VisualEntity::VisualEntity(VisualEntity&& entity) noexcept :
 	m_hoveringRenderables(std::move(entity.m_hoveringRenderables)),
 	m_entity(std::move(entity.m_entity)),
-	m_layerEntity(std::move(entity.m_layerEntity)),
+	m_visualEntity(std::move(entity.m_visualEntity)),
 	m_baseRenderOrder(entity.m_baseRenderOrder)
 	{
-		if (m_layerEntity)
-			m_layerEntity->NotifyVisualEntityMoved(&entity, this);
+		if (m_visualEntity)
+			m_visualEntity->NotifyVisualEntityMoved(&entity, this);
 	}
 
 	VisualEntity::~VisualEntity()
 	{
-		if (m_layerEntity)
-			m_layerEntity->UnregisterVisualEntity(this);
+		if (m_visualEntity)
+			m_visualEntity->UnregisterVisualEntity(this);
 	}
 
 	void VisualEntity::Update(const Nz::Vector2f& position, const Nz::Quaternionf& rotation, const Nz::Vector2f& scale)

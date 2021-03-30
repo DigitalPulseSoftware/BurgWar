@@ -6,7 +6,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
@@ -28,17 +28,18 @@ namespace bw
 		world.AddSystem<FrameCallbackSystem>();
 		world.AddSystem<PostFrameCallbackSystem>();
 		world.AddSystem<VisualInterpolationSystem>();
+
+		OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		{
+			OnEntityVisualCreated(layer, layerEntity);
+		});
+
+		OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		{
+			OnEntityVisualDelete(layer, layerEntity);
+		});
 	}
-
-	LocalLayer::~LocalLayer()
-	{
-		//FIXME: Disconnect destruction signals because some of them want to create entities (exploding mines)
-		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
-			entity->OnEntityDestruction.Clear();
-
-		Enable(false);
-	}
-
+	
 	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
 	SharedLayer(std::move(layer)),
 	m_entities(std::move(layer.m_entities)),
@@ -55,6 +56,25 @@ namespace bw
 				HandleEntityDestruction(uniqueId);
 			});
 		}
+		
+		OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		{
+			OnEntityVisualCreated(layer, layerEntity);
+		});
+
+		OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		{
+			OnEntityVisualDelete(layer, layerEntity);
+		});
+	}
+
+	LocalLayer::~LocalLayer()
+	{
+		//FIXME: Disconnect destruction signals because some of them want to create entities (exploding mines)
+		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
+			entity->OnEntityDestruction.Clear();
+
+		Enable(false);
 	}
 
 	void LocalLayer::Enable(bool enable)
@@ -80,9 +100,22 @@ namespace bw
 		}
 	}
 
+	void LocalLayer::ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func)
+	{
+		ForEachLayerEntity([&](LocalLayerEntity& entity)
+		{
+			func(entity);
+		});
+	}
+
 	LocalMatch& LocalLayer::GetLocalMatch()
 	{
 		return static_cast<LocalMatch&>(SharedLayer::GetMatch());
+	}
+
+	bool LocalLayer::IsEnabled() const
+	{
+		return m_isEnabled;
 	}
 
 	void LocalLayer::FrameUpdate(float elapsedTime)
@@ -523,7 +556,7 @@ namespace bw
 				return;
 
 			LocalLayerEntity& newWeapon = newWeaponOpt.value();
-			localEntity.UpdateWeaponEntity(newWeapon.CreateHandle());
+			localEntity.UpdateWeaponEntity(newWeapon.CreateHandle<LocalLayerEntity>());
 		}
 		else
 			localEntity.UpdateWeaponEntity({});

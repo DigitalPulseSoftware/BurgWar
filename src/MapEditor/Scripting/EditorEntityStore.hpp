@@ -7,6 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_SCRIPTING_EDITORENTITYSTORE_HPP
 #define BURGWAR_MAPEDITOR_SCRIPTING_EDITORENTITYSTORE_HPP
 
+#include <ClientLib/LayerVisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEditorEntityStore.hpp>
 
 namespace bw
@@ -17,7 +18,7 @@ namespace bw
 			using ClientEditorEntityStore::ClientEditorEntityStore;
 			~EditorEntityStore() = default;
 
-			const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const override;
+			std::optional<LayerVisualEntity> Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
 
 		private:
 			void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const override;

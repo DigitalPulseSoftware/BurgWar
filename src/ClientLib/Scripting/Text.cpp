@@ -10,18 +10,9 @@
 
 namespace bw
 {
-	/*bool Text::IsVisible() const
-	{
-		if (!m_entity)
-			throw std::runtime_error("Invalid text");
-
-		auto& gfxComponent = m_entity->GetComponent<Ndk::GraphicsComponent>();
-		return true;
-	}*/
-	
 	void Text::SetColor(Nz::Color color)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid text");
 
 		m_textSprite->SetColor(color);
@@ -29,7 +20,7 @@ namespace bw
 
 	void Text::SetHoveringHeight(float hoveringHeight)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid text");
 
 		if (!m_isHovering)
@@ -37,12 +28,12 @@ namespace bw
 
 		m_hoveringHeight = hoveringHeight;
 		if (m_isVisible)
-			m_entity->UpdateHoveringRenderableHoveringHeight(m_textSprite, m_hoveringHeight);
+			m_visualEntity->UpdateHoveringRenderableHoveringHeight(m_textSprite, m_hoveringHeight);
 	}
 
 	void Text::Show(bool show)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid text");
 
 		if (show == m_isVisible)
@@ -51,16 +42,16 @@ namespace bw
 		if (m_isHovering)
 		{
 			if (show)
-				m_entity->AttachHoveringRenderable(m_textSprite, m_transformMatrix, m_renderOrder, m_hoveringHeight);
+				m_visualEntity->AttachHoveringRenderable(m_textSprite, m_transformMatrix, m_renderOrder, m_hoveringHeight);
 			else
-				m_entity->DetachHoveringRenderable(m_textSprite);
+				m_visualEntity->DetachHoveringRenderable(m_textSprite);
 		}
 		else
 		{
 			if (show)
-				m_entity->AttachRenderable(m_textSprite, m_transformMatrix, m_renderOrder);
+				m_visualEntity->AttachRenderable(m_textSprite, m_transformMatrix, m_renderOrder);
 			else
-				m_entity->DetachRenderable(m_textSprite);
+				m_visualEntity->DetachRenderable(m_textSprite);
 		}
 
 		m_isVisible = show;
@@ -74,8 +65,8 @@ namespace bw
 	void Text::UpdateTransformMatrix()
 	{
 		if (m_isHovering)
-			m_entity->UpdateHoveringRenderableMatrix(m_textSprite, m_transformMatrix);
+			m_visualEntity->UpdateHoveringRenderableMatrix(m_textSprite, m_transformMatrix);
 		else
-			m_entity->UpdateRenderableMatrix(m_textSprite, m_transformMatrix);
+			m_visualEntity->UpdateRenderableMatrix(m_textSprite, m_transformMatrix);
 	}
 }

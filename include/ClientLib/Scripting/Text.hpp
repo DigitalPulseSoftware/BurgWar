@@ -20,7 +20,7 @@ namespace bw
 	class Text
 	{
 		public:
-			inline Text(LocalLayerEntityHandle entity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering);
+			inline Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering);
 			Text(const Text&) = delete;
 			Text(Text&&) = default;
 			~Text() = default;
@@ -47,7 +47,7 @@ namespace bw
 			void UpdateTextSprite();
 			void UpdateTransformMatrix();
 
-			LocalLayerEntityHandle m_entity;
+			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SimpleTextDrawer m_drawer;
 			Nz::TextSpriteRef m_textSprite;
