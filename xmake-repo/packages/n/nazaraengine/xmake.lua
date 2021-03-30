@@ -4,7 +4,7 @@ package("nazaraengine")
 
     set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
 
-    add_versions("20201119", "e0b05a7e7a2779e20a593b4083b4a881cc57ce14")
+    add_versions("2021.03.30", "f943b0332d0362da0f819802cfc9a6a39485ccc7")
 
     add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
     add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
