@@ -9,8 +9,7 @@
 
 namespace bw
 {
-	PostFrameCallbackSystem::PostFrameCallbackSystem(LocalMatch& match) :
-	m_match(match)
+	PostFrameCallbackSystem::PostFrameCallbackSystem()
 	{
 		Requires<ScriptComponent>();
 		SetMaximumUpdateRate(0);

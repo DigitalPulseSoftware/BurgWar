@@ -13,12 +13,10 @@
 
 namespace bw
 {
-	class LocalMatch;
-
 	class PostFrameCallbackSystem : public Ndk::System<PostFrameCallbackSystem>
 	{
 		public:
-			PostFrameCallbackSystem(LocalMatch& match);
+			PostFrameCallbackSystem();
 			~PostFrameCallbackSystem() = default;
 
 			static Ndk::SystemIndex systemIndex;
@@ -29,7 +27,6 @@ namespace bw
 			void OnUpdate(float elapsedTime) override;
 
 			Ndk::EntityList m_frameUpdateEntities;
-			LocalMatch& m_match;
 	};
 }
 

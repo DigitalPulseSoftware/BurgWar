@@ -26,7 +26,7 @@ namespace bw
 	{
 		Ndk::World& world = GetWorld();
 		world.AddSystem<FrameCallbackSystem>();
-		world.AddSystem<PostFrameCallbackSystem>(match);
+		world.AddSystem<PostFrameCallbackSystem>();
 		world.AddSystem<VisualInterpolationSystem>();
 	}
 
