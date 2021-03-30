@@ -4,7 +4,7 @@
 
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/LocalLayer.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 
@@ -13,9 +13,11 @@ namespace bw
 	std::optional<LocalLayerEntity> ClientEntityStore::InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity) const
 	{
 		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, scale, properties, parentEntity);
+		if (!entity)
+			return std::nullopt;
 
 		LocalLayerEntity layerEntity(layer, entity, serverId, uniqueId);
-		entity->AddComponent<LayerEntityComponent>(layerEntity.CreateHandle());
+		entity->AddComponent<VisualComponent>(layerEntity.CreateHandle());
 		entity->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex(), uniqueId);
 
 		if (!InitializeEntity(entity))

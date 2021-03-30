@@ -11,19 +11,14 @@ local entity = ScriptedEntity({
 	}
 })
 
-entity:On("init", function (self)
-	-- FIXME
-	if (EDITOR) then
-		return
-	end
-
-	if (CLIENT) then
+if (CLIENT) then
+	entity:On("Init", function (self)
 		self.isVisible = false
 		if (engine_GetActiveLayer() == self:GetLayerIndex() or self:GetProperty("recursive")) then
 			self:Show()
 		end
-	end
-end)
+	end)
+end
 
 if (CLIENT) then
 	function entity:Hide()
@@ -51,10 +46,6 @@ function entity:OnPlayerEnterLayer(player, newLayer)
 		local layer = self:GetProperty("layer")
 		print("Making layer " .. layer .. " visible")
 		player:UpdateLayerVisibility(layer, true)
-
-		if (CLIENT) then
-
-		end
 	end
 end
 

@@ -13,41 +13,12 @@ namespace bw
 		m_visibleLayers.clear();
 	}
 
-	void VisibleLayerComponent::RegisterVisibleLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor)
+	void VisibleLayerComponent::RegisterLocalLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor)
 	{
-		auto& nodeComponent = m_entity->GetComponent<Ndk::NodeComponent>();
-
-		std::shared_ptr<VisibleLayer> visibleLayer = std::make_shared<VisibleLayer>();
-		visibleLayer->baseNode.SetParent(nodeComponent);
-		visibleLayer->baseNode.SetScale(scale);
-		visibleLayer->baseRenderOrder = renderOrder;
+		std::shared_ptr<VisibleLocalLayer> visibleLayer = std::make_shared<VisibleLocalLayer>();
 
 		VisibleLayer* visibleLayerPtr = visibleLayer.get();
-		
-		visibleLayerPtr->onDisabled.Connect(localLayer.OnDisabled, [=](LocalLayer*)
-		{
-			visibleLayerPtr->visualEntities.clear();
-		});
 
-		visibleLayerPtr->onEnabled.Connect(localLayer.OnEnabled, [=](LocalLayer* layer)
-		{
-			assert(visibleLayerPtr->visualEntities.empty());
-			layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
-			{
-				CreateVisual(visibleLayerPtr, layerEntity);
-			});
-		});
-
-		visibleLayer->onEntityCreated.Connect(localLayer.OnEntityCreated, [=](LocalLayer*, LocalLayerEntity& entity)
-		{
-			CreateVisual(visibleLayerPtr, entity);
-		});
-
-		visibleLayer->onEntityDelete.Connect(localLayer.OnEntityDelete, [=](LocalLayer*, LocalLayerEntity& entity)
-		{
-			DeleteVisual(visibleLayerPtr, entity);
-		});
-		
 		visibleLayer->onSoundCreated.Connect(localLayer.OnSoundCreated, [=](LocalLayer*, std::size_t soundIndex, LocalLayerSound& sound)
 		{
 			CreateSound(visibleLayerPtr, soundIndex, sound);
@@ -57,21 +28,88 @@ namespace bw
 		{
 			DeleteSound(visibleLayerPtr, soundIndex, sound);
 		});
-
+		
 		if (localLayer.IsEnabled())
 		{
-			localLayer.ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
-			{
-				CreateVisual(visibleLayerPtr, layerEntity);
-			});
-
 			localLayer.ForEachLayerSound([&](std::size_t soundIndex, LocalLayerSound& layerSound)
 			{
 				CreateSound(visibleLayerPtr, soundIndex, layerSound);
 			});
 		}
 
-		visibleLayer->onCameraMove.Connect(localLayer.GetLocalMatch().GetCamera().OnCameraMove, [=](Camera*, const Nz::Vector2f& newPosition)
+		RegisterLayer(std::move(visibleLayer), localLayer.GetLocalMatch().GetCamera(), localLayer, renderOrder, scale, parallaxFactor);
+	}
+
+	void VisibleLayerComponent::RegisterVisibleLayer(Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor)
+	{
+		RegisterLayer(std::make_shared<VisibleLayer>(), camera, visualLayer, renderOrder, scale, parallaxFactor);
+	}
+
+	void VisibleLayerComponent::CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound)
+	{
+		layer->soundEntities.emplace(soundIndex, SoundEntity(m_renderWorld, layerSound.CreateHandle()));
+	}
+
+	void VisibleLayerComponent::CreateVisual(VisibleLayer* layer, Nz::Int64 uniqueId, LayerVisualEntity& layerEntity)
+	{
+		layer->visualEntities.emplace(uniqueId, VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
+	}
+
+	void VisibleLayerComponent::DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& /*layerSound*/)
+	{
+		layer->soundEntities.erase(soundIndex);
+	}
+
+	void VisibleLayerComponent::DeleteVisual(VisibleLayer* layer, Nz::Int64 uniqueId)
+	{
+		layer->visualEntities.erase(uniqueId);
+	}
+
+	void VisibleLayerComponent::RegisterLayer(std::shared_ptr<VisibleLayer> visibleLayer, Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor)
+	{
+		assert(visibleLayer);
+
+		auto& nodeComponent = m_entity->GetComponent<Ndk::NodeComponent>();
+
+		visibleLayer->baseNode.SetParent(nodeComponent);
+		visibleLayer->baseNode.SetScale(scale);
+		visibleLayer->baseRenderOrder = renderOrder;
+
+		VisibleLayer* visibleLayerPtr = visibleLayer.get();
+		
+		visibleLayerPtr->onDisabled.Connect(visualLayer.OnDisabled, [=](VisualLayer*)
+		{
+			visibleLayerPtr->visualEntities.clear();
+		});
+
+		visibleLayerPtr->onEnabled.Connect(visualLayer.OnEnabled, [=](VisualLayer* layer)
+		{
+			assert(visibleLayerPtr->visualEntities.empty());
+			layer->ForEachVisualEntity([&](LayerVisualEntity& layerEntity)
+			{
+				CreateVisual(visibleLayerPtr, layerEntity.GetUniqueId(), layerEntity);
+			});
+		});
+
+		visibleLayer->onVisualCreated.Connect(visualLayer.OnEntityVisualCreated, [=](VisualLayer*, LayerVisualEntity& layerEntity)
+		{
+			CreateVisual(visibleLayerPtr, layerEntity.GetUniqueId(), layerEntity);
+		});
+
+		visibleLayer->onVisualDelete.Connect(visualLayer.OnEntityVisualDelete, [=](VisualLayer*, LayerVisualEntity& layerEntity)
+		{
+			DeleteVisual(visibleLayerPtr, layerEntity.GetUniqueId());
+		});
+		
+		if (visualLayer.IsEnabled())
+		{
+			visualLayer.ForEachVisualEntity([&](LayerVisualEntity& layerEntity)
+			{
+				CreateVisual(visibleLayerPtr, layerEntity.GetUniqueId(), layerEntity);
+			});
+		}
+
+		visibleLayer->onCameraMove.Connect(camera.OnCameraMove, [=](Camera*, const Nz::Vector2f& newPosition)
 		{
 			// Parallax factor
 			Nz::Vector2f layerPosition = newPosition * (Nz::Vector2f(1.f) - parallaxFactor);
@@ -82,32 +120,6 @@ namespace bw
 		});
 
 		m_visibleLayers.emplace_back(std::move(visibleLayer));
-	}
-
-	void VisibleLayerComponent::CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound)
-	{
-		layer->soundEntities.emplace(soundIndex, SoundEntity(m_renderWorld, layerSound.CreateHandle()));
-	}
-
-	void VisibleLayerComponent::CreateVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)
-	{
-		if (!layerEntity.IsClientside())
-			layer->visualEntities.emplace(layerEntity.GetServerId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
-		else
-			layer->localEntities.emplace(layerEntity.GetEntity()->GetId(), VisualEntity(m_renderWorld, layerEntity.CreateHandle(), layer->baseNode, layer->baseRenderOrder));
-	}
-
-	void VisibleLayerComponent::DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& /*layerSound*/)
-	{
-		layer->soundEntities.erase(soundIndex);
-	}
-
-	void VisibleLayerComponent::DeleteVisual(VisibleLayer* layer, LocalLayerEntity& layerEntity)
-	{
-		if (!layerEntity.IsClientside())
-			layer->visualEntities.erase(layerEntity.GetServerId());
-		else
-			layer->localEntities.erase(layerEntity.GetEntity()->GetId());
 	}
 
 	Ndk::ComponentIndex VisibleLayerComponent::componentIndex;

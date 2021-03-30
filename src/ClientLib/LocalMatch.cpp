@@ -1103,7 +1103,7 @@ namespace bw
 		{
 			LocalLayerEntity& layerEntity = layerEntityOpt.value();
 
-			localPlayer.controlledEntity = layerEntity.CreateHandle();
+			localPlayer.controlledEntity = layerEntity.CreateHandle<LocalLayerEntity>();
 			localPlayer.controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
 
 			HandlePlayerControlEntity(localPlayer.playerIndex, layerEntity.GetUniqueId());
@@ -1503,7 +1503,7 @@ namespace bw
 		m_colorBackground->SetColor(layer->GetBackgroundColor());
 		auto& visibleLayer = m_currentLayer->GetComponent<VisibleLayerComponent>();
 		visibleLayer.Clear();
-		visibleLayer.RegisterVisibleLayer(*layer, 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
+		visibleLayer.RegisterLocalLayer(*layer, 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)

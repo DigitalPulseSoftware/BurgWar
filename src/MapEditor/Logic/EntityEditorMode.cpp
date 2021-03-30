@@ -21,7 +21,7 @@ namespace bw
 		translucentMaterial->SetDiffuseColor(Nz::Color(255, 255, 255, 180));
 
 		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
-		for (const Ndk::EntityHandle& entity : canvas->GetMapEntities())
+		canvas->ForEachMapEntity([&](const Ndk::EntityHandle& entity)
 		{
 			assert(entity->HasComponent<Ndk::GraphicsComponent>());
 
@@ -39,7 +39,7 @@ namespace bw
 					renderable->SetMaterial(i, translucentMaterial);
 				}
 			});
-		}
+		});
 
 		if (m_targetEntity)
 			m_targetEntity->Disable();

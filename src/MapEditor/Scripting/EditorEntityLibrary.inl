@@ -6,4 +6,9 @@
 
 namespace bw
 {
+	inline EditorEntityLibrary::EditorEntityLibrary(EditorWindow& editorWindow, const Logger& logger, ClientAssetStore& assetStore) :
+	ClientEntityLibrary(logger, assetStore),
+	m_editorWindow(editorWindow)
+	{
+	}
 }

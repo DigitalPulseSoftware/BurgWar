@@ -12,12 +12,13 @@
 namespace bw
 {
 	class AssetStore;
+	class EditorWindow;
 	class Logger;
 
 	class EditorEntityLibrary : public ClientEntityLibrary
 	{
 		public:
-			using ClientEntityLibrary::ClientEntityLibrary;
+			inline EditorEntityLibrary(EditorWindow& editorWindow, const Logger& logger, ClientAssetStore& assetStore);
 			~EditorEntityLibrary() = default;
 
 			void RegisterLibrary(sol::table& elementMetatable) override;
@@ -27,6 +28,8 @@ namespace bw
 
 		private:
 			void RegisterEditorLibrary(sol::table& elementMetatable);
+
+			EditorWindow& m_editorWindow;
 	};
 }
 

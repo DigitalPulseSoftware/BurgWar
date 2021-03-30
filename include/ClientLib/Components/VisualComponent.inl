@@ -1,0 +1,18 @@
+// Copyright (C) 2020 Jérôme Leclercq
+// This file is part of the "Burgwar" project
+// For conditions of distribution and use, see copyright notice in LICENSE
+
+#include <ClientLib/Components/VisualComponent.hpp>
+
+namespace bw
+{
+	inline VisualComponent::VisualComponent(LayerVisualEntityHandle visualEntity) :
+	m_visualEntity(std::move(visualEntity))
+	{
+	}
+	
+	inline const LayerVisualEntityHandle& VisualComponent::GetLayerVisual() const
+	{
+		return m_visualEntity;
+	}
+}

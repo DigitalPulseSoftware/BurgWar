@@ -10,18 +10,9 @@
 
 namespace bw
 {
-	/*bool Sprite::IsVisible() const
-	{
-		if (!m_entity)
-			throw std::runtime_error("Invalid sprite");
-
-		auto& gfxComponent = m_entity->GetComponent<Ndk::GraphicsComponent>();
-		return true;
-	}*/
-	
 	void Sprite::SetColor(Nz::Color color)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
 
 		m_sprite->SetColor(color);
@@ -29,7 +20,7 @@ namespace bw
 
 	void Sprite::SetCornerColor(const std::string_view& corner, Nz::Color cornerColor)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
 
 		Nz::RectCorner rectCorner;
@@ -49,7 +40,7 @@ namespace bw
 
 	void Sprite::SetCornerColors(const sol::table& cornerTable)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
 
 		struct Corner
@@ -88,22 +79,22 @@ namespace bw
 
 	void Sprite::Show(bool show)
 	{
-		if (!m_entity)
+		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
 
 		if (show == m_isVisible)
 			return;
 
 		if (show)
-			m_entity->AttachRenderable(m_sprite, m_transformMatrix, m_renderOrder);
+			m_visualEntity->AttachRenderable(m_sprite, m_transformMatrix, m_renderOrder);
 		else
-			m_entity->DetachRenderable(m_sprite);
+			m_visualEntity->DetachRenderable(m_sprite);
 
 		m_isVisible = show;
 	}
 	
 	void Sprite::UpdateTransformMatrix()
 	{
-		m_entity->UpdateRenderableMatrix(m_sprite, m_transformMatrix);
+		m_visualEntity->UpdateRenderableMatrix(m_sprite, m_transformMatrix);
 	}
 }

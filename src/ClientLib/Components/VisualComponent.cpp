@@ -2,9 +2,9 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Components/LayerEntityComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 
 namespace bw
 {
-	Ndk::ComponentIndex LayerEntityComponent::componentIndex;
+	Ndk::ComponentIndex VisualComponent::componentIndex;
 }

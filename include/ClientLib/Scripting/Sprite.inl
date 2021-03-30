@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline Sprite::Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
-	m_entity(std::move(entity)),
+	inline Sprite::Sprite(LayerVisualEntityHandle visualEntity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_sprite(std::move(sprite)),
 	m_renderOrder(renderOrder)
@@ -31,7 +31,7 @@ namespace bw
 
 	inline bool Sprite::IsValid() const
 	{
-		return m_entity;
+		return m_visualEntity.IsValid();
 	}
 
 	inline bool Sprite::IsVisible() const

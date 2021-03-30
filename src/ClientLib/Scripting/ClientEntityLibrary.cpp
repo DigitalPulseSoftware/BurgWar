@@ -7,10 +7,10 @@
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LayerEntityComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -61,7 +61,7 @@ namespace bw
 				entity->AddComponent<VisibleLayerComponent>(localMatch.GetRenderWorld());
 
 			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
-			visibleLayer.RegisterVisibleLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
+			visibleLayer.RegisterLocalLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		});
 
 		elementMetatable["AddTilemap"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
@@ -127,22 +127,12 @@ namespace bw
 
 			Nz::Matrix4f transformMatrix = Nz::Matrix4f::Identity();
 
-			//FIXME: Map editor is currently unable to show multiple layers
-			if (entity->HasComponent<LayerEntityComponent>())
-			{
-				auto& layerEntityComponent = entity->GetComponent<LayerEntityComponent>();
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
 
-				Tilemap scriptTilemap(layerEntityComponent.GetLayerEntity(), std::move(tileMap), transformMatrix, renderOrder);
-				scriptTilemap.Show();
+			Tilemap scriptTilemap(visualComponent.GetLayerVisual(), std::move(tileMap), transformMatrix, renderOrder);
+			scriptTilemap.Show();
 
-				return scriptTilemap;
-			}
-			else
-			{
-				entity->GetComponent<Ndk::GraphicsComponent>().Attach(tileMap, transformMatrix, renderOrder);
-
-				return Tilemap({}, std::move(tileMap), transformMatrix, renderOrder);
-			}
+			return scriptTilemap;
 		});
 
 		elementMetatable["ClearLayers"] = LuaFunction([](const sol::table& entityTable)

@@ -20,11 +20,6 @@ namespace bw
 		return it.value();
 	}
 
-	inline const EditorEntityStore& EditorWindow::GetEntityStore() const
-	{
-		return *m_entityStore;
-	}
-
 	inline MapCanvas* EditorWindow::GetMapCanvas()
 	{
 		return m_canvas;

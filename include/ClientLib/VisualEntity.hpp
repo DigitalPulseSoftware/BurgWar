@@ -16,16 +16,17 @@
 
 namespace bw
 {
-	class LocalLayerEntity;
-	using LocalLayerEntityHandle = Nz::ObjectHandle<LocalLayerEntity>;
+	class LayerVisualEntity;
+
+	using LayerVisualEntityHandle = Nz::ObjectHandle<LayerVisualEntity>;
 
 	class BURGWAR_CLIENTLIB_API VisualEntity
 	{
-		friend LocalLayerEntity;
+		friend LayerVisualEntity;
 
 		public:
-			VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, int baseRenderOrder = 0);
-			VisualEntity(Ndk::World& renderWorld, LocalLayerEntityHandle layerEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
+			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
+			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
 			VisualEntity(const VisualEntity&) = delete;
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();
@@ -61,7 +62,7 @@ namespace bw
 
 			std::vector<HoveringRenderable> m_hoveringRenderables;
 			Ndk::EntityOwner m_entity;
-			LocalLayerEntityHandle m_layerEntity;
+			LayerVisualEntityHandle m_visualEntity;
 			int m_baseRenderOrder;
 	};
 }

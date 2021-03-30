@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline Tilemap::Tilemap(LocalLayerEntityHandle entity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder) :
-	m_entity(std::move(entity)),
+	inline Tilemap::Tilemap(LayerVisualEntityHandle visualEntity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_tilemap(std::move(tilemap)),
 	m_renderOrder(renderOrder)
@@ -36,7 +36,7 @@ namespace bw
 
 	inline bool Tilemap::IsValid() const
 	{
-		return m_entity;
+		return m_visualEntity;
 	}
 
 	inline bool Tilemap::IsVisible() const

@@ -8,9 +8,15 @@
 #include <MapEditor/Logic/TileMapEditorMode.hpp>
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/EntityInfoDialog.hpp>
+#include <MapEditor/Widgets/MapCanvas.hpp>
 
 namespace bw
 {
+	EditorScriptingLibrary::EditorScriptingLibrary(MapCanvas& mapCanvas) :
+	SharedScriptingLibrary(mapCanvas)
+	{
+	}
+
 	void EditorScriptingLibrary::RegisterLibrary(ScriptingContext& context)
 	{
 		sol::state& state = context.GetLuaState();
@@ -26,6 +32,7 @@ namespace bw
 		AbstractScriptingLibrary::RegisterGlobalLibrary(context);
 		AbstractScriptingLibrary::RegisterMetatableLibrary(context);
 		AbstractScriptingLibrary::RegisterRandomEngineClass(context);
+		SharedScriptingLibrary::RegisterLibrary(context);
 
 		context.LoadDirectory("autorun");
 

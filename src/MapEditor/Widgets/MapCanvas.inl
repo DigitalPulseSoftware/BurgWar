@@ -13,8 +13,42 @@ namespace bw
 			func(entity);
 	}
 
-	inline const Ndk::EntityList& MapCanvas::GetMapEntities() const
+	template<typename F>
+	void MapCanvas::ForEachMapEntity(F&& func)
 	{
-		return m_mapEntities;
+		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
+			func(visualEntityHandle->GetEntity());
+	}
+	
+	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetAssetDirectory()
+	{
+		return m_assetDirectory;
+	}
+
+	inline ScriptingContext& MapCanvas::GetScriptingContext()
+	{
+		return *m_scriptingContext;
+	}
+
+	inline const ScriptingContext& MapCanvas::GetScriptingContext() const
+	{
+		return *m_scriptingContext;
+	}
+
+	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetScriptDirectory()
+	{
+		return m_scriptDirectory;
+	}
+
+	inline void MapCanvas::RegisterEntity(EntityId uniqueId, LayerVisualEntityHandle handle)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.emplace(uniqueId, std::move(handle));
+	}
+
+	inline void MapCanvas::UnregisterEntity(EntityId uniqueId)
+	{
+		assert(m_entitiesByUniqueId.find(uniqueId) != m_entitiesByUniqueId.end());
+		m_entitiesByUniqueId.erase(uniqueId);
 	}
 }

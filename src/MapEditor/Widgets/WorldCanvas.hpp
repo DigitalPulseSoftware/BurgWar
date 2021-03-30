@@ -47,9 +47,9 @@ namespace bw
 			virtual void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved);
 			virtual void OnMouseWheelMoved(const Nz::WindowEvent::MouseWheelEvent& mouseWheel);
 
-		private:
 			void OnUpdate(float elapsedTime) override;
 
+		private:
 			std::optional<CameraMovement> m_cameraMovement;
 			Nz::Color m_backgroundColor;
 			Ndk::World m_world;

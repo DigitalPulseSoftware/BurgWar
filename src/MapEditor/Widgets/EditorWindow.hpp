@@ -10,11 +10,9 @@
 #include <NDK/Prerequisites.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Map.hpp>
-#include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
 #include <MapEditor/EditorAppConfig.hpp>
 #include <MapEditor/Enums.hpp>
-#include <MapEditor/Scripting/EditorEntityStore.hpp>
 #include <MapEditor/Widgets/EditorWindowPrefabs.hpp>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QUndoStack>
@@ -57,7 +55,6 @@ namespace bw
 			inline const std::optional<LayerIndex>& GetCurrentLayer() const;
 
 			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
-			inline const EditorEntityStore& GetEntityStore() const;
 
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;
@@ -133,18 +130,21 @@ namespace bw
 			void OnOpenRecentMap();
 			void OnPerspectiveSwitch(bool enable);
 			void OnPlayMap();
+			void OnReloadScripts();
 			void OnSaveMap();
 			void OnSetAlignment();
 
 			void OpenMap(const QString& mapFolder);
 
+			void RebuildCanvas();
+
+			void UpdateEntityListButtons();
+			void UpdateLayerListButtons();
 			void RefreshLayerList();
 			void RefreshRecentFileListMenu();
 			void RefreshRecentFileListMenu(const QStringList& recentFileList);
 
 			void RegisterEntity(std::size_t entityIndex);
-
-			void ReloadScripts();
 
 			bool SaveMap();
 
@@ -156,16 +156,11 @@ namespace bw
 			};
 
 			std::filesystem::path m_workingMapPath;
-			std::optional<ClientAssetStore> m_assetStore;
-			std::optional<EditorEntityStore> m_entityStore;
 			std::optional<LayerIndex> m_currentLayer;
-			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::shared_ptr<EditorMode> m_currentMode;
-			std::shared_ptr<VirtualDirectory> m_assetFolder;
-			std::shared_ptr<VirtualDirectory> m_scriptFolder;
 			std::vector<QAction*> m_recentMapActions;
 			std::vector<std::size_t> m_selectedEntities;
-			tsl::hopscotch_map<Ndk::EntityId /*canvasIndex*/, std::size_t /*entityIndex*/> m_entityIndices;
+			tsl::hopscotch_map<EntityId /*uniqueId*/, std::size_t /*entityIndex*/> m_entityIndices;
 			List m_entityList;
 			List m_layerList;
 			QAction* m_closeMap;

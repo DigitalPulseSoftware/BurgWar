@@ -7,14 +7,16 @@
 #ifndef BURGWAR_CORELIB_EDITORSCRIPTINGLIBRARY_HPP
 #define BURGWAR_CORELIB_EDITORSCRIPTINGLIBRARY_HPP
 
-#include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
+#include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 
 namespace bw
 {
-	class EditorScriptingLibrary : public AbstractScriptingLibrary
+	class MapCanvas;
+
+	class EditorScriptingLibrary : public SharedScriptingLibrary
 	{
 		public:
-			using AbstractScriptingLibrary::AbstractScriptingLibrary;
+			EditorScriptingLibrary(MapCanvas& mapCanvas);
 			~EditorScriptingLibrary() = default;
 
 			void RegisterLibrary(ScriptingContext& context) override;

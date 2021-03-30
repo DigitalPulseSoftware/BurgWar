@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_SPRITE_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/LayerVisualEntity.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
@@ -20,7 +20,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Sprite
 	{
 		public:
-			inline Sprite(LocalLayerEntityHandle entity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Sprite(LayerVisualEntityHandle visualEntity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
 			Sprite(const Sprite&) = delete;
 			Sprite(Sprite&&) noexcept = default;
 			~Sprite() = default;
@@ -47,7 +47,7 @@ namespace bw
 		private:
 			void UpdateTransformMatrix();
 
-			LocalLayerEntityHandle m_entity;
+			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SpriteRef m_sprite;
 			int m_renderOrder;

@@ -14,6 +14,7 @@
 #include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <ClientLib/LocalLayerSound.hpp>
+#include <ClientLib/VisualLayer.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
@@ -23,7 +24,7 @@ namespace bw
 {
 	class LocalMatch;
 
-	class BURGWAR_CLIENTLIB_API LocalLayer : public SharedLayer
+	class BURGWAR_CLIENTLIB_API LocalLayer final : public SharedLayer, public VisualLayer
 	{
 		friend LocalMatch;
 
@@ -39,6 +40,7 @@ namespace bw
 
 			template<typename F> void ForEachLayerEntity(F&& func);
 			template<typename F> void ForEachLayerSound(F&& func);
+			void ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func) override;
 
 			inline const Nz::Color& GetBackgroundColor() const;
 			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntity(EntityId uniqueId);
@@ -46,7 +48,7 @@ namespace bw
 			inline EntityId GetUniqueIdByServerId(Nz::UInt32 serverId);
 			LocalMatch& GetLocalMatch();
 
-			inline bool IsEnabled() const;
+			bool IsEnabled() const override;
 			inline bool IsPredictionEnabled() const;
 
 			void FrameUpdate(float elapsedTime);
@@ -63,8 +65,6 @@ namespace bw
 			LocalLayer& operator=(const LocalLayer&) = delete;
 			LocalLayer& operator=(LocalLayer&&) = delete;
 
-			NazaraSignal(OnDisabled, LocalLayer* /*emitter*/);
-			NazaraSignal(OnEnabled, LocalLayer* /*emitter*/);
 			NazaraSignal(OnEntityCreated, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
 			NazaraSignal(OnEntityDelete, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
 			NazaraSignal(OnSoundCreated, LocalLayer* /*emitter*/, std::size_t /*soundIndex*/, LocalLayerSound& /*layerSound*/);

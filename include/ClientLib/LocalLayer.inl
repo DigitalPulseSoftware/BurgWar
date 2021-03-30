@@ -78,11 +78,6 @@ namespace bw
 		return it->second;
 	}
 
-	inline bool LocalLayer::IsEnabled() const
-	{
-		return m_isEnabled;
-	}
-
 	inline bool LocalLayer::IsPredictionEnabled() const
 	{
 		return m_isPredictionEnabled;
