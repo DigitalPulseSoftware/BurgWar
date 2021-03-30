@@ -138,12 +138,24 @@ end
 			}
 		}
 
-		io.writefile("src/CoreLib/VersionData.hpp", string.format([[
+		import("core.project.depend")
+		import("core.project.project")
+		local tmpfile = path.join(os.projectdir(), "project.autoversion")
+		local dependfile = tmpfile .. ".d"
+		depend.on_changed(function ()
+			print("regenerating version data info...")
+			io.writefile("src/CoreLib/VersionData.hpp", string.format([[
 const char* BuildSystem = "%s";
 const char* BuildBranch = "%s";
 const char* BuildCommit = "%s";
 const char* BuildDate = "%s";
 ]], system, branch, commitHash, os.date("%Y-%m-%d %H:%M:%S")))
+		end, 
+		{
+			dependfile = dependfile, 
+			files = project.allfiles(), 
+			values = {system, branch, commitHash}
+		})
 	end)
 
 target("ClientLib")
