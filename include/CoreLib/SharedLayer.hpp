@@ -24,7 +24,7 @@ namespace bw
 
 			template<typename F> void ForEachEntity(F&& func);
 
-			inline LayerIndex GetLayerIndex();
+			inline LayerIndex GetLayerIndex() const;
 			inline SharedMatch& GetMatch();
 			Ndk::World& GetWorld();
 			const Ndk::World& GetWorld() const;

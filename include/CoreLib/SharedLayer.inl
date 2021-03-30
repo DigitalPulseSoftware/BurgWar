@@ -14,7 +14,7 @@ namespace bw
 			func(entity);
 	}
 
-	inline LayerIndex SharedLayer::GetLayerIndex()
+	inline LayerIndex SharedLayer::GetLayerIndex() const
 	{
 		return m_layerIndex;
 	}
