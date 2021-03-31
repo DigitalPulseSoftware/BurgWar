@@ -12,10 +12,12 @@
 
 namespace bw
 {
+	class MapCanvas;
+
 	class EditorEntityStore : public ClientEditorEntityStore
 	{
 		public:
-			using ClientEditorEntityStore::ClientEditorEntityStore;
+			inline EditorEntityStore(MapCanvas& mapCanvas, ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~EditorEntityStore() = default;
 
 			std::optional<LayerVisualEntity> Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
@@ -25,6 +27,8 @@ namespace bw
 
 			std::shared_ptr<ScriptedEntity> CreateElement() const override;
 			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override;
+
+			MapCanvas& m_mapCanvas;
 	};
 }
 

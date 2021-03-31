@@ -9,8 +9,9 @@
 
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/SharedLayer.hpp>
+#include <ClientLib/ClientEditorLayer.hpp>
 #include <ClientLib/LayerVisualEntity.hpp>
-#include <ClientLib/VisualLayer.hpp>
+#include <Nazara/Math/Angle.hpp>
 #include <NDK/World.hpp>
 #include <memory>
 #include <vector>
@@ -19,7 +20,7 @@ namespace bw
 {
 	class MapCanvas;
 
-	class MapCanvasLayer : public SharedLayer, public VisualLayer
+	class MapCanvasLayer : public ClientEditorLayer
 	{
 		public:
 			MapCanvasLayer(MapCanvas& mapCanvas, LayerIndex layerIndex);
@@ -33,8 +34,6 @@ namespace bw
 			void ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func) override;
 
 			bool IsEnabled() const override;
-
-			void TickUpdate(float elapsedTime) override;
 
 			MapCanvasLayer& operator=(const MapCanvasLayer&) = default;
 			MapCanvasLayer& operator=(MapCanvasLayer&&) = delete;

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Scripting/EditorElementLibrary.hpp>
+#include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <MapEditor/Components/CanvasComponent.hpp>
 #include <sol/sol.hpp>
@@ -20,6 +21,30 @@ namespace bw
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<CanvasComponent>().GetLayerIndex();
+		});
+		
+		elementMetatable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(table);
+
+			auto& entityScript = entity->GetComponent<ScriptComponent>();
+
+			auto propertyVal = entityScript.GetProperty(propertyName);
+			if (propertyVal.has_value())
+			{
+				sol::state_view lua(s);
+				const PropertyValue& property = propertyVal.value();
+
+				MapCanvas* match;
+				if (entity->HasComponent<CanvasComponent>())
+					match = &entity->GetComponent<CanvasComponent>().GetMapCanvas();
+				else
+					match = nullptr;
+
+				return TranslatePropertyToLua(match, lua, property);
+			}
+			else
+				return sol::nil;
 		});
 
 		elementMetatable["PlaySound"] = Dummy;

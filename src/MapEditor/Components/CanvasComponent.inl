@@ -6,15 +6,26 @@
 
 namespace bw
 {
-	inline CanvasComponent::CanvasComponent(LayerIndex layerIndex, EntityId uniqueId) :
+	inline CanvasComponent::CanvasComponent(MapCanvas& mapCanvas, LayerIndex layerIndex, EntityId uniqueId) :
 	m_uniqueId(uniqueId),
-	m_layerIndex(layerIndex)
+	m_layerIndex(layerIndex),
+	m_mapCanvas(mapCanvas)
 	{
 	}
 
 	inline LayerIndex CanvasComponent::GetLayerIndex() const
 	{
 		return m_layerIndex;
+	}
+
+	inline MapCanvas& CanvasComponent::GetMapCanvas()
+	{
+		return m_mapCanvas;
+	}
+
+	inline const MapCanvas& CanvasComponent::GetMapCanvas() const
+	{
+		return m_mapCanvas;
 	}
 
 	inline EntityId CanvasComponent::GetUniqueId() const

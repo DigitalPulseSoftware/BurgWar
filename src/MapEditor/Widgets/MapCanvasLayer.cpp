@@ -9,7 +9,7 @@
 namespace bw
 {
 	MapCanvasLayer::MapCanvasLayer(MapCanvas& mapCanvas, LayerIndex layerIndex) :
-	SharedLayer(mapCanvas, layerIndex),
+	ClientEditorLayer(mapCanvas, layerIndex),
 	m_mapCanvas(mapCanvas)
 	{
 	}
@@ -69,9 +69,5 @@ namespace bw
 	bool MapCanvasLayer::IsEnabled() const
 	{
 		return true;
-	}
-	
-	void MapCanvasLayer::TickUpdate(float /*elapsedTime*/)
-	{
 	}
 }

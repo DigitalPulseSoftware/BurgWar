@@ -19,7 +19,7 @@
 namespace bw
 {
 	LocalLayer::LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor) :
-	SharedLayer(match, layerIndex),
+	ClientEditorLayer(match, layerIndex),
 	m_backgroundColor(backgroundColor),
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
@@ -41,7 +41,7 @@ namespace bw
 	}
 	
 	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
-	SharedLayer(std::move(layer)),
+	ClientEditorLayer(std::move(layer)),
 	m_entities(std::move(layer.m_entities)),
 	m_serverEntityIds(std::move(layer.m_serverEntityIds)),
 	m_backgroundColor(layer.m_backgroundColor),
@@ -118,61 +118,6 @@ namespace bw
 		return m_isEnabled;
 	}
 
-	void LocalLayer::FrameUpdate(float elapsedTime)
-	{
-		Ndk::World& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
-		world.GetSystem<FrameCallbackSystem>().Enable(true);
-
-		world.Update(elapsedTime);
-	}
-
-	void LocalLayer::PreFrameUpdate(float elapsedTime)
-	{
-		Ndk::World& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<VisualInterpolationSystem>().Enable(true);
-
-		world.Update(elapsedTime);
-	}
-
-	void LocalLayer::PostFrameUpdate(float elapsedTime)
-	{
-		Ndk::World& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<PostFrameCallbackSystem>().Enable(true);
-
-		world.Update(elapsedTime);
-
-		// Sound
-		for (auto& soundOpt : m_sounds)
-		{
-			if (soundOpt)
-			{
-				if (!soundOpt->sound.Update(elapsedTime))
-				{
-					OnSoundDelete(this, soundOpt->soundIndex, soundOpt->sound);
-
-					m_freeSoundIds.Set(soundOpt->soundIndex);
-					soundOpt.reset();
-				}
-			}
-		}
-	}
-
 	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
 	{
 		assert(layerEntity.GetEntity());
@@ -230,21 +175,6 @@ namespace bw
 		});
 	}
 
-	void LocalLayer::TickUpdate(float elapsedTime)
-	{
-		Ndk::World& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(true);
-		});
-
-		world.GetSystem<Ndk::LifetimeSystem>().Enable(false);
-		world.GetSystem<FrameCallbackSystem>().Enable(false);
-		world.GetSystem<VisualInterpolationSystem>().Enable(false);
-
-		SharedLayer::TickUpdate(elapsedTime);
-	}
-	
 	void LocalLayer::CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData)
 	{
 		static std::string entityPrefix = "entity_";

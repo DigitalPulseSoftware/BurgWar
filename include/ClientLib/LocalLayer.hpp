@@ -9,12 +9,11 @@
 
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <CoreLib/SharedLayer.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/Export.hpp>
+#include <ClientLib/ClientEditorLayer.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <ClientLib/LocalLayerSound.hpp>
-#include <ClientLib/VisualLayer.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
@@ -24,7 +23,7 @@ namespace bw
 {
 	class LocalMatch;
 
-	class BURGWAR_CLIENTLIB_API LocalLayer final : public SharedLayer, public VisualLayer
+	class BURGWAR_CLIENTLIB_API LocalLayer final : public ClientEditorLayer
 	{
 		friend LocalMatch;
 
@@ -51,16 +50,10 @@ namespace bw
 			bool IsEnabled() const override;
 			inline bool IsPredictionEnabled() const;
 
-			void FrameUpdate(float elapsedTime);
-			void PreFrameUpdate(float elapsedTime);
-			void PostFrameUpdate(float elapsedTime);
-
 			LocalLayerEntity& RegisterEntity(LocalLayerEntity layerEntity);
 			LocalLayerSound& RegisterSound(LocalLayerSound layerEntity);
 
 			void SyncVisuals();
-
-			void TickUpdate(float elapsedTime) override;
 
 			LocalLayer& operator=(const LocalLayer&) = delete;
 			LocalLayer& operator=(LocalLayer&&) = delete;
