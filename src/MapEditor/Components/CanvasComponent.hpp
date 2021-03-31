@@ -13,13 +13,17 @@
 
 namespace bw
 {
+	class MapCanvas;
+
 	class CanvasComponent : public Ndk::Component<CanvasComponent>
 	{
 		public:
-			inline CanvasComponent(LayerIndex layerIndex, EntityId uniqueId);
+			inline CanvasComponent(MapCanvas& mapCanvas, LayerIndex layerIndex, EntityId uniqueId);
 			~CanvasComponent() = default;
 
 			inline LayerIndex GetLayerIndex() const;
+			inline MapCanvas& GetMapCanvas();
+			inline const MapCanvas& GetMapCanvas() const;
 			inline EntityId GetUniqueId() const;
 
 			static Ndk::ComponentIndex componentIndex;
@@ -27,6 +31,7 @@ namespace bw
 		private:
 			EntityId m_uniqueId;
 			LayerIndex m_layerIndex;
+			MapCanvas& m_mapCanvas;
 	};
 }
 

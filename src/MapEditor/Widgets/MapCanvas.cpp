@@ -29,7 +29,7 @@
 namespace bw
 {
 	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
-	SharedMatch(editor, LogSide::Editor, "editor", std::numeric_limits<float>::max()),
+	SharedMatch(editor, LogSide::Editor, "editor", 1.f / 60.f),
 	WorldCanvas(parent),
 	m_editor(editor)
 	{
@@ -224,14 +224,22 @@ namespace bw
 		sol::state& lua = m_scriptingContext->GetLuaState();
 		lua["Editor"] = this;
 
-		lua["engine_GetActiveLayer"] = [&]()
+		lua["engine_GetActiveLayer"] = LuaFunction([&]()
 		{
 			return m_editor.GetCurrentLayer();
-		};
+		});
+
+		lua["engine_GetPlayerPosition"] = LuaFunction([&]()
+		{
+			Nz::Vector2f mousePosition = Nz::Vector2f(Nz::Mouse::GetPosition(*this));
+			Nz::Vector2f worldPosition = GetCamera().Unproject(mousePosition);
+
+			return worldPosition;
+		});
 
 		if (!m_entityStore)
 		{
-			m_entityStore.emplace(*m_assetStore, GetLogger(), m_scriptingContext);
+			m_entityStore.emplace(*this, *m_assetStore, GetLogger(), m_scriptingContext);
 			m_entityStore->LoadLibrary(std::make_shared<EditorElementLibrary>(GetLogger(), *m_assetStore));
 			m_entityStore->LoadLibrary(std::make_shared<EditorEntityLibrary>(m_editor, GetLogger(), *m_assetStore));
 		}
@@ -446,7 +454,45 @@ namespace bw
 
 	void MapCanvas::OnTick(bool /*lastTick*/)
 	{
-		/* Nothing to do (yet) */
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback<GamemodeEvent::Tick>();
+
+		for (MapCanvasLayer& layer : m_layers)
+			layer.TickUpdate(GetTickDuration());
+	}
+
+	void MapCanvas::OnUpdate(float elapsedTime)
+	{
+		Update(elapsedTime);
+	
+		if (m_scriptingContext)
+			m_scriptingContext->Update();
+
+		for (auto& layer : m_layers)
+		{
+			if (layer.IsEnabled())
+				layer.PreFrameUpdate(elapsedTime);
+		}
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback<GamemodeEvent::Frame>(elapsedTime);
+
+		for (auto& layer : m_layers)
+		{
+			if (layer.IsEnabled())
+				layer.FrameUpdate(elapsedTime);
+		}
+
+		WorldCanvas::OnUpdate(elapsedTime);
+
+		if (m_gamemode)
+			m_gamemode->ExecuteCallback<GamemodeEvent::PostFrame>(elapsedTime);
+
+		for (auto& layer : m_layers)
+		{
+			if (layer.IsEnabled())
+				layer.PostFrameUpdate(elapsedTime);
+		}
 	}
 
 	void MapCanvas::UpdateGrid()

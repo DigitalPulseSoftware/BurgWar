@@ -13,7 +13,7 @@ if (CLIENT) then
 	entity.Alpha = 255
 	entity.IsVisible = true
 
-	entity:On("tick", function (self)
+	entity:On("Tick", function (self)
 		local origin = self:GetPosition()
 		local rect = Rect(origin, origin + self.Tilemap:GetSize())
 
@@ -21,7 +21,7 @@ if (CLIENT) then
 		self.IsVisible = not playerPos or not rect:Contains(playerPos)
 	end)
 
-	entity:On("frame", function (self)
+	entity:On("Frame", function (self)
 		if (self.IsVisible and self.Alpha ~= maxAlpha) then
 			self:UpdateAlpha(self.Alpha + alphaRate * render.GetFrametime())
 		elseif (not self.IsVisible and self.Alpha ~= minAlpha) then
@@ -40,6 +40,5 @@ if (CLIENT) then
 				self.Tilemap:SetTileColor(x, y, color)
 			end
 		end
-
 	end
 end

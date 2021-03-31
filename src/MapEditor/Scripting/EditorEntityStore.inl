@@ -7,4 +7,9 @@
 
 namespace bw
 {
+	inline EditorEntityStore::EditorEntityStore(MapCanvas& mapCanvas, ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context) :
+	ClientEditorEntityStore(assetStore, logger, context),
+	m_mapCanvas(mapCanvas)
+	{
+	}
 }
