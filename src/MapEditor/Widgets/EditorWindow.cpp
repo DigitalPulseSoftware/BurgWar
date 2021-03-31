@@ -234,7 +234,7 @@ namespace bw
 		if (m_currentLayer && *m_currentLayer == layerIndex)
 		{
 			QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-			EntityId uniqueId = item->data(Qt::UserRole + 1).value<EntityId>();
+			EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 			delete item;
 
@@ -286,7 +286,7 @@ namespace bw
 			if (*m_currentLayer == layerIndex)
 			{
 				QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-				EntityId uniqueId = item->data(Qt::UserRole + 1).value<EntityId>();
+				EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 				delete item;
 
@@ -399,7 +399,7 @@ namespace bw
 
 		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
 		assert(item);
-		EntityId canvasId = item->data(Qt::UserRole + 1).value<EntityId>();
+		EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 		m_canvas->UpdateEntityPositionAndRotation(canvasId, entity.position, entity.rotation);
 	}
@@ -433,15 +433,15 @@ namespace bw
 		QListWidgetItem* firstItem = m_entityList.listWidget->item(int(firstEntityIndex));
 		QListWidgetItem* secondItem = m_entityList.listWidget->item(int(secondEntityIndex));
 
-		EntityId firstEntityId = firstItem->data(Qt::UserRole + 1).value<EntityId>();
+		EntityId firstEntityId = EntityId(firstItem->data(Qt::UserRole + 1).value<qlonglong>());
 		QString firstItemText = firstItem->text();
 
-		EntityId secondEntityId = secondItem->data(Qt::UserRole + 1).value<EntityId>();
+		EntityId secondEntityId = EntityId(secondItem->data(Qt::UserRole + 1).value<qlonglong>());
 		QString secondItemText = secondItem->text();
 
-		firstItem->setData(Qt::UserRole + 1, secondItem->data(Qt::UserRole + 1).value<EntityId>());
+		firstItem->setData(Qt::UserRole + 1, secondItem->data(Qt::UserRole + 1).value<qlonglong>());
 		firstItem->setText(secondItemText);
-		secondItem->setData(Qt::UserRole + 1, firstEntityId);
+		secondItem->setData(Qt::UserRole + 1, qlonglong(firstEntityId));
 		secondItem->setText(firstItemText);
 
 		m_entityIndices[firstEntityId] = secondEntityIndex;
@@ -533,7 +533,7 @@ namespace bw
 
 		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
 		assert(item);
-		EntityId uniqueId = item->data(Qt::UserRole + 1).value<EntityId>();
+		EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 		if (updateFlags & (EntityInfoUpdate::EntityClass | EntityInfoUpdate::Properties))
 		{
@@ -656,7 +656,7 @@ namespace bw
 
 				QListWidgetItem* item = m_entityList.listWidget->item(int(i));
 				assert(item);
-				EntityId canvasId = item->data(Qt::UserRole + 1).value<EntityId>();
+				EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 				m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
 			}
@@ -1254,7 +1254,7 @@ namespace bw
 		if (!item)
 			return;
 
-		EntityId canvasId = item->data(Qt::UserRole + 1).value<EntityId>();
+		EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 		LayerIndex layerIndex = static_cast<LayerIndex>(m_layerList.listWidget->currentRow());
 
 		const auto& workingMap = GetWorkingMap();
@@ -1372,7 +1372,7 @@ namespace bw
 		for (std::size_t entityIndex : m_selectedEntities)
 		{
 			QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
-			EntityId canvasId = item->data(Qt::UserRole + 1).value<EntityId>();
+			EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 			selectedEntities.push_back(canvasId);
 		}
 
@@ -1567,7 +1567,7 @@ namespace bw
 
 		QListWidgetItem* item = new QListWidgetItem(entryName);
 		item->setData(Qt::UserRole, qulonglong(entityIndex));
-		item->setData(Qt::UserRole + 1, entity.uniqueId);
+		item->setData(Qt::UserRole + 1, qlonglong(entity.uniqueId));
 
 		if (int(entityIndex) != m_entityList.listWidget->count())
 		{
