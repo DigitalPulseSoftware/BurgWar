@@ -61,21 +61,6 @@ rule("install_metadata")
 		end
 	end)
 
--- Custom rule to package nazaraserver without server SDK (for Core)
-rule("nazaraserver_nosdk")
-	on_load(function (target)
-		target:add("packages", "nazaraserver", {links = {}})
-	end)
-
-	after_load(function (target)
-		local libs = target:pkg("nazaraserver"):get("links")
-		for _, lib in ipairs(libs) do
-			if (not lib:startswith("NazaraSDKServer")) then
-				target:add("links", lib)
-			end
-		end
-	end)
-
 rule("install_nazara")
 	-- This is already handled by xmake on Windows
 	after_install("linux", function (target)
