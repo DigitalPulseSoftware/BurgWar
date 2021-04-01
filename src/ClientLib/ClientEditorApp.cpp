@@ -26,7 +26,7 @@ namespace bw
 	}
 
 	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
-	Application(argc, argv),
+	ClientApplication(argc, argv),
 	BurgApp(side, configFile),
 	m_playerSettings(*this)
 	{

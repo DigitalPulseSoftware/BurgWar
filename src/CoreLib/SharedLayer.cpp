@@ -20,7 +20,6 @@ namespace bw
 {
 	SharedLayer::SharedLayer(SharedMatch& match, LayerIndex layerIndex) :
 	m_match(match),
-	m_world(false),
 	m_layerIndex(layerIndex)
 	{
 		m_world.AddSystem<Ndk::LifetimeSystem>();

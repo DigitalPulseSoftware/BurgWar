@@ -5,8 +5,8 @@ set_version("0.2.0")
 
 add_requires("cxxopts", "concurrentqueue", "libcurl", "nlohmann_json")
 add_requires("fmt", { configs = { header_only = false } })
-add_requires("nazaraengine 2021.03.30", { alias = "nazara", configs = { server = false } })
-add_requires("nazaraengine~server 2021.03.30", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
+add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_requires("stackwalker")
@@ -97,8 +97,7 @@ target("CoreLib")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "fmt", "nlohmann_json")
-	add_packages("nazaraserver", {links = {}})
+	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_packages("stackwalker")

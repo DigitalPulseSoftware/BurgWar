@@ -4,7 +4,7 @@ package("nazaraengine")
 
     set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
 
-    add_versions("2021.03.30", "e770af6a22fc0d1fdcff4ca2e6d8a38e2e46ca33")
+    add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
 
     add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
     add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
@@ -16,16 +16,21 @@ package("nazaraengine")
     add_configs("renderer",      {description = "Includes the renderer module", default = true, type = "boolean"})
     add_configs("noise",         {description = "Includes the noise module", default = true, type = "boolean"})
     add_configs("sdk",           {description = "Includes the SDK", default = true, type = "boolean"})
+    add_configs("server",        {description = "Only includes server modules (takes priority over other options)", default = false, type = "boolean"})
     add_configs("utility",       {description = "Includes the utility module", default = true, type = "boolean"})
-    add_configs("server",        {description = "Only includes server modules (and use SDK in server mode)", default = false, type = "boolean"})
+    add_configs("clientsdk",     {description = "Includes the Client SDK", default = true, type = "boolean"})
     add_configs("plugin-assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
 
     if is_plat("linux") then
         add_syslinks("pthread")
     end
 
+    local function has_clientsdk(package)
+        return not package:config("server") or package:config("sdk")
+    end
+
     local function has_sdk(package)
-        return package:config("sdk")
+        return package:config("sdk") or has_clientsdk(package)
     end
 
     local function has_audio(package)
@@ -84,12 +89,12 @@ package("nazaraengine")
             package:add("defines", "NAZARA_STATIC")
         end
 
+        if has_clientsdk(package) then
+            package:add("links", prefix .. "ClientSDK" .. suffix)
+        end
+
         if has_sdk(package) then
-            if package:config("server") then
-                package:add("links", prefix .. "SDKServer" .. suffix)
-            else
-                package:add("links", prefix .. "SDK" .. suffix)
-            end
+            package:add("links", prefix .. "SDK" .. suffix)
         end
 
         if has_audio(package) then
@@ -206,12 +211,12 @@ package("nazaraengine")
             table.insert(premakeOptions, "--excludes-tool-assimp")
         end
 
-        if not has_sdk(package) or package:config("server") then
+        if not has_sdk(package) then
             table.insert(premakeOptions, "--excludes-tool-sdk")
         end
 
-        if not has_sdk(package) or not package:config("server") then
-            table.insert(premakeOptions, "--excludes-tool-sdkserver")
+        if not has_clientsdk(package) then
+            table.insert(premakeOptions, "--excludes-tool-clientsdk")
         end
 
         local archName = {

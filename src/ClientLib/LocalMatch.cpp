@@ -50,7 +50,6 @@ namespace bw
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
-	m_renderWorld(false),
 	m_freeClientId(-1),
 	m_renderTarget(renderTarget),
 	m_window(window),
