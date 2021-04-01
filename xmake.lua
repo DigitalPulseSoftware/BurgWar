@@ -90,9 +90,11 @@ option("clientlib_static")
 
 target("lua")
 	on_load(function (target)
-		local static = target:opt("corelib_static") and target:opt("clientlib_static")
-		if (not static) then
-			target:add("defines", "LUA_BUILD_AS_DLL", { public = true })
+		if (target:is_plat("windows", "mingw")) then
+			local static = target:opt("corelib_static") and target:opt("clientlib_static")
+			if (not static) then
+				target:add("defines", "LUA_BUILD_AS_DLL", { public = true })
+			end
 		end
 
 		target:set("kind", static and "static" or "shared")
