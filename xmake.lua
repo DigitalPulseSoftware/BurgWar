@@ -107,6 +107,7 @@ target("lua")
 	add_includedirs("contrib/lua/include", { public = true })
 	add_headerfiles("contrib/lua/include/**.h")
 	add_files("contrib/lua/src/**.c")
+	set_symbols("debug")
 
 target("CoreLib")
 	on_load(function (target)
