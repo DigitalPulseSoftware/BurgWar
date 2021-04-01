@@ -94,12 +94,12 @@ rule("install_nazara")
 	end)
 
 option("corelib_static")
-    set_default(true)
+    set_default(false)
     set_showmenu(true)
 	add_defines("BURGWAR_CORELIB_STATIC")
 
 option("clientlib_static")
-    set_default(true)
+    set_default(false)
     set_showmenu(true)
 	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
