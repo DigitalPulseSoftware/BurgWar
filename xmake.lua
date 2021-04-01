@@ -104,7 +104,17 @@ option("clientlib_static")
 	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
 target("lua")
-	set_kind("static")
+	on_load(function (target)
+		local static = target:opt("corelib_static") and target:opt("clientlib_static")
+		if (not static) then
+			target:add("defines", "LUA_BUILD_AS_DLL", { public = true })
+		end
+
+		target:set("kind", static and "static" or "shared")
+	end)
+
+	add_options("clientlib_static")
+	add_options("corelib_static")
 	set_group("3rdparties")
 
 	add_includedirs("contrib/lua/include", { public = true })
