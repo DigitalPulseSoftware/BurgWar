@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTEDEVENT_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDEVENT_HPP
 
+#include <CoreLib/Export.hpp>
 #include <Thirdparty/sol3/sol.hpp>
 
 namespace bw
@@ -19,7 +20,7 @@ namespace bw
 		sol::main_protected_function combinator;
 	};
 
-	ScriptedEvent InitEventFromLua(std::size_t index, const sol::table& table);
+	BURGWAR_CORELIB_API ScriptedEvent InitEventFromLua(std::size_t index, const sol::table& table);
 }
 
 #endif

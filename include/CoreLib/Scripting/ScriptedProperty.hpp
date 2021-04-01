@@ -20,7 +20,7 @@ namespace bw
 		bool shared = false;
 	};
 
-	ScriptedProperty InitPropertyFromLua(std::size_t index, const sol::table& table);
+	BURGWAR_CORELIB_API ScriptedProperty InitPropertyFromLua(std::size_t index, const sol::table& table);
 }
 
 #endif
