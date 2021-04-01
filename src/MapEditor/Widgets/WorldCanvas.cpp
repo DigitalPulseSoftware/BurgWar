@@ -18,7 +18,7 @@ namespace bw
 	m_camera(m_world, this, true),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
-		Ndk::RenderSystem& renderSystem = m_world.GetSystem<Ndk::RenderSystem>();
+		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
 		Nz::EventHandler& eventHandler = GetEventHandler();
