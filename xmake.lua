@@ -4,7 +4,7 @@ set_project("BurgWar")
 set_version("0.2.0")
 
 add_requires("cxxopts", "concurrentqueue", "libcurl", "nlohmann_json")
-add_requires("fmt", { configs = { header_only = false } })
+add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
 
