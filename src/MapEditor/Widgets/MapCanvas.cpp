@@ -12,6 +12,7 @@
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
+#include <NDK/Systems/ListenerSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 
@@ -21,6 +22,10 @@ namespace bw
 	WorldCanvas(parent),
 	m_editor(editor)
 	{
+		Ndk::World& world = GetWorld();
+		world.AddSystem<Ndk::ListenerSystem>();
+		world.AddSystem<Ndk::PhysicsSystem2D>();
+
 		EnableCameraControl(true);
 
 		const CameraMovement& cameraController = GetCameraController();

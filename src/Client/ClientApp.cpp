@@ -60,8 +60,10 @@ namespace bw
 		m_mainWindow->SetFramerateLimit(fpsLimit);
 
 		Ndk::World& world = AddWorld();
-		world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
-		world.GetSystem<Ndk::RenderSystem>().SetGlobalUp(Nz::Vector3f::Down());
+
+		Ndk::RenderSystem& renderSystem = world.AddSystem<Ndk::RenderSystem>();
+		renderSystem.SetDefaultBackground(nullptr);
+		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
 		const Ndk::EntityHandle& camera2D = world.CreateEntity();
 
