@@ -48,7 +48,7 @@ end
 rule("copy_bin")
 	after_install("linux", function(target)
 		local binarydir = path.join(target:installdir(), "bin")
-	    os.mkdir(binarydir)
+		os.mkdir(binarydir)
 		os.vcp(target:targetfile(), binarydir)
 	end)
 
@@ -88,13 +88,13 @@ rule("install_nazara")
 	end)
 
 option("corelib_static")
-    set_default(false)
-    set_showmenu(true)
+	set_default(false)
+	set_showmenu(true)
 	add_defines("BURGWAR_CORELIB_STATIC")
 
 option("clientlib_static")
-    set_default(false)
-    set_showmenu(true)
+	set_default(false)
+	set_showmenu(true)
 	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
 target("lua")
