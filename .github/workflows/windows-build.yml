@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set xmake env
-      run: echo "XMAKE_GLOBALDIR=$(pwd)/xmake-global" >> $GITHUB_ENV
+      run: echo "XMAKE_GLOBALDIR=$(pwd)/xmake-global" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     # Install xmake
     - name: Setup xmake
