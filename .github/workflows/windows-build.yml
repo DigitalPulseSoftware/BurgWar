@@ -20,11 +20,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
-    env:
-      XMAKE_GLOBALDIR: 'xmake-global'
-
     steps:
     - uses: actions/checkout@v2
+
+    - name: Set xmake env
+      run: echo "$(pwd)/xmake-global" >> $XMAKE_GLOBALDIR
 
     # Install xmake
     - name: Setup xmake
