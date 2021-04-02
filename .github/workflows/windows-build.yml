@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     paths-ignore:
-      - '.github/workflows/windows-build.yml'
+      - '.github/workflows/linux-build.yml'
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'
@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set xmake env
-      run: echo "$(pwd)/xmake-global" >> $XMAKE_GLOBALDIR
+      run: echo "XMAKE_GLOBALDIR=$(pwd)/xmake-global" >> $GITHUB_ENV
 
     # Install xmake
     - name: Setup xmake
