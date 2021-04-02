@@ -50,7 +50,7 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: xmake-global/packages
-        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua', 'xmake-repo') }}-${{ hashFiles('xmake-global/xmake.conf') }}-${{ hashFiles('xmake-global/repositories/**') }}
+        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua', 'xmake-repo') }}-${{ hashFiles('xmake-global/.xmake/xmake.conf') }}-${{ hashFiles('xmake-global/.xmake/repositories/**') }}
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
