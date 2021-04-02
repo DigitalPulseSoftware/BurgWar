@@ -3,6 +3,11 @@ name: Linux-Build
 on:
   pull_request:
   push:
+    paths-ignore:
+      - '.github/workflows/windows-build.yml'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'README.md'
 
 jobs:
   build:
@@ -14,6 +19,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    env:
+      XMAKE_GLOBALDIR: 'xmake-global'
 
     steps:
     - uses: actions/checkout@v2
@@ -41,8 +49,8 @@ jobs:
     # Cache xmake dependencies
     - uses: actions/cache@v2
       with:
-        path: ~/.xmake/packages
-        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua', 'xmake-repo') }}-${{ hashFiles('~/.xmake/xmake.conf') }}-${{ hashFiles('~/.xmake/repositories/**') }}
+        path: xmake-global/packages
+        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua', 'xmake-repo') }}-${{ hashFiles('xmake-global/xmake.conf') }}-${{ hashFiles('xmake-global/repositories/**') }}
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
