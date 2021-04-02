@@ -45,6 +45,14 @@ elseif is_plat("linux") then
 end
 
 
+rule("copy_bin")
+	on_install("linux", function(target)
+		local outputfile = target:targetfile()
+		if os.isfile(outputfile) then 
+			os.vcp(outputfile, path.join(target:installdir(), "bin"))
+		end
+	end)
+
 rule("copy_symbolfile")
 	after_install(function(target)
 		local symbolfile = target:symbolfile()
@@ -91,6 +99,8 @@ option("clientlib_static")
 	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
 target("lua")
+	set_group("3rdparties")
+
 	on_load(function (target)
 		if (target:is_plat("windows", "mingw")) then
 			local static = target:opt("corelib_static") and target:opt("clientlib_static")
@@ -104,7 +114,7 @@ target("lua")
 
 	add_options("clientlib_static")
 	add_options("corelib_static")
-	set_group("3rdparties")
+	add_rules("copy_bin", "copy_symbolfile")
 
 	add_includedirs("contrib/lua/include", { public = true })
 	add_headerfiles("contrib/lua/include/**.h")
@@ -120,6 +130,7 @@ target("CoreLib")
 
 	add_defines("BURGWAR_CORELIB_BUILD")
 	add_options("corelib_static")
+	add_rules("copy_bin", "copy_symbolfile")
 
 	add_deps("lua")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
@@ -186,14 +197,15 @@ const char* BuildDate = "%s";
 	end)
 
 target("ClientLib")
+	set_group("Common")
+
 	on_load(function (target)
 		target:set("kind", target:dep("clientlib_static") and "static" or "shared")
 	end)
 
-	set_group("Common")
-
 	add_defines("BURGWAR_CLIENTLIB_BUILD")
 	add_options("clientlib_static")
+	add_rules("copy_bin", "copy_symbolfile")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
@@ -203,8 +215,10 @@ target("ClientLib")
 	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazara")
 
 target("Main")
-	set_kind("static")
 	set_group("Common")
+
+	set_kind("static")
+	add_rules("copy_symbolfile")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
@@ -213,8 +227,9 @@ target("Main")
 	add_packages("nazaraserver")
 
 target("BurgWar")
-	set_kind("binary")
 	set_group("Executable")
+
+	set_kind("binary")
 	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
 	add_deps("Main", "ClientLib", "CoreLib")
@@ -227,8 +242,9 @@ target("BurgWar")
 	end)
 
 target("BurgWarServer")
-	set_kind("binary")
 	set_group("Executable")
+
+	set_kind("binary")
 	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
 	add_defines("NDK_SERVER")
@@ -243,9 +259,10 @@ target("BurgWarServer")
 	end)
 
 target("BurgWarMapTool")
-	set_basename("maptool")
-	set_kind("binary")
 	set_group("Executable")
+	set_basename("maptool")
+
+	set_kind("binary")
 	add_rules("copy_symbolfile", "install_nazara")
 
 	add_deps("Main", "CoreLib")
@@ -254,8 +271,9 @@ target("BurgWarMapTool")
 	add_packages("cxxopts", "concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
 target("BurgWarMapEditor")
-	set_kind("binary")
 	set_group("Executable")
+
+	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
 	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
 
