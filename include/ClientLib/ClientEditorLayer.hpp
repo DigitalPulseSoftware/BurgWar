@@ -7,14 +7,15 @@
 #ifndef BURGWAR_CLIENTLIB_CLIENTEDITORLAYER_HPP
 #define BURGWAR_CLIENTLIB_CLIENTEDITORLAYER_HPP
 
+#include <CoreLib/SharedLayer.hpp>
+#include <ClientLib/Export.hpp>
+#include <ClientLib/VisualLayer.hpp>
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <CoreLib/SharedLayer.hpp>
-#include <ClientLib/VisualLayer.hpp>
 
 namespace bw
 {
-	class ClientEditorLayer : public SharedLayer, public VisualLayer
+	class BURGWAR_CLIENTLIB_API ClientEditorLayer : public SharedLayer, public VisualLayer
 	{
 		public:
 			ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex);

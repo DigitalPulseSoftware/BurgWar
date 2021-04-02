@@ -7,13 +7,14 @@
 #ifndef BURGWAR_CLIENTLIB_VISUALLAYER_HPP
 #define BURGWAR_CLIENTLIB_VISUALLAYER_HPP
 
+#include <ClientLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
 
 namespace bw
 {
 	class LayerVisualEntity;
 
-	class VisualLayer
+	class BURGWAR_CLIENTLIB_API VisualLayer
 	{
 		public:
 			VisualLayer() = default;
