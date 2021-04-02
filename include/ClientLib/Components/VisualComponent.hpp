@@ -7,12 +7,13 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_VISUALCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISUALCOMPONENT_HPP
 
+#include <ClientLib/Export.hpp>
 #include <ClientLib/LayerVisualEntity.hpp>
 #include <NDK/Component.hpp>
 
 namespace bw
 {
-	class VisualComponent : public Ndk::Component<VisualComponent>
+	class BURGWAR_CLIENTLIB_API VisualComponent : public Ndk::Component<VisualComponent>
 	{
 		public:
 			inline VisualComponent(LayerVisualEntityHandle visualEntity);
