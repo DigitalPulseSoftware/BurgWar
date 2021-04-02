@@ -122,11 +122,12 @@ target("lua")
 	set_symbols("debug")
 
 target("CoreLib")
+	set_group("Common")
+	set_basename("BurgCore")
+
 	on_load(function (target)
 		target:set("kind", target:opt("corelib_static") and "static" or "shared")
 	end)
-
-	set_group("Common")
 
 	add_defines("BURGWAR_CORELIB_BUILD")
 	add_options("corelib_static")
@@ -198,6 +199,7 @@ const char* BuildDate = "%s";
 
 target("ClientLib")
 	set_group("Common")
+	set_basename("BurgClient")
 
 	on_load(function (target)
 		target:set("kind", target:dep("clientlib_static") and "static" or "shared")
@@ -216,6 +218,7 @@ target("ClientLib")
 
 target("Main")
 	set_group("Common")
+	set_basename("BurgMain")
 
 	set_kind("static")
 	add_rules("copy_symbolfile")
