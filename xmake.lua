@@ -46,11 +46,10 @@ end
 
 
 rule("copy_bin")
-	on_install("linux", function(target)
-		local outputfile = target:targetfile()
-		if os.isfile(outputfile) then 
-			os.vcp(outputfile, path.join(target:installdir(), "bin"))
-		end
+	after_install("linux", function(target)
+		local binarydir = path.join(target:installdir(), "bin")
+	    os.mkdir(binarydir)
+		os.vcp(target:targetfile(), binarydir)
 	end)
 
 rule("copy_symbolfile")
