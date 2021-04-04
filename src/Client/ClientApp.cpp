@@ -115,7 +115,7 @@ namespace bw
 
 	int ClientApp::Run()
 	{
-		while (Application::Run())
+		while (ClientApplication::Run())
 		{
 			m_mainWindow->Display();
 

@@ -24,8 +24,9 @@ namespace bw
 
 		m_canvas.Resize({ float(width()), float(height()) });
 
-		m_world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
-		m_world.GetSystem<Ndk::RenderSystem>().SetGlobalUp(Nz::Vector3f::Down());
+		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
+		renderSystem.SetDefaultBackground(nullptr);
+		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
 		const Ndk::EntityHandle& camera2D = m_world.CreateEntity();
 		camera2D->AddComponent<Ndk::NodeComponent>();
