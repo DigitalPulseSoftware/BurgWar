@@ -46,6 +46,8 @@ namespace bw
 			void Enable(bool enable = true);
 
 			inline const Ndk::EntityHandle& GetEntity() const;
+			Nz::Boxf GetGlobalBounds() const;
+			Nz::Boxf GetLocalBounds() const;
 			inline EntityId GetUniqueId() const;
 
 			inline bool IsEnabled() const;

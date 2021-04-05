@@ -89,6 +89,57 @@ namespace bw
 			visualEntity->Enable(enable);
 	}
 
+	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
+	{
+		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		Nz::Matrix4f worldMatrix = entityNode.GetTransformMatrix();
+
+		bool first = true;
+
+		Nz::Boxf aabb(-1.f, -1.f, -1.f);
+		for (const RenderableData& r : m_attachedRenderables)
+		{
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			if (boundingVolume.IsFinite())
+			{
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(worldMatrix, r.offsetMatrix));
+
+				if (first)
+					aabb.Set(boundingVolume.aabb);
+				else
+					aabb.ExtendTo(boundingVolume.aabb);
+
+				first = false;
+			}
+		}
+
+		return aabb;
+	}
+
+	Nz::Boxf LayerVisualEntity::GetLocalBounds() const
+	{
+		bool first = true;
+
+		Nz::Boxf aabb(-1.f, -1.f, -1.f);
+		for (const RenderableData& r : m_attachedRenderables)
+		{
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			if (boundingVolume.IsFinite())
+			{
+				boundingVolume.Update(r.offsetMatrix);
+
+				if (first)
+					aabb.Set(boundingVolume.aabb);
+				else
+					aabb.ExtendTo(boundingVolume.aabb);
+
+				first = false;
+			}
+		}
+
+		return aabb;
+	}
+
 	bool LayerVisualEntity::IsPhysical() const
 	{
 		return m_entity->HasComponent<Ndk::PhysicsComponent2D>(); //< TODO: Cache this?

@@ -123,16 +123,7 @@ namespace bw
 		auto& healthData = m_health.emplace();
 		healthData.currentHealth = currentHealth;
 		healthData.maxHealth = maxHealth;
-
-		float spriteWidth = 100.f;
-		/*float spriteWidth = 0.f;
-		for (const auto& renderableData : m_attachedRenderables)
-		{
-			const auto& localBox = renderableData.renderable->GetBoundingVolume().obb.localBox;
-			spriteWidth = std::max({ spriteWidth, localBox.width, localBox.height });
-		}*/
-
-		healthData.spriteWidth = spriteWidth * 0.85f;
+		healthData.spriteWidth = GetLocalBounds().width * 0.85f;
 
 		Nz::SpriteRef lostHealthBar = Nz::Sprite::New();
 		lostHealthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
