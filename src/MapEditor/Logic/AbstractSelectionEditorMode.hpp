@@ -12,13 +12,10 @@
 #include <QtCore/QPoint>
 #include <optional>
 
-namespace Ndk
-{
-	class Entity;
-}
-
 namespace bw
 {
+	class LayerVisualEntity;
+
 	class AbstractSelectionEditorMode : public EditorMode
 	{
 		public:
@@ -29,8 +26,8 @@ namespace bw
 			void OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;
 
 		protected:
-			virtual void OnEntityMenu(const QPoint& /*pos*/, Ndk::Entity* /*hoveredEntity*/) = 0;
-			virtual void OnEntitySelected(Ndk::Entity* /*selectedEntity*/) = 0;
+			virtual void OnEntityMenu(const QPoint& /*pos*/, LayerVisualEntity* /*hoveredEntity*/) = 0;
+			virtual void OnEntitySelected(LayerVisualEntity* /*selectedEntity*/) = 0;
 
 		private:
 			std::optional<Nz::Vector2i> m_rightClickBegin;

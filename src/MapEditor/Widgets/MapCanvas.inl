@@ -17,7 +17,7 @@ namespace bw
 	void MapCanvas::ForEachMapEntity(F&& func)
 	{
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
-			func(visualEntityHandle->GetEntity());
+			func(*visualEntityHandle);
 	}
 	
 	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetAssetDirectory()

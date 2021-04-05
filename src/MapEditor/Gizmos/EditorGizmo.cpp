@@ -12,11 +12,10 @@
 
 namespace bw
 {
-	EditorGizmo::EditorGizmo(std::vector<Ndk::EntityHandle> entities) :
+	EditorGizmo::EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
 	m_targetEntities(std::move(entities))
 	{
-		m_selectionOverlayEntity = m_targetEntities.front()->GetWorld()->CreateEntity();
-
+		m_selectionOverlayEntity = renderWorld.CreateEntity();
 		m_selectionOverlayEntity->AddComponent<Ndk::GraphicsComponent>();
 		
 		auto& node = m_selectionOverlayEntity->AddComponent<Ndk::NodeComponent>();
@@ -33,16 +32,16 @@ namespace bw
 		assert(!m_targetEntities.empty());
 		Nz::Boxf globalAABB = Nz::Boxf::Zero();
 
-		std::vector<Nz::Boxf> localAABBs;
-		for (const Ndk::EntityHandle& entity : m_targetEntities)
+		std::vector<Nz::Boxf> aabbs;
+		for (const LayerVisualEntityHandle& entity : m_targetEntities)
 		{
-			Nz::Boxf aabb = entity->GetComponent<Ndk::GraphicsComponent>().GetAABB();
-			if (!localAABBs.empty())
+			Nz::Boxf aabb = entity->GetGlobalBounds();
+			if (!aabbs.empty())
 				globalAABB.ExtendTo(aabb);
 			else
 				globalAABB = aabb;
 
-			localAABBs.push_back(aabb);
+			aabbs.push_back(aabb);
 		}
 
 		Nz::Vector3f origin = globalAABB.GetCenter();
@@ -57,10 +56,10 @@ namespace bw
 
 		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), 1000);
 
-		if (localAABBs.size() > 1)
+		if (aabbs.size() > 1)
 		{
-			for (const Nz::Boxf& localAABB : localAABBs)
-				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(localAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), localAABB.GetLengths()), 999);
+			for (const Nz::Boxf& aabb : aabbs)
+				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(aabb.GetPosition() - origin, Nz::Quaternionf::Identity(), aabb.GetLengths()), 999);
 		}
 	}
 

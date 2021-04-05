@@ -11,7 +11,7 @@ namespace bw
 		return m_selectionOverlayEntity;
 	}
 
-	inline const std::vector<Ndk::EntityHandle>& EditorGizmo::GetTargetEntities() const
+	inline const std::vector<LayerVisualEntityHandle>& EditorGizmo::GetTargetEntities() const
 	{
 		return m_targetEntities;
 	}

@@ -12,8 +12,8 @@
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Camera& camera, std::vector<Ndk::EntityHandle> entities, const Nz::Vector2f& positionAlignment) :
-	EditorGizmo(std::move(entities)),
+	PositionGizmo::PositionGizmo(Camera& camera, Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment) :
+	EditorGizmo(renderWorld, std::move(entities)),
 	m_camera(camera),
 	m_hoveredAction(MovementType::None),
 	m_movementType(MovementType::None),
@@ -59,9 +59,9 @@ namespace bw
 
 		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global));
 
-		for (const Ndk::EntityHandle& entity : GetTargetEntities())
+		for (const LayerVisualEntityHandle& visualEntity : GetTargetEntities())
 		{
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
 			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global)) - arrowPosition);
 		}
 	}
@@ -171,11 +171,13 @@ namespace bw
 			auto& node = selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
 			node.SetPosition(newPosition);
 
-			const std::vector<Ndk::EntityHandle>& targetEntities = GetTargetEntities();
+			const std::vector<LayerVisualEntityHandle>& targetEntities = GetTargetEntities();
 			for (std::size_t i = 0; i < targetEntities.size(); ++i)
 			{
-				auto& entityNode = targetEntities[i]->GetComponent<Ndk::NodeComponent>();
+				auto& entityNode = targetEntities[i]->GetEntity()->GetComponent<Ndk::NodeComponent>();
 				entityNode.SetPosition(newPosition + m_entitiesOffsets[i], Nz::CoordSys_Global);
+
+				targetEntities[i]->SyncVisuals();
 			}
 
 			return true;

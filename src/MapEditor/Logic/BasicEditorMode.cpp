@@ -21,28 +21,28 @@ namespace bw
 		});
 	}
 
-	void BasicEditorMode::OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity)
+	void BasicEditorMode::OnEntityMenu(const QPoint& pos, LayerVisualEntity* hoveredEntity)
 	{
 		EditorWindow& editorWindow = GetEditorWindow();
 		std::optional<std::size_t> entityIndex;
 		if (hoveredEntity)
-			entityIndex = editorWindow.GetEntityIndex(hoveredEntity->GetId());
+			entityIndex = editorWindow.GetEntityIndex(hoveredEntity->GetUniqueId());
 
 		editorWindow.OpenEntityContextMenu(entityIndex, pos);
 	}
 
-	void BasicEditorMode::OnEntitySelected(Ndk::Entity* selectedEntity)
+	void BasicEditorMode::OnEntitySelected(LayerVisualEntity* selectedEntity)
 	{
 		EditorWindow& editorWindow = GetEditorWindow();
 		if (m_multiSelectionEnabled)
 		{
 			if (selectedEntity)
-				editorWindow.ToggleEntitySelection(editorWindow.GetEntityIndex(selectedEntity->GetId()));
+				editorWindow.ToggleEntitySelection(editorWindow.GetEntityIndex(selectedEntity->GetUniqueId()));
 		}
 		else
 		{
 			if (selectedEntity)
-				editorWindow.SelectEntity(editorWindow.GetEntityIndex(selectedEntity->GetId()));
+				editorWindow.SelectEntity(editorWindow.GetEntityIndex(selectedEntity->GetUniqueId()));
 			else
 				editorWindow.ClearSelectedEntity();
 		}

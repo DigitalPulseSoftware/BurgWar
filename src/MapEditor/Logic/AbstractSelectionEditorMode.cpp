@@ -33,27 +33,23 @@ namespace bw
 
 			Nz::Rayf ray(start, end - start);
 			
-			Ndk::Entity* bestEntity = nullptr;
+			LayerVisualEntity* bestEntity = nullptr;
 			float bestEntityArea = std::numeric_limits<float>::infinity();
 
-			/*canvas->ForEachMapEntity([&](const Ndk::EntityHandle& entity)
+			canvas->ForEachMapEntity([&](LayerVisualEntity& entity)
 			{
-				assert(entity->HasComponent<Ndk::GraphicsComponent>());
-
-				auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-
-				const Nz::Boxf& box = gfxComponent.GetAABB();
+				const Nz::Boxf& box = entity.GetGlobalBounds();
 
 				if (ray.Intersect(box))
 				{
 					float entityArea = box.width * box.height;
 					if (entityArea < bestEntityArea)
 					{
-						bestEntity = entity;
+						bestEntity = &entity;
 						bestEntityArea = entityArea;
 					}
 				}
-			});*/
+			});
 
 			OnEntitySelected(bestEntity);
 			if (mouseButton.button == Nz::Mouse::Right)

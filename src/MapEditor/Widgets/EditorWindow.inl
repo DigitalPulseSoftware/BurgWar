@@ -12,7 +12,7 @@ namespace bw
 		return m_currentLayer;
 	}
 
-	inline std::size_t EditorWindow::GetEntityIndex(Ndk::EntityId entityId) const
+	inline std::size_t EditorWindow::GetEntityIndex(EntityId entityId) const
 	{
 		auto it = m_entityIndices.find(entityId);
 		assert(it != m_entityIndices.end());

@@ -18,13 +18,13 @@ namespace bw
 			using AbstractSelectionEditorMode::AbstractSelectionEditorMode;
 			~SelectionEditorMode() = default;
 
-			NazaraSignal(OnOpenMenu, SelectionEditorMode* /*editorMode*/, const QPoint& /*pos*/, Ndk::Entity* /*selectedEntity*/);
-			NazaraSignal(OnSelectEntity, SelectionEditorMode* /*editorMode*/, Ndk::Entity* /*selectedEntity*/);
+			NazaraSignal(OnOpenMenu, SelectionEditorMode* /*editorMode*/, const QPoint& /*pos*/, LayerVisualEntity* /*selectedEntity*/);
+			NazaraSignal(OnSelectEntity, SelectionEditorMode* /*editorMode*/, LayerVisualEntity* /*selectedEntity*/);
 			NazaraSignal(OnSelectionCleared, SelectionEditorMode* /*editorMode*/);
 
 		private:
-			void OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity) override;
-			void OnEntitySelected(Ndk::Entity* selectedEntity) override;
+			void OnEntityMenu(const QPoint& pos, LayerVisualEntity* hoveredEntity) override;
+			void OnEntitySelected(LayerVisualEntity* selectedEntity) override;
 	};
 }
 

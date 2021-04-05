@@ -19,8 +19,8 @@ namespace bw
 			~BasicEditorMode() = default;
 
 		private:
-			void OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity) override;
-			void OnEntitySelected(Ndk::Entity* selectedEntity) override;
+			void OnEntityMenu(const QPoint& pos, LayerVisualEntity* hoveredEntity) override;
+			void OnEntitySelected(LayerVisualEntity* selectedEntity) override;
 
 			NazaraSlot(MapCanvas, OnMultiSelectionStateUpdated, m_multiSelectionStateUpdateSlot);
 

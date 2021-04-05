@@ -118,20 +118,20 @@ namespace bw
 
 		const Map::Layer& layerData = mapData.GetLayer(*currentLayerOpt);
 
-		std::vector<Ndk::EntityHandle> entities;
-		for (EntityId entityId : entityIds)
+		std::vector<LayerVisualEntityHandle> entities;
+		for (EntityId uniqueId : entityIds)
 		{
-			const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
-			if (!entity)
+			auto it = m_entitiesByUniqueId.find(uniqueId);
+			if (it == m_entitiesByUniqueId.end())
 				continue;
 
-			entities.push_back(entity);
+			entities.push_back(it.value());
 		}
 
 		if (entities.empty())
 			return;
 
-		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), std::move(entities), layerData.positionAlignment);
+		std::unique_ptr<PositionGizmo> positionGizmo = std::make_unique<PositionGizmo>(GetCamera(), GetWorld(), std::move(entities), layerData.positionAlignment);
 		positionGizmo->OnPositionUpdated.Connect([this](PositionGizmo* emitter, Nz::Vector2f offset)
 		{
 			std::vector<EntityId> ids = BuildEntityIds(emitter->GetTargetEntities());
@@ -344,7 +344,7 @@ namespace bw
 
 	void MapCanvas::UpdateEntityPositionAndRotation(EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
 	{
-		const Ndk::EntityHandle& entity = GetWorld().GetEntity(entityId);
+		const Ndk::EntityHandle& entity = RetrieveEntityByUniqueId(entityId);
 		assert(entity);
 
 		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
@@ -594,15 +594,15 @@ namespace bw
 		}
 	}
 
-	std::vector<EntityId> MapCanvas::BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities)
+	std::vector<EntityId> MapCanvas::BuildEntityIds(const std::vector<LayerVisualEntityHandle>& entities)
 	{
 		std::vector<EntityId> ids;
 		ids.reserve(entities.size());
 
-		for (const Ndk::EntityHandle& entity : entities)
+		for (const LayerVisualEntityHandle& visualEntity : entities)
 		{
-			if (entity)
-				ids.push_back(entity->GetId());
+			if (visualEntity)
+				ids.push_back(visualEntity->GetUniqueId());
 		}
 
 		return ids;
