@@ -96,7 +96,7 @@ namespace bw
 			inline void UnregisterEntity(EntityId uniqueId);
 			void UpdateGrid();
 
-			static std::vector<EntityId> BuildEntityIds(const std::vector<Ndk::EntityHandle>& entities);
+			static std::vector<EntityId> BuildEntityIds(const std::vector<LayerVisualEntityHandle>& entities);
 
 			void resizeEvent(QResizeEvent* event) override;
 

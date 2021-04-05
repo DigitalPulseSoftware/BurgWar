@@ -54,7 +54,7 @@ namespace bw
 			Nz::Vector2f GetCameraCenter() const;
 			inline const std::optional<LayerIndex>& GetCurrentLayer() const;
 
-			inline std::size_t GetEntityIndex(Ndk::EntityId entityId) const;
+			inline std::size_t GetEntityIndex(EntityId entityId) const;
 
 			inline MapCanvas* GetMapCanvas();
 			inline const MapCanvas* GetMapCanvas() const;

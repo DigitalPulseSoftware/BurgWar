@@ -184,7 +184,7 @@ namespace bw::Commands
 
 
 	EntityUpdate::EntityUpdate(EditorWindow& editor, EntityId entityUniqueId, Map::Entity update, EntityInfoUpdateFlags updateFlags) :
-		EntitiesCommand(editor, { entityUniqueId }, "update entity"),
+	EntitiesCommand(editor, { entityUniqueId }, "update entity"),
 	m_updateFlags(updateFlags),
 	m_newState(std::move(update))
 	{

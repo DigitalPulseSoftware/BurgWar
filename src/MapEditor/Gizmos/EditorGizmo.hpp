@@ -7,9 +7,9 @@
 #ifndef BURGWAR_MAPEDITOR_EDITORGIZMO_HPP
 #define BURGWAR_MAPEDITOR_EDITORGIZMO_HPP
 
+#include <ClientLib/LayerVisualEntity.hpp>
 #include <Nazara/Platform/Event.hpp>
 #include <Nazara/Graphics/Model.hpp>
-#include <NDK/Entity.hpp>
 #include <NDK/EntityOwner.hpp>
 
 namespace bw
@@ -17,11 +17,11 @@ namespace bw
 	class EditorGizmo
 	{
 		public:
-			EditorGizmo(std::vector<Ndk::EntityHandle> entities);
+			EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities);
 			virtual ~EditorGizmo();
 
 			inline const Ndk::EntityHandle& GetSelectionOverlayEntity() const;
-			inline const std::vector<Ndk::EntityHandle>& GetTargetEntities() const;
+			inline const std::vector<LayerVisualEntityHandle>& GetTargetEntities() const;
 
 			virtual bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
 			virtual bool OnMouseButtonReleased(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
@@ -33,7 +33,7 @@ namespace bw
 			static Nz::ModelRef GenerateBoxModel();
 
 			Ndk::EntityOwner m_selectionOverlayEntity;
-			std::vector<Ndk::EntityHandle> m_targetEntities;
+			std::vector<LayerVisualEntityHandle> m_targetEntities;
 	};
 }
 

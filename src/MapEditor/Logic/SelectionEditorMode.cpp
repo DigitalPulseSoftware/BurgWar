@@ -11,12 +11,12 @@
 
 namespace bw
 {
-	void SelectionEditorMode::OnEntityMenu(const QPoint& pos, Ndk::Entity* hoveredEntity)
+	void SelectionEditorMode::OnEntityMenu(const QPoint& pos, LayerVisualEntity* hoveredEntity)
 	{
 		OnOpenMenu(this, pos, hoveredEntity);
 	}
 
-	void SelectionEditorMode::OnEntitySelected(Ndk::Entity* bestEntity)
+	void SelectionEditorMode::OnEntitySelected(LayerVisualEntity* bestEntity)
 	{
 		if (bestEntity)
 			OnSelectEntity(this, bestEntity);

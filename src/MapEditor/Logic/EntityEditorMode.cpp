@@ -21,8 +21,9 @@ namespace bw
 		translucentMaterial->SetDiffuseColor(Nz::Color(255, 255, 255, 180));
 
 		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
-		canvas->ForEachMapEntity([&](const Ndk::EntityHandle& entity)
+		canvas->ForEachMapEntity([&](const LayerVisualEntity& visualEntity)
 		{
+			const Ndk::EntityHandle& entity = visualEntity.GetEntity();
 			assert(entity->HasComponent<Ndk::GraphicsComponent>());
 
 			auto& entityData = m_entities.emplace_back();
