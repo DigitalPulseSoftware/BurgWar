@@ -125,7 +125,7 @@ namespace bw
 			if (it == m_entitiesByUniqueId.end())
 				continue;
 
-			entities.push_back(it.value());
+			entities.emplace_back(it->second);
 		}
 
 		if (entities.empty())
@@ -355,7 +355,13 @@ namespace bw
 		if (m_entityGizmo)
 		{
 			const auto& targetEntities = m_entityGizmo->GetTargetEntities();
-			if (std::find(targetEntities.begin(), targetEntities.end(), entity) != targetEntities.end())
+
+			auto it = std::find_if(targetEntities.begin(), targetEntities.end(), [&](const LayerVisualEntityHandle& visualEntity) 
+			{ 
+				return visualEntity->GetUniqueId() == entityId; 
+			});
+
+			if (it != targetEntities.end())
 				m_entityGizmo->Refresh();
 		}
 	}
