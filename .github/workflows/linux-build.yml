@@ -47,10 +47,10 @@ jobs:
     - name: Update xmake repository
       run: xmake repo --update
 
-    # Fetch xmake dependencies hash
+    # Fetch xmake dephash
     - name: Retrieve dependencies hash
       id: dep_hash
-      run: echo "::set-output name=hash::$(xmake require --info | grep installdir | shasum -a 256)"
+      run: echo "::set-output name=hash::$(xmake dephash)"
   
     # Cache xmake dependencies
     - name: Retrieve cached xmake dependencies
