@@ -44,39 +44,6 @@ elseif is_plat("linux") then
 	add_syslinks("pthread")
 end
 
-
-task("dephash")
-	on_run(function ()
-		import("core.project.project")
-
-		local requires, requires_extra = project.requires_str()
-
-		local key = {}
-		for _, package in ipairs(requires) do
-			local c = requires_extra[package]
-			if (c and c.configs) then
-				local confs = {}
-				for k, v in pairs(c.configs) do
-					table.insert(confs, k .. "=" ..tostring(v))
-				end
-
-				table.insert(key, package .. "(" .. table.concat(confs, ",") .. ")")
-			else
-				table.insert(key, package)
-			end
-		end
-
-		table.sort(key)
-
-		key = xmake.version():shortstr() .. "-" .. table.concat(key, "-")
-		print(hash.uuid4(key):gsub('-', ''):lower())
-	end)
-
-	set_menu {
-		usage = "xmake dephash",
-		description = "Outputs a sha256 hash of dependencies"
-	}
-	
 rule("copy_bin")
 	after_install("linux", function(target)
 		local binarydir = path.join(target:installdir(), "bin")

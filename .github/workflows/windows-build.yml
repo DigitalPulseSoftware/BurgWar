@@ -35,11 +35,12 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
 
-    # Fetch xmake dephash
+    # Fetch xmake dependencies hash
     - name: Retrieve dependencies hash
       id: dep_hash
-      run: echo "::set-output name=hash::$(xmake.exe dephash)"
-  
+      shell: bash
+      run: echo "::set-output name=hash::$(xmake.exe require --info | grep installdir | shasum -a 256)"
+
     # Cache xmake dependencies
     - name: Retrieve cached xmake dependencies
       uses: actions/cache@v2
