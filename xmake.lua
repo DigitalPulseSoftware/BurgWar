@@ -54,9 +54,6 @@ task("dephash")
 
 		local key = {}
 		for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-			print(instance:name())
-			print(instance:version_str())
-			print(instance:buildhash())
 			table.insert(key, instance:name() .. "-" .. instance:version_str() .. "-" .. instance:buildhash())
 		end
 
