@@ -50,7 +50,7 @@ jobs:
     # Fetch xmake dephash
     - name: Retrieve dependencies hash
       id: dep_hash
-      run: echo "::set-output name=hash::$(xmake dephash)""
+      run: echo "::set-output name=hash::$(xmake dephash)"
   
     # Cache xmake dependencies
     - name: Retrieve cached xmake dependencies
