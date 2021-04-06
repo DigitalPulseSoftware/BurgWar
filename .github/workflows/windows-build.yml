@@ -44,7 +44,7 @@ jobs:
     - name: Retrieve cached xmake dependencies
       uses: actions/cache@v2
       with:
-        path: xmake-global\packages
+        path: xmake-global\.xmake\packages
         key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}
 
     # Setup compilation mode and install project dependencies
