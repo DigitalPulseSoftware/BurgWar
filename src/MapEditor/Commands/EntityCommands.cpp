@@ -71,9 +71,7 @@ namespace bw::Commands
 		for (EntityId entityUniqueId : m_entitiesUniqueId)
 		{
 			// Retrieve indices as they may not be the same as step #1
-			const auto& indices = map.GetEntityIndices(entityUniqueId);
-
-			entityDataIt->entity = m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex);
+			entityDataIt->entity = m_editor.DeleteEntity(entityUniqueId);
 			assert(entityDataIt->entity.uniqueId == entityUniqueId);
 
 			++entityDataIt;
@@ -172,14 +170,14 @@ namespace bw::Commands
 
 	void EntityLayerUpdate::redo()
 	{
-		m_editor.MoveEntity(m_originalPosition.layerIndex, m_originalPosition.entityIndex, m_newLayerIndex, m_editor.GetWorkingMap().GetEntityCount(m_newLayerIndex));
+		assert(m_entitiesUniqueId.size() == 1);
+		m_editor.MoveEntity(m_entitiesUniqueId[0], m_newLayerIndex, m_editor.GetWorkingMap().GetEntityCount(m_newLayerIndex));
 	}
 
 	void EntityLayerUpdate::undo()
 	{
 		assert(m_entitiesUniqueId.size() == 1);
-		auto position = m_editor.GetWorkingMap().GetEntityIndices(m_entitiesUniqueId[0]);
-		m_editor.MoveEntity(position.layerIndex, position.entityIndex, m_originalPosition.layerIndex, m_originalPosition.entityIndex);
+		m_editor.MoveEntity(m_entitiesUniqueId[0], m_originalPosition.layerIndex, m_originalPosition.entityIndex);
 	}
 
 
@@ -281,9 +279,7 @@ namespace bw::Commands
 		assert(m_entityData.empty());
 		for (EntityId uniqueId : m_entityUniqueIds)
 		{
-			const auto& indices = map.GetEntityIndices(uniqueId);
-
-			Map::Entity& entityData = m_entityData.emplace_back(m_editor.DeleteEntity(indices.layerIndex, indices.entityIndex));
+			Map::Entity& entityData = m_entityData.emplace_back(m_editor.DeleteEntity(uniqueId));
 			assert(entityData.uniqueId == uniqueId);
 		}
 	}

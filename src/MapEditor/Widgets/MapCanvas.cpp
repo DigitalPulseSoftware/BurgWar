@@ -103,11 +103,16 @@ namespace bw
 		return layer.CreateEntity(uniqueId, entityClass, position, rotation, properties).GetEntity();
 	}
 
-	void MapCanvas::DeleteEntity(LayerIndex layerIndex, EntityId entityId)
+	void MapCanvas::DeleteEntity(EntityId entityId)
 	{
-		assert(layerIndex < m_layers.size());
-		auto& layer = m_layers[layerIndex];
-		layer.DeleteEntity(entityId);
+		if (auto layerEntity = RetrieveLayerEntityByUniqueId(entityId))
+		{
+			LayerIndex layerIndex = layerEntity->GetLayerIndex();
+
+			assert(layerIndex < m_layers.size());
+			auto& layer = m_layers[layerIndex];
+			layer.DeleteEntity(entityId);
+		}
 	}
 
 	void MapCanvas::EditEntitiesPosition(const std::vector<EntityId>& entityIds)
@@ -222,7 +227,7 @@ namespace bw
 			m_scriptingContext->ReloadLibraries();
 
 		sol::state& lua = m_scriptingContext->GetLuaState();
-		lua["Editor"] = this;
+		lua["Editor"] = &m_editor;
 
 		lua["engine_GetActiveLayer"] = LuaFunction([&]()
 		{
@@ -231,10 +236,8 @@ namespace bw
 
 		lua["engine_GetPlayerPosition"] = LuaFunction([&]()
 		{
-			Nz::Vector2f mousePosition = Nz::Vector2f(Nz::Mouse::GetPosition(*this));
-			Nz::Vector2f worldPosition = GetCamera().Unproject(mousePosition);
-
-			return worldPosition;
+			QPoint mousePosition = mapFromGlobal(QCursor::pos());
+			return GetCamera().Unproject(Nz::Vector2f(mousePosition.x(), mousePosition.y()));
 		});
 
 		if (!m_entityStore)
@@ -299,6 +302,15 @@ namespace bw
 		return it.value()->GetEntity();
 	}
 
+	const LayerVisualEntityHandle& MapCanvas::RetrieveLayerEntityByUniqueId(EntityId uniqueId) const
+	{
+		auto it = m_entitiesByUniqueId.find(uniqueId);
+		if (it == m_entitiesByUniqueId.end())
+			return LayerVisualEntityHandle::InvalidHandle;
+
+		return it->second;
+	}
+
 	EntityId MapCanvas::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
 	{
 		if (!entity || !entity->HasComponent<CanvasComponent>())
@@ -344,12 +356,16 @@ namespace bw
 
 	void MapCanvas::UpdateEntityPositionAndRotation(EntityId entityId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation)
 	{
-		const Ndk::EntityHandle& entity = RetrieveEntityByUniqueId(entityId);
-		assert(entity);
+		auto it = m_entitiesByUniqueId.find(entityId);
+		assert(it != m_entitiesByUniqueId.end());
 
-		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+		LayerVisualEntity& layerVisual = *it->second;
+
+		auto& nodeComponent = layerVisual.GetEntity()->GetComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
+
+		layerVisual.SyncVisuals();
 
 		// Refresh gizmo if an entity it uses has been updated
 		if (m_entityGizmo)

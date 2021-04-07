@@ -54,12 +54,12 @@ namespace bw
 
 		Nz::ModelRef aabbModel = GenerateBoxModel();
 
-		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), 1000);
+		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), std::numeric_limits<int>::max());
 
 		if (aabbs.size() > 1)
 		{
 			for (const Nz::Boxf& aabb : aabbs)
-				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(aabb.GetPosition() - origin, Nz::Quaternionf::Identity(), aabb.GetLengths()), 999);
+				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(aabb.GetPosition() - origin, Nz::Quaternionf::Identity(), aabb.GetLengths()), std::numeric_limits<int>::max() - 1);
 		}
 	}
 

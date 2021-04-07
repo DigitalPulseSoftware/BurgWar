@@ -17,7 +17,7 @@ namespace bw
 		if (!entity)
 			return std::nullopt;
 
-		LayerVisualEntity visualEntity(entity, uniqueId);
+		LayerVisualEntity visualEntity(entity, layerIndex, uniqueId);
 		entity->AddComponent<CanvasComponent>(m_mapCanvas, layerIndex, uniqueId);
 		entity->AddComponent<VisualComponent>(visualEntity.CreateHandle());
 

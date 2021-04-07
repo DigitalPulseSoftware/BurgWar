@@ -4,12 +4,14 @@
 
 #include <ClientLib/LayerVisualEntity.hpp>
 #include <cassert>
+#include <utility>
 
 namespace bw
 {
-	inline LayerVisualEntity::LayerVisualEntity(const Ndk::EntityHandle& entity, EntityId uniqueId) :
+	inline LayerVisualEntity::LayerVisualEntity(const Ndk::EntityHandle& entity, LayerIndex layerIndex, EntityId uniqueId) :
 	m_entity(entity),
-	m_uniqueId(uniqueId)
+	m_uniqueId(uniqueId),
+	m_layerIndex(layerIndex)
 	{
 		assert(m_entity);
 	}
@@ -19,9 +21,21 @@ namespace bw
 		return Enable(false);
 	}
 
+	template<typename Func>
+	void LayerVisualEntity::ForEachRenderable(Func&& func) const
+	{
+		for (const auto& renderableData : m_attachedRenderables)
+			func(std::as_const(renderableData.renderable), std::as_const(renderableData.offsetMatrix), std::as_const(renderableData.renderOrder));
+	}
+
 	inline const Ndk::EntityHandle& LayerVisualEntity::GetEntity() const
 	{
 		return m_entity;
+	}
+
+	inline LayerIndex LayerVisualEntity::GetLayerIndex() const
+	{
+		return m_layerIndex;
 	}
 
 	inline EntityId LayerVisualEntity::GetUniqueId() const

@@ -19,7 +19,7 @@
 namespace bw
 {
 	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
-	LayerVisualEntity(entity, uniqueId),
+	LayerVisualEntity(entity, layer.GetLayerIndex(), uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
 	{

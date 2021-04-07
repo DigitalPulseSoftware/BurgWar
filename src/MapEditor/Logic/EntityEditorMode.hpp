@@ -14,6 +14,10 @@
 
 namespace bw
 {
+	class LayerVisualEntity;
+
+	using LayerVisualEntityHandle = Nz::ObjectHandle<LayerVisualEntity>;
+
 	class EntityEditorMode : public EditorMode
 	{
 		public:
@@ -31,7 +35,7 @@ namespace bw
 
 			struct Entity
 			{
-				Ndk::EntityHandle entity;
+				LayerVisualEntityHandle layerEntity;
 				std::vector<Renderable> renderables;
 			};
 

@@ -39,7 +39,7 @@ namespace bw
 			void ClearEntitySelection();
 
 			const Ndk::EntityHandle& CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties);
-			void DeleteEntity(LayerIndex layerIndex, EntityId uniqueId);
+			void DeleteEntity(EntityId uniqueId);
 
 			void EditEntitiesPosition(const std::vector<EntityId>& entityIds);
 
@@ -47,6 +47,8 @@ namespace bw
 			template<typename F> void ForEachEntity(F&& func);
 			template<typename F> void ForEachMapEntity(F&& func);
 
+			MapCanvasLayer* GetActiveLayer();
+			const MapCanvasLayer* GetActiveLayer() const;
 			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory();
 			EditorEntityStore& GetEntityStore() override;
 			const EditorEntityStore& GetEntityStore() const override;
@@ -65,6 +67,7 @@ namespace bw
 			void ResetLayers(std::size_t layerCount);
 
 			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			const LayerVisualEntityHandle& RetrieveLayerEntityByUniqueId(EntityId uniqueId) const;
 			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
 
 			void ShowGrid(bool show);
