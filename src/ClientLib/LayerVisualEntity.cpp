@@ -15,6 +15,16 @@
 
 namespace bw
 {
+	namespace
+	{
+		// Reverse Y
+		Nz::Matrix4f s_coordinateMatrix(
+			1.f, 0.f, 0.f, 0.f,
+			0.f, -1.f, 0.f, 0.f,
+			0.f, 0.f, 1.f, 0.f,
+			0.f, 0.f, 0.f, 1.f);
+	}
+
 	LayerVisualEntity::LayerVisualEntity(LayerVisualEntity&& entity) noexcept :
 	HandledObject(std::move(entity)),
 	m_attachedHoveringRenderables(std::move(entity.m_attachedHoveringRenderables)),
@@ -92,7 +102,7 @@ namespace bw
 	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
 	{
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		Nz::Matrix4f worldMatrix = entityNode.GetTransformMatrix();
+		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, entityNode.GetTransformMatrix());
 
 		bool first = true;
 
@@ -126,7 +136,7 @@ namespace bw
 			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(r.offsetMatrix);
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, r.offsetMatrix));
 
 				if (first)
 					aabb.Set(boundingVolume.aabb);
