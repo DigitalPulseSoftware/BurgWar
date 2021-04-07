@@ -65,22 +65,14 @@ task("dephash")
 
 	set_menu {
 		usage = "xmake dephash",
-		description = "Outputs a sha256 hash of dependencies"
+		description = "Outputs a hash key of current dependencies version/configuration"
 	}
-	
-rule("copy_bin")
+
+rule("install_bin")
 	after_install("linux", function(target)
 		local binarydir = path.join(target:installdir(), "bin")
 		os.mkdir(binarydir)
 		os.vcp(target:targetfile(), binarydir)
-	end)
-
-rule("copy_symbolfile")
-	after_install(function(target)
-		local symbolfile = target:symbolfile()
-		if os.isfile(symbolfile) then
-			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
-		end
 	end)
 
 rule("install_metadata")
@@ -110,6 +102,14 @@ rule("install_nazara")
 		end
 	end)
 
+rule("install_symbolfile")
+	after_install(function(target)
+		local symbolfile = target:symbolfile()
+		if os.isfile(symbolfile) then
+			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
+		end
+	end)
+
 option("corelib_static")
 	set_default(false)
 	set_showmenu(true)
@@ -136,7 +136,7 @@ target("lua")
 
 	add_options("clientlib_static")
 	add_options("corelib_static")
-	add_rules("copy_bin", "copy_symbolfile")
+	add_rules("install_bin", "install_symbolfile")
 
 	add_includedirs("contrib/lua/include", { public = true })
 	add_headerfiles("contrib/lua/include/**.h")
@@ -153,7 +153,7 @@ target("CoreLib")
 
 	add_defines("BURGWAR_CORELIB_BUILD")
 	add_options("corelib_static")
-	add_rules("copy_bin", "copy_symbolfile")
+	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("lua")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
@@ -229,7 +229,7 @@ target("ClientLib")
 
 	add_defines("BURGWAR_CLIENTLIB_BUILD")
 	add_options("clientlib_static")
-	add_rules("copy_bin", "copy_symbolfile")
+	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
@@ -243,7 +243,7 @@ target("Main")
 	set_basename("BurgMain")
 
 	set_kind("static")
-	add_rules("copy_symbolfile")
+	add_rules("install_symbolfile")
 
 	add_deps("CoreLib")
 	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
@@ -255,7 +255,7 @@ target("BurgWar")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata", "install_nazara")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -270,7 +270,7 @@ target("BurgWarServer")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata", "install_nazara")
 
 	add_defines("NDK_SERVER")
 
@@ -288,7 +288,7 @@ target("BurgWarMapTool")
 	set_basename("maptool")
 
 	set_kind("binary")
-	add_rules("copy_symbolfile", "install_nazara")
+	add_rules("install_symbolfile", "install_nazara")
 
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/MapTool/**.hpp", "src/MapTool/**.inl")
@@ -300,7 +300,7 @@ target("BurgWarMapEditor")
 
 	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
-	add_rules("copy_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata", "install_nazara")
 
 	-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
 	-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
