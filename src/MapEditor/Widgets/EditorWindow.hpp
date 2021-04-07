@@ -48,7 +48,7 @@ namespace bw
 
 			Map::Entity& CreateEntity(LayerIndex layerIndex, std::size_t entityIndex, Map::Entity entityData);
 			Map::Layer& CreateLayer(LayerIndex layerIndex, Map::Layer layerData);
-			Map::Entity DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			Map::Entity DeleteEntity(EntityId entityId);
 			Map::Layer DeleteLayer(LayerIndex layerIndex);
 
 			Nz::Vector2f GetCameraCenter() const;
@@ -64,7 +64,7 @@ namespace bw
 			inline Map& GetWorkingMapMut();
 			inline const Map& GetWorkingMap() const;
 
-			void MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex);
+			void MoveEntity(EntityId entityId, LayerIndex targetLayer, std::size_t targetEntityIndex);
 
 			void OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent = nullptr);
 

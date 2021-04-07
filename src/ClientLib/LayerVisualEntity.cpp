@@ -31,7 +31,8 @@ namespace bw
 	m_attachedRenderables(std::move(entity.m_attachedRenderables)),
 	m_visualEntities(std::move(entity.m_visualEntities)),
 	m_entity(std::move(entity.m_entity)),
-	m_uniqueId(std::move(entity.m_uniqueId))
+	m_uniqueId(std::move(entity.m_uniqueId)),
+	m_layerIndex(std::move(entity.m_layerIndex))
 	{
 		entity.m_uniqueId = InvalidEntityId;
 	}

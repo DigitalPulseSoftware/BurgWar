@@ -214,7 +214,7 @@ namespace bw
 		auto& newEntity = GetWorkingMapMut().EmplaceEntity(layerIndex, entityIndex, std::move(entityData));
 		m_canvas->CreateEntity(layerIndex, newEntity.uniqueId, newEntity.entityType, newEntity.position, newEntity.rotation, newEntity.properties);
 
-		if (m_currentLayer && *m_currentLayer == layerIndex)
+		if (m_currentLayer == layerIndex)
 			RegisterEntity(entityIndex);
 
 		return newEntity;
@@ -229,16 +229,23 @@ namespace bw
 		return layer;
 	}
 
-	Map::Entity EditorWindow::DeleteEntity(LayerIndex layerIndex, std::size_t entityIndex)
+	Map::Entity EditorWindow::DeleteEntity(EntityId entityId)
 	{
-		if (m_currentLayer && *m_currentLayer == layerIndex)
+		const auto& layerEntity = m_canvas->RetrieveLayerEntityByUniqueId(entityId);
+		assert(layerEntity);
+
+		if (m_currentLayer == layerEntity->GetLayerIndex())
 		{
-			QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-			EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
+			std::size_t entityIndex;
+			{
+				auto it = m_entityIndices.find(entityId);
+				assert(it != m_entityIndices.end());
 
-			delete item;
+				entityIndex = it->second;
+			}
 
-			m_canvas->DeleteEntity(layerIndex, uniqueId);
+			delete m_entityList.listWidget->takeItem(int(entityIndex));
+			EntityId uniqueId = layerEntity->GetUniqueId();
 
 			m_entityIndices.erase(uniqueId);
 
@@ -253,13 +260,15 @@ namespace bw
 			}
 		}
 
+		m_canvas->DeleteEntity(entityId);
+
 		Map& map = GetWorkingMapMut();
-		return map.DropEntity(layerIndex, entityIndex);
+		return map.DropEntity(entityId);
 	}
 
 	Map::Layer EditorWindow::DeleteLayer(LayerIndex layerIndex)
 	{
-		if (m_currentLayer && *m_currentLayer == layerIndex)
+		if (m_currentLayer == layerIndex)
 			m_layerList.listWidget->setCurrentRow(-1);
 
 		auto layer = GetWorkingMapMut().DropLayer(layerIndex);
@@ -277,36 +286,38 @@ namespace bw
 		return camera.Unproject({ viewport.width / 2.f, viewport.height / 2.f });
 	}
 
-	void EditorWindow::MoveEntity(LayerIndex layerIndex, std::size_t entityIndex, LayerIndex targetLayer, std::size_t targetEntityIndex)
+	void EditorWindow::MoveEntity(EntityId entityId, LayerIndex targetLayer, std::size_t targetEntityIndex)
 	{
-		GetWorkingMapMut().MoveEntity(layerIndex, entityIndex, targetLayer, targetEntityIndex);
+		Map& map = GetWorkingMapMut();
 
-		if (m_currentLayer)
+		const Map::EntityIndices& indices = map.GetEntityIndices(entityId);
+
+		const Map::Entity& mapEntity = map.GetEntity(entityId);
+		m_canvas->DeleteEntity(mapEntity.uniqueId);
+		m_canvas->CreateEntity(targetLayer, mapEntity.uniqueId, mapEntity.entityType, mapEntity.position, mapEntity.rotation, mapEntity.properties);
+
+		if (m_currentLayer == indices.layerIndex)
 		{
-			if (*m_currentLayer == layerIndex)
+			delete m_entityList.listWidget->takeItem(int(indices.entityIndex));
+
+			m_entityIndices.erase(mapEntity.uniqueId);
+
+			// FIXME...
+			for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)
 			{
-				QListWidgetItem* item = m_entityList.listWidget->takeItem(int(entityIndex));
-				EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
-
-				delete item;
-
-				m_canvas->DeleteEntity(layerIndex, uniqueId);
-
-				m_entityIndices.erase(uniqueId);
-
-				// FIXME...
-				for (auto it = m_entityIndices.begin(); it != m_entityIndices.end(); ++it)
+				if (it->second >= indices.entityIndex)
 				{
-					if (it->second >= entityIndex)
-					{
-						std::size_t newEntityIndex = --it.value();
-						m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
-					}
+					std::size_t newEntityIndex = --it.value();
+					m_entityList.listWidget->item(int(newEntityIndex))->setData(Qt::UserRole, qulonglong(newEntityIndex));
 				}
 			}
-			else if (*m_currentLayer == targetLayer)
-				RegisterEntity(targetEntityIndex);
 		}
+
+		// Move entity last (because it will invalidate indices and entity references)
+		map.MoveEntity(indices.layerIndex, indices.entityIndex, targetLayer, targetEntityIndex);
+
+		if (m_currentLayer == targetLayer)
+			RegisterEntity(targetEntityIndex);
 	}
 
 	void EditorWindow::OpenEntityContextMenu(std::optional<std::size_t> entityIndexOpt, const QPoint& pos, QWidget* parent)
@@ -391,17 +402,9 @@ namespace bw
 
 	void EditorWindow::RefreshEntityPositionAndRotation(LayerIndex layerIndex, std::size_t entityIndex)
 	{
-		if (!m_currentLayer.has_value() || *m_currentLayer != layerIndex)
-			return;
-
 		const Map& map = GetWorkingMap();
 		const auto& entity = map.GetEntity(layerIndex, entityIndex);
-
-		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
-		assert(item);
-		EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
-
-		m_canvas->UpdateEntityPositionAndRotation(canvasId, entity.position, entity.rotation);
+		m_canvas->UpdateEntityPositionAndRotation(entity.uniqueId, entity.position, entity.rotation);
 	}
 
 	void EditorWindow::SelectEntity(std::size_t entityIndex, bool clearPrevious)
@@ -425,23 +428,22 @@ namespace bw
 	void EditorWindow::SwapEntities(LayerIndex layerIndex, std::size_t firstEntityIndex, std::size_t secondEntityIndex)
 	{
 		auto& map = GetWorkingMapMut();
+
+		EntityId firstEntityId = map.GetEntity(layerIndex, firstEntityIndex).uniqueId;
+		EntityId secondEntityId = map.GetEntity(layerIndex, secondEntityIndex).uniqueId;
+
 		map.SwapEntities(layerIndex, firstEntityIndex, secondEntityIndex);
 
-		if (!m_currentLayer || *m_currentLayer != layerIndex)
+		if (m_currentLayer != layerIndex)
 			return;
 
 		QListWidgetItem* firstItem = m_entityList.listWidget->item(int(firstEntityIndex));
 		QListWidgetItem* secondItem = m_entityList.listWidget->item(int(secondEntityIndex));
 
-		EntityId firstEntityId = EntityId(firstItem->data(Qt::UserRole + 1).value<qlonglong>());
 		QString firstItemText = firstItem->text();
-
-		EntityId secondEntityId = EntityId(secondItem->data(Qt::UserRole + 1).value<qlonglong>());
 		QString secondItemText = secondItem->text();
 
-		firstItem->setData(Qt::UserRole + 1, secondItem->data(Qt::UserRole + 1).value<qlonglong>());
 		firstItem->setText(secondItemText);
-		secondItem->setData(Qt::UserRole + 1, qlonglong(firstEntityId));
 		secondItem->setText(firstItemText);
 
 		m_entityIndices[firstEntityId] = secondEntityIndex;
@@ -528,35 +530,34 @@ namespace bw
 		if (updateFlags & EntityInfoUpdate::Properties)
 			mapEntity.properties = std::move(entityData.properties);
 
-		if (!m_currentLayer || *m_currentLayer != layerIndex)
-			return;
-
 		QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
 		assert(item);
-		EntityId uniqueId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 
 		if (updateFlags & (EntityInfoUpdate::EntityClass | EntityInfoUpdate::Properties))
 		{
-			m_canvas->DeleteEntity(layerIndex, uniqueId);
+			m_canvas->DeleteEntity(mapEntity.uniqueId);
 			m_canvas->CreateEntity(layerIndex, mapEntity.uniqueId, mapEntity.entityType, mapEntity.position, mapEntity.rotation, mapEntity.properties)->GetId();
 		}
 		else if (updateFlags & EntityInfoUpdate::PositionRotation)
-			m_canvas->UpdateEntityPositionAndRotation(uniqueId, mapEntity.position, mapEntity.rotation);
+			m_canvas->UpdateEntityPositionAndRotation(mapEntity.uniqueId, mapEntity.position, mapEntity.rotation);
 
-		if (resetItemName)
+		if (m_currentLayer == layerIndex)
 		{
-			QString entryName = QString::fromStdString(mapEntity.entityType);
-			if (!mapEntity.name.empty())
-				entryName = entryName % " (" % QString::fromStdString(mapEntity.name) % ")";
+			if (resetItemName)
+			{
+				QString entryName = QString::fromStdString(mapEntity.entityType);
+				if (!mapEntity.name.empty())
+					entryName = entryName % " (" % QString::fromStdString(mapEntity.name) % ")";
 
-			item->setText(entryName);
-		}
+				item->setText(entryName);
+			}
 
-		// Trigger selection signal
-		if (item->isSelected())
-		{
-			m_entityList.listWidget->setCurrentRow(-1);
-			m_entityList.listWidget->setCurrentRow(int(entityIndex));
+			// Trigger selection signal
+			if (item->isSelected())
+			{
+				m_entityList.listWidget->setCurrentRow(-1);
+				m_entityList.listWidget->setCurrentRow(int(entityIndex));
+			}
 		}
 	}
 
@@ -648,18 +649,10 @@ namespace bw
 		for (auto& layerEntity : layer.entities)
 			layerEntity.position = AlignPosition(layerEntity.position, layer.positionAlignment);
 
-		if (m_currentLayer && *m_currentLayer == layerIndex)
+		for (std::size_t i = 0; i < layer.entities.size(); ++i)
 		{
-			for (std::size_t i = 0; i < layer.entities.size(); ++i)
-			{
-				const auto& layerEntity = layer.entities[i];
-
-				QListWidgetItem* item = m_entityList.listWidget->item(int(i));
-				assert(item);
-				EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
-
-				m_canvas->UpdateEntityPositionAndRotation(canvasId, layerEntity.position, layerEntity.rotation);
-			}
+			const auto& layerEntity = layer.entities[i];
+			m_canvas->UpdateEntityPositionAndRotation(layerEntity.uniqueId, layerEntity.position, layerEntity.rotation);
 		}
 	}
 
@@ -1254,25 +1247,24 @@ namespace bw
 		if (!item)
 			return;
 
-		EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
 		LayerIndex layerIndex = static_cast<LayerIndex>(m_layerList.listWidget->currentRow());
 
 		const auto& workingMap = GetWorkingMap();
 		auto& layer = workingMap.GetLayer(layerIndex);
 
-		auto& layerEntity = layer.entities[entityIndex];
+		auto& mapEntity = layer.entities[entityIndex];
 
 		EntityInfo entityInfo;
-		entityInfo.entityClass = layerEntity.entityType;
-		entityInfo.entityName = layerEntity.name;
-		entityInfo.position = layerEntity.position;
-		entityInfo.properties = layerEntity.properties;
-		entityInfo.rotation = layerEntity.rotation;
+		entityInfo.entityClass = mapEntity.entityType;
+		entityInfo.entityName = mapEntity.name;
+		entityInfo.position = mapEntity.position;
+		entityInfo.properties = mapEntity.properties;
+		entityInfo.rotation = mapEntity.rotation;
 
-		const auto& entity = m_canvas->GetWorld().GetEntity(canvasId);
+		const auto& entity = m_canvas->RetrieveEntityByUniqueId(mapEntity.uniqueId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(layerEntity.uniqueId, std::move(entityInfo), entity, [this, uniqueId = layerEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
+		editEntityDialog->Open(mapEntity.uniqueId, std::move(entityInfo), entity, [this, uniqueId = mapEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
 			Map::Entity entity;
 			entity.entityType = std::move(entityInfo.entityClass);
@@ -1368,13 +1360,14 @@ namespace bw
 			return;
 		}
 
+		assert(m_currentLayer);
+		LayerIndex layerIndex = m_currentLayer.value();
+
+		const Map& map = GetWorkingMap();
+
 		std::vector<EntityId> selectedEntities;
 		for (std::size_t entityIndex : m_selectedEntities)
-		{
-			QListWidgetItem* item = m_entityList.listWidget->item(int(entityIndex));
-			EntityId canvasId = EntityId(item->data(Qt::UserRole + 1).value<qlonglong>());
-			selectedEntities.push_back(canvasId);
-		}
+			selectedEntities.push_back(map.GetEntity(layerIndex, entityIndex).uniqueId);
 
 		m_canvas->EditEntitiesPosition(std::move(selectedEntities));
 	}
@@ -1393,7 +1386,7 @@ namespace bw
 			return;
 		}
 
-		if (m_currentLayer && m_currentLayer.value() == layerIndex)
+		if (m_currentLayer == layerIndex)
 			return;
 
 		assert(layerIndex >= 0);
@@ -1567,7 +1560,6 @@ namespace bw
 
 		QListWidgetItem* item = new QListWidgetItem(entryName);
 		item->setData(Qt::UserRole, qulonglong(entityIndex));
-		item->setData(Qt::UserRole + 1, qlonglong(entity.uniqueId));
 
 		if (int(entityIndex) != m_entityList.listWidget->count())
 		{

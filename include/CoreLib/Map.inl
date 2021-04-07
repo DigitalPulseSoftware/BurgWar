@@ -96,6 +96,12 @@ namespace bw
 		return entityData;
 	}
 
+	inline auto Map::DropEntity(EntityId uniqueId) -> Entity
+	{
+		const EntityIndices& entityIndices = GetEntityIndices(uniqueId);
+		return DropEntity(entityIndices.layerIndex, entityIndices.entityIndex);
+	}
+
 	inline auto Map::DropLayer(LayerIndex layerIndex) -> Layer
 	{
 		Layer layer = std::move(GetLayer(layerIndex));

@@ -51,6 +51,7 @@ namespace bw
 			bool Compile(const std::filesystem::path& outputPath);
 
 			inline Entity DropEntity(LayerIndex layerIndex, std::size_t entityIndex);
+			inline Entity DropEntity(EntityId uniqueId);
 			inline Layer DropLayer(LayerIndex layerIndex);
 
 			template<typename... Args> Entity& EmplaceEntity(LayerIndex layerIndex, std::size_t entityIndex, Args&&... args);

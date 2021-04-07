@@ -19,7 +19,27 @@ namespace bw
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
 			func(*visualEntityHandle);
 	}
-	
+
+	inline MapCanvasLayer* MapCanvas::GetActiveLayer()
+	{
+		if (!m_currentLayer)
+			return nullptr;
+
+		LayerIndex layerIndex = m_currentLayer.value();
+		assert(layerIndex < m_layers.size());
+		return &m_layers[layerIndex];
+	}
+
+	inline const MapCanvasLayer* MapCanvas::GetActiveLayer() const
+	{
+		if (!m_currentLayer)
+			return nullptr;
+
+		LayerIndex layerIndex = m_currentLayer.value();
+		assert(layerIndex < m_layers.size());
+		return &m_layers[layerIndex];
+	}
+
 	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetAssetDirectory()
 	{
 		return m_assetDirectory;

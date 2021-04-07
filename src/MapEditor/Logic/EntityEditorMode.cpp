@@ -21,16 +21,12 @@ namespace bw
 		translucentMaterial->SetDiffuseColor(Nz::Color(255, 255, 255, 180));
 
 		MapCanvas* canvas = GetEditorWindow().GetMapCanvas();
-		canvas->ForEachMapEntity([&](const LayerVisualEntity& visualEntity)
+		canvas->ForEachMapEntity([&](LayerVisualEntity& visualEntity)
 		{
-			const Ndk::EntityHandle& entity = visualEntity.GetEntity();
-			assert(entity->HasComponent<Ndk::GraphicsComponent>());
-
 			auto& entityData = m_entities.emplace_back();
-			entityData.entity = entity;
+			entityData.layerEntity = visualEntity.CreateHandle();
 
-			auto& gfxComponent = entity->GetComponent<Ndk::GraphicsComponent>();
-			gfxComponent.ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
+			visualEntity.ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
 			{
 				auto& renderableData = entityData.renderables.emplace_back();
 
@@ -53,12 +49,11 @@ namespace bw
 
 		for (const auto& entityData : m_entities)
 		{
-			if (!entityData.entity)
+			if (!entityData.layerEntity)
 				continue;
 
-			auto& gfxComponent = entityData.entity->GetComponent<Ndk::GraphicsComponent>();
 			std::size_t i = 0;
-			gfxComponent.ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
+			entityData.layerEntity->ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
 			{
 				auto& renderableData = entityData.renderables[i];
 				for (std::size_t j = 0; j < renderable->GetMaterialCount(); ++j)

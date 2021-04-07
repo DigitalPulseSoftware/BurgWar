@@ -34,6 +34,8 @@ namespace bw
 			LayerVisualEntity& visualEntity = it.value();
 			m_mapCanvas.RegisterEntity(uniqueId, visualEntity.CreateHandle());
 
+			OnEntityVisualCreated(this, visualEntity);
+
 			return visualEntity;
 		}
 		catch (const std::exception& e)
@@ -55,6 +57,8 @@ namespace bw
 		auto it = m_layerEntities.find(uniqueId);
 		if (it == m_layerEntities.end())
 			return;
+
+		OnEntityVisualDelete(this, it.value());
 
 		m_layerEntities.erase(it);
 		m_mapCanvas.UnregisterEntity(uniqueId);

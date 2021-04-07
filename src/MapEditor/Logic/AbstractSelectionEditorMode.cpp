@@ -26,34 +26,36 @@ namespace bw
 
 			EditorWindow& editorWindow = GetEditorWindow();
 			MapCanvas* canvas = editorWindow.GetMapCanvas();
-
-			const Camera& camera = canvas->GetCamera();
-			Nz::Vector3f start = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 0.f });
-			Nz::Vector3f end = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 1.f });
-
-			Nz::Rayf ray(start, end - start);
-			
-			LayerVisualEntity* bestEntity = nullptr;
-			float bestEntityArea = std::numeric_limits<float>::infinity();
-
-			canvas->ForEachMapEntity([&](LayerVisualEntity& entity)
+			if (MapCanvasLayer* layer = canvas->GetActiveLayer())
 			{
-				const Nz::Boxf& box = entity.GetGlobalBounds();
+				const Camera& camera = canvas->GetCamera();
+				Nz::Vector3f start = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 0.f });
+				Nz::Vector3f end = camera.Unproject({ float(mouseButton.x), float(mouseButton.y), 1.f });
 
-				if (ray.Intersect(box))
+				Nz::Rayf ray(start, end - start);
+
+				LayerVisualEntity* bestEntity = nullptr;
+				float bestEntityArea = std::numeric_limits<float>::infinity();
+
+				layer->ForEachVisualEntity([&](LayerVisualEntity& entity)
 				{
-					float entityArea = box.width * box.height;
-					if (entityArea < bestEntityArea)
-					{
-						bestEntity = &entity;
-						bestEntityArea = entityArea;
-					}
-				}
-			});
+					const Nz::Boxf& box = entity.GetGlobalBounds();
 
-			OnEntitySelected(bestEntity);
-			if (mouseButton.button == Nz::Mouse::Right)
-				OnEntityMenu(canvas->mapToGlobal(QPoint(mouseButton.x, mouseButton.y)), bestEntity);
+					if (ray.Intersect(box))
+					{
+						float entityArea = box.width * box.height;
+						if (entityArea < bestEntityArea)
+						{
+							bestEntity = &entity;
+							bestEntityArea = entityArea;
+						}
+					}
+				});
+
+				OnEntitySelected(bestEntity);
+				if (mouseButton.button == Nz::Mouse::Right)
+					OnEntityMenu(canvas->mapToGlobal(QPoint(mouseButton.x, mouseButton.y)), bestEntity);
+			}
 		}
 	}
 }

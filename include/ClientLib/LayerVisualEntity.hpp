@@ -32,7 +32,7 @@ namespace bw
 		friend VisualEntity;
 
 		public:
-			inline LayerVisualEntity(const Ndk::EntityHandle& entity, EntityId uniqueId);
+			inline LayerVisualEntity(const Ndk::EntityHandle& entity, LayerIndex layerIndex, EntityId uniqueId);
 			LayerVisualEntity(const LayerVisualEntity&) = delete;
 			LayerVisualEntity(LayerVisualEntity&& entity) noexcept;
 			virtual ~LayerVisualEntity();
@@ -45,8 +45,11 @@ namespace bw
 			inline void Disable();
 			void Enable(bool enable = true);
 
+			template<typename Func> void ForEachRenderable(Func&& func) const;
+
 			inline const Ndk::EntityHandle& GetEntity() const;
 			Nz::Boxf GetGlobalBounds() const;
+			inline LayerIndex GetLayerIndex() const;
 			Nz::Boxf GetLocalBounds() const;
 			inline EntityId GetUniqueId() const;
 
@@ -88,6 +91,7 @@ namespace bw
 			std::vector<VisualEntity*> m_visualEntities;
 			Ndk::EntityOwner m_entity;
 			EntityId m_uniqueId;
+			LayerIndex m_layerIndex;
 	};
 }
 
