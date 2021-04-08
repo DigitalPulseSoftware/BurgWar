@@ -43,8 +43,8 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
-#include <Thirdparty/tsl/bhopscotch_map.h>
-#include <Thirdparty/tsl/hopscotch_set.h>
+#include <tsl/bhopscotch_map.h>
+#include <tsl/hopscotch_set.h>
 
 namespace bw
 {

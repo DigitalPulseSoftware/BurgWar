@@ -13,7 +13,7 @@
 #include <CoreLib/Scripting/GamemodeEvents.hpp>
 #include <CoreLib/Scripting/ScriptedEvent.hpp>
 #include <CoreLib/Scripting/ScriptedProperty.hpp>
-#include <Thirdparty/tsl/bhopscotch_map.h>
+#include <tsl/bhopscotch_map.h>
 #include <array>
 #include <string>
 

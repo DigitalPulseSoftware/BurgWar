@@ -18,8 +18,8 @@
 #include <Nazara/Core/Flags.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/EntityList.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
-#include <Thirdparty/tsl/hopscotch_set.h>
+#include <tsl/hopscotch_map.h>
+#include <tsl/hopscotch_set.h>
 #include <limits>
 #include <vector>
 

@@ -16,7 +16,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QWidget>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <algorithm>
 
 namespace bw

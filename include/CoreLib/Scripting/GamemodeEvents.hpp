@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/EventCombinator.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 #include <cstddef>
 #include <functional>
 #include <optional>

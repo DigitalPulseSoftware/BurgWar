@@ -13,7 +13,7 @@
 #include <Nazara/Graphics/TextSprite.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Entity.hpp>
-#include <Thirdparty/sol3/forward.hpp>
+#include <sol/forward.hpp>
 
 namespace bw
 {

@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <ClientLib/InputController.hpp>
-#include <Thirdparty/sol3/forward.hpp>
+#include <sol/forward.hpp>
 
 namespace bw
 {

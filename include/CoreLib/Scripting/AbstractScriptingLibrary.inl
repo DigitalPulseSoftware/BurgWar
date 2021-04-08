@@ -11,7 +11,7 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/PlayerInputData.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 #include <cassert>
 
 namespace bw

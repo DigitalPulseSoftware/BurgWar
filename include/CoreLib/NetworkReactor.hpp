@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <Nazara/Core/Thread.hpp>
 #include <Nazara/Network/ENetHost.hpp>
-#include <Thirdparty/concurrentqueue/concurrentqueue.h>
+#include <concurrentqueue/concurrentqueue.h>
 #include <atomic>
 #include <functional>
 #include <variant>

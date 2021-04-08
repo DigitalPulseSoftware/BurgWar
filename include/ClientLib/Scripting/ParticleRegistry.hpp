@@ -12,8 +12,8 @@
 #include <Nazara/Graphics/ParticleDeclaration.hpp>
 #include <Nazara/Graphics/ParticleGenerator.hpp>
 #include <Nazara/Graphics/ParticleRenderer.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
-#include <Thirdparty/sol3/sol.hpp>
+#include <tsl/hopscotch_map.h>
+#include <sol/sol.hpp>
 #include <string>
 
 namespace bw

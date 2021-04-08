@@ -10,7 +10,7 @@
 #include <CoreLib/Utils.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 
 namespace bw
 {

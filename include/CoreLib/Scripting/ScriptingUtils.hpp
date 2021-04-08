@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <NDK/Entity.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 #include <cstdlib>
 #include <memory>
 #include <optional>

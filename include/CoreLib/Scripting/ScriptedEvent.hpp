@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDEVENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 
 namespace bw
 {

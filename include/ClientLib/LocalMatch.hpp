@@ -32,8 +32,8 @@
 #include <Nazara/Network/UdpSocket.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/EntityOwner.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
-#include <Thirdparty/tsl/hopscotch_set.h>
+#include <tsl/hopscotch_map.h>
+#include <tsl/hopscotch_set.h>
 #include <memory>
 #include <optional>
 #include <variant>

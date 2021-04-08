@@ -13,7 +13,7 @@
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/SessionManager.hpp>
 #include <Nazara/Core/MemoryPool.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <vector>
 
 namespace bw

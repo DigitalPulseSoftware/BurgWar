@@ -1,50 +1,3 @@
-add_repositories("burgwar-repo xmake-repo")
-
-set_project("BurgWar")
-set_version("0.2.0")
-
-add_requires("cxxopts", "concurrentqueue", "libcurl", "nlohmann_json")
-add_requires("fmt", { configs = { header_only = false, pic = true } })
-add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
-
-if (is_plat("windows") and not is_arch("x86")) then
-	add_requires("stackwalker")
-end
-
-add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
-add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
-
-add_rules("mode.debug", "mode.releasedbg")
-add_rules("plugin.vsxmake.autoupdate")
-
-add_includedirs("include", "src")
-add_includedirs("thirdparty/include")
-
-add_rpathdirs("@executable_path")
-
-set_languages("c89", "cxx17")
-set_rundir("./bin/$(os)_$(arch)_$(mode)")
-set_runtimes(is_mode("releasedbg") and "MD" or "MDd")
-set_symbols("debug", "hidden")
-set_targetdir("./bin/$(os)_$(arch)_$(mode)")
-set_warnings("allextra")
-
-if (is_mode("releasedbg")) then
-	set_fpmodels("fast")
-	add_vectorexts("sse", "sse2", "sse3", "ssse3")
-end
-
-if (is_plat("windows")) then
-	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
-	add_cxxflags("/FC")
-	add_cxflags("/w44062") -- Enable warning: switch case not handled
-	add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
-elseif is_plat("linux") then
-	add_syslinks("pthread")
-end
-
-
 task("dephash")
 	on_run(function ()
 		import("core.project.project")
@@ -120,6 +73,55 @@ option("clientlib_static")
 	set_showmenu(true)
 	add_defines("BURGWAR_CLIENTLIB_STATIC")
 
+option_end()
+
+
+add_repositories("burgwar-repo xmake-repo")
+
+set_project("BurgWar")
+set_version("0.2.0")
+
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json", "sol2")
+add_requires("fmt", { configs = { header_only = false, pic = true } })
+add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
+add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
+
+if (is_plat("windows") and not is_arch("x86")) then
+	add_requires("stackwalker")
+end
+
+add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
+add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
+add_requireconfs("sol2", { configs = { includes_lua = false }})
+
+add_rules("mode.debug", "mode.releasedbg")
+add_rules("plugin.vsxmake.autoupdate")
+
+add_includedirs("include", "src")
+
+add_rpathdirs("@executable_path")
+
+set_languages("c89", "cxx17")
+set_rundir("./bin/$(os)_$(arch)_$(mode)")
+set_runtimes(is_mode("releasedbg") and "MD" or "MDd")
+set_symbols("debug", "hidden")
+set_targetdir("./bin/$(os)_$(arch)_$(mode)")
+set_warnings("allextra")
+
+if (is_mode("releasedbg")) then
+	set_fpmodels("fast")
+	add_vectorexts("sse", "sse2", "sse3", "ssse3")
+end
+
+if (is_plat("windows")) then
+	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
+	add_cxxflags("/FC")
+	add_cxflags("/w44062") -- Enable warning: switch case not handled
+	add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
+elseif is_plat("linux") then
+	add_syslinks("pthread")
+end
+
 target("lua")
 	set_group("3rdparties")
 
@@ -159,7 +161,8 @@ target("CoreLib")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
+	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
+	add_packages("nazaraserver")
 
 if (is_plat("windows") and not is_arch("x86")) then
 	add_packages("stackwalker")
@@ -235,8 +238,7 @@ target("ClientLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
-	add_packages("libcurl")
-	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazara")
+	add_packages("libcurl", "nazara", { public = true })
 
 target("Main")
 	set_group("Common")
@@ -260,7 +262,7 @@ target("BurgWar")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
-	add_packages("concurrentqueue", "fmt", "libcurl", "nlohmann_json", "nazara")
+	add_packages("nazara")
 
 	after_install(function (target)
 		os.vcp("clientconfig.lua", path.join(target:installdir(), "bin"))
@@ -277,7 +279,6 @@ target("BurgWarServer")
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/Server/**.hpp", "src/Server/**.inl")
 	add_files("src/Server/**.cpp")
-	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
 
 	after_install(function (target)
 		os.vcp("serverconfig.lua", path.join(target:installdir(), "bin"))
@@ -293,7 +294,7 @@ target("BurgWarMapTool")
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/MapTool/**.hpp", "src/MapTool/**.inl")
 	add_files("src/MapTool/**.cpp")
-	add_packages("cxxopts", "concurrentqueue", "fmt", "nlohmann_json", "nazaraserver")
+	add_packages("cxxopts")
 
 target("BurgWarMapEditor")
 	set_group("Executable")
@@ -312,7 +313,6 @@ target("BurgWarMapEditor")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
-	add_packages("concurrentqueue", "fmt", "nlohmann_json", "nazara")
 
 	after_install(function (target)
 		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))

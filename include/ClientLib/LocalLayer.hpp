@@ -14,7 +14,7 @@
 #include <ClientLib/Export.hpp>
 #include <ClientLib/LocalLayerEntity.hpp>
 #include <ClientLib/LocalLayerSound.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
 #include <optional>

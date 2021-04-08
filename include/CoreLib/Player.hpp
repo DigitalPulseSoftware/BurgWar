@@ -16,7 +16,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
 #include <NDK/EntityOwner.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
 #include <string>

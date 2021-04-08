@@ -4,7 +4,7 @@
 
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <Nazara/Core/Color.hpp>
-#include <Thirdparty/sol3/sol.hpp>
+#include <sol/sol.hpp>
 #include <optional>
 #include <stdexcept>
 

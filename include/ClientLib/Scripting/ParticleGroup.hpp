@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEGROUP_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Thirdparty/sol3/forward.hpp>
+#include <sol/forward.hpp>
 #include <NDK/EntityOwner.hpp>
 
 namespace bw

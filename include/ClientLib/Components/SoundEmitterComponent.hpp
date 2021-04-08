@@ -12,7 +12,7 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <NDK/Component.hpp>
 #include <memory>
-#include <Thirdparty/tsl/hopscotch_set.h>
+#include <tsl/hopscotch_set.h>
 
 namespace bw
 {

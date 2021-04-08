@@ -18,7 +18,7 @@
 #include <MapEditor/Widgets/EditorWindowPrefabs.hpp>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QUndoStack>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <filesystem>
 #include <memory>
 #include <optional>

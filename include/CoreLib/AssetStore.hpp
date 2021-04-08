@@ -11,7 +11,7 @@
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <Nazara/Core/ObjectRef.hpp>
 #include <Nazara/Utility/Image.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 
 namespace bw
 {

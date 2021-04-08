@@ -11,7 +11,7 @@
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/System.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <vector>
 
 namespace bw

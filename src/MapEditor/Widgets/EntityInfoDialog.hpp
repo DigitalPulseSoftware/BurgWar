@@ -13,7 +13,7 @@
 #include <CoreLib/Map.hpp>
 #include <MapEditor/Enums.hpp>
 #include <QtWidgets/QDialog>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <filesystem>
 #include <functional>
 #include <optional>

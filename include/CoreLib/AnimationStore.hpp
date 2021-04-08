@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Thirdparty/tsl/hopscotch_map.h>
+#include <tsl/hopscotch_map.h>
 #include <chrono>
 #include <limits>
 #include <vector>
