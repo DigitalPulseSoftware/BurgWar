@@ -1,3 +1,4 @@
+-- Generates a hash key made of packages confs/version, for CI
 task("dephash")
 	on_run(function ()
 		import("core.project.project")
@@ -21,6 +22,7 @@ task("dephash")
 		description = "Outputs a hash key of current dependencies version/configuration"
 	}
 
+-- Copies the resulting target file to the install bin folder (used for .so which are installed to lib/)
 rule("install_bin")
 	after_install("linux", function(target)
 		local binarydir = path.join(target:installdir(), "bin")
@@ -28,16 +30,18 @@ rule("install_bin")
 		os.vcp(target:targetfile(), binarydir)
 	end)
 
+-- Copies maps/scripts folders to the install bin folder
 rule("install_metadata")
 	local metadataInstalled = false
 	after_install(function(target)
-		if (not scriptsInstalled) then
+		if (not metadataInstalled) then
 			os.vcp("maps", path.join(target:installdir(), "bin"))
 			os.vcp("scripts", path.join(target:installdir(), "bin"))
 			metadataInstalled = true
 		end
 	end)
 
+-- Copies Nazara .so to the install bin folder (as it cannot be installed on the system yet)
 rule("install_nazara")
 	-- This is already handled by xmake on Windows
 	after_install("linux", function (target)
@@ -55,6 +59,7 @@ rule("install_nazara")
 		end
 	end)
 
+-- Copies symbol files (such as .pdb) to the install bin folder (required for crashdumps)
 rule("install_symbolfile")
 	after_install(function(target)
 		local symbolfile = target:symbolfile()
@@ -63,11 +68,13 @@ rule("install_symbolfile")
 		end
 	end)
 
+-- Should the CoreLib be compiled statically? (takes more space)
 option("corelib_static")
 	set_default(false)
 	set_showmenu(true)
 	add_defines("BURGWAR_CORELIB_STATIC")
 
+-- Should the ClientLib be compiled statically? (takes more space)
 option("clientlib_static")
 	set_default(false)
 	set_showmenu(true)
@@ -75,6 +82,7 @@ option("clientlib_static")
 
 option_end()
 
+-- Project configuration
 
 add_repositories("burgwar-repo xmake-repo")
 
@@ -318,5 +326,3 @@ target("BurgWarMapEditor")
 	after_install(function (target)
 		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
 	end)
-
-target_end()

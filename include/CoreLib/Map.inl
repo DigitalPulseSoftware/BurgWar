@@ -127,7 +127,7 @@ namespace bw
 		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/, const std::string& /*name*/, LayerIndex& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
-			if (static_cast<LayerIndex>(currentLayerIndex) == layerIndex)
+			if (currentLayerIndex == layerIndex)
 				currentLayerIndex = NoLayer;
 		});
 
@@ -169,7 +169,7 @@ namespace bw
 		ForeachEntityPropertyValue<PropertyType::Layer>([&](Map::Entity& /*entity*/,  const std::string& /*name*/, LayerIndex& currentLayerIndex)
 		{
 			assert(currentLayerIndex >= std::numeric_limits<LayerIndex>::min() && currentLayerIndex <= std::numeric_limits<LayerIndex>::max());
-			if (static_cast<LayerIndex>(currentLayerIndex) >= layerIndex)
+			if (currentLayerIndex >= layerIndex)
 				currentLayerIndex++;
 		});
 
