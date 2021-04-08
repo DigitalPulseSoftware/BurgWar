@@ -97,6 +97,7 @@ add_requireconfs("sol2", { configs = { includes_lua = false }})
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
+add_headerfiles("thirdparty/natvis/**.natvis")
 add_includedirs("include", "src")
 
 add_rpathdirs("@executable_path")
