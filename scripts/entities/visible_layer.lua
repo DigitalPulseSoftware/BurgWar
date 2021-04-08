@@ -32,12 +32,15 @@ if (CLIENT) then
 		assert(not self.isVisible)
 		self.isVisible = true
 
-		self:AddLayer({
-			LayerIndex = self:GetProperty("layer"),
-			ParallaxFactor = self:GetProperty("parallaxFactor"),
-			RenderOrder = self:GetProperty("renderOrder"),
-			Scale = self:GetProperty("scale")
-		})
+		local targetLayer = self:GetProperty("layer")
+		if (targetLayer ~= NoLayer) then
+			self:AddLayer({
+				LayerIndex = self:GetProperty("layer"),
+				ParallaxFactor = self:GetProperty("parallaxFactor"),
+				RenderOrder = self:GetProperty("renderOrder"),
+				Scale = self:GetProperty("scale")
+			})
+		end
 	end
 end
 
