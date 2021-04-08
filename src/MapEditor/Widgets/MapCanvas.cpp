@@ -82,7 +82,8 @@ namespace bw
 
 	void MapCanvas::Clear()
 	{
-		m_currentLayer.reset();
+		UpdateActiveLayer({});
+
 		m_entitiesByUniqueId.clear();
 		m_layers.clear();
 
@@ -229,9 +230,9 @@ namespace bw
 		sol::state& lua = m_scriptingContext->GetLuaState();
 		lua["Editor"] = &m_editor;
 
-		lua["engine_GetActiveLayer"] = LuaFunction([&]()
+		lua["engine_GetActiveLayer"] = LuaFunction([this]()
 		{
-			return m_editor.GetCurrentLayer();
+			return m_currentLayer;
 		});
 
 		lua["engine_GetPlayerPosition"] = LuaFunction([&]()
