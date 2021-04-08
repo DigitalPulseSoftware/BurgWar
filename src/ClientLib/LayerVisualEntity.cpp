@@ -105,9 +105,11 @@ namespace bw
 		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
 		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, entityNode.GetTransformMatrix());
 
+		Nz::Vector3f globalPos = worldMatrix.GetTranslation();
+
 		bool first = true;
 
-		Nz::Boxf aabb(-1.f, -1.f, -1.f);
+		Nz::Boxf aabb(globalPos.x, globalPos.y, globalPos.z, 0.f, 0.f, 0.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
 			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
