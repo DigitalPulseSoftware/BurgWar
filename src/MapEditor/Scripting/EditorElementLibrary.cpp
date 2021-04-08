@@ -6,6 +6,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <MapEditor/Components/CanvasComponent.hpp>
+#include <MapEditor/Widgets/MapCanvas.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
