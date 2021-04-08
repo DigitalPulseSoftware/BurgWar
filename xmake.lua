@@ -81,7 +81,8 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json", "sol2")
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json")
+add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
@@ -92,7 +93,6 @@ end
 
 add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
 add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
-add_requireconfs("sol2", { configs = { includes_lua = false }})
 
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
