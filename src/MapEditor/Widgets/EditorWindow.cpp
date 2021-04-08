@@ -1381,7 +1381,10 @@ namespace bw
 			m_canvas->UpdateActiveLayer({});
 			m_canvas->UpdateBackgroundColor(Nz::Color::Black);
 
+			m_entityList.listWidget->clear();
+
 			m_layerMenu->setEnabled(false);
+			UpdateEntityListButtons();
 			UpdateLayerListButtons();
 			return;
 		}
