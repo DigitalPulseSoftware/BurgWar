@@ -94,10 +94,7 @@ add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false }
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
-
-if (is_plat("windows") and not is_arch("x86")) then
-	add_requires("stackwalker")
-end
+add_requires("stackwalker master")
 
 add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
 add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
@@ -171,11 +168,7 @@ target("CoreLib")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
-	add_packages("nazaraserver")
-
-if (is_plat("windows") and not is_arch("x86")) then
-	add_packages("stackwalker")
-end
+	add_packages("nazaraserver", "stackwalker")
 
 	before_build(function (target)
 		local host = os.host()
