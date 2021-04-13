@@ -7,3 +7,4 @@ local entity = ScriptedEntity({
         text = self.Text AddText(Default = " ")
     }
 })
+end
