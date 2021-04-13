@@ -15,7 +15,7 @@ Téléchargez la dernière [release](https://github.com/DigitalPulseSoftware/Bur
 
 Burg'war utilise trois bibliothèques :
 
-- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - utilisé par l'entireté du projet (téléchargez les nightlies ou compilez vous-même) ;
+- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - utilisé par l'entièreté du projet (téléchargez les nightlies ou compilez vous-même) ;
 - [cURL](https://curl.haxx.se/) - requis par le client ([binaires pour Windows](https://curl.haxx.se/windows/)) ;
 - [Qt](https://www.qt.io) - requis par l'éditeur de map.
 
