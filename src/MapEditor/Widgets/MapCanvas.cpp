@@ -19,6 +19,7 @@
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Ray.hpp>
+#include <Nazara/Renderer/DebugDrawer.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -31,7 +32,8 @@ namespace bw
 	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
 	SharedMatch(editor, LogSide::Editor, "editor", 1.f / 60.f),
 	WorldCanvas(parent),
-	m_editor(editor)
+	m_editor(editor),
+	m_isPhysicsDebugDrawEnabled(false)
 	{
 		Ndk::World& world = GetWorld();
 		world.AddSystem<Ndk::ListenerSystem>();
@@ -161,6 +163,11 @@ namespace bw
 
 			ClearEntitySelection();
 		});*/
+	}
+
+	void MapCanvas::EnablePhysicsDebugDraw(bool enable)
+	{
+		m_isPhysicsDebugDrawEnabled = enable;
 	}
 
 	void MapCanvas::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
@@ -491,6 +498,8 @@ namespace bw
 		if (m_scriptingContext)
 			m_scriptingContext->Update();
 
+		SetActive(true);
+
 		for (auto& layer : m_layers)
 		{
 			if (layer.IsEnabled())
@@ -506,7 +515,25 @@ namespace bw
 				layer.FrameUpdate(elapsedTime);
 		}
 
-		WorldCanvas::OnUpdate(elapsedTime);
+		GetWorld().Update(elapsedTime);
+
+		if (m_isPhysicsDebugDrawEnabled)
+		{
+			Ndk::PhysicsSystem2D::DebugDrawOptions options;
+			options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float /*radius*/, Nz::Color /*outline*/, Nz::Color /*fillColor*/, void* /*userData*/)
+			{
+				for (std::size_t i = 0; i < vertexCount - 1; ++i)
+					Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
+
+				Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
+			};
+
+			for (auto& layer : m_layers)
+			{
+				if (layer.IsEnabled())
+					layer.GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);
+			}
+		}
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback<GamemodeEvent::PostFrame>(elapsedTime);
@@ -516,6 +543,9 @@ namespace bw
 			if (layer.IsEnabled())
 				layer.PostFrameUpdate(elapsedTime);
 		}
+
+		NazaraCanvas::OnUpdate(elapsedTime);
+		SetActive(false);
 	}
 
 	void MapCanvas::UpdateGrid()

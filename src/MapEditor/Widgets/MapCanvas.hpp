@@ -42,6 +42,7 @@ namespace bw
 			void DeleteEntity(EntityId uniqueId);
 
 			void EditEntitiesPosition(const std::vector<EntityId>& entityIds);
+			void EnablePhysicsDebugDraw(bool enable);
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
 			template<typename F> void ForEachEntity(F&& func);
@@ -120,6 +121,7 @@ namespace bw
 			EditorWindow& m_editor;
 			Ndk::EntityOwner m_currentLayerEntity;
 			Ndk::EntityOwner m_gridEntity;
+			bool m_isPhysicsDebugDrawEnabled;
 	};
 }
 

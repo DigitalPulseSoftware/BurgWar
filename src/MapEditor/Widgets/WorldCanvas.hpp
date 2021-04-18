@@ -23,7 +23,6 @@ namespace bw
 			~WorldCanvas() = default;
 
 			void EnableCameraControl(bool enable);
-			void EnablePhysicsDebugDraw(bool enable);
 
 			inline const Nz::Color& GetBackgroundColor() const;
 			inline const CameraMovement& GetCameraController() const;
@@ -54,7 +53,6 @@ namespace bw
 			Nz::Color m_backgroundColor;
 			Ndk::World m_world;
 			Camera m_camera;
-			bool m_isPhysicsDebugDrawEnabled;
 	};
 }
 
