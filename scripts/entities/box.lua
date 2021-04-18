@@ -17,7 +17,7 @@ entity:On("init", function (self)
 	self:SetColliders(Rect(-colliderSize, colliderSize))
 
 	if (self:GetProperty("dynamic")) then
-		self:InitRigidBody(size * 50, 10)
+		self:InitRigidBody(size * 50)
 	end
 
 	if (CLIENT) then

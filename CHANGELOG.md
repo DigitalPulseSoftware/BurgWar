@@ -6,6 +6,7 @@
 
 * Added teams handling in scoreboard and base gamemode
 * Added teamdeatchmatch gamemode
+* Added supersmashburger gamemode
 * Improved Windows and Linux builds
 * Fixed hovering visuals (nickname, health bar) position when the player entity gets scaled up or down
 * Added maptool (command-line software which can compile maps from json to binary format)
