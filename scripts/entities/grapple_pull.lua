@@ -7,6 +7,7 @@ local entity = ScriptedEntity({
 		{ Name = "source_offset", Type = PropertyType.FloatPosition, Shared = true },
 		{ Name = "target_entity", Type = PropertyType.Entity, Shared = true },
 		{ Name = "target_offset", Type = PropertyType.FloatPosition, Shared = true },
+		{ Name = "force", Type = PropertyType.Integer, Default = 100, Shared = true }
 	}
 })
 
@@ -20,7 +21,7 @@ entity:On("init", function (self)
 		return
 	end
 
-	self.Constraint = physics.CreateDampenedSpringConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset, 10, 500, 0)
+	self.Constraint = physics.CreateDampenedSpringConstraint(sourceEntity, targetEntity, sourceOffset, targetOffset, 10, self:GetProperty("force"), 0)
 end)
 
 entity:On("destroyed", function (self)

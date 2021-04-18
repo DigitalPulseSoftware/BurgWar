@@ -86,16 +86,18 @@ if (SERVER) then
 
 		timer.Sleep(math.floor(duration * 1000))
 
-		if (targetEntity and targetEntity:IsValid()) then
+		local ownerEntity = self:GetOwnerEntity()
+		if (ownerEntity and ownerEntity:IsValid() and targetEntity and targetEntity:IsValid()) then
 			self.GrapplePull = match.CreateEntity({
 				Type = "entity_grapple_pull",
 				LayerIndex = self:GetLayerIndex(),
 				LifeOwner = self,
 				Properties = {
-					source_entity = self:GetOwnerEntity(),
+					source_entity = ownerEntity,
 					source_offset = startOffset,
 					target_entity = targetEntity or NoEntity,
-					target_offset = targetOffset
+					target_offset = targetOffset,
+					force = ownerEntity:GetMass() * 10
 				}
 			})
 
