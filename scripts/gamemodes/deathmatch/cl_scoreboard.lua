@@ -26,7 +26,6 @@ end
 function gamemode:UpdateScoreboard(deaths, kills)
 	local scoreboard = self.Scoreboard
 	if (not scoreboard) then
-		print("no scoreboard")
 		return
 	end
 

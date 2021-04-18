@@ -6,7 +6,7 @@ gamemode.PlayerSeeds = {}
 
 math.randomseed(os.time())
 
-gamemode:OnAsync("PlayerDeath", function (self, player, attacker)
+gamemode.BasePlayerDeathSlot = gamemode:OnAsync("PlayerDeath", function (self, player, attacker)
 	print(player:GetName() .. " died")
 	timer.Sleep(self:GetProperty("respawntime") * 1000)
 
@@ -15,9 +15,10 @@ end)
 
 gamemode:On("PlayerJoined", function (self, player)
 	self.PlayerSeeds[player:GetPlayerIndex()] = math.random(0, math.maxinteger)
-
 	print(player:GetName() .. " joined")
+end)
 
+gamemode.BasePlayerJoinedSlot = gamemode:On("PlayerJoined", function(self, player)
 	local team = match.GetGamemode():ChoosePlayerTeam(player)
 	if (team) then
 		team:AddPlayer(player)

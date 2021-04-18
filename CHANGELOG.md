@@ -26,6 +26,7 @@
 * Added Text renderable (which is now using for showing player nicknames)
 * Added IncomingNetworkPacket:ReadColor() and OutgoingNetworkPacket:WriteColor()
 * Added Element:GetGlobalBounds() and Element:GetLocalBounds() (client-side only for now)
+* Base gamemode has now BasePlayerDeathSlot and BasePlayerJoinedSlot to allow derived gamemode to disconnect them
 * Added Rect:ExtendToPosition(pos)
 * Added Rect:Scale(scale)
 * Added match.GetLayerCount()

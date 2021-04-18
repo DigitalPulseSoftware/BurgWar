@@ -22,22 +22,12 @@ gamemode:On("Init", function (self)
 	self.CameraRect = nil
 end)
 
-gamemode:On("Frame", function (self, elapsedTime)
+function gamemode:UpdateCameraPosition()
 	local camera = match.GetCamera()
-
 	local playerPosition = engine_GetPlayerPosition(0)
 	if (playerPosition) then
 		local viewportSize = camera:GetViewport():GetSize() / camera:GetZoomFactor()
 		local cameraOrigin = playerPosition - viewportSize / 2
-
-		local shakeData = self.ShakeData
-		if (shakeData) then
-			cameraOrigin = cameraOrigin + Vec2(math.random(-1, 1), math.random(-1, 1)) * shakeData.Strength
-			shakeData.Strength = shakeData.Strength - shakeData.StrengthDecrease * elapsedTime
-			if (shakeData.Strength < 0) then
-				self.ShakeData = nil
-			end
-		end
 
 		local clampedOrigin = cameraOrigin
 		if (self.CameraRect and self.CameraRect:IsValid()) then
@@ -70,8 +60,27 @@ gamemode:On("Frame", function (self, elapsedTime)
 		end
 
 		camera:MoveToPosition(clampedOrigin)
-	else
+	end
+end
+
+gamemode:On("Frame", function (self, elapsedTime)
+	local playerPosition = engine_GetPlayerPosition(0)
+	if (not playerPosition) then
 		self.ShakeData = nil
+	end
+
+	match.GetGamemode():UpdateCameraPosition()
+
+	local shakeData = self.ShakeData
+	if (shakeData) then
+		local camera = match.GetCamera()
+		local camPos = camera:GetPosition()
+		camera:MoveToPosition(camPos + Vec2(math.random(-1, 1), math.random(-1, 1)) * shakeData.Strength)
+
+		shakeData.Strength = shakeData.Strength - shakeData.StrengthDecrease * elapsedTime
+		if (shakeData.Strength < 0) then
+			self.ShakeData = nil
+		end
 	end
 end)
 

@@ -1,6 +1,6 @@
 local gamemode = ScriptedGamemode()
 
-gamemode:On("playerdeath", function (self, player, attacker)
+gamemode:On("PlayerDeath", function (self, player, attacker)
 	self:IncreasePlayerDeath(player)
 	if (attacker) then
 		local attackerPlayer = attacker:GetOwner()

@@ -53,7 +53,7 @@ namespace bw
 	m_freeClientId(-1),
 	m_renderTarget(renderTarget),
 	m_window(window),
-	m_activeLayerIndex(0xFFFF),
+	m_activeLayerIndex(NoLayer),
 	m_averageTickError(20),
 	m_chatBox(GetLogger(), renderTarget, canvas),
 	m_application(burgApp),
