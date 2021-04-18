@@ -33,6 +33,7 @@
 * Elements and gamemode events can now be disconnected using the Disconnect method
 * Player entities are now detected using a `IsPlayerEntity` boolean on their table
 * Fixed gamemode overriding of the `Musics` table
+* Fixed entity_burger_ai only targeting entity_burger (will now target any entity having .IsPlayerEntity = true)
 
 ## Beta 1.1
 

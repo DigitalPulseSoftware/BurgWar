@@ -16,15 +16,23 @@ if (SERVER) then
 		local pos = self:GetPosition()
 		local closestEnemy
 		local closestEnemyDist = math.huge
-		for _, burger in pairs(match.GetEntitiesByClass("entity_burger")) do
-			local distance = pos:SquaredDistance(burger:GetPosition())
-			if (distance < self.DetectionRange * self.DetectionRange) then
-				if (distance < closestEnemyDist) then
-					closestEnemy = burger
-					closestEnemyDist = distance
+
+		local size = Vec2(self.DetectionRange, self.DetectionRange)
+		local rect = Rect(pos - size, pos + size)
+	
+		local closestEnemy
+		local closestEnemyDist = math.huge
+		physics.RegionQuery(self:GetLayerIndex(), rect, function (entity)
+			if (entity.IsPlayerEntity and entity ~= self) then
+				local distSq = pos:SquaredDistance(entity:GetPosition())
+				if (distSq < self.DetectionRange * self.DetectionRange) then
+					if (distSq < closestEnemyDist) then
+						closestEnemy = entity
+						closestEnemyDist = distSq
+					end
 				end
 			end
-		end
+		end)
 
 		local target = closestEnemy
 
