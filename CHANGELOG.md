@@ -27,7 +27,8 @@
 * Added IncomingNetworkPacket:ReadColor() and OutgoingNetworkPacket:WriteColor()
 * Added match.GetPlayerByIndex()
 * Added Scoreboard:UpdatePlayerTeam()
-* Added base gamemode event PlayerTeamUpdate
+* Added base gamemode event 
+* Added match.BroadcastChatMessage(message)
 * match.BroadcastPacket now has a second optional parameter to disable ready check
 * Elements and gamemode events can now be disconnected using the Disconnect method
 * Player entities are now detected using a `IsPlayerEntity` boolean on their table

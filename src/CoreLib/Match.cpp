@@ -62,8 +62,10 @@ namespace bw
 	void Match::BroadcastChatMessage(Player* player, std::string message)
 	{
 		Packets::ChatMessage chatPacket;
-		chatPacket.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
 		chatPacket.content = std::move(message);
+
+		if (player)
+			chatPacket.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
 
 		ForEachPlayer([&](Player* player)
 		{

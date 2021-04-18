@@ -134,6 +134,11 @@ namespace bw
 	{
 		SharedScriptingLibrary::RegisterMatchLibrary(context, library);
 
+		library["BroadcastChatMessage"] = LuaFunction([&](std::string message)
+		{
+			GetMatch().BroadcastChatMessage(std::move(message));
+		});
+
 		library["BroadcastPacket"] = LuaFunction([&](const OutgoingNetworkPacket& outgoingPacket, std::optional<bool> onlyReady)
 		{
 			Match& match = GetMatch();

@@ -12,6 +12,11 @@ namespace bw
 		return m_nextUniqueId++;
 	}
 
+	inline void Match::BroadcastChatMessage(std::string message)
+	{
+		return BroadcastChatMessage(nullptr, std::move(message));
+	}
+
 	template<typename T>
 	void Match::BroadcastPacket(const T& packet, bool onlyReady, Player* except)
 	{
