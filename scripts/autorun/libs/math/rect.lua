@@ -32,6 +32,32 @@ function rectmeta:Contains(pos)
 	       pos.x < self.x + self.width and pos.y < self.y + self.height
 end
 
+function rectmeta:ExtendToPosition(pos)
+	local newWidth = math.max(self.x + self.width, pos.x)
+	local newHeight = math.max(self.y + self.height, pos.y)
+
+	self.x = math.min(self.x, pos.x)
+	self.y = math.min(self.y, pos.y)
+	
+	self.width = newWidth - self.x
+	self.height = newHeight - self.y
+end
+
+function rectmeta:ExtendToRect(rect)
+	local newWidth = math.max(self.x + self.width, rect.x + rect.width)
+	local newHeight = math.max(self.y + self.height, rect.y + rect.height)
+
+	self.x = math.min(self.x, rect.x)
+	self.y = math.min(self.y, rect.y)
+	
+	self.width = newWidth - self.x
+	self.height = newHeight - self.y
+end
+
+function rectmeta:GetCenter()
+	return Vec2(self.x + self.width * 0.5, self.y + self.height * 0.5)
+end
+
 function rectmeta:GetCorner(maxX, maxY)
 	local x = self.x
 	if (maxX) then
@@ -70,6 +96,16 @@ end
 
 function rectmeta:GetSize()
 	return Vec2(self.width, self.height)
+end
+
+function rectmeta:Scale(scale)
+	local diffX = self.width * scale - self.width
+	local diffY = self.height * scale - self.height
+
+	self.x = self.x - diffX * 0.5
+	self.y = self.y - diffY * 0.5
+	self.width = self.width + diffX
+	self.height = self.height + diffY
 end
 
 function rectmeta:__tostring()

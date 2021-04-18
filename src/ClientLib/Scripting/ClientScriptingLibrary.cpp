@@ -314,6 +314,20 @@ namespace bw
 			"new", sol::no_constructor,
 
 			"GetName", LuaFunction(&LocalPlayer::GetName),
+			
+			"GetControlledEntity", LuaFunction([this](const LocalPlayer& player) -> sol::object
+			{
+				EntityId controlledEntityId = player.GetControlledEntityId();
+				if (controlledEntityId == InvalidEntityId)
+					return sol::nil;
+
+				const Ndk::EntityHandle& controlledEntity = GetMatch().RetrieveEntityByUniqueId(controlledEntityId);
+				if (!controlledEntity)
+					return sol::nil;
+
+				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
+				return scriptComponent.GetTable();
+			}),
 
 			"GetPing", LuaFunction([](LocalPlayer& localPlayer, sol::this_state L) -> sol::object
 			{

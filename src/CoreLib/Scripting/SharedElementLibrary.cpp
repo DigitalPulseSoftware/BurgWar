@@ -4,6 +4,7 @@
 
 #include <CoreLib/Scripting/SharedElementLibrary.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
+#include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ElementEventConnection.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
@@ -120,6 +121,18 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
+		});
+		
+		elementMetatable["Kill"] = LuaFunction([](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			if (entity->HasComponent<HealthComponent>())
+			{
+				auto& entityHealth = entity->GetComponent<HealthComponent>();
+				entityHealth.Damage(entityHealth.GetHealth(), entity);
+			}
+			else
+				entity->Kill();
 		});
 
 		elementMetatable["On"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)

@@ -8,8 +8,8 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Text.hpp>
@@ -221,6 +221,24 @@ namespace bw
 			LuaFunction([=](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone) { DealDamage(entityTable, origin, damage, damageZone); })
 		);
 
+		elementTable["GetGlobalBounds"] = LuaFunction([](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			
+			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
+			if (!layerVisualHandle)
+			{
+				// Fallback on position
+				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
+				return Nz::Rectf(position.x, position.y, 0.f, 0.f);
+			}
+
+			Nz::Boxf globalBounds = layerVisualHandle->GetGlobalBounds();
+			return Nz::Rectf(globalBounds.x, globalBounds.y, globalBounds.width, globalBounds.height);
+		});
+
 		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
@@ -228,6 +246,19 @@ namespace bw
 			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
 		});
 		
+		elementTable["GetLocalBounds"] = LuaFunction([](const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			
+			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
+			if (!layerVisualHandle)
+				return Nz::Rectf::Zero();
+
+			Nz::Boxf localBounds = layerVisualHandle->GetLocalBounds();
+			return Nz::Rectf(localBounds.x, localBounds.y, localBounds.width, localBounds.height);
+		});
+
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(table);

@@ -267,6 +267,11 @@ namespace bw
 			return m_match.GetSharedGamemode()->GetTable();
 		});
 
+		library["GetLayerCount"] = LuaFunction([this]()
+		{
+			return m_match.GetLayerCount();
+		});
+
 		library["GetMilliseconds"] = LuaFunction([this]()
 		{
 			return m_match.GetCurrentTime();

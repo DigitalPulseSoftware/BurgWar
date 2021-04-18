@@ -25,11 +25,17 @@
 * Added "PlayerControlledEntityUpdate" client gamemode event.
 * Added Text renderable (which is now using for showing player nicknames)
 * Added IncomingNetworkPacket:ReadColor() and OutgoingNetworkPacket:WriteColor()
+* Added Element:GetGlobalBounds() and Element:GetLocalBounds() (client-side only for now)
+* Added Rect:ExtendToPosition(pos)
+* Added Rect:Scale(scale)
+* Added match.GetLayerCount()
 * Added match.GetPlayerByIndex()
+* Added table.join(...)
 * Added Scoreboard:UpdatePlayerTeam()
 * Added base gamemode event 
 * Added match.BroadcastChatMessage(message)
 * match.BroadcastPacket now has a second optional parameter to disable ready check
+* Replaced Entity:Kill() by Element:Kill()
 * Elements and gamemode events can now be disconnected using the Disconnect method
 * Player entities are now detected using a `IsPlayerEntity` boolean on their table
 * Fixed gamemode overriding of the `Musics` table

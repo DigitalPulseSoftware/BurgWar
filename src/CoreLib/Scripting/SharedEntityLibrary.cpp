@@ -391,18 +391,6 @@ namespace bw
 				return false;
 		});
 
-		elementMetatable["Kill"] = LuaFunction([](const sol::table& entityTable)
-		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			if (entity->HasComponent<HealthComponent>())
-			{
-				auto& entityHealth = entity->GetComponent<HealthComponent>();
-				entityHealth.Damage(entityHealth.GetHealth(), entity);
-			}
-			else
-				entity->Kill();
-		});
-
 		elementMetatable["OverrideMovementController"] = LuaFunction([this](const sol::table& entityTable, sol::main_protected_function fn)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
