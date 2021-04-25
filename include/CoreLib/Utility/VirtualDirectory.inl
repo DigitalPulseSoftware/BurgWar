@@ -40,6 +40,10 @@ namespace bw
 			{
 				Entry entry;
 
+				std::string filename = physicalEntry.path().filename().generic_u8string();
+				if (m_content.find(filename) != m_content.end())
+					continue; //< Physical file/directory has been overriden by a virtual one
+
 				if (physicalEntry.is_regular_file())
 					entry.emplace<PhysicalFileEntry>(physicalEntry.path());
 				else if (physicalEntry.is_directory())
@@ -176,7 +180,7 @@ namespace bw
 				else if (std::filesystem::is_directory(entryPath))
 				{
 					// FIXME: Allocating a shared_ptr on iteration is bad, not sure about a workaround
-					entry->emplace<VirtualDirectoryEntry>(std::make_shared<VirtualDirectory>(entryPath, shared_from_this()));
+					*entry = StoreDirectoryInternal(std::string(name), entryPath);
 				}
 				else
 					return false;
