@@ -1245,10 +1245,9 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
 	{
-		if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q))
-			return;
-
 		m_inactiveEntities.clear();
+
+		bool performReconciliation = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q);
 
 		auto inputIt = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [lastInputTick = packet.lastInputTick](const PredictedInput& input)
 		{
@@ -1256,7 +1255,7 @@ namespace bw
 		});
 		if (inputIt != m_predictedInputs.end())
 		{
-			bool performReconciliation = [&]
+			performReconciliation = [&]
 			{
 				// Check if reconciliation is required (were all packets entities at the same position back then?)
 				std::size_t offset = 0;
@@ -1277,7 +1276,7 @@ namespace bw
 					{
 						auto& packetEntity = packet.entities[offset + i];
 						EntityId uniqueId = layer->GetUniqueIdByServerId(packetEntity.id);
-						if (uniqueId == 0)
+						if (uniqueId == InvalidEntityId)
 							continue;
 
 						auto it = layerData.entities.find(uniqueId);
@@ -1288,8 +1287,9 @@ namespace bw
 						constexpr float MaxRotationError = Nz::DegreeToRadian(5.f);
 
 						auto& entityData = it.value();
-						if (!CompareWithEpsilon(entityData.position, packetEntity.position, MaxPositionError) ||
-							!CompareWithEpsilon(entityData.rotation, packetEntity.rotation, MaxRotationError))
+						if (entityData.isPhysical &&
+						    (!CompareWithEpsilon(entityData.position, packetEntity.position, MaxPositionError) ||
+						     !CompareWithEpsilon(entityData.rotation, packetEntity.rotation, MaxRotationError)))
 						{
 							/*Nz::Vector2f posDiff = entityData.position - packetEntity.position;
 							Nz::RadianAnglef rotDiff = entityData.rotation - packetEntity.rotation;
@@ -1305,40 +1305,41 @@ namespace bw
 				return false;
 			}();
 
-			if (!performReconciliation)
-				return;
-
-			//bwLog(GetLogger(), LogLevel::Debug, "Too much error detected, performing reconciliation...");
-
-			for (const auto& layerData : inputIt->layers)
+			if (performReconciliation)
 			{
-				assert(layerData.layerIndex < m_layers.size());
-				auto& layer = m_layers[layerData.layerIndex];
-				if (!layer->IsEnabled() || !layer->IsPredictionEnabled())
-					continue;
+				//bwLog(GetLogger(), LogLevel::Debug, "Too much error detected, performing reconciliation...");
 
-				layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+				// Reset entities to their previous position
+				for (const auto& layerData : inputIt->layers)
 				{
-					EntityId uniqueId = layerEntity.GetUniqueId();
-					auto it = layerData.entities.find(uniqueId);
-					if (it != layerData.entities.end())
+					assert(layerData.layerIndex < m_layers.size());
+					auto& layer = m_layers[layerData.layerIndex];
+					if (!layer->IsEnabled() || !layer->IsPredictionEnabled())
+						continue;
+
+					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
 					{
-						auto& entityData = it.value();
-						if (entityData.isPhysical)
-							layerEntity.UpdateState(entityData.position, entityData.rotation, entityData.linearVelocity, entityData.angularVelocity);
-						else
-							layerEntity.UpdateState(entityData.position, entityData.rotation);
-					}
-					else if (layerEntity.IsEnabled())
-					{
-						layerEntity.Disable();
-						m_inactiveEntities.insert(uniqueId);
-					}
-				});
+						EntityId uniqueId = layerEntity.GetUniqueId();
+						auto it = layerData.entities.find(uniqueId);
+						if (it != layerData.entities.end())
+						{
+							auto& entityData = it.value();
+							if (entityData.isPhysical)
+								layerEntity.UpdateState(entityData.position, entityData.rotation, entityData.linearVelocity, entityData.angularVelocity);
+							else
+								layerEntity.UpdateState(entityData.position, entityData.rotation);
+						}
+						else if (layerEntity.IsEnabled())
+						{
+							layerEntity.Disable();
+							m_inactiveEntities.insert(uniqueId);
+						}
+					});
+				}
 			}
 		}
 
-		// Apply physics state to all layers
+		// Apply state to all layers
 		std::size_t offset = 0;
 		for (auto&& packetLayer : packet.layers)
 		{
@@ -1356,6 +1357,9 @@ namespace bw
 				LocalLayerEntity& localEntity = entityOpt.value();
 				if (localEntity.IsPhysical())
 				{
+					if (!performReconciliation)
+						continue; //< No reconciliation is required, ignore physical entities
+
 					if (packetEntity.physicsProperties.has_value())
 					{
 						auto& physData = packetEntity.physicsProperties.value();
@@ -1388,6 +1392,9 @@ namespace bw
 			return IsMoreRecent(input.inputTick, lastInputTick);
 		});
 		m_predictedInputs.erase(m_predictedInputs.begin(), firstClientInput);
+
+		if (!performReconciliation)
+			return;
 
 		for (const PredictedInput& input : m_predictedInputs)
 		{
