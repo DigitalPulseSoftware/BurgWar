@@ -203,6 +203,11 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterMatchLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
+		library["GetEntityByUniqueId"] = LuaFunction([&](EntityId uniqueId)
+		{
+			return TranslateEntityToLua(m_match.RetrieveEntityByUniqueId(uniqueId));
+		});
+
 		library["GetEntities"] = LuaFunction([&](sol::this_state L, std::optional<LayerIndex> layerIndexOpt)
 		{
 			sol::state_view state(L);
