@@ -15,4 +15,22 @@ namespace bw
 	{
 		return m_layer;
 	}
+
+	inline void NetworkSyncSystem::NotifyPhysicsUpdate(const Ndk::EntityHandle& entity)
+	{
+		if (m_physicsEntities.Has(entity))
+			m_physicsUpdateEntities.Insert(entity);
+	}
+
+	inline void NetworkSyncSystem::NotifyMovementUpdate(const Ndk::EntityHandle& entity)
+	{
+		// Dynamic entities are sent regulary, only send static for now (TODO: Handle teleportation this way)
+		if (m_staticEntities.Has(entity))
+			m_movedStaticEntities.Insert(entity);
+	}
+
+	inline void NetworkSyncSystem::NotifyScaleUpdate(const Ndk::EntityHandle& entity)
+	{
+		m_scaleUpdateEntities.Insert(entity);
+	}
 }

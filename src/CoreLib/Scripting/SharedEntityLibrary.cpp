@@ -168,6 +168,20 @@ namespace bw
 		entityPhys.SetRotation(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global)));
 	}
 
+	void SharedEntityLibrary::SetDirection(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& upVector)
+	{
+		Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + float(M_PI) / 2.f);
+
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetRotation(angle);
+		}
+
+		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+		nodeComponent.SetRotation(angle);
+	}
+
 	void SharedEntityLibrary::SetMass(lua_State* /*L*/, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
 	{
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
@@ -184,6 +198,30 @@ namespace bw
 			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			physComponent.SetMomentOfInertia(momentOfInertia);
 		}
+	}
+
+	void SharedEntityLibrary::SetPosition(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& position)
+	{
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetPosition(position);
+		}
+
+		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+		nodeComponent.SetPosition(position);
+	}
+
+	void SharedEntityLibrary::SetRotation(lua_State* L, const Ndk::EntityHandle& entity, const Nz::DegreeAnglef& rotation)
+	{
+		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		{
+			auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			physComponent.SetRotation(rotation);
+		}
+
+		auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+		nodeComponent.SetRotation(rotation);
 	}
 
 	void SharedEntityLibrary::UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
@@ -484,22 +522,13 @@ namespace bw
 			entity->AddComponent<Ndk::CollisionComponent2D>(entityCollData.BuildCollider(entityNode.GetScale().y));
 		});
 
-		elementMetatable["SetDirection"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& upVector)
+		elementMetatable["SetDirection"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const Nz::Vector2f& upVector)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
-			Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + float(M_PI) / 2.f);
-
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetRotation(angle);
-			}
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			nodeComponent.SetRotation(angle);
+			SetDirection(L, entity, upVector);
 		});
 
 		auto SetMass = [this](sol::this_state L, const sol::table& entityTable, float mass, bool recomputeMomentOfInertia = false)
@@ -527,36 +556,22 @@ namespace bw
 			SetMomentOfInertia(L, entity, momentum);
 		});
 
-		elementMetatable["SetPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& position)
+		elementMetatable["SetPosition"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const Nz::Vector2f& position)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetPosition(position);
-			}
-			
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			nodeComponent.SetPosition(position);
+			SetPosition(L, entity, position);
 		});
 
-		elementMetatable["SetRotation"] = LuaFunction([](const sol::table& entityTable, const Nz::DegreeAnglef& rotation)
+		elementMetatable["SetRotation"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const Nz::DegreeAnglef& rotation)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity)
 				return;
 
-			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			{
-				auto& physComponent = entity->GetComponent<Ndk::PhysicsComponent2D>();
-				physComponent.SetRotation(rotation);
-			}
-
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			nodeComponent.SetRotation(rotation);
+			SetRotation(L, entity, rotation);
 		});
 
 		elementMetatable["SetVelocity"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& velocity)

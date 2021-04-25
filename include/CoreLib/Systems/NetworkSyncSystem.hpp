@@ -47,8 +47,9 @@ namespace bw
 			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
-			void NotifyPhysicsUpdate(const Ndk::EntityHandle& entity);
-			void NotifyScaleUpdate(const Ndk::EntityHandle& entity);
+			inline void NotifyPhysicsUpdate(const Ndk::EntityHandle& entity);
+			inline void NotifyMovementUpdate(const Ndk::EntityHandle& entity);
+			inline void NotifyScaleUpdate(const Ndk::EntityHandle& entity);
 
 			static Ndk::SystemIndex systemIndex;
 
@@ -190,8 +191,8 @@ namespace bw
 			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
 
 			Ndk::EntityList m_inputUpdateEntities;
-			Ndk::EntityList m_invalidatedEntities;
 			Ndk::EntityList m_healthUpdateEntities;
+			Ndk::EntityList m_movedStaticEntities;
 			Ndk::EntityList m_physicsEntities;
 			Ndk::EntityList m_physicsUpdateEntities;
 			Ndk::EntityList m_scaleUpdateEntities;

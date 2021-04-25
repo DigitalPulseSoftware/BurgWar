@@ -104,6 +104,14 @@ namespace bw
 		});
 	}
 	
+	void ServerEntityLibrary::SetDirection(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& upVector)
+	{
+		SharedEntityLibrary::SetDirection(L, entity, upVector);
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
+	}
+
 	void ServerEntityLibrary::SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
 	{
 		SharedEntityLibrary::SetMass(L, entity, mass, recomputeMomentOfInertia);
@@ -118,6 +126,22 @@ namespace bw
 
 		Ndk::World* world = entity->GetWorld();
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
+	}
+
+	void ServerEntityLibrary::SetPosition(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& position)
+	{
+		SharedEntityLibrary::SetPosition(L, entity, position);
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
+	}
+
+	void ServerEntityLibrary::SetRotation(lua_State* L, const Ndk::EntityHandle& entity, const Nz::DegreeAnglef& rotation)
+	{
+		SharedEntityLibrary::SetRotation(L, entity, rotation);
+
+		Ndk::World* world = entity->GetWorld();
+		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
 	}
 
 	void ServerEntityLibrary::UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)

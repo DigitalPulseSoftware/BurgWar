@@ -65,17 +65,6 @@ namespace bw
 		callback(m_movementEvents.data(), m_movementEvents.size());
 	}
 
-	void NetworkSyncSystem::NotifyPhysicsUpdate(const Ndk::EntityHandle& entity)
-	{
-		if (m_physicsEntities.Has(entity))
-			m_physicsUpdateEntities.Insert(entity);
-	}
-
-	void NetworkSyncSystem::NotifyScaleUpdate(const Ndk::EntityHandle& entity)
-	{
-		m_scaleUpdateEntities.Insert(entity);
-	}
-
 	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const
 	{
 		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
@@ -251,16 +240,7 @@ namespace bw
 		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
 			m_physicsEntities.Insert(entity);
 		else
-		{
 			m_staticEntities.Insert(entity);
-			slots.onInvalidated.Connect(entity->GetComponent<NetworkSyncComponent>().OnInvalidated, [&](NetworkSyncComponent* netSync)
-			{
-				EntityMovement movementEvent;
-				BuildEvent(movementEvent, netSync->GetEntity());
-
-				OnEntityInvalidated(this, movementEvent);
-			});
-		}
 
 		if (entity->HasComponent<AnimationComponent>())
 		{
@@ -362,6 +342,19 @@ namespace bw
 			m_inputUpdateEntities.Clear();
 
 			OnEntitiesInputUpdate(this, m_inputEvents.data(), m_inputEvents.size());
+		}
+
+		if (!m_movedStaticEntities.empty())
+		{
+			for (const auto& entity : m_movedStaticEntities)
+			{
+				EntityMovement movementEvent;
+				BuildEvent(movementEvent, entity);
+
+				OnEntityInvalidated(this, movementEvent);
+			}
+
+			m_movedStaticEntities.Clear();
 		}
 
 		if (!m_physicsUpdateEntities.empty())
