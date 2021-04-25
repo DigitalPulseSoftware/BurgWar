@@ -179,16 +179,17 @@ namespace bw
 			}
 		}
 
-		CompressedUnsigned<Nz::UInt32> empty(0);
-		stream << empty;
+		// Scripts
+		CompressedUnsigned<Nz::UInt32> scriptCount(Nz::UInt32(m_scripts.size()));
+		stream << scriptCount;
 
-		// Scripts (TODO)
-		/*std::vector<std::string> scripts;
-
-		for (const auto& scriptPath : std::filesystem::recursive_directory_iterator(m_mapPath / "scripts"))
-			scripts.emplace_back(scriptPath.path().generic_u8string());
-
-		Nz::UInt32 scriptCount = Nz::UInt32(scripts.size());*/
+		for (const auto& script : m_scripts)
+		{
+			stream << script.filepath;
+			CompressedUnsigned<Nz::UInt64> scriptSize(Nz::UInt64(script.content.size()));
+			stream << scriptSize;
+			stream.Write(script.content.data(), script.content.size());
+		}
 
 		// Assets
 		CompressedUnsigned<Nz::UInt32> assetCount(Nz::UInt32(m_assets.size()));
@@ -560,11 +561,25 @@ namespace bw
 			}
 		}
 
+		// Scripts
 		CompressedUnsigned<Nz::UInt32> scriptCount;
 		stream >> scriptCount;
 
-		// TODO
+		m_scripts.clear();
+		m_scripts.resize(scriptCount);
 
+		for (Script& script : m_scripts)
+		{
+			stream >> script.filepath;
+
+			CompressedUnsigned<Nz::UInt64> scriptSize;
+			stream >> scriptSize;
+
+			script.content.resize(scriptSize);
+			stream.Read(script.content.data(), script.content.size());
+		}
+
+		// Assets
 		CompressedUnsigned<Nz::UInt32> assetCount;
 		stream >> assetCount;
 

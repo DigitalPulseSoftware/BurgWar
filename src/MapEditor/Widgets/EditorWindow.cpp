@@ -628,6 +628,43 @@ namespace bw
 		return QMainWindow::event(e);
 	}
 
+	void EditorWindow::AddScriptsToMap(Map& scriptedMap)
+	{
+		assert(!m_workingMapPath.empty());
+
+		std::filesystem::path rootScriptFolder = m_workingMapPath / "scripts";
+
+		auto& mapScripts = scriptedMap.GetScripts();
+		for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(m_workingMapPath / "scripts"))
+		{
+			if (!std::filesystem::is_regular_file(filepath))
+				continue;
+
+			std::string filepathStr = filepath.generic_u8string();
+
+			Nz::File file(filepath.generic_u8string());
+			if (!file.Open(Nz::OpenMode_ReadOnly))
+			{
+				bwLog(GetLogger(), LogLevel::Warning, "failed to open script {} when preparing map test", filepathStr);
+				continue;
+			}
+
+			std::vector<Nz::UInt8> content(file.GetSize());
+			if (file.Read(content.data(), content.size()) != content.size())
+			{
+				bwLog(GetLogger(), LogLevel::Warning, "failed to read script {} when preparing map test", filepathStr);
+				continue;
+			}
+
+			std::filesystem::path relativePath = std::filesystem::relative(filepath, rootScriptFolder);
+
+			mapScripts.push_back({
+				relativePath.generic_u8string(),
+				std::move(content)
+				});
+		}
+	}
+
 	void EditorWindow::AddToRecentFileList(const QString& mapFolder)
 	{
 		QSettings settings;
@@ -1107,7 +1144,10 @@ namespace bw
 		if (QMessageBox::question(this, tr("Build asset list?"), tr("Do you want to rebuild asset list before compiling map?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 			BuildAssetList();
 
-		if (m_workingMap.Compile(fileName.toStdString()))
+		Map scriptedMap = GetWorkingMap();
+		AddScriptsToMap(scriptedMap);
+
+		if (scriptedMap.Compile(fileName.toStdString()))
 			QMessageBox::information(this, tr("Compilation succeeded"), tr("Map has been successfully compiled"), QMessageBox::Ok);
 		else
 			QMessageBox::critical(this, tr("Failed to compile map"), tr("Map failed to compile"), QMessageBox::Ok);
@@ -1476,7 +1516,12 @@ namespace bw
 		if (m_playWindow)
 			m_playWindow->deleteLater();
 
-		m_playWindow = new PlayWindow(*this, m_workingMap, m_canvas->GetAssetDirectory(), m_canvas->GetScriptDirectory(), tickRate);
+		// Make a copy of the map to inject scripts
+		Map scriptedMap = GetWorkingMap();
+		if (!m_workingMapPath.empty())
+			AddScriptsToMap(scriptedMap);
+
+		m_playWindow = new PlayWindow(*this, scriptedMap, tickRate);
 		m_playWindow->resize(1280, 720);
 		m_playWindow->show();
 

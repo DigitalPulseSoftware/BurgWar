@@ -352,6 +352,16 @@ namespace bw
 		return m_mapInfo;
 	}
 
+	inline auto Map::GetScripts() -> std::vector<Script>&
+	{
+		return m_scripts;
+	}
+
+	inline auto Map::GetScripts() const -> const std::vector<Script>&
+	{
+		return m_scripts;
+	}
+
 	inline bool Map::IsValid() const
 	{
 		return m_isValid;

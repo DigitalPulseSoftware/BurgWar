@@ -74,6 +74,7 @@ namespace bw
 			template<typename F> void ForEachPlayer(F&& func);
 
 			inline BurgApp& GetApp();
+			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory() const;
 			inline AssetStore& GetAssetStore();
 			bool GetClientAsset(const std::string& filePath, const ClientAsset** clientScriptData);
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
@@ -89,6 +90,7 @@ namespace bw
 			inline Player* GetPlayerByIndex(Nz::UInt16 playerIndex);
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
+			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			inline Terrain& GetTerrain();
@@ -173,6 +175,8 @@ namespace bw
 			std::size_t m_maxPlayerCount;
 			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
+			std::shared_ptr<VirtualDirectory> m_assetDirectory;
+			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::unique_ptr<Player>> m_players;

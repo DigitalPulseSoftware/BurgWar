@@ -42,6 +42,11 @@ namespace bw
 		return m_app;
 	}
 
+	inline const std::shared_ptr<VirtualDirectory>& Match::GetAssetDirectory() const
+	{
+		return m_assetDirectory;
+	}
+
 	inline AssetStore& Match::GetAssetStore()
 	{
 		assert(m_assetStore);
@@ -83,6 +88,11 @@ namespace bw
 	inline const MatchSessions& Match::GetSessions() const
 	{
 		return m_sessions;
+	}
+
+	inline const std::shared_ptr<VirtualDirectory>& Match::GetScriptDirectory() const
+	{
+		return m_scriptDirectory;
 	}
 
 	inline const std::shared_ptr<ServerScriptingLibrary>& Match::GetScriptingLibrary() const

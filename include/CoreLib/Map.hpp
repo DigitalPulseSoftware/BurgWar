@@ -37,6 +37,7 @@ namespace bw
 			struct EntityIndices;
 			struct Layer;
 			struct PreserveUniqueId {};
+			struct Script;
 
 			inline Map();
 			inline Map(MapInfo mapInfo);
@@ -78,6 +79,8 @@ namespace bw
 			inline std::vector<Layer>& GetLayers();
 			inline const std::vector<Layer>& GetLayers() const;
 			inline const MapInfo& GetMapInfo() const;
+			inline std::vector<Script>& GetScripts();
+			inline const std::vector<Script>& GetScripts() const;
 
 			inline bool IsValid() const;
 
@@ -126,6 +129,12 @@ namespace bw
 				std::vector<Entity> entities;
 			};
 
+			struct Script
+			{
+				std::string filepath;
+				std::vector<Nz::UInt8> content;
+			};
+
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);
 			static inline Map LoadFromFolder(const std::filesystem::path& mapFolder);
 
@@ -144,6 +153,7 @@ namespace bw
 
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;
+			std::vector<Script> m_scripts;
 			EntityId m_freeUniqueId;
 			tsl::hopscotch_map<EntityId /*unique id*/, EntityIndices> m_entitiesByUniqueId;
 			MapInfo m_mapInfo;

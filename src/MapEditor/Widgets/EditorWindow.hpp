@@ -90,6 +90,7 @@ namespace bw
 			void closeEvent(QCloseEvent* event) override;
 			bool event(QEvent* e) override;
 
+			void AddScriptsToMap(Map& scriptedMap);
 			void AddToRecentFileList(const QString& mapFolder);
 			void AlignLayerEntities(LayerIndex layerIndex);
 
@@ -130,6 +131,7 @@ namespace bw
 			void OnOpenRecentMap();
 			void OnPerspectiveSwitch(bool enable);
 			void OnPlayMap();
+
 			void OnReloadScripts();
 			void OnSaveMap();
 			void OnSetAlignment();

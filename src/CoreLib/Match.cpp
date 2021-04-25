@@ -241,18 +241,20 @@ namespace bw
 		if (m_clientAssets.find(assetPath) != m_clientAssets.end())
 			return;
 
-		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
+		VirtualDirectory::Entry entry;
+		if (!m_assetDirectory->GetEntry(assetPath, &entry))
+			throw std::runtime_error(assetPath + " is not a file");
 
-		std::filesystem::path filePath = resourceFolder;
-		filePath /= assetPath;
+		std::vector<Nz::UInt8> content;
+		if (!std::holds_alternative<VirtualDirectory::PhysicalFileEntry>(entry))
+			throw std::runtime_error(assetPath + " is not a file");
 
-		if (!std::filesystem::is_regular_file(filePath))
-			throw std::runtime_error(filePath.generic_u8string() + " is not a file");
+		std::filesystem::path filepath = std::get<VirtualDirectory::PhysicalFileEntry>(entry);
 
-		Nz::UInt64 assetSize = std::filesystem::file_size(filePath);
-		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType_SHA1, filePath.generic_u8string());
+		Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
+		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType_SHA1, filepath.generic_u8string());
 
-		RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), std::move(filePath));
+		RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), std::move(filepath));
 	}
 
 	void Match::RegisterClientScript(std::string scriptPath)
@@ -260,19 +262,27 @@ namespace bw
 		if (m_clientScripts.find(scriptPath) != m_clientScripts.end())
 			return;
 
-		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
+		VirtualDirectory::Entry entry;
+		if (!m_scriptDirectory->GetEntry(scriptPath, &entry))
+			throw std::runtime_error(scriptPath + " is not a file");
 
-		std::string filePath = scriptFolder + "/" + scriptPath;
-		if (!std::filesystem::is_regular_file(filePath))
-			throw std::runtime_error(filePath + " is not a file");
+		std::vector<Nz::UInt8> content;
+		if (std::holds_alternative<VirtualDirectory::FileContentEntry>(entry))
+			content = std::get<VirtualDirectory::FileContentEntry>(entry);
+		else if (std::holds_alternative<VirtualDirectory::PhysicalFileEntry>(entry))
+		{
+			const std::filesystem::path& filepath = std::get<VirtualDirectory::PhysicalFileEntry>(entry);
 
-		Nz::File file(filePath);
-		if (!file.Open(Nz::OpenMode_ReadOnly))
-			throw std::runtime_error("failed to open " + filePath);
+			Nz::File file(filepath.generic_u8string());
+			if (!file.Open(Nz::OpenMode_ReadOnly))
+				throw std::runtime_error("failed to open " + filepath.generic_u8string());
 
-		std::vector<Nz::UInt8> content(file.GetSize());
-		if (file.Read(content.data(), content.size()) != content.size())
-			throw std::runtime_error("failed to read " + filePath);
+			content.resize(file.GetSize());
+			if (file.Read(content.data(), content.size()) != content.size())
+				throw std::runtime_error("failed to read " + filepath.generic_u8string());
+		}
+		else
+			throw std::runtime_error(scriptPath + " is not a file");
 
 		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
 		hash->Begin();
@@ -310,22 +320,22 @@ namespace bw
 
 	void Match::ReloadAssets()
 	{
-		const std::string& resourceFolder = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
+		const std::string& assetDirectory = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
-		std::shared_ptr<VirtualDirectory> assetDir = std::make_shared<VirtualDirectory>(resourceFolder);
+		m_assetDirectory = std::make_shared<VirtualDirectory>(assetDirectory);
 
 		if (!m_assetStore)
-			m_assetStore.emplace(GetLogger(), std::move(assetDir));
+			m_assetStore.emplace(GetLogger(), m_assetDirectory);
 		else
 		{
-			m_assetStore->UpdateAssetDirectory(std::move(assetDir));
+			m_assetStore->UpdateAssetDirectory(m_assetDirectory);
 			m_assetStore->Clear();
 		}
 
 		assert(m_map.IsValid());
 		for (const auto& asset : m_map.GetAssets())
 		{
-			std::filesystem::path assetPath = resourceFolder;
+			std::filesystem::path assetPath = assetDirectory;
 			assetPath /= asset.filepath;
 
 			if (!std::filesystem::is_regular_file(assetPath))
@@ -359,23 +369,25 @@ namespace bw
 	{
 		assert(m_assetStore);
 
+		m_clientScripts.clear();
+
 		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
-		std::shared_ptr<VirtualDirectory> scriptDir = std::make_shared<VirtualDirectory>(scriptFolder);
-
-		m_clientScripts.clear();
+		m_scriptDirectory = std::make_shared<VirtualDirectory>(scriptFolder);
+		for (const auto& mapScript : m_map.GetScripts())
+			m_scriptDirectory->StoreFile(mapScript.filepath, mapScript.content);
 
 		if (!m_scriptingContext)
 		{
 			if (!m_scriptingLibrary)
 				m_scriptingLibrary = std::make_shared<ServerScriptingLibrary>(*this, *m_assetStore);
 
-			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), scriptDir);
+			m_scriptingContext = std::make_shared<ScriptingContext>(GetLogger(), m_scriptDirectory);
 			m_scriptingContext->LoadLibrary(m_scriptingLibrary);
 		}
 		else
 		{
-			m_scriptingContext->UpdateScriptDirectory(scriptDir);
+			m_scriptingContext->UpdateScriptDirectory(m_scriptDirectory);
 			m_scriptingContext->ReloadLibraries();
 		}
 

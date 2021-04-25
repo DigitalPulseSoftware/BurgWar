@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	PlayWindow::PlayWindow(ClientEditorApp& app, Map map, std::shared_ptr<VirtualDirectory> assetFolder, std::shared_ptr<VirtualDirectory> scriptFolder, float tickRate, QWidget* parent) :
+	PlayWindow::PlayWindow(ClientEditorApp& app, Map map, float tickRate, QWidget* parent) :
 	NazaraCanvas(parent),
 	m_canvas(m_world.CreateHandle(), GetEventHandler(), GetCursorController().CreateHandle())
 	{
@@ -65,8 +65,10 @@ namespace bw
 			assert(authSuccessPacket && authSuccessPacket->has_value());
 
 			m_localMatch.emplace(app, this, this, &m_canvas, *session, authSuccessPacket->value(), matchData);
-			m_localMatch->LoadAssets(assetFolder);
-			m_localMatch->LoadScripts(scriptFolder);
+
+			// TODO: Filter out server files
+			m_localMatch->LoadAssets(m_match->GetAssetDirectory());
+			m_localMatch->LoadScripts(m_match->GetScriptDirectory());
 
 			session->SendPacket(Packets::Ready{});
 		});

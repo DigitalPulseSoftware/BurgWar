@@ -22,7 +22,7 @@ namespace bw
 	class PlayWindow : public NazaraCanvas
 	{
 		public:
-			PlayWindow(ClientEditorApp& app, Map map, std::shared_ptr<VirtualDirectory> assetFolder, std::shared_ptr<VirtualDirectory> scriptFolder, float tickRate, QWidget* parent = nullptr);
+			PlayWindow(ClientEditorApp& app, Map map, float tickRate, QWidget* parent = nullptr);
 			~PlayWindow() = default;
 
 		private:
