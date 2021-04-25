@@ -323,6 +323,16 @@ target("BurgWarMapEditor")
 	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
 
+	on_load(function (target)
+		import("detect.sdks.find_qt")
+
+		local qt = find_qt()
+		if (not qt) then
+			-- Disable building by default if Qt is not found
+			target:set("default", false)
+		end
+	end)
+
 	after_install(function (target)
 		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
 	end)
