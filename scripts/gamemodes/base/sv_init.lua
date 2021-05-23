@@ -120,6 +120,8 @@ gamemode:On("PlayerChat", function (self, player, message)
 			end
 
 			controlledEntity:SetPosition(Vec2(0, 0))
+		elseif (commandName == "resetmap") then
+			match.ResetTerrain()
 		end
 
 		return false
