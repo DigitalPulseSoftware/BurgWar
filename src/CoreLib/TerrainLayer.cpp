@@ -18,13 +18,29 @@
 namespace bw
 {
 	TerrainLayer::TerrainLayer(Match& match, LayerIndex layerIndex, const Map::Layer& layerData) :
-	SharedLayer(match, layerIndex)
+	SharedLayer(match, layerIndex),
+	m_mapLayer(layerData)
 	{
 		Ndk::World& world = GetWorld();
 		world.AddSystem<NetworkSyncSystem>(*this);
 
+		ResetEntities();
+	}
+
+	Match& TerrainLayer::GetMatch()
+	{
+		return static_cast<Match&>(SharedLayer::GetMatch());
+	}
+
+	void TerrainLayer::ResetEntities()
+	{
+		Match& match = GetMatch();
+		
+		Ndk::World& world = GetWorld();
+		world.Clear();
+
 		auto& entityStore = match.GetEntityStore();
-		for (const Map::Entity& entityData : layerData.entities)
+		for (const Map::Entity& entityData : m_mapLayer.entities)
 		{
 			std::size_t entityTypeIndex = entityStore.GetElementIndex(entityData.entityType);
 			if (entityTypeIndex == entityStore.InvalidIndex)
@@ -46,11 +62,6 @@ namespace bw
 		}
 	}
 
-	Match& TerrainLayer::GetMatch()
-	{
-		return static_cast<Match&>(SharedLayer::GetMatch());
-	}
-
 	void TerrainLayer::InitializeEntities()
 	{
 		auto& entityStore = GetMatch().GetEntityStore();
@@ -59,5 +70,8 @@ namespace bw
 			if (!entityStore.InitializeEntity(entity))
 				entity->Kill();
 		}
+
+		Ndk::World& world = GetWorld();
+		world.Refresh();
 	}
 }

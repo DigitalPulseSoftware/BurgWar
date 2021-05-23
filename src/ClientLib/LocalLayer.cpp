@@ -77,6 +77,25 @@ namespace bw
 		Enable(false);
 	}
 
+	void LocalLayer::Clear()
+	{
+		if (m_isEnabled)
+		{
+			// Destroy all previous entities
+			for (auto&& [serverEntityId, uniqueId] : m_serverEntityIds)
+				HandleEntityDestruction(uniqueId);
+
+			// Reset states
+			m_entities.clear();
+			m_serverEntityIds.clear();
+			m_sounds.clear();
+			m_freeSoundIds.Set(true);
+
+			// Refresh the world now to kill entities
+			GetWorld().Refresh();
+		}
+	}
+
 	void LocalLayer::Enable(bool enable)
 	{
 		if (m_isEnabled == enable)
@@ -510,6 +529,19 @@ namespace bw
 				localEntity.UpdateHealth(currentHealth);
 			else
 				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Received health data for entity {} which has none", localEntity.GetUniqueId());
+		}
+	}
+
+	void LocalLayer::HandlePacket(const Packets::MapReset::Entity* entities, std::size_t entityCount)
+	{
+		assert(m_isEnabled);
+
+		for (std::size_t i = 0; i < entityCount; ++i)
+		{
+			Nz::UInt32 entityId = entities[i].id;
+			auto& entityData = entities[i].data;
+
+			CreateEntity(entityId, entityData);
 		}
 	}
 }

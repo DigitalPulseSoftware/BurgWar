@@ -109,6 +109,7 @@ namespace bw
 			void ReloadScripts();
 
 			void RemovePlayer(Player* player, DisconnectionReason disconnection);
+			void ResetTerrain();
 
 			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
 			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;

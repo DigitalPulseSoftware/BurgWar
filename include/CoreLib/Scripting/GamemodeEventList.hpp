@@ -19,6 +19,7 @@ BURGWAR_EVENT(PlayerNameUpdate)
 BURGWAR_EVENT(Tick)
 
 // Server gamemode events
+BURGWAR_EVENT(MapInit)
 BURGWAR_EVENT(PlayerChat)
 BURGWAR_EVENT(PlayerConnected)
 BURGWAR_EVENT(PlayerDeath)
@@ -27,6 +28,8 @@ BURGWAR_EVENT(PlayerLayerUpdate)
 
 // Client gamemode events
 BURGWAR_EVENT(ChangeLayer)
+BURGWAR_EVENT(LayerDisable)
+BURGWAR_EVENT(LayerEnabled)
 BURGWAR_EVENT(Frame)
 BURGWAR_EVENT(InitScoreboard)
 BURGWAR_EVENT(PlayerPingUpdate)

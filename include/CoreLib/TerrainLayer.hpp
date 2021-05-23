@@ -28,11 +28,15 @@ namespace bw
 
 			Match& GetMatch();
 
+			void ResetEntities();
+
 			TerrainLayer& operator=(const TerrainLayer&) = delete;
 			TerrainLayer& operator=(TerrainLayer&&) = delete;
 
 		private:
 			void InitializeEntities();
+
+			const Map::Layer& m_mapLayer;
 	};
 }
 

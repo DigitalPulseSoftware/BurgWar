@@ -50,6 +50,7 @@ namespace bw
 		OutgoingCommand(EntityWeapon,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(HealthUpdate,                 Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(InputTimingCorrection,        Nz::ENetPacketFlag_Unsequenced, 0);
+		OutgoingCommand(MapReset,                     Nz::ENetPacketFlag_Reliable,    1);
 		OutgoingCommand(MatchData,                    Nz::ENetPacketFlag_Reliable,    0);
 		OutgoingCommand(MatchState,                   0,                              1);
 		OutgoingCommand(NetworkStrings,               Nz::ENetPacketFlag_Reliable,    0);

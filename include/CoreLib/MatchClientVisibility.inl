@@ -26,7 +26,8 @@ namespace bw
 
 	inline MatchClientVisibility::MatchClientVisibility(Match& match, MatchClientSession& session) :
 	m_match(match),
-	m_session(session)
+	m_session(session),
+	m_ignoreEvents(false)
 	{
 	}
 
@@ -57,6 +58,11 @@ namespace bw
 			m_newlyHiddenLayers.UnboundedSet(layerIndex);
 
 		m_layers.erase(it);
+	}
+
+	inline void MatchClientVisibility::IgnoreEvents(bool ignoreEvents)
+	{
+		m_ignoreEvents = ignoreEvents;
 	}
 
 	inline bool MatchClientVisibility::IsLayerVisible(LayerIndex layerIndex) const

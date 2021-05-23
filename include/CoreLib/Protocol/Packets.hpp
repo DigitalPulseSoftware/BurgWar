@@ -53,6 +53,7 @@ namespace bw
 		EntityWeapon,
 		InputTimingCorrection,
 		HealthUpdate,
+		MapReset,
 		MatchData,
 		MatchState,
 		NetworkStrings,
@@ -419,6 +420,25 @@ namespace bw
 			CompressedSigned<Nz::Int32> tickError;
 		};
 
+		DeclarePacket(MapReset)
+		{
+			struct Entity
+			{
+				CompressedUnsigned<Nz::UInt32> id;
+				Helper::EntityData data;
+			};
+
+			struct Layer
+			{
+				CompressedUnsigned<LayerIndex> layerIndex;
+				CompressedUnsigned<Nz::UInt32> entityCount;
+			};
+
+			Nz::UInt16 stateTick;
+			std::vector<Entity> entities;
+			std::vector<Layer> layers;
+		};
+
 		DeclarePacket(MatchData)
 		{
 			struct ClientFile
@@ -605,6 +625,7 @@ namespace bw
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, HealthUpdate& data);
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, InputTimingCorrection& data);
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, MatchData& data);
+		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, MapReset& data);
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, MatchState& data);
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, NetworkStrings& data);
 		BURGWAR_CORELIB_API void Serialize(PacketSerializer& serializer, PlayerChat& data);

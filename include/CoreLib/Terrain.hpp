@@ -19,7 +19,7 @@ namespace bw
 	class BURGWAR_CORELIB_API Terrain
 	{
 		public:
-			Terrain(Map& map);
+			Terrain(Match& match, Map& map);
 			Terrain(const Terrain&) = delete;
 			~Terrain() = default;
 
@@ -28,7 +28,9 @@ namespace bw
 			inline LayerIndex GetLayerCount() const;
 			inline const Map& GetMap() const;
 
-			void Initialize(Match& match);
+			void Initialize();
+
+			void Reset();
 
 			void Update(float elapsedTime);
 

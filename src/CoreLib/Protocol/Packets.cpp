@@ -477,6 +477,33 @@ namespace bw
 			}
 		}
 
+		void Serialize(PacketSerializer& serializer, MapReset& data)
+		{
+			serializer &= data.stateTick;
+
+			Nz::UInt32 entityCount = 0;
+
+			serializer.SerializeArraySize(data.layers);
+			for (auto& layer : data.layers)
+			{
+				serializer &= layer.layerIndex;
+				serializer &= layer.entityCount;
+
+				entityCount += layer.entityCount;
+			}
+
+			if (serializer.IsWriting())
+				assert(data.entities.size() == entityCount);
+			else
+				data.entities.resize(entityCount);
+
+			for (auto& entity : data.entities)
+			{
+				serializer &= entity.id;
+				Serialize(serializer, entity.data);
+			}
+		}
+
 		void Serialize(PacketSerializer& serializer, MatchState& data)
 		{
 			// Don't forget to update EstimateSize(const MatchState&)

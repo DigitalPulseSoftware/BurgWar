@@ -129,6 +129,7 @@ namespace bw
 				Packets::EntityPhysics,
 				Packets::EntityWeapon,
 				Packets::HealthUpdate,
+				Packets::MapReset,
 				Packets::MatchState,
 				Packets::PlayerLayer,
 				Packets::PlayerWeapons
@@ -161,6 +162,7 @@ namespace bw
 			void HandleTickPacket(Packets::EntityPhysics&& packet);
 			void HandleTickPacket(Packets::EntityWeapon&& packet);
 			void HandleTickPacket(Packets::HealthUpdate&& packet);
+			void HandleTickPacket(Packets::MapReset&& packet);
 			void HandleTickPacket(Packets::MatchState&& packet);
 			void HandleTickPacket(Packets::PlayerLayer&& packet);
 			void HandleTickPacket(Packets::PlayerWeapons&& packet);

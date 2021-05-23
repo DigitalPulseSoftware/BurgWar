@@ -66,11 +66,14 @@ namespace bw
 
 			inline void HideLayer(LayerIndex layerIndex);
 
+			inline void IgnoreEvents(bool ignoreEvents);
 			inline bool IsLayerVisible(LayerIndex layerIndex) const;
 
 			template<typename T> void PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet);
 			template<typename T> void PushEntitiesPacket(LayerIndex layerIndex, Nz::Bitset<Nz::UInt64> entitiesId, T&& packet);
 			inline void PushLayerUpdate(Nz::UInt8 localPlayerIndex, LayerIndex layerIndex);
+
+			void ResetVisibleEntities();
 
 			inline void SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled);
 
@@ -90,14 +93,15 @@ namespace bw
 				bool staticEntity;
 			};
 
+			using EntityPacketSendFunction = std::function<void()>;
+			using PendingCreationEventMap = tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::optional<NetworkSyncSystem::EntityCreation>>;
+
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 			void FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData);
 			void HandleEntityCreation(LayerIndex layerIndex, const NetworkSyncSystem::EntityCreation& eventData);
 			void HandleEntityRemove(LayerIndex layerIndex, Ndk::EntityId entityId, bool deathEvent);
+			template<typename E> void PushLayerEntities(std::vector<E>& packetEntities, LayerIndex layerIndex, PendingCreationEventMap& pendingCreationMap);
 			void SendMatchState();
-
-			using EntityPacketSendFunction = std::function<void()>;
-			using PendingCreationEventMap = tsl::hopscotch_map<Nz::UInt32 /*entityId*/, std::optional<NetworkSyncSystem::EntityCreation>>;
 
 			struct PendingLayerUpdate
 			{
@@ -166,6 +170,7 @@ namespace bw
 			Packets::EntitiesInputs    m_inputUpdatePacket;
 			Packets::EntitiesScale     m_scaleUpdatePacket;
 			Packets::MatchState        m_matchStatePacket;
+			bool m_ignoreEvents;
 	};
 }
 

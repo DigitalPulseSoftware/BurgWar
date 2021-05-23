@@ -717,6 +717,11 @@ namespace bw
 		{
 			HandleTickError(timingCorrection.serverTick, timingCorrection.tickError);
 		});
+		
+		m_session.OnMapReset.Connect([this](ClientSession* /*session*/, const Packets::MapReset& mapReset)
+		{
+			PushTickPacket(mapReset.stateTick, mapReset);
+		});
 
 		m_session.OnMatchState.Connect([this](ClientSession* /*session*/, const Packets::MatchState& matchState)
 		{
@@ -1151,8 +1156,12 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::DisableLayer&& packet)
 	{
-		assert(m_layers[packet.layerIndex]->IsEnabled());
-		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now disabled", packet.layerIndex);
+		std::size_t layerIndex = packet.layerIndex;
+
+		assert(m_layers[layerIndex]->IsEnabled());
+		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now disabled", layerIndex);
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::LayerDisable>(layerIndex);
 
 		//TODO
 		m_layers[packet.layerIndex]->Disable();
@@ -1160,13 +1169,17 @@ namespace bw
 
 	void LocalMatch::HandleTickPacket(Packets::EnableLayer&& packet)
 	{
-		assert(!m_layers[packet.layerIndex]->IsEnabled());
-		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now enabled", packet.layerIndex);
+		std::size_t layerIndex = packet.layerIndex;
+
+		assert(!m_layers[layerIndex]->IsEnabled());
+		bwLog(GetLogger(), LogLevel::Debug, "Layer {} is now enabled", layerIndex);
 
 		//TODO
-		auto& layer = m_layers[packet.layerIndex];
+		auto& layer = m_layers[layerIndex];
 		layer->Enable();
 		layer->HandlePacket(packet.layerEntities.data(), packet.layerEntities.size());
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(layerIndex);
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::EntitiesAnimation&& packet)
@@ -1241,6 +1254,33 @@ namespace bw
 			layer->HandlePacket(&packet.entities[offset], layerData.entityCount);
 			offset += layerData.entityCount;
 		}
+	}
+
+	void LocalMatch::HandleTickPacket(Packets::MapReset&& packet)
+	{
+		// Reset all layers and entity date
+		for (const auto& layerPtr : m_layers)
+		{
+			m_gamemode->ExecuteCallback<GamemodeEvent::LayerDisable>(layerPtr->GetLayerIndex());
+			layerPtr->Clear();
+		}
+
+		m_freeClientId = -1;
+		m_entitiesByUniqueId.clear();
+		m_playerEntitiesByUniqueId.clear();
+
+		// Recreate entities
+		std::size_t offset = 0;
+		for (auto&& layerData : packet.layers)
+		{
+			assert(layerData.layerIndex < m_layers.size());
+			auto& layer = m_layers[layerData.layerIndex];
+			layer->HandlePacket(&packet.entities[offset], layerData.entityCount);
+			offset += layerData.entityCount;
+		}
+
+		for (const auto& layerPtr : m_layers)
+			m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(layerPtr->GetLayerIndex());
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)

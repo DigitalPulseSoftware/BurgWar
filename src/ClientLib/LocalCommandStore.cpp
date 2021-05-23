@@ -39,6 +39,7 @@ namespace bw
 		IncomingCommand(EntityWeapon);
 		IncomingCommand(HealthUpdate);
 		IncomingCommand(InputTimingCorrection);
+		IncomingCommand(MapReset);
 		IncomingCommand(MatchData);
 		IncomingCommand(MatchState);
 		IncomingCommand(NetworkStrings);

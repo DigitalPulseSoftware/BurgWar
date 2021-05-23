@@ -306,9 +306,14 @@ namespace bw
 			return playerTable;
 		});
 
-		library["GetTick"] = LuaFunction([&]()
+		library["GetTick"] = LuaFunction([&]
 		{
 			return GetMatch().GetCurrentTick();
+		});
+
+		library["ResetTerrain"] = LuaFunction([&]
+		{
+			return GetMatch().ResetTerrain();
 		});
 	}
 

@@ -33,6 +33,8 @@ namespace bw
 			LocalLayer(LocalLayer&&) noexcept;
 			~LocalLayer();
 
+			void Clear();
+
 			inline void Disable();
 			void Enable(bool enable = true);
 			inline void EnablePrediction(bool enable = true);
@@ -76,6 +78,7 @@ namespace bw
 			void HandlePacket(const Packets::EntityPhysics& packet);
 			void HandlePacket(const Packets::EntityWeapon& packet);
 			void HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount);
+			void HandlePacket(const Packets::MapReset::Entity* entities, std::size_t entityCount);
 
 			struct EntityData
 			{

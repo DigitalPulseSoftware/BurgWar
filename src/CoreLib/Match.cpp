@@ -7,6 +7,7 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
+#include <CoreLib/MatchClientVisibility.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
@@ -40,12 +41,13 @@ namespace bw
 		ReloadAssets();
 		ReloadScripts();
 
-		m_terrain = std::make_unique<Terrain>(m_map);
-		m_terrain->Initialize(*this);
+		m_terrain = std::make_unique<Terrain>(*this, m_map);
+		m_terrain->Initialize();
 
 		BuildMatchData();
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
+		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
 	}
@@ -527,6 +529,34 @@ namespace bw
 
 			player->SendPacket(chatPacket);
 		});
+	}
+
+	void Match::ResetTerrain()
+	{
+		for (auto& playerPtr : m_players)
+		{
+			if (!playerPtr)
+				continue;
+
+			MatchClientVisibility& visibility = playerPtr->GetSession().GetVisibility();
+			visibility.IgnoreEvents(true);
+		}
+
+		m_nextUniqueId = m_map.GetFreeUniqueId();
+		m_terrain->Reset();
+
+		for (auto& playerPtr : m_players)
+		{
+			if (!playerPtr)
+				continue;
+
+			MatchClientVisibility& visibility = playerPtr->GetSession().GetVisibility();
+			visibility.IgnoreEvents(false);
+
+			visibility.ResetVisibleEntities();
+		}
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 	}
 
 	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
