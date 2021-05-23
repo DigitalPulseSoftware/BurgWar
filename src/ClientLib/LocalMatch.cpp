@@ -444,6 +444,8 @@ namespace bw
 		}
 		else
 			m_gamemode->Reload();
+
+		m_scriptingContext->LoadDirectory("map/autorun");
 	}
 
 	void LocalMatch::RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity)

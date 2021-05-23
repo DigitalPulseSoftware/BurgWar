@@ -44,6 +44,8 @@ namespace bw
 		m_terrain = std::make_unique<Terrain>(*this, m_map);
 		m_terrain->Initialize();
 
+		m_scriptingContext->LoadDirectory("map/autorun");
+
 		BuildMatchData();
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
