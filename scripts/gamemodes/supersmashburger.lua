@@ -3,7 +3,7 @@ return {
 	Base = "deathmatch",
 	Description = "Super Smash Burger, be the last burger alive",
 	Properties = {
-		{ Name = "maxplayercount", Type = PropertyType.Integer, Default = 2 },
+		{ Name = "maxplayercount", Type = PropertyType.Integer, Default = 4 },
 		{ Name = "minplayercount", Type = PropertyType.Integer, Default = 2 },
 	}
 }
