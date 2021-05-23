@@ -30,10 +30,11 @@ namespace bw
 	{
 		assert(m_isEnabled);
 
-		for (auto& soundOpt : m_sounds)
+		for (std::size_t i = 0; i < m_sounds.size(); ++i)
 		{
+			auto& soundOpt = m_sounds[i];
 			if (soundOpt)
-				func(soundOpt.value().soundIndex, soundOpt.value().sound);
+				func(i, soundOpt.value().sound);
 		}
 	}
 

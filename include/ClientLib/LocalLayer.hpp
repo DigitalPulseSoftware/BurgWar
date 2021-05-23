@@ -33,8 +33,6 @@ namespace bw
 			LocalLayer(LocalLayer&&) noexcept;
 			~LocalLayer();
 
-			void Clear();
-
 			inline void Disable();
 			void Enable(bool enable = true);
 			inline void EnablePrediction(bool enable = true);
@@ -51,6 +49,8 @@ namespace bw
 
 			bool IsEnabled() const override;
 			inline bool IsPredictionEnabled() const;
+
+			void PostFrameUpdate(float elapsedTime) override;
 
 			LocalLayerEntity& RegisterEntity(LocalLayerEntity layerEntity);
 			LocalLayerSound& RegisterSound(LocalLayerSound layerEntity);
@@ -104,7 +104,6 @@ namespace bw
 				SoundData(SoundData&& rhs) = default;
 
 				LocalLayerSound sound;
-				std::size_t soundIndex;
 			};
 
 			tsl::hopscotch_map<EntityId /*uniqueId*/, EntityData> m_entities;

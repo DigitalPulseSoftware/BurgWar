@@ -77,25 +77,6 @@ namespace bw
 		Enable(false);
 	}
 
-	void LocalLayer::Clear()
-	{
-		if (m_isEnabled)
-		{
-			// Destroy all previous entities
-			for (auto&& [serverEntityId, uniqueId] : m_serverEntityIds)
-				HandleEntityDestruction(uniqueId);
-
-			// Reset states
-			m_entities.clear();
-			m_serverEntityIds.clear();
-			m_sounds.clear();
-			m_freeSoundIds.Set(true);
-
-			// Refresh the world now to kill entities
-			GetWorld().Refresh();
-		}
-	}
-
 	void LocalLayer::Enable(bool enable)
 	{
 		if (m_isEnabled == enable)
@@ -104,15 +85,14 @@ namespace bw
 		m_isEnabled = enable;
 
 		if (enable)
-		{
 			OnEnabled(this);
-		}
 		else
 		{
 			OnDisabled(this);
 			m_entities.clear();
 			m_serverEntityIds.clear();
 			m_sounds.clear();
+			m_freeSoundIds.Clear();
 
 			// Since we are disabled, refresh won't be called until we are enabled, refresh the world now to kill entities
 			GetWorld().Refresh();
@@ -135,6 +115,25 @@ namespace bw
 	bool LocalLayer::IsEnabled() const
 	{
 		return m_isEnabled;
+	}
+
+	void LocalLayer::PostFrameUpdate(float elapsedTime)
+	{
+		// Sound
+		for (std::size_t i = 0; i < m_sounds.size(); ++i)
+		{
+			auto& soundOpt = m_sounds[i];
+			if (!soundOpt)
+				continue;
+
+			if (!soundOpt->sound.Update(elapsedTime))
+			{
+				OnSoundDelete(this, i, soundOpt->sound);
+
+				m_freeSoundIds.Set(i);
+				soundOpt.reset();
+			}
+		}
 	}
 
 	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
@@ -172,16 +171,16 @@ namespace bw
 		{
 			soundIndex = m_freeSoundIds.GetSize();
 			m_freeSoundIds.Resize(soundIndex + 1, false);
+			m_sounds.emplace_back();
 		}
 		else
 			m_freeSoundIds.Reset(soundIndex);
 
-		auto& soundOpt = m_sounds.emplace_back();
+		auto& soundOpt = m_sounds[soundIndex];
+		assert(!soundOpt);
 		soundOpt.emplace(std::move(layerEntity));
 
-		soundOpt->soundIndex = soundIndex;
-
-		OnSoundCreated(this, soundOpt->soundIndex, soundOpt->sound);
+		OnSoundCreated(this, soundIndex, soundOpt->sound);
 
 		return soundOpt->sound;
 	}

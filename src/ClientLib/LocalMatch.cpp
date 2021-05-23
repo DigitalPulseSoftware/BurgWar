@@ -1261,15 +1261,24 @@ namespace bw
 	void LocalMatch::HandleTickPacket(Packets::MapReset&& packet)
 	{
 		// Reset all layers and entity date
+		Nz::Bitset<> enabledLayers(m_layers.size(), false);
 		for (const auto& layerPtr : m_layers)
 		{
-			m_gamemode->ExecuteCallback<GamemodeEvent::LayerDisable>(layerPtr->GetLayerIndex());
-			layerPtr->Clear();
+			if (layerPtr->IsEnabled())
+			{
+				m_gamemode->ExecuteCallback<GamemodeEvent::LayerDisable>(layerPtr->GetLayerIndex());
+				layerPtr->Disable();
+
+				enabledLayers.Set(layerPtr->GetLayerIndex(), true);
+			}
 		}
 
 		m_freeClientId = -1;
 		m_entitiesByUniqueId.clear();
 		m_playerEntitiesByUniqueId.clear();
+
+		for (std::size_t i = enabledLayers.FindFirst(); i != enabledLayers.npos; i = enabledLayers.FindNext(i))
+			m_layers[i]->Enable();
 
 		// Recreate entities
 		std::size_t offset = 0;
@@ -1281,8 +1290,8 @@ namespace bw
 			offset += layerData.entityCount;
 		}
 
-		for (const auto& layerPtr : m_layers)
-			m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(layerPtr->GetLayerIndex());
+		for (std::size_t i = enabledLayers.FindFirst(); i != enabledLayers.npos; i = enabledLayers.FindNext(i))
+			m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(i);
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)

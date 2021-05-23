@@ -79,6 +79,7 @@ namespace bw
 		
 		visibleLayerPtr->onDisabled.Connect(visualLayer.OnDisabled, [=](VisualLayer*)
 		{
+			visibleLayerPtr->soundEntities.clear();
 			visibleLayerPtr->visualEntities.clear();
 		});
 

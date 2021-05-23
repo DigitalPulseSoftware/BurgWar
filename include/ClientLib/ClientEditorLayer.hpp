@@ -23,9 +23,9 @@ namespace bw
 			ClientEditorLayer(ClientEditorLayer&&) noexcept = default;
 			~ClientEditorLayer() = default;
 
-			void FrameUpdate(float elapsedTime);
-			void PreFrameUpdate(float elapsedTime);
-			void PostFrameUpdate(float elapsedTime);
+			virtual void FrameUpdate(float elapsedTime);
+			virtual void PreFrameUpdate(float elapsedTime);
+			virtual void PostFrameUpdate(float elapsedTime);
 
 			void TickUpdate(float elapsedTime) override;
 
