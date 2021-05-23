@@ -32,7 +32,7 @@ function gamemode:StartRound()
 	local maxPlayerPerRound = self:GetProperty("maxplayercount")
 	local players = match.GetPlayers()
 	table.sort(players, function (playerA, playerB)
-		return self.PlayerRoundCount[playerA:GetPlayerIndex()] < self.PlayerRoundCount[playerB:GetPlayerIndex()]
+		return (self.PlayerRoundCount[playerA:GetPlayerIndex()] or 0) < (self.PlayerRoundCount[playerB:GetPlayerIndex()] or 0)
 	end)
 
 	local activePlayers = {}
