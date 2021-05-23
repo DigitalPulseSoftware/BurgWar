@@ -6,7 +6,7 @@ gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, n
 	local id = player:GetPlayerIndex()
 
 	local text = self.PlayerNicks[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:Hide()
 	end
 
