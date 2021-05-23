@@ -7,6 +7,7 @@ local entity = ScriptedEntity({
 		{ Name = "health", Type = PropertyType.Integer, Default = 0, Shared = true },
 		{ Name = "mass", Type = PropertyType.Float, Default = 0, Shared = true },
 		{ Name = "renderOrder", Type = PropertyType.Integer, Default = 0, Shared = true },
+		{ Name = "repeatTexture", Type = PropertyType.Boolean, Default = false, Shared = true },
 		{ Name = "scale", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
 		{ Name = "size", Type = PropertyType.FloatSize, Default = Vec2(1.0, 1.0), Shared = true },
 		{ Name = "texture", Type = PropertyType.Texture, Default = "", Shared = true },
@@ -48,6 +49,7 @@ entity:On("init", function (self)
 	if (CLIENT) then
 		self.Sprite = self:AddSprite({
 			RenderOrder = self:GetProperty("renderOrder"),
+			RepeatTexture = self:GetProperty("repeatTexture"),
 			Scale = scale,
 			Size = size,
 			TextureCoords = self:GetProperty("textureCoords"),

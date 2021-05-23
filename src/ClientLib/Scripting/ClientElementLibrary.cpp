@@ -89,6 +89,7 @@ namespace bw
 			Nz::Vector2f origin = parameters.get_or("Origin", Nz::Vector2f(0.5f, 0.5f));
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
 			Nz::Rectf textureCoords = parameters.get_or("TextureCoords", Nz::Rectf(0.f, 0.f, 1.f, 1.f));
+			bool repeatTexture = parameters.get_or("RepeatTexture", false);
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
@@ -105,7 +106,8 @@ namespace bw
 
 			auto& sampler = mat->GetDiffuseSampler();
 			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
-			//sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
+			if (repeatTexture)
+				sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
 			Nz::SpriteRef sprite = Nz::Sprite::New();
 			sprite->SetColor(color);
