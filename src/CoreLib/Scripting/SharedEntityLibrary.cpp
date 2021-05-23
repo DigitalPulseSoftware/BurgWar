@@ -245,6 +245,17 @@ namespace bw
 
 	void SharedEntityLibrary::RegisterSharedLibrary(sol::table& elementMetatable)
 	{
+		elementMetatable["AddForce"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2f& force)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+
+			if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+			{
+				Ndk::PhysicsComponent2D& hitEntityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				hitEntityPhys.AddForce(force);
+			}
+		});
+
 		elementMetatable["ApplyImpulse"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2f& force)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);

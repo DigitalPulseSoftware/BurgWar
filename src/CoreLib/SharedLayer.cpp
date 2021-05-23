@@ -34,7 +34,7 @@ namespace bw
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
 		physics.SetMaxStepCount(1);
-		physics.SetSleepTime(1.f);
+		physics.SetSleepTime(0.f);
 		physics.SetStepSize(match.GetTickDuration());
 
 		Ndk::PhysicsSystem2D::Callback triggerCallbacks;

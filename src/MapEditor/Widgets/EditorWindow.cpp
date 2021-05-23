@@ -661,7 +661,7 @@ namespace bw
 			mapScripts.push_back({
 				relativePath.generic_u8string(),
 				std::move(content)
-				});
+			});
 		}
 	}
 

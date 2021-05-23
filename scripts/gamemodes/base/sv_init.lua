@@ -35,6 +35,8 @@ function gamemode:ChoosePlayerTeam(player)
 end
 
 function gamemode:OnPlayerSpawn(player)
+	local entity = player:GetControlledEntity()
+	entity:GiveWeapon("weapon_graspain")
 end
 
 function gamemode:GeneratePlayerEntityProperties(player)
@@ -121,30 +123,6 @@ gamemode:On("PlayerChat", function (self, player, message)
 		end
 
 		return false
-	end
-end)
-
-gamemode.NextSpawnTime = 0
-
-gamemode:On("Tick", function (self)
-	for _, entity in pairs(match.GetEntities()) do
-		local pos = entity:GetPosition()
-		if (pos.y > 10000) then
-			entity:Kill()
-		end
-	end
-
-	if (match.GetMilliseconds() > gamemode.NextSpawnTime) then
-		match.CreateEntity({
-			Type = "entity_clove_mine",
-			LayerIndex = 0,
-			Position = Vec2(math.random(200, 10000), -700),
-			Properties = {
-				free = true
-			}
-		})
-
-		gamemode.NextSpawnTime = match.GetMilliseconds() + math.random(30, 60) * 1000
 	end
 end)
 
