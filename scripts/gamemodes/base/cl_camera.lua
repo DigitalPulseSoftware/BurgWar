@@ -19,7 +19,7 @@ function gamemode:SetCameraScale(scale)
 end
 
 gamemode:On("Init", function (self)
-	self.CameraRect = nil
+	match.GetGamemode().CameraRect = nil
 end)
 
 function gamemode:UpdateCameraPosition()
@@ -124,8 +124,8 @@ function gamemode:RefreshCameraRect()
 	end
 end
 
-gamemode:On("tick", function (self)
-	self:RefreshCameraRect()
+gamemode:On("Tick", function (self)
+	match.GetGamemode():RefreshCameraRect()
 end)
 
 function gamemode:ShakeCamera(duration, strength)
