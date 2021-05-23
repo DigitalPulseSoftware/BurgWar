@@ -6,16 +6,14 @@ gamemode.PlayerEntity = "entity_ssb_burger"
 
 gamemode:Disconnect(gamemode.BasePlayerDeathSlot)
 
-gamemode:On("Init", function (self)
-	for i = 0, match.GetLayerCount() - 1 do
-		local cameraRects = match.GetEntitiesByClass("entity_camera_rect", i)
-		if (#cameraRects > 0) then
-			local cameraRect = cameraRects[1]
-			local creationInfo = cameraRect:DumpCreationInfo()
-			creationInfo.Type = "entity_camera_zone"
+gamemode:On("MapInit", function (self)
+	local cameraRects = match.GetEntitiesByClass("entity_camera_rect", i)
+	if (#cameraRects > 0) then
+		local cameraRect = cameraRects[1]
+		local creationInfo = cameraRect:DumpCreationInfo()
+		creationInfo.Type = "entity_camera_zone"
 
-			match.CreateEntity(creationInfo)
-		end
+		match.CreateEntity(creationInfo)
 	end
 end)
 

@@ -1,11 +1,15 @@
 local gamemode = ScriptedGamemode()
 
+gamemode.PlayerRoundCount = {}
 gamemode.State = "waiting"
 
 gamemode:Disconnect(gamemode.BasePlayerJoinedSlot)
 
 gamemode:OnAsync("PlayerJoined", function (self, player)
 	player:MoveToLayer(0)
+
+	local playerIndex = player:GetPlayerIndex()
+	self.PlayerRoundCount[playerIndex] = 0
 
 	local playerCount = #match.GetPlayers()
 	local requiredPlayerCount = self:GetProperty("minplayercount")
@@ -19,12 +23,38 @@ gamemode:OnAsync("PlayerJoined", function (self, player)
 	end
 end)
 
+gamemode:On("PlayerLeave", function (self, player)
+	local playerIndex = player:GetPlayerIndex()
+	self.PlayerRoundCount[playerIndex] = nil
+end)
+
 function gamemode:StartRound()
+	local maxPlayerPerRound = self:GetProperty("maxplayercount")
+	local players = match.GetPlayers()
+	table.sort(players, function (playerA, playerB)
+		return self.PlayerRoundCount[playerA:GetPlayerIndex()] < self.PlayerRoundCount[playerB:GetPlayerIndex()]
+	end)
+
+	local activePlayers = {}
+	local activePlayerNames = {}
+	for i = 1, maxPlayerPerRound do
+		if (i > #players) then
+			break
+		end
+
+		local player = players[i]
+		table.insert(activePlayers, player)
+		table.insert(activePlayerNames, player:GetName())
+
+		self.PlayerRoundCount[player:GetPlayerIndex()] = self.PlayerRoundCount[player:GetPlayerIndex()] + 1
+	end
+
+	match.BroadcastChatMessage("Active players: " .. table.concat(activePlayerNames, ", "))
 	match.BroadcastChatMessage("Fight!")
 
 	self.State = "playing"
 
-	for _, player in pairs(match.GetPlayers()) do
+	for _, player in pairs(activePlayers) do
 		self:SpawnPlayer(player)
 	end
 end
@@ -68,6 +98,10 @@ gamemode:OnAsync("Tick", function (self)
 		return
 	end
 
+	self.State = "won"
+
 	match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
+	timer.Sleep(5000)
+	match.ResetTerrain()
 	self:PrepareNextRound()
 end)

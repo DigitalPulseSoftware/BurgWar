@@ -30,7 +30,7 @@ function gamemode:UpdateCameraPosition()
 		camZone = cameraZones[1]:GetRect()
 	end
 
-	if (cameraRect) then
+	if (camZone and cameraRect) then
 		cameraRect = camZone:ComputeIntersection(cameraRect)
 		cameraRect:Scale(1.3333)
 	else
