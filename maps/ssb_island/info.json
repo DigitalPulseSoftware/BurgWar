@@ -493,6 +493,32 @@
 			],
 			"filePath": "tiles/9.png",
 			"size": 7134
+		},
+		{
+			"checksum": [
+				199,
+				186,
+				20,
+				10,
+				103,
+				248,
+				15,
+				237,
+				163,
+				132,
+				209,
+				141,
+				248,
+				215,
+				57,
+				38,
+				115,
+				95,
+				62,
+				175
+			],
+			"filePath": "tiles/water.png",
+			"size": 8377
 		}
 	],
 	"author": "Lynix",
@@ -563,21 +589,10 @@
 								0,
 								0,
 								0,
-								13,
-								14,
-								14,
-								14,
-								14,
-								15,
 								0,
 								0,
 								0,
 								0,
-								13,
-								14,
-								14,
-								14,
-								15,
 								0,
 								0,
 								0,
@@ -619,10 +634,6 @@
 								0,
 								0,
 								0,
-								13,
-								14,
-								14,
-								15,
 								0,
 								0,
 								0,
@@ -659,10 +670,6 @@
 								0,
 								0,
 								0,
-								13,
-								14,
-								14,
-								15,
 								0,
 								0,
 								0,
@@ -700,16 +707,35 @@
 								0,
 								0,
 								0,
-								13,
-								14,
-								14,
-								14,
-								15,
-								13,
-								14,
-								14,
-								14,
-								15,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
 								0,
 								0,
 								0,
@@ -1033,6 +1059,1063 @@
 					},
 					"rotation": 0.0,
 					"uniqueId": 1
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Island1",
+					"position": {
+						"x": 298.0,
+						"y": 612.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								14,
+								14,
+								14,
+								15
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 5,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 2000.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 76
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Island1 (Clone)",
+					"position": {
+						"x": 1703.0,
+						"y": 0.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								14,
+								14,
+								14,
+								15
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 5,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 2000.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 80
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Island1 (Clone)",
+					"position": {
+						"x": 2779.0,
+						"y": 703.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								14,
+								14,
+								14,
+								15
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 5,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 2000.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 79
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Island1 (Clone)",
+					"position": {
+						"x": 1289.0,
+						"y": 394.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								14,
+								14,
+								14,
+								15
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 5,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 2000.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 77
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Island1 (Clone) (Clone)",
+					"position": {
+						"x": 2126.0,
+						"y": 394.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								14,
+								14,
+								14,
+								15
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 5,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 2000.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 78
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "WeaponIsland",
+					"position": {
+						"x": 2625.0,
+						"y": 82.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								15,
+								0,
+								0,
+								0
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 2,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 0.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 81
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "WeaponIsland (Clone)",
+					"position": {
+						"x": 871.0,
+						"y": -20.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 128.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								13,
+								15,
+								0,
+								0,
+								0
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 2,
+								"y": 1
+							}
+						},
+						"mass": {
+							"type": "Float",
+							"value": 0.0
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 101
+						},
+						"textureCells": {
+							"isArray": true,
+							"type": "IntegerSize",
+							"value": [
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								},
+								{
+									"x": 1,
+									"y": 1
+								}
+							]
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/1.png",
+								"tiles/2.png",
+								"tiles/3.png",
+								"tiles/4.png",
+								"tiles/5.png",
+								"tiles/6.png",
+								"tiles/7.png",
+								"tiles/8.png",
+								"tiles/9.png",
+								"tiles/10.png",
+								"tiles/11.png",
+								"tiles/12.png",
+								"tiles/13.png",
+								"tiles/14.png",
+								"tiles/15.png",
+								"tiles/16.png",
+								"tiles/17.png",
+								"tiles/18.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 85
 				},
 				{
 					"entityType": "entity_tilemap",
@@ -1853,86 +2936,86 @@
 								0,
 								0,
 								0,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
-								17,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
 								18,
 								18,
 								18,
@@ -2108,7 +3191,7 @@
 						},
 						"renderOrder": {
 							"type": "Integer",
-							"value": 100
+							"value": 200
 						},
 						"textureCells": {
 							"isArray": true,
@@ -2220,19 +3303,85 @@
 					"entityType": "entity_spawnpoint",
 					"name": "",
 					"position": {
-						"x": 2038.0,
-						"y": 896.0
+						"x": 3338.0,
+						"y": 615.0
 					},
 					"properties": {},
 					"rotation": 0.0,
 					"uniqueId": 66
 				},
 				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 1885.0,
+						"y": 324.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 95
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 1162.0,
+						"y": 961.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 94
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 1892.0,
+						"y": 945.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 93
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 402.0,
+						"y": 539.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 92
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 1834.0,
+						"y": -93.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 91
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": " (Clone)",
+					"position": {
+						"x": 3114.0,
+						"y": 950.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 90
+				},
+				{
 					"entityType": "entity_trigger_kill",
 					"name": "",
 					"position": {
 						"x": 2048.0,
-						"y": 1536.0
+						"y": 1586.0
 					},
 					"properties": {
 						"size": {
@@ -2273,20 +3422,490 @@
 					"uniqueId": 68
 				},
 				{
-					"entityType": "entity_burger_ai",
+					"entityType": "entity_box",
 					"name": "",
 					"position": {
-						"x": 1600.0,
-						"y": 896.0
+						"x": 1489.0,
+						"y": 903.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 71
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Eau1",
+					"position": {
+						"x": -3063.0,
+						"y": 1361.0
 					},
 					"properties": {
-						"seed": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 64.0
+							}
+						},
+						"content": {
+							"isArray": true,
 							"type": "Integer",
-							"value": 30
+							"value": [
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 80,
+								"y": 1
+							}
+						},
+						"physical": {
+							"type": "Bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 200
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/water.png"
+							]
 						}
 					},
 					"rotation": 0.0,
-					"uniqueId": 69
+					"uniqueId": 73
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Eau2",
+					"position": {
+						"x": -3063.0,
+						"y": 1331.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 64.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 80,
+								"y": 1
+							}
+						},
+						"physical": {
+							"type": "Bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": 99
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/water.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 74
+				},
+				{
+					"entityType": "entity_tilemap",
+					"name": "Eau3",
+					"position": {
+						"x": -3063.0,
+						"y": 1305.0
+					},
+					"properties": {
+						"cellSize": {
+							"type": "FloatSize",
+							"value": {
+								"x": 128.0,
+								"y": 64.0
+							}
+						},
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 80,
+								"y": 1
+							}
+						},
+						"physical": {
+							"type": "Bool",
+							"value": false
+						},
+						"renderOrder": {
+							"type": "Integer",
+							"value": -100
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/water.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 75
+				},
+				{
+					"entityType": "entity_powerup2",
+					"name": "Grenade",
+					"position": {
+						"x": 2759.0,
+						"y": -38.0
+					},
+					"properties": {
+						"powerup_entity": {
+							"type": "Entity",
+							"value": 83
+						},
+						"respawntime": {
+							"type": "Integer",
+							"value": 20
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 82
+				},
+				{
+					"entityType": "entity_powerup2",
+					"name": "Patator",
+					"position": {
+						"x": 997.0,
+						"y": -147.0
+					},
+					"properties": {
+						"powerup_entity": {
+							"type": "Entity",
+							"value": 84
+						},
+						"respawntime": {
+							"type": "Integer",
+							"value": 60
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 86
+				},
+				{
+					"entityType": "entity_pickable_weapon_grenade",
+					"name": "",
+					"position": {
+						"x": 2759.0,
+						"y": -35.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 83
+				},
+				{
+					"entityType": "entity_pickable_weapon_patator",
+					"name": "",
+					"position": {
+						"x": 994.0,
+						"y": -167.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 84
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": "",
+					"position": {
+						"x": 834.0,
+						"y": 1014.0
+					},
+					"properties": {
+						"free": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 87
+				},
+				{
+					"entityType": "entity_clove_mine",
+					"name": "",
+					"position": {
+						"x": 2845.0,
+						"y": 75.0
+					},
+					"properties": {
+						"free": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 88
 				}
 			],
 			"name": "Layer #1"
