@@ -3935,9 +3935,9 @@
 							"isArray": true,
 							"type": "Layer",
 							"value": [
-								2,
+								3,
 								1,
-								65535
+								0
 							]
 						},
 						"str": {
@@ -6260,6 +6260,22 @@
 					"properties": {},
 					"rotation": 0.0,
 					"uniqueId": 61
+				},
+				{
+					"entityType": "entity_visible_layer",
+					"name": "",
+					"position": {
+						"x": 82.5,
+						"y": 62.5
+					},
+					"properties": {
+						"layer": {
+							"type": "Layer",
+							"value": 2
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 63
 				}
 			],
 			"name": "Layer #1"
@@ -6307,6 +6323,27 @@
 				}
 			],
 			"name": "Background"
+		},
+		{
+			"backgroundColor": {
+				"b": 0,
+				"g": 0,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 0.0,
+						"y": 0.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 62
+				}
+			],
+			"name": "Layer #2"
 		}
 	],
 	"name": "Twitch map"
