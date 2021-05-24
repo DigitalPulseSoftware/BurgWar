@@ -10,14 +10,14 @@ namespace bw
 {
 	std::shared_ptr<NetworkSessionBridge> NetworkReactorManager::ConnectToServer(const Nz::IpAddress& serverAddress, Nz::UInt32 data)
 	{
-		constexpr std::size_t MaxPeerCount = 1;
+		constexpr std::size_t MaxPeerCount = 5;
 
 		auto ConnectWithReactor = [&](NetworkReactor* reactor) -> std::shared_ptr<NetworkSessionBridge>
 		{
 			std::size_t newPeerId = reactor->ConnectTo(serverAddress, data);
 			if (newPeerId == NetworkReactor::InvalidPeerId)
 			{
-				bwLog(m_logger, LogLevel::Error, "Failed to allocate new peer");
+				bwLog(m_logger, LogLevel::Error, "failed to allocate new peer");
 				return nullptr;
 			}
 
