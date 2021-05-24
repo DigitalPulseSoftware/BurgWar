@@ -48,12 +48,12 @@ namespace bw
 		request.remoteAddress = std::move(address);
 
 		std::size_t newClientId = InvalidPeerId;
-		bool hasReturned = false;
+		std::atomic_bool hasReturned = false;
 		request.callback = [&](std::size_t peerId)
 		{
 			// This callback is called from within the reactor
 			newClientId = m_firstId + peerId;
-			hasReturned = true;
+			hasReturned.store(true, std::memory_order_release);
 
 			std::unique_lock<std::mutex> lock(signalMutex);
 			signal.notify_all();
@@ -64,7 +64,7 @@ namespace bw
 		m_connectionRequests.enqueue(request);
 
 		// As InvalidClientId is a possible return from the callback, we need another variable to prevent spurious wakeup
-		signal.wait(lock, [&]() { return hasReturned; });
+		signal.wait(lock, [&]() { return hasReturned.load(std::memory_order_acquire); });
 
 		return newClientId;
 	}
