@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # for tags and commit info
 
     # Install Qt (required for map editor)
     - name: Install Qt
@@ -46,7 +48,7 @@ jobs:
     - name: Retrieve dependencies hash
       id: dep_hash
       run: echo "::set-output name=hash::$(xmake.exe dephash)"
-  
+
     # Cache xmake dependencies
     - name: Retrieve cached xmake dependencies
       uses: actions/cache@v2

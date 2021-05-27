@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # for tags and commit info
 
     # Install Qt (required for map editor)
     - name: Install Qt
