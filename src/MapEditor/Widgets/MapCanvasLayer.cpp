@@ -3,8 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Widgets/MapCanvasLayer.hpp>
+#include <ClientLib/Components/VisualComponent.hpp>
+#include <MapEditor/Components/CanvasComponent.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
-#include <MapEditor/Widgets/MapCanvas.hpp>
+#include <NDK/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -20,6 +22,8 @@ namespace bw
 
 		std::size_t classIndex = entityStore.GetElementIndex(entityClass);
 
+		auto it = m_layerEntities.end();
+
 		try
 		{
 			if (classIndex == entityStore.InvalidIndex)
@@ -29,27 +33,30 @@ namespace bw
 			if (!entityOpt)
 				throw std::runtime_error("failed to instantiate \"" + entityClass + "\"");
 
-			auto it = m_layerEntities.emplace(uniqueId, std::move(*entityOpt)).first;
-
-			LayerVisualEntity& visualEntity = it.value();
-			m_mapCanvas.RegisterEntity(uniqueId, visualEntity.CreateHandle());
-
-			OnEntityVisualCreated(this, visualEntity);
-
-			return visualEntity;
+			it = m_layerEntities.emplace(uniqueId, std::move(*entityOpt)).first;
 		}
 		catch (const std::exception& e)
 		{
-			/*bwLog(m_editor.GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {}: {}", entityClass, e.what());
+			bwLog(m_mapCanvas.GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {}: {}", entityClass, e.what());
 
 			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
-			dummyEntity->AddComponent<Ndk::GraphicsComponent>();
 			dummyEntity->AddComponent<Ndk::NodeComponent>();
 
-			//m_mapEntities.Insert(dummyEntity);
-			return dummyEntity;*/
-			throw;
+			LayerVisualEntity visualEntity(dummyEntity, GetLayerIndex(), uniqueId);
+			dummyEntity->AddComponent<CanvasComponent>(m_mapCanvas, GetLayerIndex(), uniqueId);
+			dummyEntity->AddComponent<VisualComponent>(visualEntity.CreateHandle());
+
+			it = m_layerEntities.emplace(uniqueId, std::move(visualEntity)).first;
 		}
+
+		assert(it != m_layerEntities.end());
+
+		LayerVisualEntity& visualEntity = it.value();
+		m_mapCanvas.RegisterEntity(uniqueId, visualEntity.CreateHandle());
+
+		OnEntityVisualCreated(this, visualEntity);
+
+		return visualEntity;
 	}
 
 	void MapCanvasLayer::DeleteEntity(EntityId uniqueId)
