@@ -1,0 +1,46 @@
+{
+	"assets": [],
+	"author": "",
+	"description": "",
+	"gameVersion": "0.2.0",
+	"layers": [
+		{
+			"backgroundColor": {
+				"b": 0,
+				"g": 0,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_spawner",
+					"name": "1",
+					"position": {
+						"x": -1.0,
+						"y": 4.0
+					},
+					"properties": {
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 2
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 1
+				},
+				{
+					"entityType": "entity_pickable_weapon_grenade",
+					"name": "",
+					"position": {
+						"x": 1.0,
+						"y": -4.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 2
+				}
+			],
+			"name": "unnamed layer"
+		}
+	],
+	"name": "spawner_grenade"
+}

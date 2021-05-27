@@ -8,7 +8,7 @@ local entity = ScriptedEntity({
 
 entity.Passthrough = true
 
-entity:On("init", function (self)
+entity:On("Init", function (self)
 	local colliderSize = Vec2(400, 200) / 4 / 2
 	self:SetColliders({
 		Collider = Rect(-colliderSize, colliderSize),
@@ -25,7 +25,7 @@ entity:On("init", function (self)
 end)
 
 if (SERVER) then
-	entity:On("collisionstart", function (self, other)
+	entity:On("CollisionStart", function (self, other)
 		if (other.IsPlayerEntity) then
 			if (not other:IsFullHealth()) then
 				other:Heal(250)

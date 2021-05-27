@@ -1433,7 +1433,7 @@
 	],
 	"author": "Lynix",
 	"description": "Ceci est une description.",
-	"gameVersion": "0.1.1",
+	"gameVersion": "0.2.0",
 	"layers": [
 		{
 			"backgroundColor": {
@@ -3038,52 +3038,52 @@
 					"uniqueId": 9
 				},
 				{
-					"entityType": "entity_powerup",
+					"entityType": "entity_spawner",
 					"name": "1",
 					"position": {
 						"x": 1085.0,
 						"y": 640.0
 					},
 					"properties": {
-						"powerup_type": {
-							"type": "String",
-							"value": "entity_pickable_weapon_grenade"
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 64
 						}
 					},
 					"rotation": 0.0,
 					"uniqueId": 10
 				},
 				{
-					"entityType": "entity_powerup",
+					"entityType": "entity_spawner",
 					"name": "2",
 					"position": {
 						"x": 5851.0,
 						"y": 1414.0
 					},
 					"properties": {
-						"powerup_type": {
-							"type": "String",
-							"value": "entity_powerup_health"
-						},
 						"respawntime": {
 							"type": "Integer",
 							"value": 5
+						},
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 68
 						}
 					},
 					"rotation": 0.0,
 					"uniqueId": 11
 				},
 				{
-					"entityType": "entity_powerup",
+					"entityType": "entity_spawner",
 					"name": "3",
 					"position": {
 						"x": 2781.0,
 						"y": 1411.0
 					},
 					"properties": {
-						"powerup_type": {
-							"type": "String",
-							"value": "entity_powerup_health"
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 69
 						}
 					},
 					"rotation": 0.0,
@@ -3110,20 +3110,20 @@
 					"uniqueId": 13
 				},
 				{
-					"entityType": "entity_powerup",
+					"entityType": "entity_spawner",
 					"name": "6",
 					"position": {
 						"x": 7066.0,
 						"y": -128.0
 					},
 					"properties": {
-						"powerup_type": {
-							"type": "String",
-							"value": "entity_pickable_weapon_patator"
-						},
 						"respawntime": {
 							"type": "Integer",
 							"value": 20
+						},
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 67
 						}
 					},
 					"rotation": 0.0,
@@ -3677,14 +3677,14 @@
 					"uniqueId": 41
 				},
 				{
-					"entityType": "entity_powerup2",
+					"entityType": "entity_spawner",
 					"name": "",
 					"position": {
 						"x": 672.0,
 						"y": 2048.0
 					},
 					"properties": {
-						"powerup_entity": {
+						"spawn_entity": {
 							"type": "Entity",
 							"value": 43
 						}
@@ -6276,6 +6276,77 @@
 					},
 					"rotation": 0.0,
 					"uniqueId": 63
+				},
+				{
+					"entityType": "entity_pickable_weapon_grenade",
+					"name": "",
+					"position": {
+						"x": 1087.0,
+						"y": 632.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 64
+				},
+				{
+					"entityType": "entity_spawner",
+					"name": "1",
+					"position": {
+						"x": 9715.0,
+						"y": 1156.0
+					},
+					"properties": {
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 66
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 65
+				},
+				{
+					"entityType": "entity_pickable_weapon_grenade",
+					"name": "",
+					"position": {
+						"x": 9717.0,
+						"y": 1156.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 66
+				},
+				{
+					"entityType": "entity_pickable_weapon_patator",
+					"name": "",
+					"position": {
+						"x": 7075.0,
+						"y": -122.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 67
+				},
+				{
+					"entityType": "entity_powerup_health",
+					"name": "",
+					"position": {
+						"x": 5853.0,
+						"y": 1447.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 68
+				},
+				{
+					"entityType": "entity_powerup_health",
+					"name": "",
+					"position": {
+						"x": 2783.0,
+						"y": 1425.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 69
 				}
 			],
 			"name": "Layer #1"

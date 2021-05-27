@@ -42,7 +42,7 @@ local entity = ScriptedEntity({
 
 entity.Passthrough = true
 
-entity:On("init", function (self)
+entity:On("Init", function (self)
 	self.Duration = math.floor(self:GetProperty("duration") * 1000)
 
 	local scale = self:GetProperty("scale")
@@ -67,13 +67,9 @@ entity:On("init", function (self)
 end)
 
 if (SERVER) then
-	entity:On("collisionstart", function (self, other)
+	entity:On("CollisionStart", function (self, other)
 		-- Disabling an entity won't have any effect until the next tick, but we may still be resolving collisions
-		if (not self:IsEnabled()) then
-			return false
-		end
-
-		if (other.IsPlayerEntity) then
+		if (self:IsEnabled() and other.IsPlayerEntity) then
 			local data = self:Trigger("apply", other)
 
 			timer.Create(self.Duration, function ()
@@ -86,11 +82,7 @@ if (SERVER) then
 				end
 			end)
 
-			if (self.Parent) then
-				self.Parent:OnPowerupConsumed()
-			else
-				self:Disable()
-			end
+			self:Disable()
 		end
 
 		return false

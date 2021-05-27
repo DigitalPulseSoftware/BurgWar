@@ -523,7 +523,7 @@
 	],
 	"author": "Lynix",
 	"description": "Ceci est une description.",
-	"gameVersion": "0.1.1",
+	"gameVersion": "0.2.0",
 	"layers": [
 		{
 			"backgroundColor": {
@@ -3814,40 +3814,36 @@
 					"uniqueId": 75
 				},
 				{
-					"entityType": "entity_powerup2",
+					"entityType": "entity_spawner",
 					"name": "Grenade",
 					"position": {
 						"x": 2759.0,
 						"y": -38.0
 					},
 					"properties": {
-						"powerup_entity": {
-							"type": "Entity",
-							"value": 83
-						},
 						"respawntime": {
 							"type": "Integer",
 							"value": 20
+						},
+						"spawn_entity": {
+							"type": "Entity",
+							"value": 82
 						}
 					},
 					"rotation": 0.0,
 					"uniqueId": 82
 				},
 				{
-					"entityType": "entity_powerup2",
+					"entityType": "entity_spawner",
 					"name": "Patator",
 					"position": {
 						"x": 997.0,
 						"y": -147.0
 					},
 					"properties": {
-						"powerup_entity": {
+						"spawn_entity": {
 							"type": "Entity",
-							"value": 84
-						},
-						"respawntime": {
-							"type": "Integer",
-							"value": 60
+							"value": 86
 						}
 					},
 					"rotation": 0.0,

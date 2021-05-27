@@ -11,7 +11,7 @@ local entity = ScriptedEntity({
 
 entity.CanSpawn = false
 
-entity:On("init", function (self)
+entity:On("Init", function (self)
 	if (SERVER) then
 		self.SpawnedEntity = self:GetProperty("spawn_entity")
 		if (self.SpawnedEntity and self.SpawnedEntity:IsValid()) then
@@ -39,7 +39,7 @@ if (SERVER) then
 		self.NextRespawn = os.time() + self:GetProperty("respawntime")
 	end
 
-	entity:On("tick", function (self)
+	entity:On("Tick", function (self)
 		if (not self.SpawnData or not self.CanSpawn) then
 			return
 		end
@@ -50,7 +50,7 @@ if (SERVER) then
 			self.CanSpawn = false
 
 			self.SpawnedEntity = match.CreateEntity(self.SpawnData)
-			self.SpawnedEntity:On("destroyed", function ()
+			self.SpawnedEntity:On("Destroyed", function ()
 				if (self:IsValid()) then
 					self:OnSpawnedEntityDestroyed()
 				end
