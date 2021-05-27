@@ -11,7 +11,8 @@ entity:On("init", function (self)
 	local colliderSize = size / 2
 	self:SetColliders({
 		Collider = Rect(-colliderSize, colliderSize),
-		ColliderType = ColliderType.Callback
+		ColliderType = ColliderType.Callback,
+		IsTrigger = true
 	})
 
 	if (EDITOR) then
