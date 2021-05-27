@@ -11,15 +11,15 @@ gamemode:OnAsync("PlayerJoined", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
 	self.PlayerRoundCount[playerIndex] = 0
 
-	local playerCount = #match.GetPlayers()
-	local requiredPlayerCount = self:GetProperty("minplayercount")
+	if (self.State == "waiting") then
+		local playerCount = #match.GetPlayers()
+		local requiredPlayerCount = self:GetProperty("minplayercount")
 
-	if (playerCount >= requiredPlayerCount) then
-		if (self.State == "waiting") then
+		if (playerCount >= requiredPlayerCount) then
 			self:PrepareNextRound()
+		else
+			match.BroadcastChatMessage(string.format("%d/%d players", playerCount, requiredPlayerCount))
 		end
-	else
-		match.BroadcastChatMessage(string.format("%d/%d players", playerCount, requiredPlayerCount))
 	end
 end)
 
@@ -94,14 +94,16 @@ gamemode:OnAsync("Tick", function (self)
 		end
 	end
 
-	if (not potentialWinningPlayer) then
-		return
+	if (potentialWinningPlayer) then
+		self.State = "won"
+
+		match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
+		timer.Sleep(5000)
+		match.ResetTerrain()
+		self:PrepareNextRound()
+	else
+		-- All players disconnected, reset game
+		self.State = "waiting"
+		match.ResetTerrain()
 	end
-
-	self.State = "won"
-
-	match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
-	timer.Sleep(5000)
-	match.ResetTerrain()
-	self:PrepareNextRound()
 end)
