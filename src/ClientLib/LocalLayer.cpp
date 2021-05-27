@@ -216,19 +216,24 @@ namespace bw
 			properties.emplace(propertyName, property.value);
 		}
 
+		EntityId uniqueId = static_cast<EntityId>(entityData.uniqueId);
+
 		const LocalLayerEntity* parent = nullptr;
 		if (entityData.parentId)
 		{
 			auto idIt = m_serverEntityIds.find(entityData.parentId.value());
-			assert(idIt != m_serverEntityIds.end());
+			//assert(idIt != m_serverEntityIds.end());
+			if (idIt == m_serverEntityIds.end())
+			{
+				bwLog(GetMatch().GetLogger(), LogLevel::Error, "Entity #{} depends on {} which doesn't exist", uniqueId, entityData.parentId.value());
+				return;
+			}
 
 			auto entityIt = m_entities.find(idIt->second);
 			assert(entityIt != m_entities.end());
 
 			parent = &entityIt.value().layerEntity;
 		}
-
-		EntityId uniqueId = static_cast<EntityId>(entityData.uniqueId);
 
 		std::optional<LocalLayerEntity> layerEntity;
 
