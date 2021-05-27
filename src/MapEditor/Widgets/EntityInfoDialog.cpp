@@ -1273,7 +1273,7 @@ namespace bw
 			if (oldClass != newClass)
 			{
 				if (!newClass.isEmpty())
-					m_entityTypeWidget->setCurrentText(newClass);
+					m_entityTypeWidget->setCurrentIndex(m_entityTypeWidget->findText(newClass));
 				else
 					m_entityTypeWidget->setCurrentIndex(-1);
 			}

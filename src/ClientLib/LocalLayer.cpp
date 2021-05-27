@@ -119,6 +119,8 @@ namespace bw
 
 	void LocalLayer::PostFrameUpdate(float elapsedTime)
 	{
+		ClientEditorLayer::PostFrameUpdate(elapsedTime);
+
 		// Sound
 		for (std::size_t i = 0; i < m_sounds.size(); ++i)
 		{
