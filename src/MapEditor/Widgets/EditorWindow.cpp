@@ -1185,7 +1185,7 @@ namespace bw
 
 			PushCommand<Commands::EntityCreate>(std::move(indices), std::move(entityData));
 
-			m_entityList.listWidget->setCurrentRow(int(entityIndex));
+			SelectEntity(entityIndex);
 		});
 	}
 
