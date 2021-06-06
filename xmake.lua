@@ -95,14 +95,14 @@ add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
 
-if (is_plat("windows")) then
+if is_plat("windows") then
 	add_requires("stackwalker master")
 end
 
-add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug") })
-add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug"), shared = true } })
+add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug", "asan") })
+add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug", "asan"), shared = true } })
 
-add_rules("mode.debug", "mode.releasedbg")
+add_rules("mode.asan", "mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
 add_headerfiles("thirdparty/natvis/**.natvis")
@@ -117,12 +117,14 @@ set_symbols("debug", "hidden")
 set_targetdir("./bin/$(os)_$(arch)_$(mode)")
 set_warnings("allextra")
 
-if (is_mode("releasedbg")) then
+if is_mode("releasedbg") then
 	set_fpmodels("fast")
 	add_vectorexts("sse", "sse2", "sse3", "ssse3")
+elseif is_mode("asan") then
+	set_optimize("none")
 end
 
-if (is_plat("windows")) then
+if is_plat("windows") then
 	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
 	add_cxxflags("/FC")
 	add_cxflags("/w44062") -- Enable warning: switch case not handled
@@ -173,7 +175,7 @@ target("CoreLib")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
 	add_packages("nazaraserver")
 
-if (is_plat("windows")) then
+if is_plat("windows") then
 	add_packages("stackwalker")
 end
 
