@@ -32,7 +32,16 @@ namespace bw
 			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
 
 		if (EntityId uniqueId = GetUniqueId(); uniqueId != InvalidEntityId)
+		{
+			// Don't trigger the Destroyed event on disabling layers
+			if (m_layer.IsEnabled() && GetEntity()->HasComponent<ScriptComponent>())
+			{
+				auto& scriptComponent = GetEntity()->GetComponent<ScriptComponent>();
+				scriptComponent.ExecuteCallback<ElementEvent::Destroyed>();
+			}
+
 			m_layer.GetLocalMatch().UnregisterEntity(uniqueId);
+		}
 	}
 
 	Nz::RadianAnglef LocalLayerEntity::GetAngularVelocity() const

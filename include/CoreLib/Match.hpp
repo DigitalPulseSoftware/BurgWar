@@ -194,6 +194,7 @@ namespace bw
 			MatchSessions m_sessions;
 			NetworkStringStore m_networkStringStore;
 			bool m_disableWhenEmpty;
+			bool m_isResetting;
 	};
 }
 

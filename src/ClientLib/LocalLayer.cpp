@@ -70,10 +70,6 @@ namespace bw
 
 	LocalLayer::~LocalLayer()
 	{
-		//FIXME: Disconnect destruction signals because some of them want to create entities (exploding mines)
-		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
-			entity->OnEntityDestruction.Clear();
-
 		Enable(false);
 	}
 

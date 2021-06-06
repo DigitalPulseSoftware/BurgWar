@@ -60,11 +60,6 @@ namespace bw
 		m_layers.erase(it);
 	}
 
-	inline void MatchClientVisibility::IgnoreEvents(bool ignoreEvents)
-	{
-		m_ignoreEvents = ignoreEvents;
-	}
-
 	inline bool MatchClientVisibility::IsLayerVisible(LayerIndex layerIndex) const
 	{
 		return m_layers.find(layerIndex) != m_layers.end();
@@ -82,6 +77,11 @@ namespace bw
 			m_controlledEntities.insert(entityKey);
 		else
 			m_controlledEntities.erase(entityKey);
+	}
+
+	inline void MatchClientVisibility::ShouldIgnoreEvents(bool ignoreEvents)
+	{
+		m_ignoreEvents = ignoreEvents;
 	}
 
 	template<typename T>

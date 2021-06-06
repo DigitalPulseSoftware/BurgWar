@@ -36,7 +36,8 @@ namespace bw
 	m_gamemodeSettings(std::move(gamemodeSettings)),
 	m_map(std::move(matchSettings.map)),
 	m_sessions(*this),
-	m_disableWhenEmpty(true)
+	m_disableWhenEmpty(true),
+	m_isResetting(false)
 	{
 		ReloadAssets();
 		ReloadScripts();
@@ -305,8 +306,15 @@ namespace bw
 
 		Entity& entityData = m_entitiesByUniqueId.emplace(uniqueId, Entity{}).first.value();
 		entityData.entity = std::move(entity);
-		entityData.onDestruction.Connect(entityData.entity->OnEntityDestruction, [this, uniqueId](Ndk::Entity* /*entity*/)
+		entityData.onDestruction.Connect(entityData.entity->OnEntityDestruction, [this, uniqueId](Ndk::Entity* entity)
 		{
+			// Don't trigger the Destroyed event when resetting map
+			if (!m_isResetting)
+			{
+				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				entityScript.ExecuteCallback<ElementEvent::Destroyed>();
+			}
+
 			m_entitiesByUniqueId.erase(uniqueId);
 		});
 	}
@@ -541,11 +549,13 @@ namespace bw
 				continue;
 
 			MatchClientVisibility& visibility = playerPtr->GetSession().GetVisibility();
-			visibility.IgnoreEvents(true);
+			visibility.ShouldIgnoreEvents(true);
 		}
 
+		m_isResetting = true;
 		m_nextUniqueId = m_map.GetFreeUniqueId();
 		m_terrain->Reset();
+		m_isResetting = false;
 
 		for (auto& playerPtr : m_players)
 		{
@@ -553,7 +563,7 @@ namespace bw
 				continue;
 
 			MatchClientVisibility& visibility = playerPtr->GetSession().GetVisibility();
-			visibility.IgnoreEvents(false);
+			visibility.ShouldIgnoreEvents(false);
 
 			visibility.ResetVisibleEntities();
 		}

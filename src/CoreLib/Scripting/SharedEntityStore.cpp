@@ -31,13 +31,6 @@ namespace bw
 				entityScript.ExecuteCallback<ElementEvent::InputUpdate>(input->GetInputs());
 			});
 		}
-
-		entity->OnEntityDestruction.Connect([&](Ndk::Entity* entity)
-		{
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
-
-			entityScript.ExecuteCallback<ElementEvent::Destroyed>();
-		});
 	}
 
 	void SharedEntityStore::InitializeElement(sol::main_table& /*elementTable*/, ScriptedEntity& /*element*/)

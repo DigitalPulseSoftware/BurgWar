@@ -66,7 +66,6 @@ namespace bw
 
 			inline void HideLayer(LayerIndex layerIndex);
 
-			inline void IgnoreEvents(bool ignoreEvents);
 			inline bool IsLayerVisible(LayerIndex layerIndex) const;
 
 			template<typename T> void PushEntityPacket(LayerIndex layerIndex, Nz::UInt32 entityId, T&& packet);
@@ -76,6 +75,7 @@ namespace bw
 			void ResetVisibleEntities();
 
 			inline void SetEntityControlledStatus(LayerIndex layerIndex, Nz::UInt32 entityId, bool isControlled);
+			inline void ShouldIgnoreEvents(bool ignoreEvents);
 
 			void ShowLayer(LayerIndex layerIndex);
 

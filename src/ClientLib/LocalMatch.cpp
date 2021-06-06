@@ -1292,6 +1292,8 @@ namespace bw
 
 		for (std::size_t i = enabledLayers.FindFirst(); i != enabledLayers.npos; i = enabledLayers.FindNext(i))
 			m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(i);
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 	}
 
 	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
