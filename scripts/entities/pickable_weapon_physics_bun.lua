@@ -24,7 +24,6 @@ entity:On("collisionstart", function (self, other)
 		if (not other:HasWeapon("weapon_physics_bun")) then
 			other:GiveWeapon("weapon_physics_bun")
 			self:Kill()
-			self.Parent:OnPowerupConsumed()
 		end
 	end
 

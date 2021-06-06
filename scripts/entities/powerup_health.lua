@@ -30,7 +30,6 @@ if (SERVER) then
 			if (not other:IsFullHealth()) then
 				other:Heal(250)
 				self:Kill()
-				self.Parent:OnPowerupConsumed()
 			end
 		end
 

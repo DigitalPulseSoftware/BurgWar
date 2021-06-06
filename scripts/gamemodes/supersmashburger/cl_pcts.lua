@@ -8,7 +8,7 @@ gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, n
 	local id = player:GetPlayerIndex()
 
 	local text = self.PlayerPctTexts[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:Hide()
 	end
 
@@ -36,7 +36,7 @@ gamemode:On("PlayerLeave", function (self, player)
 	local id = player:GetPlayerIndex()
 
 	local text = self.PlayerPctTexts[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:Hide()
 	end
 
@@ -50,7 +50,7 @@ network.SetHandler("PctUpdate", function (packet)
 
 	gamemode.PlayerPcts[id] = pct
 	local text = gamemode.PlayerPctTexts[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:SetText(pct .. "%")
 
 		local size = text:GetSize()

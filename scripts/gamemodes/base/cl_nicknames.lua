@@ -37,7 +37,7 @@ end)
 gamemode:On("PlayerNameUpdate", function (self, player, newName)
 	local id = player:GetPlayerIndex()
 	local text = self.PlayerNicks[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:SetText(newName)
 
 		local size = text:GetSize()
@@ -49,7 +49,7 @@ gamemode:On("PlayerLeave", function (self, player)
 	local id = player:GetPlayerIndex()
 
 	local text = self.PlayerNicks[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:Hide()
 	end
 
@@ -59,7 +59,7 @@ end)
 gamemode:On("PlayerTeamUpdate", function (self, player, team)
 	local id = player:GetPlayerIndex()
 	local text = self.PlayerNicks[id]
-	if (text) then
+	if (text and text:IsValid()) then
 		text:SetColor(team and team:GetColor() or {r = 255, g = 255, b = 255})
 	end
 end)
