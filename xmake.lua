@@ -92,8 +92,8 @@ set_version("0.2.0")
 add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json")
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 add_requires("fmt", { configs = { header_only = false, pic = true } })
-add_requires("nazaraengine 2021.04.01", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.04.01", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
+add_requires("nazaraengine~server 2021.06.10", { alias = "nazaraserver", configs = { server = true } })
 
 if is_plat("windows") then
 	add_requires("stackwalker master")
