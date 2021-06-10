@@ -1095,7 +1095,7 @@
 						},
 						"mass": {
 							"type": "Float",
-							"value": 2000.0
+							"value": 1000.0
 						},
 						"physical": {
 							"type": "Bool",
@@ -1246,7 +1246,7 @@
 						},
 						"mass": {
 							"type": "Float",
-							"value": 2000.0
+							"value": 1000.0
 						},
 						"physical": {
 							"type": "Bool",
@@ -1397,7 +1397,7 @@
 						},
 						"mass": {
 							"type": "Float",
-							"value": 2000.0
+							"value": 1000.0
 						},
 						"physical": {
 							"type": "Bool",
@@ -1548,7 +1548,7 @@
 						},
 						"mass": {
 							"type": "Float",
-							"value": 2000.0
+							"value": 1000.0
 						},
 						"physical": {
 							"type": "Bool",
@@ -1699,7 +1699,7 @@
 						},
 						"mass": {
 							"type": "Float",
-							"value": 2000.0
+							"value": 1000.0
 						},
 						"physical": {
 							"type": "Bool",
@@ -3816,7 +3816,7 @@
 						},
 						"spawn_entity": {
 							"type": "Entity",
-							"value": 82
+							"value": 83
 						}
 					},
 					"rotation": 0.0,
@@ -3832,7 +3832,7 @@
 					"properties": {
 						"spawn_entity": {
 							"type": "Entity",
-							"value": 86
+							"value": 84
 						}
 					},
 					"rotation": 0.0,

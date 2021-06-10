@@ -6,8 +6,8 @@ local floodEvent
 if (SERVER) then
 	network.RegisterPacket("SSB_Island_WaterRising")
 
-	local waterState = "low" -- low,rising,high,decreasing
-	local nextStateTime = match.GetSeconds() + math.random(3, 9)
+	local waterState -- low,rising,high,decreasing
+	local nextStateTime
 	local triggerKillEntity
 	local risingDuration
 	local waterDecreaseTime
@@ -33,7 +33,7 @@ if (SERVER) then
 			if (waterState == "low") then
 				risingDuration = math.random(10, 20)
 				waterDecreaseTime = math.random(5, 20)
-				floodDuration = math.random(5, 10)
+				floodDuration = math.random(20, 60)
 
 				waterState = "rising"
 				nextStateTime = now + risingDuration
@@ -55,7 +55,7 @@ if (SERVER) then
 				nextStateTime = now + waterDecreaseTime
 			elseif (waterState == "decreasing") then
 				waterState = "low"
-				nextStateTime = now + math.random(3, 9)
+				nextStateTime = now + math.random(30, 90)
 			end
 		end
 	end)
@@ -64,7 +64,7 @@ if (SERVER) then
 	gamemode:On("MapInit", function ()
 		waterState = "low"
 		triggerKillEntity = assert(match.GetEntityByUniqueId(waterTriggerKill))
-		nextStateTime = match.GetSeconds() + math.random(3, 9)
+		nextStateTime = match.GetSeconds() + math.random(30, 90)
 		originalPosition = triggerKillEntity:GetPosition()
 		floodOffset = Vec2(0, -800)	
 	end)

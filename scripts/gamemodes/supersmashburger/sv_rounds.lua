@@ -9,11 +9,16 @@ gamemode:OnAsync("PlayerJoined", function (self, player)
 	player:MoveToLayer(0)
 
 	local playerIndex = player:GetPlayerIndex()
+
+	print("PlayerJoined - " .. playerIndex .. " - " .. player:GetName())
+
 	self.PlayerRoundCount[playerIndex] = 0
 
 	if (self.State == "waiting") then
 		local playerCount = #match.GetPlayers()
 		local requiredPlayerCount = self:GetProperty("minplayercount")
+
+		print("Checking player count - " .. playerCount .. "/" .. requiredPlayerCount)
 
 		if (playerCount >= requiredPlayerCount) then
 			self:PrepareNextRound()
@@ -25,6 +30,7 @@ end)
 
 gamemode:On("PlayerLeave", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
+	print("PlayerLeave - " .. playerIndex .. " - " .. player:GetName())
 	self.PlayerRoundCount[playerIndex] = nil
 end)
 
@@ -45,6 +51,8 @@ function gamemode:StartRound()
 		local player = players[i]
 		table.insert(activePlayers, player)
 		table.insert(activePlayerNames, player:GetName())
+
+		print("Start round with player - " .. player:GetPlayerIndex() .. " - " .. player:GetName())
 
 		self.PlayerRoundCount[player:GetPlayerIndex()] = self.PlayerRoundCount[player:GetPlayerIndex()] + 1
 	end
@@ -67,6 +75,8 @@ function gamemode:PrepareNextRound()
 	-- Recheck player count
 	local playerCount = #match.GetPlayers()
 	local requiredPlayerCount = self:GetProperty("minplayercount")
+
+	print("Checking player count (again) - " .. playerCount .. "/" .. requiredPlayerCount)
 
 	if (playerCount >= requiredPlayerCount) then
 		self:StartRound()

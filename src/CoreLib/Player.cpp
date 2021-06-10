@@ -165,7 +165,7 @@ namespace bw
 			weaponPacket.layerIndex = m_layerIndex;
 
 			Nz::Bitset<Nz::UInt64> weaponIds;
-			if (m_playerEntity->HasComponent<WeaponWielderComponent>())
+			if (m_playerEntity && m_playerEntity->HasComponent<WeaponWielderComponent>())
 			{
 				auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
 
