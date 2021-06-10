@@ -40,6 +40,12 @@ namespace bw
 		return m_constraint->GetErrorBias();
 	}
 
+	float Constraint::GetLastImpulse() const
+	{
+		AssertValid();
+		return m_constraint->GetLastImpulse();
+	}
+
 	float Constraint::GetMaxForce() const
 	{
 		AssertValid();

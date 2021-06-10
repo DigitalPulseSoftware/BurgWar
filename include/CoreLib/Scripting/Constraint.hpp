@@ -24,6 +24,7 @@ namespace bw
 			void EnableBodyCollision(bool enable);
 
 			float GetErrorBias() const;
+			float GetLastImpulse() const;
 			float GetMaxForce() const;
 
 			bool IsBodyCollisionEnabled() const;

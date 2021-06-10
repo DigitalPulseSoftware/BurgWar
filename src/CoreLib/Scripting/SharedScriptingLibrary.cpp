@@ -67,6 +67,11 @@ namespace bw
 			"EnableBodyCollision", LuaFunction(&Constraint::EnableBodyCollision),
 
 			"GetErrorBias", LuaFunction(&Constraint::GetErrorBias),
+			"GetLastForce", LuaFunction([&](Constraint& constraint)
+			{
+				float lastImpulse = constraint.GetLastImpulse();
+				return lastImpulse / m_match.GetTickDuration();
+			}),
 			"GetMaxForce", LuaFunction(&Constraint::GetMaxForce),
 
 			"IsBodyCollisionEnabled", LuaFunction(&Constraint::IsBodyCollisionEnabled),
