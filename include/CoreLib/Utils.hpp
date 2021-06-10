@@ -14,6 +14,7 @@
 #include <Nazara/Math/Vector3.hpp>
 #include <cctype>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace bw
@@ -67,10 +68,11 @@ namespace bw
 
 	inline Nz::RadianAnglef AngleFromQuaternion(const Nz::Quaternionf& quat);
 	template<typename T> Nz::Vector2<T> AlignPosition(Nz::Vector2<T> position, const Nz::Vector2<T>& alignment);
+	BURGWAR_CORELIB_API std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
 	template<Nz::AngleUnit Unit, typename T> bool CompareWithEpsilon(const Nz::Angle<Unit, T>& left, const Nz::Angle<Unit, T>& right, T epsilon);
 	template<typename T> bool CompareWithEpsilon(const Nz::Vector2<T>& left, const Nz::Vector2<T>& right, T epsilon);
-	BURGWAR_CORELIB_API std::string ByteToString(Nz::UInt64 bytes, bool speed = false);
 	BURGWAR_CORELIB_API Nz::Vector3f DampenedString(const Nz::Vector3f& currentPos, const Nz::Vector3f& targetPos, float frametime, float springStrength = 3.f);
+	inline bool EndsWith(const std::string_view& str, const std::string_view& suffix);
 	template<typename T> bool IsMoreRecent(T a, T b);
 	inline std::string ReplaceStr(std::string str, const std::string_view& from, const std::string_view& to);
 	template<typename F> bool SplitString(const std::string_view& str, const std::string_view& token, F&& func);

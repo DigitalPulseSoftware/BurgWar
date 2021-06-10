@@ -136,7 +136,7 @@ namespace bw
 			};
 
 			static inline Map LoadFromBinary(const std::filesystem::path& mapFile);
-			static inline Map LoadFromFolder(const std::filesystem::path& mapFolder);
+			static inline Map LoadFromDirectory(const std::filesystem::path& mapDirectory);
 
 			static nlohmann::json Serialize(const Map& map);
 			static nlohmann::json SerializeEntity(const Entity& entity);
@@ -146,7 +146,7 @@ namespace bw
 		private:
 			bool CheckEntityIndices() const;
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
-			void LoadFromTextInternal(const std::filesystem::path& mapFolder);
+			void LoadFromDirectoryInternal(const std::filesystem::path& mapFolder);
 			inline void RegisterEntity(EntityId uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
 			void Sanitize();
 			inline void UnregisterEntity(EntityId uniqueId);

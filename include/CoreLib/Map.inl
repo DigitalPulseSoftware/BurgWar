@@ -474,10 +474,10 @@ namespace bw
 		return map;
 	}
 
-	inline Map Map::LoadFromFolder(const std::filesystem::path& folder)
+	inline Map Map::LoadFromDirectory(const std::filesystem::path& mapDirectory)
 	{
 		Map map;
-		map.LoadFromTextInternal(folder);
+		map.LoadFromDirectoryInternal(mapDirectory);
 
 		return map;
 	}

@@ -635,7 +635,7 @@ namespace bw
 		std::filesystem::path rootScriptFolder = m_workingMapPath / "scripts";
 
 		auto& mapScripts = scriptedMap.GetScripts();
-		for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(m_workingMapPath / "scripts"))
+		for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(rootScriptFolder))
 		{
 			if (!std::filesystem::is_regular_file(filepath))
 				continue;
@@ -1579,7 +1579,7 @@ namespace bw
 		std::filesystem::path workingMapPath = std::filesystem::u8path(mapFolder.toStdString());
 		try
 		{
-			map = Map::LoadFromFolder(workingMapPath);
+			map = Map::LoadFromDirectory(workingMapPath);
 		}
 		catch (const std::exception& e)
 		{

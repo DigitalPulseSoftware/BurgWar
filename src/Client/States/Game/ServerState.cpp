@@ -4,6 +4,7 @@
 
 #include <Client/States/Game/ServerState.hpp>
 #include <CoreLib/NetworkSessionManager.hpp>
+#include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
@@ -22,10 +23,20 @@ namespace bw
 		gamemodeSettings.properties.emplace("respawntime", PropertySingleValue<PropertyType::Integer>(2));
 
 		Match::MatchSettings matchSettings;
-		matchSettings.map = Map::LoadFromBinary(map + ".bmap");
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
 		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("GameSettings.TickRate");
+
+		// Load map
+		if (!EndsWith(map, ".bmap"))
+		{
+			if (std::filesystem::is_directory(map))
+				matchSettings.map = Map::LoadFromDirectory(map);
+			else
+				matchSettings.map = Map::LoadFromBinary(map + ".bmap");
+		}
+		else
+			matchSettings.map = Map::LoadFromBinary(map);
 
 		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings));
 

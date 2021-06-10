@@ -38,7 +38,7 @@ int BurgWarMapTool(int argc, char* argv[])
 
 		bw::Map map;
 		if (std::filesystem::is_directory(input))
-			map = bw::Map::LoadFromFolder(input);
+			map = bw::Map::LoadFromDirectory(input);
 		else if (std::filesystem::is_regular_file(input))
 			map = bw::Map::LoadFromBinary(input);
 		else if (std::filesystem::exists(input))

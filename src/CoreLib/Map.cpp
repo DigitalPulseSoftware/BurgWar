@@ -599,18 +599,49 @@ namespace bw
 		m_isValid = true;
 	}
 
-	void Map::LoadFromTextInternal(const std::filesystem::path& mapFolder)
+	void Map::LoadFromDirectoryInternal(const std::filesystem::path& mapFolder)
 	{
+		std::vector<Nz::UInt8> content;
+
 		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open info.json file");
 
-		std::vector<Nz::UInt8> content(infoFile.GetSize());
+		content.resize(infoFile.GetSize());
 		if (infoFile.Read(content.data(), content.size()) != content.size())
 			throw std::runtime_error("failed to read info.json file");
 
 		nlohmann::json json = nlohmann::json::parse(content.begin(), content.end());
-		operator=(Unserialize(json));
+
+		Map map = Unserialize(json);
+
+		// Load map scripts
+		std::filesystem::path mapScriptDir = mapFolder / "scripts";
+
+		for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(mapScriptDir))
+		{
+			if (!std::filesystem::is_regular_file(filepath))
+				continue;
+
+			std::string filepathStr = filepath.generic_u8string();
+
+			Nz::File file(filepath.generic_u8string());
+			if (!file.Open(Nz::OpenMode_ReadOnly))
+				throw std::runtime_error("failed to open map script " + filepathStr);
+
+			content.resize(file.GetSize());
+			if (file.Read(content.data(), content.size()) != content.size())
+				throw std::runtime_error("failed to read map script " + filepathStr);
+
+			std::filesystem::path relativePath = std::filesystem::relative(filepath, mapScriptDir);
+
+			map.m_scripts.push_back({
+				relativePath.generic_u8string(),
+				std::move(content)
+			});
+		}
+
+		operator=(std::move(map));
 	}
 
 	void Map::Sanitize()

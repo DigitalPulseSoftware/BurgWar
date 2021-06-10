@@ -40,6 +40,12 @@ namespace bw
 		return left.SquaredDistance(right) < Nz::IntegralPow(epsilon, 2);
 	}
 
+	inline bool EndsWith(const std::string_view& str, const std::string_view& suffix)
+	{
+		if (suffix.size() > str.size()) return false;
+		return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+	}
+
 	template<typename T>
 	bool IsMoreRecent(T a, T b)
 	{
