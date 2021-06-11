@@ -723,6 +723,8 @@ namespace bw
 		if (newPlayer->IsReady())
 			return;
 
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
+
 		// Send a PlayerJoined packet to everyone
 		Packets::PlayerJoined joinedPacket;
 		joinedPacket.playerIndex = static_cast<Nz::UInt16>(newPlayer->GetPlayerIndex());
@@ -745,15 +747,10 @@ namespace bw
 
 			player->SendPacket(chatPacket);
 		});
-
-		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
 		
 		// Send a packet for every player associating them with the entity they control
 		ForEachPlayer([&](Player* player)
 		{
-			if (player == newPlayer)
-				return;
-
 			const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
 			if (!controlledEntity)
 				return;
@@ -828,12 +825,9 @@ namespace bw
 
 		ForEachPlayer([&](Player* player)
 		{
-			if (player->IsReady())
-			{
-				auto& playerData = pingUpdate.players.emplace_back();
-				playerData.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
-				playerData.ping = static_cast<Nz::UInt16>(player->GetSession().GetPing());
-			}
+			auto& playerData = pingUpdate.players.emplace_back();
+			playerData.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
+			playerData.ping = static_cast<Nz::UInt16>(player->GetSession().GetPing());
 		});
 
 		BroadcastPacket(pingUpdate);

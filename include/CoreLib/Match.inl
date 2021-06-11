@@ -22,17 +22,17 @@ namespace bw
 	{
 		ForEachPlayer([&packet, onlyReady, except](Player* player)
 		{
-			if ((!onlyReady || player->IsReady()) && player != except)
+			if (player != except)
 				player->SendPacket(packet);
-		});
+		}, onlyReady);
 	}
 
 	template<typename F>
-	void Match::ForEachPlayer(F&& func)
+	void Match::ForEachPlayer(F&& func, bool onlyReady)
 	{
 		for (auto& playerPtr : m_players)
 		{
-			if (playerPtr)
+			if (playerPtr && (!onlyReady || playerPtr->IsReady()))
 				func(playerPtr.get());
 		}
 	}

@@ -71,7 +71,7 @@ namespace bw
 			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 
 			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
-			template<typename F> void ForEachPlayer(F&& func);
+			template<typename F> void ForEachPlayer(F&& func, bool onlyReady = true);
 
 			inline BurgApp& GetApp();
 			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory() const;
