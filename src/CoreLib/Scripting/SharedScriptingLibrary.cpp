@@ -128,13 +128,14 @@ namespace bw
 		state.new_usertype<IncomingNetworkPacket>("IncomingNetworkPacket",
 			"new", sol::no_constructor,
 
+			"ReadBoolean",            LuaFunction(&IncomingNetworkPacket::ReadBoolean),
 			"ReadCompressedInteger",  LuaFunction(&IncomingNetworkPacket::ReadCompressedInteger),
 			"ReadCompressedUnsigned", LuaFunction(&IncomingNetworkPacket::ReadCompressedUnsigned),
-			"ReadColor",   LuaFunction(&IncomingNetworkPacket::ReadColor),
-			"ReadDouble",  LuaFunction(&IncomingNetworkPacket::ReadDouble),
-			"ReadSingle",  LuaFunction(&IncomingNetworkPacket::ReadSingle),
-			"ReadString",  LuaFunction(&IncomingNetworkPacket::ReadString),
-			"ReadVector2", LuaFunction(&IncomingNetworkPacket::ReadVector2),
+			"ReadColor",              LuaFunction(&IncomingNetworkPacket::ReadColor),
+			"ReadDouble",             LuaFunction(&IncomingNetworkPacket::ReadDouble),
+			"ReadSingle",             LuaFunction(&IncomingNetworkPacket::ReadSingle),
+			"ReadString",             LuaFunction(&IncomingNetworkPacket::ReadString),
+			"ReadVector2",            LuaFunction(&IncomingNetworkPacket::ReadVector2),
 
 			"ReadEntity", LuaFunction([&](IncomingNetworkPacket& incomingPacket) -> sol::object
 			{
@@ -150,13 +151,14 @@ namespace bw
 		state.new_usertype<OutgoingNetworkPacket>("OutgoingNetworkPacket",
 			"new", sol::no_constructor,
 
+			"WriteBoolean",            LuaFunction(&OutgoingNetworkPacket::WriteBoolean),
 			"WriteCompressedInteger",  LuaFunction(&OutgoingNetworkPacket::WriteCompressedInteger),
-			"WriteCompressedUnsigned", LuaFunction (&OutgoingNetworkPacket::WriteCompressedUnsigned),
-			"WriteColor",   LuaFunction(&OutgoingNetworkPacket::WriteColor),
-			"WriteDouble",  LuaFunction(&OutgoingNetworkPacket::WriteDouble),
-			"WriteSingle",  LuaFunction(&OutgoingNetworkPacket::WriteSingle),
-			"WriteString",  LuaFunction(&OutgoingNetworkPacket::WriteString),
-			"WriteVector2", LuaFunction(&OutgoingNetworkPacket::WriteVector2),
+			"WriteCompressedUnsigned", LuaFunction(&OutgoingNetworkPacket::WriteCompressedUnsigned),
+			"WriteColor",              LuaFunction(&OutgoingNetworkPacket::WriteColor),
+			"WriteDouble",             LuaFunction(&OutgoingNetworkPacket::WriteDouble),
+			"WriteSingle",             LuaFunction(&OutgoingNetworkPacket::WriteSingle),
+			"WriteString",             LuaFunction(&OutgoingNetworkPacket::WriteString),
+			"WriteVector2",            LuaFunction(&OutgoingNetworkPacket::WriteVector2),
 
 			"WriteEntity", LuaFunction([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
 			{

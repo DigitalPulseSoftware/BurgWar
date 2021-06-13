@@ -27,6 +27,14 @@ namespace bw
 	{
 	}
 
+	inline bool IncomingNetworkPacket::ReadBoolean()
+	{
+		bool value;
+		m_stream >> value;
+
+		return value;
+	}
+
 	inline Nz::Color IncomingNetworkPacket::ReadColor()
 	{
 		Nz::Color color;
@@ -98,6 +106,12 @@ namespace bw
 		return packet;
 	}
 	
+	inline void OutgoingNetworkPacket::WriteBoolean(bool value)
+	{
+		m_stream << value;
+		m_stream.FlushBits(); //< FIXME
+	}
+
 	inline void OutgoingNetworkPacket::WriteColor(Nz::Color color)
 	{
 		m_stream << color.r << color.g << color.b << color.a;
