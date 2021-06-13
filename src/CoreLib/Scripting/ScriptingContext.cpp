@@ -33,26 +33,20 @@ namespace bw
 		m_runningThreads.clear();
 	}
 
-	std::optional<sol::object> ScriptingContext::Load(const std::filesystem::path& file)
+	tl::expected<sol::object, std::string> ScriptingContext::Load(const std::filesystem::path& file)
 	{
 		VirtualDirectory::Entry entry;
 		if (!m_scriptDirectory->GetEntry(file.generic_u8string(), &entry))
-		{
-			bwLog(m_logger, LogLevel::Error, "Unknown path {0}", file.generic_u8string());
-			return {};
-		}
+			return tl::unexpected("unknown path " + file.generic_u8string());
 		
-		return std::visit([&](auto&& arg) -> std::optional<sol::object>
+		return std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
 		{
 			using T = std::decay_t<decltype(arg)>;
 
 			if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry> || std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
 				return LoadFile(file, arg);
 			else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
-			{
-				bwLog(m_logger, LogLevel::Error, "{0} is a directory, expected a file", file.generic_u8string());
-				return {};
-			}
+				return tl::unexpected(file.generic_u8string() + " is a directory, expected a file");
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
@@ -172,7 +166,7 @@ namespace bw
 		return (!m_availableThreads.empty()) ? PopThread() : AllocateThread();
 	}
 
-	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry)
+	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry)
 	{
 		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data()), entry.size()));
 	}
@@ -182,7 +176,7 @@ namespace bw
 		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data()), entry.size()), Async{});
 	}
 
-	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry)
+	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry)
 	{
 		std::string fileContent = ReadFile(path, entry);
 		if (fileContent.empty())
@@ -200,7 +194,7 @@ namespace bw
 		return LoadFile(std::move(path), std::string_view(fileContent), Async{});
 	}
 
-	std::optional<sol::object> ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content)
+	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content)
 	{
 		Nz::CallOnExit resetOnExit([this, currentFile = std::move(m_currentFile), currentFolder = std::move(m_currentFolder)]() mutable
 		{
@@ -216,8 +210,7 @@ namespace bw
 		if (!result.valid())
 		{
 			sol::error err = result;
-			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", m_currentFile.generic_u8string(), err.what());
-			return {};
+			return tl::unexpected("failed to load " + m_currentFile.generic_u8string() + ": " + err.what());
 		}
 
 		return result;
@@ -249,7 +242,7 @@ namespace bw
 		folder->Foreach([&](const std::string& entryName, VirtualDirectory::Entry& entry)
 		{
 			std::filesystem::path entryPath = path / entryName;
-			std::visit([&](auto&& arg) -> std::optional<sol::object>
+			auto result = std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
 			{
 				using T = std::decay_t<decltype(arg)>;
 
@@ -264,6 +257,9 @@ namespace bw
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 			}, entry);
+
+			if (!result)
+				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath.generic_u8string(), result.error());
 		});
 	}
 

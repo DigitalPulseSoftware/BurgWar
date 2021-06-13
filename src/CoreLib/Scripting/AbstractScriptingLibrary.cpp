@@ -181,8 +181,9 @@ namespace bw
 		{
 			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
 
-			if (!context.Load(scriptPath.generic_u8string()))
-				TriggerLuaError(L, "TODO");
+			auto result = context.Load(scriptPath.generic_u8string());
+			if (!result)
+				TriggerLuaError(L, result.error());
 		});
 
 		luaState["tostring"] = [](lua_State* L) -> int

@@ -11,6 +11,7 @@
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <sol/sol.hpp>
+#include <tl/expected.hpp>
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -39,7 +40,7 @@ namespace bw
 			inline const sol::state& GetLuaState() const;
 			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 
-			std::optional<sol::object> Load(const std::filesystem::path& file);
+			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file);
 			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
 			bool LoadDirectory(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
@@ -63,11 +64,11 @@ namespace bw
 		private:
 			sol::thread& CreateThread();
 
-			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry, Async);
-			std::optional<sol::object> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry, Async);
-			std::optional<sol::object> LoadFile(std::filesystem::path path, const std::string_view& content);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
 			void LoadDirectory(std::filesystem::path path, const VirtualDirectory::VirtualDirectoryEntry& folder);
 			std::string ReadFile(const std::filesystem::path& path, const VirtualDirectory::PhysicalFileEntry& entry);

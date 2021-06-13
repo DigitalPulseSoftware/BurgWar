@@ -89,7 +89,7 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json")
+add_requires("cxxopts", "concurrentqueue", "expected", "hopscotch-map", "libcurl", "nlohmann_json")
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
@@ -172,7 +172,7 @@ target("CoreLib")
 	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
+	add_packages("concurrentqueue", "expected", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
 	add_packages("nazaraserver")
 
 if is_plat("windows") then
