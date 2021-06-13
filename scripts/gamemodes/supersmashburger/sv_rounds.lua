@@ -1,7 +1,9 @@
+include("sh_rounds.lua")
+
 local gamemode = ScriptedGamemode()
 
 gamemode.PlayerRoundCount = {}
-gamemode.State = "waiting"
+gamemode.State = RoundState.Waiting
 
 gamemode:Disconnect(gamemode.BasePlayerJoinedSlot)
 
@@ -14,7 +16,7 @@ gamemode:OnAsync("PlayerJoined", function (self, player)
 
 	self.PlayerRoundCount[playerIndex] = 0
 
-	if (self.State == "waiting") then
+	if (self.State == RoundState.Waiting) then
 		local playerCount = #match.GetPlayers()
 		local requiredPlayerCount = self:GetProperty("minplayercount")
 
@@ -60,7 +62,7 @@ function gamemode:StartRound()
 	match.BroadcastChatMessage("Active players: " .. table.concat(activePlayerNames, ", "))
 	match.BroadcastChatMessage("Fight!")
 
-	self.State = "playing"
+	self:UpdateState(RoundState.Playing)
 
 	for _, player in pairs(activePlayers) do
 		self:SpawnPlayer(player)
@@ -68,7 +70,7 @@ function gamemode:StartRound()
 end
 
 function gamemode:PrepareNextRound()
-	self.State = "starting"
+	self:UpdateState(RoundState.Starting)
 	match.BroadcastChatMessage("Starting round in 5s")
 	timer.Sleep(5000)
 
@@ -82,17 +84,20 @@ function gamemode:PrepareNextRound()
 		self:StartRound()
 	else
 		match.BroadcastChatMessage("Not enough players, aborted.")
-		self.State = "waiting"
+		self:UpdateState(RoundState.Waiting)
 	end
 end
 
 gamemode:OnAsync("Tick", function (self)
-	if (self.State ~= "playing") then
+	if (self.State ~= RoundState.Playing) then
 		return
 	end
 
+	local hasPlayer = false
 	local potentialWinningPlayer
 	for _, player in pairs(match.GetPlayers()) do
+		hasPlayer = true
+
 		local entity = player:GetControlledEntity()
 		if (entity and entity:IsValid()) then
 			if (potentialWinningPlayer) then
@@ -104,16 +109,21 @@ gamemode:OnAsync("Tick", function (self)
 		end
 	end
 
-	if (potentialWinningPlayer) then
-		self.State = "won"
+	if (potentialWinningPlayer or hasPlayer) then
+		self:UpdateState(RoundState.Finished)
 
-		match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
+		if (potentialWinningPlayer) then
+			match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
+		else
+			match.BroadcastChatMessage("Draw!")
+		end
+
 		timer.Sleep(5000)
 		match.ResetTerrain()
 		self:PrepareNextRound()
 	else
 		-- All players disconnected, reset game
-		self.State = "waiting"
+		self:UpdateState(RoundState.Waiting)
 		match.ResetTerrain()
 	end
 end)

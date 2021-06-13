@@ -1,6 +1,11 @@
+include("sh_rounds.lua")
 include("cl_pcts.lua")
 
 local gamemode = ScriptedGamemode()
+gamemode.CameraPos = nil
+gamemode.CameraZoom = nil
+gamemode.TargetCameraPos = nil
+gamemode.TargetCameraZoom = nil
 
 function gamemode:UpdateCameraPosition()
 	local camera = match.GetCamera()
@@ -32,7 +37,7 @@ function gamemode:UpdateCameraPosition()
 
 	if (camZone and cameraRect) then
 		cameraRect = camZone:ComputeIntersection(cameraRect)
-		cameraRect:Scale(1.3333)
+		cameraRect:Scale(1.5)
 	else
 		if (not camZone) then
 			return
@@ -43,7 +48,7 @@ function gamemode:UpdateCameraPosition()
 
 	local camViewport = camera:GetViewport()
 	local zoomFactor = math.min(camViewport.width / cameraRect.width, camViewport.height / cameraRect.height)
-	zoomFactor = math.min(zoomFactor, 1.1)
+	zoomFactor = math.min(zoomFactor, 1.0)
 
 	local scaledViewport = camViewport:GetSize() / zoomFactor
 
@@ -61,6 +66,25 @@ function gamemode:UpdateCameraPosition()
 		camOrigin = self:ClampCameraPosition(scaledViewport, camZone, camOrigin)
 	end
 
-	camera:MoveToPosition(camOrigin)
-	camera:SetZoomFactor(zoomFactor)
+	self.TargetCameraPos = camOrigin
+	self.TargetCameraZoom = zoomFactor
+
+	local frametime = render.GetFrametime()
+	if (self.CameraPos) then
+		local diff = self.TargetCameraPos - self.CameraPos
+		self.CameraPos.x = math.approach(self.CameraPos.x, self.TargetCameraPos.x, diff.x * frametime * 0.9)
+		self.CameraPos.y = math.approach(self.CameraPos.y, self.TargetCameraPos.y, diff.y * frametime * 0.9)
+	else
+		self.CameraPos = self.TargetCameraPos
+	end
+
+	if (self.CameraZoom) then
+		local diff = self.TargetCameraZoom - self.CameraZoom
+		self.CameraZoom = math.approach(self.CameraZoom, self.TargetCameraZoom, diff * frametime * 0.9)
+	else
+		self.CameraZoom = self.TargetCameraZoom
+	end
+
+	camera:MoveToPosition(self.CameraPos)
+	camera:SetZoomFactor(self.CameraZoom)
 end

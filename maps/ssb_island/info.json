@@ -3806,13 +3806,13 @@
 					"entityType": "entity_spawner",
 					"name": "Grenade",
 					"position": {
-						"x": 2759.0,
-						"y": -38.0
+						"x": 2624.0,
+						"y": 898.0
 					},
 					"properties": {
 						"respawntime": {
 							"type": "Integer",
-							"value": 20
+							"value": 5
 						},
 						"spawn_entity": {
 							"type": "Entity",
@@ -3842,8 +3842,8 @@
 					"entityType": "entity_pickable_weapon_grenade",
 					"name": "",
 					"position": {
-						"x": 2759.0,
-						"y": -35.0
+						"x": 2624.0,
+						"y": 901.0
 					},
 					"properties": {},
 					"rotation": 0.0,
@@ -3880,8 +3880,8 @@
 					"entityType": "entity_clove_mine",
 					"name": "",
 					"position": {
-						"x": 2845.0,
-						"y": 75.0
+						"x": 1083.0,
+						"y": -30.0
 					},
 					"properties": {
 						"free": {
