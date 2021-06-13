@@ -110,6 +110,17 @@ namespace bw
 			return;
 		}
 
+		// Check nickname size
+		for (const auto& packetPlayer : packet.players)
+		{
+			if (packetPlayer.nickname.empty() || packetPlayer.nickname.size() > 32)
+			{
+				SendPacket(Packets::AuthFailure());
+				Disconnect();
+				return;
+			}
+		}
+
 		Packets::AuthSuccess authSuccessPacket;
 
 		std::vector<PlayerHandle> players;
@@ -258,7 +269,7 @@ namespace bw
 
 	void MatchClientSession::HandleIncomingPacket(Packets::UpdatePlayerName&& packet)
 	{
-		if (packet.newName.empty() || packet.newName.size() > 20)
+		if (packet.newName.empty() || packet.newName.size() > 32)
 			return;
 
 		if (packet.localIndex >= m_players.size() || !m_players[packet.localIndex])

@@ -111,40 +111,43 @@ namespace bw
 		RegisterOption(std::move(optionName), std::move(boolOption));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName, std::optional<double> defaultValue)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, std::optional<double> defaultValue, std::function<std::optional<std::string>(double value)> validation)
 	{
-		RegisterFloatOption(std::move(optionName), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::move(defaultValue));
+		RegisterFloatOption(std::move(optionName), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::move(defaultValue), std::move(validation));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue, std::function<std::optional<std::string>(double value)> validation)
 	{
 		FloatOption floatOption;
 		floatOption.defaultValue = std::move(defaultValue);
 		floatOption.maxBounds = maxBounds;
 		floatOption.minBounds = minBounds;
+		floatOption.validation = std::move(validation);
 
 		RegisterOption(std::move(optionName), std::move(floatOption));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue, std::function<std::optional<std::string>(long long value)> validation)
 	{
-		RegisterIntegerOption(std::move(optionName), std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max(), std::move(defaultValue));
+		RegisterIntegerOption(std::move(optionName), std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max(), std::move(defaultValue), std::move(validation));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue, std::function<std::optional<std::string>(long long value)> validation)
 	{
 		IntegerOption intOption;
 		intOption.defaultValue = std::move(defaultValue);
 		intOption.maxBounds = maxBounds;
 		intOption.minBounds = minBounds;
+		intOption.validation = std::move(validation);
 
 		RegisterOption(std::move(optionName), std::move(intOption));
 	}
 
-	inline void ConfigFile::RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue)
+	inline void ConfigFile::RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue, std::function<std::optional<std::string>(const std::string& value)> validation)
 	{
 		StringOption strOption;
 		strOption.defaultValue = std::move(defaultValue);
+		strOption.validation = std::move(validation);
 
 		RegisterOption(std::move(optionName), std::move(strOption));
 	}
@@ -154,20 +157,6 @@ namespace bw
 		std::size_t optionIndex = GetOptionIndex(optionName);
 
 		BoolOption& option = std::get<BoolOption>(m_options[optionIndex].data);
-		if (option.value != value)
-		{
-			option.OnValueUpdate(value);
-			option.value = value;
-		}
-
-		return true;
-	}
-
-	inline bool ConfigFile::SetStringValue(const std::string& optionName, std::string value)
-	{
-		std::size_t optionIndex = GetOptionIndex(optionName);
-
-		StringOption& option = std::get<StringOption>(m_options[optionIndex].data);
 		if (option.value != value)
 		{
 			option.OnValueUpdate(value);

@@ -9,7 +9,17 @@ namespace bw
 	PlayerConfig::PlayerConfig(BurgApp& app) :
 	ConfigFile(app)
 	{
-		RegisterStringOption("Player.Name", "mingebag");
+		RegisterStringOption("Player.Name", "mingebag", [](const std::string& value) -> std::optional<std::string>
+		{
+			if (value.empty())
+				return "name cannot be empty";
+
+			if (value.size() > 32)
+				return "name is too long";
+
+			return std::nullopt;
+		});
+
 		RegisterStringOption("JoinServer.Address", "localhost");
 		RegisterStringOption("StartServer.Gamemode", "deathmatch");
 		RegisterStringOption("StartServer.Map", "beta_map");

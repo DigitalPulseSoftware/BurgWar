@@ -297,6 +297,16 @@ namespace bw
 			return false;
 		}
 
+		if (option.validation)
+		{
+			auto err = option.validation(value);
+			if (err)
+			{
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				return false;
+			}
+		}
+
 		if (option.value != value)
 		{
 			option.OnValueUpdate(value);
@@ -321,6 +331,41 @@ namespace bw
 		{
 			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
 			return false;
+		}
+
+		if (option.validation)
+		{
+			auto err = option.validation(value);
+			if (err)
+			{
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				return false;
+			}
+		}
+
+		if (option.value != value)
+		{
+			option.OnValueUpdate(value);
+			option.value = value;
+		}
+
+		return true;
+	}
+
+	bool ConfigFile::SetStringValue(const std::string& optionName, std::string value)
+	{
+		std::size_t optionIndex = GetOptionIndex(optionName);
+
+		StringOption& option = std::get<StringOption>(m_options[optionIndex].data);
+
+		if (option.validation)
+		{
+			auto err = option.validation(value);
+			if (err)
+			{
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				return false;
+			}
 		}
 
 		if (option.value != value)
