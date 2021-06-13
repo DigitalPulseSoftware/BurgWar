@@ -72,6 +72,7 @@ namespace bw
 				float lastImpulse = constraint.GetLastImpulse();
 				return lastImpulse / m_match.GetTickDuration();
 			}),
+			"GetLastImpulse", LuaFunction(&Constraint::GetLastImpulse),
 			"GetMaxForce", LuaFunction(&Constraint::GetMaxForce),
 
 			"IsBodyCollisionEnabled", LuaFunction(&Constraint::IsBodyCollisionEnabled),

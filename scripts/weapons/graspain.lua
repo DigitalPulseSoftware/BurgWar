@@ -10,11 +10,16 @@ local weapon = ScriptedWeapon({
 	WeaponOffset = Vec2(20, -60) -- This should not be here
 })
 
+local breakSound = "placeholder/grapple_break.wav"
+
 RegisterClientAssets(weapon.Sprite)
+RegisterClientAssets(breakSound)
 
 local maxDist = 1000
 
 if (SERVER) then
+	network.RegisterPacket("GrasPain_BreakSound")
+
 	weapon:OnAsync("attack", function (self)
 		if (self.GrapplePull or self.GrappleSprite) then
 			self:Release()
@@ -88,9 +93,10 @@ if (SERVER) then
 
 		local ownerEntity = self:GetOwnerEntity()
 		if (ownerEntity and ownerEntity:IsValid() and targetEntity and targetEntity:IsValid()) then
+			local layerIndex = self:GetLayerIndex()
 			self.GrapplePull = match.CreateEntity({
 				Type = "entity_grapple_pull",
-				LayerIndex = self:GetLayerIndex(),
+				LayerIndex = layerIndex,
 				LifeOwner = self,
 				Properties = {
 					source_entity = ownerEntity,
@@ -100,6 +106,18 @@ if (SERVER) then
 					force = ownerEntity:GetMass() * 10
 				}
 			})
+			self.GrapplePull:On("Destroyed", function (pull)
+				if (self.GrapplePull) then
+					-- Premature destruction
+					self:Release()
+
+					local packet = network.NewPacket("GrasPain_BreakSound")
+					packet:WriteCompressedUnsigned(layerIndex)
+					packet:WriteVector2(self:GetPosition())
+
+					self:GetOwner():SendPacket(packet)
+				end
+			end)
 
 			self:SetNextTriggerTime(match.GetMilliseconds())
 		else
@@ -118,4 +136,15 @@ if (SERVER) then
 		end
 		self.GrappleSprite = nil
 	end
+else
+	network.SetHandler("GrasPain_BreakSound", function (packet)
+		local layerIndex = packet:ReadCompressedUnsigned()
+		local position = packet:ReadVector2()
+
+		match.PlaySound({
+			LayerIndex = layerIndex,
+			Position = position,
+			SoundPath = breakSound
+		})
+	end)
 end

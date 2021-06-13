@@ -44,6 +44,7 @@ namespace bw
 		elementMetatable["Disconnect"] = LuaFunction([&](const sol::table& entityTable, const ElementEventConnection& eventConnection)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entity->Invalidate();
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			return std::visit([&](auto&& arg)
@@ -251,6 +252,8 @@ namespace bw
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			std::size_t callbackId = entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
+
+			entity->Invalidate();
 
 			return ElementEventConnection{ scriptingEvent, callbackId };
 		}
