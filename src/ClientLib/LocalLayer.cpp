@@ -85,13 +85,14 @@ namespace bw
 		else
 		{
 			OnDisabled(this);
-			m_entities.clear();
-			m_serverEntityIds.clear();
 			m_sounds.clear();
 			m_freeSoundIds.Clear();
 
 			// Since we are disabled, refresh won't be called until we are enabled, refresh the world now to kill entities
-			GetWorld().Refresh();
+			GetWorld().Clear();
+
+			assert(m_entities.empty());
+			assert(m_serverEntityIds.empty());
 		}
 	}
 
@@ -326,12 +327,12 @@ namespace bw
 
 	void LocalLayer::HandleEntityDestruction(EntityId uniqueId)
 	{
-		auto it = m_entities.find(uniqueId);
+		std::size_t hash = m_entities.hash_function()(uniqueId);
+
+		auto it = m_entities.find(uniqueId, hash);
 		assert(it != m_entities.end());
 
 		EntityData& entity = it.value();
-		OnEntityDelete(this, entity.layerEntity);
-
 		if (!entity.layerEntity.IsClientside())
 		{
 			std::size_t erasedCount = m_serverEntityIds.erase(entity.layerEntity.GetServerId());
@@ -339,7 +340,17 @@ namespace bw
 			assert(erasedCount == 1);
 		}
 
-		m_entities.erase(it);
+		OnEntityDelete(this, entity.layerEntity);
+
+		// Don't trigger the Destroyed event on disabling layers
+		if (IsEnabled() && entity.layerEntity.GetEntity()->HasComponent<ScriptComponent>())
+		{
+			auto& scriptComponent = entity.layerEntity.GetEntity()->GetComponent<ScriptComponent>();
+			scriptComponent.ExecuteCallback<ElementEvent::Destroyed>();
+		}
+		// `it` and `entity` are no longer valid here (as a new entity could have been created by the destroyed callback)
+
+		m_entities.erase(uniqueId, hash);
 	}
 
 	void LocalLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
