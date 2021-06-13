@@ -961,6 +961,8 @@ namespace bw
 
 			LocalPlayer& localPlayer = m_matchPlayers[playerIndex].value();
 			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(localPlayer.CreateHandle(), TranslateEntityToLua(entity.GetEntity()), sol::nil);
+		
+			localPlayer.UpdateControlledEntityId(InvalidEntityId);
 		}
 	}
 

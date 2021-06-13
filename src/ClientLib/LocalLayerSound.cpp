@@ -8,6 +8,16 @@
 
 namespace bw
 {
+	float LocalLayerSound::GetSoundDuration(std::size_t soundIndex) const
+	{
+		assert(soundIndex < m_playingSounds.size());
+		auto& playingSoundOpt = m_playingSounds[soundIndex];
+		if (!playingSoundOpt)
+			return -1.f;
+
+		return playingSoundOpt->duration;
+	}
+
 	LayerIndex LocalLayerSound::GetLayerIndex() const
 	{
 		return m_layer.GetLayerIndex();

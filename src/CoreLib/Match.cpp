@@ -723,13 +723,13 @@ namespace bw
 		if (newPlayer->IsReady())
 			return;
 
-		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
-
 		// Send a PlayerJoined packet to everyone
 		Packets::PlayerJoined joinedPacket;
 		joinedPacket.playerIndex = static_cast<Nz::UInt16>(newPlayer->GetPlayerIndex());
 		joinedPacket.playerName = newPlayer->GetName();
 		BroadcastPacket(joinedPacket);
+
+		newPlayer->SetReady();
 
 		Packets::ChatMessage chatPacket;
 		chatPacket.content = newPlayer->GetName() + " has joined.";
@@ -747,10 +747,15 @@ namespace bw
 
 			player->SendPacket(chatPacket);
 		});
+
+		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer->CreateHandle());
 		
 		// Send a packet for every player associating them with the entity they control
 		ForEachPlayer([&](Player* player)
 		{
+			if (player == newPlayer)
+				return;
+
 			const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
 			if (!controlledEntity)
 				return;
@@ -763,8 +768,6 @@ namespace bw
 
 			newPlayer->SendPacket(controlledEntityUpdate);
 		});
-
-		newPlayer->SetReady();
 	}
 
 	void Match::OnTick(bool lastTick)
