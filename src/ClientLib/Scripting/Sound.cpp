@@ -7,6 +7,14 @@
 
 namespace bw
 {
+	float Sound::GetDuration() const
+	{
+		if (!m_sound)
+			throw std::runtime_error("Invalid sound");
+
+		return m_sound->GetSoundDuration(m_soundIndex);
+	}
+
 	void Sound::Stop()
 	{
 		if (!m_sound)

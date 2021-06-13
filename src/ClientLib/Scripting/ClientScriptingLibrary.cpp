@@ -71,7 +71,7 @@ namespace bw
 
 			sol::object entityTypeObj = parameters["Type"];
 			if (!entityTypeObj.is<std::string>())
-				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
+				TriggerLuaArgError(L, 1, "missing or invalid value for Type");
 
 			std::string entityType = entityTypeObj.as<std::string>();
 
@@ -174,6 +174,40 @@ namespace bw
 		library["GetTick"] = LuaFunction([&]()
 		{
 			return GetMatch().AdjustServerTick(GetMatch().EstimateServerTick());
+		});
+		
+		library["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& parameters)
+		{
+			LocalMatch& match = GetMatch();
+
+			sol::object soundPathObj = parameters["SoundPath"];
+			if (!soundPathObj.is<std::string>())
+				TriggerLuaArgError(L, 1, "missing or invalid value for SoundPath");
+
+			std::string soundPath = soundPathObj.as<std::string>();
+
+			sol::object layerIndexObj = parameters["LayerIndex"];
+			if (!layerIndexObj.is<LayerIndex>())
+				TriggerLuaArgError(L, 1, "missing or invalid value for LayerIndex");
+
+			LayerIndex layerIndex = layerIndexObj.as<LayerIndex>();
+			if (layerIndex >= match.GetLayerCount())
+				TriggerLuaArgError(L, 1, "layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
+
+			const Nz::SoundBufferRef& soundBuffer = match.GetAssetStore().GetSoundBuffer(soundPath);
+			if (!soundBuffer)
+				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
+
+			auto& layer = match.GetLayer(layerIndex);
+
+			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
+			bool isLooping = parameters.get_or("Loop", false);
+			bool isSpatialized = parameters.get_or("Spatialized", true);
+
+			auto& layerSound = layer.RegisterSound(LocalLayerSound(layer, position));
+
+			std::size_t soundIndex = layerSound.PlaySound(soundBuffer, isLooping, isSpatialized);
+			return Sound(layerSound.CreateHandle(), soundIndex);
 		});
 	}
 
@@ -434,6 +468,8 @@ namespace bw
 
 		state.new_usertype<Sound>("Sound",
 			"new", sol::no_constructor,
+
+			"GetDuration", LuaFunction(&Sound::GetDuration),
 
 			"Stop", LuaFunction(&Sound::Stop)
 		);

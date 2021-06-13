@@ -36,6 +36,8 @@ namespace bw
 			inline LocalLayerSound(LocalLayerSound&& entity) noexcept;
 			~LocalLayerSound() = default;
 
+			float GetSoundDuration(std::size_t soundIndex) const;
+
 			LayerIndex GetLayerIndex() const;
 			inline Nz::Vector2f GetPosition() const;
 

@@ -20,6 +20,8 @@ namespace bw
 			Sound(Sound&&) noexcept = default;
 			~Sound() = default;
 
+			float GetDuration() const;
+
 			void Stop();
 
 			Sound& operator=(const Sound&) = delete;
