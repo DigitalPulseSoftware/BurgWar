@@ -3,8 +3,10 @@ RegisterClientScript()
 function math.approach(from, target, incr)
 	if (target > from) then
 		return math.min(target, from + math.abs(incr))
-	else
+	elseif (target < from) then
 		return math.max(target, from - math.abs(incr))
+	else
+		return target
 	end
 end
 
