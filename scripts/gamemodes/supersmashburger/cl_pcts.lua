@@ -44,16 +44,29 @@ gamemode:On("PlayerLeave", function (self, player)
 	self.PlayerPcts[id] = nil
 end)
 
-network.SetHandler("PctUpdate", function (packet)
-	local id = packet:ReadCompressedUnsigned()
-	local pct = packet:ReadCompressedUnsigned()
-
-	gamemode.PlayerPcts[id] = pct
-	local text = gamemode.PlayerPctTexts[id]
+function gamemode:UpdatePlayerPct(playerId, pct)
+	gamemode.PlayerPcts[playerId] = pct
+	local text = gamemode.PlayerPctTexts[playerId]
 	if (text and text:IsValid()) then
 		text:SetText(pct .. "%")
 
 		local size = text:GetSize()
 		text:SetOffset(Vec2(-size.x / 2, -size.y))
 	end
+end
+
+gamemode:On("RoundStateUpdate", function (self, newState)
+	if (newState == RoundState.Finished) then
+		for _, player in pairs(match.GetPlayers()) do
+			local id = player:GetPlayerIndex()
+			gamemode:UpdatePlayerPct(id, 0)
+		end
+	end
+end)
+
+network.SetHandler("PctUpdate", function (packet)
+	local id = packet:ReadCompressedUnsigned()
+	local pct = packet:ReadCompressedUnsigned()
+
+	gamemode:UpdatePlayerPct(id, pct)
 end)

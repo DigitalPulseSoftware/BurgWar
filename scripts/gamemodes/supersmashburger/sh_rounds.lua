@@ -26,6 +26,7 @@ if (SERVER) then
 	end)
 	
 	function gamemode:UpdateState(newState)
+		self:Trigger("RoundStateUpdate", self.State, newState)
 		self.State = newState
 
 		local packet = network.NewPacket("SSB_RoundUpdate")
@@ -39,7 +40,9 @@ else
 	end)
 
 	network.SetHandler("SSB_RoundUpdate", function (packet)
-		gamemode.State = packet:ReadCompressedUnsigned()
+		local newState = packet:ReadCompressedUnsigned()
+		gamemode:Trigger("RoundStateUpdate", gamemode.State, newState)
+		gamemode.State = newState
 
 		if (gamemode.State == RoundState.Playing) then
 			match.PlaySound({
