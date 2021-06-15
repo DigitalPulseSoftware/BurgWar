@@ -10,7 +10,8 @@ namespace bw
 	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_tilemap(std::move(tilemap)),
-	m_renderOrder(renderOrder)
+	m_renderOrder(renderOrder),
+	m_isVisible(false)
 	{
 	}
 

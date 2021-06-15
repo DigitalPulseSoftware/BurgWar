@@ -10,7 +10,8 @@ namespace bw
 	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_sprite(std::move(sprite)),
-	m_renderOrder(renderOrder)
+	m_renderOrder(renderOrder),
+	m_isVisible(false)
 	{
 	}
 
