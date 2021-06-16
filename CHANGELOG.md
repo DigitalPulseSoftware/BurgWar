@@ -2,7 +2,7 @@
 
 ## master (unreleased)
 
-## **Highlights**
+### **Highlights**
 
 * The map editor is now able to show other layers (as they would be seen in the game)
 * Added bundled map scripts
@@ -13,7 +13,7 @@
 * Added /resetmap admin command
 * The grapple will now break with too much force applied
 
-## General
+### General
 
 * Improved Windows and Linux builds
 * Fixed hovering visuals (nickname, health bar) position when the player entity gets scaled up or down
@@ -24,14 +24,14 @@
 * Updated beta_map
 * entity_powerup and entity_powerup2 have been replaced by entity_spawner
 
-## Map editor
+### Map editor
 
 * Added a button to explicitly rebuild the asset list
 * Maps asset lists are now sorted by path
 * Fix: the entity list is now properly cleared when closing a map
 * Fixed entity selection when creating a new one (previous selection is now discarded)
 
-## Scripting
+### Scripting
 
 * Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
 * Added `PlayerControlledEntityUpdate` client gamemode event.
