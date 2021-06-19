@@ -30,6 +30,7 @@
 * Maps asset lists are now sorted by path
 * Fix: the entity list is now properly cleared when closing a map
 * Fixed entity selection when creating a new one (previous selection is now discarded)
+* When reloading scripts, all entities are now recreated (in case their init callback changed).
 
 ### Scripting
 

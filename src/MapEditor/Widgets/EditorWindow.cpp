@@ -1536,6 +1536,7 @@ namespace bw
 	void EditorWindow::OnReloadScripts()
 	{
 		m_canvas->ReloadScripts();
+		RebuildCanvas();
 
 		// Force entity info dialog update
 		if (m_entityInfoDialog)
