@@ -1,0 +1,76 @@
+{
+	"assets": [],
+	"author": "SirLynix",
+	"description": "Une map permettant de tester rapidement des entités / armes directement dans l'éditeur",
+	"gameVersion": "0.2.0",
+	"layers": [
+		{
+			"backgroundColor": {
+				"b": 255,
+				"g": 189,
+				"r": 6
+			},
+			"entities": [
+				{
+					"entityType": "entity_tilemap",
+					"name": "",
+					"position": {
+						"x": 821.0,
+						"y": 734.0
+					},
+					"properties": {
+						"content": {
+							"isArray": true,
+							"type": "Integer",
+							"value": [
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1,
+								1
+							]
+						},
+						"mapSize": {
+							"type": "IntegerSize",
+							"value": {
+								"x": 10,
+								"y": 1
+							}
+						},
+						"physical": {
+							"type": "Bool",
+							"value": true
+						},
+						"textures": {
+							"isArray": true,
+							"type": "Texture",
+							"value": [
+								"tiles/2.png"
+							]
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 1
+				},
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 980.0,
+						"y": 675.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 2
+				}
+			],
+			"name": "Layer #1"
+		}
+	],
+	"name": "Entity test"
+}
