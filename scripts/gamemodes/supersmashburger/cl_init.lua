@@ -7,6 +7,38 @@ gamemode.CameraZoom = nil
 gamemode.TargetCameraPos = nil
 gamemode.TargetCameraZoom = nil
 
+gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, newEntity)
+	if (self.State == RoundState.Countdown and newEntity) then
+		newEntity.previousController = newEntity:GetPlayerMovementController()
+		newEntity:UpdatePlayerMovementController(nil)
+
+		if (engine_GetLocalPlayer_PlayerIndex(0) == player:GetPlayerIndex()) then
+			self.CameraPos = newEntity:GetPosition()
+			self.CameraZoom = 1.25
+		end
+	end
+end)
+
+gamemode:On("RoundStateUpdate", function (self, oldState, newState)
+	if (newState == RoundState.Countdown) then
+		local pos = engine_GetPlayerPosition(0)
+		if (not pos) then
+			return
+		end
+
+		self.CameraPos = pos
+		self.CameraZoom = 1.25
+	elseif (newState == RoundState.Playing) then
+		for _, player in pairs(match.GetPlayers()) do
+			local entity = player:GetControlledEntity()
+			if (entity and entity.previousController) then
+				entity:UpdatePlayerMovementController(entity.previousController)
+				entity.previousController = nil
+			end
+		end	
+	end
+end)
+
 function gamemode:UpdateCameraPosition()
 	local camera = match.GetCamera()
 
@@ -61,19 +93,14 @@ function gamemode:UpdateCameraPosition()
 		offset.y = -(scaledViewport.y - cameraRect.height) * 0.5
 	end
 
-	local camOrigin = cameraRect:GetPosition() + offset
-	if (camZone) then
-		camOrigin = self:ClampCameraPosition(scaledViewport, camZone, camOrigin)
-	end
-
-	self.TargetCameraPos = camOrigin
+	self.TargetCameraPos = cameraRect:GetPosition()
 	self.TargetCameraZoom = zoomFactor
 
 	local frametime = render.GetFrametime()
 	if (self.CameraPos) then
 		local diff = self.TargetCameraPos - self.CameraPos
-		self.CameraPos.x = math.approach(self.CameraPos.x, self.TargetCameraPos.x, diff.x * frametime * 0.9)
-		self.CameraPos.y = math.approach(self.CameraPos.y, self.TargetCameraPos.y, diff.y * frametime * 0.9)
+		self.CameraPos.x = math.approach(self.CameraPos.x, self.TargetCameraPos.x, diff.x * frametime * 1.25)
+		self.CameraPos.y = math.approach(self.CameraPos.y, self.TargetCameraPos.y, diff.y * frametime * 1.25)
 	else
 		self.CameraPos = self.TargetCameraPos
 	end
@@ -85,6 +112,11 @@ function gamemode:UpdateCameraPosition()
 		self.CameraZoom = self.TargetCameraZoom
 	end
 
-	camera:MoveToPosition(self.CameraPos)
+	local camOrigin = self.CameraPos + offset
+	if (camZone) then
+		camOrigin = self:ClampCameraPosition(scaledViewport, camZone, camOrigin)
+	end
+
+	camera:MoveToPosition(camOrigin)
 	camera:SetZoomFactor(self.CameraZoom)
 end

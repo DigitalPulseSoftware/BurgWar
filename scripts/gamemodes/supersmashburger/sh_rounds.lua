@@ -1,10 +1,11 @@
 RegisterClientScript()
 
 RoundState = enums.Create({
-	Finished = 0,
-	Playing = 1,
-	Starting = 2,
-	Waiting = 3,
+	Countdown = 0,
+	Finished = 1,
+	Playing = 2,
+	Starting = 3,
+	Waiting = 4,
 })
 
 local gamemode = ScriptedGamemode()
@@ -44,7 +45,16 @@ else
 		gamemode:Trigger("RoundStateUpdate", gamemode.State, newState)
 		gamemode.State = newState
 
-		if (gamemode.State == RoundState.Playing) then
+		if (newState == RoundState.Countdown) then
+			coroutine.wrap(function()
+				timer.Sleep(1000)
+				print("3...")
+				timer.Sleep(1000)
+				print("2...")
+				timer.Sleep(1000)
+				print("1...")
+			end)()
+		elseif (gamemode.State == RoundState.Playing) then
 			match.PlaySound({
 				LayerIndex = engine_GetActiveLayer(), -- FIXME
 				SoundPath = fightSound,

@@ -605,13 +605,16 @@ namespace bw
 			entityInputs.UpdateInputs(inputs);
 		});
 
-		elementMetatable["UpdatePlayerMovementController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, std::shared_ptr<PlayerMovementController> controller)
+		elementMetatable["UpdatePlayerMovementController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, sol::optional<std::shared_ptr<PlayerMovementController>> controller)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<PlayerMovementComponent>())
 				TriggerLuaArgError(L, 1, "entity has no player movement");
 
-			return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(controller));
+			if (controller)
+				return entity->GetComponent<PlayerMovementComponent>().UpdateController(std::move(*controller));
+			else
+				return entity->GetComponent<PlayerMovementComponent>().UpdateController(nullptr);
 		});
 
 		elementMetatable["UpdatePlayerMovementSpeed"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, float newSpeed)

@@ -60,13 +60,30 @@ function gamemode:StartRound()
 	end
 
 	match.BroadcastChatMessage("Active players: " .. table.concat(activePlayerNames, ", "))
-	match.BroadcastChatMessage("Fight!")
 
-	self:UpdateState(RoundState.Playing)
+	self:UpdateState(RoundState.Countdown)
 
 	for _, player in pairs(activePlayers) do
 		self:SpawnPlayer(player)
+		local entity = player:GetControlledEntity()
+		if (entity) then
+			entity.previousController = entity:GetPlayerMovementController()
+			entity:UpdatePlayerMovementController(nil)
+		end
 	end
+
+	timer.Sleep(4000)
+
+	self:UpdateState(RoundState.Playing)
+	for _, player in pairs(match.GetPlayers()) do
+		local entity = player:GetControlledEntity()
+		if (entity and entity.previousController) then
+			entity:UpdatePlayerMovementController(entity.previousController)
+			entity.previousController = nil
+		end
+	end
+
+	match.BroadcastChatMessage("Fight!")
 end
 
 function gamemode:PrepareNextRound()
@@ -92,7 +109,7 @@ gamemode:OnAsync("Tick", function (self)
 	if (self.State ~= RoundState.Playing) then
 		return
 	end
-
+	
 	local hasPlayer = false
 	local potentialWinningPlayer
 	for _, player in pairs(match.GetPlayers()) do

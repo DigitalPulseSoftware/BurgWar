@@ -55,7 +55,7 @@ function gamemode:UpdatePlayerPct(playerId, pct)
 	end
 end
 
-gamemode:On("RoundStateUpdate", function (self, newState)
+gamemode:On("RoundStateUpdate", function (self, oldState, newState)
 	if (newState == RoundState.Finished) then
 		for _, player in pairs(match.GetPlayers()) do
 			local id = player:GetPlayerIndex()

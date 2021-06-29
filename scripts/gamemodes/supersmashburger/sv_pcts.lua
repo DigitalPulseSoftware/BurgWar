@@ -25,7 +25,7 @@ function gamemode:OnPlayerSpawn(player)
 		end
 
 		self:UpdatePct(id, damage // 5)
-		return 0 -- Prevent player from hurting each other
+		return 0 -- Prevent players from hurting each other
 	end)
 end
 
