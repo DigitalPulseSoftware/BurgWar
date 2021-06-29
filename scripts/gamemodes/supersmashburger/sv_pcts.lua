@@ -9,6 +9,10 @@ local startingMass = 50
 function gamemode:OnPlayerSpawn(player)
 	self.Base:OnPlayerSpawn(player)
 
+	local entity = player:GetControlledEntity()
+	entity:GiveWeapon("weapon_sword_emmentalibur")
+	entity:GiveWeapon("weapon_graspain")
+
 	local id = player:GetPlayerIndex()
 	self.PlayerPcts[id] = 0
 

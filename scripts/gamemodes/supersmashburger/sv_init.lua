@@ -17,9 +17,3 @@ gamemode:On("MapInit", function (self)
 		match.CreateEntity(creationInfo)
 	end
 end)
-
-function gamemode:OnPlayerSpawn(player)
-	local entity = player:GetControlledEntity()
-	entity:GiveWeapon("weapon_sword_emmentalibur")
-	entity:GiveWeapon("weapon_graspain")
-end
