@@ -2,8 +2,11 @@ RegisterClientScript("cl_camera.lua")
 RegisterClientScript("cl_init.lua")
 RegisterClientScript("cl_nicknames.lua")
 RegisterClientScript("cl_scoreboard.lua")
+RegisterClientScript("sh_scores.lua")
+RegisterClientScript("sh_teams.lua")
 RegisterClientScript("shared.lua")
 
+include("sh_scores.lua")
 include("sh_teams.lua")
 
 local gamemode = ScriptedGamemode()

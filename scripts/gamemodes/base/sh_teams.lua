@@ -1,5 +1,3 @@
-RegisterClientScript()
-
 local gamemode = ScriptedGamemode()
 
 gamemode.teams = {}

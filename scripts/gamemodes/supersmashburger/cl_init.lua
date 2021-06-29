@@ -1,4 +1,5 @@
 include("sh_rounds.lua")
+include("sh_scoreboard.lua")
 include("cl_pcts.lua")
 
 local gamemode = ScriptedGamemode()

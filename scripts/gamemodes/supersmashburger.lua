@@ -1,6 +1,6 @@
 return {
 	Name = "supersmashburger",
-	Base = "deathmatch",
+	Base = "base",
 	Description = "Super Smash Burger, be the last burger alive",
 	Events = {
 		{ Name = "RoundStateUpdate" }

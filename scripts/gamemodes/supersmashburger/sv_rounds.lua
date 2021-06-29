@@ -57,6 +57,7 @@ function gamemode:StartRound()
 		print("Start round with player - " .. player:GetPlayerIndex() .. " - " .. player:GetName())
 
 		self.PlayerRoundCount[player:GetPlayerIndex()] = self.PlayerRoundCount[player:GetPlayerIndex()] + 1
+		self:IncreasePlayerScore(player, "Played")
 	end
 
 	match.BroadcastChatMessage("Active players: " .. table.concat(activePlayerNames, ", "))
@@ -131,6 +132,7 @@ gamemode:OnAsync("Tick", function (self)
 
 		if (potentialWinningPlayer) then
 			match.BroadcastChatMessage(potentialWinningPlayer:GetName() .. " won!")
+			self:IncreasePlayerScore(potentialWinningPlayer, "Wins")
 		else
 			match.BroadcastChatMessage("Draw!")
 		end

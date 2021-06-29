@@ -7,9 +7,9 @@ gamemode:On("InitScoreboard", function (self, scoreboard)
 	self.ScoreboardTeamIndexes = {}
 
 	-- Retrieve active gamemode instead of base gamemode
-	local bottomGamemode = match.GetGamemode()
+	local derivedGamemode = match.GetGamemode()
 
-	for _, columnName in pairs(bottomGamemode.ScoreboardColumns) do
+	for _, columnName in pairs(derivedGamemode.ScoreboardColumns) do
 		self.ScoreboardColumnIndexes[columnName] = scoreboard:AddColumn(columnName)
 	end
 
@@ -19,7 +19,7 @@ gamemode:On("InitScoreboard", function (self, scoreboard)
 	end
 
 	for _, player in pairs(match.GetPlayers()) do
-		bottomGamemode:RegisterScoreboardPlayer(player)
+		derivedGamemode:RegisterScoreboardPlayer(player)
 	end
 end)
 
@@ -46,11 +46,32 @@ function gamemode:RegisterScoreboardPlayer(player)
 		end
 	end
 
+	-- Retrieve active gamemode instead of base gamemode
+	local derivedGamemode = match.GetGamemode()
+
+	local columnValues = {}
+	table.insert(columnValues, player:GetName())
+	for _, scoreType in pairs(derivedGamemode.ScoreTypes) do
+		table.insert(columnValues, tostring(derivedGamemode:GetPlayerScore(player, scoreType) or 0))
+	end
+	table.insert(columnValues, tostring(player:GetPing() or ""))
+
 	local playerTeam = self:GetPlayerTeam(player)
-	scoreboard:RegisterPlayer(playerIndex, playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or -1, {
-		player:GetName(),
-		tostring(player:GetPing() or ""),
-	}, isLocalPlayer)
+	scoreboard:RegisterPlayer(playerIndex, playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or -1, columnValues, isLocalPlayer)
+end
+
+function gamemode:UpdateScoreboard(playerScores)
+	local scoreboard = self.Scoreboard
+	if (not scoreboard) then
+		return
+	end
+
+	local derivedGamemode = match.GetGamemode()
+	for playerIndex, scores in pairs(playerScores) do
+		for _, scoreType in pairs(derivedGamemode.ScoreTypes) do
+			scoreboard:UpdatePlayerValue(playerIndex, self.ScoreboardColumnIndexes[scoreType], tostring(scores[scoreType] or 0))
+		end
+	end
 end
 
 gamemode:On("PlayerLeave", function (self, player)

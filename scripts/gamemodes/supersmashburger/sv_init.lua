@@ -1,3 +1,4 @@
+include("sh_scoreboard.lua")
 include("sv_rounds.lua")
 include("sv_pcts.lua")
 
@@ -14,15 +15,5 @@ gamemode:On("MapInit", function (self)
 		creationInfo.Type = "entity_camera_zone"
 
 		match.CreateEntity(creationInfo)
-	end
-end)
-
-gamemode:On("PlayerDeath", function (self, player, attacker)
-	self:IncreasePlayerDeath(player)
-	if (attacker) then
-		local attackerPlayer = attacker:GetOwner()
-		if (attackerPlayer and attackerPlayer:GetPlayerIndex() ~= player:GetPlayerIndex()) then
-			self:IncreasePlayerKill(attackerPlayer)
-		end
 	end
 end)
