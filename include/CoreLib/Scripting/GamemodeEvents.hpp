@@ -9,6 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/EventCombinator.hpp>
+#include <limits> //<FIXME: This is a bug from sol2 v3.2.1 (sol/stack_core.hpp is missing this includes), upgrading may fix this
 #include <sol/sol.hpp>
 #include <cstddef>
 #include <functional>
