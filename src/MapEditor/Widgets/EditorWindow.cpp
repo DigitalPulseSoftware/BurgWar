@@ -633,6 +633,8 @@ namespace bw
 		assert(!m_workingMapPath.empty());
 
 		std::filesystem::path rootScriptFolder = m_workingMapPath / "scripts";
+		if (!std::filesystem::is_directory(rootScriptFolder))
+			return;
 
 		auto& mapScripts = scriptedMap.GetScripts();
 		for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(rootScriptFolder))
