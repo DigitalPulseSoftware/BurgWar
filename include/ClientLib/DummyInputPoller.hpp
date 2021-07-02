@@ -4,20 +4,20 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_DUMMYINPUTCONTROLLER_HPP
-#define BURGWAR_CLIENTLIB_DUMMYINPUTCONTROLLER_HPP
+#ifndef BURGWAR_CLIENTLIB_DUMMYINPUTPOLLER_HPP
+#define BURGWAR_CLIENTLIB_DUMMYINPUTPOLLER_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/InputController.hpp>
+#include <ClientLib/InputPoller.hpp>
 #include <sol/forward.hpp>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API DummyInputController : public InputController
+	class BURGWAR_CLIENTLIB_API DummyInputPoller : public InputPoller
 	{
 		public:
-			DummyInputController() = default;
-			~DummyInputController() = default;
+			DummyInputPoller() = default;
+			~DummyInputPoller() = default;
 
 			PlayerInputData& GetInputs();
 
@@ -28,6 +28,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/DummyInputController.inl>
+#include <ClientLib/DummyInputPoller.inl>
 
 #endif

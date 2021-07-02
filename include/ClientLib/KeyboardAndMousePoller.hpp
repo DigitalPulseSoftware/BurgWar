@@ -4,20 +4,20 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_KEYBOARDANDMOUSECONTROLLER_HPP
-#define BURGWAR_CLIENTLIB_KEYBOARDANDMOUSECONTROLLER_HPP
+#ifndef BURGWAR_CLIENTLIB_KEYBOARDANDMOUSEPOLLER_HPP
+#define BURGWAR_CLIENTLIB_KEYBOARDANDMOUSEPOLLER_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/InputController.hpp>
+#include <ClientLib/InputPoller.hpp>
 #include <Nazara/Platform/Window.hpp>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API KeyboardAndMouseController : public InputController
+	class BURGWAR_CLIENTLIB_API KeyboardAndMousePoller : public InputPoller
 	{
 		public:
-			KeyboardAndMouseController(Nz::Window& window, Nz::UInt8 localPlayerIndex);
-			~KeyboardAndMouseController() = default;
+			KeyboardAndMousePoller(Nz::Window& window, Nz::UInt8 localPlayerIndex);
+			~KeyboardAndMousePoller() = default;
 
 			PlayerInputData Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity) override;
 
@@ -29,6 +29,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/KeyboardAndMouseController.inl>
+#include <ClientLib/KeyboardAndMousePoller.inl>
 
 #endif

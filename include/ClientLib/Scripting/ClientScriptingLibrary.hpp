@@ -31,7 +31,7 @@ namespace bw
 			virtual void RegisterSoundLibrary(ScriptingContext& context, sol::table& library);
 
 			void RegisterCameraClass(ScriptingContext& context);
-			void RegisterDummyInputControllerClass(ScriptingContext& context);
+			void RegisterDummyInputPollerClass(ScriptingContext& context);
 			void RegisterLocalPlayerClass(ScriptingContext& context);
 			void RegisterMusicClass(ScriptingContext& context);
 			void RegisterParticleGroupClass(ScriptingContext& context);

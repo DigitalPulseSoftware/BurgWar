@@ -13,12 +13,12 @@
 
 namespace bw
 {
-	class InputController;
-	class DummyInputController;
+	class InputPoller;
+	class DummyInputPoller;
 }
 
-SOL_BASE_CLASSES(bw::DummyInputController, bw::InputController);
-SOL_DERIVED_CLASSES(bw::InputController, bw::DummyInputController);
+SOL_BASE_CLASSES(bw::DummyInputPoller, bw::InputPoller);
+SOL_DERIVED_CLASSES(bw::InputPoller, bw::DummyInputPoller);
 
 namespace sol
 {

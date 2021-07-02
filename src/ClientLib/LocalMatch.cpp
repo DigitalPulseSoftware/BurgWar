@@ -17,8 +17,8 @@
 #include <CoreLib/Systems/WeaponSystem.hpp>
 #include <ClientLib/ClientEditorApp.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <ClientLib/KeyboardAndMouseController.hpp>
-#include <ClientLib/InputController.hpp>
+#include <ClientLib/KeyboardAndMousePoller.hpp>
+#include <ClientLib/InputPoller.hpp>
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/VisualEntity.hpp>
@@ -128,9 +128,9 @@ namespace bw
 		for (Nz::UInt8 i = 0; i < playerCount; ++i)
 		{
 			auto& playerData = m_localPlayers.emplace_back(i);
-			playerData.inputController = std::make_shared<KeyboardAndMouseController>(*window, i);
+			playerData.inputPoller = std::make_shared<KeyboardAndMousePoller>(*window, i);
 			playerData.playerIndex = authSuccess.players[i].playerIndex;
-			playerData.inputController->OnSwitchWeapon.Connect([this, i](InputController* /*emitter*/, bool direction)
+			playerData.inputPoller->OnSwitchWeapon.Connect([this, i](InputPoller* /*emitter*/, bool direction)
 			{
 				auto& playerData = m_localPlayers[i];
 
@@ -416,15 +416,15 @@ namespace bw
 			return m_activeLayerIndex;
 		});
 
-		state["engine_OverridePlayerInputController"] = LuaFunction([&](sol::this_state L, Nz::UInt8 localIndex, std::shared_ptr<InputController> inputController)
+		state["engine_OverridePlayerInputPoller"] = LuaFunction([&](sol::this_state L, Nz::UInt8 localIndex, std::shared_ptr<InputPoller> inputPoller)
 		{
 			if (localIndex >= m_localPlayers.size())
 				TriggerLuaArgError(L, 1, "invalid player index");
 
-			if (!inputController)
+			if (!inputPoller)
 				TriggerLuaArgError(L, 2, "invalid input controller");
 
-			m_localPlayers[localIndex].inputController = std::move(inputController);
+			m_localPlayers[localIndex].inputPoller = std::move(inputPoller);
 		});
 
 		ForEachEntity([this](const Ndk::EntityHandle& entity)
@@ -445,7 +445,7 @@ namespace bw
 		else
 			m_gamemode->Reload();
 
-		m_scriptingContext->LoadDirectory("map/autorun");
+		m_scriptingContext->LoadDirectoryOpt("map/autorun");
 	}
 
 	void LocalMatch::RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity)
@@ -1823,7 +1823,7 @@ namespace bw
 			PlayerInputData input;
 
 			if (checkInputs)
-				input = controllerData.inputController->Poll(*this, controllerData.controlledEntity);
+				input = controllerData.inputPoller->Poll(*this, controllerData.controlledEntity);
 
 			if (controllerData.lastInputData != input)
 			{

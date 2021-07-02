@@ -45,7 +45,7 @@ namespace bw
 	class Camera;
 	class ClientGamemode;
 	class ClientSession;
-	class InputController;
+	class InputPoller;
 	class Scoreboard;
 	class VirtualDirectory;
 
@@ -181,7 +181,7 @@ namespace bw
 				}
 
 				std::size_t selectedWeapon;
-				std::shared_ptr<InputController> inputController;
+				std::shared_ptr<InputPoller> inputPoller;
 				std::vector<Ndk::EntityHandle> weapons;
 				LocalLayerEntityHandle controlledEntity;
 				Nz::UInt8 localIndex;

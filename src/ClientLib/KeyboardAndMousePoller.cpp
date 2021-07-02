@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/KeyboardAndMouseController.hpp>
+#include <ClientLib/KeyboardAndMousePoller.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <ClientLib/Camera.hpp>
@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	KeyboardAndMouseController::KeyboardAndMouseController(Nz::Window& window, Nz::UInt8 localPlayerIndex) :
+	KeyboardAndMousePoller::KeyboardAndMousePoller(Nz::Window& window, Nz::UInt8 localPlayerIndex) :
 	m_window(window),
 	m_localPlayerIndex(localPlayerIndex)
 	{
@@ -23,7 +23,7 @@ namespace bw
 		});
 	}
 
-	PlayerInputData KeyboardAndMouseController::Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMousePoller::Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
 

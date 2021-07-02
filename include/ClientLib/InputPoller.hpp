@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
-#define BURGWAR_CLIENTLIB_INPUTCONTROLLER_HPP
+#ifndef BURGWAR_CLIENTLIB_INPUTPOLLER_HPP
+#define BURGWAR_CLIENTLIB_INPUTPOLLER_HPP
 
 #include <CoreLib/PlayerInputData.hpp>
 #include <ClientLib/Export.hpp>
@@ -17,18 +17,18 @@ namespace bw
 {
 	class LocalMatch;
 
-	class BURGWAR_CLIENTLIB_API InputController
+	class BURGWAR_CLIENTLIB_API InputPoller
 	{
 		public:
-			InputController() = default;
-			virtual ~InputController();
+			InputPoller() = default;
+			virtual ~InputPoller();
 
 			virtual PlayerInputData Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity) = 0;
 
-			NazaraSignal(OnSwitchWeapon, InputController* /*emitter*/, bool /*direction*/);
+			NazaraSignal(OnSwitchWeapon, InputPoller* /*emitter*/, bool /*direction*/);
 	};
 }
 
-#include <ClientLib/InputController.inl>
+#include <ClientLib/InputPoller.inl>
 
 #endif

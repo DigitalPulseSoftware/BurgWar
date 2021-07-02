@@ -8,7 +8,7 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Version.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <ClientLib/KeyboardAndMouseController.hpp>
+#include <ClientLib/KeyboardAndMousePoller.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>

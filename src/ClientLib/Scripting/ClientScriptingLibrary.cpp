@@ -7,7 +7,7 @@
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/Camera.hpp>
-#include <ClientLib/DummyInputController.hpp>
+#include <ClientLib/DummyInputPoller.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
@@ -31,7 +31,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 
 		RegisterCameraClass(context);
-		RegisterDummyInputControllerClass(context);
+		RegisterDummyInputPollerClass(context);
 		RegisterGlobalLibrary(context);
 		RegisterLocalPlayerClass(context);
 		RegisterMusicClass(context);
@@ -316,18 +316,18 @@ namespace bw
 		);
 	}
 
-	void ClientScriptingLibrary::RegisterDummyInputControllerClass(ScriptingContext& context)
+	void ClientScriptingLibrary::RegisterDummyInputPollerClass(ScriptingContext& context)
 	{
 #define BW_INPUT_PROPERTY(name, type) #name, sol::property( \
-		LuaFunction([](DummyInputController& input) { return input.GetInputs(). name ; }), \
-		LuaFunction([](DummyInputController& input, const type& newValue) { input.GetInputs(). name = newValue; }))
+		LuaFunction([](DummyInputPoller& input) { return input.GetInputs(). name ; }), \
+		LuaFunction([](DummyInputPoller& input, const type& newValue) { input.GetInputs(). name = newValue; }))
 
 		sol::state& state = context.GetLuaState();
-		state.new_usertype<InputController>("InputController");
+		state.new_usertype<InputPoller>("InputPoller");
 
-		state.new_usertype<DummyInputController>("DummyInputController",
-			sol::base_classes, sol::bases<InputController>(),
-			"new", sol::factories(LuaFunction(&std::make_shared<DummyInputController>)),
+		state.new_usertype<DummyInputPoller>("DummyInputPoller",
+			sol::base_classes, sol::bases<InputPoller>(),
+			"new", sol::factories(LuaFunction(&std::make_shared<DummyInputPoller>)),
 
 			BW_INPUT_PROPERTY(aimDirection, Nz::Vector2f),
 			BW_INPUT_PROPERTY(isAttacking, bool),
