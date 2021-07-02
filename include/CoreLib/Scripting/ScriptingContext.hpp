@@ -43,6 +43,7 @@ namespace bw
 			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file);
 			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
 			bool LoadDirectory(const std::filesystem::path& folder);
+			bool LoadDirectoryOpt(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
 			inline void Print(const std::string& str, const Nz::Color& color = Nz::Color::White);

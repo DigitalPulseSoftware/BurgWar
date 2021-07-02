@@ -83,9 +83,25 @@ namespace bw
 		VirtualDirectory::Entry entry;
 		if (!m_scriptDirectory->GetEntry(folder.generic_u8string(), &entry))
 		{
-			bwLog(m_logger, LogLevel::Error, "Unknown path {0}", folder.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "unknown path {0}", folder.generic_u8string());
 			return false;
 		}
+
+		if (!std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry))
+		{
+			bwLog(m_logger, LogLevel::Error, "{0} is not a directory", folder.generic_u8string());
+			return false;
+		}
+
+		LoadDirectory(folder, std::get<VirtualDirectory::VirtualDirectoryEntry>(entry));
+		return true;
+	}
+
+	bool ScriptingContext::LoadDirectoryOpt(const std::filesystem::path& folder)
+	{
+		VirtualDirectory::Entry entry;
+		if (!m_scriptDirectory->GetEntry(folder.generic_u8string(), &entry))
+			return true;
 
 		if (!std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry))
 		{

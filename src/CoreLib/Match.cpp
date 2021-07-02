@@ -45,7 +45,7 @@ namespace bw
 		m_terrain = std::make_unique<Terrain>(*this, m_map);
 		m_terrain->Initialize();
 
-		m_scriptingContext->LoadDirectory("map/autorun");
+		m_scriptingContext->LoadDirectoryOpt("map/autorun");
 
 		BuildMatchData();
 
