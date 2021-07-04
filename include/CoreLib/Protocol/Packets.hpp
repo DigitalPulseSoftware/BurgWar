@@ -121,6 +121,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<float> scale;
+				std::optional<Nz::UInt16> ownerPlayerIndex;
 				std::optional<CompressedUnsigned<Nz::UInt32>> parentId;
 				std::optional<HealthData> health;
 				std::optional<PlayerInputData> inputs;
@@ -524,6 +525,7 @@ namespace bw
 		DeclarePacket(PlayerJoined)
 		{
 			CompressedUnsigned<Nz::UInt16> playerIndex;
+			std::optional<Nz::UInt8> localIndex;
 			std::string playerName;
 		};
 

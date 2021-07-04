@@ -6,6 +6,7 @@
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
 #include <CoreLib/Player.hpp>
+#include <CoreLib/PlayerInputController.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/EntityOwnerComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
@@ -128,6 +129,17 @@ namespace bw
 				throw std::runtime_error(err.msg);
 			}
 		});
+	}
+
+	void ServerScriptingLibrary::RegisterInputControllerClass(ScriptingContext& context)
+	{
+		SharedScriptingLibrary::RegisterInputControllerClass(context);
+
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<PlayerInputController>("PlayerInputController",
+			sol::base_classes, sol::bases<InputController>(),
+			"new", sol::factories(LuaFunction(&std::make_shared<PlayerInputController>))
+		);
 	}
 
 	void ServerScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
@@ -342,6 +354,7 @@ namespace bw
 				return scriptComponent.GetTable();
 			}),
 			"GetLayerIndex", LuaFunction(&Player::GetLayerIndex),
+			"GetInputs", LuaFunction(&Player::GetInputs),
 			"GetPlayerIndex", LuaFunction(&Player::GetPlayerIndex),
 			"GetName", LuaFunction(&Player::GetName),
 			"IsAdmin", LuaFunction(&Player::IsAdmin),

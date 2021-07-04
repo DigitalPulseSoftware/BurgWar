@@ -7,6 +7,8 @@
 #include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/Components/LocalPlayerControlledComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
@@ -44,6 +46,8 @@ namespace bw
 
 		Ndk::InitializeComponent<VisualComponent>("LayrEnt");
 		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
+		Ndk::InitializeComponent<LocalOwnerComponent>("LclOwner");
+		Ndk::InitializeComponent<LocalPlayerControlledComponent>("LclPly");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
 		Ndk::InitializeComponent<VisualInterpolationComponent>("Interp");

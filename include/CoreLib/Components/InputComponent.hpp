@@ -8,21 +8,25 @@
 #define BURGWAR_CORELIB_COMPONENTS_INPUTCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/InputController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Components.hpp>
 #include <array>
+#include <memory>
 
 namespace bw
 {
 	class BURGWAR_CORELIB_API InputComponent : public Ndk::Component<InputComponent>
 	{
 		public:
-			inline InputComponent();
+			inline InputComponent(std::shared_ptr<InputController> inputController);
 
+			inline const std::shared_ptr<InputController>& GetController() const;
 			inline const PlayerInputData& GetInputs() const;
 			inline const PlayerInputData& GetPreviousInputs() const;
 
+			inline void UpdateController(std::shared_ptr<InputController> inputController);
 			inline void UpdateInputs(const PlayerInputData& inputData);
 			inline void UpdatePreviousInputs(const PlayerInputData& inputData);
 
@@ -33,6 +37,7 @@ namespace bw
 		private:
 			std::array<PlayerInputData, 2> m_inputData;
 			std::size_t m_inputIndex;
+			std::shared_ptr<InputController> m_inputController;
 	};
 }
 

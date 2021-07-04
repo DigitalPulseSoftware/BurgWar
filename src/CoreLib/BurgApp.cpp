@@ -20,6 +20,7 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/LogSystem/StdSink.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
+#include <CoreLib/Systems/InputSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
@@ -51,6 +52,7 @@ namespace bw
 		Ndk::InitializeComponent<WeaponComponent>("Weapon");
 		Ndk::InitializeComponent<WeaponWielderComponent>("WepnWiel");
 		Ndk::InitializeSystem<AnimationSystem>();
+		Ndk::InitializeSystem<InputSystem>();
 		Ndk::InitializeSystem<NetworkSyncSystem>();
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();

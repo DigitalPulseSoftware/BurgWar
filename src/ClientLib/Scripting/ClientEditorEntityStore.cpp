@@ -7,6 +7,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/LocalPlayerInputController.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
@@ -47,7 +48,7 @@ namespace bw
 			entity->AddComponent<PlayerMovementComponent>();
 
 		if (hasInputs)
-			entity->AddComponent<InputComponent>();
+			entity->AddComponent<InputComponent>(std::make_shared<LocalPlayerInputController>());
 
 		return entity;
 	}

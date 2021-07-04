@@ -8,10 +8,20 @@ gamemode.CameraZoom = nil
 gamemode.TargetCameraPos = nil
 gamemode.TargetCameraZoom = nil
 
+local stuckInputController = CustomInputController.new(function (entity)
+	local inputs = entity:GetOwner():GetInputs()
+
+	inputs.isAttacking = false
+	inputs.isMovingLeft = false
+	inputs.isMovingRight = false
+
+	return inputs
+end)
+
 gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, newEntity)
 	if (self.State == RoundState.Countdown and newEntity) then
-		newEntity.previousController = newEntity:GetPlayerMovementController()
-		newEntity:UpdatePlayerMovementController(nil)
+		newEntity.previousController = newEntity:GetInputController()
+		newEntity:UpdateInputController(stuckInputController)
 
 		if (engine_GetLocalPlayer_PlayerIndex(0) == player:GetPlayerIndex()) then
 			self.CameraPos = newEntity:GetPosition()
@@ -33,7 +43,7 @@ gamemode:On("RoundStateUpdate", function (self, oldState, newState)
 		for _, player in pairs(match.GetPlayers()) do
 			local entity = player:GetControlledEntity()
 			if (entity and entity.previousController) then
-				entity:UpdatePlayerMovementController(entity.previousController)
+				entity:UpdateInputController(entity.previousController)
 				entity.previousController = nil
 			end
 		end	

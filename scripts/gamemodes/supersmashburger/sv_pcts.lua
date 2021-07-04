@@ -39,8 +39,10 @@ function gamemode:UpdatePct(playerId, pct)
 
 	local player = assert(match.GetPlayerByIndex(playerId))
 	local entity = player:GetControlledEntity()
-	local newMass = math.max(math.floor(startingMass - newPct * massLossPerPct), 5)
-	entity:SetMass(newMass)
+	if entity then
+		local newMass = math.max(math.floor(startingMass - newPct * massLossPerPct), 5)
+		entity:SetMass(newMass)
+	end
 
 	local packet = network.NewPacket("PctUpdate")
 	packet:WriteCompressedUnsigned(playerId)

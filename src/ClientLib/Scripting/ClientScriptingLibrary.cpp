@@ -9,6 +9,7 @@
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/DummyInputPoller.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/LocalPlayerInputController.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
 #include <ClientLib/Scripting/Music.hpp>
@@ -58,6 +59,17 @@ namespace bw
 
 		state["RegisterClientAssets"] = LuaFunction([]() { return true; }); // Dummy function
 		state["RegisterClientScript"] = LuaFunction([]() { return true; }); // Dummy function
+	}
+
+	void ClientScriptingLibrary::RegisterInputControllerClass(ScriptingContext& context)
+	{
+		SharedScriptingLibrary::RegisterInputControllerClass(context);
+
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<LocalPlayerInputController>("PlayerInputController",
+			sol::base_classes, sol::bases<InputController>(),
+			"new", sol::factories(LuaFunction(&std::make_shared<LocalPlayerInputController>))
+		);
 	}
 
 	void ClientScriptingLibrary::RegisterMatchLibrary(ScriptingContext& context, sol::table& library)
@@ -363,15 +375,28 @@ namespace bw
 				return scriptComponent.GetTable();
 			}),
 
-			"GetPing", LuaFunction([](LocalPlayer& localPlayer, sol::this_state L) -> sol::object
+			"GetInputs", LuaFunction([this](const LocalPlayer& player, sol::this_state L)
 			{
-				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
-					return sol::make_object(L, ping);
-				else
-					return sol::nil;
+				if (!player.IsLocalPlayer())
+					TriggerLuaError(L, "only local player inputs can be retrieved");
+
+				Nz::UInt8 localPlayerIndex = player.GetLocalPlayerIndex();
+				LocalMatch& match = GetMatch();
+
+				return match.GetLocalPlayerInputs(localPlayerIndex);
 			}),
 
-			"GetPlayerIndex", LuaFunction(&LocalPlayer::GetPlayerIndex)
+			"GetPing", LuaFunction([](LocalPlayer& localPlayer) -> sol::optional<Nz::UInt16>
+			{
+				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
+					return ping;
+				else
+					return {};
+			}),
+
+			"GetPlayerIndex", LuaFunction(&LocalPlayer::GetPlayerIndex),
+
+			"IsLocalPlayer", LuaFunction(&LocalPlayer::IsLocalPlayer)
 		);
 	}
 

@@ -1030,6 +1030,9 @@ namespace bw
 			entityData.health->maxHealth = creationEvent.healthProperties->maxHealth;
 		}
 
+		if (creationEvent.playerOwner)
+			entityData.ownerPlayerIndex = static_cast<Nz::UInt16>(creationEvent.playerOwner->GetPlayerIndex());
+
 		if (creationEvent.playerMovement.has_value())
 		{
 			entityData.playerMovement.emplace();

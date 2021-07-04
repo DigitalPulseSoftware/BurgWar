@@ -620,6 +620,20 @@ namespace bw
 		{
 			serializer &= data.playerIndex;
 			serializer &= data.playerName;
+
+			bool hasLocalIndex;
+			if (serializer.IsWriting())
+				hasLocalIndex = data.localIndex.has_value();
+
+			serializer &= hasLocalIndex;
+
+			if (hasLocalIndex)
+			{
+				if (serializer.IsWriting())
+					serializer &= data.localIndex.value();
+				else
+					serializer &= data.localIndex.emplace();
+			}
 		}
 
 		void Serialize(PacketSerializer& serializer, PlayerPingUpdate& data)
@@ -717,6 +731,7 @@ namespace bw
 			bool hasParent;
 			bool hasMovementData;
 			bool hasPhysicsProps;
+			bool hasOwner;
 
 			if (serializer.IsWriting())
 			{
@@ -726,6 +741,7 @@ namespace bw
 				hasParent = data.parentId.has_value();
 				hasMovementData = data.playerMovement.has_value();
 				hasPhysicsProps = data.physicsProperties.has_value();
+				hasOwner = data.ownerPlayerIndex.has_value();
 			}
 
 			serializer &= hasScale;
@@ -734,6 +750,7 @@ namespace bw
 			serializer &= hasParent;
 			serializer &= hasMovementData;
 			serializer &= hasPhysicsProps;
+			serializer &= hasOwner;
 
 			if (!serializer.IsWriting())
 			{
@@ -754,6 +771,9 @@ namespace bw
 
 				if (hasPhysicsProps)
 					data.physicsProperties.emplace();
+
+				if (hasOwner)
+					data.ownerPlayerIndex.emplace();
 			}
 
 			serializer &= data.entityClass;
@@ -773,6 +793,9 @@ namespace bw
 
 			if (data.inputs)
 				Serialize(serializer, data.inputs.value());
+
+			if (data.ownerPlayerIndex)
+				serializer &= data.ownerPlayerIndex.value();
 
 			if (data.parentId)
 				serializer &= data.parentId.value();

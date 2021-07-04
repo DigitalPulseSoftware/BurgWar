@@ -6,6 +6,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/Components/LocalOwnerComponent.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
@@ -298,6 +299,12 @@ namespace bw
 		{
 			bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate element {0} of type {1}: {2}", entityId, entityClass, e.what());
 			return;
+		}
+
+		if (entityData.ownerPlayerIndex)
+		{
+			if (LocalPlayer* player = GetLocalMatch().GetPlayerByIndex(*entityData.ownerPlayerIndex))
+				layerEntity->GetEntity()->AddComponent<LocalOwnerComponent>(player->CreateHandle());
 		}
 
 		if (entityData.health)

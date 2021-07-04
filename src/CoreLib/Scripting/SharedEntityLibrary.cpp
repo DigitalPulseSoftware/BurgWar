@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedEntityLibrary.hpp>
+#include <CoreLib/CustomInputController.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Colliders.hpp>
 #include <CoreLib/Utils.hpp>
@@ -297,6 +298,16 @@ namespace bw
 			sol::state_view state(L);
 
 			return ColliderToTable(state, entity->GetComponent<CollisionDataComponent>().GetColliders());
+		});
+		
+		elementMetatable["GetInputController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+
+			if (!entity->HasComponent<InputComponent>())
+				TriggerLuaArgError(L, 1, "entity has no inputs");
+
+			return entity->GetComponent<InputComponent>().GetController();
 		});
 
 		elementMetatable["GetHealth"] = LuaFunction([](const sol::table& entityTable) -> Nz::UInt16
@@ -603,6 +614,16 @@ namespace bw
 
 			auto& entityInputs = entity->GetComponent<InputComponent>();
 			entityInputs.UpdateInputs(inputs);
+		});
+		
+		elementMetatable["UpdateInputController"] = LuaFunction([this](const sol::table& entityTable, std::shared_ptr<InputController> controller)
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			if (!entity || !entity->HasComponent<InputComponent>())
+				return;
+
+			auto& entityInputs = entity->GetComponent<InputComponent>();
+			entityInputs.UpdateController(std::move(controller));
 		});
 
 		elementMetatable["UpdatePlayerMovementController"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, sol::optional<std::shared_ptr<PlayerMovementController>> controller)

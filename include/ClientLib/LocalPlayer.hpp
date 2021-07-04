@@ -11,6 +11,7 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
+#include <optional>
 #include <string>
 
 namespace bw
@@ -22,15 +23,18 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API LocalPlayer : public Nz::HandledObject<LocalPlayer>
 	{
 		public:
-			inline LocalPlayer(Nz::UInt16 playerIndex, std::string name);
+			inline LocalPlayer(Nz::UInt16 playerIndex, std::string name, std::optional<Nz::UInt8> localPlayerIndex);
 			LocalPlayer(const LocalPlayer&) = delete;
 			LocalPlayer(LocalPlayer&&) noexcept = default;
 			~LocalPlayer() = default;
 
 			inline EntityId GetControlledEntityId() const;
+			inline Nz::UInt8 GetLocalPlayerIndex() const;
 			inline const std::string& GetName() const;
 			inline Nz::UInt16 GetPing() const;
 			inline Nz::UInt16 GetPlayerIndex() const;
+
+			inline bool IsLocalPlayer() const;
 
 			inline const std::string& ToString() const;
 
@@ -44,6 +48,7 @@ namespace bw
 			static constexpr Nz::UInt16 InvalidPing = std::numeric_limits<Nz::UInt16>::max();
 
 		private:
+			std::optional<Nz::UInt8> m_localPlayerIndex;
 			std::string m_name;
 			Nz::UInt16 m_ping;
 			Nz::UInt16 m_playerIndex;

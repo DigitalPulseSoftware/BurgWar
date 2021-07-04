@@ -65,6 +65,12 @@ namespace bw
 		return m_session;
 	}
 
+	inline const PlayerInputData& LocalMatch::GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const
+	{
+		assert(localPlayerIndex < m_localPlayers.size());
+		return m_localPlayers[localPlayerIndex].lastInputData;
+	}
+
 	inline ParticleRegistry& LocalMatch::GetParticleRegistry()
 	{
 		assert(m_particleRegistry);

@@ -80,6 +80,7 @@ namespace bw
 			LocalLayer& GetLayer(LayerIndex layerIndex) override;
 			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
+			inline const PlayerInputData& GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;

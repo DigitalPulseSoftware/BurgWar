@@ -22,6 +22,7 @@
 #include <ClientLib/LocalCommandStore.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <ClientLib/Components/LocalPlayerControlledComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Scripting/ClientEditorScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientElementLibrary.hpp>
@@ -1018,7 +1019,7 @@ namespace bw
 		if (packet.playerIndex >= m_matchPlayers.size())
 			m_matchPlayers.resize(packet.playerIndex + 1);
 
-		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName);
+		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName, packet.localIndex);
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer.CreateHandle());
 	}
@@ -1103,6 +1104,7 @@ namespace bw
 		{
 			auto& controlledEntity = localPlayer.controlledEntity;
 			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
+			controlledEntity->GetEntity()->RemoveComponent<LocalPlayerControlledComponent>();
 
 			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
 		}
@@ -1114,6 +1116,7 @@ namespace bw
 
 			localPlayer.controlledEntity = layerEntity.CreateHandle<LocalLayerEntity>();
 			localPlayer.controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
+			localPlayer.controlledEntity->GetEntity()->AddComponent<LocalPlayerControlledComponent>(*this, packet.localIndex);
 
 			HandlePlayerControlEntity(localPlayer.playerIndex, layerEntity.GetUniqueId());
 		}
@@ -1302,7 +1305,7 @@ namespace bw
 	{
 		m_inactiveEntities.clear();
 
-		bool performReconciliation = Nz::Keyboard::IsKeyPressed(Nz::Keyboard::Scancode::Q);
+		bool performReconciliation = !Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::A);
 
 		auto inputIt = std::find_if(m_predictedInputs.begin(), m_predictedInputs.end(), [lastInputTick = packet.lastInputTick](const PredictedInput& input)
 		{
@@ -1310,7 +1313,7 @@ namespace bw
 		});
 		if (inputIt != m_predictedInputs.end())
 		{
-			performReconciliation = [&]
+			performReconciliation = performReconciliation && [&]
 			{
 				// Check if reconciliation is required (were all packets entities at the same position back then?)
 				std::size_t offset = 0;
@@ -1666,23 +1669,7 @@ namespace bw
 		m_tickedPackets.erase(m_tickedPackets.begin(), it);
 
 		if (lastTick)
-		{
 			SendInputs(estimatedServerTick, true);
-
-			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
-			{
-				auto& controllerData = m_localPlayers[i];
-				if (controllerData.controlledEntity)
-				{
-					auto& entity = controllerData.controlledEntity->GetEntity();
-					if (entity->HasComponent<InputComponent>())
-					{
-						auto& entityInputs = entity->GetComponent<InputComponent>();
-						entityInputs.UpdateInputs(controllerData.lastInputData);
-					}
-				}
-			}
-		}
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback<GamemodeEvent::Tick>();
@@ -1706,7 +1693,6 @@ namespace bw
 			// Remember inputs for reconciliation
 			PredictedInput& predictedInputs = m_predictedInputs.emplace_back();
 			predictedInputs.inputTick = GetNetworkTick();
-			//predictedInputs.inputTick = GetNetworkTick();
 
 			predictedInputs.inputs.resize(m_localPlayers.size());
 			for (std::size_t i = 0; i < m_localPlayers.size(); ++i)
@@ -1714,7 +1700,8 @@ namespace bw
 				auto& controllerData = m_localPlayers[i];
 
 				auto& playerData = predictedInputs.inputs[i];
-				playerData.input = controllerData.lastInputData;
+				playerData.input = PlayerInputData{};
+				playerData.previousInput = PlayerInputData{};
 
 				if (controllerData.controlledEntity)
 				{
@@ -1736,7 +1723,7 @@ namespace bw
 					if (entity->HasComponent<InputComponent>())
 					{
 						auto& entityInputs = entity->GetComponent<InputComponent>();
-						entityInputs.UpdateInputs(playerData.input);
+						playerData.input = entityInputs.GetInputs();
 						playerData.previousInput = entityInputs.GetPreviousInputs();
 					}
 				}

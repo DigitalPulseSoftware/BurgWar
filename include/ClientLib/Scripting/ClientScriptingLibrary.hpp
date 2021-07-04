@@ -25,6 +25,7 @@ namespace bw
 
 		private:
 			void RegisterGlobalLibrary(ScriptingContext& context) override;
+			void RegisterInputControllerClass(ScriptingContext& context) override;
 			void RegisterMatchLibrary(ScriptingContext& context, sol::table& library) override;
 			virtual void RegisterParticleLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterScriptLibrary(ScriptingContext& context, sol::table& library) override;

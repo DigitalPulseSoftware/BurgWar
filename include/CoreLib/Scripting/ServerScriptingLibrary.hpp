@@ -26,6 +26,7 @@ namespace bw
 		private:
 			void RegisterAssetLibrary(ScriptingContext& context, sol::table& library);
 			void RegisterGlobalLibrary(ScriptingContext& context) override;
+			void RegisterInputControllerClass(ScriptingContext& context) override;
 			void RegisterMatchLibrary(ScriptingContext& context, sol::table& library) override;
 			void RegisterNetworkLibrary(ScriptingContext& context, sol::table& library) override;
 			void RegisterPlayerClass(ScriptingContext& context);

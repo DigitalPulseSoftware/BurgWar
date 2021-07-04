@@ -741,6 +741,10 @@ namespace bw
 			joinedPacket.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());
 			joinedPacket.playerName = player->GetName();
 
+			// Send player local index
+			if (player == newPlayer)
+				joinedPacket.localIndex = player->GetLocalIndex();
+
 			newPlayer->SendPacket(joinedPacket);
 
 			chatPacket.localIndex = player->GetLocalIndex();

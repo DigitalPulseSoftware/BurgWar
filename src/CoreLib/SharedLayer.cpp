@@ -8,6 +8,7 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Systems/AnimationSystem.hpp>
+#include <CoreLib/Systems/InputSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
@@ -27,6 +28,7 @@ namespace bw
 		m_world.AddSystem<Ndk::VelocitySystem>();
 
 		m_world.AddSystem<AnimationSystem>(match);
+		m_world.AddSystem<InputSystem>();
 		m_world.AddSystem<PlayerMovementSystem>();
 		m_world.AddSystem<TickCallbackSystem>(match);
 		m_world.AddSystem<WeaponSystem>(match);

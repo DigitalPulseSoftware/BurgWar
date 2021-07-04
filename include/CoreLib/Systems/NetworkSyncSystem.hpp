@@ -27,6 +27,7 @@
 
 namespace bw
 {
+	class Player;
 	class TerrainLayer;
 
 	class BURGWAR_CORELIB_API NetworkSyncSystem : public Ndk::System<NetworkSyncSystem>
@@ -87,6 +88,7 @@ namespace bw
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				float scale;
+				Player* playerOwner;
 				std::optional<Ndk::EntityId> parent;
 				std::optional<Ndk::EntityId> weapon;
 				std::optional<HealthProperties> healthProperties;

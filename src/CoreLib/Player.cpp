@@ -303,15 +303,6 @@ namespace bw
 		m_visibleLayers.UnboundedSet(layerIndex, isVisible);
 	}
 
-	void Player::UpdateInputs(const PlayerInputData& inputData)
-	{
-		if (m_playerEntity && m_playerEntity->HasComponent<InputComponent>())
-		{
-			auto& inputComponent = m_playerEntity->GetComponent<InputComponent>();
-			inputComponent.UpdateInputs(inputData);
-		}
-	}
-
 	void Player::UpdateName(std::string newName)
 	{
 		m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerNameUpdate>(CreateHandle(), newName);

@@ -5,6 +5,7 @@
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <NDK/Components.hpp>
 #include <Nazara/Utility/Image.hpp>
+#include <CoreLib/PlayerInputController.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
@@ -83,7 +84,7 @@ namespace bw
 			entity->AddComponent<PlayerMovementComponent>();
 
 		if (hasInputs)
-			entity->AddComponent<InputComponent>();
+			entity->AddComponent<InputComponent>(std::make_shared<PlayerInputController>());
 
 		bwLog(GetLogger(), LogLevel::Debug, "Created entity {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
 

@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline LocalPlayer::LocalPlayer(Nz::UInt16 playerIndex, std::string name) :
+	inline LocalPlayer::LocalPlayer(Nz::UInt16 playerIndex, std::string name, std::optional<Nz::UInt8> localPlayerIndex) :
+	m_localPlayerIndex(std::move(localPlayerIndex)),
 	m_name(std::move(name)),
 	m_ping(InvalidPing),
 	m_playerIndex(playerIndex),
@@ -17,6 +18,12 @@ namespace bw
 	inline EntityId LocalPlayer::GetControlledEntityId() const
 	{
 		return m_controlledEntityId;
+	}
+
+	inline Nz::UInt8 LocalPlayer::GetLocalPlayerIndex() const
+	{
+		assert(m_localPlayerIndex);
+		return *m_localPlayerIndex;
 	}
 
 	inline const std::string& LocalPlayer::GetName() const
@@ -32,6 +39,11 @@ namespace bw
 	inline Nz::UInt16 LocalPlayer::GetPlayerIndex() const
 	{
 		return m_playerIndex;
+	}
+
+	inline bool LocalPlayer::IsLocalPlayer() const
+	{
+		return m_localPlayerIndex.has_value();
 	}
 
 	inline const std::string& LocalPlayer::ToString() const

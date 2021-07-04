@@ -9,6 +9,7 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/LocalMatch.hpp>
 #include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/LocalOwnerComponent.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -259,6 +260,16 @@ namespace bw
 
 			Nz::Boxf localBounds = layerVisualHandle->GetLocalBounds();
 			return Nz::Rectf(localBounds.x, localBounds.y, localBounds.width, localBounds.height);
+		});
+		
+		elementTable["GetOwner"] = LuaFunction([](sol::this_state s, const sol::table& table) -> sol::object
+		{
+			Ndk::EntityHandle entity = AssertScriptEntity(table);
+
+			if (!entity->HasComponent<LocalOwnerComponent>())
+				return sol::nil;
+
+			return sol::make_object(s, entity->GetComponent<LocalOwnerComponent>().GetOwner()->CreateHandle());
 		});
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object

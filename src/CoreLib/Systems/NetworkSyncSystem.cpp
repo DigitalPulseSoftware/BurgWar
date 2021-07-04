@@ -6,12 +6,13 @@
 #include <NDK/Components.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/TerrainLayer.hpp>
+#include <CoreLib/Utils.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
+#include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <CoreLib/Utils.hpp>
 
 namespace bw
 {
@@ -96,6 +97,11 @@ namespace bw
 
 			creationEvent.inputs = entityInputs.GetInputs();
 		}
+
+		if (entity->HasComponent<OwnerComponent>())
+			creationEvent.playerOwner = entity->GetComponent<OwnerComponent>().GetOwner();
+		else
+			creationEvent.playerOwner = nullptr;
 
 		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 		creationEvent.scale = entityNode.GetScale().y; //< x is affected by the "looking right" flag

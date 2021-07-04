@@ -3,8 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/BasicPlayerMovementController.hpp>
+#include <CoreLib/CustomInputController.hpp>
+#include <CoreLib/InputController.hpp>
 #include <CoreLib/NoclipPlayerMovementController.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
@@ -47,6 +48,7 @@ namespace bw
 		RegisterEventConnectionClass(context);
 		RegisterGameLibrary(context, gameTable);
 		RegisterGlobalLibrary(context);
+		RegisterInputControllerClass(context);
 		RegisterMatchLibrary(context, matchTable);
 		RegisterMetatableLibrary(context);
 		RegisterNetworkLibrary(context, networkTable);
@@ -121,6 +123,21 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state.new_usertype<ElementEventConnection>("ElementEventConnection", "new", sol::no_constructor);
 		state.new_usertype<GamemodeEventConnection>("GamemodeEventConnection", "new", sol::no_constructor);
+	}
+
+	void SharedScriptingLibrary::RegisterInputControllerClass(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+		state.new_usertype<InputController>("InputController");
+
+		state.new_usertype<CustomInputController>("CustomInputController",
+			sol::base_classes, sol::bases<InputController>(),
+
+			"new", sol::factories(LuaFunction([](sol::main_protected_function callback) -> std::shared_ptr<InputController>
+			{
+				return std::make_shared<CustomInputController>(std::move(callback));
+			}))
+		);
 	}
 
 	void SharedScriptingLibrary::RegisterNetworkPacketClasses(ScriptingContext& context)

@@ -11,9 +11,19 @@ namespace bw
 		return m_playerEntity;
 	}
 
+	inline const PlayerInputData& Player::GetInputs() const
+	{
+		return m_inputs;
+	}
+
 	inline LayerIndex Player::GetLayerIndex() const
 	{
 		return m_layerIndex;
+	}
+
+	inline Nz::UInt8 Player::GetLocalIndex() const
+	{
+		return m_localIndex;
 	}
 
 	inline Match& Player::GetMatch() const
@@ -24,11 +34,6 @@ namespace bw
 	inline const std::string& Player::GetName() const
 	{
 		return m_name;
-	}
-
-	inline Nz::UInt8 Player::GetLocalIndex() const
-	{
-		return m_localIndex;
 	}
 
 	inline std::size_t Player::GetPlayerIndex() const
@@ -60,5 +65,10 @@ namespace bw
 	void Player::SendPacket(const T& packet)
 	{
 		m_session.SendPacket(packet);
+	}
+
+	inline void Player::UpdateInputs(const PlayerInputData& inputData)
+	{
+		m_inputs = inputData;
 	}
 }

@@ -6,9 +6,15 @@
 
 namespace bw
 {
-	inline InputComponent::InputComponent() :
-	m_inputIndex(0)
+	inline InputComponent::InputComponent(std::shared_ptr<InputController> inputController) :
+	m_inputIndex(0),
+	m_inputController(std::move(inputController))
 	{
+	}
+
+	inline const std::shared_ptr<InputController>& InputComponent::GetController() const
+	{
+		return m_inputController;
 	}
 
 	inline const PlayerInputData& InputComponent::GetInputs() const
@@ -25,6 +31,11 @@ namespace bw
 			previousInputIndex = m_inputData.size() - 1;
 
 		return m_inputData[previousInputIndex];
+	}
+
+	inline void InputComponent::UpdateController(std::shared_ptr<InputController> inputController)
+	{
+		m_inputController = std::move(inputController);
 	}
 
 	inline void InputComponent::UpdateInputs(const PlayerInputData& inputData)

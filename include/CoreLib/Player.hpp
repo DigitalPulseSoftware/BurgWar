@@ -29,7 +29,8 @@ namespace bw
 
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
-	class BURGWAR_CORELIB_API Player : public Nz::HandledObject<Player>	{
+	class BURGWAR_CORELIB_API Player : public Nz::HandledObject<Player>
+	{
 		friend Match;
 
 		public:
@@ -39,10 +40,11 @@ namespace bw
 			~Player();
 
 			inline const Ndk::EntityHandle& GetControlledEntity() const;
+			inline const PlayerInputData& GetInputs() const;
 			inline LayerIndex GetLayerIndex() const;
+			inline Nz::UInt8 GetLocalIndex() const;
 			inline Match& GetMatch() const;
 			inline const std::string& GetName() const;
-			inline Nz::UInt8 GetLocalIndex() const;
 			inline std::size_t GetPlayerIndex() const;
 			inline MatchClientSession& GetSession();
 			inline const MatchClientSession& GetSession() const;
@@ -65,7 +67,7 @@ namespace bw
 
 			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
-			void UpdateInputs(const PlayerInputData& inputData);
+			inline void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateName(std::string newName);
 
 			Player& operator=(const Player&) = delete;
@@ -83,12 +85,6 @@ namespace bw
 			NazaraSlot(WeaponWielderComponent, OnWeaponAdded, m_onWeaponAdded);
 			NazaraSlot(WeaponWielderComponent, OnWeaponRemove, m_onWeaponRemove);
 
-			struct Input
-			{
-				PlayerInputData data;
-				Nz::UInt16 index;
-			};
-
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			LayerIndex m_layerIndex;
 			std::size_t m_playerIndex;
@@ -98,6 +94,7 @@ namespace bw
 			Nz::UInt8 m_localIndex;
 			Match& m_match;
 			MatchClientSession& m_session;
+			PlayerInputData m_inputs;
 			bool m_isAdmin;
 			bool m_isReady;
 			bool m_shouldSendWeapons;

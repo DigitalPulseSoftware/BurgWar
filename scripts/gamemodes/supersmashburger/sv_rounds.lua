@@ -1,5 +1,15 @@
 include("sh_rounds.lua")
 
+local stuckInputController = CustomInputController.new(function (entity)
+	local inputs = entity:GetOwner():GetInputs()
+
+	inputs.isAttacking = false
+	inputs.isMovingLeft = false
+	inputs.isMovingRight = false
+
+	return inputs
+end)
+
 local gamemode = ScriptedGamemode()
 
 gamemode.PlayerRoundCount = {}
@@ -12,15 +22,11 @@ gamemode:OnAsync("PlayerJoined", function (self, player)
 
 	local playerIndex = player:GetPlayerIndex()
 
-	print("PlayerJoined - " .. playerIndex .. " - " .. player:GetName())
-
 	self.PlayerRoundCount[playerIndex] = 0
 
 	if (self.State == RoundState.Waiting) then
 		local playerCount = #match.GetPlayers()
 		local requiredPlayerCount = self:GetProperty("minplayercount")
-
-		print("Checking player count - " .. playerCount .. "/" .. requiredPlayerCount)
 
 		if (playerCount >= requiredPlayerCount) then
 			self:PrepareNextRound()
@@ -54,8 +60,6 @@ function gamemode:StartRound()
 		table.insert(activePlayers, player)
 		table.insert(activePlayerNames, player:GetName())
 
-		print("Start round with player - " .. player:GetPlayerIndex() .. " - " .. player:GetName())
-
 		self.PlayerRoundCount[player:GetPlayerIndex()] = self.PlayerRoundCount[player:GetPlayerIndex()] + 1
 		self:IncreasePlayerScore(player, "Played")
 	end
@@ -66,10 +70,11 @@ function gamemode:StartRound()
 
 	for _, player in pairs(activePlayers) do
 		self:SpawnPlayer(player)
+
 		local entity = player:GetControlledEntity()
 		if (entity) then
-			entity.previousController = entity:GetPlayerMovementController()
-			entity:UpdatePlayerMovementController(nil)
+			entity.previousController = entity:GetInputController()
+			entity:UpdateInputController(stuckInputController)
 		end
 	end
 
@@ -79,7 +84,7 @@ function gamemode:StartRound()
 	for _, player in pairs(match.GetPlayers()) do
 		local entity = player:GetControlledEntity()
 		if (entity and entity.previousController) then
-			entity:UpdatePlayerMovementController(entity.previousController)
+			entity:UpdateInputController(entity.previousController)
 			entity.previousController = nil
 		end
 	end
