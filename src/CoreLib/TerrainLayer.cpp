@@ -10,7 +10,6 @@
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <Nazara/Physics2D/Arbiter2D.hpp>
 #include <NDK/Components.hpp>
 #include <NDK/Systems.hpp>

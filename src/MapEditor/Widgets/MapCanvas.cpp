@@ -380,12 +380,12 @@ namespace bw
 		{
 			const auto& targetEntities = m_entityGizmo->GetTargetEntities();
 
-			auto it = std::find_if(targetEntities.begin(), targetEntities.end(), [&](const LayerVisualEntityHandle& visualEntity) 
+			auto targetIt = std::find_if(targetEntities.begin(), targetEntities.end(), [&](const LayerVisualEntityHandle& visualEntity) 
 			{ 
 				return visualEntity->GetUniqueId() == entityId; 
 			});
 
-			if (it != targetEntities.end())
+			if (targetIt != targetEntities.end())
 				m_entityGizmo->Refresh();
 		}
 	}

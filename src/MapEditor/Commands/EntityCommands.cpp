@@ -274,8 +274,6 @@ namespace bw::Commands
 	
 	void PrefabInstantiate::undo()
 	{
-		const Map& map = m_editor.GetWorkingMap();
-
 		assert(m_entityData.empty());
 		for (EntityId uniqueId : m_entityUniqueIds)
 		{

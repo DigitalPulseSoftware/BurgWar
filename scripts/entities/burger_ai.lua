@@ -12,7 +12,7 @@ if (SERVER) then
 		self:SelectWeapon("weapon_sword_emmentalibur")
 	end)
 
-	entity:On("tick", function (self)
+	entity:On("Tick", function (self)
 		local pos = self:GetPosition()
 		local closestEnemy
 		local closestEnemyDist = math.huge
