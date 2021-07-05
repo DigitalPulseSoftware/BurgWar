@@ -39,6 +39,8 @@ XMake est également capable de générer un fichier projet pour un autre outil 
 - Ninja: `xmake project -k ninja`
 - XCode: `xmake project -k xcode`
 
+Vous pouvez ensuite compiler le jeu avec l'outil de votre choix.
+
 ### Lancer le jeu
 
 Une fois la compilation terminée, vous devriez obtenir les binaires du jeu dans le dossier `bin/<config>` (où `<config>` équivaudra à votre plateforme/architecture/configuration, ex: `windows_x64_debug`).
@@ -57,7 +59,7 @@ Les technologies utilisées sont :
 - [cxxopts](https://github.com/jarro2783/cxxopts) : pour parser la ligne de commande (pour l'outil maptool)
 - [fmt](https://github.com/fmtlib/fmt) : bibliothèque de formattage incontournable en C++, utilisée pour le système de logs
 - [hopscotch-map](https://github.com/Tessil/hopscotch-map) : une hashmap performante basée sur le [hopscotch hashing](https://en.wikipedia.org/wiki/Hopscotch_hashing)
-- [Nazara Engine](https://github.com/DigitalPulseSoftware/NazaraEngine) : mon propre moteur de jeu, responsable du rendu, de l'audio, de la physique, etc.
+- [Nazara Engine](https://github.com/DigitalPulseSoftware/NazaraEngine) : **mon propre moteur de jeu**, responsable du rendu, de l'audio, de la physique, etc.
 - [nlohmann_json](https://json.nlohmann.me) : parseur de JSon simple d'utilisation
 - [Qt](https://www.qt.io) : bibliothèque très connue permettant de faire des interfaces graphiques facilement en C++
 - [sol](https://github.com/ThePhD/sol2) : interface C++ <=> Lua très pratique et rapide

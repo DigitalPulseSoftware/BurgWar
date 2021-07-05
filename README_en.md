@@ -37,6 +37,8 @@ XMake can also generate a project file for another tool:
 - Ninja: `xmake project -k ninja`
 - XCode: `xmake project -k xcode`
 
+You should now be able to the project file with the tool of your choice.
+
 ### Run the game
 
 Once the compilation finished, you should have the game binaries in the `bin/<config>` folder (where `<config>` is your platform/arch/mode, for example: `windows_x64_debug`).
