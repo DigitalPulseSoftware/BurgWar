@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalPlayerInputController.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/Components/LocalPlayerControlledComponent.hpp>
 #include <cassert>
 
@@ -16,9 +16,9 @@ namespace bw
 			return std::nullopt; //< Don't override inputs (for non-local player controlled entities)
 
 		LocalPlayerControlledComponent& controlledComponent = entity->GetComponent<LocalPlayerControlledComponent>();
-		LocalMatch& localMatch = controlledComponent.GetLocalMatch();
+		ClientMatch& clientMatch = controlledComponent.GetClientMatch();
 		Nz::UInt8 localPlayerIndex = controlledComponent.GetLocalPlayerIndex();
 
-		return localMatch.GetLocalPlayerInputs(localPlayerIndex);
+		return clientMatch.GetLocalPlayerInputs(localPlayerIndex);
 	}
 }

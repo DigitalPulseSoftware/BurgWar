@@ -3,14 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/SoundEntity.hpp>
-#include <ClientLib/LocalLayerSound.hpp>
+#include <ClientLib/ClientLayerSound.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	SoundEntity::SoundEntity(Ndk::World& renderWorld, LocalLayerSoundHandle layerSoundHandle, float depth) :
+	SoundEntity::SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerSoundHandle, float depth) :
 	m_entity(renderWorld.CreateEntity()),
 	m_layerSound(std::move(layerSoundHandle)),
 	m_depth(depth)
@@ -21,7 +21,7 @@ namespace bw
 		m_layerSound->RegisterAudibleSound(this);
 	}
 	
-	SoundEntity::SoundEntity(Ndk::World& renderWorld, LocalLayerSoundHandle layerSoundHandle, const Nz::Node& parentNode, float depth) :
+	SoundEntity::SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerSoundHandle, const Nz::Node& parentNode, float depth) :
 	SoundEntity(renderWorld, std::move(layerSoundHandle), depth)
 	{
 		m_entity->GetComponent<Ndk::NodeComponent>().SetParent(parentNode);

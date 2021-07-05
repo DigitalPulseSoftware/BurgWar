@@ -11,7 +11,7 @@ namespace bw
 		return m_inputs;
 	}
 	
-	PlayerInputData DummyInputPoller::Poll(LocalMatch& /*localMatch*/, const LocalLayerEntityHandle& /*controlledEntity*/)
+	PlayerInputData DummyInputPoller::Poll(ClientMatch& /*clientMatch*/, const ClientLayerEntityHandle& /*controlledEntity*/)
 	{
 		return m_inputs;
 	}

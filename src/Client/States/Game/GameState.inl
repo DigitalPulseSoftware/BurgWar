@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline const std::shared_ptr<LocalMatch>& GameState::GetMatch()
+	inline const std::shared_ptr<ClientMatch>& GameState::GetMatch()
 	{
 		return m_match;
 	}

@@ -9,7 +9,7 @@
 #include <CoreLib/Version.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMousePoller.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/States/BackgroundState.hpp>

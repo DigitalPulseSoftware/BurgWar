@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALPLAYER_HPP
-#define BURGWAR_CLIENTLIB_LOCALPLAYER_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTPLAYER_HPP
+#define BURGWAR_CLIENTLIB_CLIENTPLAYER_HPP
 
 #include <CoreLib/EntityId.hpp>
 #include <ClientLib/Export.hpp>
@@ -16,17 +16,17 @@
 
 namespace bw
 {
-	class LocalPlayer;
+	class ClientPlayer;
 
-	using LocalPlayerHandle = Nz::ObjectHandle<LocalPlayer>;
+	using ClientPlayerHandle = Nz::ObjectHandle<ClientPlayer>;
 
-	class BURGWAR_CLIENTLIB_API LocalPlayer : public Nz::HandledObject<LocalPlayer>
+	class BURGWAR_CLIENTLIB_API ClientPlayer : public Nz::HandledObject<ClientPlayer>
 	{
 		public:
-			inline LocalPlayer(Nz::UInt16 playerIndex, std::string name, std::optional<Nz::UInt8> localPlayerIndex);
-			LocalPlayer(const LocalPlayer&) = delete;
-			LocalPlayer(LocalPlayer&&) noexcept = default;
-			~LocalPlayer() = default;
+			inline ClientPlayer(Nz::UInt16 playerIndex, std::string name, std::optional<Nz::UInt8> localPlayerIndex);
+			ClientPlayer(const ClientPlayer&) = delete;
+			ClientPlayer(ClientPlayer&&) noexcept = default;
+			~ClientPlayer() = default;
 
 			inline EntityId GetControlledEntityId() const;
 			inline Nz::UInt8 GetLocalPlayerIndex() const;
@@ -42,8 +42,8 @@ namespace bw
 			inline void UpdateName(std::string name);
 			inline void UpdatePing(Nz::UInt16 ping);
 
-			LocalPlayer& operator=(const LocalPlayer&) = delete;
-			LocalPlayer& operator=(LocalPlayer&&) noexcept = default;
+			ClientPlayer& operator=(const ClientPlayer&) = delete;
+			ClientPlayer& operator=(ClientPlayer&&) noexcept = default;
 
 			static constexpr Nz::UInt16 InvalidPing = std::numeric_limits<Nz::UInt16>::max();
 
@@ -56,6 +56,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/LocalPlayer.inl>
+#include <ClientLib/ClientPlayer.inl>
 
 #endif

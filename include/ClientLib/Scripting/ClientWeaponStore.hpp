@@ -13,8 +13,8 @@
 namespace bw
 {
 	class ClientAssetStore;
-	class LocalLayer;
-	class LocalLayerEntity;
+	class ClientLayer;
+	class ClientLayerEntity;
 
 	class BURGWAR_CLIENTLIB_API ClientWeaponStore : public SharedWeaponStore
 	{
@@ -22,7 +22,7 @@ namespace bw
 			inline ClientWeaponStore(ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ClientWeaponStore() = default;
 
-			std::optional<LocalLayerEntity> InstantiateWeapon(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent);
+			std::optional<ClientLayerEntity> InstantiateWeapon(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent);
 
 		private:
 			void InitializeElementTable(sol::main_table& elementTable) override;

@@ -14,30 +14,30 @@
 
 namespace bw
 {
-	class LocalLayer;
-	class LocalMatch;
+	class ClientLayer;
+	class ClientMatch;
 
-	class BURGWAR_CLIENTLIB_API LocalMatchComponent : public Ndk::Component<LocalMatchComponent>
+	class BURGWAR_CLIENTLIB_API ClientMatchComponent : public Ndk::Component<ClientMatchComponent>
 	{
 		public:
-			inline LocalMatchComponent(LocalMatch& localMatch, LayerIndex layerIndex, EntityId uniqueId);
-			~LocalMatchComponent() = default;
+			inline ClientMatchComponent(ClientMatch& clientMatch, LayerIndex layerIndex, EntityId uniqueId);
+			~ClientMatchComponent() = default;
 
-			LocalLayer& GetLayer();
-			const LocalLayer& GetLayer() const;
+			ClientLayer& GetLayer();
+			const ClientLayer& GetLayer() const;
 			inline LayerIndex GetLayerIndex() const;
-			inline LocalMatch& GetLocalMatch() const;
+			inline ClientMatch& GetClientMatch() const;
 			inline EntityId GetUniqueId() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			EntityId m_uniqueId;
-			LocalMatch& m_localMatch;
+			ClientMatch& m_clientMatch;
 			LayerIndex m_layerIndex;
 	};
 }
 
-#include <ClientLib/Components/LocalMatchComponent.inl>
+#include <ClientLib/Components/ClientMatchComponent.inl>
 
 #endif

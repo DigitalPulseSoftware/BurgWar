@@ -7,9 +7,9 @@
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	std::optional<LocalLayerEntity> ClientWeaponStore::InstantiateWeapon(LocalLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
+	std::optional<ClientLayerEntity> ClientWeaponStore::InstantiateWeapon(ClientLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
 	{
 		const auto& weaponClass = GetElement(entityIndex);
 
@@ -35,15 +35,15 @@ namespace bw
 
 		const Ndk::EntityHandle& weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
-		LocalLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
+		ClientLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
 
 		weapon->AddComponent<VisualComponent>(layerEntity.CreateHandle());
-		weapon->AddComponent<LocalMatchComponent>(layer.GetLocalMatch(), layer.GetLayerIndex(), uniqueId);
+		weapon->AddComponent<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 
-		bwLog(GetLogger(), LogLevel::Debug, "Created {} weapon {} on layer {} of type {}", (serverId != LocalLayerEntity::ClientsideId) ? "server" : "client", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
+		bwLog(GetLogger(), LogLevel::Debug, "Created {} weapon {} on layer {} of type {}", (serverId != ClientLayerEntity::ClientsideId) ? "server" : "client", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
 
 		return layerEntity;
 	}

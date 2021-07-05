@@ -2,18 +2,18 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 
 namespace bw
 {
 	template<typename T>
-	T LocalMatch::AdjustServerTick(T tick)
+	T ClientMatch::AdjustServerTick(T tick)
 	{
 		return tick - 3;
 	}
 
 	template<typename F>
-	void LocalMatch::ForEachPlayer(F&& func)
+	void ClientMatch::ForEachPlayer(F&& func)
 	{
 		for (auto& playerOpt : m_matchPlayers)
 		{
@@ -24,66 +24,66 @@ namespace bw
 		}
 	}
 
-	inline EntityId bw::LocalMatch::AllocateClientUniqueId()
+	inline EntityId bw::ClientMatch::AllocateClientUniqueId()
 	{
 		return m_freeClientId--;
 	}
 
-	inline Nz::UInt16 LocalMatch::GetActiveLayer()
+	inline Nz::UInt16 ClientMatch::GetActiveLayer()
 	{
 		return m_activeLayerIndex;
 	}
 
-	inline AnimationManager& LocalMatch::GetAnimationManager()
+	inline AnimationManager& ClientMatch::GetAnimationManager()
 	{
 		return m_animationManager;
 	}
 
-	inline ClientAssetStore& LocalMatch::GetAssetStore()
+	inline ClientAssetStore& ClientMatch::GetAssetStore()
 	{
 		assert(m_assetStore.has_value());
 		return *m_assetStore;
 	}
 
-	inline ClientEditorApp& LocalMatch::GetApplication()
+	inline ClientEditorApp& ClientMatch::GetApplication()
 	{
 		return m_application;
 	}
 
-	inline Camera& LocalMatch::GetCamera()
+	inline Camera& ClientMatch::GetCamera()
 	{
 		return *m_camera;
 	}
 
-	inline const Camera& LocalMatch::GetCamera() const
+	inline const Camera& ClientMatch::GetCamera() const
 	{
 		return *m_camera;
 	}
 
-	inline ClientSession& LocalMatch::GetClientSession()
+	inline ClientSession& ClientMatch::GetClientSession()
 	{
 		return m_session;
 	}
 
-	inline const PlayerInputData& LocalMatch::GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const
+	inline const PlayerInputData& ClientMatch::GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const
 	{
 		assert(localPlayerIndex < m_localPlayers.size());
 		return m_localPlayers[localPlayerIndex].lastInputData;
 	}
 
-	inline ParticleRegistry& LocalMatch::GetParticleRegistry()
+	inline ParticleRegistry& ClientMatch::GetParticleRegistry()
 	{
 		assert(m_particleRegistry);
 		return *m_particleRegistry;
 	}
 
-	inline const ParticleRegistry& LocalMatch::GetParticleRegistry() const
+	inline const ParticleRegistry& ClientMatch::GetParticleRegistry() const
 	{
 		assert(m_particleRegistry);
 		return *m_particleRegistry;
 	}
 
-	inline LocalPlayer* LocalMatch::GetPlayerByIndex(Nz::UInt16 playerIndex)
+	inline ClientPlayer* ClientMatch::GetPlayerByIndex(Nz::UInt16 playerIndex)
 	{
 		if (playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerIndex].has_value())
 			return nullptr;
@@ -91,12 +91,12 @@ namespace bw
 		return &m_matchPlayers[playerIndex].value();
 	}
 
-	inline Ndk::World& LocalMatch::GetRenderWorld()
+	inline Ndk::World& ClientMatch::GetRenderWorld()
 	{
 		return m_renderWorld;
 	}
 
-	inline void LocalMatch::Quit()
+	inline void ClientMatch::Quit()
 	{
 		m_isLeavingMatch = true;
 	}

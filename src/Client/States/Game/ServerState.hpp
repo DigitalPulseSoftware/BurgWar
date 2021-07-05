@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 	class LocalSessionManager;
 	class NetworkSessionManager;
 

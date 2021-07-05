@@ -10,7 +10,7 @@
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalCommandStore.hpp>
+#include <ClientLib/ClientCommandStore.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <memory>
@@ -22,7 +22,7 @@ namespace bw
 
 	class BURGWAR_CLIENTLIB_API ClientSession
 	{
-		friend class LocalCommandStore;
+		friend class ClientCommandStore;
 
 		public:
 			inline ClientSession(BurgApp& app);
@@ -96,7 +96,7 @@ namespace bw
 
 			std::shared_ptr<SessionBridge> m_bridge;
 			BurgApp& m_application;
-			LocalCommandStore m_commandStore;
+			ClientCommandStore m_commandStore;
 			NetworkStringStore m_stringStore;
 	};
 }

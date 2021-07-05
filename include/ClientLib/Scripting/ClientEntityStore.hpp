@@ -17,8 +17,8 @@
 namespace bw
 {
 	class AssetStore;
-	class LocalLayer;
-	class LocalLayerEntity;
+	class ClientLayer;
+	class ClientLayerEntity;
 
 	class BURGWAR_CLIENTLIB_API ClientEntityStore : public ClientEditorEntityStore
 	{
@@ -27,7 +27,7 @@ namespace bw
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
-			std::optional<LocalLayerEntity> InstantiateEntity(LocalLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
+			std::optional<ClientLayerEntity> InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
 	};
 }
 

@@ -6,15 +6,15 @@
 
 namespace bw
 {
-	inline LocalPlayerControlledComponent::LocalPlayerControlledComponent(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex) :
-	m_localMatch(localMatch),
+	inline LocalPlayerControlledComponent::LocalPlayerControlledComponent(ClientMatch& clientMatch, Nz::UInt8 localPlayerIndex) :
+	m_clientMatch(clientMatch),
 	m_localPlayerIndex(localPlayerIndex)
 	{
 	}
 	
-	inline LocalMatch& LocalPlayerControlledComponent::GetLocalMatch() const
+	inline ClientMatch& LocalPlayerControlledComponent::GetClientMatch() const
 	{
-		return m_localMatch;
+		return m_clientMatch;
 	}
 	
 	inline Nz::UInt8 LocalPlayerControlledComponent::GetLocalPlayerIndex() const

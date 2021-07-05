@@ -14,7 +14,7 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
 	class BURGWAR_CLIENTLIB_API FrameCallbackSystem : public Ndk::System<FrameCallbackSystem>
 	{

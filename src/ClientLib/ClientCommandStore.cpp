@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalCommandStore.hpp>
+#include <ClientLib/ClientCommandStore.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 
 namespace bw
 {
-	LocalCommandStore::LocalCommandStore(const Logger& logger) :
+	ClientCommandStore::ClientCommandStore(const Logger& logger) :
 	CommandStore(logger)
 	{
 #define IncomingCommand(Type) RegisterIncomingCommand<Packets::Type>(#Type, [](ClientSession* session, Packets::Type&& packet) \

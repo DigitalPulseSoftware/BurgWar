@@ -19,7 +19,7 @@ namespace bw
 			KeyboardAndMousePoller(Nz::Window& window, Nz::UInt8 localPlayerIndex);
 			~KeyboardAndMousePoller() = default;
 
-			PlayerInputData Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity) override;
+			PlayerInputData Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity) override;
 
 		private:
 			NazaraSlot(Nz::EventHandler, OnMouseWheelMoved, m_onMouseWheelMovedSlot);

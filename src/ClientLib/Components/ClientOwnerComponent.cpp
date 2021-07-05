@@ -2,10 +2,10 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/Components/ClientOwnerComponent.hpp>
 
 namespace bw
 {
-	Ndk::ComponentIndex LocalOwnerComponent::componentIndex;
+	Ndk::ComponentIndex ClientOwnerComponent::componentIndex;
 }
 

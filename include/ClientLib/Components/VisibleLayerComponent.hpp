@@ -9,7 +9,7 @@
 
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/VisualLayer.hpp>
@@ -19,7 +19,7 @@
 
 namespace bw
 {
-	class LocalLayerEntity;
+	class ClientLayerEntity;
 
 	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public Ndk::Component<VisibleLayerComponent>
 	{
@@ -29,7 +29,7 @@ namespace bw
 
 			void Clear();
 
-			void RegisterLocalLayer(LocalLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
+			void RegisterLocalLayer(ClientLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 			void RegisterVisibleLayer(Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 
 			static Ndk::ComponentIndex componentIndex;
@@ -37,10 +37,10 @@ namespace bw
 		private:
 			struct VisibleLayer;
 
-			void CreateSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
+			void CreateSound(VisibleLayer* layer, std::size_t soundIndex, ClientLayerSound& layerSound);
 			void CreateVisual(VisibleLayer* layer, Nz::Int64 uniqueId, LayerVisualEntity& layerEntity);
 
-			void DeleteSound(VisibleLayer* layer, std::size_t soundIndex, LocalLayerSound& layerSound);
+			void DeleteSound(VisibleLayer* layer, std::size_t soundIndex, ClientLayerSound& layerSound);
 			void DeleteVisual(VisibleLayer* layer, Nz::Int64 uniqueId);
 
 			void RegisterLayer(std::shared_ptr<VisibleLayer> visibleLayer, Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
@@ -62,8 +62,8 @@ namespace bw
 
 			struct VisibleLocalLayer : VisibleLayer
 			{
-				NazaraSlot(LocalLayer, OnSoundCreated, onSoundCreated);
-				NazaraSlot(LocalLayer, OnSoundDelete, onSoundDelete);
+				NazaraSlot(ClientLayer, OnSoundCreated, onSoundCreated);
+				NazaraSlot(ClientLayer, OnSoundDelete, onSoundDelete);
 			};
 
 			//FIXME (shared_ptr => unique_ptr)

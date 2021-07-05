@@ -8,7 +8,7 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_PLAYWINDOW_HPP
 
 #include <CoreLib/Match.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <memory>
 #include <optional>
@@ -32,7 +32,7 @@ namespace bw
 
 			Ndk::World m_world;
 			Ndk::Canvas m_canvas;
-			std::optional<LocalMatch> m_localMatch;
+			std::optional<ClientMatch> m_clientMatch;
 			std::optional<Match> m_match;
 			std::shared_ptr<ClientSession> m_session;
 	};

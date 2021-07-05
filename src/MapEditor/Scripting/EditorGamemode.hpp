@@ -16,7 +16,7 @@ namespace bw
 	class EditorGamemode : public SharedGamemode
 	{
 		public:
-			EditorGamemode(MapCanvas& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, PropertyValueMap propertyValues);
+			EditorGamemode(MapCanvas& clientMatch, std::shared_ptr<ScriptingContext> scriptingContext, PropertyValueMap propertyValues);
 			~EditorGamemode() = default;
 
 		private:

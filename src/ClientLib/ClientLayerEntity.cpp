@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
@@ -10,32 +10,32 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
-#include <ClientLib/LocalLayer.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientLayer.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components.hpp>
 
 namespace bw
 {
-	LocalLayerEntity::LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
+	ClientLayerEntity::ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
 	LayerVisualEntity(entity, layer.GetLayerIndex(), uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
 	{
-		m_layer.GetLocalMatch().RegisterEntity(uniqueId, CreateHandle<LocalLayerEntity>());
+		m_layer.GetClientMatch().RegisterEntity(uniqueId, CreateHandle<ClientLayerEntity>());
 	}
 
-	LocalLayerEntity::~LocalLayerEntity()
+	ClientLayerEntity::~ClientLayerEntity()
 	{
 		if (m_ghostEntity)
 			m_layer.OnEntityDelete(&m_layer, *m_ghostEntity);
 
 		if (EntityId uniqueId = GetUniqueId(); uniqueId != InvalidEntityId)
-			m_layer.GetLocalMatch().UnregisterEntity(uniqueId);
+			m_layer.GetClientMatch().UnregisterEntity(uniqueId);
 	}
 
-	Nz::RadianAnglef LocalLayerEntity::GetAngularVelocity() const
+	Nz::RadianAnglef ClientLayerEntity::GetAngularVelocity() const
 	{
 		assert(IsPhysical());
 
@@ -43,14 +43,14 @@ namespace bw
 		return entityPhys.GetAngularVelocity();
 	}
 
-	LocalLayerEntity* LocalLayerEntity::GetGhost()
+	ClientLayerEntity* ClientLayerEntity::GetGhost()
 	{
 		if (!m_ghostEntity)
 		{
 			const Ndk::EntityHandle& ghostEntity = GetEntity()->GetWorld()->CreateEntity();
 			ghostEntity->AddComponent<Ndk::NodeComponent>();
 
-			m_ghostEntity = std::make_unique<LocalLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetLocalMatch().AllocateClientUniqueId());
+			m_ghostEntity = std::make_unique<ClientLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetClientMatch().AllocateClientUniqueId());
 
 			/*for (auto& renderable : m_attachedRenderables)
 			{
@@ -77,12 +77,12 @@ namespace bw
 		return m_ghostEntity.get();
 	}
 
-	LayerIndex LocalLayerEntity::GetLayerIndex() const
+	LayerIndex ClientLayerEntity::GetLayerIndex() const
 	{
 		return m_layer.GetLayerIndex();
 	}
 
-	Nz::Vector2f LocalLayerEntity::GetLinearVelocity() const
+	Nz::Vector2f ClientLayerEntity::GetLinearVelocity() const
 	{
 		assert(IsPhysical());
 
@@ -90,7 +90,7 @@ namespace bw
 		return entityPhys.GetVelocity();
 	}
 
-	Nz::Vector2f LocalLayerEntity::GetPhysicalPosition() const
+	Nz::Vector2f ClientLayerEntity::GetPhysicalPosition() const
 	{
 		assert(IsPhysical());
 		
@@ -98,7 +98,7 @@ namespace bw
 		return entityPhys.GetPosition();
 	}
 
-	Nz::RadianAnglef LocalLayerEntity::GetPhysicalRotation() const
+	Nz::RadianAnglef ClientLayerEntity::GetPhysicalRotation() const
 	{
 		assert(IsPhysical());
 
@@ -106,19 +106,19 @@ namespace bw
 		return entityPhys.GetRotation();
 	}
 
-	Nz::Vector2f LocalLayerEntity::GetPosition() const
+	Nz::Vector2f ClientLayerEntity::GetPosition() const
 	{
 		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
 		return Nz::Vector2f(entityNode.GetPosition()); //< FIXME
 	}
 
-	Nz::RadianAnglef LocalLayerEntity::GetRotation() const
+	Nz::RadianAnglef ClientLayerEntity::GetRotation() const
 	{
 		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
 		return AngleFromQuaternion(entityNode.GetRotation()); //< FIXME
 	}
 
-	void LocalLayerEntity::InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth)
+	void ClientLayerEntity::InitializeHealth(Nz::UInt16 maxHealth, Nz::UInt16 currentHealth)
 	{
 		auto& healthData = m_health.emplace();
 		healthData.currentHealth = currentHealth;
@@ -144,19 +144,19 @@ namespace bw
 			ShowHealthBar();
 	}
 
-	bool LocalLayerEntity::IsFacingRight() const
+	bool ClientLayerEntity::IsFacingRight() const
 	{
 		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
 		return entityNode.GetScale().x > 0.f;
 	}
 
-	void LocalLayerEntity::UpdateAnimation(Nz::UInt8 animationId)
+	void ClientLayerEntity::UpdateAnimation(Nz::UInt8 animationId)
 	{
 		auto& animComponent = GetEntity()->GetComponent<AnimationComponent>();
 		animComponent.Play(animationId, m_layer.GetMatch().GetCurrentTime());
 	}
 
-	void LocalLayerEntity::UpdatePlayerMovement(bool isFacingRight)
+	void ClientLayerEntity::UpdatePlayerMovement(bool isFacingRight)
 	{
 		auto& playerMovementComponent = GetEntity()->GetComponent<PlayerMovementComponent>();
 
@@ -167,7 +167,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayerEntity::UpdateHealth(Nz::UInt16 newHealth)
+	void ClientLayerEntity::UpdateHealth(Nz::UInt16 newHealth)
 	{
 		assert(m_health);
 
@@ -196,12 +196,12 @@ namespace bw
 		}
 	}
 
-	void LocalLayerEntity::UpdateInputs(const PlayerInputData& inputData)
+	void ClientLayerEntity::UpdateInputs(const PlayerInputData& inputData)
 	{
 		GetEntity()->GetComponent<InputComponent>().UpdateInputs(inputData);
 	}
 
-	void LocalLayerEntity::UpdateParent(const LocalLayerEntity* newParent)
+	void ClientLayerEntity::UpdateParent(const ClientLayerEntity* newParent)
 	{
 		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
 		if (newParent)
@@ -210,7 +210,7 @@ namespace bw
 			entityNode.SetParent(static_cast<Nz::Node*>(nullptr));
 	}
 
-	void LocalLayerEntity::UpdateWeaponEntity(const LocalLayerEntityHandle& entity)
+	void ClientLayerEntity::UpdateWeaponEntity(const ClientLayerEntityHandle& entity)
 	{
 		if (m_weaponEntity)
 		{
@@ -230,13 +230,13 @@ namespace bw
 		}
 	}
 
-	void LocalLayerEntity::HideHealthBar()
+	void ClientLayerEntity::HideHealthBar()
 	{
 		DetachHoveringRenderable(m_health->healthSprite);
 		DetachHoveringRenderable(m_health->lostHealthSprite);
 	}
 
-	void LocalLayerEntity::ShowHealthBar()
+	void ClientLayerEntity::ShowHealthBar()
 	{
 		AttachHoveringRenderable(m_health->healthSprite, Nz::Matrix4f::Identity(), 2, 10.f);
 		AttachHoveringRenderable(m_health->lostHealthSprite, Nz::Matrix4f::Identity(), 1, 10.f);

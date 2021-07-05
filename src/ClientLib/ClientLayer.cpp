@@ -2,11 +2,11 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/ClientLayer.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/ClientMatch.hpp>
+#include <ClientLib/Components/ClientOwnerComponent.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
@@ -19,7 +19,7 @@
 
 namespace bw
 {
-	LocalLayer::LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor) :
+	ClientLayer::ClientLayer(ClientMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor) :
 	ClientEditorLayer(match, layerIndex),
 	m_backgroundColor(backgroundColor),
 	m_isEnabled(false),
@@ -30,18 +30,18 @@ namespace bw
 		world.AddSystem<PostFrameCallbackSystem>();
 		world.AddSystem<VisualInterpolationSystem>();
 
-		OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		OnEntityCreated.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
 		{
 			OnEntityVisualCreated(layer, layerEntity);
 		});
 
-		OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		OnEntityDelete.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
 		{
 			OnEntityVisualDelete(layer, layerEntity);
 		});
 	}
 	
-	LocalLayer::LocalLayer(LocalLayer&& layer) noexcept :
+	ClientLayer::ClientLayer(ClientLayer&& layer) noexcept :
 	ClientEditorLayer(std::move(layer)),
 	m_entities(std::move(layer.m_entities)),
 	m_serverEntityIds(std::move(layer.m_serverEntityIds)),
@@ -58,23 +58,23 @@ namespace bw
 			});
 		}
 		
-		OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		OnEntityCreated.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
 		{
 			OnEntityVisualCreated(layer, layerEntity);
 		});
 
-		OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& layerEntity)
+		OnEntityDelete.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
 		{
 			OnEntityVisualDelete(layer, layerEntity);
 		});
 	}
 
-	LocalLayer::~LocalLayer()
+	ClientLayer::~ClientLayer()
 	{
 		Enable(false);
 	}
 
-	void LocalLayer::Enable(bool enable)
+	void ClientLayer::Enable(bool enable)
 	{
 		if (m_isEnabled == enable)
 			return;
@@ -97,25 +97,25 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func)
+	void ClientLayer::ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func)
 	{
-		ForEachLayerEntity([&](LocalLayerEntity& entity)
+		ForEachLayerEntity([&](ClientLayerEntity& entity)
 		{
 			func(entity);
 		});
 	}
 
-	LocalMatch& LocalLayer::GetLocalMatch()
+	ClientMatch& ClientLayer::GetClientMatch()
 	{
-		return static_cast<LocalMatch&>(SharedLayer::GetMatch());
+		return static_cast<ClientMatch&>(SharedLayer::GetMatch());
 	}
 
-	bool LocalLayer::IsEnabled() const
+	bool ClientLayer::IsEnabled() const
 	{
 		return m_isEnabled;
 	}
 
-	void LocalLayer::PostFrameUpdate(float elapsedTime)
+	void ClientLayer::PostFrameUpdate(float elapsedTime)
 	{
 		ClientEditorLayer::PostFrameUpdate(elapsedTime);
 
@@ -136,7 +136,7 @@ namespace bw
 		}
 	}
 
-	LocalLayerEntity& LocalLayer::RegisterEntity(LocalLayerEntity layerEntity)
+	ClientLayerEntity& ClientLayer::RegisterEntity(ClientLayerEntity layerEntity)
 	{
 		assert(layerEntity.GetEntity());
 		assert(layerEntity.GetEntity()->GetWorld() == &GetWorld());
@@ -164,7 +164,7 @@ namespace bw
 		return entity.layerEntity;
 	}
 
-	LocalLayerSound& LocalLayer::RegisterSound(LocalLayerSound layerEntity)
+	ClientLayerSound& ClientLayer::RegisterSound(ClientLayerSound layerEntity)
 	{
 		std::size_t soundIndex = m_freeSoundIds.FindFirst();
 		if (soundIndex == m_freeSoundIds.npos)
@@ -185,25 +185,25 @@ namespace bw
 		return soundOpt->sound;
 	}
 
-	void LocalLayer::SyncVisuals()
+	void ClientLayer::SyncVisuals()
 	{
-		ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+		ForEachLayerEntity([&](ClientLayerEntity& layerEntity)
 		{
 			layerEntity.SyncVisuals();
 		});
 	}
 
-	void LocalLayer::CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData)
+	void ClientLayer::CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData)
 	{
 		static std::string entityPrefix = "entity_";
 		static std::string weaponPrefix = "weapon_";
 
 		assert(m_isEnabled);
 
-		LocalMatch& localMatch = GetLocalMatch();
-		ClientEntityStore& entityStore = localMatch.GetEntityStore();
-		ClientWeaponStore& weaponStore = localMatch.GetWeaponStore();
-		const NetworkStringStore& networkStringStore = localMatch.GetNetworkStringStore();
+		ClientMatch& clientMatch = GetClientMatch();
+		ClientEntityStore& entityStore = clientMatch.GetEntityStore();
+		ClientWeaponStore& weaponStore = clientMatch.GetWeaponStore();
+		const NetworkStringStore& networkStringStore = clientMatch.GetNetworkStringStore();
 
 		const std::string& entityClass = networkStringStore.GetString(entityData.entityClass);
 
@@ -216,7 +216,7 @@ namespace bw
 
 		EntityId uniqueId = static_cast<EntityId>(entityData.uniqueId);
 
-		const LocalLayerEntity* parent = nullptr;
+		const ClientLayerEntity* parent = nullptr;
 		if (entityData.parentId)
 		{
 			auto idIt = m_serverEntityIds.find(entityData.parentId.value());
@@ -233,7 +233,7 @@ namespace bw
 			parent = &entityIt.value().layerEntity;
 		}
 
-		std::optional<LocalLayerEntity> layerEntity;
+		std::optional<ClientLayerEntity> layerEntity;
 
 		float scale = (entityData.scale) ? entityData.scale.value() : 1.f;
 
@@ -303,8 +303,8 @@ namespace bw
 
 		if (entityData.ownerPlayerIndex)
 		{
-			if (LocalPlayer* player = GetLocalMatch().GetPlayerByIndex(*entityData.ownerPlayerIndex))
-				layerEntity->GetEntity()->AddComponent<LocalOwnerComponent>(player->CreateHandle());
+			if (ClientPlayer* player = GetClientMatch().GetPlayerByIndex(*entityData.ownerPlayerIndex))
+				layerEntity->GetEntity()->AddComponent<ClientOwnerComponent>(player->CreateHandle());
 		}
 
 		if (entityData.health)
@@ -332,7 +332,7 @@ namespace bw
 		RegisterEntity(std::move(layerEntity.value()));
 	}
 
-	void LocalLayer::HandleEntityDestruction(EntityId uniqueId)
+	void ClientLayer::HandleEntityDestruction(EntityId uniqueId)
 	{
 		std::size_t hash = m_entities.hash_function()(uniqueId);
 
@@ -360,7 +360,7 @@ namespace bw
 		m_entities.erase(uniqueId, hash);
 	}
 
-	void LocalLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::CreateEntities::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -373,7 +373,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::DeleteEntities::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::DeleteEntities::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -384,7 +384,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EnableLayer::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::EnableLayer::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -397,7 +397,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntitiesAnimation::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::EntitiesAnimation::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -410,12 +410,12 @@ namespace bw
 			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = entityOpt.value();
+			ClientLayerEntity& localEntity = entityOpt.value();
 			localEntity.UpdateAnimation(animationId);
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntitiesDeath::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::EntitiesDeath::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -427,7 +427,7 @@ namespace bw
 				auto entityOpt = GetEntity(uniqueId);
 				assert(entityOpt);
 
-				LocalLayerEntity& localEntity = entityOpt.value();
+				ClientLayerEntity& localEntity = entityOpt.value();
 				if (localEntity.HasHealth())
 					localEntity.UpdateHealth(0);
 				else
@@ -438,7 +438,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntitiesInputs::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::EntitiesInputs::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -451,12 +451,12 @@ namespace bw
 			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = entityOpt.value();
+			ClientLayerEntity& localEntity = entityOpt.value();
 			localEntity.UpdateInputs(inputs);
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntitiesScale::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::EntitiesScale::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -469,12 +469,12 @@ namespace bw
 			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = entityOpt.value();
+			ClientLayerEntity& localEntity = entityOpt.value();
 			localEntity.UpdateScale(newScale);
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntityPhysics& packet)
+	void ClientLayer::HandlePacket(const Packets::EntityPhysics& packet)
 	{
 		assert(packet.entityId.layerId == GetLayerIndex());
 
@@ -482,7 +482,7 @@ namespace bw
 		if (!entityOpt)
 			return;
 
-		LocalLayerEntity& localEntity = *entityOpt;
+		ClientLayerEntity& localEntity = *entityOpt;
 		if (localEntity.IsPhysical())
 		{
 			const Ndk::EntityHandle& entity = localEntity.GetEntity();
@@ -509,7 +509,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::EntityWeapon& packet)
+	void ClientLayer::HandlePacket(const Packets::EntityWeapon& packet)
 	{
 		assert(packet.entityId.layerId == GetLayerIndex());
 
@@ -517,21 +517,21 @@ namespace bw
 		if (!entityOpt)
 			return;
 
-		LocalLayerEntity& localEntity = *entityOpt;
+		ClientLayerEntity& localEntity = *entityOpt;
 		if (packet.weaponEntityId != Packets::EntityWeapon::NoWeapon)
 		{
 			auto newWeaponOpt = GetEntityByServerId(packet.weaponEntityId);
 			if (!newWeaponOpt)
 				return;
 
-			LocalLayerEntity& newWeapon = newWeaponOpt.value();
-			localEntity.UpdateWeaponEntity(newWeapon.CreateHandle<LocalLayerEntity>());
+			ClientLayerEntity& newWeapon = newWeaponOpt.value();
+			localEntity.UpdateWeaponEntity(newWeapon.CreateHandle<ClientLayerEntity>());
 		}
 		else
 			localEntity.UpdateWeaponEntity({});
 	}
 
-	void LocalLayer::HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::HealthUpdate::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 
@@ -544,7 +544,7 @@ namespace bw
 			if (!entityOpt)
 				continue;
 
-			LocalLayerEntity& localEntity = entityOpt.value();
+			ClientLayerEntity& localEntity = entityOpt.value();
 			if (localEntity.HasHealth())
 				localEntity.UpdateHealth(currentHealth);
 			else
@@ -552,7 +552,7 @@ namespace bw
 		}
 	}
 
-	void LocalLayer::HandlePacket(const Packets::MapReset::Entity* entities, std::size_t entityCount)
+	void ClientLayer::HandlePacket(const Packets::MapReset::Entity* entities, std::size_t entityCount)
 	{
 		assert(m_isEnabled);
 

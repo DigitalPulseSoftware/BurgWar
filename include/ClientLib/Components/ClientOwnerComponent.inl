@@ -2,16 +2,16 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/Components/ClientOwnerComponent.hpp>
 
 namespace bw
 {
-	inline LocalOwnerComponent::LocalOwnerComponent(LocalPlayerHandle owner) :
+	inline ClientOwnerComponent::ClientOwnerComponent(ClientPlayerHandle owner) :
 	m_owner(std::move(owner))
 	{
 	}
 
-	inline LocalPlayer* LocalOwnerComponent::GetOwner() const
+	inline ClientPlayer* ClientOwnerComponent::GetOwner() const
 	{
 		return m_owner;
 	}

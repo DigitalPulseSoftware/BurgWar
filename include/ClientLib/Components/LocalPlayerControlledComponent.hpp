@@ -14,21 +14,21 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
 	class BURGWAR_CLIENTLIB_API LocalPlayerControlledComponent : public Ndk::Component<LocalPlayerControlledComponent>
 	{
 		public:
-			inline LocalPlayerControlledComponent(LocalMatch& localMatch, Nz::UInt8 localPlayerIndex);
+			inline LocalPlayerControlledComponent(ClientMatch& clientMatch, Nz::UInt8 localPlayerIndex);
 			~LocalPlayerControlledComponent() = default;
 
-			inline LocalMatch& GetLocalMatch() const;
+			inline ClientMatch& GetClientMatch() const;
 			inline Nz::UInt8 GetLocalPlayerIndex() const;
 
 			static Ndk::ComponentIndex componentIndex;
 
 		private:
-			LocalMatch& m_localMatch;
+			ClientMatch& m_clientMatch;
 			Nz::UInt8 m_localPlayerIndex;
 	};
 }

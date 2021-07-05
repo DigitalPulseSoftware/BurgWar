@@ -6,8 +6,8 @@
 #include <CoreLib/SharedAppConfig.hpp>
 #include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
-#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
+#include <ClientLib/Components/ClientOwnerComponent.hpp>
 #include <ClientLib/Components/LocalPlayerControlledComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
@@ -45,8 +45,8 @@ namespace bw
 		});
 
 		Ndk::InitializeComponent<VisualComponent>("LayrEnt");
-		Ndk::InitializeComponent<LocalMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<LocalOwnerComponent>("LclOwner");
+		Ndk::InitializeComponent<ClientMatchComponent>("LclMatch");
+		Ndk::InitializeComponent<ClientOwnerComponent>("LclOwner");
 		Ndk::InitializeComponent<LocalPlayerControlledComponent>("LclPly");
 		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
 		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");

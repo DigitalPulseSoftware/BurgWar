@@ -4,16 +4,16 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALLAYER_HPP
-#define BURGWAR_CLIENTLIB_LOCALLAYER_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
+#define BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
 
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientEditorLayer.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
-#include <ClientLib/LocalLayerSound.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
+#include <ClientLib/ClientLayerSound.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>
 #include <memory>
@@ -21,17 +21,17 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
-	class BURGWAR_CLIENTLIB_API LocalLayer final : public ClientEditorLayer
+	class BURGWAR_CLIENTLIB_API ClientLayer final : public ClientEditorLayer
 	{
-		friend LocalMatch;
+		friend ClientMatch;
 
 		public:
-			LocalLayer(LocalMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor);
-			LocalLayer(const LocalLayer&) = delete;
-			LocalLayer(LocalLayer&&) noexcept;
-			~LocalLayer();
+			ClientLayer(ClientMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor);
+			ClientLayer(const ClientLayer&) = delete;
+			ClientLayer(ClientLayer&&) noexcept;
+			~ClientLayer();
 
 			inline void Disable();
 			void Enable(bool enable = true);
@@ -42,28 +42,28 @@ namespace bw
 			void ForEachVisualEntity(const std::function<void(LayerVisualEntity& visualEntity)>& func) override;
 
 			inline const Nz::Color& GetBackgroundColor() const;
-			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntity(EntityId uniqueId);
-			inline std::optional<std::reference_wrapper<LocalLayerEntity>> GetEntityByServerId(Nz::UInt32 serverId);
+			inline std::optional<std::reference_wrapper<ClientLayerEntity>> GetEntity(EntityId uniqueId);
+			inline std::optional<std::reference_wrapper<ClientLayerEntity>> GetEntityByServerId(Nz::UInt32 serverId);
 			inline EntityId GetUniqueIdByServerId(Nz::UInt32 serverId);
-			LocalMatch& GetLocalMatch();
+			ClientMatch& GetClientMatch();
 
 			bool IsEnabled() const override;
 			inline bool IsPredictionEnabled() const;
 
 			void PostFrameUpdate(float elapsedTime) override;
 
-			LocalLayerEntity& RegisterEntity(LocalLayerEntity layerEntity);
-			LocalLayerSound& RegisterSound(LocalLayerSound layerEntity);
+			ClientLayerEntity& RegisterEntity(ClientLayerEntity layerEntity);
+			ClientLayerSound& RegisterSound(ClientLayerSound layerEntity);
 
 			void SyncVisuals();
 
-			LocalLayer& operator=(const LocalLayer&) = delete;
-			LocalLayer& operator=(LocalLayer&&) = delete;
+			ClientLayer& operator=(const ClientLayer&) = delete;
+			ClientLayer& operator=(ClientLayer&&) = delete;
 
-			NazaraSignal(OnEntityCreated, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
-			NazaraSignal(OnEntityDelete, LocalLayer* /*emitter*/, LocalLayerEntity& /*layerEntity*/);
-			NazaraSignal(OnSoundCreated, LocalLayer* /*emitter*/, std::size_t /*soundIndex*/, LocalLayerSound& /*layerSound*/);
-			NazaraSignal(OnSoundDelete, LocalLayer* /*emitter*/, std::size_t /*soundIndex*/, LocalLayerSound& /*layerSound*/);
+			NazaraSignal(OnEntityCreated, ClientLayer* /*emitter*/, ClientLayerEntity& /*layerEntity*/);
+			NazaraSignal(OnEntityDelete, ClientLayer* /*emitter*/, ClientLayerEntity& /*layerEntity*/);
+			NazaraSignal(OnSoundCreated, ClientLayer* /*emitter*/, std::size_t /*soundIndex*/, ClientLayerSound& /*layerSound*/);
+			NazaraSignal(OnSoundDelete, ClientLayer* /*emitter*/, std::size_t /*soundIndex*/, ClientLayerSound& /*layerSound*/);
 
 		private:
 			void CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData);
@@ -82,28 +82,28 @@ namespace bw
 
 			struct EntityData
 			{
-				EntityData(LocalLayerEntity&& entity) :
+				EntityData(ClientLayerEntity&& entity) :
 				layerEntity(std::move(entity))
 				{
 				}
 
 				EntityData(EntityData&& rhs) noexcept = default;
 
-				LocalLayerEntity layerEntity;
+				ClientLayerEntity layerEntity;
 
 				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
 			};
 
 			struct SoundData
 			{
-				SoundData(LocalLayerSound&& layerSound) :
+				SoundData(ClientLayerSound&& layerSound) :
 				sound(std::move(layerSound))
 				{
 				}
 
 				SoundData(SoundData&& rhs) = default;
 
-				LocalLayerSound sound;
+				ClientLayerSound sound;
 			};
 
 			tsl::hopscotch_map<EntityId /*uniqueId*/, EntityData> m_entities;
@@ -116,6 +116,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/LocalLayer.inl>
+#include <ClientLib/ClientLayer.inl>
 
 #endif

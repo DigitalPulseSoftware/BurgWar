@@ -21,7 +21,7 @@ namespace bw
 
 			PlayerInputData& GetInputs();
 
-			PlayerInputData Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity) override;
+			PlayerInputData Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity) override;
 
 		private:
 			PlayerInputData m_inputs;

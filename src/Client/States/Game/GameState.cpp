@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/GameState.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/MainMenuState.hpp>
@@ -16,7 +16,7 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		m_match = std::make_shared<LocalMatch>(*stateData.app, stateData.window, stateData.window, &stateData.canvas.value(), *m_clientSession, authSuccess, matchData);
+		m_match = std::make_shared<ClientMatch>(*stateData.app, stateData.window, stateData.window, &stateData.canvas.value(), *m_clientSession, authSuccess, matchData);
 		m_match->LoadAssets(std::move(assetDirectory));
 		m_match->LoadScripts(std::move(scriptDirectory));
 

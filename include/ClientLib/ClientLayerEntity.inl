@@ -2,26 +2,26 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
 
 namespace bw
 {
-	inline Nz::UInt32 LocalLayerEntity::GetServerId() const
+	inline Nz::UInt32 ClientLayerEntity::GetServerId() const
 	{
 		return m_serverEntityId;
 	}
 
-	inline const LocalLayerEntityHandle& LocalLayerEntity::GetWeaponEntity() const
+	inline const ClientLayerEntityHandle& ClientLayerEntity::GetWeaponEntity() const
 	{
 		return m_weaponEntity;
 	}
 
-	inline bool LocalLayerEntity::IsClientside() const
+	inline bool ClientLayerEntity::IsClientside() const
 	{
 		return m_serverEntityId == ClientsideId;
 	}
 
-	inline bool LocalLayerEntity::HasHealth() const
+	inline bool ClientLayerEntity::HasHealth() const
 	{
 		return m_health.has_value();
 	}

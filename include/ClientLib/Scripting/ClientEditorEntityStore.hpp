@@ -17,7 +17,7 @@
 namespace bw
 {
 	class ClientAssetStore;
-	class LocalLayer;
+	class ClientLayer;
 
 	class BURGWAR_CLIENTLIB_API ClientEditorEntityStore : public SharedEntityStore
 	{

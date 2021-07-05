@@ -5,7 +5,7 @@
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 
 namespace bw
 {

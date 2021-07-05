@@ -8,7 +8,7 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/DummyInputPoller.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/LocalPlayerInputController.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/Scripting/ParticleGroup.hpp>
@@ -20,7 +20,7 @@
 
 namespace bw
 {
-	ClientScriptingLibrary::ClientScriptingLibrary(LocalMatch& match) :
+	ClientScriptingLibrary::ClientScriptingLibrary(ClientMatch& match) :
 	SharedScriptingLibrary(match)
 	{
 	}
@@ -78,7 +78,7 @@ namespace bw
 
 		library["CreateEntity"] = LuaFunction([&](sol::this_state L, const sol::table& parameters)
 		{
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 			auto& entityStore = match.GetEntityStore();
 
 			sol::object entityTypeObj = parameters["Type"];
@@ -128,8 +128,8 @@ namespace bw
 
 			EntityId clientUniqueId = match.AllocateClientUniqueId();
 
-			LocalLayer& layer = match.GetLayer(layerIndex);
-			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, LocalLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
+			ClientLayer& layer = match.GetLayer(layerIndex);
+			auto entityOpt = entityStore.InstantiateEntity(layer, elementIndex, ClientLayerEntity::ClientsideId, clientUniqueId, position, rotation, scale, entityProperties, parentEntity);
 			if (!entityOpt)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
@@ -149,13 +149,13 @@ namespace bw
 
 		library["GetCamera"] = LuaFunction([&]() -> CameraHandle
 		{
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 			return match.GetCamera().CreateHandle();
 		});
 
 		library["GetPlayerByIndex"] = LuaFunction([&](sol::this_state L, Nz::UInt16 playerIndex) -> sol::object
 		{
-			if (LocalPlayer* player = GetMatch().GetPlayerByIndex(playerIndex))
+			if (ClientPlayer* player = GetMatch().GetPlayerByIndex(playerIndex))
 				return sol::make_object(L, player->CreateHandle());
 			else
 				return sol::nil;
@@ -165,12 +165,12 @@ namespace bw
 		{
 			sol::state_view lua(L);
 
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 
 			sol::table playerTable = lua.create_table();
 
 			std::size_t index = 1;
-			match.ForEachPlayer([&](LocalPlayer& localPlayer)
+			match.ForEachPlayer([&](ClientPlayer& localPlayer)
 			{
 				playerTable[index++] = localPlayer.CreateHandle();
 			});
@@ -190,7 +190,7 @@ namespace bw
 		
 		library["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& parameters)
 		{
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 
 			sol::object soundPathObj = parameters["SoundPath"];
 			if (!soundPathObj.is<std::string>())
@@ -216,7 +216,7 @@ namespace bw
 			bool isLooping = parameters.get_or("Loop", false);
 			bool isSpatialized = parameters.get_or("Spatialized", true);
 
-			auto& layerSound = layer.RegisterSound(LocalLayerSound(layer, position));
+			auto& layerSound = layer.RegisterSound(ClientLayerSound(layer, position));
 
 			std::size_t soundIndex = layerSound.PlaySound(soundBuffer, isLooping, isSpatialized);
 			return Sound(layerSound.CreateHandle(), soundIndex);
@@ -227,7 +227,7 @@ namespace bw
 	{
 		library["CreateGroup"] = LuaFunction([&](sol::this_state L, unsigned int maxParticleCount, const std::string& particleType)
 		{
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 
 			const ParticleRegistry& registry = match.GetParticleRegistry();
 			const auto& layout = registry.GetLayout(particleType);
@@ -261,7 +261,7 @@ namespace bw
 	{
 		library["CreateMusicFromFile"] = LuaFunction([this](sol::this_state L, const std::string& musicPath) -> sol::object
 		{
-			LocalMatch& match = GetMatch();
+			ClientMatch& match = GetMatch();
 			const auto& assetDirectory = match.GetAssetStore().GetAssetDirectory();
 
 			VirtualDirectory::Entry entry;
@@ -356,12 +356,12 @@ namespace bw
 	{
 		sol::state& state = context.GetLuaState();
 
-		state.new_usertype<LocalPlayerHandle>("LocalPlayer",
+		state.new_usertype<ClientPlayerHandle>("ClientPlayer",
 			"new", sol::no_constructor,
 
-			"GetName", LuaFunction(&LocalPlayer::GetName),
+			"GetName", LuaFunction(&ClientPlayer::GetName),
 			
-			"GetControlledEntity", LuaFunction([this](const LocalPlayer& player) -> sol::object
+			"GetControlledEntity", LuaFunction([this](const ClientPlayer& player) -> sol::object
 			{
 				EntityId controlledEntityId = player.GetControlledEntityId();
 				if (controlledEntityId == InvalidEntityId)
@@ -375,28 +375,28 @@ namespace bw
 				return scriptComponent.GetTable();
 			}),
 
-			"GetInputs", LuaFunction([this](const LocalPlayer& player, sol::this_state L)
+			"GetInputs", LuaFunction([this](const ClientPlayer& player, sol::this_state L)
 			{
 				if (!player.IsLocalPlayer())
 					TriggerLuaError(L, "only local player inputs can be retrieved");
 
 				Nz::UInt8 localPlayerIndex = player.GetLocalPlayerIndex();
-				LocalMatch& match = GetMatch();
+				ClientMatch& match = GetMatch();
 
 				return match.GetLocalPlayerInputs(localPlayerIndex);
 			}),
 
-			"GetPing", LuaFunction([](LocalPlayer& localPlayer) -> sol::optional<Nz::UInt16>
+			"GetPing", LuaFunction([](ClientPlayer& localPlayer) -> sol::optional<Nz::UInt16>
 			{
-				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != LocalPlayer::InvalidPing)
+				if (Nz::UInt16 ping = localPlayer.GetPing(); ping != ClientPlayer::InvalidPing)
 					return ping;
 				else
 					return {};
 			}),
 
-			"GetPlayerIndex", LuaFunction(&LocalPlayer::GetPlayerIndex),
+			"GetPlayerIndex", LuaFunction(&ClientPlayer::GetPlayerIndex),
 
-			"IsLocalPlayer", LuaFunction(&LocalPlayer::IsLocalPlayer)
+			"IsLocalPlayer", LuaFunction(&ClientPlayer::IsLocalPlayer)
 		);
 	}
 
@@ -500,8 +500,8 @@ namespace bw
 		);
 	}
 
-	LocalMatch& ClientScriptingLibrary::GetMatch()
+	ClientMatch& ClientScriptingLibrary::GetMatch()
 	{
-		return static_cast<LocalMatch&>(GetSharedMatch());
+		return static_cast<ClientMatch&>(GetSharedMatch());
 	}
 }

@@ -8,14 +8,14 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_SOUND_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayerSound.hpp>
+#include <ClientLib/ClientLayerSound.hpp>
 
 namespace bw
 {
 	class BURGWAR_CLIENTLIB_API Sound
 	{
 		public:
-			inline Sound(LocalLayerSoundHandle sound, std::size_t soundIndex);
+			inline Sound(ClientLayerSoundHandle sound, std::size_t soundIndex);
 			Sound(const Sound&) = delete;
 			Sound(Sound&&) noexcept = default;
 			~Sound() = default;
@@ -28,7 +28,7 @@ namespace bw
 			Sound& operator=(Sound&&) noexcept = default;
 
 		private:
-			LocalLayerSoundHandle m_sound;
+			ClientLayerSoundHandle m_sound;
 			std::size_t m_soundIndex;
 	};
 }

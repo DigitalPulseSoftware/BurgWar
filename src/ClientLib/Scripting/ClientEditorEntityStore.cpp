@@ -6,7 +6,7 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
-#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/LocalPlayerInputController.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>

@@ -8,7 +8,7 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <MapEditor/Commands/EntityCommands.hpp>
 #include <MapEditor/Commands/MapCommands.hpp>

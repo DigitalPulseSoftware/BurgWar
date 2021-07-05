@@ -64,11 +64,11 @@ namespace bw
 		{
 			assert(authSuccessPacket && authSuccessPacket->has_value());
 
-			m_localMatch.emplace(app, this, this, &m_canvas, *session, authSuccessPacket->value(), matchData);
+			m_clientMatch.emplace(app, this, this, &m_canvas, *session, authSuccessPacket->value(), matchData);
 
 			// TODO: Filter out server files
-			m_localMatch->LoadAssets(m_match->GetAssetDirectory());
-			m_localMatch->LoadScripts(m_match->GetScriptDirectory());
+			m_clientMatch->LoadAssets(m_match->GetAssetDirectory());
+			m_clientMatch->LoadScripts(m_match->GetScriptDirectory());
 
 			session->SendPacket(Packets::Ready{});
 		});
@@ -86,9 +86,9 @@ namespace bw
 
 		m_match->Update(elapsedTime);
 
-		if (m_localMatch)
+		if (m_clientMatch)
 		{
-			if (!m_localMatch->Update(elapsedTime))
+			if (!m_clientMatch->Update(elapsedTime))
 			{
 				deleteLater();
 				return;

@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISUALINTERPOLATIONCOMPONENT_HPP
 
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <NDK/Component.hpp>
 

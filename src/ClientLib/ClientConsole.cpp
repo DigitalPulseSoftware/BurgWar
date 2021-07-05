@@ -2,11 +2,11 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalConsole.hpp>
+#include <ClientLib/ClientConsole.hpp>
 
 namespace bw
 {
-	LocalConsole::LocalConsole(const Logger& logger, Nz::RenderTarget* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
+	ClientConsole::ClientConsole(const Logger& logger, Nz::RenderTarget* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir) :
 	Console(window, canvas),
 	m_environment(logger, std::move(scriptingLibrary), scriptDir)
 	{

@@ -6,8 +6,8 @@
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
-#include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/ClientMatch.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
@@ -47,10 +47,10 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
-			auto& localMatch = entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
+			auto& clientMatch = entity->GetComponent<ClientMatchComponent>().GetClientMatch();
 
 			LayerIndex layerIndex = parameters["LayerIndex"];
-			if (layerIndex >= localMatch.GetLayerCount())
+			if (layerIndex >= clientMatch.GetLayerCount())
 				TriggerLuaArgError(L, 2, "layer index out of bounds");
 
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -58,10 +58,10 @@ namespace bw
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
 
 			if (!entity->HasComponent<VisibleLayerComponent>())
-				entity->AddComponent<VisibleLayerComponent>(localMatch.GetRenderWorld());
+				entity->AddComponent<VisibleLayerComponent>(clientMatch.GetRenderWorld());
 
 			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
-			visibleLayer.RegisterLocalLayer(localMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
+			visibleLayer.RegisterLocalLayer(clientMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		});
 
 		elementMetatable["AddTilemap"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>

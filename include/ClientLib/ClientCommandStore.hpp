@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALCOMMANDSTORE_HPP
-#define BURGWAR_CLIENTLIB_LOCALCOMMANDSTORE_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTCOMMANDSTORE_HPP
+#define BURGWAR_CLIENTLIB_CLIENTCOMMANDSTORE_HPP
 
 #include <CoreLib/CommandStore.hpp>
 #include <ClientLib/Export.hpp>
@@ -14,14 +14,14 @@ namespace bw
 {
 	class ClientSession;
 
-	class BURGWAR_CLIENTLIB_API LocalCommandStore : public CommandStore<ClientSession*>
+	class BURGWAR_CLIENTLIB_API ClientCommandStore : public CommandStore<ClientSession*>
 	{
 		public:
-			LocalCommandStore(const Logger& logger);
-			~LocalCommandStore() = default;
+			ClientCommandStore(const Logger& logger);
+			~ClientCommandStore() = default;
 	};
 }
 
-#include <ClientLib/LocalCommandStore.inl>
+#include <ClientLib/ClientCommandStore.inl>
 
 #endif

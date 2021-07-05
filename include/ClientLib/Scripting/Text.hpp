@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_TEXT_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_TEXT_HPP
 
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>

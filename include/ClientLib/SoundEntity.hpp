@@ -15,16 +15,16 @@
 
 namespace bw
 {
-	class LocalLayerSound;
-	using LocalLayerSoundHandle = Nz::ObjectHandle<LocalLayerSound>;
+	class ClientLayerSound;
+	using ClientLayerSoundHandle = Nz::ObjectHandle<ClientLayerSound>;
 
 	class BURGWAR_CLIENTLIB_API SoundEntity
 	{
-		friend LocalLayerSound;
+		friend ClientLayerSound;
 
 		public:
-			SoundEntity(Ndk::World& renderWorld, LocalLayerSoundHandle layerEntityHandle, float depth = 0.f);
-			SoundEntity(Ndk::World& renderWorld, LocalLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
+			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, float depth = 0.f);
+			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
 			SoundEntity(const SoundEntity&) = delete;
 			SoundEntity(SoundEntity&& entity) noexcept;
 			~SoundEntity();
@@ -43,7 +43,7 @@ namespace bw
 		private:
 			std::vector<Nz::UInt32> m_soundIds;
 			Ndk::EntityOwner m_entity;
-			LocalLayerSoundHandle m_layerSound;
+			ClientLayerSoundHandle m_layerSound;
 			float m_depth;
 	};
 }

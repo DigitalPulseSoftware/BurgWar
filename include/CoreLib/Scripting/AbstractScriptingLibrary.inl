@@ -17,12 +17,12 @@
 namespace bw
 {
 	class Camera;
-	class LocalPlayer;
+	class ClientPlayer;
 	class Player;
 	class RandomEngine;
 
 	using CameraHandle = Nz::ObjectHandle<Camera>;
-	using LocalPlayerHandle = Nz::ObjectHandle<LocalPlayer>;
+	using ClientPlayerHandle = Nz::ObjectHandle<ClientPlayer>;
 	using PlayerHandle = Nz::ObjectHandle<Player>;
 
 	inline AbstractScriptingLibrary::AbstractScriptingLibrary(const Logger& logger) :
@@ -45,7 +45,7 @@ namespace sol
 	struct is_automagical<bw::CameraHandle> : std::false_type {};
 
 	template <>
-	struct is_automagical<bw::LocalPlayerHandle> : std::false_type {};
+	struct is_automagical<bw::ClientPlayerHandle> : std::false_type {};
 
 	template <>
 	struct is_automagical<bw::PlayerHandle> : std::false_type {};

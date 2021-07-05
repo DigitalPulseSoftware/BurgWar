@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALLAYERSOUND_HPP
-#define BURGWAR_CLIENTLIB_LOCALLAYERSOUND_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTLAYERSOUND_HPP
+#define BURGWAR_CLIENTLIB_CLIENTLAYERSOUND_HPP
 
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/PlayerInputData.hpp>
@@ -19,22 +19,22 @@
 
 namespace bw
 {
-	class LocalLayer;
-	class LocalLayerSound;
+	class ClientLayer;
+	class ClientLayerSound;
 	class SoundEntity;
 
-	using LocalLayerSoundHandle = Nz::ObjectHandle<LocalLayerSound>;
+	using ClientLayerSoundHandle = Nz::ObjectHandle<ClientLayerSound>;
 
-	class BURGWAR_CLIENTLIB_API LocalLayerSound final : public Nz::HandledObject<LocalLayerSound>
+	class BURGWAR_CLIENTLIB_API ClientLayerSound final : public Nz::HandledObject<ClientLayerSound>
 	{
 		friend SoundEntity;
 
 		public:
-			inline LocalLayerSound(LocalLayer& layer, const Nz::Vector2f& position);
-			inline LocalLayerSound(LocalLayer& layer, const Nz::Node& parentNode);
-			LocalLayerSound(const LocalLayerSound&) = delete;
-			inline LocalLayerSound(LocalLayerSound&& entity) noexcept;
-			~LocalLayerSound() = default;
+			inline ClientLayerSound(ClientLayer& layer, const Nz::Vector2f& position);
+			inline ClientLayerSound(ClientLayer& layer, const Nz::Node& parentNode);
+			ClientLayerSound(const ClientLayerSound&) = delete;
+			inline ClientLayerSound(ClientLayerSound&& entity) noexcept;
+			~ClientLayerSound() = default;
 
 			float GetSoundDuration(std::size_t soundIndex) const;
 
@@ -48,11 +48,11 @@ namespace bw
 
 			inline void UpdatePosition(const Nz::Vector2f& position);
 
-			LocalLayerSound& operator=(const LocalLayerSound&) = delete;
-			LocalLayerSound& operator=(LocalLayerSound&&) = delete;
+			ClientLayerSound& operator=(const ClientLayerSound&) = delete;
+			ClientLayerSound& operator=(ClientLayerSound&&) = delete;
 
 		private:
-			inline LocalLayerSound(LocalLayer& layer);
+			inline ClientLayerSound(ClientLayer& layer);
 
 			void NotifyAudibleSoundMoved(SoundEntity* oldPointer, SoundEntity* newPointer);
 			void RegisterAudibleSound(SoundEntity* AudibleSound);
@@ -69,11 +69,11 @@ namespace bw
 
 			std::vector<std::optional<PlayingSound>> m_playingSounds;
 			std::vector<SoundEntity*> m_soundEntities;
-			LocalLayer& m_layer;
+			ClientLayer& m_layer;
 			Nz::Node m_node;
 	};
 }
 
-#include <ClientLib/LocalLayerSound.inl>
+#include <ClientLib/ClientLayerSound.inl>
 
 #endif

@@ -13,12 +13,12 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
 	class BURGWAR_CLIENTLIB_API ClientScriptingLibrary : public SharedScriptingLibrary
 	{
 		public:
-			ClientScriptingLibrary(LocalMatch& match);
+			ClientScriptingLibrary(ClientMatch& match);
 			~ClientScriptingLibrary() = default;
 
 			void RegisterLibrary(ScriptingContext& context) override;
@@ -39,7 +39,7 @@ namespace bw
 			void RegisterScoreboardClass(ScriptingContext& context);
 			void RegisterSoundClass(ScriptingContext& context);
 
-			LocalMatch& GetMatch();
+			ClientMatch& GetMatch();
 	};
 }
 

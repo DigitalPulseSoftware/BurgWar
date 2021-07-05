@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Sound::Sound(LocalLayerSoundHandle sound, std::size_t soundIndex) :
+	inline Sound::Sound(ClientLayerSoundHandle sound, std::size_t soundIndex) :
 	m_sound(std::move(sound)),
 	m_soundIndex(soundIndex)
 	{

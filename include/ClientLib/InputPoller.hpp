@@ -9,13 +9,13 @@
 
 #include <CoreLib/PlayerInputData.hpp>
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalLayerEntity.hpp>
+#include <ClientLib/ClientLayerEntity.hpp>
 #include <Nazara/Core/Signal.hpp>
 #include <NDK/Entity.hpp>
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
 	class BURGWAR_CLIENTLIB_API InputPoller
 	{
@@ -23,7 +23,7 @@ namespace bw
 			InputPoller() = default;
 			virtual ~InputPoller();
 
-			virtual PlayerInputData Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity) = 0;
+			virtual PlayerInputData Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity) = 0;
 
 			NazaraSignal(OnSwitchWeapon, InputPoller* /*emitter*/, bool /*direction*/);
 	};

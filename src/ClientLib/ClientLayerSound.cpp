@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalLayerSound.hpp>
-#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/ClientLayerSound.hpp>
+#include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/SoundEntity.hpp>
 
 namespace bw
 {
-	float LocalLayerSound::GetSoundDuration(std::size_t soundIndex) const
+	float ClientLayerSound::GetSoundDuration(std::size_t soundIndex) const
 	{
 		assert(soundIndex < m_playingSounds.size());
 		auto& playingSoundOpt = m_playingSounds[soundIndex];
@@ -18,12 +18,12 @@ namespace bw
 		return playingSoundOpt->duration;
 	}
 
-	LayerIndex LocalLayerSound::GetLayerIndex() const
+	LayerIndex ClientLayerSound::GetLayerIndex() const
 	{
 		return m_layer.GetLayerIndex();
 	}
 
-	std::size_t LocalLayerSound::PlaySound(const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized)
+	std::size_t ClientLayerSound::PlaySound(const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized)
 	{
 		// Find first finished sound
 		std::size_t soundIndex = 0;
@@ -48,7 +48,7 @@ namespace bw
 		return soundIndex;
 	}
 
-	void LocalLayerSound::StopSound(std::size_t soundIndex)
+	void ClientLayerSound::StopSound(std::size_t soundIndex)
 	{
 		assert(soundIndex < m_playingSounds.size());
 		auto& playingSoundOpt = m_playingSounds[soundIndex];
@@ -58,7 +58,7 @@ namespace bw
 			soundEntity->StopSound(soundIndex);
 	}
 
-	bool LocalLayerSound::Update(float elapsedTime)
+	bool ClientLayerSound::Update(float elapsedTime)
 	{
 		bool hasActiveSounds = false;
 		for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it)
@@ -97,7 +97,7 @@ namespace bw
 		return hasActiveSounds;
 	}
 
-	void LocalLayerSound::NotifyAudibleSoundMoved(SoundEntity* oldPointer, SoundEntity* newPointer)
+	void ClientLayerSound::NotifyAudibleSoundMoved(SoundEntity* oldPointer, SoundEntity* newPointer)
 	{
 		auto it = std::find(m_soundEntities.begin(), m_soundEntities.end(), oldPointer);
 		assert(it != m_soundEntities.end());
@@ -105,7 +105,7 @@ namespace bw
 		*it = newPointer;
 	}
 	
-	void LocalLayerSound::RegisterAudibleSound(SoundEntity* sound)
+	void ClientLayerSound::RegisterAudibleSound(SoundEntity* sound)
 	{
 		assert(std::find(m_soundEntities.begin(), m_soundEntities.end(), sound) == m_soundEntities.end());
 		m_soundEntities.push_back(sound);
@@ -114,7 +114,7 @@ namespace bw
 		sound->Update(position);
 	}
 
-	void LocalLayerSound::UnregisterAudibleSound(SoundEntity* sound)
+	void ClientLayerSound::UnregisterAudibleSound(SoundEntity* sound)
 	{
 		auto it = std::find(m_soundEntities.begin(), m_soundEntities.end(), sound);
 		assert(it != m_soundEntities.end());

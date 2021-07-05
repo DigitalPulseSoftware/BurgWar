@@ -13,7 +13,7 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 	class VirtualDirectory;
 
 	class GameState final : public AbstractState
@@ -22,7 +22,7 @@ namespace bw
 			GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<VirtualDirectory> scriptDirectory);
 			~GameState() = default;
 
-			inline const std::shared_ptr<LocalMatch>& GetMatch();
+			inline const std::shared_ptr<ClientMatch>& GetMatch();
 
 		private:
 			void Leave(Ndk::StateMachine& fsm) override;
@@ -30,7 +30,7 @@ namespace bw
 
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			std::shared_ptr<LocalMatch> m_match;
+			std::shared_ptr<ClientMatch> m_match;
 	};
 }
 

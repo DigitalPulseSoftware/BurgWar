@@ -7,9 +7,9 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
-#include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
-#include <ClientLib/Components/LocalOwnerComponent.hpp>
+#include <ClientLib/ClientMatch.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
+#include <ClientLib/Components/ClientOwnerComponent.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
@@ -246,7 +246,7 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
 
-			return entity->GetComponent<LocalMatchComponent>().GetLayerIndex();
+			return entity->GetComponent<ClientMatchComponent>().GetLayerIndex();
 		});
 		
 		elementTable["GetLocalBounds"] = LuaFunction([](const sol::table& entityTable)
@@ -266,10 +266,10 @@ namespace bw
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(table);
 
-			if (!entity->HasComponent<LocalOwnerComponent>())
+			if (!entity->HasComponent<ClientOwnerComponent>())
 				return sol::nil;
 
-			return sol::make_object(s, entity->GetComponent<LocalOwnerComponent>().GetOwner()->CreateHandle());
+			return sol::make_object(s, entity->GetComponent<ClientOwnerComponent>().GetOwner()->CreateHandle());
 		});
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
@@ -284,9 +284,9 @@ namespace bw
 				sol::state_view lua(s);
 				const PropertyValue& property = propertyVal.value();
 
-				LocalMatch* match;
-				if (entity->HasComponent<LocalMatchComponent>())
-					match = &entity->GetComponent<LocalMatchComponent>().GetLocalMatch();
+				ClientMatch* match;
+				if (entity->HasComponent<ClientMatchComponent>())
+					match = &entity->GetComponent<ClientMatchComponent>().GetClientMatch();
 				else
 					match = nullptr;
 
@@ -299,7 +299,7 @@ namespace bw
 		elementTable["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
 			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			auto& entityMatch = entity->GetComponent<LocalMatchComponent>();
+			auto& entityMatch = entity->GetComponent<ClientMatchComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
@@ -309,7 +309,7 @@ namespace bw
 
 			auto& layer = entityMatch.GetLayer();
 
-			std::optional<LocalLayerSound> localLayerSound;
+			std::optional<ClientLayerSound> localLayerSound;
 			if (isAttachedToEntity)
 				localLayerSound.emplace(layer, entityNode);
 			else

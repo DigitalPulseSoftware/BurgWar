@@ -4,8 +4,8 @@
 
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
-#include <ClientLib/LocalMatch.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/ClientMatch.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <NDK/World.hpp>
@@ -59,15 +59,15 @@ namespace bw
 			if (!trailSprite)
 				return;
 
-			auto& entityLocalMatch = entity->GetComponent<LocalMatchComponent>();
+			auto& entityClientMatch = entity->GetComponent<ClientMatchComponent>();
 
-			LocalMatch& localMatch = entityLocalMatch.GetLocalMatch();
-			LocalLayer& localLayer = entityLocalMatch.GetLayer();
+			ClientMatch& clientMatch = entityClientMatch.GetClientMatch();
+			ClientLayer& localLayer = entityClientMatch.GetLayer();
 			
-			EntityId trailId = localMatch.AllocateClientUniqueId();
+			EntityId trailId = clientMatch.AllocateClientUniqueId();
 
 			const auto& trailEntity = localLayer.GetWorld().CreateEntity();
-			trailEntity->AddComponent<LocalMatchComponent>(localMatch, localLayer.GetLayerIndex(), trailId);
+			trailEntity->AddComponent<ClientMatchComponent>(clientMatch, localLayer.GetLayerIndex(), trailId);
 
 			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
 			trailNode.SetPosition(startPos);
@@ -76,10 +76,10 @@ namespace bw
 			trailEntity->AddComponent<Ndk::LifetimeComponent>((hitDistance - trailSprite->GetSize().x / 2.f) / trailSpeed);
 			trailEntity->AddComponent<Ndk::VelocityComponent>(direction * trailSpeed);
 
-			LocalLayerEntity layerEntity(localLayer, trailEntity, LocalLayerEntity::ClientsideId, trailId);
+			ClientLayerEntity layerEntity(localLayer, trailEntity, ClientLayerEntity::ClientsideId, trailId);
 			layerEntity.AttachRenderable(trailSprite, Nz::Matrix4f::Identity(), -1);
 
-			entityLocalMatch.GetLayer().RegisterEntity(std::move(layerEntity));
+			entityClientMatch.GetLayer().RegisterEntity(std::move(layerEntity));
 		};
 
 		elementMetatable["Shoot"] = sol::overload(

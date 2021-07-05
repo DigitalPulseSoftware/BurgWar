@@ -12,12 +12,12 @@
 
 namespace bw
 {
-	class LocalMatch;
+	class ClientMatch;
 
 	class BURGWAR_CLIENTLIB_API ClientGamemode : public SharedGamemode
 	{
 		public:
-			ClientGamemode(LocalMatch& localMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);
+			ClientGamemode(ClientMatch& clientMatch, std::shared_ptr<ScriptingContext> scriptingContext, std::string gamemodeName, PropertyValueMap propertyValues);
 			~ClientGamemode() = default;
 
 		private:

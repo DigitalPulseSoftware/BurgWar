@@ -6,7 +6,7 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
 #include <CoreLib/Utility/VirtualDirectory.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Nazara/Network/Algorithm.hpp>

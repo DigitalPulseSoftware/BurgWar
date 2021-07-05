@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
@@ -19,7 +19,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMousePoller.hpp>
 #include <ClientLib/InputPoller.hpp>
-#include <ClientLib/LocalCommandStore.hpp>
+#include <ClientLib/ClientCommandStore.hpp>
 #include <ClientLib/Scoreboard.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Components/LocalPlayerControlledComponent.hpp>
@@ -30,7 +30,7 @@
 #include <ClientLib/Scripting/ClientGamemode.hpp>
 #include <ClientLib/Scripting/ClientScriptingLibrary.hpp>
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
-#include <ClientLib/Components/LocalMatchComponent.hpp>
+#include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
@@ -47,7 +47,7 @@
 
 namespace bw
 {
-	LocalMatch::LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	ClientMatch::ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
@@ -82,13 +82,13 @@ namespace bw
 		LayerIndex layerIndex = 0;
 		for (auto&& layerData : matchData.layers)
 		{
-			auto& layer = m_layers.emplace_back(std::make_unique<LocalLayer>(*this, layerIndex++, layerData.backgroundColor));
-			layer->OnEntityCreated.Connect([this](LocalLayer* layer, LocalLayerEntity& entity)
+			auto& layer = m_layers.emplace_back(std::make_unique<ClientLayer>(*this, layerIndex++, layerData.backgroundColor));
+			layer->OnEntityCreated.Connect([this](ClientLayer* layer, ClientLayerEntity& entity)
 			{
 				HandleEntityCreated(layer, entity);
 			});
 
-			layer->OnEntityDelete.Connect([this](LocalLayer* layer, LocalLayerEntity& entity)
+			layer->OnEntityDelete.Connect([this](ClientLayer* layer, ClientLayerEntity& entity)
 			{
 				HandleEntityDeletion(layer, entity);
 			});
@@ -159,7 +159,7 @@ namespace bw
 		BindSignals(burgApp, window, canvas);
 	}
 
-	LocalMatch::~LocalMatch()
+	ClientMatch::~ClientMatch()
 	{
 		// Clear timer manager before scripting context gets deleted
 		GetScriptPacketHandlerRegistry().Clear();
@@ -173,7 +173,7 @@ namespace bw
 		m_gamemode.reset();
 	}
 
-	void LocalMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	void ClientMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
 		for (auto& layer : m_layers)
 		{
@@ -182,56 +182,56 @@ namespace bw
 		}
 	}
 
-	ClientEntityStore& LocalMatch::GetEntityStore()
+	ClientEntityStore& ClientMatch::GetEntityStore()
 	{
 		assert(m_entityStore);
 		return *m_entityStore;
 	}
 
-	const ClientEntityStore& LocalMatch::GetEntityStore() const
+	const ClientEntityStore& ClientMatch::GetEntityStore() const
 	{
 		assert(m_entityStore);
 		return *m_entityStore;
 	}
 
-	LocalLayer& LocalMatch::GetLayer(LayerIndex layerIndex)
+	ClientLayer& ClientMatch::GetLayer(LayerIndex layerIndex)
 	{
 		assert(layerIndex < m_layers.size());
 		return *m_layers[layerIndex];
 	}
 
-	const LocalLayer& LocalMatch::GetLayer(LayerIndex layerIndex) const
+	const ClientLayer& ClientMatch::GetLayer(LayerIndex layerIndex) const
 	{
 		assert(layerIndex < m_layers.size());
 		return *m_layers[layerIndex];
 	}
 
-	LayerIndex LocalMatch::GetLayerCount() const
+	LayerIndex ClientMatch::GetLayerCount() const
 	{
 		return LayerIndex(m_layers.size());
 	}
 
-	const NetworkStringStore& LocalMatch::GetNetworkStringStore() const
+	const NetworkStringStore& ClientMatch::GetNetworkStringStore() const
 	{
 		return m_session.GetNetworkStringStore();
 	}
 
-	std::shared_ptr<const SharedGamemode> LocalMatch::GetSharedGamemode() const
+	std::shared_ptr<const SharedGamemode> ClientMatch::GetSharedGamemode() const
 	{
 		return m_gamemode;
 	}
 
-	ClientWeaponStore& LocalMatch::GetWeaponStore()
+	ClientWeaponStore& ClientMatch::GetWeaponStore()
 	{
 		return *m_weaponStore;
 	}
 
-	const ClientWeaponStore& LocalMatch::GetWeaponStore() const
+	const ClientWeaponStore& ClientMatch::GetWeaponStore() const
 	{
 		return *m_weaponStore;
 	}
 
-	void LocalMatch::InitDebugGhosts()
+	void ClientMatch::InitDebugGhosts()
 	{
 		m_debug.emplace();
 		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
@@ -264,7 +264,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
+	void ClientMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
 	{
 		if (!m_assetStore)
 		{
@@ -278,7 +278,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
+	void ClientMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
 	{
 		assert(m_assetStore);
 
@@ -449,13 +449,13 @@ namespace bw
 		m_scriptingContext->LoadDirectoryOpt("map/autorun");
 	}
 
-	void LocalMatch::RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity)
+	void ClientMatch::RegisterEntity(EntityId uniqueId, ClientLayerEntityHandle entity)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId.emplace(uniqueId, std::move(entity));
 	}
 
-	const Ndk::EntityHandle& LocalMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	const Ndk::EntityHandle& ClientMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
@@ -464,22 +464,22 @@ namespace bw
 		return it.value()->GetEntity();
 	}
 
-	EntityId LocalMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId ClientMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
 	{
-		if (!entity || !entity->HasComponent<LocalMatchComponent>())
+		if (!entity || !entity->HasComponent<ClientMatchComponent>())
 			return InvalidEntityId;
 
-		return entity->GetComponent<LocalMatchComponent>().GetUniqueId();
+		return entity->GetComponent<ClientMatchComponent>().GetUniqueId();
 	}
 
-	void LocalMatch::UnregisterEntity(EntityId uniqueId)
+	void ClientMatch::UnregisterEntity(EntityId uniqueId)
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		assert(it != m_entitiesByUniqueId.end());
 		m_entitiesByUniqueId.erase(it);
 	}
 
-	bool LocalMatch::Update(float elapsedTime)
+	bool ClientMatch::Update(float elapsedTime)
 	{
 		if (m_isLeavingMatch)
 			return false;
@@ -526,8 +526,8 @@ namespace bw
 							{
 								if (auto entityOpt = layer->GetEntityByServerId(entityId))
 								{
-									LocalLayerEntity& entity = entityOpt.value();
-									LocalLayerEntity* ghostEntity = entity.GetGhost();
+									ClientLayerEntity& entity = entityOpt.value();
+									ClientLayerEntity* ghostEntity = entity.GetGhost();
 									/*if (isPhysical)
 										ghostEntity->UpdateState(position, rotation, linearVelocity, angularVelocity);
 									else*/
@@ -630,7 +630,7 @@ namespace bw
 		return true;
 	}
 	
-	void LocalMatch::BindEscapeMenu()
+	void ClientMatch::BindEscapeMenu()
 	{
 		m_escapeMenu.OnLeaveMatch.Connect([this](EscapeMenu*)
 		{
@@ -643,7 +643,7 @@ namespace bw
 		});
 	}
 
-	void LocalMatch::BindPackets()
+	void ClientMatch::BindPackets()
 	{
 		//TODO: Use slots
 		m_session.OnChatMessage.Connect([this](ClientSession* /*session*/, const Packets::ChatMessage& message)
@@ -772,7 +772,7 @@ namespace bw
 		});
 	}
 
-	void LocalMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas)
+	void ClientMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas)
 	{
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
@@ -891,12 +891,12 @@ namespace bw
 		});
 	}
 
-	Nz::UInt64 LocalMatch::EstimateServerTick() const
+	Nz::UInt64 ClientMatch::EstimateServerTick() const
 	{
 		return GetCurrentTick() - m_averageTickError.GetAverageValue();
 	}
 
-	void LocalMatch::HandleChatMessage(const Packets::ChatMessage& packet)
+	void ClientMatch::HandleChatMessage(const Packets::ChatMessage& packet)
 	{
 		//TODO: Implement this in gamemode callback
 		if (packet.playerIndex == Packets::ChatMessage::InvalidPlayer)
@@ -927,13 +927,13 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleConsoleAnswer(const Packets::ConsoleAnswer& packet)
+	void ClientMatch::HandleConsoleAnswer(const Packets::ConsoleAnswer& packet)
 	{
 		if (m_remoteConsole)
 			m_remoteConsole->Print(packet.response, packet.color);
 	}
 
-	void LocalMatch::HandleEntityCreated(LocalLayer* /*layer*/, LocalLayerEntity& entity)
+	void ClientMatch::HandleEntityCreated(ClientLayer* /*layer*/, ClientLayerEntity& entity)
 	{
 		// Check if entity is a pending player entity
 		auto playerIt = m_playerEntitiesByUniqueId.find(entity.GetUniqueId());
@@ -944,12 +944,12 @@ namespace bw
 			assert(playerIndex < m_matchPlayers.size());
 			assert(m_matchPlayers[playerIndex].has_value());
 
-			LocalPlayer& localPlayer = m_matchPlayers[playerIndex].value();
+			ClientPlayer& localPlayer = m_matchPlayers[playerIndex].value();
 			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(localPlayer.CreateHandle(), sol::nil, TranslateEntityToLua(entity.GetEntity()));
 		}
 	}
 
-	void LocalMatch::HandleEntityDeletion(LocalLayer* /*layer*/, LocalLayerEntity& entity)
+	void ClientMatch::HandleEntityDeletion(ClientLayer* /*layer*/, ClientLayerEntity& entity)
 	{
 		// Check if entity is a (visible) player entity
 		auto playerIt = m_playerEntitiesByUniqueId.find(entity.GetUniqueId());
@@ -960,14 +960,14 @@ namespace bw
 			assert(playerIndex < m_matchPlayers.size());
 			assert(m_matchPlayers[playerIndex].has_value());
 
-			LocalPlayer& localPlayer = m_matchPlayers[playerIndex].value();
+			ClientPlayer& localPlayer = m_matchPlayers[playerIndex].value();
 			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(localPlayer.CreateHandle(), TranslateEntityToLua(entity.GetEntity()), sol::nil);
 		
 			localPlayer.UpdateControlledEntityId(InvalidEntityId);
 		}
 	}
 
-	void LocalMatch::HandlePlayerControlEntity(const Packets::PlayerControlEntity& packet)
+	void ClientMatch::HandlePlayerControlEntity(const Packets::PlayerControlEntity& packet)
 	{
 		if (packet.playerIndex >= m_matchPlayers.size() || !m_matchPlayers[packet.playerIndex])
 		{
@@ -978,7 +978,7 @@ namespace bw
 		HandlePlayerControlEntity(packet.playerIndex, static_cast<EntityId>(packet.controlledEntityId));
 	}
 
-	void LocalMatch::HandlePlayerControlEntity(std::size_t playerIndex, EntityId newControlledEntityId)
+	void ClientMatch::HandlePlayerControlEntity(std::size_t playerIndex, EntityId newControlledEntityId)
 	{
 		assert(playerIndex < m_matchPlayers.size());
 		auto& matchPlayer = m_matchPlayers[playerIndex];
@@ -1014,17 +1014,17 @@ namespace bw
 			m_gamemode->ExecuteCallback<GamemodeEvent::PlayerControlledEntityUpdate>(matchPlayer->CreateHandle(), previousEntity, newEntity);
 	}
 
-	void LocalMatch::HandlePlayerJoined(const Packets::PlayerJoined& packet)
+	void ClientMatch::HandlePlayerJoined(const Packets::PlayerJoined& packet)
 	{
 		if (packet.playerIndex >= m_matchPlayers.size())
 			m_matchPlayers.resize(packet.playerIndex + 1);
 
-		LocalPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName, packet.localIndex);
+		ClientPlayer& newPlayer = m_matchPlayers[packet.playerIndex].emplace(packet.playerIndex, packet.playerName, packet.localIndex);
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerJoined>(newPlayer.CreateHandle());
 	}
 
-	void LocalMatch::HandlePlayerLeaving(const Packets::PlayerLeaving& packet)
+	void ClientMatch::HandlePlayerLeaving(const Packets::PlayerLeaving& packet)
 	{
 		if (packet.playerIndex >= m_matchPlayers.size())
 			return;
@@ -1048,7 +1048,7 @@ namespace bw
 		playerOpt.reset();
 	}
 
-	void LocalMatch::HandlePlayerNameUpdate(const Packets::PlayerNameUpdate& packet)
+	void ClientMatch::HandlePlayerNameUpdate(const Packets::PlayerNameUpdate& packet)
 	{
 		if (packet.playerIndex >= m_matchPlayers.size())
 			return;
@@ -1061,7 +1061,7 @@ namespace bw
 		playerOpt->UpdateName(packet.newName);
 	}
 
-	void LocalMatch::HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet)
+	void ClientMatch::HandlePlayerPingUpdate(const Packets::PlayerPingUpdate& packet)
 	{
 		for (const auto& playerData : packet.players)
 		{
@@ -1074,7 +1074,7 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::PlayerPingUpdate>();
 	}
 
-	void LocalMatch::HandleScriptPacket(const Packets::ScriptPacket& packet)
+	void ClientMatch::HandleScriptPacket(const Packets::ScriptPacket& packet)
 	{
 		const ScriptHandlerRegistry& registry = GetScriptPacketHandlerRegistry();
 		const NetworkStringStore& stringStore = GetNetworkStringStore();
@@ -1084,7 +1084,7 @@ namespace bw
 		registry.Call(packetName, IncomingNetworkPacket(stringStore, packet));
 	}
 
-	void LocalMatch::HandleTickPacket(TickPacketContent&& packet)
+	void ClientMatch::HandleTickPacket(TickPacketContent&& packet)
 	{
 		std::visit([this](auto&& packet)
 		{
@@ -1092,7 +1092,7 @@ namespace bw
 		}, std::move(packet));
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::ControlEntity&& packet)
+	void ClientMatch::HandleTickPacket(Packets::ControlEntity&& packet)
 	{
 		assert(packet.layerIndex < m_layers.size());
 		auto& layerPtr = m_layers[packet.layerIndex];
@@ -1112,9 +1112,9 @@ namespace bw
 		auto layerEntityOpt = layerPtr->GetEntityByServerId(packet.entityId);
 		if (layerEntityOpt)
 		{
-			LocalLayerEntity& layerEntity = layerEntityOpt.value();
+			ClientLayerEntity& layerEntity = layerEntityOpt.value();
 
-			localPlayer.controlledEntity = layerEntity.CreateHandle<LocalLayerEntity>();
+			localPlayer.controlledEntity = layerEntity.CreateHandle<ClientLayerEntity>();
 			localPlayer.controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
 			localPlayer.controlledEntity->GetEntity()->AddComponent<LocalPlayerControlledComponent>(*this, packet.localIndex);
 
@@ -1137,7 +1137,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::CreateEntities&& packet)
+	void ClientMatch::HandleTickPacket(Packets::CreateEntities&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1149,7 +1149,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::DeleteEntities&& packet)
+	void ClientMatch::HandleTickPacket(Packets::DeleteEntities&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1161,7 +1161,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::DisableLayer&& packet)
+	void ClientMatch::HandleTickPacket(Packets::DisableLayer&& packet)
 	{
 		std::size_t layerIndex = packet.layerIndex;
 
@@ -1174,7 +1174,7 @@ namespace bw
 		m_layers[packet.layerIndex]->Disable();
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EnableLayer&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EnableLayer&& packet)
 	{
 		std::size_t layerIndex = packet.layerIndex;
 
@@ -1189,7 +1189,7 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::LayerEnabled>(layerIndex);
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntitiesAnimation&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntitiesAnimation&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1201,7 +1201,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntitiesDeath&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntitiesDeath&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1213,7 +1213,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntitiesInputs&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntitiesInputs&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1225,7 +1225,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntitiesScale&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntitiesScale&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1237,21 +1237,21 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntityPhysics&& packet)
 	{
 		assert(packet.entityId.layerId < m_layers.size());
 		auto& layer = m_layers[packet.entityId.layerId];
 		layer->HandlePacket(packet);
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
+	void ClientMatch::HandleTickPacket(Packets::EntityWeapon&& packet)
 	{
 		assert(packet.entityId.layerId < m_layers.size());
 		auto& layer = m_layers[packet.entityId.layerId];
 		layer->HandlePacket(packet);
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::HealthUpdate&& packet)
+	void ClientMatch::HandleTickPacket(Packets::HealthUpdate&& packet)
 	{
 		std::size_t offset = 0;
 		for (auto&& layerData : packet.layers)
@@ -1263,7 +1263,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::MapReset&& packet)
+	void ClientMatch::HandleTickPacket(Packets::MapReset&& packet)
 	{
 		// Reset all layers and entity date
 		Nz::Bitset<> enabledLayers(m_layers.size(), false);
@@ -1301,7 +1301,7 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::MatchState&& packet)
+	void ClientMatch::HandleTickPacket(Packets::MatchState&& packet)
 	{
 		m_inactiveEntities.clear();
 
@@ -1375,7 +1375,7 @@ namespace bw
 					if (!layer->IsEnabled() || !layer->IsPredictionEnabled())
 						continue;
 
-					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					layer->ForEachLayerEntity([&](ClientLayerEntity& layerEntity)
 					{
 						EntityId uniqueId = layerEntity.GetUniqueId();
 						auto it = layerData.entities.find(uniqueId);
@@ -1412,7 +1412,7 @@ namespace bw
 				if (!entityOpt)
 					continue;
 
-				LocalLayerEntity& localEntity = entityOpt.value();
+				ClientLayerEntity& localEntity = entityOpt.value();
 				if (localEntity.IsPhysical())
 				{
 					if (!performReconciliation)
@@ -1513,7 +1513,7 @@ namespace bw
 						{
 							auto layerEntityOpt = layer->GetEntity(uniqueId);
 							assert(layerEntityOpt);
-							LocalLayerEntity& layerEntity = layerEntityOpt.value();
+							ClientLayerEntity& layerEntity = layerEntityOpt.value();
 							layerEntity.Enable();
 
 							auto& entityData = entityIt.value();
@@ -1548,14 +1548,14 @@ namespace bw
 				if (!entityOpt)
 					continue;
 
-				LocalLayerEntity& entity = entityOpt.value();
+				ClientLayerEntity& entity = entityOpt.value();
 				entity.Enable();
 				break;
 			}
 		}
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::PlayerLayer&& packet)
+	void ClientMatch::HandleTickPacket(Packets::PlayerLayer&& packet)
 	{
 		m_localPlayers[packet.localIndex].layerIndex = packet.layerIndex;
 
@@ -1571,7 +1571,7 @@ namespace bw
 		visibleLayer.RegisterLocalLayer(*layer, 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
 	}
 
-	void LocalMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)
+	void ClientMatch::HandleTickPacket(Packets::PlayerWeapons&& packet)
 	{
 		auto& playerData = m_localPlayers[packet.localIndex];
 		playerData.weapons.clear();
@@ -1584,24 +1584,24 @@ namespace bw
 			auto entityOpt = layer->GetEntityByServerId(weaponEntityIndex);
 			if (!entityOpt)
 			{
-				bwLog(GetLogger(), LogLevel::Warning, "Local player #{0} weapon entity {1} doesn't exist", +packet.localIndex, weaponEntityIndex);
+				bwLog(GetLogger(), LogLevel::Warning, "Player #{0} weapon entity {1} doesn't exist", +packet.localIndex, weaponEntityIndex);
 				continue;
 			}
 
-			LocalLayerEntity& layerEntity = entityOpt.value();
+			ClientLayerEntity& layerEntity = entityOpt.value();
 
 			assert(layerEntity.GetEntity()->HasComponent<WeaponComponent>());
 
 			playerData.weapons.emplace_back(layerEntity.GetEntity());
 
 			auto& scriptComponent = layerEntity.GetEntity()->GetComponent<ScriptComponent>();
-			bwLog(GetLogger(), LogLevel::Info, "Local player #{0} has weapon {1}", +packet.localIndex, scriptComponent.GetElement()->fullName);
+			bwLog(GetLogger(), LogLevel::Info, "Player #{0} has weapon {1}", +packet.localIndex, scriptComponent.GetElement()->fullName);
 		}
 
 		playerData.selectedWeapon = playerData.weapons.size();
 	}
 
-	void LocalMatch::HandleTickError(Nz::UInt16 stateTick, Nz::Int32 tickError)
+	void ClientMatch::HandleTickError(Nz::UInt16 stateTick, Nz::Int32 tickError)
 	{
 		for (auto it = m_tickPredictions.begin(); it != m_tickPredictions.end(); ++it)
 		{
@@ -1626,7 +1626,7 @@ namespace bw
 		std::cout << "New tick error: " << m_tickError << std::endl;*/
 	}
 
-	void LocalMatch::InitializeRemoteConsole()
+	void ClientMatch::InitializeRemoteConsole()
 	{
 		m_remoteConsole.emplace(m_renderTarget, m_canvas);
 		m_remoteConsole->SetExecuteCallback([this](const std::string& command) -> bool
@@ -1641,7 +1641,7 @@ namespace bw
 		});
 	}
 
-	void LocalMatch::InitializeScoreboard()
+	void ClientMatch::InitializeScoreboard()
 	{
 		m_scoreboard = m_canvas->Add<Scoreboard>(GetLogger());
 		m_gamemode->ExecuteCallback<GamemodeEvent::InitScoreboard>(m_scoreboard->CreateHandle());
@@ -1652,7 +1652,7 @@ namespace bw
 		m_scoreboard->Center();
 	}
 
-	void LocalMatch::OnTick(bool lastTick)
+	void ClientMatch::OnTick(bool lastTick)
 	{
 		Nz::UInt16 estimatedServerTick = GetNetworkTick(EstimateServerTick());
 
@@ -1746,7 +1746,7 @@ namespace bw
 					auto& layerData = predictedInputs.layers.emplace_back();
 					layerData.layerIndex = layer->GetLayerIndex();
 
-					layer->ForEachLayerEntity([&](LocalLayerEntity& layerEntity)
+					layer->ForEachLayerEntity([&](ClientLayerEntity& layerEntity)
 					{
 						assert(layerData.entities.find(layerEntity.GetUniqueId()) == layerData.entities.end());
 						auto& entityData = layerData.entities.emplace(layerEntity.GetUniqueId(), PredictedInput::EntityData{}).first.value();
@@ -1771,7 +1771,7 @@ namespace bw
 		}
 	}
 
-	void LocalMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)
+	void ClientMatch::PushTickPacket(Nz::UInt16 tick, const TickPacketContent& packet)
 	{
 		//bwLog(GetLogger(), LogLevel::Debug, "Execute server tick in {}", tick - m_expectedServerTick.value());
 
@@ -1789,7 +1789,7 @@ namespace bw
 		m_tickedPackets.emplace(it, std::move(newPacket));
 	}
 
-	bool LocalMatch::SendInputs(Nz::UInt16 serverTick, bool force)
+	bool ClientMatch::SendInputs(Nz::UInt16 serverTick, bool force)
 	{
 		assert(m_localPlayers.size() == m_inputPacket.inputs.size());
 

@@ -6,7 +6,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <ClientLib/Camera.hpp>
-#include <ClientLib/LocalMatch.hpp>
+#include <ClientLib/ClientMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Platform/Mouse.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
@@ -23,7 +23,7 @@ namespace bw
 		});
 	}
 
-	PlayerInputData KeyboardAndMousePoller::Poll(LocalMatch& localMatch, const LocalLayerEntityHandle& controlledEntity)
+	PlayerInputData KeyboardAndMousePoller::Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity)
 	{
 		PlayerInputData inputData;
 
@@ -55,7 +55,7 @@ namespace bw
 		{
 			const auto& entity = controlledEntity->GetEntity();
 			
-			const Camera& camera = localMatch.GetCamera();
+			const Camera& camera = clientMatch.GetCamera();
 
 			Nz::Vector2f originPosition = controlledEntity->GetPosition();
 			float lookSwitch = originPosition.x;

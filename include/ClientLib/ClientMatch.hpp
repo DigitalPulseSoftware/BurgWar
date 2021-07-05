@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALMATCH_HPP
-#define BURGWAR_CLIENTLIB_LOCALMATCH_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTMATCH_HPP
+#define BURGWAR_CLIENTLIB_CLIENTMATCH_HPP
 
 #include <CoreLib/AnimationManager.hpp>
 #include <CoreLib/PropertyValues.hpp>
@@ -19,9 +19,9 @@
 #include <ClientLib/ClientAssetStore.hpp>
 #include <ClientLib/EscapeMenu.hpp>
 #include <ClientLib/Export.hpp>
-#include <ClientLib/LocalConsole.hpp>
-#include <ClientLib/LocalLayer.hpp>
-#include <ClientLib/LocalPlayer.hpp>
+#include <ClientLib/ClientConsole.hpp>
+#include <ClientLib/ClientLayer.hpp>
+#include <ClientLib/ClientPlayer.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
@@ -49,15 +49,15 @@ namespace bw
 	class Scoreboard;
 	class VirtualDirectory;
 
-	class BURGWAR_CLIENTLIB_API LocalMatch : public SharedMatch, public std::enable_shared_from_this<LocalMatch>
+	class BURGWAR_CLIENTLIB_API ClientMatch : public SharedMatch, public std::enable_shared_from_this<ClientMatch>
 	{
 		friend ClientSession;
 
 		public:
-			LocalMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
-			LocalMatch(const LocalMatch&) = delete;
-			LocalMatch(LocalMatch&&) = delete;
-			~LocalMatch();
+			ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			ClientMatch(const ClientMatch&) = delete;
+			ClientMatch(ClientMatch&&) = delete;
+			~ClientMatch();
 
 			template<typename T> T AdjustServerTick(T tick);
 
@@ -77,14 +77,14 @@ namespace bw
 			inline ClientSession& GetClientSession();
 			ClientEntityStore& GetEntityStore() override;
 			const ClientEntityStore& GetEntityStore() const override;
-			LocalLayer& GetLayer(LayerIndex layerIndex) override;
-			const LocalLayer& GetLayer(LayerIndex layerIndex) const override;
+			ClientLayer& GetLayer(LayerIndex layerIndex) override;
+			const ClientLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
 			inline const PlayerInputData& GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
-			inline LocalPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
+			inline ClientPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
 			inline Ndk::World& GetRenderWorld();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;
@@ -97,7 +97,7 @@ namespace bw
 
 			inline void Quit();
 
-			void RegisterEntity(EntityId uniqueId, LocalLayerEntityHandle entity);
+			void RegisterEntity(EntityId uniqueId, ClientLayerEntityHandle entity);
 			
 			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
 			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
@@ -106,8 +106,8 @@ namespace bw
 
 			bool Update(float elapsedTime);
 
-			LocalMatch& operator=(const LocalMatch&) = delete;
-			LocalMatch& operator=(LocalMatch&&) = delete;
+			ClientMatch& operator=(const ClientMatch&) = delete;
+			ClientMatch& operator=(ClientMatch&&) = delete;
 
 		private:
 			struct ServerEntity;
@@ -141,8 +141,8 @@ namespace bw
 			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
-			void HandleEntityCreated(LocalLayer* layer, LocalLayerEntity& entity);
-			void HandleEntityDeletion(LocalLayer* layer, LocalLayerEntity& entity);
+			void HandleEntityCreated(ClientLayer* layer, ClientLayerEntity& entity);
+			void HandleEntityDeletion(ClientLayer* layer, ClientLayerEntity& entity);
 			void HandlePlayerControlEntity(const Packets::PlayerControlEntity& packet);
 			void HandlePlayerControlEntity(std::size_t playerIndex, EntityId newControlledEntityId);
 			void HandlePlayerJoined(const Packets::PlayerJoined& packet);
@@ -184,7 +184,7 @@ namespace bw
 				std::size_t selectedWeapon;
 				std::shared_ptr<InputPoller> inputPoller;
 				std::vector<Ndk::EntityHandle> weapons;
-				LocalLayerEntityHandle controlledEntity;
+				ClientLayerEntityHandle controlledEntity;
 				Nz::UInt8 localIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;
 				Nz::UInt16 playerIndex;
@@ -253,8 +253,8 @@ namespace bw
 			NazaraSlot(Nz::EventHandler, OnLostFocus, m_onLostFocus);
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
 			NazaraSlot(Ndk::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
-			NazaraSlot(LocalLayer, OnEntityCreated, m_onEntityCreated);
-			NazaraSlot(LocalLayer, OnEntityDelete, m_onEntityDelete);
+			NazaraSlot(ClientLayer, OnEntityCreated, m_onEntityCreated);
+			NazaraSlot(ClientLayer, OnEntityDelete, m_onEntityDelete);
 
 			typename Nz::Signal<const std::string&>::ConnectionGuard m_nicknameUpdateSlot;
 
@@ -264,14 +264,14 @@ namespace bw
 			std::optional<Camera> m_camera;
 			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
-			std::optional<LocalConsole> m_localConsole;
+			std::optional<ClientConsole> m_localConsole;
 			std::optional<ParticleRegistry> m_particleRegistry;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodeName;
-			std::vector<std::unique_ptr<LocalLayer>> m_layers;
+			std::vector<std::unique_ptr<ClientLayer>> m_layers;
 			std::vector<LocalPlayerData> m_localPlayers;
-			std::vector<std::optional<LocalPlayer>> m_matchPlayers;
+			std::vector<std::optional<ClientPlayer>> m_matchPlayers;
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
@@ -283,7 +283,7 @@ namespace bw
 			Nz::RenderTarget* m_renderTarget;
 			Nz::RenderWindow* m_window;
 			Nz::UInt16 m_activeLayerIndex;
-			tsl::hopscotch_map<EntityId, LocalLayerEntityHandle> m_entitiesByUniqueId;
+			tsl::hopscotch_map<EntityId, ClientLayerEntityHandle> m_entitiesByUniqueId;
 			tsl::hopscotch_map<EntityId, std::size_t> m_playerEntitiesByUniqueId;
 			tsl::hopscotch_set<EntityId> m_inactiveEntities;
 			AnimationManager m_animationManager;
@@ -304,6 +304,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/LocalMatch.inl>
+#include <ClientLib/ClientMatch.inl>
 
 #endif

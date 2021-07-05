@@ -2,22 +2,22 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/LocalLayer.hpp>
+#include <ClientLib/ClientLayer.hpp>
 
 namespace bw
 {
-	inline void LocalLayer::Disable()
+	inline void ClientLayer::Disable()
 	{
 		return Enable(false);
 	}
 
-	inline void LocalLayer::EnablePrediction(bool enable)
+	inline void ClientLayer::EnablePrediction(bool enable)
 	{
 		m_isPredictionEnabled = enable;
 	}
 
 	template<typename F>
-	void LocalLayer::ForEachLayerEntity(F&& func)
+	void ClientLayer::ForEachLayerEntity(F&& func)
 	{
 		assert(m_isEnabled);
 
@@ -26,7 +26,7 @@ namespace bw
 	}
 
 	template<typename F>
-	void LocalLayer::ForEachLayerSound(F&& func)
+	void ClientLayer::ForEachLayerSound(F&& func)
 	{
 		assert(m_isEnabled);
 
@@ -38,12 +38,12 @@ namespace bw
 		}
 	}
 
-	inline const Nz::Color& LocalLayer::GetBackgroundColor() const
+	inline const Nz::Color& ClientLayer::GetBackgroundColor() const
 	{
 		return m_backgroundColor;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntity(EntityId uniqueId)
+	inline std::optional<std::reference_wrapper<ClientLayerEntity>> ClientLayer::GetEntity(EntityId uniqueId)
 	{
 		assert(m_isEnabled);
 
@@ -54,7 +54,7 @@ namespace bw
 		return it.value().layerEntity;
 	}
 
-	inline std::optional<std::reference_wrapper<LocalLayerEntity>> LocalLayer::GetEntityByServerId(Nz::UInt32 serverId)
+	inline std::optional<std::reference_wrapper<ClientLayerEntity>> ClientLayer::GetEntityByServerId(Nz::UInt32 serverId)
 	{
 		assert(m_isEnabled);
 
@@ -68,7 +68,7 @@ namespace bw
 		return entityOpt;
 	}
 
-	inline EntityId LocalLayer::GetUniqueIdByServerId(Nz::UInt32 serverId)
+	inline EntityId ClientLayer::GetUniqueIdByServerId(Nz::UInt32 serverId)
 	{
 		assert(m_isEnabled);
 
@@ -79,7 +79,7 @@ namespace bw
 		return it->second;
 	}
 
-	inline bool LocalLayer::IsPredictionEnabled() const
+	inline bool ClientLayer::IsPredictionEnabled() const
 	{
 		return m_isPredictionEnabled;
 	}

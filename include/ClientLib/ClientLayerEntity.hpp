@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
-#define BURGWAR_CLIENTLIB_LOCALLAYERENTITY_HPP
+#ifndef BURGWAR_CLIENTLIB_CLIENTLAYERENTITY_HPP
+#define BURGWAR_CLIENTLIB_CLIENTLAYERENTITY_HPP
 
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
@@ -23,21 +23,21 @@
 
 namespace bw
 {
-	class LocalLayer;
-	class LocalLayerEntity;
+	class ClientLayer;
+	class ClientLayerEntity;
 
-	using LocalLayerEntityHandle = Nz::ObjectHandle<LocalLayerEntity>;
+	using ClientLayerEntityHandle = Nz::ObjectHandle<ClientLayerEntity>;
 
-	class BURGWAR_CLIENTLIB_API LocalLayerEntity final : public LayerVisualEntity
+	class BURGWAR_CLIENTLIB_API ClientLayerEntity final : public LayerVisualEntity
 	{
 		public:
-			LocalLayerEntity(LocalLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
-			LocalLayerEntity(const LocalLayerEntity&) = delete;
-			LocalLayerEntity(LocalLayerEntity&& entity) noexcept = default;
-			~LocalLayerEntity();
+			ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
+			ClientLayerEntity(const ClientLayerEntity&) = delete;
+			ClientLayerEntity(ClientLayerEntity&& entity) noexcept = default;
+			~ClientLayerEntity();
 
 			Nz::RadianAnglef GetAngularVelocity() const;
-			LocalLayerEntity* GetGhost();
+			ClientLayerEntity* GetGhost();
 			LayerIndex GetLayerIndex() const;
 			Nz::Vector2f GetLinearVelocity() const;
 			Nz::Vector2f GetPhysicalPosition() const;
@@ -45,7 +45,7 @@ namespace bw
 			Nz::Vector2f GetPosition() const;
 			Nz::RadianAnglef GetRotation() const;
 			inline Nz::UInt32 GetServerId() const;
-			inline const LocalLayerEntityHandle& GetWeaponEntity() const;
+			inline const ClientLayerEntityHandle& GetWeaponEntity() const;
 
 			inline bool HasHealth() const;
 
@@ -58,11 +58,11 @@ namespace bw
 			void UpdatePlayerMovement(bool isFacingRight);
 			void UpdateHealth(Nz::UInt16 newHealth);
 			void UpdateInputs(const PlayerInputData& inputData);
-			void UpdateParent(const LocalLayerEntity* newParent);
-			void UpdateWeaponEntity(const LocalLayerEntityHandle& entity);
+			void UpdateParent(const ClientLayerEntity* newParent);
+			void UpdateWeaponEntity(const ClientLayerEntityHandle& entity);
 
-			LocalLayerEntity& operator=(const LocalLayerEntity&) = delete;
-			LocalLayerEntity& operator=(LocalLayerEntity&&) = delete;
+			ClientLayerEntity& operator=(const ClientLayerEntity&) = delete;
+			ClientLayerEntity& operator=(ClientLayerEntity&&) = delete;
 
 			static constexpr Nz::UInt32 ClientsideId = 0xFFFFFFFF;
 
@@ -84,15 +84,15 @@ namespace bw
 				Nz::SpriteRef lostHealthSprite;
 			};
 
-			std::unique_ptr<LocalLayerEntity> m_ghostEntity;
+			std::unique_ptr<ClientLayerEntity> m_ghostEntity;
 			std::optional<DebugEntityIdData> m_entityId;
 			std::optional<HealthData> m_health;
 			Nz::UInt32 m_serverEntityId;
-			LocalLayerEntityHandle m_weaponEntity;
-			LocalLayer& m_layer;
+			ClientLayerEntityHandle m_weaponEntity;
+			ClientLayer& m_layer;
 	};
 }
 
-#include <ClientLib/LocalLayerEntity.inl>
+#include <ClientLib/ClientLayerEntity.inl>
 
 #endif
