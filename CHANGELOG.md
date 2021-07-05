@@ -34,6 +34,7 @@
 
 ### Scripting
 
+* Added InputController (a script can now override the way entities inputs are generated)
 * Gamemode events are now triggered on the table they used to register the event (this is important when using gamemode inheritance)
 * Added `PlayerControlledEntityUpdate` client gamemode event.
 * Added Text renderable (which is now used for showing player nicknames)
@@ -43,6 +44,11 @@
 * Base gamemode has now BasePlayerDeathSlot and BasePlayerJoinedSlot to allow derived gamemode to disconnect them
 * The Destroyed event is no longer called client-side when a layer is disabled
 * Added Constraint:GetLastForce and Constraint:GetLastImpulse
+* Added Element:GetOwner() on client
+* Added Element:GetInputController()
+* Added Element:UpdateInputController()
+* Added Player:IsLocalPlayer() on client
+* Added Player:GetInputs (for every player on server but only local players on client)
 * Added Rect:ExtendToPosition(pos)
 * Added Rect:Scale(scale)
 * Added match.GetEntityByUniqueId(id)
