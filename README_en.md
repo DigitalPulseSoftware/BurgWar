@@ -9,49 +9,56 @@ So you're free to modify the game, add your weapons, your way of playing, your a
 
 ## How to play?
 
-Download the latest [release](https://github.com/DigitalPulseSoftware/BurgWar/releases) is enough to play, you can also download the map editor to make your own maps.
+Download the latest [release](https://github.com/DigitalPulseSoftware/BurgWar/releases) to play should suffice, you can also download the map editor to make your own maps.
 
-## How to compile it?
+## How to compile?
 
-Burg'war uses three libraries :
+Burg'War is compiled using [XMake](https://xmake.io), a build tool system which will download and compile all dependencies it won't find on your computer, except for [Qt](https://www.qt.io) which you will need to install yourself if you wish to compile the map editor.
 
-- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - used by the whole project (download the nightlies or compile it yourself) ;
-- [cURL](https://curl.haxx.se/) - required by the client ([binaries for Windows](https://curl.haxx.se/windows/)) ;
-- [Qt](https://www.qt.io) - required by the map editor.
+**Warning**, because of a current limitation of XMake, compilation will fail is Qt is nowhere to be found on your computer, even if you don't compile the map editor.  
+As a temporary fix, delete all lignes from **xmake.lua** following the line `target("BurgWarMapEditor")`.
 
-Once the binaries of these libraries are installed on your system, copy the `build/config.default.lua` file to `build/config.lua` and fill it in to indicate where your dependencies are located.
+This will be improved in a future XMake version.
 
-This file is used by the generator ([Premake](https://premake.github.io)) to find out where the library binaries (bin) and the headers for inclusion (include) are located.
-In Windows, you also need to know where the .libs for include are located (lib).
+Once XMake is installed (note that you can also download a [portable version](https://github.com/xmake-io/xmake/releases) of XMake if you wish not to install it), you'll need to run `xmake config --mode=releasedbg` in the project folder (you can also use `--mode=debug` if you wish to build a debug version of the game).
 
-The format is as follows:
-```lua
-DependencyName = {
-  -- You can specify each folder separately
-	BinPath = [[C:\Qt\5.12.6\msvc2017_64\bin]],
-	IncludePath = [[C:\Qt\5.12.6\msvc2017_64\include]],
-	LibPath = [[C:\Qt\5.12.6\msvc2017_64\lib]],
-  
-  -- Or if, as in the example above, you have a folder containing bin/include(/lib) subfolders, you can use the following shortcut:
-  PackageFolder = [[C:\Qt\5.12.6\msvc2017_64]],
-}
-```
+XMake will try to find all the project dependencies on your computer and ask you to install the missing ones (except for Qt).
 
-If the dependency is installed on your system (which is often the case on Linux), you can indicate this with:
-```lua
-DependencyName = {
-  PackageFolder = ":system",
-}
-```
+### Compile using command-line (first method)
 
-The three dependencies are `cURL`, `Nazara` and `Qt`. 
-Note that `Qt` also requires the `MocPath` option, path to the moc.exe utility (normally found in the bin directory), this is not mandatory but recommended if you want to make changes to the project.
+Once you're ready to compile the game itself, run `xmake` (or `xmake -jX` if you wish not to use all your computer threads, with X being the number of threads you wish to use) and watch the game compile.
 
-In the case where a dependency is not filled, the projects that depends on it will be ignored.
+### Generate a project (second method)
 
-Once this file is populated, you just need to run `premake5.exe` (`premake5-linux64` on Linux) followed by a spacing and the target you want to generate, commonly `vs2019` for Visual Studio 2019, `gmake` for a makefile, etc. (Call premake without arguments to get a list of supported targets).
+XMake can also generate a project file for another tool:
+- Visual Studio: `xmake project -k vsxmake`
+- CMakeLists.txt (which you can open in CLion and more): `xmake project -k cmake`
+- Makefile: `xmake project -k make`
+- Ninja: `xmake project -k ninja`
+- XCode: `xmake project -k xcode`
 
-From there, compile the project according to the generated target, and you should get executables for the Client (Burgwar), Server (BWServer) and Map Editor (BWMapEditor).
-Each of these projects uses a .lua file for its configuration, make sure it is present (and properly configured) in the current directory of the executable before starting it.
+### Run the game
 
-You'll only miss the necessary assets (images/sounds/etc.), which you can find by downloading the GitHub releases.
+Once the compilation finished, you should have the game binaries in the `bin/<config>` folder (where `<config>` is your platform/arch/mode, for example: `windows_x64_debug`).
+
+Now, copy the `clientconfig.lua`, `editconfig.lua` and `serverconfig.lua` files next to your Burg'War executables. You'll also need the game assets which you can download from the [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases).
+
+You should now be able to run the game using XMake, by running `xmake run <target>` (replace `<target>` by the executable name you wish to run, for example `xmake run BurgWar` will run the game binary).
+
+**Note: you need to use `xmake run` to run the game because of the dependencies installed by XMake which wouldn't be found otherwise, you can use `xmake install -o installed` to have XMake copy all necessary files in the `installed/bin` folder.**
+
+## What technologies are used by Burg'War?
+
+The technologies behind Burg'War are :
+- [concurrentqueue](https://github.com/cameron314/concurrentqueue) : a lock-free queue used to send and receive messages from the network threads
+- [cURL](https://curl.haxx.se/) : used by the client to download assets from a HTTP(S) server
+- [cxxopts](https://github.com/jarro2783/cxxopts) : used by maptool to parse commandline parameters
+- [fmt](https://github.com/fmtlib/fmt) : a well-known C++ formatting library used by the logging system
+- [hopscotch-map](https://github.com/Tessil/hopscotch-map) : a fast hashmap based on [hopscotch hashing](https://en.wikipedia.org/wiki/Hopscotch_hashing)
+- [Nazara Engine](https://github.com/DigitalPulseSoftware/NazaraEngine) : **my own game engine**, which handles rendering, audio, physics and more
+- [nlohmann_json](https://json.nlohmann.me) : a simple and powerful JSon parser for C++
+- [Qt](https://www.qt.io) : a very famous C++ framework to make GUI
+- [sol](https://github.com/ThePhD/sol2) : C++ <=> Lua interface, very fast and handy
+- [tl_expected](https://github.com/TartanLlama/expected) : A Result-like class for C++
+- [tl_function_ref](https://github.com/TartanLlama/function_ref) : A lambda or function reference (more efficient than std::function when you don't need to store functions)
+- [XMake](https://xmake.io) : a very powerful build and dependency system which compiles the project and download missing dependencies, which is why you don't need to care about this list to build the game!

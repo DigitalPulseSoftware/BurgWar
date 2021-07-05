@@ -11,47 +11,56 @@ Vous avez donc toute la liberté de modifier le jeu, rajouter vos armes, votre f
 
 Téléchargez la dernière [release](https://github.com/DigitalPulseSoftware/BurgWar/releases) suffit pour jouer, vous avez également la possibilité de télécharger l'éditeur de map pour faire vos propres maps.
 
+Vous pouvez également tester la dernière version de développement en suivant les instructions [sur le wiki](https://github.com/DigitalPulseSoftware/BurgWar/wiki/%5BFR%5D-T%C3%A9l%C3%A9charger-les-nightlies-pour-jouer-au-jeu-hors-releases).
+
 ## Comment compiler le projet ?
 
-Burg'war utilise trois bibliothèques :
+Burg'War se compile en utilisant [XMake](https://xmake.io), qui se chargera pour vous de télécharger / compiler toutes les dépendances manquantes, à l'exception de [Qt](https://www.qt.io) que vous devrez installer vous-même si vous souhaitez compiler l'éditeur de map.
 
-- [NazaraEngine](https://github.com/DigitalPulseSoftware/NazaraEngine) - utilisé par l'entièreté du projet (téléchargez les nightlies ou compilez vous-même) ;
-- [cURL](https://curl.haxx.se/) - requis par le client ([binaires pour Windows](https://curl.haxx.se/windows/)) ;
-- [Qt](https://www.qt.io) - requis par l'éditeur de map.
+**Attention**, en raison d'une limitation de XMake, la compilation échouera si Qt n'est pas présent sur votre machine, et ce même si vous ne compilez pas l'éditeur de map.  
+Comme correctif temporaire, vous pouvez supprimer toutes les lignes du fichier **xmake.lua** à partir de `target("BurgWarMapEditor")`.
 
-Une fois les binaires de ces bibliothèques installées sur votre système, copiez-le fichier `build/config.default.lua` vers `build/config.lua` et remplissez-le pour indiquer où se trouvent vos dépendances.
+Dans une version ultérieure de XMake, ceci ne sera plus nécessaire.
 
-Ce fichier est utilisé par le générateur ([Premake](https://premake.github.io)) pour savoir où se trouvent les binaires des bibliothèques (bin) et les headers pour l'inclusion (include).
-Sous Windows, il faut également renseigner l'endroit où se trouve les .lib d'inclusion (lib).
+Une fois XMake téléchargé et installé (note: vous pouvez aussi obtenir [une version portable](https://github.com/xmake-io/xmake/releases) si vous ne souhaitez pas l'installer), il vous suffit ensuite d'exécuter la commande `xmake config --mode=releasedbg` dans le répertoire du projet (vous pouvez également préciser `--mode=debug` si vous désirez obtenir une build de débuggage).
 
-Le format est le suivant :
-```lua
-NomDependance = {
-  -- Vous pouvez spécifiez chaque dossier séparément
-	BinPath = [[C:\Qt\5.12.6\msvc2017_64\bin]],
-	IncludePath = [[C:\Qt\5.12.6\msvc2017_64\include]],
-	LibPath = [[C:\Qt\5.12.6\msvc2017_64\lib]],
-  
-  -- Ou si, comme dans l'exemple ci-dessus, vous avez un dossiez contenant des sous-dossiers bin/include(/lib), vous pouvez utiliser le raccourci suivant :
-  PackageFolder = [[C:\Qt\5.12.6\msvc2017_64]],
-}
-```
+XMake va ensuite essayer de trouver les dépendances du projet sur votre machine et vous proposer d'installer celles qu'il ne peut pas trouver (à l'exception de Qt).
 
-Si la dépendance est installée sur votre système (comme souvent sur Linux), vous pouvez l'indiquer avec :
-```lua
-NomDependance = {
-  PackageFolder = ":system",
-}
-```
+### Compilation en ligne de commande (Méthode 1)
 
-Les trois dépendances sont `cURL`, `Nazara` et `Qt`. 
-À noter que `Qt` demande aussi l'option `MocPath`, chemin vers l'utilitaire moc.exe (normalement trouvé dans le dossier bin), ce n'est pas obligatoire mais recommandé si vous souhaitez effectuer des changements au projet.
+Une fois que vous êtes prêts à compiler le jeu lui-même, exécutez la commande `xmake` (ou `xmake -jX` si vous souhaitez réduire le nombre de threads utilisés, avec X pour le nombre de threads désiré) et regardez le jeu se compiler sous vos yeux ébahis.
 
-Dans le cas où une dépendance ne serait pas renseignée, les projets qui en dépendent seront ignorés.
+### Génération de projet (Méthode 2)
 
-Une fois ce fichier rempli, vous n'avez qu'à exécuter `premake5.exe` (`premake5-linux64` sous Linux) suivi d'un espacement et de la cible que vous souhaitez générer, communément `vs2019` pour Visual Studio 2019, `gmake` pour un makefile, etc. (Appelez premake sans argument pour obtenir la liste des cibles supportées).
+XMake est également capable de générer un fichier projet pour un autre outil :
+- Visual Studio: `xmake project -k vsxmake`
+- CMakeLists.txt (ouvrable dans CLion et autre): `xmake project -k cmake`
+- Makefile: `xmake project -k make`
+- Ninja: `xmake project -k ninja`
+- XCode: `xmake project -k xcode`
 
-À partir de là, compilez le projet selon la cible générée, et vous devriez obtenir des exécutables pour le Client (Burgwar), le Serveur (BWServer) et l'Éditeur de map (BWMapEditor).
-Chacun de ces projets utilise un fichier .lua pour sa configuration, veillez bien à ce qu'il soit présent (et bien configuré) dans le répertoire courant de l'exécutable avant de le démarrer.
+### Lancer le jeu
 
-Il ne vous manquera que les assets (images/sons/etc.) nécessaires, que vous pouvez trouver en téléchargeant les releases GitHub.
+Une fois la compilation terminée, vous devriez obtenir les binaires du jeu dans le dossier `bin/<config>` (où `<config>` équivaudra à votre plateforme/architecture/configuration, ex: `windows_x64_debug`).
+
+Copiez les fichiers `clientconfig.lua`, `editconfig.lua` et `serverconfig.lua` à côté des exécutables de Burg'War. Vous nécessiterez également les assets (trouvables dans les [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases) ou sur [sur le wiki](https://github.com/DigitalPulseSoftware/BurgWar/wiki/%5BFR%5D-T%C3%A9l%C3%A9charger-les-nightlies-pour-jouer-au-jeu-hors-releases)) pour exécuter correctement le jeu.
+
+Vous pouvez maintenant lancer le jeu via XMake, avec la commande `xmake run <target>` (remplacez `<target>` par le nom de l'exécutable, par exemple `xmake run BurgWar` pour lancer le jeu).
+
+**Note: vous devez passer par `xmake run` à cause des dépendances qui ne seraient pas trouvées autrement, si vous désirez pouvoir lancer les exécutables directement utilisez la commande `xmake install -o installed` pour que XMake copie tous les fichiers nécessaires dans le dossier `installed/bin`.**
+
+## Quelles sont les technologies utilisées par Burg'War ?
+
+Les technologies utilisées sont :
+- [concurrentqueue](https://github.com/cameron314/concurrentqueue) : file d'attente lock-free utilisée pour transmettre et recevoir des messages avec les thread réseau
+- [cURL](https://curl.haxx.se/) : utilisée par le client pour télécharger les assets depuis un serveur HTTP(S)
+- [cxxopts](https://github.com/jarro2783/cxxopts) : pour parser la ligne de commande (pour l'outil maptool)
+- [fmt](https://github.com/fmtlib/fmt) : bibliothèque de formattage incontournable en C++, utilisée pour le système de logs
+- [hopscotch-map](https://github.com/Tessil/hopscotch-map) : une hashmap performante basée sur le [hopscotch hashing](https://en.wikipedia.org/wiki/Hopscotch_hashing)
+- [Nazara Engine](https://github.com/DigitalPulseSoftware/NazaraEngine) : mon propre moteur de jeu, responsable du rendu, de l'audio, de la physique, etc.
+- [nlohmann_json](https://json.nlohmann.me) : parseur de JSon simple d'utilisation
+- [Qt](https://www.qt.io) : bibliothèque très connue permettant de faire des interfaces graphiques facilement en C++
+- [sol](https://github.com/ThePhD/sol2) : interface C++ <=> Lua très pratique et rapide
+- [tl_expected](https://github.com/TartanLlama/expected) : implémentation d'une classe Result-like pour le C++
+- [tl_function_ref](https://github.com/TartanLlama/function_ref) : implémentation d'une référence vers une lambda ou fonction (plus efficace que std::function)
+- [XMake](https://xmake.io) : système de build et de gestion de dépendances qui compile le projet et télécharge les dépendances requises, ce qui fait que vous n'avez pas à vous soucier de cette liste pour compiler le projet !
