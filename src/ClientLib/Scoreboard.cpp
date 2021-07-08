@@ -77,7 +77,7 @@ namespace bw
 		return teamIndex;
 	}
 
-	void Scoreboard::RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, bool isLocalPlayer)
+	void Scoreboard::RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, std::optional<Nz::Color> color, bool isLocalPlayer)
 	{
 		if (m_players.size() <= playerIndex)
 			m_players.resize(playerIndex + 1);
@@ -88,11 +88,14 @@ namespace bw
 		playerData.background = m_contentWidget->Add<Ndk::BaseWidget>();
 		playerData.background->EnableBackground(isLocalPlayer);
 		playerData.background->SetBackgroundColor(Nz::Color(255, 255, 255, 60));
+		playerData.color = color;
 		playerData.teamId = teamId;
 
-		Nz::Color teamColor = Nz::Color::White;
-		if (teamId < m_teams.size())
-			teamColor = m_teams[teamId].color;
+		Nz::Color playerColor = Nz::Color::White;
+		if (playerData.color)
+			playerColor = *playerData.color;
+		else if (teamId < m_teams.size())
+			playerColor = m_teams[teamId].color;
 
 		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
@@ -102,7 +105,7 @@ namespace bw
 			auto& columnData = playerData.values.emplace_back();
 			columnData.value = std::move(value);
 			columnData.label = m_contentWidget->Add<Ndk::LabelWidget>();
-			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, teamColor));
+			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, playerColor));
 			columnData.label->Resize(columnData.label->GetPreferredSize());
 		}
 
@@ -163,20 +166,22 @@ namespace bw
 		if (playerIndex >= m_players.size() || !m_players[playerIndex].has_value())
 			return;
 
-		auto& playerData = m_players[playerIndex];
-		if (valueIndex >= playerData->values.size())
+		auto& playerData = *m_players[playerIndex];
+		if (valueIndex >= playerData.values.size())
 			return;
 
-		Nz::Color teamColor = Nz::Color::White;
-		if (playerData->teamId < m_teams.size())
-			teamColor = m_teams[playerData->teamId].color;
+		Nz::Color playerColor = Nz::Color::White;
+		if (playerData.color)
+			playerColor = *playerData.color;
+		else if (playerData.teamId < m_teams.size())
+			playerColor = m_teams[playerData.teamId].color;
 
 		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
 
-		auto& columnData = playerData->values[valueIndex];
+		auto& columnData = playerData.values[valueIndex];
 		columnData.value = std::move(value);
-		columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, teamColor));
+		columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, playerColor));
 		columnData.label->Resize(columnData.label->GetPreferredSize());
 
 		Layout();

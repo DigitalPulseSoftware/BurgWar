@@ -2,6 +2,13 @@ local gamemode = ScriptedGamemode()
 
 gamemode.PlayerNicks = {}
 
+function gamemode:GetPlayerColor(player)
+	local team = self:GetPlayerTeam(player)
+	if (team) then
+		return team:GetColor()
+	end
+end
+
 gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, newEntity)
 	local id = player:GetPlayerIndex()
 
@@ -23,9 +30,9 @@ gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, n
 		local size = text:GetSize()
 		text:SetOffset(Vec2(-size.x / 2, -size.y))
 
-		local team = self:GetPlayerTeam(player)
-		if (team) then
-			text:SetColor(team:GetColor())
+		local color = match.GetGamemode():GetPlayerColor(player)
+		if (color) then
+			text:SetColor(color)
 		end
 
 		self.PlayerNicks[id] = text

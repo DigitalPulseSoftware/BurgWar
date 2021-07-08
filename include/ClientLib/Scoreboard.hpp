@@ -32,7 +32,7 @@ namespace bw
 			std::size_t AddColumn(std::string name);
 			std::size_t AddTeam(std::string name, Nz::Color color);
 
-			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, bool isLocalPlayer = false);
+			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, std::optional<Nz::Color> color = {}, bool isLocalPlayer = false);
 
 			Nz::String ToString() const;
 
@@ -58,6 +58,7 @@ namespace bw
 				};
 
 				Ndk::BaseWidget* background;
+				std::optional<Nz::Color> color;
 				std::size_t teamId;
 				std::vector<ColumnData> values;
 			};

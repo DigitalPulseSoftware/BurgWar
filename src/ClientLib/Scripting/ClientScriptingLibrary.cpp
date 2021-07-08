@@ -465,16 +465,30 @@ namespace bw
 			"AddColumn", LuaFunction(&Scoreboard::AddColumn),
 			"AddTeam", LuaFunction(&Scoreboard::AddTeam),
 
-			"RegisterPlayer", sol::overload(
-				LuaFunction([](Scoreboard& scoreboard, std::size_t playerIndex, Nz::Int64 teamId, std::vector<std::string> values)
-				{ 
-					scoreboard.RegisterPlayer(playerIndex, (teamId >= 0) ? static_cast<std::size_t>(teamId) : Scoreboard::InvalidTeam, values);
-				}),
-				LuaFunction([](Scoreboard& scoreboard, std::size_t playerIndex, Nz::Int64 teamId, std::vector<std::string> values, bool isLocalPlayer)
-				{ 
-					scoreboard.RegisterPlayer(playerIndex, (teamId >= 0) ? static_cast<std::size_t>(teamId) : Scoreboard::InvalidTeam, values, isLocalPlayer);
-				})
-			),
+			"RegisterPlayer", LuaFunction([](Scoreboard& scoreboard, sol::this_state L, const sol::table& parameters)
+			{ 
+				std::size_t playerIndex = parameters["PlayerIndex"];
+				std::optional<Nz::Color> color = parameters["Color"];
+				bool isLocalPlayer = parameters.get_or("IsLocalPlayer", false);
+
+				std::size_t teamIndex = Scoreboard::InvalidTeam;
+				sol::object teamIndexObj = parameters["TeamIndex"];
+				if (!teamIndexObj.is<sol::nil_t>())
+				{
+					if (!teamIndexObj.is<std::size_t>())
+						TriggerLuaArgError(L, 2, "missing or invalid value for TeamIndex");
+
+					teamIndex = teamIndexObj.as<std::size_t>();
+				}
+
+				sol::object valuesObj = parameters["Values"];
+				if (!teamIndexObj.is<sol::table>())
+					TriggerLuaArgError(L, 2, "missing or invalid value for Values");
+
+				std::vector<std::string> values = valuesObj.as<std::vector<std::string>>();
+
+				scoreboard.RegisterPlayer(playerIndex, teamIndex, values, color, isLocalPlayer);
+			}),
 
 			"UnregisterPlayer", LuaFunction(&Scoreboard::UnregisterPlayer),
 

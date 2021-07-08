@@ -57,7 +57,13 @@ function gamemode:RegisterScoreboardPlayer(player)
 	table.insert(columnValues, tostring(player:GetPing() or ""))
 
 	local playerTeam = self:GetPlayerTeam(player)
-	scoreboard:RegisterPlayer(playerIndex, playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or -1, columnValues, isLocalPlayer)
+	scoreboard:RegisterPlayer({
+		PlayerIndex = playerIndex,
+		TeamIndex = playerTeam and self.ScoreboardTeamIndexes[playerTeam:GetName()] or nil,
+		Values = columnValues, 
+		Color = derivedGamemode:GetPlayerColor(player),
+		IsLocalPlayer = isLocalPlayer
+	})
 end
 
 function gamemode:UpdateScoreboard(playerScores)
