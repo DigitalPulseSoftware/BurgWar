@@ -19,7 +19,7 @@ local stuckInputController = CustomInputController.new(function (entity)
 end)
 
 gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, newEntity)
-	if (self.State == RoundState.Countdown and newEntity) then
+	if (self.State == RoundState.Countdown and newEntity and player:IsLocalPlayer()) then
 		newEntity.previousController = newEntity:GetInputController()
 		newEntity:UpdateInputController(stuckInputController)
 
