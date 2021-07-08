@@ -23,10 +23,8 @@ gamemode:On("PlayerControlledEntityUpdate", function (self, player, oldEntity, n
 		newEntity.previousController = newEntity:GetInputController()
 		newEntity:UpdateInputController(stuckInputController)
 
-		if (engine_GetLocalPlayer_PlayerIndex(0) == player:GetPlayerIndex()) then
-			self.CameraPos = newEntity:GetPosition()
-			self.CameraZoom = 1.25
-		end
+		self.CameraPos = newEntity:GetPosition()
+		self.CameraZoom = 1.25
 	end
 end)
 
@@ -106,28 +104,28 @@ function gamemode:UpdateCameraPosition()
 
 	self.TargetCameraPos = cameraRect:GetPosition()
 	self.TargetCameraZoom = zoomFactor
-
-	local frametime = render.GetFrametime()
+	
+	--[[local frametime = render.GetFrametime()
 	if (self.CameraPos) then
 		local diff = self.TargetCameraPos - self.CameraPos
-		self.CameraPos.x = math.approach(self.CameraPos.x, self.TargetCameraPos.x, diff.x * frametime * 1.25)
-		self.CameraPos.y = math.approach(self.CameraPos.y, self.TargetCameraPos.y, diff.y * frametime * 1.25)
+		self.CameraPos.x = math.approach(self.CameraPos.x, self.TargetCameraPos.x, 500 * frametime)
+		self.CameraPos.y = math.approach(self.CameraPos.y, self.TargetCameraPos.y, 500 * frametime)
 	else
 		self.CameraPos = self.TargetCameraPos
 	end
 
 	if (self.CameraZoom) then
 		local diff = self.TargetCameraZoom - self.CameraZoom
-		self.CameraZoom = math.approach(self.CameraZoom, self.TargetCameraZoom, diff * frametime * 0.9)
+		self.CameraZoom = math.approach(self.CameraZoom, self.TargetCameraZoom, 0.1 * frametime)
 	else
 		self.CameraZoom = self.TargetCameraZoom
-	end
+	end]]
 
-	local camOrigin = self.CameraPos + offset
+	local camOrigin = self.TargetCameraPos + offset
 	if (camZone) then
 		camOrigin = self:ClampCameraPosition(scaledViewport, camZone, camOrigin)
 	end
 
 	camera:MoveToPosition(camOrigin)
-	camera:SetZoomFactor(self.CameraZoom)
+	camera:SetZoomFactor(self.TargetCameraZoom)
 end

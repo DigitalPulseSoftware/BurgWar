@@ -38,7 +38,6 @@ end)
 
 gamemode:On("PlayerLeave", function (self, player)
 	local playerIndex = player:GetPlayerIndex()
-	print("PlayerLeave - " .. playerIndex .. " - " .. player:GetName())
 	self.PlayerRoundCount[playerIndex] = nil
 end)
 
