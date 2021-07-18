@@ -1,4 +1,3 @@
-
 local gamemode = ScriptedGamemode()
 
 gamemode.PlayerPcts = {}
