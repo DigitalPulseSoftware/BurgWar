@@ -26,6 +26,7 @@ namespace bw
 		if (!m_configFile.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("failed to load config file");
 
+		LoadMods();
 		FillStores();
 
 		Nz::UInt8 aaLevel = m_config.GetIntegerValue<Nz::UInt8>("WindowSettings.AntialiasingLevel");

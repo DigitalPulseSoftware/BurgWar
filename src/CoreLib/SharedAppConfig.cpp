@@ -10,6 +10,7 @@ namespace bw
 	ConfigFile(app)
 	{
 		RegisterStringOption("Resources.AssetDirectory");
+		RegisterStringOption("Resources.ModDirectory");
 		RegisterStringOption("Resources.ScriptDirectory");
 		RegisterBoolOption("Debug.SendServerState");
 		RegisterStringOption("GameSettings.FastDownloadURLs", "");

@@ -7,5 +7,6 @@ GameSettings = {
 Resources = {
 	AssetDirectory = "assets",
 	EditorDirectory = "assets/editor",
+	ModDirectory = "mods",
 	ScriptDirectory  = "scripts"
 }

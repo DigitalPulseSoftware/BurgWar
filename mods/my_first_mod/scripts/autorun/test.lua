@@ -1,0 +1,1 @@
+print("COUCOU, JE SUIS UN MOD")

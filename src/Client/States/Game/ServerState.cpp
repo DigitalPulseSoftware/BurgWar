@@ -27,6 +27,12 @@ namespace bw
 		matchSettings.name = "local";
 		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("GameSettings.TickRate");
 
+		Match::ModSettings modSettings;
+
+		// FIXME: Allow to select enabled mods
+		for (auto&& [modId, mod] : app.GetMods())
+			modSettings.enabledMods[modId] = Match::ModSettings::ModEntry{};
+
 		// Load map
 		if (!EndsWith(map, ".bmap"))
 		{
@@ -38,7 +44,7 @@ namespace bw
 		else
 			matchSettings.map = Map::LoadFromBinary(map);
 
-		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings));
+		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
 
 		MatchSessions& sessions = m_match->GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();

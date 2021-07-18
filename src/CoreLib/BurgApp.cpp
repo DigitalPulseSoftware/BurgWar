@@ -3,7 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/BurgApp.hpp>
-#include <Nazara/Core/Clock.hpp>
+#include <CoreLib/ConfigFile.hpp>
+#include <CoreLib/Mod.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/CollisionDataComponent.hpp>
 #include <CoreLib/Components/CooldownComponent.hpp>
@@ -25,6 +26,7 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
+#include <Nazara/Core/Clock.hpp>
 
 namespace bw
 {
@@ -65,5 +67,19 @@ namespace bw
 		Nz::UInt64 elapsedTime = now - m_lastTime;
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
+	}
+	
+	void BurgApp::LoadMods()
+	{
+		const std::string& modDir = m_config.GetStringValue("Resources.ModDirectory");
+		if (modDir.empty())
+			return;
+
+		std::vector<Mod> mods = Mod::LoadAllFromDirectory(m_logger, modDir);
+		for (auto&& mod : mods)
+		{
+			std::string id = mod.GetId();
+			m_mods.emplace(std::move(id), std::make_shared<Mod>(std::move(mod)));
+		}
 	}
 }

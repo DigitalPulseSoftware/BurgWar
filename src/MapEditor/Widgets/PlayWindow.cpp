@@ -45,7 +45,13 @@ namespace bw
 		matchSettings.name = "local";
 		matchSettings.tickDuration = 1.f / tickRate;
 
-		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings));
+		Match::ModSettings modSettings;
+
+		// FIXME: Allow to select enabled mods
+		for (auto&& [modId, mod] : app.GetMods())
+			modSettings.enabledMods[modId] = Match::ModSettings::ModEntry{};
+
+		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
 
 		MatchSessions& sessions = m_match->GetSessions();
 		LocalSessionManager* sessionManager = sessions.CreateSessionManager<LocalSessionManager>();

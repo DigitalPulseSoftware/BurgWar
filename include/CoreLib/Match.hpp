@@ -33,6 +33,7 @@
 namespace bw
 {
 	class BurgApp;
+	class Mod;
 	class ServerGamemode;
 	class ServerScriptingLibrary;
 	class Terrain;
@@ -51,10 +52,11 @@ namespace bw
 		public:
 			struct ClientAsset;
 			struct ClientScript;
-			struct MatchSettings;
 			struct GamemodeSettings;
+			struct MatchSettings;
+			struct ModSettings;
 
-			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings);
+			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -106,6 +108,7 @@ namespace bw
 			void RegisterNetworkString(std::string string);
 
 			void ReloadAssets();
+			void ReloadMods();
 			void ReloadScripts();
 
 			void RemovePlayer(Player* player, DisconnectionReason disconnection);
@@ -138,6 +141,16 @@ namespace bw
 				std::string name;
 				Map map;
 				float tickDuration;
+			};
+
+			struct ModSettings
+			{
+				struct ModEntry
+				{
+					PropertyValueMap properties; //< TODO: Not used yet
+				};
+
+				tsl::hopscotch_map<std::string, ModEntry> enabledMods;
 			};
 
 			struct GamemodeSettings
@@ -180,6 +193,7 @@ namespace bw
 			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
+			std::vector<std::shared_ptr<Mod>> m_enabledMods;
 			std::vector<std::unique_ptr<Player>> m_players;
 			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, ClientAsset> m_clientAssets;
@@ -192,6 +206,7 @@ namespace bw
 			GamemodeSettings m_gamemodeSettings;
 			Map m_map;
 			MatchSessions m_sessions;
+			ModSettings m_modSettings;
 			NetworkStringStore m_networkStringStore;
 			bool m_disableWhenEmpty;
 			bool m_isResetting;

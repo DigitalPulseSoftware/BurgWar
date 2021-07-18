@@ -8,6 +8,7 @@
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
+#include <CoreLib/Mod.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
@@ -27,7 +28,7 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings) :
+	Match::Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings) :
 	SharedMatch(app, LogSide::Server, std::move(matchSettings.name), matchSettings.tickDuration),
 	m_maxPlayerCount(matchSettings.maxPlayerCount),
 	m_nextUniqueId(matchSettings.map.GetFreeUniqueId()),
@@ -36,9 +37,11 @@ namespace bw
 	m_gamemodeSettings(std::move(gamemodeSettings)),
 	m_map(std::move(matchSettings.map)),
 	m_sessions(*this),
+	m_modSettings(std::move(modSettings)),
 	m_disableWhenEmpty(true),
 	m_isResetting(false)
 	{
+		ReloadMods();
 		ReloadAssets();
 		ReloadScripts();
 
@@ -335,6 +338,11 @@ namespace bw
 		const std::string& assetDirectory = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
 		m_assetDirectory = std::make_shared<VirtualDirectory>(assetDirectory);
+		for (const auto& modPtr : m_enabledMods)
+		{
+			for (const auto& [assetPath, physicalPath] : modPtr->GetAssets())
+				m_assetDirectory->StoreFile(assetPath, physicalPath);
+		}
 
 		if (!m_assetStore)
 			m_assetStore.emplace(GetLogger(), m_assetDirectory);
@@ -377,6 +385,22 @@ namespace bw
 		}
 	}
 
+	void Match::ReloadMods()
+	{
+		const auto& loadedMods = m_app.GetMods();
+		for (auto&& [modId, modSettings] : m_modSettings.enabledMods)
+		{
+			auto it = loadedMods.find(modId);
+			if (it == loadedMods.end())
+			{
+				bwLog(GetLogger(), LogLevel::Error, "unknown mod {0}", modId);
+				continue;
+			}
+
+			m_enabledMods.emplace_back(it->second);
+		}
+	}
+
 	void Match::ReloadScripts()
 	{
 		assert(m_assetStore);
@@ -386,6 +410,12 @@ namespace bw
 		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
 		m_scriptDirectory = std::make_shared<VirtualDirectory>(scriptFolder);
+		for (const auto& modPtr : m_enabledMods)
+		{
+			for (const auto& [scriptPath, physicalPath] : modPtr->GetScripts())
+				m_scriptDirectory->StoreFile(scriptPath, physicalPath);
+		}
+
 		for (const auto& mapScript : m_map.GetScripts())
 			m_scriptDirectory->StoreFile(mapScript.filepath, mapScript.content);
 

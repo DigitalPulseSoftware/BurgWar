@@ -9,6 +9,7 @@ GameSettings = {
 }
 Resources = {
 	AssetDirectory = "assets",
+	ModDirectory = "mods",
 	ScriptDirectory  = "scripts"
 }
 WindowSettings = {

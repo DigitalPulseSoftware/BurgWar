@@ -23,4 +23,9 @@ namespace bw
 	{
 		return m_logger;
 	}
+	
+	inline const tsl::hopscotch_map<std::string, std::shared_ptr<Mod>>& BurgApp::GetMods() const
+	{
+		return m_mods;
+	}
 }

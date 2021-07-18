@@ -66,6 +66,7 @@ namespace bw
 
 		Ndk::InitializeComponent<CanvasComponent>("CanvsCmp");
 
+		LoadMods();
 		FillStores();
 
 		const std::string& editorAssetsFolder = m_config.GetStringValue("Resources.EditorDirectory");
