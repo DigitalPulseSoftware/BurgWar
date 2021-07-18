@@ -482,7 +482,7 @@ namespace bw
 				}
 
 				sol::object valuesObj = parameters["Values"];
-				if (!teamIndexObj.is<sol::table>())
+				if (!valuesObj.is<sol::table>())
 					TriggerLuaArgError(L, 2, "missing or invalid value for Values");
 
 				std::vector<std::string> values = valuesObj.as<std::vector<std::string>>();
