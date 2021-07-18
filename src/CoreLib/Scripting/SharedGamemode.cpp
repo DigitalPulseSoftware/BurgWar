@@ -33,9 +33,9 @@ namespace bw
 
 	sol::table SharedGamemode::LoadGamemode(const std::string& gamemodeName)
 	{
-		auto resultOpt = m_context->Load("gamemodes/" + gamemodeName + ".lua");
+		auto resultOpt = m_context->Load("gamemodes/" + gamemodeName + ".lua", false);
 		if (!resultOpt)
-			throw std::runtime_error("failed to retrieve gamemode " + gamemodeName + " data");
+			throw std::runtime_error("failed to load gamemode " + gamemodeName + " data");
 
 		sol::table gamemodeTable = resultOpt->as<sol::table>();
 		gamemodeTable["__index"] = gamemodeTable;

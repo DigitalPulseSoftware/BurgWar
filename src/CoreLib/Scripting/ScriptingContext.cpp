@@ -33,13 +33,19 @@ namespace bw
 		m_runningThreads.clear();
 	}
 
-	tl::expected<sol::object, std::string> ScriptingContext::Load(const std::filesystem::path& file)
+	tl::expected<sol::object, std::string> ScriptingContext::Load(const std::filesystem::path& file, bool logError)
 	{
 		VirtualDirectory::Entry entry;
 		if (!m_scriptDirectory->GetEntry(file.generic_u8string(), &entry))
-			return tl::unexpected("unknown path " + file.generic_u8string());
+		{
+			tl::expected<sol::object, std::string> result = tl::unexpected("unknown path " + file.generic_u8string());
+			if (logError && !result)
+				bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file.generic_u8string(), result.error());
+
+			return result;
+		}
 		
-		return std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
+		auto result = std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
 		{
 			using T = std::decay_t<decltype(arg)>;
 
@@ -51,6 +57,11 @@ namespace bw
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 		}, entry);
+
+		if (logError && !result)
+			bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file.generic_u8string(), result.error());
+
+		return result;
 	}
 
 	auto ScriptingContext::Load(const std::filesystem::path& file, Async) -> std::optional<FileLoadCoroutine>

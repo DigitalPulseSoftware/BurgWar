@@ -40,7 +40,7 @@ namespace bw
 			inline const sol::state& GetLuaState() const;
 			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 
-			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file);
+			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file, bool logError = true);
 			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
 			bool LoadDirectory(const std::filesystem::path& folder);
 			bool LoadDirectoryOpt(const std::filesystem::path& folder);
