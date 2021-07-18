@@ -10,6 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace bw
 {
