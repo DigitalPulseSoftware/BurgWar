@@ -18,9 +18,15 @@ Vous pouvez également tester la dernière version de développement en suivant 
 Burg'War se compile en utilisant [XMake](https://xmake.io), qui se chargera pour vous de télécharger / compiler toutes les dépendances manquantes, à l'exception de [Qt](https://www.qt.io) que vous devrez installer vous-même si vous souhaitez compiler l'éditeur de map.
 
 **Attention**, en raison d'une limitation de XMake, la compilation échouera si Qt n'est pas présent sur votre machine, et ce même si vous ne compilez pas l'éditeur de map.  
-Comme correctif temporaire, vous pouvez supprimer toutes les lignes du fichier **xmake.lua** à partir de `target("BurgWarMapEditor")`.
-
+Comme correctif temporaire, vous pouvez supprimer toutes les lignes du fichier **xmake.lua** à partir de `target("BurgWarMapEditor")` si vous n'avez pas Qt et désirez vous en passer.  
 Dans une version ultérieure de XMake, ceci ne sera plus nécessaire.
+
+**Si vous êtes sous Linux**, la version de Nazara utilisée par Burg'War ne fonctionnant pas avec XMake, certaines dépendances systèmes doivent être installées sous peine de voir la compilation du moteur échouer:
+* Avec apt: `sudo apt-get install libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev`
+* Avec pacman: `sudo pacman -S openal libsndfile freetype2 libxcb libx11 sdl2 mesa assimp`
+* Avec portage: `sudo emerge media-libs/assimp media-libs/mesa media-libs/libsdl2 x11-libs/libX11 x11-libs/libxcb media-libs/freetype media-libs/libsndfile media-libs/openal`
+
+Une fois que Burg'War sera passé à la dernière version de Nazara (utilisant XMake), cela ne sera plus nécessaire.
 
 Une fois XMake téléchargé et installé (note: vous pouvez aussi obtenir [une version portable](https://github.com/xmake-io/xmake/releases) si vous ne souhaitez pas l'installer), il vous suffit ensuite d'exécuter la commande `xmake config --mode=releasedbg` dans le répertoire du projet (vous pouvez également préciser `--mode=debug` si vous désirez obtenir une build de débuggage).
 

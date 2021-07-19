@@ -16,9 +16,15 @@ Download the latest [release](https://github.com/DigitalPulseSoftware/BurgWar/re
 Burg'War is compiled using [XMake](https://xmake.io), a build tool system which will download and compile all dependencies it won't find on your computer, except for [Qt](https://www.qt.io) which you will need to install yourself if you wish to compile the map editor.
 
 **Warning**, because of a current limitation of XMake, compilation will fail is Qt is nowhere to be found on your computer, even if you don't compile the map editor.  
-As a temporary fix, delete all lignes from **xmake.lua** following the line `target("BurgWarMapEditor")`.
-
+As a temporary fix, delete all lignes from **xmake.lua** following the line `target("BurgWarMapEditor")` if you wish not to use it and don't have Qt.  
 This will be improved in a future XMake version.
+
+**If you are under Linux**, Burg'War uses an older version of Nazara which doesn't use XMake. Although XMake will build the engine for you it, it requires some system dependencies and may fail if they are missing:
+* With apt: `sudo apt-get install libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev`
+* With pacman: `sudo pacman -S openal libsndfile freetype2 libxcb libx11 sdl2 mesa assimp`
+* With portage: `sudo emerge media-libs/assimp media-libs/mesa media-libs/libsdl2 x11-libs/libX11 x11-libs/libxcb media-libs/freetype media-libs/libsndfile media-libs/openal`
+
+Once Burg'War moves to the latest version of Nazara (which uses XMake), this won't be necessary.
 
 Once XMake is installed (note that you can also download a [portable version](https://github.com/xmake-io/xmake/releases) of XMake if you wish not to install it), you'll need to run `xmake config --mode=releasedbg` in the project folder (you can also use `--mode=debug` if you wish to build a debug version of the game).
 
