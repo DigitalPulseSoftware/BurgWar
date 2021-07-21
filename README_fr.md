@@ -51,9 +51,18 @@ Vous pouvez ensuite compiler le jeu avec l'outil de votre choix.
 
 Une fois la compilation terminée, vous devriez obtenir les binaires du jeu dans le dossier `bin/<config>` (où `<config>` équivaudra à votre plateforme/architecture/configuration, ex: `windows_x64_debug`).
 
-Copiez les fichiers `clientconfig.lua`, `editconfig.lua` et `serverconfig.lua` à côté des exécutables de Burg'War. Vous nécessiterez également les assets (trouvables dans les [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases) ou sur [sur le wiki](https://github.com/DigitalPulseSoftware/BurgWar/wiki/%5BFR%5D-T%C3%A9l%C3%A9charger-les-nightlies-pour-jouer-au-jeu-hors-releases)) pour exécuter correctement le jeu.
+Copiez les fichiers `clientconfig.lua`, `editorconfig.lua` et `serverconfig.lua` à côté des exécutables de Burg'War. Vous nécessiterez également les assets (trouvables dans les [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases) ou sur [sur le wiki](https://github.com/DigitalPulseSoftware/BurgWar/wiki/%5BFR%5D-T%C3%A9l%C3%A9charger-les-nightlies-pour-jouer-au-jeu-hors-releases)) pour exécuter correctement le jeu.
 
-Vous pouvez maintenant lancer le jeu via XMake, avec la commande `xmake run <target>` (remplacez `<target>` par le nom de l'exécutable, par exemple `xmake run BurgWar` pour lancer le jeu).
+**Attention**, par défaut les fichiers de configuration indiquent des dossiers à côté des exécutables, pour le développement vous voudrez probablement indiquer les dossiers assets/mods/scripts à la racine du projet. Pour ce faire, modifiez la section `Resources` de vos fichiers de configuration pour pointer les dossiers à la racine. Par exemple :
+```lua
+Resources = {
+	AssetDirectory = "../../assets",
+	ModDirectory = "../../mods",
+	ScriptDirectory  = "../../scripts"
+}
+```
+
+Vous pouvez maintenant lancer le jeu via XMake, avec la commande `xmake run <target>` (remplacez `<target>` par le nom de l'exécutable, par exemple `xmake run BurgWar` pour lancer le jeu). Si vous avez généré un projet (par exemple avec Visual Studio), vous pouvez aussi lancer les exécutables à partir de là.
 
 **Note: vous devez passer par `xmake run` à cause des dépendances qui ne seraient pas trouvées autrement, si vous désirez pouvoir lancer les exécutables directement utilisez la commande `xmake install -o installed` pour que XMake copie tous les fichiers nécessaires dans le dossier `installed/bin`.**
 

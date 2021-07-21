@@ -49,7 +49,16 @@ You should now be able to the project file with the tool of your choice.
 
 Once the compilation finished, you should have the game binaries in the `bin/<config>` folder (where `<config>` is your platform/arch/mode, for example: `windows_x64_debug`).
 
-Now, copy the `clientconfig.lua`, `editconfig.lua` and `serverconfig.lua` files next to your Burg'War executables. You'll also need the game assets which you can download from the [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases).
+Now, copy the `clientconfig.lua`, `editorconfig.lua` and `serverconfig.lua` files next to your Burg'War executables. You'll also need the game assets which you can download from the [releases](https://github.com/DigitalPulseSoftware/BurgWar/releases).
+
+**Beware**, by default configurations files specifies directories next to the executables, which is probably not what you want for developing. You can update configurations files to tell the executables to fetch assets/mods/scripts at the repository root. In order to do that, update the `Resources` section of your configuration files, for example:
+```lua
+Resources = {
+	AssetDirectory = "../../assets",
+	ModDirectory = "../../mods",
+	ScriptDirectory  = "../../scripts"
+}
+```
 
 You should now be able to run the game using XMake, by running `xmake run <target>` (replace `<target>` by the executable name you wish to run, for example `xmake run BurgWar` will run the game binary).
 
