@@ -1,88 +1,6 @@
--- Generates a hash key made of packages confs/version, for CI
-task("dephash")
-	on_run(function ()
-		import("core.project.project")
-		import("private.action.require.impl.package")
-
-		local requires, requires_extra = project.requires_str()
-
-		local key = {}
-		for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-			table.insert(key, instance:name() .. "-" .. instance:version_str() .. "-" .. instance:buildhash())
-		end
-
-		table.sort(key)
-
-		key = table.concat(key, ",")
-		print(hash.uuid4(key):gsub('-', ''):lower())
-	end)
-
-	set_menu {
-		usage = "xmake dephash",
-		description = "Outputs a hash key of current dependencies version/configuration"
-	}
-
--- Copies the resulting target file to the install bin folder (used for .so which are installed to lib/)
-rule("install_bin")
-	after_install("linux", function(target)
-		local binarydir = path.join(target:installdir(), "bin")
-		os.mkdir(binarydir)
-		os.vcp(target:targetfile(), binarydir)
-	end)
-
--- Copies maps/scripts folders to the install bin folder
-rule("install_metadata")
-	local metadataInstalled = false
-	after_install(function(target)
-		if (not metadataInstalled) then
-			os.vcp("maps", path.join(target:installdir(), "bin"))
-			os.vcp("scripts", path.join(target:installdir(), "bin"))
-			metadataInstalled = true
-		end
-	end)
-
--- Copies Nazara .so to the install bin folder (as it cannot be installed on the system yet)
-rule("install_nazara")
-	-- This is already handled by xmake on Windows
-	after_install("linux", function (target)
-		local outputdir = path.join(target:installdir(), "bin")
-		local nazara = target:pkg("nazara") or target:pkg("nazaraserver")
-		if (nazara) then
-			local libfiles = nazara:get("libfiles")
-			if (libfiles) then
-				for _, libpath in ipairs(table.wrap(libfiles)) do
-					if (libpath:endswith(".so")) then
-						os.vcp(libpath, outputdir)
-					end
-				end
-			end
-		end
-	end)
-
--- Copies symbol files (such as .pdb) to the install bin folder (required for crashdumps)
-rule("install_symbolfile")
-	after_install(function(target)
-		local symbolfile = target:symbolfile()
-		if os.isfile(symbolfile) then
-			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
-		end
-	end)
-
--- Should the CoreLib be compiled statically? (takes more space)
-option("corelib_static")
-	set_default(false)
-	set_showmenu(true)
-	add_defines("BURGWAR_CORELIB_STATIC")
-
--- Should the ClientLib be compiled statically? (takes more space)
-option("clientlib_static")
-	set_default(false)
-	set_showmenu(true)
-	add_defines("BURGWAR_CLIENTLIB_STATIC")
-
-option_end()
-
 -- Project configuration
+
+set_xmakever("2.5.6")
 
 add_repositories("burgwar-repo xmake-repo")
 
@@ -102,6 +20,11 @@ end
 add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug", "asan") })
 add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug", "asan"), shared = true } })
 
+set_allowedmodes("asan", "debug", "releasedbg")
+set_allowedplats("windows", "linux", "macosx")
+set_allowedarchs("windows|x64", "linux|x86_64", "macosx|x86_64")
+set_defaultmode("debug")
+
 add_rules("mode.asan", "mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -112,7 +35,6 @@ add_rpathdirs("@executable_path")
 
 set_languages("c89", "cxx17")
 set_rundir("./bin/$(os)_$(arch)_$(mode)")
-set_runtimes(is_mode("releasedbg") and "MD" or "MDd")
 set_symbols("debug", "hidden")
 set_targetdir("./bin/$(os)_$(arch)_$(mode)")
 set_warnings("allextra")
@@ -125,8 +47,9 @@ elseif is_mode("asan") then
 end
 
 if is_plat("windows") then
+	set_runtimes(is_mode("releasedbg") and "MD" or "MDd")
+
 	add_cxxflags("/bigobj", "/Zc:__cplusplus", "/Zc:referenceBinding", "/Zc:throwingNew")
-	add_cxxflags("/FC")
 	add_cxflags("/w44062") -- Enable warning: switch case not handled
 	add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
 elseif is_plat("linux") then
@@ -340,3 +263,87 @@ target("BurgWarMapEditor")
 	after_install(function (target)
 		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
 	end)
+
+-- Tasks and options
+
+-- Generates a hash key made of packages confs/version, for CI
+task("dephash")
+	on_run(function ()
+		import("core.project.project")
+		import("private.action.require.impl.package")
+
+		local requires, requires_extra = project.requires_str()
+
+		local key = {}
+		for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+			table.insert(key, instance:name() .. "-" .. instance:version_str() .. "-" .. instance:buildhash())
+		end
+
+		table.sort(key)
+
+		key = table.concat(key, ",")
+		print(hash.uuid4(key):gsub('-', ''):lower())
+	end)
+
+	set_menu {
+		usage = "xmake dephash",
+		description = "Outputs a hash key of current dependencies version/configuration"
+	}
+
+-- Copies the resulting target file to the install bin folder (used for .so which are installed to lib/)
+rule("install_bin")
+	after_install("linux", function(target)
+		local binarydir = path.join(target:installdir(), "bin")
+		os.mkdir(binarydir)
+		os.vcp(target:targetfile(), binarydir)
+	end)
+
+-- Copies maps/scripts folders to the install bin folder
+rule("install_metadata")
+	local metadataInstalled = false
+	after_install(function(target)
+		if (not metadataInstalled) then
+			os.vcp("maps", path.join(target:installdir(), "bin"))
+			os.vcp("scripts", path.join(target:installdir(), "bin"))
+			metadataInstalled = true
+		end
+	end)
+
+-- Copies Nazara .so to the install bin folder (as it cannot be installed on the system yet)
+rule("install_nazara")
+	-- This is already handled by xmake on Windows
+	after_install("linux", function (target)
+		local outputdir = path.join(target:installdir(), "bin")
+		local nazara = target:pkg("nazara") or target:pkg("nazaraserver")
+		if (nazara) then
+			local libfiles = nazara:get("libfiles")
+			if (libfiles) then
+				for _, libpath in ipairs(table.wrap(libfiles)) do
+					if (libpath:endswith(".so")) then
+						os.vcp(libpath, outputdir)
+					end
+				end
+			end
+		end
+	end)
+
+-- Copies symbol files (such as .pdb) to the install bin folder (required for crashdumps)
+rule("install_symbolfile")
+	after_install(function(target)
+		local symbolfile = target:symbolfile()
+		if os.isfile(symbolfile) then
+			os.vcp(symbolfile, path.join(target:installdir(), "bin"))
+		end
+	end)
+
+-- Should the CoreLib be compiled statically? (takes more space)
+option("corelib_static")
+	set_default(false)
+	set_showmenu(true)
+	add_defines("BURGWAR_CORELIB_STATIC")
+
+-- Should the ClientLib be compiled statically? (takes more space)
+option("clientlib_static")
+	set_default(false)
+	set_showmenu(true)
+	add_defines("BURGWAR_CLIENTLIB_STATIC")
