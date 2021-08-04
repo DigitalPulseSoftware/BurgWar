@@ -5,8 +5,8 @@
 #include <Client/States/MainMenuState.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <Client/ClientApp.hpp>
-#include <Client/States/JoinServerState.hpp>
 #include <Client/States/OptionState.hpp>
+#include <Client/States/ServerListState.hpp>
 #include <Client/States/StartServerState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
@@ -78,7 +78,7 @@ namespace bw
 
 	void MainMenuState::OnJoinServerPressed()
 	{
-		m_nextState = std::make_shared<JoinServerState>(GetStateDataPtr(), shared_from_this());
+		m_nextState = std::make_shared<ServerListState>(GetStateDataPtr(), shared_from_this());
 	}
 
 	void MainMenuState::OnOptionPressed()

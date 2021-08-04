@@ -38,6 +38,7 @@ namespace bw
 			template<typename... Args>
 			std::optional<sol::object> ExecuteCustomCallback(std::size_t eventIndex, Args... args);
 
+			inline const std::string& GetGamemodeName() const;
 			inline const tsl::hopscotch_map<std::string /*key*/, ScriptedProperty>& GetProperties() const;
 			inline const PropertyValueMap& GetPropertyValues() const;
 			inline sol::table& GetTable();
@@ -52,7 +53,6 @@ namespace bw
 			SharedGamemode& operator=(const SharedGamemode&) = delete;
 
 		protected:
-			inline const std::string& GetGamemodeName() const;
 			inline sol::table& GetGamemodeTable();
 			inline std::optional<std::reference_wrapper<const PropertyValue>> GetProperty(const std::string& keyName) const;
 			inline const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;

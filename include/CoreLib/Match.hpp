@@ -10,6 +10,7 @@
 #include <CoreLib/AssetStore.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Map.hpp>
+#include <CoreLib/MasterServerEntry.hpp>
 #include <CoreLib/MatchSessions.hpp>
 #include <CoreLib/Player.hpp>
 #include <CoreLib/SharedMatch.hpp>
@@ -87,13 +88,16 @@ namespace bw
 			const TerrainLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
 			inline sol::state& GetLuaState();
+			inline const Map& GetMap() const;
 			inline const Packets::MatchData& GetMatchData() const;
+			inline const ModSettings& GetModSettings() const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline Player* GetPlayerByIndex(Nz::UInt16 playerIndex);
-			inline MatchSessions& GetSessions();
-			inline const MatchSessions& GetSessions() const;
 			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
+			inline MatchSessions& GetSessions();
+			inline const MatchSessions& GetSessions() const;
+			inline const MatchSettings& GetSettings() const;
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			inline Terrain& GetTerrain();
 			inline const Terrain& GetTerrain() const;
@@ -139,6 +143,7 @@ namespace bw
 			{
 				std::size_t maxPlayerCount;
 				std::string name;
+				std::string description;
 				Map map;
 				float tickDuration;
 			};
@@ -194,6 +199,7 @@ namespace bw
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::shared_ptr<Mod>> m_enabledMods;
+			std::vector<std::unique_ptr<MasterServerEntry>> m_masterServerEntries;
 			std::vector<std::unique_ptr<Player>> m_players;
 			mutable Packets::MatchData m_matchData;
 			tsl::hopscotch_map<std::string, ClientAsset> m_clientAssets;
@@ -206,6 +212,7 @@ namespace bw
 			GamemodeSettings m_gamemodeSettings;
 			Map m_map;
 			MatchSessions m_sessions;
+			MatchSettings m_settings;
 			ModSettings m_modSettings;
 			NetworkStringStore m_networkStringStore;
 			bool m_disableWhenEmpty;

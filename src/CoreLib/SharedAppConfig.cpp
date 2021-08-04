@@ -14,6 +14,7 @@ namespace bw
 		RegisterStringOption("Resources.ScriptDirectory");
 		RegisterBoolOption("Debug.SendServerState");
 		RegisterStringOption("GameSettings.FastDownloadURLs", "");
+		RegisterStringOption("GameSettings.MasterServers", "");
 		RegisterFloatOption("GameSettings.TickRate");
 	}
 }
