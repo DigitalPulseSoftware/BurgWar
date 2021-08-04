@@ -97,6 +97,7 @@ target("CoreLib")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", { public = true })
 	add_packages("nazaraserver")
+	add_packages("libcurl", { public = true })
 
 if is_plat("windows") then
 	add_packages("stackwalker")
@@ -172,7 +173,7 @@ target("ClientLib")
 	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
-	add_packages("libcurl", "nazara", { public = true })
+	add_packages("nazara", { public = true })
 
 target("Main")
 	set_group("Common")

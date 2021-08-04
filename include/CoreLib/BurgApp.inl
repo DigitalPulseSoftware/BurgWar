@@ -28,4 +28,9 @@ namespace bw
 	{
 		return m_mods;
 	}
+
+	inline WebService& BurgApp::GetWebService()
+	{
+		return m_webService;
+	}
 }

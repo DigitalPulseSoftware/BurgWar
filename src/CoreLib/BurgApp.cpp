@@ -34,7 +34,8 @@ namespace bw
 	m_logger(*this, side),
 	m_config(config),
 	m_appTime(0),
-	m_lastTime(Nz::GetElapsedMicroseconds())
+	m_lastTime(Nz::GetElapsedMicroseconds()),
+	m_webService(m_logger)
 	{
 		m_logger.RegisterSink(std::make_shared<StdSink>());
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
@@ -67,6 +68,8 @@ namespace bw
 		Nz::UInt64 elapsedTime = now - m_lastTime;
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
+
+		m_webService.Poll();
 	}
 	
 	void BurgApp::LoadMods()
