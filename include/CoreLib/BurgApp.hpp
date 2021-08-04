@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_BURGAPP_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/WebService.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Prerequisites.hpp>
@@ -29,6 +30,7 @@ namespace bw
 			inline const ConfigFile& GetConfig() const;
 			inline Logger& GetLogger();
 			inline const tsl::hopscotch_map<std::string, std::shared_ptr<Mod>>& GetMods() const;
+			inline WebService& GetWebService();
 
 			void Update();
 
@@ -42,6 +44,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::shared_ptr<Mod>> m_mods;
 			Nz::UInt64 m_appTime;
 			Nz::UInt64 m_lastTime;
+			WebService m_webService;
 	};
 }
 
