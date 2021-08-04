@@ -164,6 +164,11 @@ namespace bw
 		}
 	}
 
+	inline const std::string& SharedGamemode::GetGamemodeName() const
+	{
+		return m_gamemodeName;
+	}
+
 	inline const tsl::hopscotch_map<std::string, ScriptedProperty>& SharedGamemode::GetProperties() const
 	{
 		return m_properties;
@@ -196,11 +201,6 @@ namespace bw
 		auto& callbackData = callbacks.emplace_back();
 		callbackData.async = async;
 		callbackData.callback = std::move(callback);
-	}
-
-	inline const std::string& SharedGamemode::GetGamemodeName() const
-	{
-		return m_gamemodeName;
 	}
 
 	inline sol::table& SharedGamemode::GetGamemodeTable()

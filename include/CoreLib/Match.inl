@@ -63,10 +63,20 @@ namespace bw
 		return m_scriptingContext->GetLuaState();
 	}
 
+	inline const Map& Match::GetMap() const
+	{
+		return m_map;
+	}
+
 	inline const Packets::MatchData& Match::GetMatchData() const
 	{
 		m_matchData.currentTick = GetNetworkTick();
 		return m_matchData;
+	}
+
+	inline auto Match::GetModSettings() const -> const ModSettings&
+	{
+		return m_modSettings;
 	}
 
 	inline Player* Match::GetPlayerByIndex(Nz::UInt16 playerIndex)
@@ -88,6 +98,11 @@ namespace bw
 	inline const MatchSessions& Match::GetSessions() const
 	{
 		return m_sessions;
+	}
+
+	inline auto Match::GetSettings() const -> const MatchSettings&
+	{
+		return m_settings;
 	}
 
 	inline const std::shared_ptr<VirtualDirectory>& Match::GetScriptDirectory() const

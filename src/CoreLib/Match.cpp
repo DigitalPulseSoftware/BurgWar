@@ -29,7 +29,7 @@
 namespace bw
 {
 	Match::Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings) :
-	SharedMatch(app, LogSide::Server, std::move(matchSettings.name), matchSettings.tickDuration),
+	SharedMatch(app, LogSide::Server, matchSettings.name, matchSettings.tickDuration),
 	m_maxPlayerCount(matchSettings.maxPlayerCount),
 	m_nextUniqueId(matchSettings.map.GetFreeUniqueId()),
 	m_lastPingUpdate(0),
@@ -37,6 +37,7 @@ namespace bw
 	m_gamemodeSettings(std::move(gamemodeSettings)),
 	m_map(std::move(matchSettings.map)),
 	m_sessions(*this),
+	m_settings(std::move(matchSettings)),
 	m_modSettings(std::move(modSettings)),
 	m_disableWhenEmpty(true),
 	m_isResetting(false)
@@ -51,6 +52,15 @@ namespace bw
 		m_scriptingContext->LoadDirectoryOpt("map/autorun");
 
 		BuildMatchData();
+
+		const std::string& masterServerList = m_app.GetConfig().GetStringValue("GameSettings.MasterServers");
+		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+		{
+			if (!masterServerURI.empty())
+				m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
+
+			return true;
+		});
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
@@ -360,14 +370,14 @@ namespace bw
 
 			if (!std::filesystem::is_regular_file(assetPath))
 			{
-				bwLog(GetLogger(), LogLevel::Error, "Map asset file not found ({})", asset.filepath);
+				bwLog(GetLogger(), LogLevel::Error, "Map asset file not found ({0})", asset.filepath);
 				continue;
 			}
 
 			Nz::UInt64 fileSize = std::filesystem::file_size(assetPath);
 			if (fileSize != asset.size)
 			{
-				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({}): size doesn't match (expected {}, got {})", asset.filepath, asset.size, fileSize);
+				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({0}): size doesn't match (expected {1}, got {2})", asset.filepath, asset.size, fileSize);
 				continue;
 			}
 
@@ -377,7 +387,7 @@ namespace bw
 			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType_SHA1, assetPath.generic_u8string());
 			if (fileChecksum != expectedChecksum)
 			{
-				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({}): checksum doesn't match", asset.filepath, asset.size, fileSize);
+				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({0}): checksum doesn't match", asset.filepath, asset.size, fileSize);
 				continue;
 			}
 
@@ -621,6 +631,9 @@ namespace bw
 	void Match::Update(float elapsedTime)
 	{
 		m_sessions.Poll();
+
+		for (const auto& masterServerEntryPtr : m_masterServerEntries)
+			masterServerEntryPtr->Update(elapsedTime);
 
 		if (m_disableWhenEmpty && m_freePlayerId.TestAll())
 			return;
