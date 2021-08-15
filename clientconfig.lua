@@ -5,6 +5,12 @@ Debug = {
 	ShowVersion = true
 }
 GameSettings = {
+	FastDownloadURLs = [[
+https://burgwar.digitalpulse.software/resources
+	]],
+	MasterServers = [[
+https://bwmasterserver.digitalpulse.software
+	]],
 	TickRate = 33,
 }
 Resources = {
