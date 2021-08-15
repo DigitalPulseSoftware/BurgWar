@@ -67,19 +67,19 @@ namespace bw
 
 	void MasterServerEntry::Refresh()
 	{
-		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](std::optional<unsigned int> httpCode, std::string body)
+		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](WebRequestResult&& result)
 		{
-			if (!httpCode)
+			if (!result)
 			{
-				bwLog(m_match.GetLogger(), LogLevel::Error, "failed to refresh to {0}, register request failed: {1}", m_masterServerURL, body);
+				bwLog(m_match.GetLogger(), LogLevel::Error, "failed to refresh to {0}, register request failed: {1}", m_masterServerURL, result.GetErrorMessage());
 				return;
 			}
 
-			switch (*httpCode)
+			switch (result.GetReponseCode())
 			{
 				case 200:
 					bwLog(m_match.GetLogger(), LogLevel::Debug, "successfully refreshed master server entry of {0}", m_masterServerURL);
-					m_updateToken = std::move(body);
+					m_updateToken = std::move(result.GetBody());
 					m_timeBeforeRefresh = 30.f;
 					break;
 
@@ -90,10 +90,12 @@ namespace bw
 					break;
 
 				default:
-					bwLog(m_match.GetLogger(), LogLevel::Error, "failed to refresh master server {0}, refresh request failed with code {1}", m_masterServerURL, *httpCode);
+					bwLog(m_match.GetLogger(), LogLevel::Error, "failed to refresh master server {0}, refresh request failed with code {1}", m_masterServerURL, result.GetReponseCode());
 					break;
 			}
 		});
+
+		request->SetServiceName("MasterServer");
 
 		nlohmann::json serverData = BuildServerInfo();
 		serverData["update_token"] = m_updateToken;
@@ -106,27 +108,29 @@ namespace bw
 
 	void MasterServerEntry::Register()
 	{
-		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](std::optional<unsigned int> httpCode, std::string body)
+		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](WebRequestResult&& result)
 		{
-			if (!httpCode)
+			if (!result)
 			{
-				bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register to {0}, register request failed: {1}", m_masterServerURL, body);
+				bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register to {0}, register request failed: {1}", m_masterServerURL, result.GetErrorMessage());
 				return;
 			}
 
-			switch (*httpCode)
+			switch (result.GetReponseCode())
 			{
 				case 200:
 					bwLog(m_match.GetLogger(), LogLevel::Info, "successfully registered server to {0}", m_masterServerURL);
-					m_updateToken = std::move(body);
+					m_updateToken = std::move(result.GetBody());
 					m_timeBeforeRefresh = 30.f;
 					break;
 
 				default:
-					bwLog(m_match.GetLogger(), LogLevel::Info, "failed to register to {0}, register request failed with code {1}", m_masterServerURL, *httpCode);
+					bwLog(m_match.GetLogger(), LogLevel::Info, "failed to register to {0}, register request failed with code {1}", m_masterServerURL, result.GetReponseCode());
 					break;
 			}
 		});
+
+		request->SetServiceName("MasterServer");
 
 		request->SetJSonContent(BuildServerInfo().dump());
 

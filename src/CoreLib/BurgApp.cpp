@@ -34,8 +34,7 @@ namespace bw
 	m_logger(*this, side),
 	m_config(config),
 	m_appTime(0),
-	m_lastTime(Nz::GetElapsedMicroseconds()),
-	m_webService(m_logger)
+	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
 		m_logger.RegisterSink(std::make_shared<StdSink>());
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
@@ -60,6 +59,17 @@ namespace bw
 		Ndk::InitializeSystem<PlayerMovementSystem>();
 		Ndk::InitializeSystem<TickCallbackSystem>();
 		Ndk::InitializeSystem<WeaponSystem>();
+
+		if (!WebService::Initialize())
+			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services, some functionalities will not work");
+
+		m_webService.emplace(m_logger);
+	}
+
+	BurgApp::~BurgApp()
+	{
+		m_webService.reset();
+		WebService::Uninitialize();
 	}
 
 	void BurgApp::Update()
@@ -69,7 +79,7 @@ namespace bw
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
 
-		m_webService.Poll();
+		m_webService->Poll();
 	}
 	
 	void BurgApp::LoadMods()

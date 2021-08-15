@@ -6,4 +6,13 @@
 
 namespace bw
 {
+	const std::string& WebService::GetUserAgent()
+	{
+		return s_userAgent;
+	}
+
+	bool WebService::IsInitialized()
+	{
+		return s_isInitialized;
+	}
 }

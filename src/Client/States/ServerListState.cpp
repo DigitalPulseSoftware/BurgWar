@@ -115,22 +115,22 @@ namespace bw
 			{
 				timeBeforeRefresh = RefreshTime / 2.f;
 
-				std::unique_ptr<WebRequest> request = WebRequest::Get(masterServer + "/servers", [stateData = GetStateDataPtr(), url = masterServer, serverDataPtr = std::weak_ptr(m_serverListData)](std::optional<unsigned int> httpCode, std::string body)
+				std::unique_ptr<WebRequest> request = WebRequest::Get(masterServer + "/servers", [stateData = GetStateDataPtr(), url = masterServer, serverDataPtr = std::weak_ptr(m_serverListData)](WebRequestResult&& result)
 				{
-					if (!httpCode)
+					if (!result)
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to register to {0}, register request failed: {1}", url, body);
+						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, register request failed: {1}", url, result.GetErrorMessage());
 						return;
 					}
 
-					switch (*httpCode)
+					switch (result.GetReponseCode())
 					{
 						case 200:
 							bwLog(stateData->app->GetLogger(), LogLevel::Debug, "successfully refreshed server list from {0}", url);
 							
 							if (auto serverData = serverDataPtr.lock())
 							{
-								nlohmann::json serverList = nlohmann::json::parse(body);
+								nlohmann::json serverList = nlohmann::json::parse(result.GetBody());
 								for (auto&& serverDoc : serverList)
 								{
 									bwLog(stateData->app->GetLogger(), LogLevel::Debug, " - {0}: {1}:{2} ", serverDoc.value("name", "<noname>"), serverDoc.value("address", "<noip>"), serverDoc.value("port", 0));
@@ -143,7 +143,7 @@ namespace bw
 							break;
 
 						default:
-							bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, request failed with code {1}", url, *httpCode);
+							bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, request failed with code {1}", url, result.GetReponseCode());
 							break;
 					}
 				});

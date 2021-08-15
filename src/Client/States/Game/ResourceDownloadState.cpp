@@ -33,8 +33,13 @@ namespace bw
 		auto scriptDir = std::make_shared<VirtualDirectory>(config.GetStringValue("Resources.ScriptDirectory"));
 		RegisterFiles(m_matchData.scripts, scriptDir, m_targetScriptDirectory, config.GetStringValue("Resources.ScriptCacheDirectory"), m_scriptData, true);
 
-		if (!m_matchData.fastDownloadUrls.empty() && HttpDownloadManager::IsInitialized())
-			m_downloadManagers.emplace(m_downloadManagers.begin(), std::make_unique<HttpDownloadManager>(app->GetLogger(), std::move(m_matchData.fastDownloadUrls), 2));
+		if (!m_matchData.fastDownloadUrls.empty())
+		{
+			if (WebService::IsInitialized())
+				m_downloadManagers.emplace(m_downloadManagers.begin(), std::make_unique<HttpDownloadManager>(app->GetLogger(), std::move(m_matchData.fastDownloadUrls), 2));
+			else
+				bwLog(app->GetLogger(), LogLevel::Warning, "web services are not initialized, fast download will be disabled");
+		}
 
 		// Register assets files
 		auto assetDir = std::make_shared<VirtualDirectory>(config.GetStringValue("Resources.AssetDirectory"));

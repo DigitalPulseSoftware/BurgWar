@@ -6,28 +6,40 @@
 
 namespace bw
 {
-	inline void WebRequest::SetCallback(Callback callback)
+	inline void WebRequest::SetDataCallback(DataCallback callback)
 	{
-		m_callback = std::move(callback);
+		m_dataCallback = std::move(callback);
 	}
-	
+
+	inline void WebRequest::SetResultCallback(ResultCallback callback)
+	{
+		m_resultCallback = std::move(callback);
+	}
+
 	inline void WebRequest::SetHeader(std::string header, std::string value)
 	{
 		m_headers.insert_or_assign(std::move(header), std::move(value));
 	}
 	
-	inline void WebRequest::AppendBodyResponse(const char* data, std::size_t length)
+	inline bool WebRequest::OnBodyResponse(const char* data, std::size_t length)
 	{
-		m_responseBody.append(data, length);
+		if (!m_dataCallback)
+		{
+			m_responseBody.append(data, length);
+			return true;
+		}
+
+		return m_dataCallback(data, length);
 	}
 
-	inline void WebRequest::TriggerCallback(unsigned int code)
+	inline void WebRequest::TriggerCallback()
 	{
-		m_callback(code, std::move(m_responseBody));
+		m_resultCallback(WebRequestResult(m_curlHandle.Get(), std::move(m_responseBody)));
+		m_responseBody.clear();
 	}
 
 	inline void WebRequest::TriggerCallback(std::string errorMessage)
 	{
-		m_callback({}, std::move(errorMessage));
+		m_resultCallback(WebRequestResult(std::move(errorMessage)));
 	}
 }
