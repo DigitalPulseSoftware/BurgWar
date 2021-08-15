@@ -20,6 +20,8 @@ namespace bw
 
 	class BURGWAR_CORELIB_API WebService
 	{
+		friend class BurgApp;
+
 		public:
 			WebService(const Logger& logger);
 			WebService(const WebService&) = delete;
@@ -33,10 +35,19 @@ namespace bw
 			WebService& operator=(const WebService&) = delete;
 			WebService& operator=(WebService&&) = default;
 
+			static inline const std::string& GetUserAgent();
+			static inline bool IsInitialized();
+
 		private:
+			static bool Initialize();
+			static void Uninitialize();
+
 			const Logger& m_logger;
 			Nz::MovablePtr<CURLM> m_curlMulti;
 			tsl::hopscotch_map<CURL*, std::unique_ptr<WebRequest>> m_activeRequests;
+
+			static bool s_isInitialized;
+			static std::string s_userAgent;
 	};
 }
 

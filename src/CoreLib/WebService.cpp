@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/WebService.hpp>
+#include <CoreLib/Version.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <curl/curl.h>
 
@@ -11,6 +12,7 @@ namespace bw
 	WebService::WebService(const Logger& logger) :
 	m_logger(logger)
 	{
+		assert(s_isInitialized);
 		m_curlMulti = curl_multi_init();
 	}
 
@@ -37,7 +39,8 @@ namespace bw
 			WebRequest* request = static_cast<WebRequest*>(userdata);
 
 			std::size_t totalSize = size * nmemb;
-			request->AppendBodyResponse(ptr, totalSize);
+			if (!request->OnBodyResponse(ptr, totalSize))
+				return 0;
 
 			return totalSize;
 		};
@@ -77,12 +80,7 @@ namespace bw
 				WebRequest& request = *it->second;
 
 				if (m->data.result == CURLE_OK)
-				{
-					long responseCode;
-					curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &responseCode);
-
-					request.TriggerCallback(static_cast<unsigned int>(responseCode));
-				}
+					request.TriggerCallback();
 				else
 					request.TriggerCallback(curl_easy_strerror(m->data.result));
 
@@ -93,4 +91,33 @@ namespace bw
 		}
 		while (m);
 	}
+
+	bool WebService::Initialize()
+	{
+		assert(!s_isInitialized);
+		if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+			return false;
+
+		curl_version_info_data* curlVersionData = curl_version_info(CURLVERSION_NOW);
+
+		s_isInitialized = true;
+		s_userAgent = "Burg'War/" 
+		              NazaraStringifyMacro(BURGWAR_VERSION_MAJOR) "." NazaraStringifyMacro(BURGWAR_VERSION_MINOR) "." NazaraStringifyMacro(BURGWAR_VERSION_PATCH) 
+		              " WebService - curl/" + std::string(curlVersionData->version);
+
+		return true;
+	}
+
+	void WebService::Uninitialize()
+	{
+		if (s_isInitialized)
+		{
+			curl_global_cleanup();
+			s_isInitialized = false;
+			s_userAgent = std::string(); //< force buffer deletion
+		}
+	}
+
+	bool WebService::s_isInitialized = false;
+	std::string WebService::s_userAgent;
 }

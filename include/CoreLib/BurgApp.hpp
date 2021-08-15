@@ -14,6 +14,7 @@
 #include <Nazara/Prerequisites.hpp>
 #include <tsl/hopscotch_map.h>
 #include <memory>
+#include <optional>
 
 namespace bw
 {
@@ -24,7 +25,7 @@ namespace bw
 	{
 		public:
 			BurgApp(LogSide side, const ConfigFile& config);
-			~BurgApp() = default;
+			~BurgApp();
 
 			inline Nz::UInt64 GetAppTime() const;
 			inline const ConfigFile& GetConfig() const;
@@ -41,10 +42,10 @@ namespace bw
 			void LoadMods();
 
 			const ConfigFile& m_config;
+			std::optional<WebService> m_webService;
 			tsl::hopscotch_map<std::string, std::shared_ptr<Mod>> m_mods;
 			Nz::UInt64 m_appTime;
 			Nz::UInt64 m_lastTime;
-			WebService m_webService;
 	};
 }
 
