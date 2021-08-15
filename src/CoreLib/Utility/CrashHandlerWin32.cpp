@@ -168,7 +168,7 @@ namespace bw
 			std::ostringstream ss;
 			ss << std::fixed;
 
-			ss << "Game version: " << BURGWAR_VERSION_MAJOR << "." << BURGWAR_VERSION_MINOR << "." << BURGWAR_VERSION_PATCH << " (" << BURGWAR_VERSION << ")" << "\n";
+			ss << "Game version: " << GameMajorVersion << "." << GameMinorVersion << "." << GamePatchVersion << " (" << GameVersion << ")" << "\n";
 			ss << "Build info: " << GetBuildInfo() << "\n";
 
 			ss << "CPU: " << Nz::HardwareInfo::GetProcessorBrandString().ToStdString() << "\n";

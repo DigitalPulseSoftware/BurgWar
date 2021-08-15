@@ -11,7 +11,7 @@
 int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 {
 	std::cout << "BurgWar ";
-	std::cout << bw::MajorVersion << "." << bw::MinorVersion << "." << bw::PatchVersion << " ";
+	std::cout << bw::GameMajorVersion << "." << bw::GameMinorVersion << "." << bw::GamePatchVersion << " ";
 	std::cout << bw::BuildBranch << " (" << bw::BuildCommit << ") - " << bw::BuildDate;
 	std::cout << std::endl;
 

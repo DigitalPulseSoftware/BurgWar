@@ -206,12 +206,12 @@ namespace bw
 	{
 		library["GetVersions"] = LuaFunction([]
 		{
-			return std::make_tuple(BURGWAR_VERSION_MAJOR, BURGWAR_VERSION_MINOR, BURGWAR_VERSION_PATCH);
+			return std::make_tuple(GameMajorVersion, GameMinorVersion, GamePatchVersion);
 		});
 
 		library["GetVersionNumber"] = LuaFunction([]
 		{
-			return BURGWAR_VERSION;
+			return GameVersion;
 		});
 	}
 
@@ -222,7 +222,7 @@ namespace bw
 		sol::state& state = context.GetLuaState();
 		state["BuildVersion"] = LuaFunction([](Nz::UInt32 major, Nz::UInt32 minor, std::optional<Nz::UInt32> patch)
 		{
-			return BURGWAR_BUILD_VERSION(major, minor, patch.value_or(0));
+			return BuildVersion(major, minor, patch.value_or(0));
 		});
 	}
 
