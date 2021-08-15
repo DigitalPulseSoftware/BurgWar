@@ -119,7 +119,7 @@ namespace bw
 		stream << m_mapInfo.name << m_mapInfo.author << m_mapInfo.description;
 
 		// Game version
-		stream << BURGWAR_VERSION;
+		stream << GameVersion;
 
 		// Map layers
 		CompressedUnsigned<Nz::UInt16> layerCount(Nz::UInt16(m_layers.size()));
@@ -253,7 +253,7 @@ namespace bw
 		mapJson["name"] = mapInfo.name;
 		mapJson["author"] = mapInfo.author;
 		mapJson["description"] = mapInfo.description;
-		mapJson["gameVersion"] = fmt::format("{}.{}.{}", BURGWAR_VERSION_MAJOR, BURGWAR_VERSION_MINOR, BURGWAR_VERSION_PATCH);
+		mapJson["gameVersion"] = fmt::format("{}.{}.{}", GameMajorVersion, GameMinorVersion, GamePatchVersion);
 
 		auto assetArray = nlohmann::json::array();
 		for (const auto& mapAsset : map.GetAssets())

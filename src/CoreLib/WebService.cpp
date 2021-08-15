@@ -101,8 +101,8 @@ namespace bw
 		curl_version_info_data* curlVersionData = curl_version_info(CURLVERSION_NOW);
 
 		s_isInitialized = true;
-		s_userAgent = "Burg'War/" 
-		              NazaraStringifyMacro(BURGWAR_VERSION_MAJOR) "." NazaraStringifyMacro(BURGWAR_VERSION_MINOR) "." NazaraStringifyMacro(BURGWAR_VERSION_PATCH) 
+		s_userAgent = "Burg'War/" +
+		              std::to_string(GameMajorVersion) + "." + std::to_string(GameMinorVersion) + "." + std::to_string(GamePatchVersion) +
 		              " WebService - curl/" + std::string(curlVersionData->version);
 
 		return true;

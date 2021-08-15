@@ -37,7 +37,7 @@ namespace bw
 		const auto& modSettings = m_match.GetModSettings();
 
 		nlohmann::json serverData;
-		serverData["version"] = BURGWAR_VERSION;
+		serverData["version"] = GameVersion;
 		serverData["name"] = matchSettings.name;
 		serverData["description"] = matchSettings.description;
 		serverData["gamemode"] = m_match.GetGamemode()->GetGamemodeName();
