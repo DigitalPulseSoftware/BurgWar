@@ -4,7 +4,6 @@
 
 #include <ClientLib/ClientEditorApp.hpp>
 #include <CoreLib/SharedAppConfig.hpp>
-#include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/ClientOwnerComponent.hpp>
@@ -55,16 +54,10 @@ namespace bw
 		Ndk::InitializeSystem<PostFrameCallbackSystem>();
 		Ndk::InitializeSystem<SoundSystem>();
 		Ndk::InitializeSystem<VisualInterpolationSystem>();
-
-		if (!HttpDownloadManager::Initialize())
-			bwLog(GetLogger(), LogLevel::Warning, "Failed to initialize HTTP, http download are disabled");
 	}
 
 	ClientEditorApp::~ClientEditorApp()
 	{
-		if (HttpDownloadManager::IsInitialized())
-			HttpDownloadManager::Uninitialize();
-
 		Nz::FontLibrary::Clear();
 		Nz::MaterialLibrary::Clear();
 		Nz::SpriteLibrary::Clear();

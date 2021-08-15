@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 #define BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 
+#include <CoreLib/WebService.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/DownloadManager.hpp>
 #include <ClientLib/Export.hpp>
@@ -15,22 +16,17 @@
 #include <functional>
 #include <vector>
 
-using CURL = void;
-using CURLM = void;
-
 namespace bw
 {
 	class Logger;
 
 	class BURGWAR_CLIENTLIB_API HttpDownloadManager : public DownloadManager
 	{
-		friend class ClientEditorApp;
-
 		public:
 			HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
 			HttpDownloadManager(const HttpDownloadManager&) = delete;
 			HttpDownloadManager(HttpDownloadManager&&) = delete;
-			~HttpDownloadManager();
+			~HttpDownloadManager() = default;
 
 			const FileEntry& GetEntry(std::size_t fileIndex) const override;
 
@@ -40,16 +36,11 @@ namespace bw
 
 			void Update() override;
 
-			static bool IsInitialized();
-
 			HttpDownloadManager& operator=(const HttpDownloadManager&) = delete;
 			HttpDownloadManager& operator=(HttpDownloadManager&&) = delete;
 
 		private:
 			void RequestNextFiles();
-
-			static bool Initialize();
-			static void Uninitialize();
 
 			struct PendingFile : FileEntry
 			{
@@ -59,18 +50,12 @@ namespace bw
 
 			struct Request
 			{
-				struct Metadata
-				{
-					Nz::File file;
-					std::function<void(const void* /*data*/, std::size_t /*size*/)> dataCallback;
-					std::unique_ptr<Nz::AbstractHash> hash;
-					std::vector<Nz::UInt8> fileContent;
-					bool keepInMemory;
-				};
-
-				Nz::MovablePtr<CURL> handle = nullptr;
+				Nz::File file;
+				std::function<void(const void* /*data*/, std::size_t /*size*/)> dataCallback;
 				std::size_t fileIndex;
-				std::unique_ptr<Metadata> metadata;
+				std::unique_ptr<Nz::AbstractHash> hash;
+				std::vector<Nz::UInt8> fileContent;
+				bool keepInMemory;
 				bool isActive = false;
 			};
 
@@ -78,12 +63,10 @@ namespace bw
 			std::size_t m_nextFileIndex;
 			std::vector<std::string> m_baseDownloadUrls;
 			std::vector<PendingFile> m_downloadList;
-			std::vector<Request> m_curlRequests;
+			std::vector<Request> m_requests;
 			Nz::ByteArray m_byteArray;
-			CURLM* m_curlMulti;
 			const Logger& m_logger;
-
-			static bool s_isInitialized;
+			WebService m_webService;
 	};
 }
 
