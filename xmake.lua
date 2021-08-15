@@ -53,6 +53,7 @@ if is_plat("windows") then
 	add_cxflags("/w44062") -- Enable warning: switch case not handled
 	add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
 elseif is_plat("linux") then
+	add_cxflags("-fPIC")
 	add_syslinks("pthread")
 end
 
