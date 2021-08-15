@@ -7,10 +7,11 @@
 #ifndef BURGWAR_STATES_SERVERLISTSTATE_HPP
 #define BURGWAR_STATES_SERVERLISTSTATE_HPP
 
+#include <CoreLib/WebService.hpp>
 #include <Client/States/AbstractState.hpp>
-#include <Nazara/Network/IpAddress.hpp>
 #include <NDK/State.hpp>
 #include <NDK/Widgets.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <tsl/hopscotch_map.h>
 #include <variant>
 #include <vector>
@@ -21,28 +22,40 @@ namespace bw
 	{
 		public:
 			ServerListState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState);
-			~ServerListState() = default;
+			~ServerListState();
 
 		private:
+			void Enter(Ndk::StateMachine& fsm) override;
+			void Leave(Ndk::StateMachine& fsm) override;
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
 			void LayoutWidgets() override;
 
 			void OnBackPressed();
 			void OnDirectConnectionPressed();
+			void OnServerConnectionPressed(const std::string& masterServer, const std::string& uuid);
 
 			void RefreshServers(float elapsedTime);
+			void UpdateServerList(const std::string& masterServer, const nlohmann::json& serverListDoc);
 
 			struct ServerData
 			{
-				tsl::hopscotch_map<std::string, float> masterServers;
+				Ndk::ButtonWidget* connectButton;
+				Ndk::LabelWidget* infoLabel;
+				std::string serverName;
 			};
 
+			Ndk::BaseWidget* m_serverListWidget;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_directConnectButton;
+			Ndk::ScrollAreaWidget* m_serverListScrollbar;
 			std::shared_ptr<AbstractState> m_previousState;
+			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
-			std::shared_ptr<ServerData> m_serverListData;
+			std::vector<std::reference_wrapper<const ServerData>> m_tempOrderedServerList;
+			tsl::hopscotch_map<std::string, float> m_masterServers;
+			tsl::hopscotch_map<std::string, ServerData> m_serverListContent;
+			WebService m_webService;
 	};
 }
 
