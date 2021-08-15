@@ -5,15 +5,12 @@
 #include <Main/Main.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Utility/CrashHandler.hpp>
+#include <fmt/core.h>
 #include <exception>
-#include <iostream>
 
 int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 {
-	std::cout << "BurgWar ";
-	std::cout << bw::GameMajorVersion << "." << bw::GameMinorVersion << "." << bw::GamePatchVersion << " ";
-	std::cout << bw::BuildBranch << " (" << bw::BuildCommit << ") - " << bw::BuildDate;
-	std::cout << std::endl;
+	fmt::print("BurgWar {0}.{1}.{2} {3} ({4}) - {5}", bw::GameMajorVersion, bw::GameMinorVersion, bw::GamePatchVersion, bw::BuildBranch, bw::BuildCommit, bw::BuildDate);
 
 	std::unique_ptr<bw::CrashHandler> crashHandler = bw::CrashHandler::PlatformCrashHandler();
 	crashHandler->Install();
@@ -24,12 +21,12 @@ int BurgMain(int argc, char* argv[], int(*mainFunc)(int argc, char* argv[]))
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Unhandled exception: " << e.what() << std::endl;
+		fmt::print(stderr, "unhandled exception: {0}", e.what());
 		throw;
 	}
 	catch (...)
 	{
-		std::cerr << "Unhandled non-standard exception" << std::endl;
+		fmt::print(stderr, "unhandled non-standard exception");
 		throw;
 	}
 }
