@@ -50,7 +50,7 @@ namespace bw
 		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
 		{
 			if (!masterServerURI.empty())
-				m_masterServers.emplace(masterServerURI, 0.f);
+				m_masterServers.emplace(masterServerURI, MasterServerData{});
 
 			return true;
 		});
@@ -106,9 +106,12 @@ namespace bw
 		constexpr float padding = 10.f;
 
 		m_tempOrderedServerList.clear();
-		m_tempOrderedServerList.reserve(m_serverListContent.size());
-		for (auto&& [_, serverData] : m_serverListContent)
-			m_tempOrderedServerList.emplace_back(serverData);
+
+		for (auto&& [url, masterServerData] : m_masterServers)
+		{
+			for (auto&& [uuid, serverData] : masterServerData.serverList)
+				m_tempOrderedServerList.emplace_back(serverData);
+		}
 
 		std::sort(m_tempOrderedServerList.begin(), m_tempOrderedServerList.end(), [](const ServerData& lhs, const ServerData& rhs)
 		{
@@ -222,12 +225,12 @@ namespace bw
 		for (auto it = m_masterServers.begin(); it != m_masterServers.end(); ++it)
 		{
 			const std::string& masterServer = it->first;
-			float& timeBeforeRefresh = it.value();
+			MasterServerData& masterServerData = it.value();
 
-			timeBeforeRefresh -= elapsedTime;
-			if (timeBeforeRefresh < 0.f)
+			masterServerData.timeBeforeRefresh -= elapsedTime;
+			if (masterServerData.timeBeforeRefresh < 0.f)
 			{
-				timeBeforeRefresh = RefreshTime / 2.f;
+				masterServerData.timeBeforeRefresh = RefreshTime / 2.f;
 
 				std::unique_ptr<WebRequest> request = WebRequest::Get(masterServer + "/servers", [this, stateData = GetStateDataPtr(), url = masterServer](WebRequestResult&& result)
 				{
@@ -247,7 +250,7 @@ namespace bw
 
 							auto it = m_masterServers.find(url);
 							if (it != m_masterServers.end())
-								it.value() = RefreshTime;
+								it.value().timeBeforeRefresh = RefreshTime;
 
 							break;
 						}
@@ -265,9 +268,13 @@ namespace bw
 
 	void ServerListState::UpdateServerList(const std::string& masterServer, const nlohmann::json& serverListDoc)
 	{
-		//TODO: Handle multiple master servers
-
 		StateData& stateData = GetStateData();
+
+		auto it = m_masterServers.find(masterServer);
+		if (it == m_masterServers.end())
+			return;
+
+		MasterServerData& masterServerData = it.value();
 
 		tsl::hopscotch_map<std::string, ServerData> newServerList;
 
@@ -296,18 +303,17 @@ namespace bw
 
 			ServerData serverData;
 
-			auto it = m_serverListContent.find(uuid);
-			if (it != m_serverListContent.end())
+			auto serverIt = masterServerData.serverList.find(uuid);
+			if (serverIt != masterServerData.serverList.end())
 			{
-				bwLog(stateData.app->GetLogger(), LogLevel::Debug, " Server {} is still there", uuid);
-
 				// Update server
-				serverData = std::move(it.value());
-				m_serverListContent.erase(it);
+				serverData = std::move(serverIt.value());
+				masterServerData.serverList.erase(serverIt);
 			}
 			else
 			{
-				bwLog(stateData.app->GetLogger(), LogLevel::Debug, " Server {} appeared", uuid);
+				if (masterServerData.receivedData)
+					bwLog(stateData.app->GetLogger(), LogLevel::Debug, "server {0} appeared (from {1})", uuid, masterServer);
 
 				// New server
 				serverData.connectButton = m_serverListWidget->Add<Ndk::ButtonWidget>();
@@ -357,16 +363,22 @@ namespace bw
 			newServerList.emplace(std::move(uuid), std::move(serverData));
 		}
 
-		for (auto&& [uuid, serverData] : m_serverListContent)
+		for (auto&& [uuid, serverData] : masterServerData.serverList)
 		{
-			bwLog(stateData.app->GetLogger(), LogLevel::Debug, " Server {} disappeared", uuid);
+			bwLog(stateData.app->GetLogger(), LogLevel::Debug, "server {0} disappeared (from {1})", uuid, masterServer);
 
 			// Delete old servers
 			serverData.connectButton->Destroy();
 			serverData.infoLabel->Destroy();
 		}
 
-		m_serverListContent = std::move(newServerList);
+		if (!masterServerData.receivedData)
+		{
+			bwLog(stateData.app->GetLogger(), LogLevel::Debug, "received {0} server(s) from {1}", newServerList.size(), masterServer);
+			masterServerData.receivedData = true;
+		}
+
+		masterServerData.serverList = std::move(newServerList);
 
 		LayoutWidgets();
 	}

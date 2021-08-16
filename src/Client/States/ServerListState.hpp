@@ -45,6 +45,13 @@ namespace bw
 				std::string serverName;
 			};
 
+			struct MasterServerData
+			{
+				tsl::hopscotch_map<std::string, ServerData> serverList;
+				float timeBeforeRefresh = 0.f;
+				bool receivedData = false; //< Did we already successfully refresh from this master server?
+			};
+
 			Ndk::BaseWidget* m_serverListWidget;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_directConnectButton;
@@ -53,8 +60,7 @@ namespace bw
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::vector<std::reference_wrapper<const ServerData>> m_tempOrderedServerList;
-			tsl::hopscotch_map<std::string, float> m_masterServers;
-			tsl::hopscotch_map<std::string, ServerData> m_serverListContent;
+			tsl::hopscotch_map<std::string, MasterServerData> m_masterServers;
 			WebService m_webService;
 	};
 }
