@@ -111,12 +111,12 @@ namespace bw
 		RegisterOption(std::move(optionName), std::move(boolOption));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName, std::optional<double> defaultValue, std::function<std::optional<std::string>(double value)> validation)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, std::optional<double> defaultValue, FloatValidation validation)
 	{
 		RegisterFloatOption(std::move(optionName), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::move(defaultValue), std::move(validation));
 	}
 
-	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue, std::function<std::optional<std::string>(double value)> validation)
+	inline void ConfigFile::RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue, FloatValidation validation)
 	{
 		FloatOption floatOption;
 		floatOption.defaultValue = std::move(defaultValue);
@@ -127,12 +127,12 @@ namespace bw
 		RegisterOption(std::move(optionName), std::move(floatOption));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue, std::function<std::optional<std::string>(long long value)> validation)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue, IntegerValidation validation)
 	{
 		RegisterIntegerOption(std::move(optionName), std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max(), std::move(defaultValue), std::move(validation));
 	}
 
-	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue, std::function<std::optional<std::string>(long long value)> validation)
+	inline void ConfigFile::RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue, IntegerValidation validation)
 	{
 		IntegerOption intOption;
 		intOption.defaultValue = std::move(defaultValue);
@@ -143,7 +143,7 @@ namespace bw
 		RegisterOption(std::move(optionName), std::move(intOption));
 	}
 
-	inline void ConfigFile::RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue, std::function<std::optional<std::string>(const std::string& value)> validation)
+	inline void ConfigFile::RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue, StringValidation validation)
 	{
 		StringOption strOption;
 		strOption.defaultValue = std::move(defaultValue);

@@ -9,17 +9,6 @@ namespace bw
 	PlayerConfig::PlayerConfig(BurgApp& app) :
 	ConfigFile(app)
 	{
-		RegisterStringOption("Player.Name", "mingebag", [](const std::string& value) -> std::optional<std::string>
-		{
-			if (value.empty())
-				return "name cannot be empty";
-
-			if (value.size() > 32)
-				return "name is too long";
-
-			return std::nullopt;
-		});
-
 		RegisterStringOption("JoinServer.Address", "localhost");
 		RegisterStringOption("StartServer.Gamemode", "deathmatch");
 		RegisterStringOption("StartServer.Map", "beta_map");
@@ -28,5 +17,16 @@ namespace bw
 		RegisterIntegerOption("Sound.GlobalVolume", 0, 100, 80);
 		RegisterIntegerOption("Sound.EffectVolume", 0, 100, 100);
 		RegisterIntegerOption("Sound.MusicVolume", 0, 100, 60);
+		
+		RegisterStringOption("Player.Name", "mingebag", [](const std::string& value) -> tl::expected<std::string, std::string>
+		{
+			if (value.empty())
+				return tl::make_unexpected("name cannot be empty");
+
+			if (value.size() > 32)
+				return tl::make_unexpected("name is too long");
+
+			return value;
+		});
 	}
 }

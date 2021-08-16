@@ -52,12 +52,16 @@ namespace bw
 			ConfigFile& operator=(ConfigFile&&) = delete;
 
 		protected:
+			using FloatValidation = std::function<tl::expected<double, std::string>(double value)>;
+			using IntegerValidation = std::function<tl::expected<long long, std::string>(long long value)>;
+			using StringValidation = std::function<tl::expected<std::string, std::string>(const std::string& value)>;
+
 			inline void RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue = std::nullopt);
-			inline void RegisterFloatOption(std::string optionName, std::optional<double> defaultValue = std::nullopt, std::function<std::optional<std::string>(double value)> validation = nullptr);
-			inline void RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue = std::nullopt, std::function<std::optional<std::string>(double value)> validation = nullptr);
-			inline void RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue = std::nullopt, std::function<std::optional<std::string>(long long value)> validation = nullptr);
-			inline void RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue = std::nullopt, std::function<std::optional<std::string>(long long value)> validation = nullptr);
-			inline void RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue = std::nullopt, std::function<std::optional<std::string>(const std::string& value)> validation = nullptr);
+			inline void RegisterFloatOption(std::string optionName, std::optional<double> defaultValue = std::nullopt, FloatValidation validation = nullptr);
+			inline void RegisterFloatOption(std::string optionName, double minBounds, double maxBounds, std::optional<double> defaultValue = std::nullopt, FloatValidation validation = nullptr);
+			inline void RegisterIntegerOption(std::string optionName, std::optional<long long> defaultValue = std::nullopt, IntegerValidation validation = nullptr);
+			inline void RegisterIntegerOption(std::string optionName, long long minBounds, long long maxBounds, std::optional<long long> defaultValue = std::nullopt, IntegerValidation validation = nullptr);
+			inline void RegisterStringOption(std::string optionName, std::optional<std::string> defaultValue = std::nullopt, StringValidation validation = nullptr);
 
 		private:
 			struct BoolOption
@@ -73,7 +77,7 @@ namespace bw
 				double maxBounds;
 				double minBounds;
 				double value;
-				std::function<std::optional<std::string>(double value)> validation;
+				FloatValidation validation;
 				std::optional<double> defaultValue;
 
 				NazaraSignal(OnValueUpdate, double /*newValue*/);
@@ -84,7 +88,7 @@ namespace bw
 				long long maxBounds;
 				long long minBounds;
 				long long value;
-				std::function<std::optional<std::string>(long long value)> validation;
+				IntegerValidation validation;
 				std::optional<long long> defaultValue;
 
 				NazaraSignal(OnValueUpdate, long long /*newValue*/);
@@ -93,7 +97,7 @@ namespace bw
 			struct StringOption
 			{
 				std::string value;
-				std::function<std::optional<std::string>(const std::string& value)> validation;
+				StringValidation validation;
 				std::optional<std::string> defaultValue;
 
 				NazaraSignal(OnValueUpdate, const std::string& /*newValue*/);

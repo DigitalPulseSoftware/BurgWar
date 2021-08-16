@@ -299,12 +299,14 @@ namespace bw
 
 		if (option.validation)
 		{
-			auto err = option.validation(value);
-			if (err)
+			auto valueOrErr = option.validation(value);
+			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
+
+			value = valueOrErr.value();
 		}
 
 		if (option.value != value)
@@ -335,12 +337,14 @@ namespace bw
 
 		if (option.validation)
 		{
-			auto err = option.validation(value);
-			if (err)
+			auto valueOrErr = option.validation(value);
+			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
+
+			value = valueOrErr.value();
 		}
 
 		if (option.value != value)
@@ -360,18 +364,20 @@ namespace bw
 
 		if (option.validation)
 		{
-			auto err = option.validation(value);
-			if (err)
+			auto valueOrErr = option.validation(value);
+			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, *err);
+				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
+
+			value = std::move(valueOrErr).value();
 		}
 
 		if (option.value != value)
 		{
 			option.OnValueUpdate(value);
-			option.value = value;
+			option.value = std::move(value);
 		}
 
 		return true;
