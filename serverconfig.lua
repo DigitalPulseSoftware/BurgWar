@@ -1,7 +1,12 @@
 Debug = {
 	SendServerState = true
 }
-GameSettings = {
+Resources = {
+	AssetDirectory = "assets",
+	ModDirectory = "mods",
+	ScriptDirectory  = "scripts"
+}
+ServerSettings = {
 	FastDownloadURLs = [[
 https://burgwar.digitalpulse.software/resources
 	]],
@@ -11,9 +16,4 @@ https://bwmasterserver.digitalpulse.software
 	Gamemode = "deathmatch",
 	MapFile = "beta_map.bmap",
 	TickRate = 33,
-}
-Resources = {
-	AssetDirectory = "assets",
-	ModDirectory = "mods",
-	ScriptDirectory  = "scripts"
 }

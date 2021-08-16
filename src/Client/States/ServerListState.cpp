@@ -46,7 +46,7 @@ namespace bw
 			OnDirectConnectionPressed();
 		});
 
-		const std::string& masterServerList = GetStateData().app->GetConfig().GetStringValue("GameSettings.MasterServers");
+		const std::string& masterServerList = GetStateData().app->GetConfig().GetStringValue("ServerSettings.MasterServers");
 		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
 		{
 			if (!masterServerURI.empty())

@@ -4,7 +4,12 @@ Debug = {
 	ShowServerGhosts = false,
 	ShowVersion = true
 }
-GameSettings = {
+Resources = {
+	AssetDirectory = "assets",
+	ModDirectory = "mods",
+	ScriptDirectory  = "scripts"
+}
+ServerSettings = {
 	FastDownloadURLs = [[
 https://burgwar.digitalpulse.software/resources
 	]],
@@ -12,11 +17,6 @@ https://burgwar.digitalpulse.software/resources
 https://bwmasterserver.digitalpulse.software
 	]],
 	TickRate = 33,
-}
-Resources = {
-	AssetDirectory = "assets",
-	ModDirectory = "mods",
-	ScriptDirectory  = "scripts"
 }
 WindowSettings = {
 	AntialiasingLevel = 8,

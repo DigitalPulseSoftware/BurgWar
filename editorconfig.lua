@@ -1,9 +1,6 @@
 Debug = {
 	SendServerState = false
 }
-GameSettings = {
-	TickRate = 33,
-}
 Resources = {
 	FastDownloadURLs = [[
 https://burgwar.digitalpulse.software/resources
@@ -15,4 +12,7 @@ https://bwmasterserver.digitalpulse.software
 	EditorDirectory = "assets/editor",
 	ModDirectory = "mods",
 	ScriptDirectory  = "scripts"
+}
+ServerSettings = {
+	TickRate = 33,
 }

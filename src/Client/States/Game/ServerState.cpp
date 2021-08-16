@@ -25,7 +25,7 @@ namespace bw
 		Match::MatchSettings matchSettings;
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
-		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("GameSettings.TickRate");
+		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("ServerSettings.TickRate");
 
 		Match::ModSettings modSettings;
 

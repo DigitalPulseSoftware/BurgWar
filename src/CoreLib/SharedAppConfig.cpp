@@ -13,8 +13,8 @@ namespace bw
 		RegisterStringOption("Resources.ModDirectory");
 		RegisterStringOption("Resources.ScriptDirectory");
 		RegisterBoolOption("Debug.SendServerState");
-		RegisterStringOption("GameSettings.FastDownloadURLs", "");
-		RegisterStringOption("GameSettings.MasterServers", "");
-		RegisterFloatOption("GameSettings.TickRate");
+		RegisterStringOption("ServerSettings.FastDownloadURLs", "");
+		RegisterStringOption("ServerSettings.MasterServers", "");
+		RegisterFloatOption("ServerSettings.TickRate");
 	}
 }

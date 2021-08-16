@@ -19,13 +19,13 @@ namespace bw
 		LoadMods();
 
 		Match::GamemodeSettings gamemodeSettings;
-		gamemodeSettings.name = m_configFile.GetStringValue("GameSettings.Gamemode");
+		gamemodeSettings.name = m_configFile.GetStringValue("ServerSettings.Gamemode");
 
 		Match::MatchSettings matchSettings;
-		matchSettings.map = Map::LoadFromBinary(m_configFile.GetStringValue("GameSettings.MapFile"));
+		matchSettings.map = Map::LoadFromBinary(m_configFile.GetStringValue("ServerSettings.MapFile"));
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
-		matchSettings.tickDuration = 1.f / m_configFile.GetFloatValue<float>("GameSettings.TickRate");
+		matchSettings.tickDuration = 1.f / m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
 
 		Match::ModSettings modSettings;
 

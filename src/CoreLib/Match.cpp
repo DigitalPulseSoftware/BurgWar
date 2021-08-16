@@ -53,7 +53,7 @@ namespace bw
 
 		BuildMatchData();
 
-		const std::string& masterServerList = m_app.GetConfig().GetStringValue("GameSettings.MasterServers");
+		const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
 		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
 		{
 			if (!masterServerURI.empty())
@@ -95,7 +95,7 @@ namespace bw
 
 	void Match::BuildClientAssetListPacket(Packets::MatchData& clientAsset) const
 	{
-		const std::string& fastDownloadUrls = m_app.GetConfig().GetStringValue("GameSettings.FastDownloadURLs");
+		const std::string& fastDownloadUrls = m_app.GetConfig().GetStringValue("ServerSettings.FastDownloadURLs");
 
 		// Make sure url are only present once
 		tsl::hopscotch_set<std::string> urls;
