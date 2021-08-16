@@ -137,9 +137,11 @@ namespace bw
 						{
 							if (option.validation)
 							{
-								auto valueOrErr = option.validation(value);
+								auto valueOrErr = option.validation(std::move(value));
 								if (!valueOrErr)
 									throw std::runtime_error("option value failed validation: " + valueOrErr.error());
+
+								value = std::move(valueOrErr).value();
 							}
 						}
 

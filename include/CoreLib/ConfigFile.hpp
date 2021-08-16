@@ -54,7 +54,7 @@ namespace bw
 		protected:
 			using FloatValidation = std::function<tl::expected<double, std::string>(double value)>;
 			using IntegerValidation = std::function<tl::expected<long long, std::string>(long long value)>;
-			using StringValidation = std::function<tl::expected<std::string, std::string>(const std::string& value)>;
+			using StringValidation = std::function<tl::expected<std::string, std::string>(std::string value)>;
 
 			inline void RegisterBoolOption(std::string optionName, std::optional<bool> defaultValue = std::nullopt);
 			inline void RegisterFloatOption(std::string optionName, std::optional<double> defaultValue = std::nullopt, FloatValidation validation = nullptr);
