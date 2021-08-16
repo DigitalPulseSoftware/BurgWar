@@ -44,7 +44,7 @@ namespace bw
 		serverData["map"] = m_match.GetMap().GetMapInfo().name;
 
 		std::size_t currentPlayerCount = 0;
-		m_match.ForEachPlayer([&](Player*) { currentPlayerCount++; });
+		m_match.ForEachPlayer([&](Player*) { currentPlayerCount++; }, false);
 
 		serverData["current_player_count"] = currentPlayerCount;
 		serverData["maximum_player_count"] = m_match.GetSettings().maxPlayerCount;
