@@ -85,10 +85,10 @@ namespace bw
 
 				try
 				{
-					std::visit([&](auto&& arg)
+					std::visit([&](auto&& option)
 					{
-						using T = std::decay_t<decltype(arg)>;
-						using ArgType = std::decay_t<decltype(arg.value)>;
+						using T = std::decay_t<decltype(option)>;
+						using ArgType = std::decay_t<decltype(option.value)>;
 
 						ArgType value;
 
@@ -127,13 +127,23 @@ namespace bw
 						// Check bounds
 						if constexpr (std::is_same_v<T, FloatOption> || std::is_same_v<T, IntegerOption>)
 						{
-							if (value < arg.minBounds)
-								throw std::runtime_error("option value is under bounds (" + std::to_string(value) + " < " + std::to_string(arg.minBounds) + ')');
-							else if (value > arg.maxBounds)
-								throw std::runtime_error("option value is over bounds (" + std::to_string(value) + " > " + std::to_string(arg.maxBounds) + ')');
+							if (value < option.minBounds)
+								throw std::runtime_error("option value is under bounds (" + std::to_string(value) + " < " + std::to_string(option.minBounds) + ')');
+							else if (value > option.maxBounds)
+								throw std::runtime_error("option value is over bounds (" + std::to_string(value) + " > " + std::to_string(option.maxBounds) + ')');
 						}
 
-						arg.value = std::move(value);
+						if constexpr (!std::is_same_v<T, BoolOption>)
+						{
+							if (option.validation)
+							{
+								auto valueOrErr = option.validation(value);
+								if (!valueOrErr)
+									throw std::runtime_error("option value failed validation: " + valueOrErr.error());
+							}
+						}
+
+						option.value = std::move(value);
 
 					}, option.data);
 				}
