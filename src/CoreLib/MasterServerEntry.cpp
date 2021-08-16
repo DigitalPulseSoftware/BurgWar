@@ -47,7 +47,7 @@ namespace bw
 		m_match.ForEachPlayer([&](Player*) { currentPlayerCount++; }, false);
 
 		serverData["current_player_count"] = currentPlayerCount;
-		serverData["maximum_player_count"] = m_match.GetSettings().maxPlayerCount;
+		serverData["maximum_player_count"] = matchSettings.maxPlayerCount;
 
 		std::vector<std::string> mods;
 		mods.reserve(modSettings.enabledMods.size());
@@ -59,7 +59,7 @@ namespace bw
 
 		serverData["mods"] = mods;
 
-		serverData["port"] = 14768;
+		serverData["port"] = matchSettings.port;
 		serverData["uptime"] = 0; //< TODO
 
 		return serverData;

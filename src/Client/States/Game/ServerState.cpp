@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/ServerState.hpp>
-#include <CoreLib/NetworkSessionManager.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/ClientApp.hpp>
@@ -25,6 +24,7 @@ namespace bw
 		Match::MatchSettings matchSettings;
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
+		matchSettings.port = listenPort;
 		matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("ServerSettings.TickRate");
 
 		Match::ModSettings modSettings;
@@ -48,10 +48,6 @@ namespace bw
 
 		MatchSessions& sessions = m_match->GetSessions();
 		m_localSessionManager = sessions.CreateSessionManager<LocalSessionManager>();
-		if (listenPort != 0)
-			m_networkSessionManager = sessions.CreateSessionManager<NetworkSessionManager>(listenPort, 64);
-		else
-			m_networkSessionManager = nullptr;
 
 		if (config.GetBoolValue("Debug.SendServerState"))
 			m_match->InitDebugGhosts();

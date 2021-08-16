@@ -144,6 +144,7 @@ namespace bw
 				std::size_t maxPlayerCount;
 				std::string name;
 				std::string description;
+				Nz::UInt16 port = 0;
 				Map map;
 				float tickDuration;
 			};

@@ -33,7 +33,6 @@ namespace bw
 			std::optional<Match> m_match;
 			std::shared_ptr<AbstractState> m_originalState;
 			LocalSessionManager* m_localSessionManager;
-			NetworkSessionManager* m_networkSessionManager;
 	};
 }
 

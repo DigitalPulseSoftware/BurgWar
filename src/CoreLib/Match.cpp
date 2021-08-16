@@ -9,6 +9,7 @@
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
 #include <CoreLib/Mod.hpp>
+#include <CoreLib/NetworkSessionManager.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
@@ -66,6 +67,9 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 
 		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
+
+		if (m_settings.port != 0)
+			m_sessions.CreateSessionManager<NetworkSessionManager>(m_settings.port, m_settings.maxPlayerCount);
 	}
 
 	Match::~Match()

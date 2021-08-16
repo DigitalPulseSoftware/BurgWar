@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerApp.hpp>
-#include <CoreLib/NetworkSessionManager.hpp>
 #include <Nazara/Core/Thread.hpp>
 
 namespace bw
@@ -33,6 +32,7 @@ namespace bw
 		matchSettings.description = serverDesc;
 		matchSettings.maxPlayerCount = maxPlayerCount;
 		matchSettings.name = serverName;
+		matchSettings.port = serverPort;
 		matchSettings.tickDuration = 1.f / tickRate;
 
 		// Load map
@@ -53,7 +53,6 @@ namespace bw
 			modSettings.enabledMods[modId] = Match::ModSettings::ModEntry{};
 
 		m_match = std::make_unique<Match>(*this, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
-		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(serverPort, maxPlayerCount);
 	}
 
 	int ServerApp::Run()
