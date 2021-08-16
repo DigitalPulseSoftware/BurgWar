@@ -1514,7 +1514,7 @@ namespace bw
 	{
 		const ConfigFile& config = GetConfig();
 
-		float tickRate = config.GetFloatValue<float>("GameSettings.TickRate");
+		float tickRate = config.GetFloatValue<float>("ServerSettings.TickRate");
 
 		if (m_playWindow)
 			m_playWindow->deleteLater();
