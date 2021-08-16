@@ -11,6 +11,6 @@ namespace bw
 	SharedAppConfig(app)
 	{
 		RegisterStringOption("ServerSettings.Gamemode");
-		RegisterStringOption("ServerSettings.MapFile");
+		RegisterStringOption("ServerSettings.MapPath");
 	}
 }

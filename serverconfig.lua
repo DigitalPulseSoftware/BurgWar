@@ -14,6 +14,6 @@ https://burgwar.digitalpulse.software/resources
 https://bwmasterserver.digitalpulse.software
 	]],
 	Gamemode = "deathmatch",
-	MapFile = "beta_map.bmap",
+	MapPath = "beta_map.bmap",
 	TickRate = 33,
 }

@@ -22,10 +22,21 @@ namespace bw
 		gamemodeSettings.name = m_configFile.GetStringValue("ServerSettings.Gamemode");
 
 		Match::MatchSettings matchSettings;
-		matchSettings.map = Map::LoadFromBinary(m_configFile.GetStringValue("ServerSettings.MapFile"));
 		matchSettings.maxPlayerCount = 64;
 		matchSettings.name = "local";
 		matchSettings.tickDuration = 1.f / m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
+
+		// Load map
+		const std::string& mapPath = m_configFile.GetStringValue("ServerSettings.MapPath");
+		if (!EndsWith(mapPath, ".bmap"))
+		{
+			if (std::filesystem::is_directory(mapPath))
+				matchSettings.map = Map::LoadFromDirectory(mapPath);
+			else
+				matchSettings.map = Map::LoadFromBinary(mapPath + ".bmap");
+		}
+		else
+			matchSettings.map = Map::LoadFromBinary(mapPath);
 
 		Match::ModSettings modSettings;
 
