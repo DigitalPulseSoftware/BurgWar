@@ -12,5 +12,26 @@ namespace bw
 	{
 		RegisterStringOption("ServerSettings.Gamemode");
 		RegisterStringOption("ServerSettings.MapPath");
+		RegisterIntegerOption("ServerSettings.MaxPlayerCount", 1, 0xFFFF, 16);
+		RegisterIntegerOption("ServerSettings.Port", 1, 0xFFFF, 14768);
+
+		RegisterStringOption("ServerSettings.Description", "", [](std::string value) -> tl::expected<std::string, std::string>
+		{
+			if (value.size() > 1024)
+				return tl::make_unexpected("description is too long");
+
+			return value;
+		});
+
+		RegisterStringOption("ServerSettings.Name", "a server has no name", [](std::string value) -> tl::expected<std::string, std::string>
+		{
+			if (value.empty())
+				return tl::make_unexpected("name cannot be empty");
+
+			if (value.size() > 32)
+				return tl::make_unexpected("name is too long");
+
+			return value;
+		});
 	}
 }

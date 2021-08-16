@@ -18,16 +18,24 @@ namespace bw
 
 		LoadMods();
 
+		Nz::UInt16 maxPlayerCount = m_configFile.GetIntegerValue<Nz::UInt16>("ServerSettings.MaxPlayerCount");
+		Nz::UInt16 serverPort = m_configFile.GetIntegerValue<Nz::UInt16>("ServerSettings.Port");
+		const std::string& gamemode = m_configFile.GetStringValue("ServerSettings.Gamemode");
+		const std::string& mapPath = m_configFile.GetStringValue("ServerSettings.MapPath");
+		const std::string& serverDesc = m_configFile.GetStringValue("ServerSettings.Description");
+		const std::string& serverName = m_configFile.GetStringValue("ServerSettings.Name");
+		float tickRate = m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
+
 		Match::GamemodeSettings gamemodeSettings;
-		gamemodeSettings.name = m_configFile.GetStringValue("ServerSettings.Gamemode");
+		gamemodeSettings.name = gamemode;
 
 		Match::MatchSettings matchSettings;
-		matchSettings.maxPlayerCount = 64;
-		matchSettings.name = "local";
-		matchSettings.tickDuration = 1.f / m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
+		matchSettings.description = serverDesc;
+		matchSettings.maxPlayerCount = maxPlayerCount;
+		matchSettings.name = serverName;
+		matchSettings.tickDuration = 1.f / tickRate;
 
 		// Load map
-		const std::string& mapPath = m_configFile.GetStringValue("ServerSettings.MapPath");
 		if (!EndsWith(mapPath, ".bmap"))
 		{
 			if (std::filesystem::is_directory(mapPath))
@@ -45,7 +53,7 @@ namespace bw
 			modSettings.enabledMods[modId] = Match::ModSettings::ModEntry{};
 
 		m_match = std::make_unique<Match>(*this, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
-		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(Nz::UInt16(14768), 64);
+		m_match->GetSessions().CreateSessionManager<NetworkSessionManager>(serverPort, maxPlayerCount);
 	}
 
 	int ServerApp::Run()
