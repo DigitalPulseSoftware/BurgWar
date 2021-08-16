@@ -70,7 +70,7 @@ jobs:
 
     # Compile maps to the package
     - name: Compile maps
-      run: ./maptool.exe --compile ../../maps/*
+      run: ./maptool.exe --compile ((get-item ..\\..\\maps\*) -join (' '))
       working-directory: package/bin
   
     # Upload artifacts
