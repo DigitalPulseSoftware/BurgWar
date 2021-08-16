@@ -1493,7 +1493,11 @@ namespace bw
 			for (auto& layer : m_layers)
 			{
 				if (layer->IsEnabled() && layer->IsPredictionEnabled())
+				{
 					layer->TickUpdate(GetTickDuration());
+
+					// TODO: Update history of the future
+				}
 			}
 
 			for (auto it = m_inactiveEntities.begin(); it != m_inactiveEntities.end();)

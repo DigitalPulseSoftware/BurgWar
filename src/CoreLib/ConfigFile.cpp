@@ -47,7 +47,7 @@ namespace bw
 			if (auto result = lua.safe_script_file(path); !result.valid())
 			{
 				sol::error err = result;
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load config {0}: {1}", path, err.what());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "failed to load config {0}: {1}", path, err.what());
 				return false;
 			}
 
@@ -79,7 +79,7 @@ namespace bw
 					if (hasDefaultDefault)
 						continue;
 
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Missing config option \"{0}\"", option.name);
+					bwLog(m_app.GetLogger(), LogLevel::Error, "missing config option \"{0}\"", option.name);
 					return false;
 				}
 
@@ -96,28 +96,28 @@ namespace bw
 						if constexpr (std::is_same_v<T, BoolOption>)
 						{
 							if (!lua_isboolean(L, -1))
-								throw std::runtime_error("Boolean expected");
+								throw std::runtime_error("expected boolean, got " + std::string(lua_typename(L, -1)));
 
 							value = lua_toboolean(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, FloatOption>)
 						{
 							if (!lua_isnumber(L, -1))
-								throw std::runtime_error("Float expected");
+								throw std::runtime_error("expected number, got " + std::string(lua_typename(L, -1)));
 
 							value = luaL_checknumber(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, IntegerOption>)
 						{
 							if (!lua_isnumber(L, -1))
-								throw std::runtime_error("Integer expected");
+								throw std::runtime_error("expected number, got " + std::string(lua_typename(L, -1)));
 
 							value = luaL_checkinteger(L, -1);
 						}
 						else if constexpr (std::is_same_v<T, StringOption>)
 						{
 							if (!lua_isstring(L, -1))
-								throw std::runtime_error("string expected");
+								throw std::runtime_error("expected string, got " + std::string(lua_typename(L, -1)));
 
 							value = luaL_checkstring(L, -1);
 						}
@@ -151,14 +151,14 @@ namespace bw
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load \"{0}\": {1}", option.name, e.what());
+					bwLog(m_app.GetLogger(), LogLevel::Error, "failed to load \"{0}\": {1}", option.name, e.what());
 
 					if (!hasDefaultDefault)
 						return false;
 				}
 				catch (...)
 				{
-					bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to load \"{0}\": {1}", option.name, lua_tostring(L, -1));
+					bwLog(m_app.GetLogger(), LogLevel::Error, "failed to load \"{0}\": {1}", option.name, lua_tostring(L, -1));
 					lua_pop(L, lua_gettop(L));
 
 					if (!hasDefaultDefault)
@@ -170,7 +170,7 @@ namespace bw
 		}
 		catch (const sol::error& e)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to parse config \"{0}\": {1}", path, e.what());
+			bwLog(m_app.GetLogger(), LogLevel::Error, "failed to parse config \"{0}\": {1}", path, e.what());
 			return false;
 		}
 
@@ -182,7 +182,7 @@ namespace bw
 		std::fstream file(filePath, std::ios::out | std::ios::trunc);
 		if (!file.is_open())
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Failed to open config file {0}: {1}", filePath.generic_u8string());
+			bwLog(m_app.GetLogger(), LogLevel::Error, "failed to open config file {0}: {1}", filePath.generic_u8string());
 			return false;
 		}
 
@@ -299,13 +299,13 @@ namespace bw
 		FloatOption& option = std::get<FloatOption>(m_options[optionIndex].data);
 		if (value > option.maxBounds)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
+			bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
 			return false;
 		}
 
 		if (value < option.minBounds)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
+			bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
 			return false;
 		}
 
@@ -314,7 +314,7 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
 
@@ -337,13 +337,13 @@ namespace bw
 		IntegerOption& option = std::get<IntegerOption>(m_options[optionIndex].data);
 		if (value > option.maxBounds)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
+			bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) is too big (max: {2})", m_options[optionIndex].name, value, option.maxBounds);
 			return false;
 		}
 
 		if (value < option.minBounds)
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
+			bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) is too small (min: {2})", m_options[optionIndex].name, value, option.minBounds);
 			return false;
 		}
 
@@ -352,7 +352,7 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
 
@@ -379,7 +379,7 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "Option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
 				return false;
 			}
 

@@ -456,16 +456,16 @@ namespace bw
 
 		std::array<char, 8> signature;
 		if (stream.Read(signature.data(), signature.size()) != signature.size())
-			throw std::runtime_error("Corrupted map file (or not a burger map file)");
+			throw std::runtime_error("corrupted map file (or not a burger map file)");
 
 		if (std::memcmp(signature.data(), "Burgrmap", signature.size()) != 0)
-			throw std::runtime_error("Not a valid burger map file");
+			throw std::runtime_error("not a valid burger map file");
 
 		Nz::UInt16 fileVersion;
 		stream >> fileVersion;
 
 		if (fileVersion > MapFileVersion)
-			throw std::runtime_error("Unhandled file version (more recent than game)");
+			throw std::runtime_error("unhandled file version (more recent than game)");
 
 		// Map header
 		stream >> m_mapInfo.name >> m_mapInfo.author >> m_mapInfo.description;
