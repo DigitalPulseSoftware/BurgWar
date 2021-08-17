@@ -43,11 +43,12 @@ COPY --chown=burgwar:burgwar xmake.lua xmake.lua
 
 RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y
 RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
+
+# TMP: compile default map
 RUN /home/burgwar/.local/bin/xmake -r BurgWarMapTool
+RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool ../../maps/beta_map -c beta_map.bmap
 
 # TMP: prepare blank server
-RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool ../../maps/beta_map -c beta_map.bmap
-#RUN cp serverconfig.lua bin/linux_x86_64_releasedbg/
 COPY serverconfig.lua bin/linux_x86_64_releasedbg/serverconfig.lua
 COPY assets/ assets/
 
