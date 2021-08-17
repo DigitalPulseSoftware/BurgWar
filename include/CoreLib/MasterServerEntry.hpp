@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_MASTERSERVERENTRY_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/WebService.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
 #include <string>
@@ -40,6 +41,7 @@ namespace bw
 			std::string m_requestBody;
 			std::string m_updateToken;
 			Match& m_match;
+			WebService m_webService;
 			float m_timeBeforeRefresh;
 	};
 }

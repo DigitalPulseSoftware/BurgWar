@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MasterServerEntry.hpp>
-#include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
@@ -15,12 +14,15 @@ namespace bw
 {
 	MasterServerEntry::MasterServerEntry(Match& match, std::string masterServerURL) :
 	m_masterServerURL(std::move(masterServerURL)),
-	m_match(match)
+	m_match(match),
+	m_webService(m_match.GetLogger())
 	{
 	}
 
 	void MasterServerEntry::Update(float elapsedTime)
 	{
+		m_webService.Poll();
+
 		m_timeBeforeRefresh -= elapsedTime;
 		if (m_timeBeforeRefresh >= 0.f)
 			return;
@@ -102,7 +104,7 @@ namespace bw
 
 		request->SetJSonContent(serverData.dump());
 
-		m_match.GetApp().GetWebService().AddRequest(std::move(request));
+		m_webService.AddRequest(std::move(request));
 		m_timeBeforeRefresh = 15.f;
 	}
 
@@ -134,7 +136,7 @@ namespace bw
 
 		request->SetJSonContent(BuildServerInfo().dump());
 
-		m_match.GetApp().GetWebService().AddRequest(std::move(request));
+		m_webService.AddRequest(std::move(request));
 		m_timeBeforeRefresh = 15.f;
 	}
 }
