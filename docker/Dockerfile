@@ -1,48 +1,55 @@
-FROM debian:stable
-MAINTAINER SirMishaa
+FROM debian:latest
 
-# Update packages and install GCC and git
-RUN apt update && apt upgrade -y && apt install build-essential git -y
+LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel "Elanis" Soupe"
+EXPOSE 14768/udp
+HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 
-# Nazara and Burgwar dependencies
-RUN apt install libopenal-dev libsndfile1-dev libfreetype6-dev libassimp-dev libsdl2-dev libxcb-ewmh-dev libxcb-keysyms1-dev \
-                qtbase5-dev libcurl4-gnutls-dev \
-				-y
+# We need gcc 9+
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list 
 
-# Configure env for tzdata
-ENV TZ=Europe/Brussels
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Update system
+RUN apt update
+RUN apt upgrade -y
 
-# Build Nazara
+# Install all we need ...
+RUN apt install -y build-essential curl git net-tools unzip
 
-WORKDIR /usr/lib
+# TEMP: Install nazara legacy dependencies
+RUN apt-get install -y libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev
 
-RUN git clone --depth 1 -b master https://github.com/DigitalPulseSoftware/NazaraEngine
+# Install xmake with root (so it will install dependencies)
+RUN curl -fsSL https://xmake.io/shget.text | /bin/bash
 
-WORKDIR /usr/lib/NazaraEngine/build
+# Add user
+RUN useradd burgwar
+RUN mkdir -p /home/burgwar
+RUN chown -R burgwar:burgwar /home/burgwar
 
-RUN ./premake5-linux64 gmake
+# That's ugly ... but we need it to install xmake :/
+RUN mkdir -p /tmp/
+RUN chmod -R 777 /tmp/ 
 
-WORKDIR /usr/lib/NazaraEngine/build/gmake
+USER burgwar
+WORKDIR /home/burgwar
 
-RUN make -j8
+# Install xmake for use 
+RUN curl -fsSL https://xmake.io/shget.text | /bin/bash
 
-WORKDIR /usr/lib/NazaraEngine/build
+# Build server
+RUN git clone https://github.com/DigitalPulseSoftware/BurgWar.git
+WORKDIR /home/burgwar/BurgWar
 
-RUN ./premake5-linux64 package
+COPY --chown=burgwar:burgwar xmake.lua xmake.lua
 
-# Build Burgwar
+RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y
+RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
+RUN /home/burgwar/.local/bin/xmake -r BurgWarMapTool
 
-WORKDIR /root
+# TMP: prepare blank server
+RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool ../../maps/beta_map -c beta_map.bmap
+#RUN cp serverconfig.lua bin/linux_x86_64_releasedbg/
+COPY serverconfig.lua bin/linux_x86_64_releasedbg/serverconfig.lua
+COPY assets/ assets/
 
-RUN git clone --depth 1 -b master https://github.com/DigitalPulseSoftware/BurgWar
+ENTRYPOINT /home/burgwar/.local/bin/xmake run BurgWarServer
 
-WORKDIR /root/BurgWar/build
-
-COPY config-docker.lua config.lua
-
-RUN ./premake5-linux64 gmake2
-
-WORKDIR /root/BurgWar/build/gmake2
-
-RUN make -j8
