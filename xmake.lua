@@ -21,8 +21,8 @@ add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug", "asan") })
 add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug", "asan"), shared = true } })
 
 set_allowedmodes("asan", "debug", "releasedbg")
-set_allowedplats("windows", "linux", "macosx")
-set_allowedarchs("windows|x64", "linux|x86_64", "macosx|x86_64")
+set_allowedplats("windows", "mingw", "linux", "macosx")
+set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "macosx|x86_64")
 set_defaultmode("debug")
 
 add_rules("mode.asan", "mode.debug", "mode.releasedbg")
@@ -34,9 +34,9 @@ add_includedirs("include", "src")
 add_rpathdirs("@executable_path")
 
 set_languages("c89", "cxx17")
-set_rundir("./bin/$(os)_$(arch)_$(mode)")
+set_rundir("./bin/$(plat)_$(arch)_$(mode)")
 set_symbols("debug", "hidden")
-set_targetdir("./bin/$(os)_$(arch)_$(mode)")
+set_targetdir("./bin/$(plat)_$(arch)_$(mode)")
 set_warnings("allextra")
 
 if is_mode("releasedbg") then
@@ -55,6 +55,9 @@ if is_plat("windows") then
 elseif is_plat("linux") then
 	add_cxflags("-fPIC")
 	add_syslinks("pthread")
+elseif is_plat("mingw") then
+	add_cxflags("-Og", "-Wa,-mbig-obj")
+	add_ldflags("-Wa,-mbig-obj")
 end
 
 target("lua")

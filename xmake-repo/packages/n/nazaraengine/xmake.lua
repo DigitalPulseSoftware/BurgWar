@@ -159,7 +159,7 @@ package("nazaraengine")
         package:add("links", prefix .. "Core" .. suffix)
     end)
 
-    on_install("windows", "linux", function (package)
+    on_install("windows", "linux", "mingw", function (package)
         -- Remove potential leftovers from previous build
         os.rm("lib")
 
@@ -229,9 +229,14 @@ package("nazaraengine")
         local premakeArch = assert(archName[package:arch()])
         local libDir
 
+        local premakeExecutable = is_subhost("windows") and "./premake5.exe" or "./premake5-linux64"
+
+        -- patch Newton MinGW defines check
+        io.replace("thirdparty/src/newton/dgCore/dgTypes.cpp", [[#if (defined (_MSC_VER) || defined (_MINGW_32_VER) || defined (_MINGW_64_VER))]], [[#if (defined (_MSC_VER) || defined (__MINGW32__) || defined (__MINGW64__))]], {plain=true})
+
         os.cd("build")
         if package:is_plat("windows") then
-            os.vrun("./premake5.exe " .. table.concat(premakeOptions, " ") .. " vs2019")
+            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " vs2019")
             os.cd("vs2019")
 
             local configs = {}
@@ -244,43 +249,57 @@ package("nazaraengine")
             import("package.tools.msbuild").build(package, configs)
 
             libDir = "msvc"
-        elseif package:is_plat("linux") then
-            os.vrun("./premake5-linux64 " .. table.concat(premakeOptions, " ") .. " gmake2")
+        elseif package:is_plat("linux", "mingw") then
+            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " gmake2")
             os.cd("gmake2")
-            
-            local configName = (package:debug() and "debug" or "release") .. (package:config("shared") and "dynamic" or "static") .. "_" .. premakeArch
 
-            os.vrun("make config=" .. configName .. " -j4")
+            local configs = {}
+            table.insert(configs, "config=" .. (package:debug() and "debug" or "release") .. (package:config("shared") and "dynamic" or "static") .. "_" .. premakeArch)
 
-            libDir = "gmake"
+             -- mingw-make doesn't seem to like parallel building (or maybe it's premake?)
+            if package:is_plat("mingw") then
+                local opt = package:is_plat("mingw") and {jobs=1} or nil
+                import("package.tools.make").build(package, table.join(configs, {"chipmunk"}), opt)
+            end
+
+            import("package.tools.make").build(package, configs, opt)
+
+            libDir = package:is_plat("mingw") and "mingw" or "gmake"
+        else
+            os.raise("unexpected platform")
         end
 
         os.cd("../../")
         os.cp("include/Nazara", package:installdir("include"))
         os.cp("SDK/include/NDK", package:installdir("include"))
-        os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
 
         if package:is_plat("windows") then
+            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*.dll", package:installdir("bin"))
+            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*.lib", package:installdir("lib"))
+        else
+            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
+        end
+
+        if package:is_plat("windows", "mingw") then
             if has_audio(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/soft_oal.dll", package:installdir("lib"))
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/soft_oal.dll", package:installdir("bin"))
             end
 
             if has_platform(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/SDL2.dll", package:installdir("lib"))
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/SDL2.dll", package:installdir("bin"))
             end
 
             if has_utility(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/libsndfile-1.dll", package:installdir("lib"))
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/libsndfile-1.dll", package:installdir("bin"))
             end
 
             if has_assimp_plugin(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/assimp.dll", package:installdir("lib"))
+                os.cp("thirdparty/lib/common/" .. premakeArch .. "/assimp.dll", package:installdir("bin"))
             end
         end
     end)
 
     on_test(function (package)
-        print(package:deps())
         assert(package:check_cxxsnippets({test = [[
             void test(int args, char** argv) {
                 Nz::Clock c;

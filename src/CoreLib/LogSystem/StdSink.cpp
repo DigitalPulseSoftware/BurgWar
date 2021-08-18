@@ -6,6 +6,7 @@
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <Nazara/Prerequisites.hpp>
 #include <Nazara/Core/StackArray.hpp>
+#include <cstring>
 #include <cwchar>
 #include <vector>
 
