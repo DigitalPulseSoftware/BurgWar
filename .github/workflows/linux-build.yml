@@ -80,7 +80,9 @@ jobs:
     - name: Compile maps
       run: ./maptool --compile ../../maps/*
       working-directory: package/bin
-  
+      env:
+        LD_LIBRARY_PATH: ../lib
+
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:
