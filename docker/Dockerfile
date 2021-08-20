@@ -42,9 +42,9 @@ COPY --chown=burgwar:burgwar xmake.lua xmake.lua
 RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y
 RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
 
-# TEMP: compile default map
+# Compile every default map
 RUN /home/burgwar/.local/bin/xmake -r BurgWarMapTool
-RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool ../../maps/beta_map -c beta_map.bmap
+RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool -c /home/burgwar/BurgWar/maps/*
 
 RUN /home/burgwar/.local/bin/xmake install -v -o build/ BurgWarServer
 
@@ -83,8 +83,8 @@ COPY assets/ assets/
 COPY --from=build-env /home/burgwar/BurgWar/mods/ mods/
 COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
 
-# TEMP: Copy default map
-COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/beta_map.bmap beta_map.bmap
+# Copy every default map
+COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/*.bmap /home/burgwar/
 
 # TEMP: Copy .so files
 RUN ln -s ../lib/libcurl.so bin/libcurl.so.4
