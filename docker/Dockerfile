@@ -37,9 +37,7 @@ RUN /home/burgwar/.local/bin/xmake update -s dev
 RUN git clone https://github.com/DigitalPulseSoftware/BurgWar.git
 WORKDIR /home/burgwar/BurgWar
 
-COPY --chown=burgwar:burgwar xmake.lua xmake.lua
-
-RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y
+RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y --build_mapeditor=false
 RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
 
 # Compile every default map
