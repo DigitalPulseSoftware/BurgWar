@@ -1,8 +1,4 @@
-FROM debian:latest
-
-LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel "Elanis" Soupe"
-EXPOSE 14768/udp
-HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
+FROM debian:latest as build-env
 
 # We need gcc 9+
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list 
@@ -29,11 +25,13 @@ RUN chown -R burgwar:burgwar /home/burgwar
 RUN mkdir -p /tmp/
 RUN chmod -R 777 /tmp/ 
 
+# Switch to burgwar user
 USER burgwar
 WORKDIR /home/burgwar
 
-# Install xmake for use 
+# Install xmake for burgwar user 
 RUN curl -fsSL https://xmake.io/shget.text | /bin/bash
+RUN /home/burgwar/.local/bin/xmake update -s dev
 
 # Build server
 RUN git clone https://github.com/DigitalPulseSoftware/BurgWar.git
@@ -44,13 +42,52 @@ COPY --chown=burgwar:burgwar xmake.lua xmake.lua
 RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y
 RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
 
-# TMP: compile default map
+# TEMP: compile default map
 RUN /home/burgwar/.local/bin/xmake -r BurgWarMapTool
 RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool ../../maps/beta_map -c beta_map.bmap
 
-# TMP: prepare blank server
-COPY serverconfig.lua bin/linux_x86_64_releasedbg/serverconfig.lua
+RUN /home/burgwar/.local/bin/xmake install -v -o build/ BurgWarServer
+
+##############################
+# Runtime image
+##############################
+FROM debian:latest
+
+LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel \"Elanis\" Soupe"
+EXPOSE 14768/udp
+HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
+
+# We need gcc 9+
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+RUN apt update
+RUN apt install -y libgcc-s1
+
+# TEMP: Install nazara legacy dependencies
+RUN apt-get install -y libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev
+
+# Add user
+RUN useradd burgwar
+RUN mkdir -p /home/burgwar
+RUN chown -R burgwar:burgwar /home/burgwar
+
+USER burgwar
+WORKDIR /home/burgwar 
+
+COPY --from=build-env /home/burgwar/BurgWar/build/ .
+
+# TEMP: prepare blank server
+COPY serverconfig.lua serverconfig.lua
 COPY assets/ assets/
 
-ENTRYPOINT /home/burgwar/.local/bin/xmake run BurgWarServer
+# Copy mods and scripts from bw repo
+COPY --from=build-env /home/burgwar/BurgWar/mods/ mods/
+COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
 
+# TEMP: Copy default map
+COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/beta_map.bmap beta_map.bmap
+
+# TEMP: Copy .so files
+RUN ln -s ../lib/libcurl.so bin/libcurl.so.4
+
+# Set entrypoint
+ENTRYPOINT /home/burgwar/bin/BurgWarServer
