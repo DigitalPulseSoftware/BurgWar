@@ -1,5 +1,7 @@
 -- Project configuration
 
+option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
+
 set_xmakever("2.5.6")
 
 add_repositories("burgwar-repo xmake-repo")
@@ -236,38 +238,40 @@ target("BurgWarMapTool")
 	add_files("src/MapTool/**.cpp")
 	add_packages("cxxopts", "nazaraserver")
 
-target("BurgWarMapEditor")
-	set_group("Executable")
+if has_config("build_mapeditor") then
+	target("BurgWarMapEditor")
+		set_group("Executable")
 
-	set_kind("binary")
-	add_rules("qt.console", "qt.moc")
-	add_rules("install_symbolfile", "install_metadata")
+		set_kind("binary")
+		add_rules("qt.console", "qt.moc")
+		add_rules("install_symbolfile", "install_metadata")
 
-	-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
-	-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
-	if (not is_plat("windows")) then
-		add_cxxflags("-fno-sized-deallocation")
-	end
-
-	add_frameworks("QtCore", "QtGui", "QtWidgets")
-	add_deps("Main", "ClientLib", "CoreLib")
-	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
-	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
-	add_packages("nazara")
-
-	on_load(function (target)
-		import("detect.sdks.find_qt")
-
-		local qt = find_qt()
-		if (not qt) then
-			-- Disable building by default if Qt is not found
-			target:set("default", false)
+		-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
+		-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
+		if (not is_plat("windows")) then
+			add_cxxflags("-fno-sized-deallocation")
 		end
-	end)
 
-	after_install(function (target)
-		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
-	end)
+		add_frameworks("QtCore", "QtGui", "QtWidgets")
+		add_deps("Main", "ClientLib", "CoreLib")
+		add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
+		add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
+		add_packages("nazara")
+
+		on_load(function (target)
+			import("detect.sdks.find_qt")
+
+			local qt = find_qt()
+			if (not qt) then
+				-- Disable building by default if Qt is not found
+				target:set("default", false)
+			end
+		end)
+
+		after_install(function (target)
+			os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
+		end)
+end
 
 -- Tasks and options
 
