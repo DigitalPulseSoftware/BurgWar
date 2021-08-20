@@ -96,7 +96,7 @@ target("CoreLib")
 	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("lua")
-	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
+	add_headerfiles("include/(CoreLib/**.hpp)", "include/(CoreLib/**.inl)")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", { public = true })
@@ -174,7 +174,7 @@ target("ClientLib")
 	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
+	add_headerfiles("include/(ClientLib/**.hpp)", "include/(ClientLib/**.inl)")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("nazara", { public = true })
@@ -187,7 +187,7 @@ target("Main")
 	add_rules("install_symbolfile")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
+	add_headerfiles("include/(Main/**.hpp)", "include/(Main/**.inl)")
 	add_headerfiles("src/Main/**.hpp", "src/Main/**.inl")
 	add_files("src/Main/**.cpp")
 	add_packages("nazaraserver")
@@ -196,7 +196,7 @@ target("BurgWar")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -211,7 +211,7 @@ target("BurgWarServer")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata")
 
 	add_defines("NDK_SERVER")
 
@@ -229,7 +229,7 @@ target("BurgWarMapTool")
 	set_basename("maptool")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_nazara")
+	add_rules("install_symbolfile")
 
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/MapTool/**.hpp", "src/MapTool/**.inl")
@@ -241,7 +241,7 @@ target("BurgWarMapEditor")
 
 	set_kind("binary")
 	add_rules("qt.console", "qt.moc")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata")
 
 	-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
 	-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
@@ -311,24 +311,6 @@ rule("install_metadata")
 			os.vcp("maps", path.join(target:installdir(), "bin"))
 			os.vcp("scripts", path.join(target:installdir(), "bin"))
 			metadataInstalled = true
-		end
-	end)
-
--- Copies Nazara .so to the install bin folder (as it cannot be installed on the system yet)
-rule("install_nazara")
-	-- This is already handled by xmake on Windows
-	after_install("linux", function (target)
-		local outputdir = path.join(target:installdir(), "bin")
-		local nazara = target:pkg("nazara") or target:pkg("nazaraserver")
-		if (nazara) then
-			local libfiles = nazara:get("libfiles")
-			if (libfiles) then
-				for _, libpath in ipairs(table.wrap(libfiles)) do
-					if (libpath:endswith(".so")) then
-						os.vcp(libpath, outputdir)
-					end
-				end
-			end
 		end
 	end)
 
