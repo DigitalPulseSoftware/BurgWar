@@ -8,7 +8,7 @@ RUN apt update
 RUN apt upgrade -y
 
 # Install all we need ...
-RUN apt install -y build-essential curl git net-tools unzip
+RUN apt install -y build-essential curl git unzip
 
 # TEMP: Install nazara legacy dependencies
 RUN apt-get install -y libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev
@@ -60,7 +60,7 @@ HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 # We need gcc 9+
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
 RUN apt update
-RUN apt install -y libgcc-s1
+RUN apt install -y libgcc-s1 net-tools
 
 # TEMP: Install nazara legacy dependencies
 RUN apt-get install -y libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-dev libxcb-cursor-dev libxcb-ewmh-dev libxcb-keysyms1-dev libx11-dev mesa-common-dev libgl1-mesa-dev libassimp-dev
