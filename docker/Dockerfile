@@ -57,6 +57,8 @@ LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel \"Elanis\" Soupe"
 EXPOSE 14768/udp
 HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 
+ENV LD_LIBRARY_PATH=/home/burgwar/lib/
+
 # We need gcc 9+
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
 RUN apt update
@@ -85,9 +87,6 @@ COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
 
 # Copy every default map
 COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/*.bmap /home/burgwar/
-
-# TEMP: Copy .so files
-RUN ln -s ../lib/libcurl.so bin/libcurl.so.4
 
 # Set entrypoint
 ENTRYPOINT /home/burgwar/bin/BurgWarServer
