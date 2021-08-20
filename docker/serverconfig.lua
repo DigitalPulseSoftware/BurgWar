@@ -2,9 +2,9 @@ Debug = {
 	SendServerState = true
 }
 Resources = {
-	AssetDirectory = "../../assets",
-	ModDirectory = "../../mods",
-	ScriptDirectory  = "../../scripts"
+	AssetDirectory = "assets",
+	ModDirectory = "mods",
+	ScriptDirectory  = "scripts"
 }
 ServerSettings = {
 	FastDownloadURLs = [[
