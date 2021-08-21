@@ -3,7 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/WebRequestResult.hpp>
-#include <curl/curl.h>
+#include <CoreLib/WebService.hpp>
+#include <CoreLib/CurlLibrary.hpp> //< include last because of curl/curl.h
 
 namespace bw
 {
@@ -11,8 +12,10 @@ namespace bw
 	{
 		assert(HasSucceeded());
 
+		auto& libcurl = WebService::GetLibcurl();
+
 		curl_off_t downloadedSize = 0;
-		curl_easy_getinfo(m_curlHandle, CURLINFO_SIZE_DOWNLOAD_T, &downloadedSize);
+		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_SIZE_DOWNLOAD_T, &downloadedSize);
 
 		return downloadedSize;
 	}
@@ -21,8 +24,10 @@ namespace bw
 	{
 		assert(HasSucceeded());
 
+		auto& libcurl = WebService::GetLibcurl();
+
 		curl_off_t downloadSpeed = 0;
-		curl_easy_getinfo(m_curlHandle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
+		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
 
 		return downloadSpeed;
 	}
@@ -31,8 +36,10 @@ namespace bw
 	{
 		assert(HasSucceeded());
 
+		auto& libcurl = WebService::GetLibcurl();
+
 		long responseCode;
-		curl_easy_getinfo(m_curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
+		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
 
 		return responseCode;
 	}

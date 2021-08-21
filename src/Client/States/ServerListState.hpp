@@ -13,6 +13,7 @@
 #include <NDK/Widgets.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <tsl/hopscotch_map.h>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -61,7 +62,7 @@ namespace bw
 			std::shared_ptr<AbstractState> m_nextState;
 			std::vector<std::reference_wrapper<const ServerData>> m_tempOrderedServerList;
 			tsl::hopscotch_map<std::string, MasterServerData> m_masterServers;
-			WebService m_webService;
+			std::optional<WebService> m_webService;
 	};
 }
 

@@ -17,10 +17,13 @@ using CURLM = void;
 namespace bw
 {
 	class Logger;
+	struct CurlLibrary;
 
 	class BURGWAR_CORELIB_API WebService
 	{
 		friend class BurgApp;
+		friend class WebRequest;
+		friend class WebRequestResult;
 
 		public:
 			WebService(const Logger& logger);
@@ -39,15 +42,16 @@ namespace bw
 			static inline bool IsInitialized();
 
 		private:
-			static bool Initialize();
+			static inline const CurlLibrary& GetLibcurl();
+			static bool Initialize(std::string* error);
 			static void Uninitialize();
 
 			const Logger& m_logger;
 			Nz::MovablePtr<CURLM> m_curlMulti;
 			tsl::hopscotch_map<CURL*, std::unique_ptr<WebRequest>> m_activeRequests;
 
-			static bool s_isInitialized;
 			static std::string s_userAgent;
+			static std::unique_ptr<CurlLibrary> s_curlLibrary;
 	};
 }
 

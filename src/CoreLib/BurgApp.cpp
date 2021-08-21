@@ -60,10 +60,14 @@ namespace bw
 		Ndk::InitializeSystem<TickCallbackSystem>();
 		Ndk::InitializeSystem<WeaponSystem>();
 
-		if (!WebService::Initialize())
-			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services, some functionalities will not work");
-
-		m_webService.emplace(m_logger);
+		std::string error;
+		if (WebService::Initialize(&error))
+		{
+			bwLog(GetLogger(), LogLevel::Debug, "libcurl has been loaded");
+			m_webService.emplace(m_logger);
+		}
+		else
+			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services ({0}), some functionalities will not work", error);
 	}
 
 	BurgApp::~BurgApp()
@@ -79,7 +83,8 @@ namespace bw
 		m_appTime += elapsedTime / 1000;
 		m_lastTime = now;
 
-		m_webService->Poll();
+		if (m_webService)
+			m_webService->Poll();
 	}
 	
 	void BurgApp::LoadMods()

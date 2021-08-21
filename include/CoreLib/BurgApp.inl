@@ -31,6 +31,7 @@ namespace bw
 
 	inline WebService& BurgApp::GetWebService()
 	{
+		assert(m_webService);
 		return *m_webService;
 	}
 }

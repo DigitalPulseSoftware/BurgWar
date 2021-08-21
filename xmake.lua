@@ -1,19 +1,19 @@
 -- Project configuration
+set_xmakever("2.5.6")
 
 option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
-
-set_xmakever("2.5.6")
 
 add_repositories("burgwar-repo xmake-repo")
 
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json", "tl_expected", "tl_function_ref")
-add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
+add_requires("libcurl", { optional = true })
 add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.06.10", { alias = "nazaraserver", configs = { server = true } })
+add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
 	add_requires("stackwalker master")
@@ -103,7 +103,7 @@ target("CoreLib")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", { public = true })
 	add_packages("nazaraserver")
-	add_packages("libcurl", { public = true })
+	add_packages("libcurl", { public = true, links = {} })
 
 if is_plat("windows") then
 	add_packages("stackwalker")

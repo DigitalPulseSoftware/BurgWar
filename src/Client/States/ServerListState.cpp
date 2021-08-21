@@ -18,9 +18,13 @@ namespace bw
 
 	ServerListState::ServerListState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
 	AbstractState(std::move(stateData)),
-	m_previousState(std::move(previousState)),
-	m_webService(GetStateData().app->GetLogger())
+	m_previousState(std::move(previousState))
 	{
+		if (WebService::IsInitialized())
+			m_webService.emplace(GetStateData().app->GetLogger());
+		else
+			bwLog(GetStateData().app->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
+
 		m_serverListWidget = GetStateData().canvas->Add<Ndk::BaseWidget>();
 
 		m_serverListScrollbar = CreateWidget<Ndk::ScrollAreaWidget>(m_serverListWidget);
@@ -82,15 +86,17 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		m_webService.Poll();
-
 		if (m_nextGameState)
 			fsm.ResetState(std::move(m_nextGameState));
 
 		if (m_nextState)
 			fsm.ChangeState(std::move(m_nextState));
 
-		RefreshServers(elapsedTime);
+		if (m_webService)
+		{
+			m_webService->Poll();
+			RefreshServers(elapsedTime);
+		}
 
 		return true;
 	}
@@ -217,7 +223,7 @@ namespace bw
 			}
 		});
 
-		m_webService.AddRequest(std::move(request));
+		m_webService->AddRequest(std::move(request));
 	}
 
 	void ServerListState::RefreshServers(float elapsedTime)
@@ -261,7 +267,7 @@ namespace bw
 					}
 				});
 
-				m_webService.AddRequest(std::move(request));
+				m_webService->AddRequest(std::move(request));
 			}
 		}
 	}
