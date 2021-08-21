@@ -17,6 +17,7 @@ namespace bw
 {
 	class Logger;
 	class Match;
+	class WebRequestResult;
 
 	class BURGWAR_CORELIB_API MasterServerEntry
 	{
@@ -33,6 +34,7 @@ namespace bw
 
 		private:
 			nlohmann::json BuildServerInfo() const;
+			void HandleResponse(WebRequestResult&& result, bool refresh);
 
 			void Refresh();
 			void Register();

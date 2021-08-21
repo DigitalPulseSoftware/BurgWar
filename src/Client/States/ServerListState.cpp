@@ -14,6 +14,11 @@
 
 namespace bw
 {
+	namespace
+	{
+		constexpr Nz::UInt32 MasterServerDataVersion = 1U;
+	}
+
 	constexpr float RefreshTime = 15.f;
 
 	ServerListState::ServerListState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
@@ -188,7 +193,21 @@ namespace bw
 				case 200:
 				{
 					bwLog(stateData->app->GetLogger(), LogLevel::Debug, "successfully received connection info of {0} from {1}", uuid, masterServer);
-					nlohmann::json connectionDetails = nlohmann::json::parse(result.GetBody());
+					nlohmann::json connectionDetails;
+					
+					try
+					{
+						connectionDetails = nlohmann::json::parse(result.GetBody());
+					}
+					catch (const std::exception& e)
+					{
+						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to parse connection details: {0}", e.what());
+						return;
+					}
+
+					Nz::UInt32 dataVersion = connectionDetails.value("data_version", 0);
+					if (dataVersion != MasterServerDataVersion)
+						bwLog(stateData->app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
 					std::string address = connectionDetails.value("ip", "");
 					if (address.empty())
@@ -282,9 +301,13 @@ namespace bw
 
 		MasterServerData& masterServerData = it.value();
 
+		Nz::UInt32 dataVersion = serverListDoc.value("data_version", 0);
+		if (dataVersion != MasterServerDataVersion)
+			bwLog(stateData.app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
+
 		tsl::hopscotch_map<std::string, ServerData> newServerList;
 
-		for (auto&& serverDoc : serverListDoc)
+		for (auto&& serverDoc : serverListDoc["servers"])
 		{
 			std::string uuid = serverDoc.value("uuid", "");
 			if (uuid.empty())
@@ -293,7 +316,7 @@ namespace bw
 				continue;
 			}
 
-			Nz::UInt32 version = serverDoc.value("version", Nz::UInt32(0));
+			Nz::UInt32 version = serverDoc.value("game_version", Nz::UInt32(0));
 			if (version != GameVersion)
 			{
 				bwLog(stateData.app->GetLogger(), LogLevel::Debug, "ignored server {0} because version didn't match (got {1}, expected {2})", uuid, version, GameVersion);
