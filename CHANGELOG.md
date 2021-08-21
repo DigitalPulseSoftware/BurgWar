@@ -1,6 +1,6 @@
 # Changelog
 
-## Beta 2.0 (unreleased)
+## Beta 2.0
 
 ### **Highlights**
 
