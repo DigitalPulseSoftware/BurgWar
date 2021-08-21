@@ -15,7 +15,7 @@ namespace bw
 	m_logger(logger)
 	{
 		assert(IsInitialized());
-		m_curlMulti = s_curlLibrary->curl_multi_init();
+		m_curlMulti = s_curlLibrary->multi_init();
 	}
 
 	WebService::~WebService()
@@ -25,9 +25,9 @@ namespace bw
 		if (m_curlMulti)
 		{
 			for (auto&& [handle, request] : m_activeRequests)
-				s_curlLibrary->curl_multi_remove_handle(m_curlMulti, handle);
+				s_curlLibrary->multi_remove_handle(m_curlMulti, handle);
 
-			s_curlLibrary->curl_multi_cleanup(m_curlMulti);
+			s_curlLibrary->multi_cleanup(m_curlMulti);
 		}
 	}
 
@@ -49,12 +49,12 @@ namespace bw
 			return totalSize;
 		};
 
-		s_curlLibrary->curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeCallback);
-		s_curlLibrary->curl_easy_setopt(handle, CURLOPT_WRITEDATA, request.get());
+		s_curlLibrary->easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeCallback);
+		s_curlLibrary->easy_setopt(handle, CURLOPT_WRITEDATA, request.get());
 
 		m_activeRequests.emplace(handle, std::move(request));
 
-		s_curlLibrary->curl_multi_add_handle(m_curlMulti, handle);
+		s_curlLibrary->multi_add_handle(m_curlMulti, handle);
 	}
 	
 	void WebService::Poll()
@@ -62,10 +62,10 @@ namespace bw
 		assert(m_curlMulti);
 
 		int reportedActiveRequest;
-		CURLMcode err = s_curlLibrary->curl_multi_perform(m_curlMulti, &reportedActiveRequest);
+		CURLMcode err = s_curlLibrary->multi_perform(m_curlMulti, &reportedActiveRequest);
 		if (err != CURLM_OK)
 		{
-			bwLog(m_logger, LogLevel::Error, "[WebService] curl_multi_perform failed with {0}: {1}", err, s_curlLibrary->curl_multi_strerror(err));
+			bwLog(m_logger, LogLevel::Error, "[WebService] curl_multi_perform failed with {0}: {1}", err, s_curlLibrary->multi_strerror(err));
 			return;
 		}
 
@@ -73,7 +73,7 @@ namespace bw
 		do
 		{
 			int msgq;
-			m = s_curlLibrary->curl_multi_info_read(m_curlMulti, &msgq);
+			m = s_curlLibrary->multi_info_read(m_curlMulti, &msgq);
 			if (m && (m->msg == CURLMSG_DONE))
 			{
 				CURL* handle = m->easy_handle;
@@ -86,9 +86,9 @@ namespace bw
 				if (m->data.result == CURLE_OK)
 					request.TriggerCallback();
 				else
-					request.TriggerCallback(s_curlLibrary->curl_easy_strerror(m->data.result));
+					request.TriggerCallback(s_curlLibrary->easy_strerror(m->data.result));
 
-				s_curlLibrary->curl_multi_remove_handle(m_curlMulti, handle);
+				s_curlLibrary->multi_remove_handle(m_curlMulti, handle);
 
 				m_activeRequests.erase(it);
 			}
@@ -137,10 +137,10 @@ namespace bw
 			return false;
 		}
 
-		if (libcurl->curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+		if (libcurl->global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
 			return false;
 
-		curl_version_info_data* curlVersionData = libcurl->curl_version_info(CURLVERSION_NOW);
+		curl_version_info_data* curlVersionData = libcurl->version_info(CURLVERSION_NOW);
 
 		s_userAgent = "Burg'War/" +
 		              std::to_string(GameMajorVersion) + "." + std::to_string(GameMinorVersion) + "." + std::to_string(GamePatchVersion) +
@@ -154,7 +154,7 @@ namespace bw
 	{
 		if (IsInitialized())
 		{
-			s_curlLibrary->curl_global_cleanup();
+			s_curlLibrary->global_cleanup();
 			s_curlLibrary.reset();
 
 			s_userAgent = std::string(); //< force buffer deletion

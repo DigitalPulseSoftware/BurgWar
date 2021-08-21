@@ -16,7 +16,7 @@ namespace bw
 	{
 		Nz::DynLib library;
 
-#define BURGWAR_CURL_FUNCTION(F) using F##_ptr = decltype(&F); \
+#define BURGWAR_CURL_FUNCTION(F) using F##_ptr = decltype(&curl_##F); \
                                  F##_ptr F = nullptr;
 
 #include <CoreLib/CurlFunctionList.hpp>

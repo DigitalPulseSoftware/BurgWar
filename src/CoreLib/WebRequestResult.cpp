@@ -15,7 +15,7 @@ namespace bw
 		auto& libcurl = WebService::GetLibcurl();
 
 		curl_off_t downloadedSize = 0;
-		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_SIZE_DOWNLOAD_T, &downloadedSize);
+		libcurl.easy_getinfo(m_curlHandle, CURLINFO_SIZE_DOWNLOAD_T, &downloadedSize);
 
 		return downloadedSize;
 	}
@@ -27,7 +27,7 @@ namespace bw
 		auto& libcurl = WebService::GetLibcurl();
 
 		curl_off_t downloadSpeed = 0;
-		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
+		libcurl.easy_getinfo(m_curlHandle, CURLINFO_SPEED_DOWNLOAD_T, &downloadSpeed);
 
 		return downloadSpeed;
 	}
@@ -39,7 +39,7 @@ namespace bw
 		auto& libcurl = WebService::GetLibcurl();
 
 		long responseCode;
-		libcurl.curl_easy_getinfo(m_curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
+		libcurl.easy_getinfo(m_curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
 
 		return responseCode;
 	}
