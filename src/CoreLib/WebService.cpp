@@ -125,7 +125,7 @@ namespace bw
 
 		try
 		{
-#define BURGWAR_CURL_FUNCTION(F) LoadFunction(libcurl-> F, #F);
+#define BURGWAR_CURL_FUNCTION(F) LoadFunction(libcurl-> F, "curl_" #F);
 
 #include <CoreLib/CurlFunctionList.hpp>
 		}
