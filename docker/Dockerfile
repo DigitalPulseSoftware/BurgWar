@@ -52,7 +52,7 @@ LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel \"Elanis\" Soupe"
 EXPOSE 14768/udp
 HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 
-ENV LD_LIBRARY_PATH=/home/burgwar/lib/
+ENV LD_LIBRARY_PATH=/srv/lib/
 
 # We need some gcc libs
 RUN apt update
@@ -63,11 +63,11 @@ RUN apt-get install -y libopenal-dev libsndfile1-dev libfreetype6-dev libsdl2-de
 
 # Add user
 RUN useradd burgwar
-RUN mkdir -p /home/burgwar
-RUN chown -R burgwar:burgwar /home/burgwar
+RUN mkdir -p /srv/
+RUN chown -R burgwar:burgwar /srv/
 
 USER burgwar
-WORKDIR /home/burgwar 
+WORKDIR /srv/
 
 COPY --from=build-env /home/burgwar/BurgWar/build/ .
 
@@ -80,7 +80,7 @@ COPY --from=build-env /home/burgwar/BurgWar/mods/ mods/
 COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
 
 # Copy every default map
-COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/*.bmap /home/burgwar/
+COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/*.bmap /srv/
 
 # Set entrypoint
-ENTRYPOINT /home/burgwar/bin/BurgWarServer
+ENTRYPOINT /srv/bin/BurgWarServer
