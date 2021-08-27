@@ -90,7 +90,7 @@ namespace bw
 
 				s_curlLibrary->multi_remove_handle(m_curlMulti, handle);
 
-				m_activeRequests.erase(it);
+				m_activeRequests.erase(handle);
 			}
 		}
 		while (m);

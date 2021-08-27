@@ -26,6 +26,30 @@ namespace bw
 			libcurl.slist_free_all(m_headerList);
 	}
 
+	void WebRequest::ForceProtocol(Nz::NetProtocol protocol)
+	{
+		assert(protocol != Nz::NetProtocol_Unknown);
+
+		auto& libcurl = WebService::GetLibcurl();
+		switch (protocol)
+		{
+			case Nz::NetProtocol_Any:
+				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_WHATEVER);
+				break;
+
+			case Nz::NetProtocol_IPv4:
+				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+				break;
+
+			case Nz::NetProtocol_IPv6:
+				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
+				break;
+
+			case Nz::NetProtocol_Unknown:
+				break;
+		}
+	}
+
 	void WebRequest::SetJSonContent(const std::string_view& encodedJSon)
 	{
 		auto& libcurl = WebService::GetLibcurl();

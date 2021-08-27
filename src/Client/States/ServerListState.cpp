@@ -209,8 +209,8 @@ namespace bw
 					if (dataVersion != MasterServerDataVersion)
 						bwLog(stateData->app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
-					std::string address = connectionDetails.value("ip", "");
-					if (address.empty())
+					std::string addresses = connectionDetails.value("ip", "");
+					if (addresses.empty())
 					{
 						bwLog(stateData->app->GetLogger(), LogLevel::Error, "missing ip field, aborting connection.");
 						return;
@@ -223,16 +223,18 @@ namespace bw
 						return;
 					}
 
-					Nz::IpAddress serverAddress;
-					if (!serverAddress.BuildFromAddress(address.c_str()))
+					SplitString(addresses, ";", [&](const std::string_view& ip)
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Debug, "invalid address ({0}), aborting connection.", address);
-						return;
-					}
+						std::vector<Nz::HostnameInfo> hostnames = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, std::string(ip));
+						if (hostnames.empty())
+							return true;
 
-					serverAddress.SetPort(serverPort);
+						Nz::IpAddress serverAddress = hostnames.front().address;
+						serverAddress.SetPort(serverPort);
 
-					m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress, shared_from_this());
+						m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress, shared_from_this());
+						return false;
+					});
 					break;
 				}
 

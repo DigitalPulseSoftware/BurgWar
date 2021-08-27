@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### General
+
+* Handled servers registering using IPv6, they will now register a second time using an IPv4-only route which will allows master server to know both addresses (which will then be used by the game).
+
 ## Beta 2.0
 
 ### **Highlights**

@@ -94,7 +94,37 @@ namespace bw
 					if (dataVersion != MasterServerDataVersion)
 						bwLog(m_match.GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
+					nlohmann::json ipv4UrlValue = response["register_ipv4_url"];
 					updateToken = response["token"];
+
+					if (!refresh && ipv4UrlValue.is_string())
+					{
+						std::string ipv4Url = ipv4UrlValue;
+						if (!ipv4Url.empty())
+						{
+							std::unique_ptr<WebRequest> request = WebRequest::Post(ipv4Url, [&](WebRequestResult&& result)
+							{
+								if (result.HasSucceeded())
+								{
+									if (result.GetReponseCode() == 200)
+										bwLog(m_match.GetLogger(), LogLevel::Debug, "successfully registered ipv4 to master server {0}", m_masterServerURL);
+									else
+										bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}, unexpected response {1}: {2}", m_masterServerURL, result.GetReponseCode(), result.GetBody());
+								}
+								else
+									bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}: {1}", m_masterServerURL, result.GetErrorMessage());
+							});
+
+							request->ForceProtocol(Nz::NetProtocol_IPv4); //< Just in case
+
+							nlohmann::json requestData;
+							requestData["update_token"] = updateToken;
+
+							request->SetJSonContent(requestData.dump());
+
+							m_webService.AddRequest(std::move(request));
+						}
+					}
 				}
 				catch (const std::exception& e)
 				{
