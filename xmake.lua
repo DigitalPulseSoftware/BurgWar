@@ -3,6 +3,7 @@ set_xmakever("2.5.6")
 
 option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
 
+set_policy("package.requires_lock", true)
 add_repositories("burgwar-repo xmake-repo")
 
 set_project("BurgWar")
@@ -75,6 +76,8 @@ target("lua")
 
 		target:set("kind", static and "static" or "shared")
 	end)
+
+	set_warnings("none")
 
 	add_options("clientlib_static")
 	add_options("corelib_static")
