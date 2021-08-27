@@ -1,8 +1,5 @@
 FROM debian:latest as build-env
 
-# We need gcc 9+
-RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list 
-
 # Update system
 RUN apt update
 RUN apt upgrade -y
@@ -57,8 +54,7 @@ HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 
 ENV LD_LIBRARY_PATH=/home/burgwar/lib/
 
-# We need gcc 9+
-RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+# We need some gcc libs
 RUN apt update
 RUN apt install -y libgcc-s1 net-tools
 
