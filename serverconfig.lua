@@ -16,6 +16,6 @@ https://bwmasterserver.digitalpulse.software
 	Gamemode = "deathmatch",
 	MapPath = "beta_map.bmap",
 	Name = "no name set",
-	Description = "a description of your server"
+	Description = "a description of your server",
 	TickRate = 33,
 }

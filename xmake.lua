@@ -1,17 +1,19 @@
 -- Project configuration
-
 set_xmakever("2.5.6")
+
+option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
 
 add_repositories("burgwar-repo xmake-repo")
 
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "libcurl", "nlohmann_json", "tl_expected", "tl_function_ref")
-add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
+add_requires("libcurl", { optional = true })
 add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
 add_requires("nazaraengine~server 2021.06.10", { alias = "nazaraserver", configs = { server = true } })
+add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
 	add_requires("stackwalker master")
@@ -21,8 +23,8 @@ add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug", "asan") })
 add_requireconfs("libcurl", "nazaraengine", "nazaraengine~server", { configs = { debug = is_mode("debug", "asan"), shared = true } })
 
 set_allowedmodes("asan", "debug", "releasedbg")
-set_allowedplats("windows", "linux", "macosx")
-set_allowedarchs("windows|x64", "linux|x86_64", "macosx|x86_64")
+set_allowedplats("windows", "mingw", "linux", "macosx")
+set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "macosx|x86_64")
 set_defaultmode("debug")
 
 add_rules("mode.asan", "mode.debug", "mode.releasedbg")
@@ -34,9 +36,9 @@ add_includedirs("include", "src")
 add_rpathdirs("@executable_path")
 
 set_languages("c89", "cxx17")
-set_rundir("./bin/$(os)_$(arch)_$(mode)")
+set_rundir("./bin/$(plat)_$(arch)_$(mode)")
 set_symbols("debug", "hidden")
-set_targetdir("./bin/$(os)_$(arch)_$(mode)")
+set_targetdir("./bin/$(plat)_$(arch)_$(mode)")
 set_warnings("allextra")
 
 if is_mode("releasedbg") then
@@ -55,6 +57,9 @@ if is_plat("windows") then
 elseif is_plat("linux") then
 	add_cxflags("-fPIC")
 	add_syslinks("pthread")
+elseif is_plat("mingw") then
+	add_cxflags("-Og", "-Wa,-mbig-obj")
+	add_ldflags("-Wa,-mbig-obj")
 end
 
 target("lua")
@@ -93,12 +98,12 @@ target("CoreLib")
 	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("lua")
-	add_headerfiles("include/CoreLib/**.hpp", "include/CoreLib/**.inl")
+	add_headerfiles("include/(CoreLib/**.hpp)", "include/(CoreLib/**.inl)")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", { public = true })
 	add_packages("nazaraserver")
-	add_packages("libcurl", { public = true })
+	add_packages("libcurl", { public = true, links = {} })
 
 if is_plat("windows") then
 	add_packages("stackwalker")
@@ -171,7 +176,7 @@ target("ClientLib")
 	add_rules("install_bin", "install_symbolfile")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/ClientLib/**.hpp", "include/ClientLib/**.inl")
+	add_headerfiles("include/(ClientLib/**.hpp)", "include/(ClientLib/**.inl)")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("nazara", { public = true })
@@ -184,7 +189,7 @@ target("Main")
 	add_rules("install_symbolfile")
 
 	add_deps("CoreLib")
-	add_headerfiles("include/Main/**.hpp", "include/Main/**.inl")
+	add_headerfiles("include/(Main/**.hpp)", "include/(Main/**.inl)")
 	add_headerfiles("src/Main/**.hpp", "src/Main/**.inl")
 	add_files("src/Main/**.cpp")
 	add_packages("nazaraserver")
@@ -193,7 +198,7 @@ target("BurgWar")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata")
 
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
@@ -208,7 +213,7 @@ target("BurgWarServer")
 	set_group("Executable")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+	add_rules("install_symbolfile", "install_metadata")
 
 	add_defines("NDK_SERVER")
 
@@ -226,45 +231,47 @@ target("BurgWarMapTool")
 	set_basename("maptool")
 
 	set_kind("binary")
-	add_rules("install_symbolfile", "install_nazara")
+	add_rules("install_symbolfile")
 
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/MapTool/**.hpp", "src/MapTool/**.inl")
 	add_files("src/MapTool/**.cpp")
 	add_packages("cxxopts", "nazaraserver")
 
-target("BurgWarMapEditor")
-	set_group("Executable")
+if has_config("build_mapeditor") then
+	target("BurgWarMapEditor")
+		set_group("Executable")
 
-	set_kind("binary")
-	add_rules("qt.console", "qt.moc")
-	add_rules("install_symbolfile", "install_metadata", "install_nazara")
+		set_kind("binary")
+		add_rules("qt.console", "qt.moc")
+		add_rules("install_symbolfile", "install_metadata")
 
-	-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
-	-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
-	if (not is_plat("windows")) then
-		add_cxxflags("-fno-sized-deallocation")
-	end
-
-	add_frameworks("QtCore", "QtGui", "QtWidgets")
-	add_deps("Main", "ClientLib", "CoreLib")
-	add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
-	add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
-	add_packages("nazara")
-
-	on_load(function (target)
-		import("detect.sdks.find_qt")
-
-		local qt = find_qt()
-		if (not qt) then
-			-- Disable building by default if Qt is not found
-			target:set("default", false)
+		-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
+		-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
+		if (not is_plat("windows")) then
+			add_cxxflags("-fno-sized-deallocation")
 		end
-	end)
 
-	after_install(function (target)
-		os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
-	end)
+		add_frameworks("QtCore", "QtGui", "QtWidgets")
+		add_deps("Main", "ClientLib", "CoreLib")
+		add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
+		add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
+		add_packages("nazara")
+
+		on_load(function (target)
+			import("detect.sdks.find_qt")
+
+			local qt = find_qt()
+			if (not qt) then
+				-- Disable building by default if Qt is not found
+				target:set("default", false)
+			end
+		end)
+
+		after_install(function (target)
+			os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
+		end)
+end
 
 -- Tasks and options
 
@@ -308,24 +315,6 @@ rule("install_metadata")
 			os.vcp("maps", path.join(target:installdir(), "bin"))
 			os.vcp("scripts", path.join(target:installdir(), "bin"))
 			metadataInstalled = true
-		end
-	end)
-
--- Copies Nazara .so to the install bin folder (as it cannot be installed on the system yet)
-rule("install_nazara")
-	-- This is already handled by xmake on Windows
-	after_install("linux", function (target)
-		local outputdir = path.join(target:installdir(), "bin")
-		local nazara = target:pkg("nazara") or target:pkg("nazaraserver")
-		if (nazara) then
-			local libfiles = nazara:get("libfiles")
-			if (libfiles) then
-				for _, libpath in ipairs(table.wrap(libfiles)) do
-					if (libpath:endswith(".so")) then
-						os.vcp(libpath, outputdir)
-					end
-				end
-			end
 		end
 	end)
 

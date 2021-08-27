@@ -14,13 +14,22 @@
 
 namespace bw
 {
+	namespace
+	{
+		constexpr Nz::UInt32 MasterServerDataVersion = 1U;
+	}
+
 	constexpr float RefreshTime = 15.f;
 
 	ServerListState::ServerListState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
 	AbstractState(std::move(stateData)),
-	m_previousState(std::move(previousState)),
-	m_webService(GetStateData().app->GetLogger())
+	m_previousState(std::move(previousState))
 	{
+		if (WebService::IsInitialized())
+			m_webService.emplace(GetStateData().app->GetLogger());
+		else
+			bwLog(GetStateData().app->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
+
 		m_serverListWidget = GetStateData().canvas->Add<Ndk::BaseWidget>();
 
 		m_serverListScrollbar = CreateWidget<Ndk::ScrollAreaWidget>(m_serverListWidget);
@@ -82,15 +91,17 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		m_webService.Poll();
-
 		if (m_nextGameState)
 			fsm.ResetState(std::move(m_nextGameState));
 
 		if (m_nextState)
 			fsm.ChangeState(std::move(m_nextState));
 
-		RefreshServers(elapsedTime);
+		if (m_webService)
+		{
+			m_webService->Poll();
+			RefreshServers(elapsedTime);
+		}
 
 		return true;
 	}
@@ -182,7 +193,21 @@ namespace bw
 				case 200:
 				{
 					bwLog(stateData->app->GetLogger(), LogLevel::Debug, "successfully received connection info of {0} from {1}", uuid, masterServer);
-					nlohmann::json connectionDetails = nlohmann::json::parse(result.GetBody());
+					nlohmann::json connectionDetails;
+					
+					try
+					{
+						connectionDetails = nlohmann::json::parse(result.GetBody());
+					}
+					catch (const std::exception& e)
+					{
+						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to parse connection details: {0}", e.what());
+						return;
+					}
+
+					Nz::UInt32 dataVersion = connectionDetails.value("data_version", 0);
+					if (dataVersion != MasterServerDataVersion)
+						bwLog(stateData->app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
 					std::string address = connectionDetails.value("ip", "");
 					if (address.empty())
@@ -217,7 +242,7 @@ namespace bw
 			}
 		});
 
-		m_webService.AddRequest(std::move(request));
+		m_webService->AddRequest(std::move(request));
 	}
 
 	void ServerListState::RefreshServers(float elapsedTime)
@@ -261,7 +286,7 @@ namespace bw
 					}
 				});
 
-				m_webService.AddRequest(std::move(request));
+				m_webService->AddRequest(std::move(request));
 			}
 		}
 	}
@@ -276,9 +301,13 @@ namespace bw
 
 		MasterServerData& masterServerData = it.value();
 
+		Nz::UInt32 dataVersion = serverListDoc.value("data_version", 0);
+		if (dataVersion != MasterServerDataVersion)
+			bwLog(stateData.app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
+
 		tsl::hopscotch_map<std::string, ServerData> newServerList;
 
-		for (auto&& serverDoc : serverListDoc)
+		for (auto&& serverDoc : serverListDoc["servers"])
 		{
 			std::string uuid = serverDoc.value("uuid", "");
 			if (uuid.empty())
@@ -287,7 +316,7 @@ namespace bw
 				continue;
 			}
 
-			Nz::UInt32 version = serverDoc.value("version", Nz::UInt32(0));
+			Nz::UInt32 version = serverDoc.value("game_version", Nz::UInt32(0));
 			if (version != GameVersion)
 			{
 				bwLog(stateData.app->GetLogger(), LogLevel::Debug, "ignored server {0} because version didn't match (got {1}, expected {2})", uuid, version, GameVersion);

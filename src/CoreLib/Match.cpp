@@ -54,19 +54,24 @@ namespace bw
 
 		BuildMatchData();
 
-		const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
-		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+		if (WebService::IsInitialized())
 		{
-			if (!masterServerURI.empty())
-				m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
+			const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
+			SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+			{
+				if (!masterServerURI.empty())
+					m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
 
-			return true;
-		});
+				return true;
+			});
+		}
+		else
+			bwLog(GetLogger(), LogLevel::Warning, "web services are not initialized, server will not be listed");
 
 		m_gamemode->ExecuteCallback<GamemodeEvent::Init>();
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 
-		bwLog(GetLogger(), LogLevel::Info, "Match initialized");
+		bwLog(GetLogger(), LogLevel::Info, "match initialized");
 
 		if (m_settings.port != 0)
 			m_sessions.CreateSessionManager<NetworkSessionManager>(m_settings.port, m_settings.maxPlayerCount);

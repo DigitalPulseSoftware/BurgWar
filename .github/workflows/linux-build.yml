@@ -47,6 +47,8 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: branch@dev
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
@@ -80,7 +82,9 @@ jobs:
     - name: Compile maps
       run: ./maptool --compile ../../maps/*
       working-directory: package/bin
-  
+      env:
+        LD_LIBRARY_PATH: ../lib
+
     # Upload artifacts
     - uses: actions/upload-artifact@v2
       with:

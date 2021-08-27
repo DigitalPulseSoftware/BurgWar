@@ -10,6 +10,7 @@
 #include <CoreLib/Version.hpp>
 #include <Nazara/Core/HardwareInfo.hpp>
 #include <array>
+#include <cstring>
 #include <cstdio>
 #include <cwchar>
 #include <functional>
@@ -87,7 +88,7 @@ namespace bw
 			WinHandle dumpFile(CreateFileW(filename, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0));
 			if (dumpFile.get() == INVALID_HANDLE_VALUE)
 			{
-				fwprintf(stderr, L"CrashDump: failed to create file %ls\n", filename);
+				std::fwprintf(stderr, L"CrashDump: failed to create file %ls\n", filename);
 				return;
 			}
 
@@ -106,9 +107,9 @@ namespace bw
 				nullptr);
 
 			if (success)
-				fwprintf(stderr, L"Unhandled exception triggered: crashDump %ls generated\n", filename);
+				std::fwprintf(stderr, L"Unhandled exception triggered: crashDump %ls generated\n", filename);
 			else
-				fprintf(stderr, "CrashDump: MiniDumpWriteDump failed: %u (%s)\n", GetLastError(), Nz::Error::GetLastSystemError().GetConstBuffer());
+				std::fprintf(stderr, "CrashDump: MiniDumpWriteDump failed: %u (%s)\n", GetLastError(), Nz::Error::GetLastSystemError().GetConstBuffer());
 		}
 
 		void GenerateCrashlog(const wchar_t* filename, EXCEPTION_POINTERS* e, DWORD /*crashedThread*/)
@@ -161,7 +162,7 @@ namespace bw
 			WinHandle dumpFile(CreateFileW(filename, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0));
 			if (dumpFile.get() == INVALID_HANDLE_VALUE)
 			{
-				fwprintf(stderr, L"CrashDump: failed to create file %ls\n", filename);
+				std::fwprintf(stderr, L"CrashDump: failed to create file %ls\n", filename);
 				return;
 			}
 
@@ -248,9 +249,9 @@ namespace bw
 			std::string crashlog = std::move(ss).str();
 
 			if (WriteFile(dumpFile.get(), crashlog.data(), DWORD(crashlog.size()), nullptr, nullptr))
-				fwprintf(stderr, L"Unhandled exception triggered: Callstack file %ls generated\n", filename);
+				std::fwprintf(stderr, L"Unhandled exception triggered: Callstack file %ls generated\n", filename);
 			else
-				fprintf(stderr, "Crashlog: Failed to dump stack\n");
+				std::fprintf(stderr, "Crashlog: Failed to dump stack\n");
 #else
 			NazaraUnused(filename);
 			NazaraUnused(e);

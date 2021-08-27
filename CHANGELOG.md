@@ -1,11 +1,13 @@
 # Changelog
 
-## master (unreleased)
+## Beta 2.0
 
 ### **Highlights**
 
 * The map editor is now able to show other layers (as they would be seen in the game)
 * Added bundled map scripts
+* Added initial mods support
+* Added server listing (with server name, description and more!)
 * Added supersmashburger gamemode
 * Added teamdeatchmatch gamemode
 * Added teams handling
@@ -15,6 +17,8 @@
 
 ### General
 
+* x86 arch is no longer supported
+* Official fast-download and master server URLs have been added to the default configuration files
 * Improved Windows and Linux builds
 * Fixed hovering visuals (nickname, health bar) position when the player entity gets scaled up or down
 * Added maptool (command-line software which can compile maps from json to binary format)
@@ -23,6 +27,9 @@
 * Switched from static to dynamic linking for common code to decrease binary size
 * Updated beta_map
 * entity_powerup and entity_powerup2 have been replaced by entity_spawner
+* `GameSettings` configuration table has been renamed to `ServerSettings`
+* Server config `GameSettings.MapFile` has been replaced by `ServerSettings.MapPath` (which can point to a non-compiled map folder as well as a compiled .bmap file)
+* Added `ServerSettings.Name`, `ServerSettings.Description`, `ServerSettings.Port` and `ServerSettings.MaxPlayerCount` configs
 
 ### Map editor
 
@@ -59,8 +66,10 @@
 * Added table.join(...)
 * Added Scoreboard:UpdatePlayerTeam()
 * Added base gamemode event `PlayerTeamUpdate`
+* Added base gamemode callback `GetPlayerColor`
 * Added match.BroadcastChatMessage(message)
 * Element:AddSprite now accepts a `repeatTexture` boolean
+* Scoreboard:RegisterPlayer now takes a table parameter
 * match.BroadcastPacket now has a second optional parameter to disable ready check
 * match.GetPlayers now longer returns connecting players
 * Replaced Entity:Kill() by Element:Kill()

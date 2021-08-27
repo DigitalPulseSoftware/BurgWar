@@ -4,40 +4,49 @@
 
 #include <CoreLib/WebRequest.hpp>
 #include <CoreLib/WebService.hpp>
-#include <curl/curl.h>
+#include <CoreLib/CurlLibrary.hpp> //< include last because of curl/curl.h
 
 namespace bw
 {
 	WebRequest::WebRequest() :
 	m_isUserAgentSet(false)
 	{
-		m_curlHandle = curl_easy_init();
+		auto& libcurl = WebService::GetLibcurl();
+
+		m_curlHandle = libcurl.easy_init();
 	}
 
 	WebRequest::~WebRequest()
 	{
+		auto& libcurl = WebService::GetLibcurl();
 		if (m_curlHandle)
-			curl_easy_cleanup(m_curlHandle);
+			libcurl.easy_cleanup(m_curlHandle);
 
 		if (m_headerList)
-			curl_slist_free_all(m_headerList);
+			libcurl.slist_free_all(m_headerList);
 	}
 
 	void WebRequest::SetJSonContent(const std::string_view& encodedJSon)
 	{
+		auto& libcurl = WebService::GetLibcurl();
+
 		SetHeader("Content-Type", "application/json");
-		curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, curl_off_t(encodedJSon.size()));
-		curl_easy_setopt(m_curlHandle, CURLOPT_COPYPOSTFIELDS, encodedJSon.data());
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, curl_off_t(encodedJSon.size()));
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_COPYPOSTFIELDS, encodedJSon.data());
 	}
 
 	void WebRequest::SetMaximumFileSize(Nz::UInt64 maxFileSize)
 	{
+		auto& libcurl = WebService::GetLibcurl();
+
 		curl_off_t maxSize = maxFileSize;
-		curl_easy_setopt(m_curlHandle, CURLOPT_MAXFILESIZE_LARGE, maxSize);
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_MAXFILESIZE_LARGE, maxSize);
 	}
 
 	void WebRequest::SetServiceName(const std::string_view& serviceName)
 	{
+		auto& libcurl = WebService::GetLibcurl();
+
 		if (!serviceName.empty())
 		{
 			//TODO Nz::StackString?
@@ -46,27 +55,33 @@ namespace bw
 			userAgent.append(" - ");
 			userAgent.append(serviceName.data(), serviceName.size());
 
-			curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, userAgent.data());
+			libcurl.easy_setopt(m_curlHandle, CURLOPT_USERAGENT, userAgent.data());
 		}
 		else
-			curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, WebService::GetUserAgent().c_str());
+			libcurl.easy_setopt(m_curlHandle, CURLOPT_USERAGENT, WebService::GetUserAgent().c_str());
 
 		m_isUserAgentSet = true;
 	}
 
 	void WebRequest::SetURL(const std::string& url)
 	{
-		curl_easy_setopt(m_curlHandle, CURLOPT_URL, url.data());
+		auto& libcurl = WebService::GetLibcurl();
+
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_URL, url.data());
 	}
 
 	void WebRequest::SetupGet()
 	{
-		curl_easy_setopt(m_curlHandle, CURLOPT_HTTPGET, long(1));
+		auto& libcurl = WebService::GetLibcurl();
+
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_HTTPGET, long(1));
 	}
 
 	void WebRequest::SetupPost()
 	{
-		curl_easy_setopt(m_curlHandle, CURLOPT_POST, long(1));
+		auto& libcurl = WebService::GetLibcurl();
+
+		libcurl.easy_setopt(m_curlHandle, CURLOPT_POST, long(1));
 	}
 
 	std::unique_ptr<WebRequest> WebRequest::Get(const std::string& url, ResultCallback callback)
@@ -91,19 +106,21 @@ namespace bw
 
 	CURL* WebRequest::Prepare()
 	{
+		auto& libcurl = WebService::GetLibcurl();
+
 		if (!m_headers.empty())
 		{
 			for (auto&& [header, value] : m_headers)
 			{
 				std::string headerValue = (!value.empty()) ? header + ": " + value : header + ";";
-				m_headerList = curl_slist_append(m_headerList, headerValue.c_str());
+				m_headerList = libcurl.slist_append(m_headerList, headerValue.c_str());
 			}
 
-			curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, m_headerList.Get());
+			libcurl.easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, m_headerList.Get());
 		}
 
 		if (!m_isUserAgentSet)
-			curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, WebService::GetUserAgent().c_str());
+			libcurl.easy_setopt(m_curlHandle, CURLOPT_USERAGENT, WebService::GetUserAgent().c_str());
 
 		return m_curlHandle;
 	}

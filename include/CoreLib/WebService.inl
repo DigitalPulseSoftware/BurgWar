@@ -6,13 +6,19 @@
 
 namespace bw
 {
-	const std::string& WebService::GetUserAgent()
+	inline const std::string& WebService::GetUserAgent()
 	{
 		return s_userAgent;
 	}
 
-	bool WebService::IsInitialized()
+	inline bool WebService::IsInitialized()
 	{
-		return s_isInitialized;
+		return s_curlLibrary.get();
+	}
+
+	inline auto WebService::GetLibcurl() -> const CurlLibrary&
+	{
+		assert(IsInitialized());
+		return *s_curlLibrary;
 	}
 }
