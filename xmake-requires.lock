@@ -52,17 +52,17 @@
             },
             version = "7.73.0"
         },
-        ["nazaraengine 2021.06.10#31fecfc4"] = {
+        ["nazaraengine 2021.08.28#31fecfc4"] = {
             repo = {
                 url = "xmake-repo"
             },
-            version = "2021.06.10"
+            version = "2021.08.28"
         },
-        ["nazaraengine~server 2021.06.10#e1c6474d"] = {
+        ["nazaraengine~server 2021.08.28#e1c6474d"] = {
             repo = {
                 url = "xmake-repo"
             },
-            version = "2021.06.10"
+            version = "2021.08.28"
         },
         ["nlohmann_json#31fecfc4"] = {
             repo = {
@@ -244,17 +244,17 @@
             },
             version = "7.73.0"
         },
-        ["nazaraengine 2021.06.10#31fecfc4"] = {
+        ["nazaraengine 2021.08.28#31fecfc4"] = {
             repo = {
                 url = "xmake-repo"
             },
-            version = "2021.06.10"
+            version = "2021.08.28"
         },
-        ["nazaraengine~server 2021.06.10#e1c6474d"] = {
+        ["nazaraengine~server 2021.08.28#e1c6474d"] = {
             repo = {
                 url = "xmake-repo"
             },
-            version = "2021.06.10"
+            version = "2021.08.28"
         },
         ["nlohmann_json#31fecfc4"] = {
             repo = {

@@ -4,6 +4,7 @@ package("nazaraengine")
 
     set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
 
+    add_versions("2021.08.28", "8d7e99456ce5e76993cd2037a017018f982e2206")
     add_versions("2021.06.10", "4989fbe2d28aa37dc11d24bdcc395431932a2f11")
     add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
 

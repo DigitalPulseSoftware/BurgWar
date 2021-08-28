@@ -11,7 +11,6 @@
 #include <Nazara/Network/IpAddress.hpp>
 #include <NDK/State.hpp>
 #include <NDK/Widgets.hpp>
-#include <thread>
 #include <variant>
 #include <vector>
 
@@ -21,7 +20,7 @@ namespace bw
 	{
 		public:
 			JoinServerState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState);
-			~JoinServerState();
+			~JoinServerState() = default;
 
 		private:
 			void Leave(Ndk::StateMachine& fsm) override;
@@ -31,16 +30,12 @@ namespace bw
 
 			void OnBackPressed();
 			void OnConnectionPressed();
-			void OnResolvingFinished();
 
 			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White);
 
-			std::atomic_bool m_resolvingHasResult;
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
-			std::thread m_resolvingThread;
-			std::variant<std::monostate, Nz::IpAddress /*result*/, std::string /*error*/> m_resolvingResult;
 			Ndk::BoxLayout* m_serverAddressLayout;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_connectionButton;
@@ -48,7 +43,6 @@ namespace bw
 			Ndk::LabelWidget* m_statusLabel;
 			Ndk::TextAreaWidget* m_serverAddressArea;
 			Ndk::TextAreaWidget* m_serverPortArea;
-			bool m_isResolving;
 	};
 }
 

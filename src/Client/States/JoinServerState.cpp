@@ -9,8 +9,6 @@
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
 #include <Nazara/Core/String.hpp>
-#include <Nazara/Network/Algorithm.hpp>
-#include <Nazara/Network/IpAddress.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
@@ -25,8 +23,7 @@ namespace bw
 {
 	JoinServerState::JoinServerState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
 	AbstractState(std::move(stateData)),
-	m_previousState(std::move(previousState)),
-	m_isResolving(false)
+	m_previousState(std::move(previousState))
 	{
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Hide();
@@ -82,12 +79,6 @@ namespace bw
 		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("JoinServer.Port")));
 	}
 
-	JoinServerState::~JoinServerState()
-	{
-		if (m_resolvingThread.joinable())
-			m_resolvingThread.join();
-	}
-
 	void JoinServerState::Leave(Ndk::StateMachine& fsm)
 	{
 		m_statusLabel->Hide();
@@ -99,17 +90,6 @@ namespace bw
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
-
-		if (m_isResolving)
-		{
-			if (m_resolvingHasResult)
-			{
-				m_isResolving = false;
-
-				m_resolvingThread.join();
-				OnResolvingFinished();
-			}
-		}
 
 		if (m_nextGameState)
 			fsm.ResetState(std::move(m_nextGameState));
@@ -126,8 +106,8 @@ namespace bw
 
 	void JoinServerState::OnConnectionPressed()
 	{
-		Nz::String serverHostname = m_serverAddressArea->GetText();
-		if (serverHostname.IsEmpty())
+		std::string serverHostname = m_serverAddressArea->GetText().ToStdString();
+		if (serverHostname.empty())
 		{
 			UpdateStatus("Error: blank server address", Nz::Color::Red);
 			return;
@@ -148,36 +128,16 @@ namespace bw
 		}
 
 		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetStringValue("JoinServer.Address", serverHostname.ToStdString());
+		playerConfig.SetStringValue("JoinServer.Address", serverHostname);
 		playerConfig.SetIntegerValue("JoinServer.Port", rawPort);
 
 		GetStateData().app->SavePlayerConfig();
 
-		m_isResolving = true;
-		m_resolvingHasResult = false;
-		m_resolvingThread = std::thread([=]
-		{
-			Nz::ResolveError resolveError;
-			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, serverHostname, Nz::String::Number(rawPort), &resolveError);
-			if (serverAddresses.empty())
-				m_resolvingResult = Nz::ErrorToString(resolveError);
-			else
-				m_resolvingResult = serverAddresses.front().address;
+		ConnectionState::ServerName address;
+		address.hostname = serverHostname;
+		address.port = static_cast<Nz::UInt16>(rawPort);
 
-			m_resolvingHasResult = true;
-		});
-
-		UpdateStatus("Resolving server address...");
-	}
-
-	void JoinServerState::OnResolvingFinished()
-	{
-		assert(!std::holds_alternative<std::monostate>(m_resolvingResult));
-
-		if (std::holds_alternative<Nz::IpAddress>(m_resolvingResult))
-			m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::get<Nz::IpAddress>(m_resolvingResult), shared_from_this());
-		else
-			UpdateStatus("Failed to resolve server address: " + std::get<std::string>(m_resolvingResult), Nz::Color::Red);
+		m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::move(address), shared_from_this());
 	}
 
 	void JoinServerState::LayoutWidgets()

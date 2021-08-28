@@ -223,18 +223,18 @@ namespace bw
 						return;
 					}
 
+					ConnectionState::AddressList serverAddresses;
 					SplitString(addresses, ";", [&](const std::string_view& ip)
 					{
-						std::vector<Nz::HostnameInfo> hostnames = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, std::string(ip));
-						if (hostnames.empty())
-							return true;
+						ConnectionState::ServerName address;
+						address.hostname = ip;
+						address.port = serverPort;
 
-						Nz::IpAddress serverAddress = hostnames.front().address;
-						serverAddress.SetPort(serverPort);
-
-						m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), serverAddress, shared_from_this());
-						return false;
+						serverAddresses.emplace_back(std::move(address));
+						return true;
 					});
+
+					m_nextGameState = std::make_shared<ConnectionState>(GetStateDataPtr(), std::move(serverAddresses), shared_from_this());
 					break;
 				}
 

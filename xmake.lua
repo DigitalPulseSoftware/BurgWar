@@ -12,8 +12,8 @@ set_version("0.2.0")
 add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
-add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.06.10", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine 2021.08.28", { alias = "nazara" })
+add_requires("nazaraengine~server 2021.08.28", { alias = "nazaraserver", configs = { server = true } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
