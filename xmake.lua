@@ -206,6 +206,7 @@ target("BurgWar")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
+	add_files("src/Client/resources.rc")
 	add_packages("nazara")
 
 	after_install(function (target)
@@ -259,6 +260,7 @@ if has_config("build_mapeditor") then
 		add_deps("Main", "ClientLib", "CoreLib")
 		add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 		add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
+		add_files("src/MapEditor/resources.rc")
 		add_packages("nazara")
 
 		on_load(function (target)
