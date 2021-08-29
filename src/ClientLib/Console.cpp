@@ -24,6 +24,11 @@ namespace bw
 		OnRenderTargetSizeChange(window);
 	}
 
+	Console::~Console()
+	{
+		m_widget->Destroy();
+	}
+
 	void Console::Clear()
 	{
 		m_widget->Clear();

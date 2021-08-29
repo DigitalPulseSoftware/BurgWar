@@ -19,6 +19,8 @@
 
 * Improved visibility check of entity_tilemap_fade
 * Fixed default serverconfig.lua
+* Fixed in-game console staying open after exiting a match
+
 
 ## Beta 2.0
 

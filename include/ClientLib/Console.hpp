@@ -25,7 +25,7 @@ namespace bw
 			Console(Nz::RenderTarget* window, Ndk::Canvas* canvas);
 			Console(const Console&) = delete;
 			Console(Console&&) = delete;
-			~Console() = default;
+			~Console();
 
 			void Clear();
 
