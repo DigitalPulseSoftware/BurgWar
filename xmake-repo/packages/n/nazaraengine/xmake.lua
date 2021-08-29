@@ -230,7 +230,7 @@ package("nazaraengine")
         local premakeArch = assert(archName[package:arch()])
         local libDir
 
-        local premakeExecutable = is_subhost("windows") and "./premake5.exe" or "./premake5-linux64"
+        local premakeExecutable = is_host("windows") and "./premake5.exe" or "./premake5-linux64"
 
         -- patch Newton MinGW defines check
         io.replace("thirdparty/src/newton/dgCore/dgTypes.cpp", [[#if (defined (_MSC_VER) || defined (_MINGW_32_VER) || defined (_MINGW_64_VER))]], [[#if (defined (_MSC_VER) || defined (__MINGW32__) || defined (__MINGW64__))]], {plain=true})
