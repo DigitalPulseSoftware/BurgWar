@@ -203,44 +203,50 @@
     ["windows|x64"] = {
         ["cmake#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "3.21.0"
         },
         ["concurrentqueue#31fecfc4"] = {
             branch = "master",
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "master"
         },
         ["cxxopts#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v2.2.0"
         },
         ["fmt#7572102e"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "8.0.1"
         },
         ["hopscotch-map#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v2.3.0"
         },
         ["libcurl#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "7.73.0"
         },
@@ -258,37 +264,42 @@
         },
         ["nlohmann_json#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v3.10.0"
         },
         ["sol2 v3.2.1#72267bd5"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v3.2.1"
         },
         ["stackwalker master#31fecfc4"] = {
             branch = "master",
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "master"
         },
         ["tl_expected#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v1.0.0"
         },
         ["tl_function_ref#31fecfc4"] = {
             repo = {
-                commit = "71b02a9c7bf1ad1fb865fbb9967092c8f6a5b0aa",
-                url = "C:/Users/Lynix/Documents/GitHub/xmake-repo/"
+                branch = "master",
+                commit = "67314da9aea10c393c5e44be834b6fe6366daa5e",
+                url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v1.0.0"
         }
