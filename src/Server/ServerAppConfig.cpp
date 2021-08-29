@@ -10,6 +10,7 @@ namespace bw
 	ServerAppConfig::ServerAppConfig(ServerApp& app) :
 	SharedAppConfig(app)
 	{
+		RegisterBoolOption("ServerSettings.DisableWhenEmpty", true);
 		RegisterStringOption("ServerSettings.Gamemode");
 		RegisterStringOption("ServerSettings.MapPath");
 		RegisterIntegerOption("ServerSettings.MaxPlayerCount", 1, 0xFFFF, 16);

@@ -24,11 +24,13 @@ namespace bw
 		const std::string& serverDesc = m_configFile.GetStringValue("ServerSettings.Description");
 		const std::string& serverName = m_configFile.GetStringValue("ServerSettings.Name");
 		float tickRate = m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
+		bool disableWhenEmpty = m_configFile.GetBoolValue("ServerSettings.DisableWhenEmpty");
 
 		Match::GamemodeSettings gamemodeSettings;
 		gamemodeSettings.name = gamemode;
 
 		Match::MatchSettings matchSettings;
+		matchSettings.disableWhenEmpty = disableWhenEmpty;
 		matchSettings.description = serverDesc;
 		matchSettings.maxPlayerCount = maxPlayerCount;
 		matchSettings.name = serverName;

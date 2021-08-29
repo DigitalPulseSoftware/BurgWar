@@ -14,6 +14,7 @@
 * Handled servers registering using IPv6, they will now register a second time using an IPv4-only route which will allows master server to know both addresses (which will then be used by the game).
 * Increased max distance of weapon_graspain
 * Added icons to game and map editor executables on Windows
+* Added ServerSettings.DisableWhenEmpty config for servers
 
 ### Fixes
 

@@ -40,7 +40,6 @@ namespace bw
 	m_sessions(*this),
 	m_settings(std::move(matchSettings)),
 	m_modSettings(std::move(modSettings)),
-	m_disableWhenEmpty(true),
 	m_isResetting(false),
 	m_isMatchRunning(true)
 	{
@@ -648,8 +647,8 @@ namespace bw
 		for (const auto& masterServerEntryPtr : m_masterServerEntries)
 			masterServerEntryPtr->Update(elapsedTime);
 
-		if (m_disableWhenEmpty && m_freePlayerId.TestAll())
-			return;
+		if (m_settings.disableWhenEmpty && m_freePlayerId.TestAll())
+			return m_isMatchRunning;
 
 		m_scriptingContext->Update();
 

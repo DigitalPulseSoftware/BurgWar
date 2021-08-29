@@ -148,6 +148,7 @@ namespace bw
 				std::string description;
 				Nz::UInt16 port = 0;
 				Map map;
+				bool disableWhenEmpty = true;
 				bool registerToMasterServer = true;
 				float tickDuration;
 			};
@@ -219,7 +220,6 @@ namespace bw
 			MatchSettings m_settings;
 			ModSettings m_modSettings;
 			NetworkStringStore m_networkStringStore;
-			bool m_disableWhenEmpty;
 			bool m_isResetting;
 			bool m_isMatchRunning;
 	};
