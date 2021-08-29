@@ -327,6 +327,11 @@ namespace bw
 		{
 			return GetMatch().ResetTerrain();
 		});
+
+		library["Quit"] = LuaFunction([&]
+		{
+			return GetMatch().Quit();
+		});
 	}
 
 	void ServerScriptingLibrary::RegisterNetworkLibrary(ScriptingContext& context, sol::table& library)

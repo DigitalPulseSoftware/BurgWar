@@ -41,7 +41,8 @@ namespace bw
 	m_settings(std::move(matchSettings)),
 	m_modSettings(std::move(modSettings)),
 	m_disableWhenEmpty(true),
-	m_isResetting(false)
+	m_isResetting(false),
+	m_isMatchRunning(true)
 	{
 		ReloadMods();
 		ReloadAssets();
@@ -640,7 +641,7 @@ namespace bw
 		return entity->GetComponent<MatchComponent>().GetUniqueId();
 	}
 
-	void Match::Update(float elapsedTime)
+	bool Match::Update(float elapsedTime)
 	{
 		m_sessions.Poll();
 
@@ -729,6 +730,8 @@ namespace bw
 					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
+
+		return m_isMatchRunning;
 	}
 
 	void Match::BuildMatchData()

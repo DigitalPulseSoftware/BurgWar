@@ -6,6 +6,7 @@
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <Client/ClientApp.hpp>
+#include <Client/States/BackgroundState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 
 namespace bw
@@ -36,7 +37,13 @@ namespace bw
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		m_match->Update(elapsedTime);
+		if (!m_match->Update(elapsedTime))
+		{
+			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
+			fsm.PushState(m_originalState);
+			return true;
+		}
+
 		return true;
 	}
 }

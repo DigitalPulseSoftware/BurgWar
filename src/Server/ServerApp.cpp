@@ -61,7 +61,8 @@ namespace bw
 		{
 			BurgApp::Update();
 
-			m_match->Update(GetUpdateTime());
+			if (!m_match->Update(GetUpdateTime()))
+				break;
 
 			//TODO: Sleep only when server is not overloaded
 			Nz::Thread::Sleep(1);

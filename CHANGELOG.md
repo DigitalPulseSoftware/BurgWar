@@ -21,6 +21,9 @@
 * Fixed default serverconfig.lua
 * Fixed in-game console staying open after exiting a match
 
+### Scripting
+
+* Added match.Quit() function (server-only)
 
 ## Beta 2.0
 

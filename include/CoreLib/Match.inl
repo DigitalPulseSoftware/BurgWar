@@ -126,4 +126,9 @@ namespace bw
 		assert(m_terrain);
 		return *m_terrain;
 	}
+
+	inline void Match::Quit()
+	{
+		m_isMatchRunning = false;
+	}
 }
