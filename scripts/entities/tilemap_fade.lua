@@ -17,8 +17,18 @@ if (CLIENT) then
 		local origin = self:GetPosition()
 		local rect = Rect(origin, origin + self.Tilemap:GetSize())
 
-		local playerPos = engine_GetPlayerPosition(0)
-		self.IsVisible = not playerPos or not rect:Contains(playerPos)
+		self.IsVisible = true
+
+		for _, player in pairs(match.GetLocalPlayers()) do
+			local controlledEntity = player:GetControlledEntity()
+			if controlledEntity then
+				local bounds = controlledEntity:GetGlobalBounds()
+				if rect:Contains(bounds:GetCenter()) then
+					self.IsVisible = false
+					break
+				end
+			end
+		end
 	end)
 
 	entity:On("Frame", function (self)
