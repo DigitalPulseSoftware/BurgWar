@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Beta 2.1
+
 ### General
 
 * Gravity and jump power are now 50% stronger
