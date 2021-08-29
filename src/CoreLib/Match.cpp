@@ -56,14 +56,17 @@ namespace bw
 
 		if (WebService::IsInitialized())
 		{
-			const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
-			SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+			if (m_settings.registerToMasterServer && m_settings.port != 0)
 			{
-				if (!masterServerURI.empty())
-					m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
+				const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
+				SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+				{
+					if (!masterServerURI.empty())
+						m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
 
-				return true;
-			});
+					return true;
+				});
+			}
 		}
 		else
 			bwLog(GetLogger(), LogLevel::Warning, "web services are not initialized, server will not be listed");

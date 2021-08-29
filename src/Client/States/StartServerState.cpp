@@ -30,13 +30,16 @@ namespace bw
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Hide();
 
-		m_serverConfigLayout = CreateWidget<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Vertical);
-		m_serverConfigLayout->EnableBackground(true);
-		m_serverConfigLayout->SetBackgroundColor(Nz::Color(0, 0, 0, 100));
-		m_serverConfigLayout->Resize({ 400.f, 250.f });
+		m_background = CreateWidget<Ndk::BaseWidget>();
+		m_background->EnableBackground(true);
+		m_background->SetBackgroundColor(Nz::Color(0, 0, 0, 100));
 
-		Ndk::LabelWidget* configurationLabel = m_serverConfigLayout->Add<Ndk::LabelWidget>();
-		configurationLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Server configuration", 36));
+		m_serverConfigLayout = m_background->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Vertical);
+		m_serverConfigLayout->SetPosition(10.f, 10.f);
+
+		m_title = m_serverConfigLayout->Add<Ndk::LabelWidget>();
+		m_title->UpdateText(Nz::SimpleTextDrawer::Draw("Server configuration", 36));
+		m_title->CenterHorizontal();
 
 		Ndk::BoxLayout* gamemodeLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
@@ -47,6 +50,7 @@ namespace bw
 		m_gamemodeArea->EnableBackground(true);
 		m_gamemodeArea->SetBackgroundColor(Nz::Color::White);
 		m_gamemodeArea->SetTextColor(Nz::Color::Black);
+		m_gamemodeArea->SetMaximumHeight(m_gamemodeArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* mapLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
@@ -57,6 +61,7 @@ namespace bw
 		m_mapArea->EnableBackground(true);
 		m_mapArea->SetBackgroundColor(Nz::Color::White);
 		m_mapArea->SetTextColor(Nz::Color::Black);
+		m_mapArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* portLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
@@ -67,13 +72,39 @@ namespace bw
 		m_portArea->EnableBackground(true);
 		m_portArea->SetBackgroundColor(Nz::Color::White);
 		m_portArea->SetTextColor(Nz::Color::Black);
-		m_portArea->SetCharacterFilter([](Nz::UInt32 character) 
+		m_portArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
+		m_portArea->SetCharacterFilter([](Nz::UInt32 character)
 		{
 			if (character < U'0' || character > U'9')
 				return false;
 
 			return true;
 		});
+
+		m_listServerCheckbox = m_serverConfigLayout->Add<Ndk::CheckboxWidget>();
+		m_listServerCheckbox->UpdateText(Nz::SimpleTextDrawer::Draw("Register the server online", 24));
+
+		m_nameLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+
+		Ndk::LabelWidget* nameLabel = m_nameLayout->Add<Ndk::LabelWidget>();
+		nameLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Name: ", 24));
+
+		m_nameArea = m_nameLayout->Add<Ndk::TextAreaWidget>();
+		m_nameArea->EnableBackground(true);
+		m_nameArea->SetBackgroundColor(Nz::Color::White);
+		m_nameArea->SetTextColor(Nz::Color::Black);
+		m_nameArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
+
+		m_descriptionLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+
+		Ndk::LabelWidget* descLabel = m_descriptionLayout->Add<Ndk::LabelWidget>();
+		descLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Description: ", 24));
+
+		m_descriptionArea = m_descriptionLayout->Add<Ndk::TextAreaWidget>();
+		m_descriptionArea->EnableBackground(true);
+		m_descriptionArea->SetBackgroundColor(Nz::Color::White);
+		m_descriptionArea->SetTextColor(Nz::Color::Black);
+		m_descriptionArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* buttonLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
@@ -100,8 +131,11 @@ namespace bw
 
 		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
 
+		m_descriptionArea->SetText(playerConfig.GetStringValue("StartServer.Description"));
 		m_gamemodeArea->SetText(playerConfig.GetStringValue("StartServer.Gamemode"));
+		m_listServerCheckbox->SetState((playerConfig.GetBoolValue("StartServer.ListServer")) ? Ndk::CheckboxState_Checked : Ndk::CheckboxState_Unchecked);
 		m_mapArea->SetText(playerConfig.GetStringValue("StartServer.Map"));
+		m_nameArea->SetText(playerConfig.GetStringValue("StartServer.Name"));
 		m_portArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("StartServer.Port")));
 	}
 
@@ -109,7 +143,6 @@ namespace bw
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
-
 
 		if (m_nextGameState)
 			fsm.ResetState(std::move(m_nextGameState));
@@ -126,15 +159,17 @@ namespace bw
 
 	void StartServerState::OnStartServerPressed()
 	{
-		Nz::String gamemode = m_gamemodeArea->GetText();
-		if (gamemode.IsEmpty())
+		ClientApp* app = GetStateData().app;
+
+		std::string gamemode = m_gamemodeArea->GetText().ToStdString();
+		if (gamemode.empty())
 		{
 			UpdateStatus("Error: blank gamemode", Nz::Color::Red);
 			return;
 		}
 
-		Nz::String map = m_mapArea->GetText();
-		if (map.IsEmpty())
+		std::string map = m_mapArea->GetText().ToStdString();
+		if (map.empty())
 		{
 			UpdateStatus("Error: blank map", Nz::Color::Red);
 			return;
@@ -154,16 +189,77 @@ namespace bw
 			return;
 		}
 
-		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
-		playerConfig.SetStringValue("StartServer.Gamemode", gamemode.ToStdString());
-		playerConfig.SetStringValue("StartServer.Map", map.ToStdString());
+		ConfigFile& playerConfig = app->GetPlayerSettings();
+
+		bool listServer = (m_listServerCheckbox->GetState() == Ndk::CheckboxState_Checked);
+		std::string serverName;
+		std::string serverDesc;
+		if (listServer)
+		{
+			serverName = m_nameArea->GetText().ToStdString();
+			if (serverName.empty())
+			{
+				UpdateStatus("Error: blank server name", Nz::Color::Red);
+				return;
+			}
+
+			if (serverName.size() > 32)
+			{
+				UpdateStatus("Error: server name is too long", Nz::Color::Red);
+				return;
+			}
+
+			serverDesc = m_descriptionArea->GetText().ToStdString();
+			if (serverDesc.size() > 1024)
+			{
+				UpdateStatus("Error: server description is too long", Nz::Color::Red);
+				return;
+			}
+
+			playerConfig.SetStringValue("StartServer.Description", serverDesc);
+			playerConfig.SetStringValue("StartServer.Name", serverName);
+		}
+
+		playerConfig.SetBoolValue("StartServer.ListServer", listServer);
+
+		playerConfig.SetStringValue("StartServer.Gamemode", gamemode);
+		playerConfig.SetStringValue("StartServer.Map", map);
 		playerConfig.SetIntegerValue("StartServer.Port", rawPort);
 
-		GetStateData().app->SavePlayerConfig();
+		app->SavePlayerConfig();
 
 		try
 		{
-			m_nextGameState = std::make_shared<ServerState>(GetStateDataPtr(), static_cast<Nz::UInt16>(rawPort), gamemode.ToStdString(), map.ToStdString(), shared_from_this());
+			const ConfigFile& config = app->GetConfig();
+
+			Match::GamemodeSettings gamemodeSettings;
+			gamemodeSettings.name = std::move(gamemode);
+
+			Match::MatchSettings matchSettings;
+			matchSettings.maxPlayerCount = 16;
+			matchSettings.name = std::move(serverName);
+			matchSettings.registerToMasterServer = listServer;
+			matchSettings.port = static_cast<Nz::UInt16>(rawPort);
+			matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("ServerSettings.TickRate");
+
+			Match::ModSettings modSettings;
+
+			// FIXME: Allow to select enabled mods
+			for (auto&& [modId, mod] : app->GetMods())
+				modSettings.enabledMods[modId] = Match::ModSettings::ModEntry{};
+
+			// Load map
+			if (!EndsWith(map, ".bmap"))
+			{
+				if (std::filesystem::is_directory(map))
+					matchSettings.map = Map::LoadFromDirectory(map);
+				else
+					matchSettings.map = Map::LoadFromBinary(map + ".bmap");
+			}
+			else
+				matchSettings.map = Map::LoadFromBinary(map);
+
+			m_nextGameState = std::make_shared<ServerState>(GetStateDataPtr(), std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings), shared_from_this());
 		}
 		catch (const std::exception& e)
 		{
@@ -178,27 +274,30 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 2> widgets = {
-			m_statusLabel,
-			m_serverConfigLayout
+		std::array<Ndk::BaseWidget*, 8> widgets = {
+			m_title,
+			m_gamemodeArea,
+			m_mapArea,
+			m_portArea,
+			m_listServerCheckbox,
+			m_nameArea,
+			m_descriptionArea,
+			m_backButton
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
 		for (Ndk::BaseWidget* widget : widgets)
-			totalSize += widget->GetSize().y;
+		{
+			if (widget)
+				totalSize += widget->GetSize().y;
+		}
 
-		Nz::Vector2f cursor = center;
-		cursor.y -= totalSize / 2.f;
+		m_background->Resize(Nz::Vector2f(canvasSize.x / 2.f, totalSize));
+		m_background->Center();
+		m_serverConfigLayout->Resize(m_background->GetSize() - Nz::Vector2f(20.f, 20.f));
 
-		m_serverConfigLayout->Resize(m_serverConfigLayout->GetSize()); //< Force layout
-
-		m_statusLabel->SetPosition({ 0.f, cursor.y, 0.f });
+		m_statusLabel->SetPosition({ 0.f, m_background->GetPosition().y - m_statusLabel->GetHeight(), 0.f });
 		m_statusLabel->CenterHorizontal();
-		cursor.y += m_statusLabel->GetSize().y + padding;
-
-		m_serverConfigLayout->SetPosition({ 0.f, cursor.y, 0.f });
-		m_serverConfigLayout->CenterHorizontal();
-		cursor.y += m_serverConfigLayout->GetSize().y + padding;
 	}
 
 	void StartServerState::UpdateStatus(const std::string& status, const Nz::Color& color)

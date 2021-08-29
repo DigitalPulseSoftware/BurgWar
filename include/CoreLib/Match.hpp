@@ -146,6 +146,7 @@ namespace bw
 				std::string description;
 				Nz::UInt16 port = 0;
 				Map map;
+				bool registerToMasterServer = true;
 				float tickDuration;
 			};
 

@@ -35,12 +35,19 @@ namespace bw
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
+			Ndk::BoxLayout* m_descriptionLayout;
+			Ndk::BoxLayout* m_nameLayout;
 			Ndk::BoxLayout* m_serverConfigLayout;
+			Ndk::BaseWidget* m_background;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_startServerButton;
+			Ndk::CheckboxWidget* m_listServerCheckbox;
+			Ndk::LabelWidget* m_title;
 			Ndk::LabelWidget* m_statusLabel;
+			Ndk::TextAreaWidget* m_descriptionArea;
 			Ndk::TextAreaWidget* m_gamemodeArea;
 			Ndk::TextAreaWidget* m_mapArea;
+			Ndk::TextAreaWidget* m_nameArea;
 			Ndk::TextAreaWidget* m_portArea;
 	};
 }
