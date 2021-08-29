@@ -15,7 +15,7 @@ local breakSound = "placeholder/grapple_break.wav"
 RegisterClientAssets(weapon.Sprite)
 RegisterClientAssets(breakSound)
 
-local maxDist = 1000
+local maxDist = 1500
 
 if (SERVER) then
 	network.RegisterPacket("GrasPain_BreakSound")
