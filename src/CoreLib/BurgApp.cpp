@@ -27,6 +27,24 @@
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
+#include <Nazara/Core/Thread.hpp>
+#include <cassert>
+#include <thread>
+
+#if defined(NAZARA_PLATFORM_WINDOWS)
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <Windows.h>
+#elif defined(NAZARA_PLATFORM_POSIX)
+#include <signal.h>
+#endif
 
 namespace bw
 {
@@ -36,6 +54,11 @@ namespace bw
 	m_appTime(0),
 	m_lastTime(Nz::GetElapsedMicroseconds())
 	{
+		assert(!s_application);
+		s_application = this;
+
+		InstallInterruptHandlers();
+
 		m_logger.RegisterSink(std::make_shared<StdSink>());
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 
@@ -74,6 +97,9 @@ namespace bw
 	{
 		m_webService.reset();
 		WebService::Uninitialize();
+
+		assert(s_application);
+		s_application = nullptr;
 	}
 
 	void BurgApp::Update()
@@ -85,6 +111,40 @@ namespace bw
 
 		if (m_webService)
 			m_webService->Poll();
+	}
+
+	void BurgApp::HandleInterruptSignal()
+	{
+		assert(s_application);
+		bwLog(s_application->GetLogger(), LogLevel::Info, "received interruption signal, exiting...");
+
+		s_application->Quit();
+	}
+
+	void BurgApp::InstallInterruptHandlers()
+	{
+		bool succeeded = false;
+
+#if defined(NAZARA_PLATFORM_WINDOWS)
+		succeeded = SetConsoleCtrlHandler([](DWORD /*ctrlType*/) -> BOOL
+		{
+			HandleInterruptSignal();
+			return TRUE;
+		}, TRUE);
+#elif defined(NAZARA_PLATFORM_POSIX)
+		struct sigaction action;
+		sigemptyset(&action.sa_mask);
+		action.sa_flags = 0;
+		action.sa_handler = [](int sig)
+		{
+			HandleInterruptSignal();
+		};
+
+		succeeded = (sigaction(SIGINT, &action, nullptr) != 0);
+#endif
+
+		if (!succeeded)
+			bwLog(GetLogger(), LogLevel::Error, "failed to install interruption signal handler");
 	}
 	
 	void BurgApp::LoadMods()
@@ -100,4 +160,6 @@ namespace bw
 			m_mods.emplace(std::move(id), std::make_shared<Mod>(std::move(mod)));
 		}
 	}
+
+	BurgApp* BurgApp::s_application = nullptr;
 }

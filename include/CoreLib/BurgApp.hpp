@@ -36,10 +36,18 @@ namespace bw
 			void Update();
 
 		private:
+			static void HandleInterruptSignal();
+
+			void InstallInterruptHandlers();
+
 			Logger m_logger;
+			
+			static BurgApp* s_application;
 
 		protected:
 			void LoadMods();
+
+			virtual void Quit() = 0;
 
 			const ConfigFile& m_config;
 			std::optional<WebService> m_webService;

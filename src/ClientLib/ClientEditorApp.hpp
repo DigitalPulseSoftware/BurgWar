@@ -26,6 +26,8 @@ namespace bw
 
 			void SavePlayerConfig();
 
+			void Quit() override;
+
 		protected:
 			void FillStores();
 

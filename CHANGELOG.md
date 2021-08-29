@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### General
+
+* Ctrl+C/SIGINT signals are now handled and the server will close properly
+
 ## Beta 2.1
 
 ### General

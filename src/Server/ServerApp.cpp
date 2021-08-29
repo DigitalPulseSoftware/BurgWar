@@ -69,4 +69,9 @@ namespace bw
 
 		return 0;
 	}
+	
+	void ServerApp::Quit()
+	{
+		Application::Quit();
+	}
 }

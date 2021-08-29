@@ -22,6 +22,7 @@ namespace bw
 			~ServerApp() = default;
 
 			int Run();
+			void Quit() override;
 
 		private:
 			ServerAppConfig m_configFile;
