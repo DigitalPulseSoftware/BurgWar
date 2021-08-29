@@ -65,7 +65,28 @@ namespace bw
 		return m_session;
 	}
 
-	inline const PlayerInputData& ClientMatch::GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const
+	inline ClientPlayer* ClientMatch::GetLocalPlayerClientPlayer(std::size_t localPlayerIndex)
+	{
+		assert(localPlayerIndex < m_localPlayers.size());
+		Nz::UInt16 playerIndex = m_localPlayers[localPlayerIndex].playerIndex;
+		assert(playerIndex < m_matchPlayers.size() && m_matchPlayers[playerIndex].has_value());
+		return &m_matchPlayers[playerIndex].value();
+	}
+
+	inline const ClientPlayer* ClientMatch::GetLocalPlayerClientPlayer(std::size_t localPlayerIndex) const
+	{
+		assert(localPlayerIndex < m_localPlayers.size());
+		Nz::UInt16 playerIndex = m_localPlayers[localPlayerIndex].playerIndex;
+		assert(playerIndex < m_matchPlayers.size() && m_matchPlayers[playerIndex].has_value());
+		return &m_matchPlayers[playerIndex].value();
+	}
+
+	inline std::size_t ClientMatch::GetLocalPlayerCount() const
+	{
+		return m_localPlayers.size();
+	}
+
+	inline const PlayerInputData& ClientMatch::GetLocalPlayerInputs(std::size_t localPlayerIndex) const
 	{
 		assert(localPlayerIndex < m_localPlayers.size());
 		return m_localPlayers[localPlayerIndex].lastInputData;

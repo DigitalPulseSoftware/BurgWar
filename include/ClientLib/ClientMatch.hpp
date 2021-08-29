@@ -80,7 +80,10 @@ namespace bw
 			ClientLayer& GetLayer(LayerIndex layerIndex) override;
 			const ClientLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
-			inline const PlayerInputData& GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const;
+			inline ClientPlayer* GetLocalPlayerClientPlayer(std::size_t localPlayerIndex);
+			inline const ClientPlayer* GetLocalPlayerClientPlayer(std::size_t localPlayerIndex) const;
+			inline std::size_t GetLocalPlayerCount() const;
+			inline const PlayerInputData& GetLocalPlayerInputs(std::size_t localPlayerIndex) const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
