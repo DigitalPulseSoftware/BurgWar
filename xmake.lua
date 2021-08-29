@@ -206,8 +206,11 @@ target("BurgWar")
 	add_deps("Main", "ClientLib", "CoreLib")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
-	add_files("src/Client/resources.rc")
 	add_packages("nazara")
+
+	if is_plat("windows", "mingw") then
+		add_files("src/Client/resources.rc")
+	end
 
 	after_install(function (target)
 		os.vcp("clientconfig.lua", path.join(target:installdir(), "bin"))
@@ -252,15 +255,18 @@ if has_config("build_mapeditor") then
 
 		-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
 		-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
-		if (not is_plat("windows")) then
+		if not is_plat("windows") then
 			add_cxxflags("-fno-sized-deallocation")
+		end
+
+		if is_plat("windows", "mingw") then
+			add_files("src/Client/resources.rc")
 		end
 
 		add_frameworks("QtCore", "QtGui", "QtWidgets")
 		add_deps("Main", "ClientLib", "CoreLib")
 		add_headerfiles("src/MapEditor/**.hpp", "src/MapEditor/**.inl")
 		add_files("src/MapEditor/Widgets/**.hpp", "src/MapEditor/**.cpp")
-		add_files("src/MapEditor/resources.rc")
 		add_packages("nazara")
 
 		on_load(function (target)
