@@ -36,7 +36,7 @@ namespace bw
 				float jumpHeight = playerMovement.GetJumpHeight();
 				float jumpBoostHeight = playerMovement.GetJumpBoostHeight();
 
-				jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 128.f);
+				jumpVelocity = std::sqrt(2.f * jumpHeight * 9.81f * 192.f);
 
 				playerMovement.UpdateJumpTime(jumpBoostHeight / jumpVelocity);
 			}

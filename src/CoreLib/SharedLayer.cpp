@@ -34,7 +34,7 @@ namespace bw
 		m_world.AddSystem<WeaponSystem>(match);
 
 		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
-		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 128.f));
+		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 192.f));
 		physics.SetMaxStepCount(1);
 		physics.SetSleepTime(0.f);
 		physics.SetStepSize(match.GetTickDuration());
