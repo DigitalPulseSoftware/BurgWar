@@ -146,7 +146,7 @@ namespace bw
 	{
 		bwLog(GetStateData().app->GetLogger(), LogLevel::Debug, "connecting using local session...");
 		m_clientSession->Connect(sessionManager->CreateSession());
-		m_timeBeforeGivingUp = 1.f; //< Should be instant
+		m_timeBeforeGivingUp = 3.f; //< Should be instant
 	}
 	
 	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
