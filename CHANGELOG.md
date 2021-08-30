@@ -4,7 +4,7 @@
 
 ### General
 
-* Ctrl+C/SIGINT signals are now handled and the server will close properly
+* Ctrl+C/SIGINT/SIGTERM signals are now handled and the server will close properly
 * Added ServerSettings.SleepWhenEmpty config for servers (disable ticks if no player is on the server)
 * Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
 * Decreased server usage (it will now sleep according to its tick rate)

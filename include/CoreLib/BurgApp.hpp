@@ -37,7 +37,7 @@ namespace bw
 			void Update();
 
 		private:
-			static void HandleInterruptSignal();
+			static void HandleInterruptSignal(const char* signalName);
 
 			void InstallInterruptHandlers();
 

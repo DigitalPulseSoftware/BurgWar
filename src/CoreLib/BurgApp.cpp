@@ -44,6 +44,7 @@
 #include <Windows.h>
 #elif defined(NAZARA_PLATFORM_POSIX)
 #include <signal.h>
+#include <string.h>
 #endif
 
 namespace bw
@@ -114,10 +115,10 @@ namespace bw
 			m_webService->Poll();
 	}
 
-	void BurgApp::HandleInterruptSignal()
+	void BurgApp::HandleInterruptSignal(const char* signalName)
 	{
 		assert(s_application);
-		bwLog(s_application->GetLogger(), LogLevel::Info, "received interruption signal, exiting...");
+		bwLog(s_application->GetLogger(), LogLevel::Info, "received interruption signal {0}, exiting...", signalName);
 
 		s_application->Quit();
 	}
@@ -127,9 +128,22 @@ namespace bw
 		bool succeeded = false;
 
 #if defined(NAZARA_PLATFORM_WINDOWS)
-		succeeded = SetConsoleCtrlHandler([](DWORD /*ctrlType*/) -> BOOL
+		succeeded = SetConsoleCtrlHandler([](DWORD ctrlType) -> BOOL
 		{
-			HandleInterruptSignal();
+			switch (ctrlType)
+			{
+				case CTRL_C_EVENT: HandleInterruptSignal("CTRL_C"); break;
+				case CTRL_BREAK_EVENT: HandleInterruptSignal("CTRL_BREAK"); break;
+				case CTRL_CLOSE_EVENT: HandleInterruptSignal("CTRL_CLOSE"); break;
+				case CTRL_LOGOFF_EVENT: HandleInterruptSignal("CTRL_LOGOFF"); break;
+				case CTRL_SHUTDOWN_EVENT: HandleInterruptSignal("CTRL_SHUTDOWN"); break;
+				default:
+				{
+					std::string signalName = "<unknown CTRL signal " + std::to_string(ctrlType) + ">";
+					HandleInterruptSignal(signalName.c_str());
+				}
+			}
+
 			return TRUE;
 		}, TRUE);
 #elif defined(NAZARA_PLATFORM_POSIX)
@@ -138,14 +152,18 @@ namespace bw
 		action.sa_flags = 0;
 		action.sa_handler = [](int sig)
 		{
-			HandleInterruptSignal();
+			HandleInterruptSignal(strsignal(sig));
 		};
 
-		succeeded = (sigaction(SIGINT, &action, nullptr) != 0);
+		if (sigaction(SIGINT, &action, nullptr) != 0)
+			succeeded = false;
+
+		if (sigaction(SIGTERM, &action, nullptr) != 0)
+			succeeded = false;
 #endif
 
 		if (!succeeded)
-			bwLog(GetLogger(), LogLevel::Error, "failed to install interruption signal handler");
+			bwLog(GetLogger(), LogLevel::Error, "failed to install interruption signal handlers");
 	}
 	
 	void BurgApp::LoadMods()
