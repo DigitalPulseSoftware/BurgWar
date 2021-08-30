@@ -44,7 +44,7 @@ namespace bw
 
 	void Logger::InitializeContext(LogContext& context) const
 	{
-		context.elapsedTime = m_app.GetAppTime() / 1000.f;
+		context.elapsedTime = m_app.GetLogTime() / 1'000'000.f;
 		context.side = GetSide();
 	}
 
@@ -53,10 +53,10 @@ namespace bw
 #ifdef _MSC_VER
 		auto TimePart = [](float elapsedTime) -> std::string
 		{
-			std::array<char, 40> buffer;
+			std::array<char, 41> buffer;
 			buffer[0] = '[';
 
-			auto result = std::to_chars(buffer.data() + 1, buffer.data() + buffer.size() - 2, elapsedTime, std::chars_format::fixed, 3);
+			auto result = std::to_chars(buffer.data() + 1, buffer.data() + buffer.size() - 2, elapsedTime, std::chars_format::fixed, 4);
 			assert(result.ec == std::errc{});
 
 			*result.ptr = ']';
@@ -70,7 +70,7 @@ namespace bw
 		{
 			std::stringstream ss;
 			ss.setf(std::ios::fixed, std::ios::floatfield);
-			ss.precision(3);
+			ss.precision(4);
 
 			ss << '[';
 			ss << elapsedTime;

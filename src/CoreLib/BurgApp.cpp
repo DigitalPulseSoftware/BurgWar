@@ -52,7 +52,8 @@ namespace bw
 	m_logger(*this, side),
 	m_config(config),
 	m_appTime(0),
-	m_lastTime(Nz::GetElapsedMicroseconds())
+	m_lastTime(Nz::GetElapsedMicroseconds()),
+	m_startTime(m_lastTime)
 	{
 		assert(!s_application);
 		s_application = this;

@@ -15,6 +15,7 @@
 * Increased max distance of weapon_graspain
 * Added icons to game and map editor executables on Windows
 * Added ServerSettings.DisableWhenEmpty config for servers
+* Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
 
 ### Fixes
 

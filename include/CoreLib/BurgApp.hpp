@@ -30,6 +30,7 @@ namespace bw
 			inline Nz::UInt64 GetAppTime() const;
 			inline const ConfigFile& GetConfig() const;
 			inline Logger& GetLogger();
+			inline Nz::UInt64 GetLogTime() const;
 			inline const tsl::hopscotch_map<std::string, std::shared_ptr<Mod>>& GetMods() const;
 			inline WebService& GetWebService();
 
@@ -54,6 +55,7 @@ namespace bw
 			tsl::hopscotch_map<std::string, std::shared_ptr<Mod>> m_mods;
 			Nz::UInt64 m_appTime;
 			Nz::UInt64 m_lastTime;
+			Nz::UInt64 m_startTime;
 	};
 }
 
