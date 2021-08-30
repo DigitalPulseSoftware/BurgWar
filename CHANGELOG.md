@@ -5,24 +5,27 @@
 ### General
 
 * Ctrl+C/SIGINT signals are now handled and the server will close properly
+* Added ServerSettings.SleepWhenEmpty config for servers (disable ticks if no player is on the server)
+* Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
+* Decreased server usage (it will now sleep according to its tick rate)
+* Config file loading is now much more verbose (especially with debug logs) and will print all errors/warnings instead of the first one, it will also print ignored options
+
+### Fixes
+* Fixed in-game console staying open after exiting a match
 
 ## Beta 2.1
 
 ### General
 
 * Gravity and jump power are now 50% stronger
-* Handled servers registering using IPv6, they will now register a second time using an IPv4-only route which will allows master server to know both addresses (which will then be used by the game).
+* Handled servers registering using IPv6, they will now register a second time using an IPv4-only route which will allows master server to know both addresses (which will then be used by the game)
 * Increased max distance of weapon_graspain
 * Added icons to game and map editor executables on Windows
-* Added ServerSettings.SleepWhenEmpty config for servers (disable ticks if no player is on the server)
-* Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
-* Decreased server usage (it will now sleep according to its tick rate)
 
 ### Fixes
 
 * Improved visibility check of entity_tilemap_fade
 * Fixed default serverconfig.lua
-* Fixed in-game console staying open after exiting a match
 
 ### Scripting
 
