@@ -647,7 +647,7 @@ namespace bw
 		for (const auto& masterServerEntryPtr : m_masterServerEntries)
 			masterServerEntryPtr->Update(elapsedTime);
 
-		if (m_settings.disableWhenEmpty && m_freePlayerId.TestAll())
+		if (m_settings.sleepWhenEmpty && m_freePlayerId.TestAll())
 			return m_isMatchRunning;
 
 		m_scriptingContext->Update();

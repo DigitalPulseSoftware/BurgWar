@@ -14,7 +14,7 @@
 * Handled servers registering using IPv6, they will now register a second time using an IPv4-only route which will allows master server to know both addresses (which will then be used by the game).
 * Increased max distance of weapon_graspain
 * Added icons to game and map editor executables on Windows
-* Added ServerSettings.DisableWhenEmpty config for servers
+* Added ServerSettings.SleepWhenEmpty config for servers (disable ticks if no player is on the server)
 * Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
 * Decreased server usage (it will now sleep according to its tick rate)
 

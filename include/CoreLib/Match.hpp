@@ -148,7 +148,7 @@ namespace bw
 				std::string description;
 				Nz::UInt16 port = 0;
 				Map map;
-				bool disableWhenEmpty = true;
+				bool sleepWhenEmpty = true;
 				bool registerToMasterServer = true;
 				float tickDuration;
 			};

@@ -10,11 +10,11 @@ namespace bw
 	ServerAppConfig::ServerAppConfig(ServerApp& app) :
 	SharedAppConfig(app)
 	{
-		RegisterBoolOption("ServerSettings.DisableWhenEmpty", true);
 		RegisterStringOption("ServerSettings.Gamemode");
 		RegisterStringOption("ServerSettings.MapPath");
 		RegisterIntegerOption("ServerSettings.MaxPlayerCount", 1, 0xFFFF, 16);
 		RegisterIntegerOption("ServerSettings.Port", 1, 0xFFFF, 14768);
+		RegisterBoolOption("ServerSettings.SleepWhenEmpty", true);
 
 		RegisterStringOption("ServerSettings.Description", "", [](std::string value) -> tl::expected<std::string, std::string>
 		{
