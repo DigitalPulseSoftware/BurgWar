@@ -4,6 +4,7 @@ local ammoSprite = "placeholder/potato.png"
 local scale = 0.25
 
 local weapon = ScriptedWeapon({
+	Category = 3,
 	Cooldown = 5,
 	Scale = scale,
 	Sprite = "placeholder/patator.png",

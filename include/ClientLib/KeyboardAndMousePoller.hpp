@@ -22,6 +22,7 @@ namespace bw
 			PlayerInputData Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity) override;
 
 		private:
+			NazaraSlot(Nz::EventHandler, OnKeyPressed, m_onKeyPressedSlot);
 			NazaraSlot(Nz::EventHandler, OnMouseWheelMoved, m_onMouseWheelMovedSlot);
 
 			Nz::Window& m_window;

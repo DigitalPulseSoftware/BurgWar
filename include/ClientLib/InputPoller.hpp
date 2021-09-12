@@ -26,6 +26,7 @@ namespace bw
 			virtual PlayerInputData Poll(ClientMatch& clientMatch, const ClientLayerEntityHandle& controlledEntity) = 0;
 
 			NazaraSignal(OnSwitchWeapon, InputPoller* /*emitter*/, bool /*direction*/);
+			NazaraSignal(OnSwitchWeaponIndex, InputPoller* /*emitter*/, unsigned int /*index*/);
 	};
 }
 

@@ -18,6 +18,7 @@ namespace bw
 	struct ScriptedWeapon : ScriptedElement
 	{
 		WeaponAttackMode attackMode;
+		Nz::UInt8 category;
 		Nz::UInt32 cooldown;
 		Nz::Vector2f spriteOrigin;
 		Nz::Vector2f weaponOrigin;

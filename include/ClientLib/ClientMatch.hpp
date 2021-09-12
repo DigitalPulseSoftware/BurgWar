@@ -179,6 +179,12 @@ namespace bw
 
 			struct LocalPlayerData
 			{
+				struct Weapon
+				{
+					Ndk::EntityHandle entity;
+					Nz::UInt8 category;
+				};
+
 				LocalPlayerData(Nz::UInt8 localIndex) :
 				localIndex(localIndex)
 				{
@@ -186,7 +192,7 @@ namespace bw
 
 				std::size_t selectedWeapon;
 				std::shared_ptr<InputPoller> inputPoller;
-				std::vector<Ndk::EntityHandle> weapons;
+				std::vector<Weapon> weapons;
 				ClientLayerEntityHandle controlledEntity;
 				Nz::UInt8 localIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;

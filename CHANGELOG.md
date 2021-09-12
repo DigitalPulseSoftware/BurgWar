@@ -9,6 +9,7 @@
 * Log time is now more precise and will always reflect elapsed time (before that change, log time have been the same during each update loop)
 * Decreased server usage (it will now sleep according to its tick rate)
 * Config file loading is now much more verbose (especially with debug logs) and will print all errors/warnings instead of the first one, it will also print ignored options
+* Added weapon categories which can be used to quickly change weapon
 
 ### Fixes
 * Fixed in-game console staying open after exiting a match

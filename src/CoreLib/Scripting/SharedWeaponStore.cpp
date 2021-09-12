@@ -34,6 +34,7 @@ namespace bw
 			weapon.attackMode = WeaponAttackMode::SingleShot;
 		}
 
+		weapon.category = elementTable.get_or("Category", Nz::UInt8(0));
 		weapon.cooldown = static_cast<Nz::UInt32>(elementTable.get_or("Cooldown", 0.f) * 1000);
 
 		sol::object animations = elementTable["Animations"];
