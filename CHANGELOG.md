@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### **Highlights**
+
+* Player heal/damage values are now shown as floating text
+
 ### General
 
 * Ctrl+C/SIGINT/SIGTERM signals are now handled and the server will close properly

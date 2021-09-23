@@ -175,3 +175,15 @@ entity:OnAsync("inputupdate", function (self, input)
 		end
 	end
 end)
+
+entity:On("HealthUpdate", function (entity, oldHealth, newHealth)
+	match.CreateEntity({
+		Type = "entity_health_text",
+		LayerIndex = entity:GetLayerIndex(),
+		Position = entity:GetGlobalBounds():GetCenter(),
+		Properties = {
+			renderOrder = 1000,
+			value = newHealth - oldHealth
+		}
+	})
+end)
