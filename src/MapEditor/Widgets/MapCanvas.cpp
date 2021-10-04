@@ -173,7 +173,13 @@ namespace bw
 	void MapCanvas::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
 	{
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
-			func(visualEntityHandle->GetEntity());
+		{
+			const Ndk::EntityHandle& entity = visualEntityHandle->GetEntity();
+			if (!entity)
+				continue;
+
+			func(entity);
+		}
 	}
 
 	EditorEntityStore& MapCanvas::GetEntityStore()
