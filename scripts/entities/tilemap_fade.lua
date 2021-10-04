@@ -19,13 +19,19 @@ if (CLIENT) then
 
 		self.IsVisible = true
 
-		for _, player in pairs(match.GetLocalPlayers()) do
-			local controlledEntity = player:GetControlledEntity()
-			if controlledEntity then
-				local bounds = controlledEntity:GetGlobalBounds()
-				if rect:Contains(bounds:GetCenter()) then
-					self.IsVisible = false
-					break
+		if (EDITOR) then
+			if rect:Contains(editor.GetWorldMousePosition()) then
+				self.IsVisible = false
+			end
+		else
+			for _, player in pairs(match.GetLocalPlayers()) do
+				local controlledEntity = player:GetControlledEntity()
+				if controlledEntity then
+					local bounds = controlledEntity:GetGlobalBounds()
+					if rect:Contains(bounds:GetCenter()) then
+						self.IsVisible = false
+						break
+					end
 				end
 			end
 		end

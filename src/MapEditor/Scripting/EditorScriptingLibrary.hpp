@@ -25,6 +25,10 @@ namespace bw
 			void BindEditorWindow(ScriptingContext& context);
 			void BindEntityInfoDialog(ScriptingContext& context);
 			void BindTileMapEditorMode(ScriptingContext& context);
+
+			MapCanvas& GetMapCanvas();
+
+			void RegisterEditorLibrary(ScriptingContext& context);
 	};
 }
 

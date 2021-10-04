@@ -39,6 +39,7 @@ namespace bw
 		BindEditorWindow(context);
 		BindEntityInfoDialog(context);
 		BindTileMapEditorMode(context);
+		RegisterEditorLibrary(context);
 	}
 
 	void EditorScriptingLibrary::BindEditorWindow(ScriptingContext& context)
@@ -125,5 +126,24 @@ namespace bw
 
 			sol::base_classes, sol::bases<bw::EditorMode>()
 		);
+	}
+
+	MapCanvas& EditorScriptingLibrary::GetMapCanvas()
+	{
+		return static_cast<MapCanvas&>(GetSharedMatch());
+	}
+
+	void EditorScriptingLibrary::RegisterEditorLibrary(ScriptingContext& context)
+	{
+		sol::state& state = context.GetLuaState();
+
+		sol::table library = state.create_named_table("editor");
+		library["GetWorldMousePosition"] = [this]
+		{
+			MapCanvas& mapCanvas = GetMapCanvas();
+
+			QPoint mousePosition = mapCanvas.mapFromGlobal(QCursor::pos());
+			return mapCanvas.GetCamera().Unproject(Nz::Vector2f(mousePosition.x(), mousePosition.y()));
+		};
 	}
 }
