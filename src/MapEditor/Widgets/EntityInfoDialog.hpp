@@ -53,6 +53,7 @@ namespace bw
 			EntityInfoDialog(const Logger& logger, const Map& map, EditorEntityStore& clientEntityStore, ScriptingContext& scriptingContext, QWidget* parent = nullptr);
 			~EntityInfoDialog();
 
+			inline LayerIndex GetLayerIndex() const;
 			inline const Nz::Vector2f& GetPosition() const;
 			inline const Nz::DegreeAnglef& GetRotation() const;
 
@@ -60,7 +61,7 @@ namespace bw
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
 			inline const Ndk::EntityHandle& GetTargetEntity() const;
 
-			void Open(EntityId uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(EntityId uniqueId, LayerIndex layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);
@@ -114,6 +115,7 @@ namespace bw
 
 			Ndk::EntityHandle m_targetEntity;
 			EntityId m_entityUniqueId;
+			LayerIndex m_entityLayer;
 			std::size_t m_entityTypeIndex;
 			std::size_t m_propertyTypeIndex;
 			std::vector<PropertyData> m_properties;

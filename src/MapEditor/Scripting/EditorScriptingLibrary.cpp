@@ -65,8 +65,9 @@ namespace bw
 
 			"Hide", &EntityInfoDialog::hide,
 			
-			"GetPosition", &EntityInfoDialog::GetPosition,
-			"GetRotation", &EntityInfoDialog::GetRotation,
+			"GetLayerIndex", &EntityInfoDialog::GetLayerIndex,
+			"GetPosition",   &EntityInfoDialog::GetPosition,
+			"GetRotation",   &EntityInfoDialog::GetRotation,
 
 			"GetProperty", [](EntityInfoDialog& entityInfo, const std::string& propertyName, sol::this_state L)
 			{

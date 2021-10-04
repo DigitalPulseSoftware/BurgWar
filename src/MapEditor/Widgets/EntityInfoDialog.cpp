@@ -1257,8 +1257,9 @@ namespace bw
 		return std::make_pair(propertyData.type, propertyData.isArray);
 	}
 
-	void EntityInfoDialog::Open(EntityId uniqueId, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
+	void EntityInfoDialog::Open(EntityId uniqueId, LayerIndex layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback)
 	{
+		m_entityLayer = layerIndex;
 		m_entityUniqueId = uniqueId;
 		m_callback = std::move(callback);
 		m_targetEntity = targetEntity;

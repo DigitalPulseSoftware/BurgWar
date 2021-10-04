@@ -1433,7 +1433,7 @@
 	],
 	"author": "Lynix",
 	"description": "Ceci est une description.",
-	"gameVersion": "0.2.0",
+	"gameVersion": "0.2.1",
 	"layers": [
 		{
 			"backgroundColor": {
@@ -6347,6 +6347,29 @@
 					"properties": {},
 					"rotation": 0.0,
 					"uniqueId": 69
+				},
+				{
+					"entityType": "entity_playable_area",
+					"name": "",
+					"position": {
+						"x": -1001.0,
+						"y": -2305.0
+					},
+					"properties": {
+						"padding": {
+							"type": "Float",
+							"value": 1000.0
+						},
+						"size": {
+							"type": "FloatSize",
+							"value": {
+								"x": 12243.0,
+								"y": 5994.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 70
 				}
 			],
 			"name": "Layer #1"
