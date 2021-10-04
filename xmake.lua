@@ -92,7 +92,7 @@ target("CoreLib")
 	set_group("Common")
 	set_basename("BurgCore")
 
-	on_load(function (target)
+	after_load(function (target)
 		target:set("kind", target:opt("corelib_static") and "static" or "shared")
 	end)
 
@@ -170,7 +170,7 @@ target("ClientLib")
 	set_group("Common")
 	set_basename("BurgClient")
 
-	on_load(function (target)
+	after_load(function (target)
 		target:set("kind", target:dep("clientlib_static") and "static" or "shared")
 	end)
 
