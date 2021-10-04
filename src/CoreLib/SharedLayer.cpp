@@ -50,6 +50,7 @@ namespace bw
 				{
 					auto& firstScript = first->GetComponent<ScriptComponent>();
 					auto& secondScript = second->GetComponent<ScriptComponent>();
+
 					if (auto ret = firstScript.ExecuteCallback<ElementEvent::CollisionStart>(secondScript.GetTable()); ret.has_value())
 						shouldCollide = *ret;
 				}
@@ -59,6 +60,23 @@ namespace bw
 			HandleCollision(bodyB, bodyA);
 
 			return shouldCollide;
+		};
+
+		triggerCallbacks.endCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
+		{
+			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			{
+				if (first->HasComponent<ScriptComponent>() && second->HasComponent<ScriptComponent>())
+				{
+					auto& firstScript = first->GetComponent<ScriptComponent>();
+					auto& secondScript = second->GetComponent<ScriptComponent>();
+
+					firstScript.ExecuteCallback<ElementEvent::CollisionStop>(secondScript.GetTable());
+				}
+			};
+
+			HandleCollision(bodyA, bodyB);
+			HandleCollision(bodyB, bodyA);
 		};
 
 		physics.RegisterCallbacks(1, triggerCallbacks);
