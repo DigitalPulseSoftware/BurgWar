@@ -64,6 +64,17 @@ namespace bw
 		Nz::TextureLibrary::Clear();
 	}
 
+	void ClientEditorApp::SavePlayerConfig()
+	{
+		if (!m_playerSettings.SaveToFile(PlayerSettingsFile))
+			bwLog(GetLogger(), LogLevel::Warning, "Failed to save player config");
+	}
+
+	void ClientEditorApp::Quit()
+	{
+		ClientApplication::Quit();
+	}
+
 	void ClientEditorApp::FillStores()
 	{
 		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
@@ -107,11 +118,5 @@ namespace bw
 		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
 		Nz::FontLibrary::Register("BW_Names", grandstander);
 		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());
-	}
-
-	void ClientEditorApp::SavePlayerConfig()
-	{
-		if (!m_playerSettings.SaveToFile(PlayerSettingsFile))
-			bwLog(GetLogger(), LogLevel::Warning, "Failed to save player config");
 	}
 }

@@ -3,6 +3,7 @@ RegisterClientScript()
 local scale = 0.75
 
 local weapon = ScriptedWeapon({
+	Category = 2,
 	Cooldown = 0.5,
 	Scale = scale,
 	Sprite = "placeholder/baguette.png",
@@ -15,7 +16,7 @@ local breakSound = "placeholder/grapple_break.wav"
 RegisterClientAssets(weapon.Sprite)
 RegisterClientAssets(breakSound)
 
-local maxDist = 1000
+local maxDist = 1500
 
 if (SERVER) then
 	network.RegisterPacket("GrasPain_BreakSound")

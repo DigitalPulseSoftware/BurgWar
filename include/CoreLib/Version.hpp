@@ -33,7 +33,7 @@ namespace bw
 
 	constexpr std::uint32_t GameMajorVersion = 0;
 	constexpr std::uint32_t GameMinorVersion = 2;
-	constexpr std::uint32_t GamePatchVersion = 0;
+	constexpr std::uint32_t GamePatchVersion = 1;
 
 	constexpr std::uint32_t GameVersion = BuildVersion(GameMajorVersion, GameMinorVersion, GamePatchVersion);
 }

@@ -3,6 +3,7 @@ RegisterClientScript("rifle.lua")
 local scale = 0.2
 
 local weapon = ScriptedWeapon({
+	Category = 3,
 	Cooldown = 0.1,
 	Scale = scale,
 	Sprite = "rifle-30349_640.png",

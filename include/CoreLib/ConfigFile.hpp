@@ -8,7 +8,9 @@
 #define BURGWAR_CORELIB_CONFIGFILE_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Signal.hpp>
+#include <sol/forward.hpp>
 #include <tl/expected.hpp>
 #include <filesystem>
 #include <fstream>
@@ -107,6 +109,7 @@ namespace bw
 
 			struct ConfigOption
 			{
+				std::size_t index;
 				std::string name;
 				ConfigData data;
 			};
@@ -118,15 +121,17 @@ namespace bw
 				std::unordered_map<std::string, std::unique_ptr<ConfigSection>> subsections;
 			};
 
+			bool LoadSection(const sol::table& table, ConfigSection& section, Nz::Bitset<>& missingOptions, const std::string& prefix = {});
+
 			template<typename T> void RegisterOption(std::string optionName, T&& optionData);
 			void RegisterConfig(std::string optionName, ConfigData value);
 			
 			void SaveSectionToFile(std::fstream& file, const ConfigSection& section, std::size_t indentCount);
 
 			std::vector<ConfigOption> m_options;
-			std::unordered_map<std::string, std::unique_ptr<ConfigSection>> m_subsections;
 			std::unordered_map<std::string, std::size_t> m_optionByName;
 			BurgApp& m_app;
+			ConfigSection m_globalSection;
 	};
 }
 

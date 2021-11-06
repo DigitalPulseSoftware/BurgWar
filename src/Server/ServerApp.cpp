@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerApp.hpp>
-#include <Nazara/Core/Thread.hpp>
+#include <thread>
 
 namespace bw
 {
@@ -24,11 +24,13 @@ namespace bw
 		const std::string& serverDesc = m_configFile.GetStringValue("ServerSettings.Description");
 		const std::string& serverName = m_configFile.GetStringValue("ServerSettings.Name");
 		float tickRate = m_configFile.GetFloatValue<float>("ServerSettings.TickRate");
+		bool sleepWhenEmpty = m_configFile.GetBoolValue("ServerSettings.SleepWhenEmpty");
 
 		Match::GamemodeSettings gamemodeSettings;
 		gamemodeSettings.name = gamemode;
 
 		Match::MatchSettings matchSettings;
+		matchSettings.sleepWhenEmpty = sleepWhenEmpty;
 		matchSettings.description = serverDesc;
 		matchSettings.maxPlayerCount = maxPlayerCount;
 		matchSettings.name = serverName;
@@ -57,16 +59,36 @@ namespace bw
 
 	int ServerApp::Run()
 	{
+		Nz::Clock updateClock;
+		Nz::UInt64 tickDuration = static_cast<Nz::UInt64>(m_match->GetTickDuration() * 1'000'000);
+
 		while (Application::Run())
 		{
 			BurgApp::Update();
 
-			m_match->Update(GetUpdateTime());
+			if (!m_match->Update(GetUpdateTime()))
+				break;
 
-			//TODO: Sleep only when server is not overloaded
-			Nz::Thread::Sleep(1);
+			Nz::UInt64 elapsedTime = updateClock.Restart();
+			if (tickDuration > elapsedTime)
+			{
+				// Since OS sleep is not that precise, let some time between the wakeup time and the tick
+				constexpr Nz::UInt64 wakeUpTime = 3'000;
+
+				Nz::UInt64 remainingTime = tickDuration - elapsedTime;
+				if (remainingTime > wakeUpTime)
+				{
+					Nz::UInt64 sleepTime = remainingTime - wakeUpTime;
+					std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime / 1'000));
+				}
+			}
 		}
 
 		return 0;
+	}
+	
+	void ServerApp::Quit()
+	{
+		Application::Quit();
 	}
 }

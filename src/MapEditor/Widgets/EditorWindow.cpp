@@ -564,6 +564,7 @@ namespace bw
 
 	void EditorWindow::UpdateWorkingMap(Map map, std::filesystem::path mapPath)
 	{
+		m_currentLayer.reset();
 		m_workingMap = std::move(map);
 		m_workingMapPath = std::move(mapPath);
 		m_mapDirtyFlag = false;
@@ -1172,7 +1173,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = AlignPosition(GetCameraCenter(), layer.positionAlignment);
 
-		createEntityDialog->Open(workingMap.GetFreeUniqueId(), entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		createEntityDialog->Open(workingMap.GetFreeUniqueId(), layerIndex, entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			Map& map = GetWorkingMapMut();
 			std::size_t entityIndex = map.GetEntityCount(layerIndex);
@@ -1307,7 +1308,7 @@ namespace bw
 		const auto& entity = m_canvas->RetrieveEntityByUniqueId(mapEntity.uniqueId);
 
 		EntityInfoDialog* editEntityDialog = GetEntityInfoDialog();
-		editEntityDialog->Open(mapEntity.uniqueId, std::move(entityInfo), entity, [this, uniqueId = mapEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
+		editEntityDialog->Open(mapEntity.uniqueId, layerIndex, std::move(entityInfo), entity, [this, uniqueId = mapEntity.uniqueId](EntityInfoDialog* /*editEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags updateFlags)
 		{
 			Map::Entity entity;
 			entity.entityType = std::move(entityInfo.entityClass);

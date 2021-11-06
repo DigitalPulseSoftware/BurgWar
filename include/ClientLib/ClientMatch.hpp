@@ -80,7 +80,10 @@ namespace bw
 			ClientLayer& GetLayer(LayerIndex layerIndex) override;
 			const ClientLayer& GetLayer(LayerIndex layerIndex) const override;
 			LayerIndex GetLayerCount() const override;
-			inline const PlayerInputData& GetLocalPlayerInputs(Nz::UInt8 localPlayerIndex) const;
+			inline ClientPlayer* GetLocalPlayerClientPlayer(std::size_t localPlayerIndex);
+			inline const ClientPlayer* GetLocalPlayerClientPlayer(std::size_t localPlayerIndex) const;
+			inline std::size_t GetLocalPlayerCount() const;
+			inline const PlayerInputData& GetLocalPlayerInputs(std::size_t localPlayerIndex) const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
@@ -176,6 +179,12 @@ namespace bw
 
 			struct LocalPlayerData
 			{
+				struct Weapon
+				{
+					Ndk::EntityHandle entity;
+					Nz::UInt8 category;
+				};
+
 				LocalPlayerData(Nz::UInt8 localIndex) :
 				localIndex(localIndex)
 				{
@@ -183,7 +192,7 @@ namespace bw
 
 				std::size_t selectedWeapon;
 				std::shared_ptr<InputPoller> inputPoller;
-				std::vector<Ndk::EntityHandle> weapons;
+				std::vector<Weapon> weapons;
 				ClientLayerEntityHandle controlledEntity;
 				Nz::UInt8 localIndex;
 				Nz::UInt16 layerIndex = 0xFFFF;

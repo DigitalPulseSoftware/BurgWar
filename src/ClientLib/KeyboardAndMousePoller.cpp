@@ -17,7 +17,39 @@ namespace bw
 	m_window(window),
 	m_localPlayerIndex(localPlayerIndex)
 	{
-		m_onMouseWheelMovedSlot.Connect(m_window.GetEventHandler().OnMouseWheelMoved, [this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		Nz::EventHandler& eventHandler = m_window.GetEventHandler();
+		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		{
+			switch (event.virtualKey)
+			{
+				case Nz::Keyboard::VKey::Num1:
+				case Nz::Keyboard::VKey::Num2:
+				case Nz::Keyboard::VKey::Num3:
+				case Nz::Keyboard::VKey::Num4:
+				case Nz::Keyboard::VKey::Num5:
+				case Nz::Keyboard::VKey::Num6:
+				case Nz::Keyboard::VKey::Num7:
+				case Nz::Keyboard::VKey::Num8:
+				case Nz::Keyboard::VKey::Num9:
+				{
+					unsigned int weaponIndex = static_cast<unsigned int>(event.virtualKey) - static_cast<unsigned int>(Nz::Keyboard::VKey::Num0);
+					OnSwitchWeaponIndex(this, weaponIndex);
+					break;
+				}
+
+				case Nz::Keyboard::VKey::Num0:
+				{
+					OnSwitchWeaponIndex(this, 10);
+					break;
+				}
+
+
+				default:
+					break;
+			}
+		});
+
+		m_onMouseWheelMovedSlot.Connect(eventHandler.OnMouseWheelMoved, [this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
 		{
 			OnSwitchWeapon(this, event.delta > 0.f);
 		});

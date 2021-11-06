@@ -3,6 +3,7 @@ set_xmakever("2.5.6")
 
 option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
 
+set_policy("package.requires_lock", true)
 add_repositories("burgwar-repo xmake-repo")
 
 set_project("BurgWar")
@@ -11,8 +12,8 @@ set_version("0.2.0")
 add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
-add_requires("nazaraengine 2021.06.10", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.06.10", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine 2021.08.28", { alias = "nazara" })
+add_requires("nazaraengine~server 2021.08.28", { alias = "nazaraserver", configs = { server = true } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
@@ -76,6 +77,8 @@ target("lua")
 		target:set("kind", static and "static" or "shared")
 	end)
 
+	set_warnings("none")
+
 	add_options("clientlib_static")
 	add_options("corelib_static")
 	add_rules("install_bin", "install_symbolfile")
@@ -89,7 +92,7 @@ target("CoreLib")
 	set_group("Common")
 	set_basename("BurgCore")
 
-	on_load(function (target)
+	after_load(function (target)
 		target:set("kind", target:opt("corelib_static") and "static" or "shared")
 	end)
 
@@ -167,7 +170,7 @@ target("ClientLib")
 	set_group("Common")
 	set_basename("BurgClient")
 
-	on_load(function (target)
+	after_load(function (target)
 		target:set("kind", target:dep("clientlib_static") and "static" or "shared")
 	end)
 
@@ -204,6 +207,10 @@ target("BurgWar")
 	add_headerfiles("src/Client/**.hpp", "src/Client/**.inl")
 	add_files("src/Client/**.cpp")
 	add_packages("nazara")
+
+	if is_plat("windows", "mingw") then
+		add_files("src/Client/resources.rc")
+	end
 
 	after_install(function (target)
 		os.vcp("clientconfig.lua", path.join(target:installdir(), "bin"))
@@ -248,8 +255,12 @@ if has_config("build_mapeditor") then
 
 		-- Prevents symbol finding issues between Qt5 compiled with C++ >= 14 and Qt5 compiled with C++11
 		-- see https://stackoverflow.com/questions/53022608/application-crashes-with-symbol-zdlpvm-version-qt-5-not-defined-in-file-libqt
-		if (not is_plat("windows")) then
+		if not is_plat("windows") then
 			add_cxxflags("-fno-sized-deallocation")
+		end
+
+		if is_plat("windows", "mingw") then
+			add_files("src/Client/resources.rc")
 		end
 
 		add_frameworks("QtCore", "QtGui", "QtWidgets")

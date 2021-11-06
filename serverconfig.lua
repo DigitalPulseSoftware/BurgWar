@@ -13,6 +13,7 @@ https://burgwar.digitalpulse.software/resources
 	MasterServers = [[
 https://bwmasterserver.digitalpulse.software
 	]],
+	DisableWhenEmpty = true,
 	Gamemode = "deathmatch",
 	MapPath = "beta_map.bmap",
 	Name = "no name set",

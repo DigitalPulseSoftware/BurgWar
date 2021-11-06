@@ -22,10 +22,7 @@
 
 #include <io.h>
 #include <fcntl.h>
-#include <windows.h>
-
-#else
-
+#include <Windows.h>
 
 #endif
 

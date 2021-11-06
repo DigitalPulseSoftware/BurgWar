@@ -3,6 +3,7 @@ RegisterClientScript()
 local scale = 0.2
 
 local weapon = ScriptedWeapon({
+	Category = 4,
 	Cooldown = 1,
 	Scale = scale,
 	Sprite = "grenade.png",

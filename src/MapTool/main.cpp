@@ -38,17 +38,14 @@ int BurgWarMapTool(int argc, char* argv[])
 			return EXIT_SUCCESS;
 		}
 
-		bool first = true;
 		std::vector<std::string> inputMaps = result["input"].as<std::vector<std::string>>();
-		for (const std::string& inputMap : result["input"].as<std::vector<std::string>>())
+		for (const std::string& inputMap : inputMaps)
 		{
 			std::filesystem::path inputPath = inputMap;
 			std::filesystem::path mapName;
 
-			if (!first)
-				fmt::print("-----\n");
-
-			first = false;
+			if (inputMaps.size() > 1)
+				fmt::print("--- {0} ---\n", inputPath.generic_u8string());
 
 			bw::Map map;
 
@@ -98,18 +95,20 @@ int BurgWarMapTool(int argc, char* argv[])
 				// Show info about the map
 				const auto& mapInfo = map.GetMapInfo();
 
-				fmt::print("{input_map} info:\n- Name: {name}\n- Description: {desc}\n- Author: {author}\n", fmt::arg("input_map", inputMap), fmt::arg("name", mapInfo.name), fmt::arg("desc", mapInfo.description), fmt::arg("author", mapInfo.author));
+				fmt::print("{input_map} info:\n- Name: {name}\n- Description: {desc}\n- Author: {author}\n", 
+					fmt::arg("input_map", inputMap), 
+					fmt::arg("name", mapInfo.name), 
+					fmt::arg("desc", mapInfo.description), 
+					fmt::arg("author", mapInfo.author));
 
 				std::size_t layerCount = map.GetLayerCount();
 				fmt::print("\nThis map has {} layer(s):\n", layerCount);
 				for (std::size_t i = 0; i < layerCount; ++i)
 				{
-					const auto& layer = map.GetLayer(i);
+					const auto& layer = map.GetLayer(static_cast<bw::LayerIndex>(i));
 					fmt::print("- layer #{} ({}) has {} entities\n", i, layer.name, layer.entities.size());
 				}
 			}
-
-			first = false;
 		}
 	}
 	catch (const cxxopts::OptionException& e)

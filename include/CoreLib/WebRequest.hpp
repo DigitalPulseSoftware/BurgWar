@@ -10,6 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/WebRequestResult.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
+#include <Nazara/Network/Enums.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>
 #include <string>
@@ -30,6 +31,8 @@ namespace bw
 			WebRequest(const WebRequest&) = delete;
 			WebRequest(WebRequest&&) = default;
 			~WebRequest();
+
+			void ForceProtocol(Nz::NetProtocol protocol);
 
 			inline void SetDataCallback(DataCallback callback);
 			inline void SetHeader(std::string header, std::string value);

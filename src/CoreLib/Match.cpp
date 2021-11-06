@@ -40,8 +40,8 @@ namespace bw
 	m_sessions(*this),
 	m_settings(std::move(matchSettings)),
 	m_modSettings(std::move(modSettings)),
-	m_disableWhenEmpty(true),
-	m_isResetting(false)
+	m_isResetting(false),
+	m_isMatchRunning(true)
 	{
 		ReloadMods();
 		ReloadAssets();
@@ -56,14 +56,17 @@ namespace bw
 
 		if (WebService::IsInitialized())
 		{
-			const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
-			SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+			if (m_settings.registerToMasterServer && m_settings.port != 0)
 			{
-				if (!masterServerURI.empty())
-					m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
+				const std::string& masterServerList = m_app.GetConfig().GetStringValue("ServerSettings.MasterServers");
+				SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
+				{
+					if (!masterServerURI.empty())
+						m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
 
-				return true;
-			});
+					return true;
+				});
+			}
 		}
 		else
 			bwLog(GetLogger(), LogLevel::Warning, "web services are not initialized, server will not be listed");
@@ -637,15 +640,15 @@ namespace bw
 		return entity->GetComponent<MatchComponent>().GetUniqueId();
 	}
 
-	void Match::Update(float elapsedTime)
+	bool Match::Update(float elapsedTime)
 	{
 		m_sessions.Poll();
 
 		for (const auto& masterServerEntryPtr : m_masterServerEntries)
 			masterServerEntryPtr->Update(elapsedTime);
 
-		if (m_disableWhenEmpty && m_freePlayerId.TestAll())
-			return;
+		if (m_settings.sleepWhenEmpty && m_freePlayerId.TestAll())
+			return m_isMatchRunning;
 
 		m_scriptingContext->Update();
 
@@ -726,6 +729,8 @@ namespace bw
 					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
+
+		return m_isMatchRunning;
 	}
 
 	void Match::BuildMatchData()

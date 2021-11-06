@@ -10,8 +10,11 @@ namespace bw
 	ConfigFile(app)
 	{
 		RegisterStringOption("JoinServer.Address", "localhost");
+		RegisterStringOption("StartServer.Description", "");
+		RegisterBoolOption("StartServer.ListServer", false);
 		RegisterStringOption("StartServer.Gamemode", "deathmatch");
 		RegisterStringOption("StartServer.Map", "beta_map");
+		RegisterStringOption("StartServer.Name", "A server has no name");
 		RegisterIntegerOption("JoinServer.Port", 0, 0xFFFF, 14768);
 		RegisterIntegerOption("StartServer.Port", 0, 0xFFFF, 14768);
 		RegisterIntegerOption("Sound.GlobalVolume", 0, 100, 80);

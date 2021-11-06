@@ -20,7 +20,7 @@ namespace bw
 	class ServerState final : public AbstractState
 	{
 		public:
-			ServerState(std::shared_ptr<StateData> stateDataPtr, Nz::UInt16 listenPort, const std::string& gamemode, const std::string& map, std::shared_ptr<AbstractState> originalState);
+			ServerState(std::shared_ptr<StateData> stateDataPtr, Match::MatchSettings matchSettings, Match::GamemodeSettings gamemodeSettings, Match::ModSettings modSettings, std::shared_ptr<AbstractState> originalState);
 			~ServerState() = default;
 
 			inline Match& GetMatch();

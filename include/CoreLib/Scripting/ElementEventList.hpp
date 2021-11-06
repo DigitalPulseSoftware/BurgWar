@@ -13,6 +13,7 @@
 /*** Common ***/
 
 // Shared element events
+BURGWAR_EVENT(CollisionStop)
 BURGWAR_EVENT(CollisionStart)
 BURGWAR_EVENT(Death)
 BURGWAR_EVENT(Destroyed)

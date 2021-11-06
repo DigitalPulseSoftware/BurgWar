@@ -523,7 +523,7 @@
 	],
 	"author": "Lynix",
 	"description": "Ceci est une description.",
-	"gameVersion": "0.2.0",
+	"gameVersion": "0.2.1",
 	"layers": [
 		{
 			"backgroundColor": {
@@ -3377,25 +3377,6 @@
 					"uniqueId": 90
 				},
 				{
-					"entityType": "entity_trigger_kill",
-					"name": "",
-					"position": {
-						"x": 2048.0,
-						"y": 1962.0
-					},
-					"properties": {
-						"size": {
-							"type": "FloatSize",
-							"value": {
-								"x": 10240.0,
-								"y": 1024.0
-							}
-						}
-					},
-					"rotation": 0.0,
-					"uniqueId": 67
-				},
-				{
 					"entityType": "entity_camera_rect",
 					"name": "",
 					"position": {
@@ -3923,6 +3904,29 @@
 					},
 					"rotation": 0.0,
 					"uniqueId": 100
+				},
+				{
+					"entityType": "entity_playable_area",
+					"name": "",
+					"position": {
+						"x": -513.0,
+						"y": -385.0
+					},
+					"properties": {
+						"padding": {
+							"type": "Float",
+							"value": 0.0
+						},
+						"size": {
+							"type": "FloatSize",
+							"value": {
+								"x": 5120.0,
+								"y": 2048.0
+							}
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 101
 				}
 			],
 			"name": "Layer #1"

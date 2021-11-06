@@ -152,6 +152,21 @@ namespace bw
 			ClientMatch& match = GetMatch();
 			return match.GetCamera().CreateHandle();
 		});
+		
+		library["GetLocalPlayers"] = LuaFunction([&](sol::this_state L) -> sol::table
+		{
+			sol::state_view lua(L);
+
+			ClientMatch& match = GetMatch();
+
+			sol::table playerTable = lua.create_table();
+
+			std::size_t localPlayerCount = match.GetLocalPlayerCount();
+			for (std::size_t i = 0; i < localPlayerCount; ++i)
+				playerTable[i + 1] = match.GetLocalPlayerClientPlayer(i)->CreateHandle();
+
+			return playerTable;
+		});
 
 		library["GetPlayerByIndex"] = LuaFunction([&](sol::this_state L, Nz::UInt16 playerIndex) -> sol::object
 		{

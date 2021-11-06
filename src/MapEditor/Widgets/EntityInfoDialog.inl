@@ -6,6 +6,11 @@
 
 namespace bw
 {
+	inline LayerIndex EntityInfoDialog::GetLayerIndex() const
+	{
+		return m_entityLayer;
+	}
+
 	inline const Nz::Vector2f& EntityInfoDialog::GetPosition() const
 	{
 		return m_entityInfo.position;

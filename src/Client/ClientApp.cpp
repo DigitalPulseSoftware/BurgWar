@@ -124,7 +124,8 @@ namespace bw
 
 			m_networkReactors.Update();
 
-			m_stateMachine.Update(GetUpdateTime());
+			if (!m_stateMachine.Update(GetUpdateTime()))
+				break;
 		}
 
 		return 0;

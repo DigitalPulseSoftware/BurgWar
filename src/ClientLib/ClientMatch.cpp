@@ -131,6 +131,7 @@ namespace bw
 			auto& playerData = m_localPlayers.emplace_back(i);
 			playerData.inputPoller = std::make_shared<KeyboardAndMousePoller>(*window, i);
 			playerData.playerIndex = authSuccess.players[i].playerIndex;
+
 			playerData.inputPoller->OnSwitchWeapon.Connect([this, i](InputPoller* /*emitter*/, bool direction)
 			{
 				auto& playerData = m_localPlayers[i];
@@ -149,6 +150,30 @@ namespace bw
 				Packets::PlayerSelectWeapon selectPacket;
 				selectPacket.localIndex = i;
 				selectPacket.newWeaponIndex = static_cast<Nz::UInt8>((playerData.selectedWeapon < playerData.weapons.size()) ? playerData.selectedWeapon : selectPacket.NoWeapon);
+
+				m_session.SendPacket(selectPacket);
+			});
+
+			playerData.inputPoller->OnSwitchWeaponIndex.Connect([this, i](InputPoller* /*emitter*/, unsigned int index)
+			{
+				auto& playerData = m_localPlayers[i];
+				auto it = std::find_if(playerData.weapons.begin(), playerData.weapons.end(), [&](const auto& weaponData)
+				{
+					return weaponData.category == index;
+				});
+
+				if (it == playerData.weapons.end())
+					return;
+
+				std::size_t selectedWeapon = std::distance(playerData.weapons.begin(), it);
+				if (playerData.selectedWeapon == selectedWeapon)
+					return;
+
+				playerData.selectedWeapon = selectedWeapon;
+
+				Packets::PlayerSelectWeapon selectPacket;
+				selectPacket.localIndex = i;
+				selectPacket.newWeaponIndex = static_cast<Nz::UInt8>(selectedWeapon);
 
 				m_session.SendPacket(selectPacket);
 			});
@@ -1596,10 +1621,14 @@ namespace bw
 
 			assert(layerEntity.GetEntity()->HasComponent<WeaponComponent>());
 
-			playerData.weapons.emplace_back(layerEntity.GetEntity());
-
 			auto& scriptComponent = layerEntity.GetEntity()->GetComponent<ScriptComponent>();
-			bwLog(GetLogger(), LogLevel::Info, "Player #{0} has weapon {1}", +packet.localIndex, scriptComponent.GetElement()->fullName);
+			const ScriptedWeapon& weaponData = static_cast<const ScriptedWeapon&>(*scriptComponent.GetElement());
+
+			auto& weapon = playerData.weapons.emplace_back();
+			weapon.entity = layerEntity.GetEntity();
+			weapon.category = weaponData.category;
+
+			bwLog(GetLogger(), LogLevel::Info, "Player #{0} has weapon {1}", +packet.localIndex, weaponData.fullName);
 		}
 
 		playerData.selectedWeapon = playerData.weapons.size();
@@ -1732,14 +1761,14 @@ namespace bw
 					}
 				}
 
-				for (auto&& weaponEntity : controllerData.weapons)
+				for (auto&& weapon : controllerData.weapons)
 				{
-					if (!weaponEntity || !weaponEntity->HasComponent<WeaponComponent>())
+					if (!weapon.entity || !weapon.entity->HasComponent<WeaponComponent>())
 						continue;
 
 					auto& weaponData = playerData.weapons.emplace_back();
-					weaponData.entity = weaponEntity;
-					weaponData.isAttacking = weaponEntity->GetComponent<WeaponComponent>().IsAttacking();
+					weaponData.entity = weapon.entity;
+					weaponData.isAttacking = weapon.entity->GetComponent<WeaponComponent>().IsAttacking();
 				}
 			}
 
