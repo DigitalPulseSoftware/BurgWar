@@ -71,10 +71,6 @@ WORKDIR /srv/
 
 COPY --from=build-env /home/burgwar/BurgWar/build/ .
 
-# TEMP: prepare blank server
-COPY serverconfig.lua serverconfig.lua
-COPY assets/ assets/
-
 # Copy mods and scripts from bw repo
 COPY --from=build-env /home/burgwar/BurgWar/mods/ mods/
 COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
