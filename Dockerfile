@@ -31,15 +31,14 @@ RUN curl -fsSL https://xmake.io/shget.text | /bin/bash
 RUN /home/burgwar/.local/bin/xmake update -s dev
 
 # Build server
-RUN git clone https://github.com/DigitalPulseSoftware/BurgWar.git
-WORKDIR /home/burgwar/BurgWar
+COPY . /home/burgwar/
 
 RUN /home/burgwar/.local/bin/xmake config --mode=releasedbg -y --build_mapeditor=false
 RUN /home/burgwar/.local/bin/xmake -r BurgWarServer
 
 # Compile every default map
 RUN /home/burgwar/.local/bin/xmake -r BurgWarMapTool
-RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool -c /home/burgwar/BurgWar/maps/*
+RUN /home/burgwar/.local/bin/xmake run BurgWarMapTool -c /home/burgwar/maps/*
 
 RUN /home/burgwar/.local/bin/xmake install -v -o build/ BurgWarServer
 
@@ -69,14 +68,14 @@ RUN chown -R burgwar:burgwar /srv/
 USER burgwar
 WORKDIR /srv/
 
-COPY --from=build-env /home/burgwar/BurgWar/build/ .
+COPY --from=build-env /home/burgwar/build/ .
 
 # Copy mods and scripts from bw repo
-COPY --from=build-env /home/burgwar/BurgWar/mods/ mods/
-COPY --from=build-env /home/burgwar/BurgWar/scripts/ scripts/
+COPY --from=build-env /home/burgwar/mods/ mods/
+COPY --from=build-env /home/burgwar/scripts/ scripts/
 
 # Copy every default map
-COPY --from=build-env /home/burgwar/BurgWar/bin/linux_x86_64_releasedbg/*.bmap /srv/
+COPY --from=build-env /home/burgwar/bin/linux_x86_64_releasedbg/*.bmap /srv/
 
 # Set entrypoint
 ENTRYPOINT /srv/bin/BurgWarServer
