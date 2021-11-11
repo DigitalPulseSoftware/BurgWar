@@ -64,6 +64,21 @@ You should now be able to run the game using XMake, by running `xmake run <targe
 
 **Note: you need to use `xmake run` to run the game because of the dependencies installed by XMake which wouldn't be found otherwise, you can use `xmake install -o installed` to have XMake copy all necessary files in the `installed/bin` folder.**
 
+### Run the docker image for the server
+
+You need only few steps to build and run BurgWar server image:
+- `git clone` the repository
+- Build image with `docker build --tag burgwar-server:latest .`
+- Run server:
+```
+docker run -ti --rm --name=burgwar-server -p 14768:14768/udp \
+ -v /relativeOrAbsolute/path/to/assets:/srv/assets/ \
+ -v /relativeOrAbsolute/path/to/mods:/srv/mods/ \
+ -v /relativeOrAbsolute/path/to/scripts:/srv/scripts/ \
+ -v /absolute/path/to/serverconfig.lua:/srv/serverconfig.lua \
+ burgwar-server:latest
+```
+
 ## What technologies are used by Burg'War?
 
 The technologies behind Burg'War are :
