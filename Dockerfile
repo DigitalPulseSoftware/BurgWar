@@ -47,7 +47,7 @@ RUN /home/burgwar/.local/bin/xmake install -v -o build/ BurgWarServer
 ##############################
 FROM debian:latest
 
-LABEL org.opencontainers.image.authors="Jerome Leclercq;Axel \"Elanis\" Soupe"
+LABEL org.opencontainers.image.authors="Jerome \"Lynix\" Leclercq;Axel \"Elanis\" Soupe"
 EXPOSE 14768/udp
 HEALTHCHECK --interval=1m --timeout=3s CMD netstat -nltpu | grep -c 14768
 
