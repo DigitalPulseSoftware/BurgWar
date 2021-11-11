@@ -79,6 +79,8 @@ docker run -ti --rm --name=burgwar-server -p 14768:14768/udp \
  burgwar-server:latest
 ```
 
+**Warning:** If you are using Docker Desktop on Windows, you should execute this command under a WSL console. Executing with Git bash for example won't work.
+
 ## What technologies are used by Burg'War?
 
 The technologies behind Burg'War are :
