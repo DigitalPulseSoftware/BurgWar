@@ -391,6 +391,7 @@ namespace bw
 				using T = std::decay_t<decltype(dummyType)>;
 
 				static constexpr PropertyType Property = T::Property;
+				using UnderlyingType = PropertyUnderlyingType_t<Property>;
 
 				if (isArray)
 				{
@@ -409,7 +410,8 @@ namespace bw
 				}
 				else
 				{
-					PropertySingleValue<Property> propertyValue(value);
+					UnderlyingType extractedValue = value;
+					PropertySingleValue<Property> propertyValue(std::move(extractedValue));
 					entity.properties.emplace(std::move(propertyName), std::move(propertyValue));
 				}
 			};

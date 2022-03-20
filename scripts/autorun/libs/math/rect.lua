@@ -49,7 +49,7 @@ function rectmeta:ExtendToRect(rect)
 
 	self.x = math.min(self.x, rect.x)
 	self.y = math.min(self.y, rect.y)
-	
+
 	self.width = newWidth - self.x
 	self.height = newHeight - self.y
 end

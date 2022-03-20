@@ -132,7 +132,7 @@ namespace Nz
 			Nz::UInt8 byteValue = integerValue & 0x7F;
 			integerValue >>= 7;
 
-			remaining = (integerValue > 0);
+			remaining = (integerValue != 0);
 			if (remaining)
 				byteValue |= 0x80;
 

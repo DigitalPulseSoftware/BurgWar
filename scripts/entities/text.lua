@@ -9,7 +9,7 @@ local entity = ScriptedEntity({
 })
 
 if (CLIENT) then
-    entity:On("init", function (self)
+    entity:On("Init", function (self)
 		self.Text = self:AddText({
 			RenderOrder = self:GetProperty("renderOrder"),
 			Text = self:GetProperty("text")

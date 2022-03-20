@@ -56,10 +56,10 @@ namespace bw
 		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(DownloadClientFileRequest,   Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(PlayerConsoleCommand,        Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(PlayerSelectWeapon,          Nz::ENetPacketFlag_Reliable, 0);
+		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);
 		OutgoingCommand(ScriptPacket,                Nz::ENetPacketFlag_Reliable, 1);
 		OutgoingCommand(UpdatePlayerName,            Nz::ENetPacketFlag_Reliable, 1);

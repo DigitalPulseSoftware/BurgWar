@@ -207,6 +207,22 @@ namespace bw
 			return;
 		}
 
+		for (const auto& inputOpt : packet.inputs)
+		{
+			if (!inputOpt)
+				continue;
+
+			auto& inputs = *inputOpt;
+			if (std::isinf(inputs.aimDirection.x) || std::isinf(inputs.aimDirection.y))
+				return; //< infinite value
+
+			if (std::isnan(inputs.aimDirection.x) || std::isnan(inputs.aimDirection.y))
+				return; //< not a number
+
+			if (std::abs(inputs.aimDirection.GetSquaredLength() - 1.f) > 0.01f)
+				return; //< not a unit vector: ignore
+		}
+
 		// Compute client error
 		Nz::UInt16 currentTick = m_match.GetNetworkTick();
 		Nz::UInt16 adjustedTick = currentTick + 2; // Prevent network jitter

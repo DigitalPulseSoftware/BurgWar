@@ -16,7 +16,7 @@ entity:On("init", function (self)
 		collider.ColliderType = ColliderType.Callback
 	end
 	self:SetColliders(colliders)
-	
+
 	self.DisappearTime = match.GetSeconds() + self:GetProperty("lifetime")
 end)
 

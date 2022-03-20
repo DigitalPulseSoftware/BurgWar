@@ -80,7 +80,7 @@ namespace bw
 			template<typename T>
 			sol::object operator()(SharedMatch* /*match*/, sol::state_view& lua, T&& value)
 			{
-				return sol::make_object(lua, value);
+				return sol::make_object(lua, std::forward<T>(value));
 			}
 		};
 
