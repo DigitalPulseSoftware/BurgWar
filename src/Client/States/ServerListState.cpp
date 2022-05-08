@@ -30,7 +30,7 @@ namespace bw
 		else
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
 
-		m_serverListWidget = GetStateData().canvas->Add<Ndk::BaseWidget>();
+		m_serverListWidget = GetStateData().canvas->Add<Nz::BaseWidget>();
 
 		m_serverListScrollbar = CreateWidget<Ndk::ScrollAreaWidget>(m_serverListWidget);
 		m_serverListScrollbar->EnableBackground(true);
@@ -148,13 +148,13 @@ namespace bw
 
 		m_serverListWidget->Resize({ maxWidth, heightCursor.y });
 
-		std::array<Ndk::BaseWidget*, 2> widgets = {
+		std::array<Nz::BaseWidget*, 2> widgets = {
 			m_backButton,
 			m_directConnectButton
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 			totalSize += widget->GetSize().x;
 
 		Nz::Vector2f cursor;

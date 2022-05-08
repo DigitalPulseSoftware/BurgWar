@@ -103,7 +103,7 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 4> widgets = {
+		std::array<Nz::BaseWidget*, 4> widgets = {
 			m_startServerButton,
 			m_joinServerButton,
 			m_optionButton,
@@ -112,7 +112,7 @@ namespace bw
 
 		float maxWidth = 0.f;
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 		{
 			Nz::Vector2f size = widget->GetSize();
 
@@ -123,7 +123,7 @@ namespace bw
 		Nz::Vector2f cursor = center;
 		cursor.y -= totalSize / 2.f;
 
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 		{
 			widget->Resize({ maxWidth, widget->GetHeight() });
 			widget->SetPosition({ 0.f, cursor.y, 0.f });

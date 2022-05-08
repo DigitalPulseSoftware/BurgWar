@@ -9,11 +9,11 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "entt", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
-add_requires("nazaraengine 2021.08.28", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.08.28", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine", { alias = "nazara" })
+add_requires("nazaraengine~server", { alias = "nazaraserver", configs = { audio = false, graphics = false, platform = false, renderer = false } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
@@ -104,7 +104,7 @@ target("CoreLib")
 	add_headerfiles("include/(CoreLib/**.hpp)", "include/(CoreLib/**.inl)")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", { public = true })
+	add_packages("concurrentqueue", "entt", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
 	add_packages("nazaraserver")
 	add_packages("libcurl", { public = true, links = {} })
 

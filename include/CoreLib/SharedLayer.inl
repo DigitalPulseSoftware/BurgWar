@@ -10,7 +10,7 @@ namespace bw
 	template<typename F>
 	void SharedLayer::ForEachEntity(F&& func)
 	{
-		for (const Ndk::EntityHandle& entity : m_world.GetEntities())
+		for (entt::entity entity : m_world.GetEntities())
 			func(entity);
 	}
 
@@ -24,13 +24,13 @@ namespace bw
 		return m_match;
 	}
 	
-	inline Ndk::World& SharedLayer::GetWorld()
+	inline entt::registry& SharedLayer::GetWorld()
 	{
-		return m_world;
+		return m_registry;
 	}
 
-	inline const Ndk::World& SharedLayer::GetWorld() const
+	inline const entt::registry& SharedLayer::GetWorld() const
 	{
-		return m_world;
+		return m_registry;
 	}
 }

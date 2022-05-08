@@ -20,7 +20,7 @@ namespace bw
 			EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities);
 			virtual ~EditorGizmo();
 
-			inline const Ndk::EntityHandle& GetSelectionOverlayEntity() const;
+			inline entt::entity GetSelectionOverlayEntity() const;
 			inline const std::vector<LayerVisualEntityHandle>& GetTargetEntities() const;
 
 			virtual bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;

@@ -124,7 +124,7 @@ namespace bw
 						throw std::runtime_error("failed to create client script cache directory: " + clientFolderPath.generic_u8string());
 				}
 
-				if (!m_outputFile.Open(filePath, Nz::OpenMode_Truncate | Nz::OpenMode_WriteOnly))
+				if (!m_outputFile.Open(filePath, Nz::OpenMode::Truncate | Nz::OpenMode::WriteOnly))
 					throw std::runtime_error("failed to open file " + filePath);
 			}
 			else if constexpr (std::is_same_v<T, Packets::DownloadClientFileResponse::Failure>)

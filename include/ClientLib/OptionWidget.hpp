@@ -20,10 +20,10 @@ namespace bw
 {
 	class ConfigFile;
 
-	class BURGWAR_CLIENTLIB_API OptionWidget : public Ndk::BaseWidget
+	class BURGWAR_CLIENTLIB_API OptionWidget : public Nz::BaseWidget
 	{
 		public:
-			OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig);
+			OptionWidget(Nz::BaseWidget* parent, ConfigFile& playerConfig);
 			OptionWidget(const OptionWidget&) = delete;
 			OptionWidget(OptionWidget&&) = delete;
 			~OptionWidget() = default;

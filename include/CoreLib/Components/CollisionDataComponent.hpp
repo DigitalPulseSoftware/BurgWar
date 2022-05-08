@@ -10,29 +10,31 @@
 #include <CoreLib/Colliders.hpp>
 #include <CoreLib/Export.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
-#include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API CollisionDataComponent : public Ndk::Component<CollisionDataComponent>
+	class BURGWAR_CORELIB_API CollisionDataComponent
 	{
 		friend class ColliderSystem;
 
 		public:
 			CollisionDataComponent() = default;
+			CollisionDataComponent(const CollisionDataComponent&) = default;
+			CollisionDataComponent(CollisionDataComponent&&) = default;
 			~CollisionDataComponent() = default;
 
 			inline void AddCollider(Collider collider);
 
-			Nz::Collider2DRef BuildCollider(float scale = 1.f) const;
+			std::shared_ptr<Nz::Collider2D> BuildCollider(float scale = 1.f) const;
 
 			inline const std::vector<Collider>& GetColliders() const;
 
-			static Ndk::ComponentIndex componentIndex;
+			CollisionDataComponent& operator=(const CollisionDataComponent&) = default;
+			CollisionDataComponent& operator=(CollisionDataComponent&&) = default;
 
 		private:
-			static Nz::Collider2DRef ToCollider(const Collider& collider, float scale);
+			static std::shared_ptr<Nz::Collider2D> ToCollider(const Collider& collider, float scale);
 
 			std::vector<Collider> m_colliders;
 	};

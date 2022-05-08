@@ -29,7 +29,7 @@ namespace bw
 			SoundEntity(SoundEntity&& entity) noexcept;
 			~SoundEntity();
 
-			inline const Ndk::EntityHandle& GetEntity() const;
+			inline entt::entity GetEntity() const;
 
 			void PlaySound(std::size_t soundIndex, const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized);
 

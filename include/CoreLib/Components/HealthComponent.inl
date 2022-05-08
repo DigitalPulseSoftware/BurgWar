@@ -6,19 +6,21 @@
 
 namespace bw
 {
-	inline HealthComponent::HealthComponent(Nz::UInt16 maxHealth) :
+	inline HealthComponent::HealthComponent(entt::registry& registry, entt::entity entity, Nz::UInt16 maxHealth) :
+	BaseComponent(registry, entity),
 	m_currentHealth(maxHealth),
 	m_maxHealth(maxHealth)
 	{
 	}
 
 	inline HealthComponent::HealthComponent(const HealthComponent& health) :
+	BaseComponent(health),
 	m_currentHealth(health.m_currentHealth),
 	m_maxHealth(health.m_maxHealth)
 	{
 	}
 
-	inline void HealthComponent::Damage(Nz::UInt16 damage, const Ndk::EntityHandle& attacker)
+	inline void HealthComponent::Damage(Nz::UInt16 damage, entt::entity attacker)
 	{
 		OnDamage(this, damage, attacker);
 
@@ -40,10 +42,7 @@ namespace bw
 
 				// Recheck health in case a slot gave us health
 				if (m_currentHealth == 0)
-				{
-					OnDied(this, attacker);
-					m_entity->Kill();
-				}
+					OnDie(this, attacker);
 			}
 		}
 	}
@@ -63,7 +62,7 @@ namespace bw
 		return m_maxHealth;
 	}
 
-	inline void HealthComponent::Heal(Nz::UInt16 heal, const Ndk::EntityHandle& healer)
+	inline void HealthComponent::Heal(Nz::UInt16 heal, entt::entity healer)
 	{
 		Nz::UInt16 newHealth = m_currentHealth + heal;
 		if (newHealth < m_currentHealth)

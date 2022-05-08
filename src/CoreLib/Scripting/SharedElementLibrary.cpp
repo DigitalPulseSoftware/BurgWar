@@ -26,8 +26,8 @@ namespace bw
 	{
 		elementMetatable["DeleteOnRemove"] = LuaFunction([](const sol::table& entityTable, const sol::table& targetEntityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			const Ndk::EntityHandle& targetEntity = AssertScriptEntity(targetEntityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::entity targetEntity = AssertScriptEntity(targetEntityTable);
 
 			if (!entity->HasComponent<EntityOwnerComponent>())
 				entity->AddComponent<EntityOwnerComponent>();
@@ -37,13 +37,13 @@ namespace bw
 
 		elementMetatable["Disable"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			entity->Disable();
 		});
 
 		elementMetatable["Disconnect"] = LuaFunction([&](const sol::table& entityTable, const ElementEventConnection& eventConnection)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			entity->Invalidate();
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
@@ -62,13 +62,13 @@ namespace bw
 
 		elementMetatable["Enable"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			entity->Enable();
 		});
 
 		elementMetatable["GetDirection"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
@@ -81,7 +81,7 @@ namespace bw
 
 		elementMetatable["GetPosition"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
@@ -89,7 +89,7 @@ namespace bw
 
 		elementMetatable["GetRotation"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
@@ -97,7 +97,7 @@ namespace bw
 
 		elementMetatable["GetScale"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys_Global));
@@ -106,13 +106,13 @@ namespace bw
 
 		elementMetatable["IsEnabled"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			return entity->IsEnabled();
 		});
 
 		elementMetatable["IsLookingRight"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return nodeComponent.GetScale().x > 0.f;
@@ -120,13 +120,13 @@ namespace bw
 
 		elementMetatable["IsValid"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
+			entt::entity entity = RetrieveScriptEntity(entityTable);
 			return entity.IsValid();
 		});
 		
 		elementMetatable["Kill"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (entity->HasComponent<HealthComponent>())
 			{
 				auto& entityHealth = entity->GetComponent<HealthComponent>();
@@ -148,19 +148,19 @@ namespace bw
 
 		elementMetatable["SetLifeTime"] = LuaFunction([](const sol::table& entityTable, float lifetime)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
 		});
 
 		elementMetatable["SetScale"] = LuaFunction([&](const sol::table& entityTable, float scale)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			SetScale(entity, scale);
 		});
 
 		elementMetatable["ToLocalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
@@ -168,7 +168,7 @@ namespace bw
 
 		elementMetatable["ToGlobalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& localPosition)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
@@ -176,7 +176,7 @@ namespace bw
 
 		elementMetatable["Trigger"] = LuaFunction([](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			const auto& element = entityScript.GetElement();
@@ -210,7 +210,7 @@ namespace bw
 			return eventData.index;
 		};
 
-		if (Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable))
+		if (entt::entity entity = RetrieveScriptEntity(entityTable))
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
@@ -248,7 +248,7 @@ namespace bw
 		if (async && HasReturnValue(scriptingEvent))
 			TriggerLuaArgError(L, 2, "events returning a value cannot be async");
 
-		if (Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable))
+		if (entt::entity entity = RetrieveScriptEntity(entityTable))
 		{
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 			std::size_t callbackId = entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);

@@ -287,7 +287,7 @@ namespace bw
 
 				if (m_clientVisibleLayers.UnboundedTest(i))
 				{
-					for (const Ndk::EntityHandle& entity : syncSystem.GetEntities())
+					for (entt::entity entity : syncSystem.GetEntities())
 						layer.visibleEntities.emplace(entity->GetId(), Layer::VisibleEntityData{});
 
 					continue;

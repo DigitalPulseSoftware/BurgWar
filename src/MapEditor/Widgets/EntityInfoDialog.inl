@@ -21,7 +21,7 @@ namespace bw
 		return m_entityInfo.rotation;
 	}
 
-	const Ndk::EntityHandle& EntityInfoDialog::GetTargetEntity() const
+	entt::entity EntityInfoDialog::GetTargetEntity() const
 	{
 		return m_targetEntity;
 	}

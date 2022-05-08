@@ -8,28 +8,31 @@
 #define BURGWAR_CORELIB_COMPONENTS_WEAPONWIELDERCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/EntityOwner.hpp>
+#include <CoreLib/Components/BaseComponent.hpp>
+#include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Component.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
+#include <tl/function_ref.hpp>
 #include <functional>
 #include <limits>
-
+ 
 namespace bw
 {
-	class BURGWAR_CORELIB_API WeaponWielderComponent : public Ndk::Component<WeaponWielderComponent>
+	class BURGWAR_CORELIB_API WeaponWielderComponent : public BaseComponent
 	{
 		public:
-			using WeaponInitCallback = std::function<Ndk::EntityHandle (const std::string& /*weaponName*/)>;
+			using WeaponInitCallback = tl::function_ref<entt::entity (const std::string& /*weaponName*/)>;
 
-			inline WeaponWielderComponent();
+			inline WeaponWielderComponent(entt::registry& registry, entt::entity entity);
 			inline WeaponWielderComponent(const WeaponWielderComponent& weaponWielder);
 			~WeaponWielderComponent() = default;
 
-			inline const Ndk::EntityHandle& GetActiveWeapon() const;
+			inline entt::entity GetActiveWeapon() const;
 			inline std::size_t GetSelectedWeapon() const;
-			inline const Ndk::EntityHandle& GetWeapon(std::size_t weaponIndex) const;
-			inline const std::vector<Ndk::EntityOwner>& GetWeapons() const;
+			inline entt::entity GetWeapon(std::size_t weaponIndex) const;
+			inline const std::vector<EntityOwner>& GetWeapons() const;
 			inline std::size_t GetWeaponCount() const;
 			inline const Nz::Vector2f& GetWeaponOffset() const;
 
@@ -38,15 +41,13 @@ namespace bw
 			inline bool HasActiveWeapon() const;
 			inline bool HasWeapon(const std::string& weaponClass) const;
 
-			void OverrideEntities(const std::function<void(Ndk::EntityOwner& owner)>& callback);
+			void OverrideEntities(const std::function<void(EntityOwner& owner)>& callback);
 
 			void RemoveWeapon(const std::string& weaponClass);
 
 			void SelectWeapon(std::size_t weaponId);
 			inline bool SelectWeapon(const std::string& weaponClass);
 			inline void SetWeaponOffset(const Nz::Vector2f& weaponOffset);
-
-			static Ndk::ComponentIndex componentIndex;
 
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 
@@ -55,10 +56,10 @@ namespace bw
 			NazaraSignal(OnWeaponRemove, WeaponWielderComponent* /*wielder*/, const std::string& /*weaponClass*/, std::size_t /*weaponIndex*/);
 
 		private:
-			Nz::Vector2f m_weaponOffset;
 			std::size_t m_activeWeaponIndex;
-			std::vector<Ndk::EntityOwner> m_weapons;
+			std::vector<EntityOwner> m_weapons;
 			tsl::hopscotch_map<std::string /*weaponClass*/, std::size_t /*weaponIndex*/> m_weaponByName;
+			Nz::Vector2f m_weaponOffset;
 	};
 }
 

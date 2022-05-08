@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	ParticleGroup::ParticleGroup(const ParticleRegistry& particleRegistry, const Ndk::EntityHandle& particleGroup) :
+	ParticleGroup::ParticleGroup(const ParticleRegistry& particleRegistry, entt::entity particleGroup) :
 	m_entity(particleGroup),
 	m_registry(particleRegistry)
 	{

@@ -15,7 +15,7 @@ namespace bw
 	class BURGWAR_CORELIB_API ServerTexture
 	{
 		public:
-			inline ServerTexture(Nz::ImageRef image);
+			inline ServerTexture(std::shared_ptr<Nz::Image> image);
 			ServerTexture(const ServerTexture&) = default;
 			ServerTexture(ServerTexture&&) = default;
 			~ServerTexture() = default;
@@ -26,7 +26,7 @@ namespace bw
 			ServerTexture& operator=(ServerTexture&&) = default;
 
 		private:
-			Nz::ImageRef m_image;
+			std::shared_ptr<Nz::Image> m_image;
 	};
 }
 

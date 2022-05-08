@@ -132,7 +132,7 @@ namespace bw
 				m_playingSounds.erase(soundEntry.playingSoundId);
 		}
 
-		for (const Ndk::EntityHandle& movableEntity : m_movableEntities)
+		for (entt::entity movableEntity : m_movableEntities)
 		{
 			auto& nodeComponent = movableEntity->GetComponent<Ndk::NodeComponent>();
 			auto& soundEmitterComponent = movableEntity->GetComponent<SoundEmitterComponent>();

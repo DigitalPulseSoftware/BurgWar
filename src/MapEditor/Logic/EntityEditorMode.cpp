@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	EntityEditorMode::EntityEditorMode(const Ndk::EntityHandle& targetEntity, EditorWindow& editorWindow) :
+	EntityEditorMode::EntityEditorMode(entt::entity targetEntity, EditorWindow& editorWindow) :
 	EditorMode(editorWindow),
 	m_targetEntity(targetEntity)
 	{

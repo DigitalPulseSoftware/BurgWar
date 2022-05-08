@@ -18,8 +18,8 @@
 #include <Nazara/Core/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/System.hpp>
 #include <tsl/hopscotch_map.h>
+#include <tsl/hopscotch_set.h>
 #include <optional>
 #include <string>
 #include <variant>
@@ -30,7 +30,7 @@ namespace bw
 	class Player;
 	class TerrainLayer;
 
-	class BURGWAR_CORELIB_API NetworkSyncSystem : public Ndk::System<NetworkSyncSystem>
+	class BURGWAR_CORELIB_API NetworkSyncSystem
 	{
 		public:
 			struct EntityCreation;
@@ -48,11 +48,9 @@ namespace bw
 			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
-			inline void NotifyPhysicsUpdate(const Ndk::EntityHandle& entity);
-			inline void NotifyMovementUpdate(const Ndk::EntityHandle& entity);
-			inline void NotifyScaleUpdate(const Ndk::EntityHandle& entity);
-
-			static Ndk::SystemIndex systemIndex;
+			inline void NotifyPhysicsUpdate(entt::entity entity);
+			inline void NotifyMovementUpdate(entt::entity entity);
+			inline void NotifyScaleUpdate(entt::entity entity);
 
 			struct HealthProperties
 			{
@@ -76,49 +74,49 @@ namespace bw
 
 			struct EntityPlayAnimation
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				std::size_t animId;
 				Nz::UInt64 startTime;
 			};
 
 			struct EntityCreation
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				EntityId uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				float scale;
 				Player* playerOwner;
-				std::optional<Ndk::EntityId> parent;
-				std::optional<Ndk::EntityId> weapon;
+				std::optional<entt::entity> parent;
+				std::optional<entt::entity> weapon;
 				std::optional<HealthProperties> healthProperties;
 				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
 				tsl::hopscotch_map<std::string /*key*/, PropertyValue> properties;
-				std::vector<std::pair<LayerIndex, Ndk::EntityId>> dependentIds;
+				std::vector<std::pair<LayerIndex, entt::entity>> dependentIds;
 			};
 
 			struct EntityDeath
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 			};
 
 			struct EntityDestruction
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 			};
 
 			struct EntityHealth
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				Nz::UInt16 currentHealth;
 			};
 
 			struct EntityInputs
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				PlayerInputData inputs;
 			};
 
@@ -131,7 +129,7 @@ namespace bw
 					float movementSpeed;
 				};
 
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				bool isAsleep;
 				float mass;
 				float momentOfInertia;
@@ -140,19 +138,19 @@ namespace bw
 
 			struct EntityScale
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				float newScale;
 			};
 
 			struct EntityWeapon
 			{
-				Ndk::EntityId entityId;
-				std::optional<Ndk::EntityId> weaponId;
+				entt::entity entityId;
+				std::optional<entt::entity> weaponId;
 			};
 
 			struct EntityMovement
 			{
-				Ndk::EntityId entityId;
+				entt::entity entityId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
@@ -171,35 +169,35 @@ namespace bw
 			NazaraSignal(OnEntitiesWeaponUpdate, NetworkSyncSystem* /*emitter*/, const EntityWeapon* /*events*/, std::size_t /*entityCount*/);
 
 		private:
-			void BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const;
-			void BuildEvent(EntityDeath& deathEvent, Ndk::Entity* entity) const;
-			void BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const;
-			void BuildEvent(EntityMovement& movementEvent, Ndk::Entity* entity) const;
+			void BuildEvent(EntityCreation& creationEvent, entt::entity entity) const;
+			void BuildEvent(EntityDeath& deathEvent, entt::entity entity) const;
+			void BuildEvent(EntityDestruction& deleteEvent, entt::entity entity) const;
+			void BuildEvent(EntityMovement& movementEvent, entt::entity entity) const;
 
-			void OnEntityAdded(Ndk::Entity* entity) override;
-			void OnEntityRemoved(Ndk::Entity* entity) override;
-			void OnUpdate(float elapsedTime) override;
+			//void OnEntityAdded(entt::entity entity) override;
+			//void OnEntityRemoved(entt::entity entity) override;
+			//void OnUpdate(float elapsedTime) override;
 
 			struct EntitySlots
 			{
 				NazaraSlot(AnimationComponent, OnAnimationStart, onAnimationStart);
-				NazaraSlot(HealthComponent, OnDied, onDied);
+				NazaraSlot(HealthComponent, OnDie, onDied);
 				NazaraSlot(HealthComponent, OnHealthChange, onHealthChange);
 				NazaraSlot(InputComponent, OnInputUpdate, onInputUpdate);
 				NazaraSlot(NetworkSyncComponent, OnInvalidated, onInvalidated);
 				NazaraSlot(WeaponWielderComponent, OnNewWeaponSelection, onNewWeaponSelection);
 			};
 
-			tsl::hopscotch_map<Ndk::EntityId, EntitySlots> m_entitySlots;
+			tsl::hopscotch_map<entt::entity, EntitySlots> m_entitySlots;
 
-			Ndk::EntityList m_inputUpdateEntities;
-			Ndk::EntityList m_healthUpdateEntities;
-			Ndk::EntityList m_movedStaticEntities;
-			Ndk::EntityList m_physicsEntities;
-			Ndk::EntityList m_physicsUpdateEntities;
-			Ndk::EntityList m_scaleUpdateEntities;
-			Ndk::EntityList m_staticEntities;
-			Ndk::EntityList m_weaponUpdateEntities;
+			tsl::hopscotch_set<entt::entity> m_inputUpdateEntities;
+			tsl::hopscotch_set<entt::entity> m_healthUpdateEntities;
+			tsl::hopscotch_set<entt::entity> m_movedStaticEntities;
+			tsl::hopscotch_set<entt::entity> m_physicsEntities;
+			tsl::hopscotch_set<entt::entity> m_physicsUpdateEntities;
+			tsl::hopscotch_set<entt::entity> m_scaleUpdateEntities;
+			tsl::hopscotch_set<entt::entity> m_staticEntities;
+			tsl::hopscotch_set<entt::entity> m_weaponUpdateEntities;
 			mutable std::vector<EntityCreation> m_creationEvents;
 			mutable std::vector<EntityDestruction> m_destructionEvents;
 			std::vector<EntityHealth> m_healthEvents;

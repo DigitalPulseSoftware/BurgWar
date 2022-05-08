@@ -30,7 +30,7 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
+			entt::entity entity = AssertScriptEntity(weaponTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
@@ -44,7 +44,7 @@ namespace bw
 			{
 				hitDistance *= hitInfo.fraction;
 
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				entt::entity hitEntity = hitInfo.body;
 
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{

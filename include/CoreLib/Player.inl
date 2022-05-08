@@ -6,9 +6,12 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& Player::GetControlledEntity() const
+	inline entt::entity Player::GetControlledEntity() const
 	{
-		return m_playerEntity;
+		if (m_playerEntity)
+			return m_playerEntity->GetEntity();
+		else
+			return entt::null;
 	}
 
 	inline const PlayerInputData& Player::GetInputs() const

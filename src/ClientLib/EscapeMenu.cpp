@@ -12,7 +12,7 @@ namespace bw
 	EscapeMenu::EscapeMenu(ClientEditorApp& clientEditorApp, Ndk::Canvas* canvas) :
 	m_app(clientEditorApp)
 	{
-		m_backgroundWidget = canvas->Add<Ndk::BaseWidget>();
+		m_backgroundWidget = canvas->Add<Nz::BaseWidget>();
 		m_backgroundWidget->EnableBackground(true);
 		m_backgroundWidget->SetBackgroundColor(Nz::Color(0, 0, 0, 160));
 

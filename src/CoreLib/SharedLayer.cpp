@@ -40,11 +40,11 @@ namespace bw
 		physics.SetStepSize(match.GetTickDuration());
 
 		Ndk::PhysicsSystem2D::Callback triggerCallbacks;
-		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
+		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, entt::entity bodyA, entt::entity bodyB, void* /*userdata*/)
 		{
 			bool shouldCollide = true;
 
-			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			auto HandleCollision = [&](entt::entity first, entt::entity second)
 			{
 				if (first->HasComponent<ScriptComponent>() && second->HasComponent<ScriptComponent>())
 				{
@@ -62,9 +62,9 @@ namespace bw
 			return shouldCollide;
 		};
 
-		triggerCallbacks.endCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
+		triggerCallbacks.endCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, entt::entity bodyA, entt::entity bodyB, void* /*userdata*/)
 		{
-			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			auto HandleCollision = [&](entt::entity first, entt::entity second)
 			{
 				if (first->HasComponent<ScriptComponent>() && second->HasComponent<ScriptComponent>())
 				{
@@ -81,11 +81,11 @@ namespace bw
 
 		physics.RegisterCallbacks(1, triggerCallbacks);
 
-		triggerCallbacks.preSolveCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& arbiter, const Ndk::EntityHandle& bodyA, const Ndk::EntityHandle& bodyB, void* /*userdata*/)
+		triggerCallbacks.preSolveCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& arbiter, entt::entity bodyA, entt::entity bodyB, void* /*userdata*/)
 		{
 			bool shouldCollide = true;
 
-			auto HandleCollision = [&](const Ndk::EntityHandle& first, const Ndk::EntityHandle& second)
+			auto HandleCollision = [&](entt::entity first, entt::entity second)
 			{
 				if (first->HasComponent<PlayerMovementComponent>())
 				{

@@ -26,23 +26,23 @@ namespace bw
 		return static_cast<T*>(m_constraint.GetObject());
 	}
 
-	inline DampedSpringConstraint::DampedSpringConstraint(Ndk::EntityHandle entity, Nz::DampedSpringConstraint2D* constraint) :
-	Constraint(std::move(entity), constraint->CreateHandle())
+	inline DampedSpringConstraint::DampedSpringConstraint(entt::registry& registry, entt::entity entity, Nz::DampedSpringConstraint2D* constraint) :
+	Constraint(registry, entity, constraint->CreateHandle())
 	{
 	}
 
-	inline PinConstraint::PinConstraint(Ndk::EntityHandle entity, Nz::PinConstraint2D* constraint) :
-	Constraint(std::move(entity), constraint->CreateHandle())
+	inline PinConstraint::PinConstraint(entt::registry& registry, entt::entity entity, Nz::PinConstraint2D* constraint) :
+	Constraint(registry, entity, constraint->CreateHandle())
 	{
 	}
 	
-	inline PivotConstraint::PivotConstraint(Ndk::EntityHandle entity, Nz::PivotConstraint2D* constraint) :
-	Constraint(std::move(entity), constraint->CreateHandle())
+	inline PivotConstraint::PivotConstraint(entt::registry& registry, entt::entity entity, Nz::PivotConstraint2D* constraint) :
+	Constraint(registry, entity, constraint->CreateHandle())
 	{
 	}
 
-	inline RotaryLimitConstraint::RotaryLimitConstraint(Ndk::EntityHandle entity, Nz::RotaryLimitConstraint2D* constraint) :
-	Constraint(std::move(entity), constraint->CreateHandle())
+	inline RotaryLimitConstraint::RotaryLimitConstraint(entt::registry& registry, entt::entity entity, Nz::RotaryLimitConstraint2D* constraint) :
+	Constraint(registry, entity, constraint->CreateHandle())
 	{
 	}
 }

@@ -129,7 +129,7 @@ namespace bw
 
 			std::string content = Map::Serialize(prefab).dump(1, '\t');
 
-			Nz::File infoFile(path.toStdString(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+			Nz::File infoFile(path.toStdString(), Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 			if (!infoFile.IsOpen())
 			{
 				QMessageBox::critical(m_parent, tr("Failed to save prefab"), tr("An error occurred while opening the prefab file"));
@@ -160,7 +160,7 @@ namespace bw
 		if (prefabPath.isEmpty())
 			return;
 
-		Nz::File infoFile(prefabPath.toStdString(), Nz::OpenMode_ReadOnly);
+		Nz::File infoFile(prefabPath.toStdString(), Nz::OpenMode::ReadOnly);
 		if (!infoFile.IsOpen())
 		{
 			QMessageBox::critical(m_parent, tr("Failed to load prefab"), tr("An error occurred while opening the prefab file"));

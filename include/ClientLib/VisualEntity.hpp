@@ -31,7 +31,7 @@ namespace bw
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();
 
-			inline const Ndk::EntityHandle& GetEntity() const;
+			inline entt::entity GetEntity() const;
 
 			void Update(const Nz::Vector2f& position, const Nz::Quaternionf& rotation, const Nz::Vector2f& scale);
 

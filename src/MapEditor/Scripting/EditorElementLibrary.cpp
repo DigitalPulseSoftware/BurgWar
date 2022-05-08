@@ -19,14 +19,14 @@ namespace bw
 		
 		elementMetatable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<CanvasComponent>().GetLayerIndex();
 		});
 		
 		elementMetatable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(table);
+			entt::entity entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 

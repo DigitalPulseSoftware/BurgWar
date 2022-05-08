@@ -8,21 +8,18 @@
 #define BURGWAR_CORELIB_SYSTEMS_INPUTSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/System.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API InputSystem : public Ndk::System<InputSystem>
+	class BURGWAR_CORELIB_API InputSystem
 	{
 		public:
 			InputSystem();
 			~InputSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
-
 		private:
-			void OnUpdate(float elapsedTime) override;
+			void OnUpdate(float elapsedTime);
 	};
 }
 

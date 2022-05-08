@@ -24,9 +24,9 @@ namespace bw
 	{
 		elementMetatable["GetOwnerEntity"] = LuaFunction([](const sol::table& weaponTable) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
+			entt::entity entity = AssertScriptEntity(weaponTable);
 
-			const Ndk::EntityHandle& ownerEntity = entity->GetComponent<WeaponComponent>().GetOwner();
+			entt::entity ownerEntity = entity->GetComponent<WeaponComponent>().GetOwner();
 			if (!ownerEntity)
 				return sol::nil;
 
@@ -35,7 +35,7 @@ namespace bw
 
 		elementMetatable["SetNextTriggerTime"] = LuaFunction([](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
+			entt::entity entity = AssertScriptEntity(weaponTable);
 			
 			entity->GetComponent<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
 		});

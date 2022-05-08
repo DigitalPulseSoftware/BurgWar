@@ -9,20 +9,17 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Player.hpp>
-#include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API PlayerControlledComponent : public Ndk::Component<PlayerControlledComponent>
+	class BURGWAR_CORELIB_API PlayerControlledComponent
 	{
 		public:
 			PlayerControlledComponent(PlayerHandle owner);
 			~PlayerControlledComponent() = default;
 
 			inline Player* GetOwner() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			PlayerHandle m_owner;

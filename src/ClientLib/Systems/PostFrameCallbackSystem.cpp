@@ -33,7 +33,7 @@ namespace bw
 
 	void PostFrameCallbackSystem::OnUpdate(float /*elapsedTime*/)
 	{
-		for (const Ndk::EntityHandle& entity : m_frameUpdateEntities)
+		for (entt::entity entity : m_frameUpdateEntities)
 		{
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 

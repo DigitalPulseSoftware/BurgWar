@@ -65,7 +65,7 @@ namespace bw
 
 			Nz::UInt64 EstimateServerTick() const;
 
-			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+			void ForEachEntity(std::function<void(entt::entity entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
 
 			inline Nz::UInt16 GetActiveLayer();
@@ -95,15 +95,15 @@ namespace bw
 
 			void InitDebugGhosts();
 
-			void LoadAssets(std::shared_ptr<VirtualDirectory> assetDir);
-			void LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir);
+			void LoadAssets(std::shared_ptr<Nz::VirtualDirectory> assetDir);
+			void LoadScripts(const std::shared_ptr<Nz::VirtualDirectory>& scriptDir);
 
 			inline void Quit();
 
 			void RegisterEntity(EntityId uniqueId, ClientLayerEntityHandle entity);
 			
-			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
-			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
 
 			void UnregisterEntity(EntityId uniqueId);
 
@@ -181,7 +181,7 @@ namespace bw
 			{
 				struct Weapon
 				{
-					Ndk::EntityHandle entity;
+					entt::entity entity;
 					Nz::UInt8 category;
 				};
 
@@ -213,7 +213,7 @@ namespace bw
 
 				struct WeaponData
 				{
-					Ndk::EntityHandle entity;
+					entt::entity entity;
 					bool isAttacking;
 				};
 

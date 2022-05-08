@@ -9,30 +9,28 @@
 
 #include <CoreLib/Export.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <NDK/Component.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API NetworkSyncComponent : public Ndk::Component<NetworkSyncComponent>
+	class BURGWAR_CORELIB_API NetworkSyncComponent
 	{
 		public:
-			inline NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle);
+			inline NetworkSyncComponent(std::string entityClass, entt::entity parent = entt::null);
 			~NetworkSyncComponent() = default;
 
 			inline const std::string& GetEntityClass() const;
-			inline const Ndk::EntityHandle& GetParent() const;
+			inline entt::entity GetParent() const;
 
 			inline void Invalidate();
 
-			inline void UpdateParent(const Ndk::EntityHandle& parent);
-
-			static Ndk::ComponentIndex componentIndex;
+			inline void UpdateParent(entt::entity parent);
 
 			NazaraSignal(OnInvalidated, NetworkSyncComponent* /*emitter*/);
 
 		private:
-			Ndk::EntityHandle m_parent;
+			entt::entity m_parent;
 			std::string m_entityClass;
 	};
 }

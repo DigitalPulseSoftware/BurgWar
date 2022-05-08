@@ -27,16 +27,16 @@ namespace bw
 		return widget;
 	}
 
-	inline const Ndk::EntityHandle& AbstractState::CreateEntity()
+	inline entt::entity AbstractState::CreateEntity()
 	{
-		const Ndk::EntityHandle& entity = m_stateData->world->CreateEntity();
+		entt::entity entity = m_stateData->world->CreateEntity();
 		entity->Enable(m_isVisible);
 		m_entities.emplace_back(entity);
 
 		return entity;
 	}
 
-	inline void AbstractState::DestroyWidget(Ndk::BaseWidget* widget)
+	inline void AbstractState::DestroyWidget(Nz::BaseWidget* widget)
 	{
 		auto it = std::find_if(m_widgets.begin(), m_widgets.end(), [&](const WidgetEntry& widgetEntity) { return widgetEntity.widget == widget; });
 		assert(it != m_widgets.end());

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_PLAYER_HPP
 #define BURGWAR_CLIENTLIB_PLAYER_HPP
 
+#include <CoreLib/EntityOwner.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
@@ -15,7 +16,6 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Core/MovablePtr.hpp>
-#include <NDK/EntityOwner.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>
@@ -39,7 +39,7 @@ namespace bw
 			Player(Player&&) noexcept = default;
 			~Player();
 
-			inline const Ndk::EntityHandle& GetControlledEntity() const;
+			inline entt::entity GetControlledEntity() const;
 			inline const PlayerInputData& GetInputs() const;
 			inline LayerIndex GetLayerIndex() const;
 			inline Nz::UInt8 GetLocalIndex() const;
@@ -65,7 +65,7 @@ namespace bw
 
 			std::string ToString() const;
 
-			void UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
+			void UpdateControlledEntity(entt::entity entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
 			inline void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateName(std::string newName);
@@ -77,19 +77,19 @@ namespace bw
 			static constexpr std::size_t NoWeapon = WeaponWielderComponent::NoWeapon;
 
 		private:
-			void OnDeath(const Ndk::EntityHandle& attacker);
+			void OnDeath(entt::entity attacker);
 			void SetReady();
 
-			NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
-			NazaraSlot(HealthComponent, OnDied, m_onPlayerEntityDied);
+			//NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
+			NazaraSlot(HealthComponent, OnDie, m_onPlayerEntityDie);
 			NazaraSlot(WeaponWielderComponent, OnWeaponAdded, m_onWeaponAdded);
 			NazaraSlot(WeaponWielderComponent, OnWeaponRemove, m_onWeaponRemove);
 
+			std::optional<EntityOwner> m_playerEntity;
 			std::optional<ScriptingEnvironment> m_scriptingEnvironment;
 			LayerIndex m_layerIndex;
 			std::size_t m_playerIndex;
 			std::string m_name;
-			Ndk::EntityOwner m_playerEntity;
 			Nz::Bitset<Nz::UInt64> m_visibleLayers;
 			Nz::UInt8 m_localIndex;
 			Match& m_match;

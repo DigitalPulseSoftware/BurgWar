@@ -30,7 +30,7 @@ namespace bw
 		float C = 10.f;
 		float factor = 1.f - std::exp(-elapsedTime * C);
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		for (entt::entity entity : GetEntities())
 		{
 			auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
 			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();

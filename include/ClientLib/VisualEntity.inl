@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& VisualEntity::GetEntity() const
+	inline entt::entity VisualEntity::GetEntity() const
 	{
 		return m_entity;
 	}

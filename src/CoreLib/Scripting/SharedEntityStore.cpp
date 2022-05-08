@@ -18,14 +18,14 @@ namespace bw
 		ReloadLibraries(); // This function creates the metatable
 	}
 
-	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& entity) const
+	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, entt::entity entity) const
 	{
 		if (entity->HasComponent<InputComponent>())
 		{
 			InputComponent& entityInputs = entity->GetComponent<InputComponent>();
 			entityInputs.OnInputUpdate.Connect([](InputComponent* input)
 			{
-				const Ndk::EntityHandle& entity = input->GetEntity();
+				entt::entity entity = input->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();
 
 				entityScript.ExecuteCallback<ElementEvent::InputUpdate>(input->GetInputs());
@@ -37,7 +37,7 @@ namespace bw
 	{
 	}
 
-	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const
+	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, entt::entity entity) const
 	{
 		if (!ScriptStore::InitializeEntity(entityClass, entity))
 			return false;

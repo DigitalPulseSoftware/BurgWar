@@ -15,7 +15,7 @@ namespace bw
 		constexpr float optionSpace = 10.f;
 	}
 
-	OptionWidget::OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig) :
+	OptionWidget::OptionWidget(Nz::BaseWidget* parent, ConfigFile& playerConfig) :
 	BaseWidget(parent),
 	m_activeSection(nullptr),
 	m_playerConfig(playerConfig),
@@ -184,7 +184,7 @@ namespace bw
 			if (m_ignoreWidgetUpdate)
 				return;
 
-			m_updatedValues[keyName] = text.ToStdString();
+			m_updatedValues[keyName] = text;
 		});
 
 		m_activeSection->options.emplace_back(std::move(option));

@@ -88,7 +88,7 @@ namespace bw
 				matIndex++;
 			}
 
-			const Ndk::EntityHandle& tilemapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
+			entt::entity tilemapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
 			tilemapEntity->AddComponent<Ndk::NodeComponent>();
 			tilemapEntity->AddComponent<Ndk::GraphicsComponent>().Attach(tileMap);
 			tilemapEntity->Disable();

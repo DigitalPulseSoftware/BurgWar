@@ -34,7 +34,7 @@ namespace bw
 	{
 		elementTable["AddModel"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			std::string modelPath = parameters["ModelPath"];
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -58,13 +58,13 @@ namespace bw
 			if (Nz::NumberEquals(pushbackForce, 0.f))
 				return;
 
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
 
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](entt::entity hitEntity)
 			{
 				if (hitEntities.Has(hitEntity))
 					return;
@@ -81,7 +81,7 @@ namespace bw
 		
 		elementTable["AddSprite"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -166,7 +166,7 @@ namespace bw
 
 		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			std::string fontName = parameters.get_or("Font", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -226,7 +226,7 @@ namespace bw
 
 		elementTable["GetGlobalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			auto& visualComponent = entity->GetComponent<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
@@ -244,14 +244,14 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<ClientMatchComponent>().GetLayerIndex();
 		});
 		
 		elementTable["GetLocalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			auto& visualComponent = entity->GetComponent<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
@@ -264,7 +264,7 @@ namespace bw
 		
 		elementTable["GetOwner"] = LuaFunction([](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(table);
+			entt::entity entity = AssertScriptEntity(table);
 
 			if (!entity->HasComponent<ClientOwnerComponent>())
 				return sol::nil;
@@ -274,7 +274,7 @@ namespace bw
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(table);
+			entt::entity entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -298,7 +298,7 @@ namespace bw
 
 		elementTable["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<ClientMatchComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
@@ -322,7 +322,7 @@ namespace bw
 		});
 	}
 
-	void ClientElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
+	void ClientElementLibrary::SetScale(entt::entity entity, float newScale)
 	{
 		auto& visualComponent = entity->GetComponent<VisualComponent>();
 		visualComponent.GetLayerVisual()->UpdateScale(newScale);
@@ -330,7 +330,7 @@ namespace bw
 		if (entity->HasComponent<WeaponWielderComponent>())
 		{
 			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
-			for (const Ndk::EntityHandle& weapon : wielderComponent.GetWeapons())
+			for (entt::entity weapon : wielderComponent.GetWeapons())
 				SetScale(weapon, newScale);
 		}
 	}

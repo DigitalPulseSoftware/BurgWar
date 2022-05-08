@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	ClientLayerEntity::ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
+	ClientLayerEntity::ClientLayerEntity(ClientLayer& layer, entt::entity entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
 	LayerVisualEntity(entity, layer.GetLayerIndex(), uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
@@ -47,7 +47,7 @@ namespace bw
 	{
 		if (!m_ghostEntity)
 		{
-			const Ndk::EntityHandle& ghostEntity = GetEntity()->GetWorld()->CreateEntity();
+			entt::entity ghostEntity = GetEntity()->GetWorld()->CreateEntity();
 			ghostEntity->AddComponent<Ndk::NodeComponent>();
 
 			m_ghostEntity = std::make_unique<ClientLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetClientMatch().AllocateClientUniqueId());

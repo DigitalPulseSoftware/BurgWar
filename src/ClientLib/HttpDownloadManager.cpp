@@ -200,7 +200,7 @@ namespace bw
 
 				request.fileIndex = m_nextFileIndex;
 				request.hash->Begin();
-				request.file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+				request.file.Open(filePath, Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 				request.keepInMemory = pendingDownload.keepInMemory;
 
 				m_webService.AddRequest(std::move(webRequest));

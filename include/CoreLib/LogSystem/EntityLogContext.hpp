@@ -9,13 +9,13 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/MatchLogContext.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
 	struct EntityLogContext : MatchLogContext
 	{
-		Ndk::EntityHandle entity;
+		entt::entity entity;
 	};
 }
 

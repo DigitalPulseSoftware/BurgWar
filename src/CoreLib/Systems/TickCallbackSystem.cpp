@@ -33,7 +33,7 @@ namespace bw
 
 	void TickCallbackSystem::OnUpdate(float elapsedTime)
 	{
-		for (const Ndk::EntityHandle& entity : m_tickableEntities)
+		for (entt::entity entity : m_tickableEntities)
 		{
 			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 			if (!scriptComponent.CanTriggerTick(elapsedTime)) //<FIXME: Due to reconciliation, this is not right

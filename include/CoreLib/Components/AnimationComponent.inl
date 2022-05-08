@@ -3,15 +3,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Components/AnimationComponent.hpp>
+#include <cassert>
 
 namespace bw
 {
-	inline AnimationComponent::AnimationComponent(std::shared_ptr<AnimationStore> animStore) :
+	inline AnimationComponent::AnimationComponent(entt::registry& registry, entt::entity entity, std::shared_ptr<AnimationStore> animStore) :
+	BaseComponent(registry, entity),
 	m_animationStore(std::move(animStore))
 	{
 	}
 
 	inline AnimationComponent::AnimationComponent(const AnimationComponent& animation) :
+	BaseComponent(animation),
 	m_playingAnimation(animation.m_playingAnimation),
 	m_animationStore(animation.m_animationStore)
 	{

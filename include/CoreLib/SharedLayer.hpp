@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <NDK/World.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
@@ -27,8 +27,8 @@ namespace bw
 
 			inline LayerIndex GetLayerIndex() const;
 			inline SharedMatch& GetMatch();
-			Ndk::World& GetWorld();
-			const Ndk::World& GetWorld() const;
+			inline entt::registry& GetWorld();
+			inline const entt::registry& GetWorld() const;
 
 			virtual void TickUpdate(float elapsedTime);
 
@@ -37,7 +37,7 @@ namespace bw
 
 		private:
 			SharedMatch& m_match;
-			Ndk::World m_world;
+			entt::registry m_registry;
 			LayerIndex m_layerIndex;
 	};
 }

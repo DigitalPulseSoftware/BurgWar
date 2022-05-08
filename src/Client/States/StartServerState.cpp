@@ -30,7 +30,7 @@ namespace bw
 		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
 		m_statusLabel->Hide();
 
-		m_background = CreateWidget<Ndk::BaseWidget>();
+		m_background = CreateWidget<Nz::BaseWidget>();
 		m_background->EnableBackground(true);
 		m_background->SetBackgroundColor(Nz::Color(0, 0, 0, 100));
 
@@ -161,14 +161,14 @@ namespace bw
 	{
 		ClientApp* app = GetStateData().app;
 
-		std::string gamemode = m_gamemodeArea->GetText().ToStdString();
+		std::string gamemode = m_gamemodeArea->GetText();
 		if (gamemode.empty())
 		{
 			UpdateStatus("Error: blank gamemode", Nz::Color::Red);
 			return;
 		}
 
-		std::string map = m_mapArea->GetText().ToStdString();
+		std::string map = m_mapArea->GetText();
 		if (map.empty())
 		{
 			UpdateStatus("Error: blank map", Nz::Color::Red);
@@ -185,7 +185,7 @@ namespace bw
 		long long rawPort;
 		if (!serverPort.ToInteger(&rawPort) || rawPort < 0 || rawPort > 0xFFFF)
 		{
-			UpdateStatus("Error: " + serverPort.ToStdString() + " is not a valid port", Nz::Color::Red);
+			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red);
 			return;
 		}
 
@@ -196,7 +196,7 @@ namespace bw
 		std::string serverDesc;
 		if (listServer)
 		{
-			serverName = m_nameArea->GetText().ToStdString();
+			serverName = m_nameArea->GetText();
 			if (serverName.empty())
 			{
 				UpdateStatus("Error: blank server name", Nz::Color::Red);
@@ -209,7 +209,7 @@ namespace bw
 				return;
 			}
 
-			serverDesc = m_descriptionArea->GetText().ToStdString();
+			serverDesc = m_descriptionArea->GetText();
 			if (serverDesc.size() > 1024)
 			{
 				UpdateStatus("Error: server description is too long", Nz::Color::Red);
@@ -274,7 +274,7 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 8> widgets = {
+		std::array<Nz::BaseWidget*, 8> widgets = {
 			m_title,
 			m_gamemodeArea,
 			m_mapArea,
@@ -286,7 +286,7 @@ namespace bw
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 		{
 			if (widget)
 				totalSize += widget->GetSize().y;

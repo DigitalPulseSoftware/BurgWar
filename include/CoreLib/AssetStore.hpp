@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_ASSETSTORE_HPP
 
 #include <CoreLib/Export.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Core/ObjectRef.hpp>
 #include <Nazara/Utility/Image.hpp>
 #include <tsl/hopscotch_map.h>
@@ -20,24 +20,24 @@ namespace bw
 	class BURGWAR_CORELIB_API AssetStore
 	{
 		public:
-			inline AssetStore(const Logger& logger, std::shared_ptr<VirtualDirectory> assetDirectory);
+			inline AssetStore(const Logger& logger, std::shared_ptr<Nz::VirtualDirectory> assetDirectory);
 			virtual ~AssetStore();
 
 			virtual void Clear();
 
-			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory() const;
-			const Nz::ImageRef& GetImage(const std::string& imagePath) const;
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetAssetDirectory() const;
+			const std::shared_ptr<Nz::Image>& GetImage(const std::string& imagePath) const;
 
-			inline void UpdateAssetDirectory(std::shared_ptr<VirtualDirectory> assetDirectory);
+			inline void UpdateAssetDirectory(std::shared_ptr<Nz::VirtualDirectory> assetDirectory);
 
 		protected:
-			template<typename ResourceType, typename ParameterType> const Nz::ObjectRef<ResourceType>& GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, Nz::ObjectRef<ResourceType>>& cache, const ParameterType& params) const;
+			template<typename ResourceType, typename ParameterType> const std::shared_ptr<ResourceType>& GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, std::shared_ptr<ResourceType>>& cache, const ParameterType& params) const;
 
 			const Logger& m_logger;
 
 		private:
-			mutable tsl::hopscotch_map<std::string, Nz::ImageRef> m_images;
-			mutable std::shared_ptr<VirtualDirectory> m_assetDirectory;
+			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::Image>> m_images;
+			mutable std::shared_ptr<Nz::VirtualDirectory> m_assetDirectory;
 	};
 }
 

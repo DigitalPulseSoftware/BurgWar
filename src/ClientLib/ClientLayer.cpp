@@ -245,7 +245,7 @@ namespace bw
 				// Entity
 				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
 				{
-					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, scale, properties, (parent) ? parent->GetEntity() : Ndk::EntityHandle::InvalidHandle);
+					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, scale, properties, (parent) ? parent->GetEntity() : entt::null);
 					if (!entity)
 					{
 						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {0} of type {1}", uniqueId, entityClass);
@@ -485,7 +485,7 @@ namespace bw
 		ClientLayerEntity& localEntity = *entityOpt;
 		if (localEntity.IsPhysical())
 		{
-			const Ndk::EntityHandle& entity = localEntity.GetEntity();
+			entt::entity entity = localEntity.GetEntity();
 
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			entityPhys.SetMass(packet.mass, false);

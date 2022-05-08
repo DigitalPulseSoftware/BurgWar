@@ -8,18 +8,15 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/System.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API PlayerMovementSystem : public Ndk::System<PlayerMovementSystem>
+	class BURGWAR_CORELIB_API PlayerMovementSystem
 	{
 		public:
 			PlayerMovementSystem();
 			~PlayerMovementSystem() = default;
-
-			static Ndk::SystemIndex systemIndex;
 
 		private:
 			void OnEntityAdded(Ndk::Entity* entity) override;

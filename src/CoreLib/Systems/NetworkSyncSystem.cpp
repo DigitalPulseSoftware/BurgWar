@@ -28,7 +28,7 @@ namespace bw
 	{
 		m_creationEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		for (entt::entity entity : GetEntities())
 		{
 			EntityCreation& creationEvent = m_creationEvents.emplace_back();
 			BuildEvent(creationEvent, entity);
@@ -41,7 +41,7 @@ namespace bw
 	{
 		m_destructionEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		for (entt::entity entity : GetEntities())
 		{
 			EntityDestruction& destructionEvent = m_destructionEvents.emplace_back();
 			BuildEvent(destructionEvent, entity);
@@ -54,7 +54,7 @@ namespace bw
 	{
 		m_movementEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : m_physicsEntities)
+		for (entt::entity entity : m_physicsEntities)
 		{
 			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
 			if (entityPhys.IsSleeping())
@@ -76,7 +76,7 @@ namespace bw
 		auto& entityMatch = entity->GetComponent<MatchComponent>();
 		creationEvent.uniqueId = entityMatch.GetUniqueId();
 
-		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
+		if (entt::entity parent = syncComponent.GetParent())
 		{
 			assert(parent->GetWorld() == entity->GetWorld());
 			creationEvent.parent = parent->GetId();
@@ -152,7 +152,7 @@ namespace bw
 
 				auto RegisterDependentId = [&](EntityId entityId)
 				{
-					const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
+					entt::entity propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
 					if (propertyEntity)
 					{
 						auto& propertyEntityMatch = propertyEntity->GetComponent<MatchComponent>();
@@ -185,7 +185,7 @@ namespace bw
 		{
 			auto& entityWeaponWielder = entity->GetComponent<WeaponWielderComponent>();
 
-			if (const Ndk::EntityHandle& activeWeapon = entityWeaponWielder.GetActiveWeapon())
+			if (entt::entity activeWeapon = entityWeaponWielder.GetActiveWeapon())
 				creationEvent.weapon = activeWeapon->GetId();
 		}
 	}
@@ -265,7 +265,7 @@ namespace bw
 		{
 			auto& entityHealth = entity->GetComponent<HealthComponent>();
 
-			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle& /*attacker*/)
+			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, entt::entity /*attacker*/)
 			{
 				EntityDeath deathEvent;
 				BuildEvent(deathEvent, health->GetEntity());
@@ -273,7 +273,7 @@ namespace bw
 				OnEntityDeath(this, deathEvent);
 			});
 
-			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health, Nz::UInt16 /*newHealth*/, const Ndk::EntityHandle& /*dealer*/)
+			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health, Nz::UInt16 /*newHealth*/, entt::entity /*dealer*/)
 			{
 				m_healthUpdateEntities.Insert(health->GetEntity());
 			});

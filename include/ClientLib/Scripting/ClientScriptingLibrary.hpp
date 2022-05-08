@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_CLIENTSCRIPTINGLIBRARY_HPP
 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <ClientLib/Export.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 
 namespace bw
 {

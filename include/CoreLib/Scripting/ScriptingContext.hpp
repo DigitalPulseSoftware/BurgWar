@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <sol/sol.hpp>
 #include <tl/expected.hpp>
 #include <filesystem>
@@ -27,7 +27,7 @@ namespace bw
 			struct FileLoadCoroutine;
 			using PrintFunction = std::function<void(const std::string& str, const Nz::Color& color)>;
 
-			ScriptingContext(const Logger& logger, std::shared_ptr<VirtualDirectory> scriptDir);
+			ScriptingContext(const Logger& logger, std::shared_ptr<Nz::VirtualDirectory> scriptDir);
 			~ScriptingContext();
 
 			template<typename... Args> sol::coroutine CreateCoroutine(Args&&... args);
@@ -38,7 +38,7 @@ namespace bw
 			inline const std::filesystem::path& GetCurrentFolder() const;
 			inline sol::state& GetLuaState();
 			inline const sol::state& GetLuaState() const;
-			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetScriptDirectory() const;
 
 			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file, bool logError = true);
 			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
@@ -53,7 +53,7 @@ namespace bw
 			inline void SetPrintFunction(PrintFunction function);
 
 			void Update();
-			inline void UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir);
+			inline void UpdateScriptDirectory(std::shared_ptr<Nz::VirtualDirectory> scriptDir);
 
 			struct FileLoadCoroutine
 			{
@@ -65,19 +65,22 @@ namespace bw
 		private:
 			sol::thread& CreateThread();
 
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry);
-			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::FileContentEntry& entry, Async);
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry);
-			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const VirtualDirectory::PhysicalFileEntry& entry, Async);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry, Async);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry, Async);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry, Async);
 			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
-			void LoadDirectory(std::filesystem::path path, const VirtualDirectory::VirtualDirectoryEntry& folder);
-			std::string ReadFile(const std::filesystem::path& path, const VirtualDirectory::PhysicalFileEntry& entry);
+			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::DirectoryEntry& folder);
+			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalDirectoryEntry& folder);
+			std::string ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::PhysicalFileEntry& entry);
 
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;
 			PrintFunction m_printFunction;
-			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_scriptDirectory;
 			std::vector<std::shared_ptr<AbstractScriptingLibrary>> m_libraries;
 			std::vector<sol::thread> m_availableThreads;
 			std::vector<sol::thread> m_runningThreads;

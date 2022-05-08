@@ -8,11 +8,11 @@
 #define BURGWAR_CORELIB_NETWORK_REACTOR_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Core/Thread.hpp>
 #include <Nazara/Network/ENetHost.hpp>
 #include <concurrentqueue/concurrentqueue.h>
 #include <atomic>
 #include <functional>
+#include <thread>
 #include <variant>
 #include <vector>
 
@@ -134,13 +134,13 @@ namespace bw
 
 			std::atomic_bool m_running;
 			std::size_t m_firstId;
+			std::thread m_thread;
 			std::vector<Nz::ENetPeer*> m_clients;
 			moodycamel::ConcurrentQueue<ConnectionRequest> m_connectionRequests;
 			moodycamel::ConcurrentQueue<IncomingEvent> m_incomingQueue;
 			moodycamel::ConcurrentQueue<OutgoingEvent> m_outgoingQueue;
 			Nz::ENetHost m_host;
 			Nz::NetProtocol m_protocol;
-			Nz::Thread m_thread;
 	};
 }
 

@@ -253,7 +253,7 @@ namespace bw
 
 		Player* player = m_players[packet.localIndex];
 
-		const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+		entt::entity controlledEntity = player->GetControlledEntity();
 		if (!controlledEntity)
 			return;
 
@@ -309,7 +309,7 @@ namespace bw
 		}
 
 		//FIXME: Use fragments instead of sending the whole file at once
-		Nz::File file(filePath.generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File file(filePath.generic_u8string(), Nz::OpenMode::ReadOnly);
 		if (!file.IsOpen())
 		{
 			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to open {}", filePath.generic_u8string());

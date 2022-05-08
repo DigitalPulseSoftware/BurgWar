@@ -21,13 +21,13 @@ namespace bw
 
 	void WeaponSystem::OnUpdate(float /*elapsedTime*/)
 	{
-		for (const Ndk::EntityHandle& weapon : GetEntities())
+		for (entt::entity weapon : GetEntities())
 		{
 			auto& weaponComponent = weapon->GetComponent<WeaponComponent>();
 			if (!weaponComponent.IsActive())
 				continue;
 
-			if (const Ndk::EntityHandle& owner = weaponComponent.GetOwner())
+			if (entt::entity owner = weaponComponent.GetOwner())
 			{
 				InputComponent& ownerInputs = owner->GetComponent<InputComponent>();
 				Ndk::NodeComponent& ownerNode = owner->GetComponent<Ndk::NodeComponent>();

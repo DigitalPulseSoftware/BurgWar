@@ -116,7 +116,7 @@ namespace bw
 	{
 		Nz::String text = m_chatEnteringBox->GetText();
 		if (!text.IsEmpty())
-			OnChatMessage(text.ToStdString());
+			OnChatMessage(text);
 	}
 
 	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget)

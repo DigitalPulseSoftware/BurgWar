@@ -6,9 +6,8 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Core/CallOnExit.hpp>
-#include <NDK/World.hpp>
 #include <cassert>
 #include <filesystem>
 #include <sstream>
@@ -69,7 +68,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
+	inline void ScriptStore<Element>::UpdateEntityElement(entt::entity entity)
 	{
 		assert(entity->HasComponent<ScriptComponent>());
 
@@ -93,12 +92,12 @@ namespace bw
 		const auto& scriptDir = m_context->GetScriptDirectory();
 
 		VirtualDirectory::Entry entry;
-		if (scriptDir->GetEntry(directoryPath.generic_u8string(), &entry) && std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry))
+		if (scriptDir->GetEntry(directoryPath.generic_u8string(), &entry) && std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry))
 		{
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			VirtualDirectory::DirectoryEntry& directory = std::get<VirtualDirectory::DirectoryEntry>(entry);
+			directory->Foreach([&](const std::string& entryName, const Nz::VirtualDirectory::Entry& entry)
 			{
-				LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), directoryPath / entryName);
+				LoadElement(std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
 			});
 		}
 	}
@@ -258,9 +257,9 @@ namespace bw
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
+	entt::entity ScriptStore<Element>::CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
 	{
-		const Ndk::EntityHandle& entity = world.CreateEntity();
+		entt::entity entity = registry.create();
 
 		PropertyValueMap filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
 
@@ -313,7 +312,7 @@ namespace bw
 		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 
-		entity->AddComponent<ScriptComponent>(m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
+		registry.emplace<ScriptComponent>(m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
 
 		return entity;
 	}
@@ -527,7 +526,7 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
+	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, entt::entity entity) const
 	{
 		auto& entityScript = entity->GetComponent<ScriptComponent>();
 		if (!entityScript.ExecuteCallback<ElementEvent::Init>())

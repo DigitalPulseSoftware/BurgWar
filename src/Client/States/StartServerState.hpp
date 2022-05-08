@@ -38,7 +38,7 @@ namespace bw
 			Ndk::BoxLayout* m_descriptionLayout;
 			Ndk::BoxLayout* m_nameLayout;
 			Ndk::BoxLayout* m_serverConfigLayout;
-			Ndk::BaseWidget* m_background;
+			Nz::BaseWidget* m_background;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_startServerButton;
 			Ndk::CheckboxWidget* m_listServerCheckbox;

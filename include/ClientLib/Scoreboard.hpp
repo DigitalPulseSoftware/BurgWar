@@ -21,10 +21,10 @@ namespace bw
 
 	using ScoreboardHandle = Nz::ObjectHandle<Scoreboard>;
 
-	class BURGWAR_CLIENTLIB_API Scoreboard : public Ndk::BaseWidget, public Nz::HandledObject<Scoreboard>
+	class BURGWAR_CLIENTLIB_API Scoreboard : public Nz::BaseWidget, public Nz::HandledObject<Scoreboard>
 	{
 		public:
-			Scoreboard(Ndk::BaseWidget* parent, const Logger& logger);
+			Scoreboard(Nz::BaseWidget* parent, const Logger& logger);
 			Scoreboard(const Scoreboard&) = delete;
 			Scoreboard(Scoreboard&&) = delete;
 			~Scoreboard();
@@ -57,7 +57,7 @@ namespace bw
 					Ndk::LabelWidget* label;
 				};
 
-				Ndk::BaseWidget* background;
+				Nz::BaseWidget* background;
 				std::optional<Nz::Color> color;
 				std::size_t teamId;
 				std::vector<ColumnData> values;
@@ -73,7 +73,7 @@ namespace bw
 			{
 				std::string name;
 				Nz::Color color;
-				Ndk::BaseWidget* background;
+				Nz::BaseWidget* background;
 				Ndk::ImageWidget* line;
 				Ndk::LabelWidget* widget;
 			};
@@ -81,9 +81,9 @@ namespace bw
 			std::vector<ColumnData> m_columns;
 			std::vector<std::optional<PlayerData>> m_players;
 			std::vector<TeamData> m_teams;
-			Ndk::BaseWidget* m_backgroundWidget;
-			Ndk::BaseWidget* m_columnBackgroundWidget;
-			Ndk::BaseWidget* m_contentWidget;
+			Nz::BaseWidget* m_backgroundWidget;
+			Nz::BaseWidget* m_columnBackgroundWidget;
+			Nz::BaseWidget* m_contentWidget;
 			Ndk::ScrollAreaWidget* m_scrollArea;
 			const Logger& m_logger;
 	};

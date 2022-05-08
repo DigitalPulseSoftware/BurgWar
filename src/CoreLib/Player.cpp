@@ -3,11 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Player.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
-#include <Nazara/Graphics/Material.hpp>
-#include <Nazara/Graphics/Sprite.hpp>
-#include <Nazara/Physics2D/Collider2D.hpp>
-#include <NDK/Components.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Map.hpp>
@@ -28,6 +23,10 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
+#include <Nazara/Core/CallOnExit.hpp>
+#include <Nazara/Graphics/Material.hpp>
+#include <Nazara/Graphics/Sprite.hpp>
+#include <Nazara/Physics2D/Collider2D.hpp>
 
 namespace bw
 {
@@ -60,7 +59,7 @@ namespace bw
 		{
 			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringValue("Resources.ScriptDirectory");
 
-			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<VirtualDirectory>(scriptFolder));
+			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<Nz::VirtualDirectory>(scriptFolder));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
 			{
 				if (!ply)
@@ -92,9 +91,11 @@ namespace bw
 				if (m_playerEntity)
 				{
 					Terrain& terrain = m_match.GetTerrain();
-					Ndk::World& world = terrain.GetLayer(layerIndex).GetWorld();
+					entt::registry& world = terrain.GetLayer(layerIndex).GetWorld();
 
-					const Ndk::EntityHandle& newPlayerEntity = world.CloneEntity(m_playerEntity);
+#if 0
+
+					entt::entity newPlayerEntity = world.CloneEntity(m_playerEntity);
 					/*const auto& componentBits = m_playerEntity->GetComponentBits();
 					for (std::size_t i = componentBits.FindFirst(); i != componentBits.npos; i = componentBits.FindNext(i))
 					{
@@ -131,11 +132,13 @@ namespace bw
 						});
 					}
 
+#endif
+
 					m_shouldSendWeapons = true;
 				}
 			}
 			else
-				m_playerEntity.Reset();
+				m_playerEntity.reset();
 
 			m_layerIndex = layerIndex;
 
@@ -165,17 +168,24 @@ namespace bw
 			weaponPacket.layerIndex = m_layerIndex;
 
 			Nz::Bitset<Nz::UInt64> weaponIds;
-			if (m_playerEntity && m_playerEntity->HasComponent<WeaponWielderComponent>())
+			if (m_playerEntity)
+			{
+				entt::registry& registry = m_playerEntity->GetRegistry();
+				if (WeaponWielderComponent* weaponWielder = registry.try_get<WeaponWielderComponent>(m_playerEntity->GetEntity()))
+				{
+					for (entt::entity weapon : weaponWielder->GetWeapons())
+					{
+						assert(registry.valid(weapon));
+
+						weaponPacket.weaponEntities.emplace_back(Nz::UInt32(weapon->GetId()));
+						weaponIds.UnboundedSet(weapon->GetId());
+					}
+				}
+			}
+			//	&& m_playerEntity->HasComponent<WeaponWielderComponent>())
 			{
 				auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
 
-				for (const Ndk::EntityHandle& weapon : weaponWielder.GetWeapons())
-				{
-					assert(weapon);
-
-					weaponPacket.weaponEntities.emplace_back(Nz::UInt32(weapon->GetId()));
-					weaponIds.UnboundedSet(weapon->GetId());
-				}
 			}
 
 			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));
@@ -194,7 +204,7 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::UpdateControlledEntity(const Ndk::EntityHandle& entity, bool sendPacket, bool ignoreLayerUpdate)
+	void Player::UpdateControlledEntity(entt::entity entity, bool sendPacket, bool ignoreLayerUpdate)
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
@@ -207,7 +217,7 @@ namespace bw
 			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), false);
 		}
 
-		m_playerEntity = Ndk::EntityHandle::InvalidHandle;
+		m_playerEntity = entt::null;
 		m_onPlayerEntityDied.Disconnect();
 		m_onPlayerEntityDestruction.Disconnect();
 		m_onWeaponAdded.Disconnect();
@@ -244,7 +254,7 @@ namespace bw
 			{
 				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
 
-				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* /*health*/, const Ndk::EntityHandle& attacker)
+				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* /*health*/, entt::entity attacker)
 				{
 					OnDeath(attacker);
 				});
@@ -252,7 +262,7 @@ namespace bw
 
 			m_onPlayerEntityDestruction.Connect(m_playerEntity->OnEntityDestruction, [this](Ndk::Entity* /*entity*/)
 			{
-				OnDeath(Ndk::EntityHandle::InvalidHandle);
+				OnDeath(entt::null);
 			});
 
 			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
@@ -315,11 +325,11 @@ namespace bw
 		m_match.BroadcastPacket(nameUpdatePacket);
 	}
 
-	void Player::OnDeath(const Ndk::EntityHandle& attacker)
+	void Player::OnDeath(entt::entity attacker)
 	{
 		assert(m_playerEntity);
 
-		UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle, false);
+		UpdateControlledEntity(entt::null, false);
 
 		Packets::ChatMessage chatPacket;
 		if (attacker && attacker->HasComponent<OwnerComponent>())

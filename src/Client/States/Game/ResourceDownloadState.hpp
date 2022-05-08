@@ -40,7 +40,7 @@ namespace bw
 
 			void OnCancelled() override;
 
-			void RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<VirtualDirectory>& resourceDir, const std::shared_ptr<VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory);
+			void RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<Nz::VirtualDirectory>& resourceDir, const std::shared_ptr<Nz::VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory);
 			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
 
 			using CancelableState::UpdateStatus;
@@ -49,8 +49,8 @@ namespace bw
 			FileMap m_assetData;
 			FileMap m_scriptData;
 			std::shared_ptr<ClientSession> m_clientSession;
-			std::shared_ptr<VirtualDirectory> m_targetAssetDirectory;
-			std::shared_ptr<VirtualDirectory> m_targetScriptDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_targetAssetDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_targetScriptDirectory;
 			std::vector<std::unique_ptr<DownloadManager>> m_downloadManagers;
 			Packets::AuthSuccess m_authSuccess;
 			Packets::MatchData m_matchData;

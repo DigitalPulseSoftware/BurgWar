@@ -58,7 +58,7 @@ namespace bw
 		weapon.animationStartFunction = elementTable.get_or("OnAnimationStart", sol::main_protected_function{});
 	}
 
-	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent)
+	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, entt::entity entity, entt::entity parent)
 	{
 		entity->AddComponent<CooldownComponent>(weaponClass.cooldown);
 
@@ -85,7 +85,7 @@ namespace bw
 			{
 				anim.OnAnimationStart.Connect([this, callback = weaponClass.animationStartFunction](AnimationComponent* anim)
 				{
-					const Ndk::EntityHandle& entity = anim->GetEntity();
+					entt::entity entity = anim->GetEntity();
 					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 
 					auto co = scriptComponent.GetContext()->CreateCoroutine(callback);

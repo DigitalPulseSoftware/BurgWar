@@ -11,8 +11,8 @@ namespace bw
 	{
 		const EntityLogContext& entityContext = static_cast<const EntityLogContext&>(context);
 
-		if (entityContext.entity)
-			content = "[Entity " + std::to_string(entityContext.entity->GetId()) + "] " + content;
+		if (entityContext.entity != entt::null)
+			content = "[Entity " + std::to_string(static_cast<Nz::UInt64>(entityContext.entity)) + "] " + content;
 		else
 			content = "[Entity <invalid>] " + content;
 

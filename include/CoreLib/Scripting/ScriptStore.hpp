@@ -12,7 +12,6 @@
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <NDK/Entity.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
 #include <memory>
@@ -21,8 +20,6 @@
 
 namespace bw
 {
-	class VirtualDirectory;
-
 	template<typename Element>
 	class ScriptStore
 	{
@@ -49,16 +46,16 @@ namespace bw
 
 			void Resolve();
 			
-			void UpdateEntityElement(const Ndk::EntityHandle& entity);
+			void UpdateEntityElement(entt::entity entity);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
 		protected:
 			virtual std::shared_ptr<Element> CreateElement() const;
-			const Ndk::EntityHandle& CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const;
+			entt::entity CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const;
 			virtual void InitializeElementTable(sol::main_table& elementTable);
 			virtual void InitializeElement(sol::main_table& elementTable, Element& element) = 0;
-			bool InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const;
+			bool InitializeEntity(const Element& entityClass, entt::entity entity) const;
 
 			sol::state& GetLuaState();
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;

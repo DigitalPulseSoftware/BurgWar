@@ -3,8 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
-#include <NDK/Components.hpp>
-#include <Nazara/Utility/Image.hpp>
 #include <CoreLib/PlayerInputController.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
@@ -16,97 +14,107 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
+#include <Nazara/Utility/Image.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
-	const Ndk::EntityHandle& ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
+	entt::entity ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::entity parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
 		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
-		const Ndk::EntityHandle& entity = SharedEntityStore::CreateEntity(layer.GetWorld(), entityClass, properties);
-		entity->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
+		entt::registry& registry = layer.GetWorld();
 
-		auto& node = entity->AddComponent<Ndk::NodeComponent>();
+		entt::entity entity = SharedEntityStore::CreateEntity(layer.GetWorld(), entityClass, properties);
+		registry.emplace<MatchComponent>(entity, layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
+
+		auto& node = registry.emplace<Nz::NodeComponent>(entity);
 		node.SetPosition(position);
 		node.SetRotation(rotation);
 
-		if (parent)
-			node.SetParent(parent);
+		if (parent != entt::null)
+			node.SetParent(registry, parent);
 
 		if (entityClass->maxHealth > 0)
 		{
-			auto& healthComponent = entity->AddComponent<HealthComponent>(entityClass->maxHealth);
-			healthComponent.OnDamage.Connect([](HealthComponent* health, Nz::UInt16& damageValue, const Ndk::EntityHandle& source)
+			auto& healthComponent = registry.emplace<HealthComponent>(entity, registry, entity, entityClass->maxHealth);
+			healthComponent.OnDamage.Connect([](HealthComponent* health, Nz::UInt16& damageValue, entt::entity source)
 			{
-				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
+				entt::registry& registry = health->GetRegistry();
+				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
 
-				if (auto ret = entityScript.ExecuteCallback<ElementEvent::TakeDamage>(damageValue, TranslateEntityToLua(source)); ret.has_value())
+				if (auto ret = entityScript.ExecuteCallback<ElementEvent::TakeDamage>(damageValue, TranslateEntityToLua(registry, source)); ret.has_value())
 					damageValue = *ret;
 			});
 
-			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, const Ndk::EntityHandle& source)
+			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, entt::entity source)
 			{
-				auto& entityScript = health->GetEntity()->GetComponent<ScriptComponent>();
+				entt::registry& registry = health->GetRegistry();
+				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
 
-				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, TranslateEntityToLua(source));
+				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, TranslateEntityToLua(registry, source));
 			});
 
-			healthComponent.OnDying.Connect([&](HealthComponent* health, const Ndk::EntityHandle& attacker)
+			healthComponent.OnDying.Connect([&](HealthComponent* health, entt::entity attacker)
 			{
-				const Ndk::EntityHandle& entity = health->GetEntity();
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				entt::registry& registry = health->GetRegistry();
+				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
 
-				entityScript.ExecuteCallback<ElementEvent::Death>(TranslateEntityToLua(attacker));
+				entityScript.ExecuteCallback<ElementEvent::Death>(TranslateEntityToLua(registry, attacker));
 			});
 
-			healthComponent.OnDied.Connect([&](const HealthComponent* health, const Ndk::EntityHandle& attacker)
+			healthComponent.OnDie.Connect([&](const HealthComponent* health, entt::entity attacker)
 			{
-				const Ndk::EntityHandle& entity = health->GetEntity();
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				entt::registry& registry = health->GetRegistry();
+				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
 
-				entityScript.ExecuteCallback<ElementEvent::Died>(TranslateEntityToLua(attacker));
+				entityScript.ExecuteCallback<ElementEvent::Died>(TranslateEntityToLua(registry, attacker));
 			});
 		}
 
 		if (entityClass->isNetworked)
 		{
 			// Not quite sure about this, maybe parent handling should be automatic?
-			if (parent && parent->HasComponent<NetworkSyncComponent>())
-				entity->AddComponent<NetworkSyncComponent>(entityClass->fullName, parent);
+
+			if (parent != entt::null && registry.try_get<NetworkSyncComponent>(parent))
+				registry.emplace<NetworkSyncComponent>(entity, entityClass->fullName, parent);
 			else
-				entity->AddComponent<NetworkSyncComponent>(entityClass->fullName);
+				registry.emplace<NetworkSyncComponent>(entity, entityClass->fullName);
 		}
 
 		if (playerControlled)
-			entity->AddComponent<PlayerMovementComponent>();
+			registry.emplace<PlayerMovementComponent>(entity);
 
 		if (hasInputs)
-			entity->AddComponent<InputComponent>(std::make_shared<PlayerInputController>());
+			registry.emplace<InputComponent>(entity, std::make_shared<PlayerInputController>());
 
 		bwLog(GetLogger(), LogLevel::Debug, "Created entity {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
 
 		return entity;
 	}
 
-	bool ServerEntityStore::InitializeEntity(const Ndk::EntityHandle& entity) const
+	bool ServerEntityStore::InitializeEntity(entt::registry& registry, entt::entity entity) const
 	{
-		const auto& entityScript = entity->GetComponent<ScriptComponent>();
+		const auto& entityScript = registry.get<ScriptComponent>(entity);
 		return SharedEntityStore::InitializeEntity(static_cast<const ScriptedEntity&>(*entityScript.GetElement()), entity);
 	}
 
-	const Ndk::EntityHandle& ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent) const
+	entt::entity ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::entity parent) const
 	{
-		const Ndk::EntityHandle& entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
-		if (!entity)
-			return Ndk::EntityHandle::InvalidHandle;
+		entt::registry& registry = layer.GetWorld();
 
-		if (!InitializeEntity(entity))
+		entt::entity entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
+		if (entity != entt::null)
+			return entt::null;
+
+		if (!InitializeEntity(registry, entity))
 		{
-			entity->Kill();
-			return Ndk::EntityHandle::InvalidHandle;
+			registry.destroy(entity);
+			return entt::null;
 		}
 
 		return entity;

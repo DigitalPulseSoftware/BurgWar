@@ -25,7 +25,7 @@ namespace bw
 	class TileMapEditorMode : public EntityEditorMode
 	{
 		public:
-			TileMapEditorMode(EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles);
+			TileMapEditorMode(EditorWindow& editor, entt::entity targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles);
 			~TileMapEditorMode() = default;
 
 			void EnableClearMode(bool clearMode);

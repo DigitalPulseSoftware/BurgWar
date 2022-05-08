@@ -11,13 +11,12 @@
 #include <CoreLib/InputController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <NDK/Components.hpp>
 #include <array>
 #include <memory>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API InputComponent : public Ndk::Component<InputComponent>
+	class BURGWAR_CORELIB_API InputComponent
 	{
 		public:
 			inline InputComponent(std::shared_ptr<InputController> inputController);
@@ -29,8 +28,6 @@ namespace bw
 			inline void UpdateController(std::shared_ptr<InputController> inputController);
 			inline void UpdateInputs(const PlayerInputData& inputData);
 			inline void UpdatePreviousInputs(const PlayerInputData& inputData);
-
-			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnInputUpdate, InputComponent* /*input*/);
 

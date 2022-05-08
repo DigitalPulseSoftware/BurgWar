@@ -66,7 +66,7 @@ namespace bw
 		renderSystem.SetDefaultBackground(nullptr);
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
-		const Ndk::EntityHandle& camera2D = world.CreateEntity();
+		entt::entity camera2D = world.CreateEntity();
 
 		auto& cameraComponent2D = camera2D->AddComponent<Ndk::CameraComponent>();
 		cameraComponent2D.SetProjectionType(Nz::ProjectionType_Orthogonal);

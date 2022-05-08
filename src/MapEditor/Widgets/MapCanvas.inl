@@ -9,7 +9,7 @@ namespace bw
 	template<typename F>
 	void MapCanvas::ForEachEntity(F&& func)
 	{
-		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
+		for (entt::entity entity : GetWorld().GetEntities())
 			func(entity);
 	}
 
@@ -40,7 +40,7 @@ namespace bw
 		return &m_layers[layerIndex];
 	}
 
-	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetAssetDirectory()
+	inline const std::shared_ptr<Nz::VirtualDirectory>& MapCanvas::GetAssetDirectory()
 	{
 		return m_assetDirectory;
 	}
@@ -55,7 +55,7 @@ namespace bw
 		return *m_scriptingContext;
 	}
 
-	inline const std::shared_ptr<VirtualDirectory>& MapCanvas::GetScriptDirectory()
+	inline const std::shared_ptr<Nz::VirtualDirectory>& MapCanvas::GetScriptDirectory()
 	{
 		return m_scriptDirectory;
 	}

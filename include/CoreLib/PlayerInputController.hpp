@@ -17,7 +17,7 @@ namespace bw
 			PlayerInputController() = default;
 			~PlayerInputController() = default;
 
-			std::optional<PlayerInputData> GenerateInputs(const Ndk::EntityHandle& entity) const override;
+			std::optional<PlayerInputData> GenerateInputs(entt::registry& registry, entt::entity entity) const override;
 	};
 }
 

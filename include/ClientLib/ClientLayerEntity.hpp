@@ -31,7 +31,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API ClientLayerEntity final : public LayerVisualEntity
 	{
 		public:
-			ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
+			ClientLayerEntity(ClientLayer& layer, entt::entity entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
 			ClientLayerEntity(const ClientLayerEntity&) = delete;
 			ClientLayerEntity(ClientLayerEntity&& entity) noexcept = default;
 			~ClientLayerEntity();

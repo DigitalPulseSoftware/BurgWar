@@ -23,13 +23,13 @@ namespace bw
 		private:
 			void RegisterServerLibrary(sol::table& elementMetatable);
 
-			void SetDirection(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& upVector) override;
-			void SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia) override;
-			void SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia) override;
-			void SetPosition(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& position) override;
-			void SetRotation(lua_State* L, const Ndk::EntityHandle& entity, const Nz::DegreeAnglef& rotation) override;
-			void UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost) override;
-			void UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed) override;
+			void SetDirection(lua_State* L, entt::entity entity, const Nz::Vector2f& upVector) override;
+			void SetMass(lua_State* L, entt::entity entity, float mass, bool recomputeMomentOfInertia) override;
+			void SetMomentOfInertia(lua_State* L, entt::entity entity, float momentOfInertia) override;
+			void SetPosition(lua_State* L, entt::entity entity, const Nz::Vector2f& position) override;
+			void SetRotation(lua_State* L, entt::entity entity, const Nz::DegreeAnglef& rotation) override;
+			void UpdatePlayerJumpHeight(lua_State* L, entt::entity entity, float jumpHeight, float jumpHeightBoost) override;
+			void UpdatePlayerMovement(lua_State* L, entt::entity entity, float movementSpeed) override;
 	};
 }
 

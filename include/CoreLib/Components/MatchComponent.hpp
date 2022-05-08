@@ -10,13 +10,12 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
 	class Match;
 
-	class BURGWAR_CORELIB_API MatchComponent : public Ndk::Component<MatchComponent>
+	class BURGWAR_CORELIB_API MatchComponent
 	{
 		public:
 			inline MatchComponent(Match& match, LayerIndex layerIndex, EntityId uniqueId);
@@ -25,8 +24,6 @@ namespace bw
 			inline LayerIndex GetLayerIndex() const;
 			inline Match& GetMatch() const;
 			inline EntityId GetUniqueId() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			EntityId m_uniqueId;

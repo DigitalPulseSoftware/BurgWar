@@ -53,7 +53,7 @@ namespace bw
 				bool receivedData = false; //< Did we already successfully refresh from this master server?
 			};
 
-			Ndk::BaseWidget* m_serverListWidget;
+			Nz::BaseWidget* m_serverListWidget;
 			Ndk::ButtonWidget* m_backButton;
 			Ndk::ButtonWidget* m_directConnectButton;
 			Ndk::ScrollAreaWidget* m_serverListScrollbar;

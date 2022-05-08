@@ -198,7 +198,7 @@ namespace bw
 		m_gamemode.reset();
 	}
 
-	void ClientMatch::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	void ClientMatch::ForEachEntity(std::function<void(entt::entity entity)> func)
 	{
 		for (auto& layer : m_layers)
 		{
@@ -259,7 +259,7 @@ namespace bw
 	void ClientMatch::InitDebugGhosts()
 	{
 		m_debug.emplace();
-		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+		if (m_debug->socket.Create(Nz::NetProtocol::IPv4))
 		{
 			m_debug->socket.EnableBlocking(false);
 
@@ -289,7 +289,7 @@ namespace bw
 		}
 	}
 
-	void ClientMatch::LoadAssets(std::shared_ptr<VirtualDirectory> assetDir)
+	void ClientMatch::LoadAssets(std::shared_ptr<Nz::VirtualDirectory> assetDir)
 	{
 		if (!m_assetStore)
 		{
@@ -303,7 +303,7 @@ namespace bw
 		}
 	}
 
-	void ClientMatch::LoadScripts(const std::shared_ptr<VirtualDirectory>& scriptDir)
+	void ClientMatch::LoadScripts(const std::shared_ptr<Nz::VirtualDirectory>& scriptDir)
 	{
 		assert(m_assetStore);
 
@@ -365,7 +365,7 @@ namespace bw
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = LuaFunction([&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -391,7 +391,7 @@ namespace bw
 
 		state["engine_AnimatePositionByOffsetSq"] = LuaFunction([&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -453,7 +453,7 @@ namespace bw
 			m_localPlayers[localIndex].inputPoller = std::move(inputPoller);
 		});
 
-		ForEachEntity([this](const Ndk::EntityHandle& entity)
+		ForEachEntity([this](entt::entity entity)
 		{
 			if (entity->HasComponent<ScriptComponent>())
 			{
@@ -480,16 +480,16 @@ namespace bw
 		m_entitiesByUniqueId.emplace(uniqueId, std::move(entity));
 	}
 
-	const Ndk::EntityHandle& ClientMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::entity ClientMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
-			return Ndk::EntityHandle::InvalidHandle;
+			return entt::null;
 
 		return it.value()->GetEntity();
 	}
 
-	EntityId ClientMatch::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId ClientMatch::RetrieveUniqueIdByEntity(entt::entity entity) const
 	{
 		if (!entity || !entity->HasComponent<ClientMatchComponent>())
 			return InvalidEntityId;
@@ -1377,7 +1377,7 @@ namespace bw
 							/*Nz::Vector2f posDiff = entityData.position - packetEntity.position;
 							Nz::RadianAnglef rotDiff = entityData.rotation - packetEntity.rotation;
 
-							bwLog(GetLogger(), LogLevel::Debug, "Prediction error for entity #{} (position diff: {}, rotation diff: {})", uniqueId, posDiff.ToString().ToStdString(), rotDiff.ToString().ToStdString());*/
+							bwLog(GetLogger(), LogLevel::Debug, "Prediction error for entity #{} (position diff: {}, rotation diff: {})", uniqueId, posDiff.ToString(), rotDiff.ToString());*/
 							return true;
 						}
 					}

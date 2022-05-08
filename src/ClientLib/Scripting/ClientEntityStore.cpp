@@ -10,9 +10,9 @@
 
 namespace bw
 {
-	std::optional<ClientLayerEntity> ClientEntityStore::InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity) const
+	std::optional<ClientLayerEntity> ClientEntityStore::InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, entt::entity parentEntity) const
 	{
-		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, scale, properties, parentEntity);
+		entt::entity entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, scale, properties, parentEntity);
 		if (!entity)
 			return std::nullopt;
 

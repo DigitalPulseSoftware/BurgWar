@@ -8,31 +8,29 @@
 #define BURGWAR_CORELIB_COMPONENTS_HEALTHCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/Components/BaseComponent.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API HealthComponent : public Ndk::Component<HealthComponent>
+	class BURGWAR_CORELIB_API HealthComponent : public BaseComponent
 	{
 		public:
-			inline HealthComponent(Nz::UInt16 maxHealth);
-			inline HealthComponent(const HealthComponent&);
+			inline HealthComponent(entt::registry& registry, entt::entity entity, Nz::UInt16 maxHealth);
+			inline HealthComponent(const HealthComponent& health);
 
-			inline void Damage(Nz::UInt16 damage, const Ndk::EntityHandle& attacker);
+			inline void Damage(Nz::UInt16 damage, entt::entity attacker);
 
 			inline Nz::UInt16 GetHealth() const;
 			inline float GetHealthPct() const;
 			inline Nz::UInt16 GetMaxHealth() const;
 
-			inline void Heal(Nz::UInt16 heal, const Ndk::EntityHandle& healer);
+			inline void Heal(Nz::UInt16 heal, entt::entity healer);
 
-			static Ndk::ComponentIndex componentIndex;
-
-			NazaraSignal(OnDamage, HealthComponent* /*emitter*/, Nz::UInt16& /*damage*/, const Ndk::EntityHandle& /*attacker*/);
-			NazaraSignal(OnDying, HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
-			NazaraSignal(OnDied, const HealthComponent* /*emitter*/, const Ndk::EntityHandle& /*attacker*/);
-			NazaraSignal(OnHealthChange, HealthComponent* /*emitter*/, Nz::UInt16 /*newHealth*/, const Ndk::EntityHandle& /*source*/);
+			NazaraSignal(OnDamage, HealthComponent* /*emitter*/, Nz::UInt16& /*damage*/, entt::entity /*attacker*/);
+			NazaraSignal(OnDying, HealthComponent* /*emitter*/, entt::entity /*attacker*/);
+			NazaraSignal(OnDie, const HealthComponent* /*emitter*/, entt::entity /*attacker*/);
+			NazaraSignal(OnHealthChange, HealthComponent* /*emitter*/, Nz::UInt16 /*newHealth*/, entt::entity /*source*/);
 
 		private:
 			Nz::UInt16 m_currentHealth;

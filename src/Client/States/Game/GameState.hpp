@@ -19,7 +19,7 @@ namespace bw
 	class GameState final : public AbstractState
 	{
 		public:
-			GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<VirtualDirectory> scriptDirectory);
+			GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData, std::shared_ptr<Nz::VirtualDirectory> assetDirectory, std::shared_ptr<Nz::VirtualDirectory> scriptDirectory);
 			~GameState() = default;
 
 			inline const std::shared_ptr<ClientMatch>& GetMatch();

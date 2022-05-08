@@ -16,13 +16,13 @@
 
 namespace bw
 {
-	TileMapEditorMode::TileMapEditorMode(EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) :
+	TileMapEditorMode::TileMapEditorMode(EditorWindow& editor, entt::entity targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) :
 	EntityEditorMode(targetEntity, editor),
 	m_editionMode(EditionMode::None),
 	m_tilemapData(std::move(tilemapData)),
 	m_clearMode(false)
 	{
-		Nz::ImageRef eraserImage = Nz::ImageLibrary::Get("Eraser");
+		std::shared_ptr<Nz::Image> eraserImage = Nz::ImageLibrary::Get("Eraser");
 		if (eraserImage)
 		{
 			m_eraserCursor = Nz::Cursor::New();

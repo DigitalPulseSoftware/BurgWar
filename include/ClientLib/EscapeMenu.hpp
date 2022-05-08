@@ -50,7 +50,7 @@ namespace bw
 			Ndk::ButtonWidget* m_leaveMatchButton;
 			Ndk::ButtonWidget* m_optionsButton;
 			Ndk::ButtonWidget* m_quitAppButton;
-			Ndk::BaseWidget* m_backgroundWidget;
+			Nz::BaseWidget* m_backgroundWidget;
 			ClientEditorApp& m_app;
 			OptionWidget* m_optionWidget;
 	};

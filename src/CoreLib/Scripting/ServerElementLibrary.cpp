@@ -33,12 +33,12 @@ namespace bw
 	{
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			Ndk::World* world = entity->GetWorld();
 			assert(world);
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](const Ndk::EntityHandle& hitEntity)
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](entt::entity hitEntity)
 			{
 				if (hitEntities.Has(hitEntity))
 					return;
@@ -62,7 +62,7 @@ namespace bw
 
 		elementTable["DumpCreationInfo"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<ScriptComponent>() || !entity->HasComponent<MatchComponent>() || !entity->HasComponent<Ndk::NodeComponent>())
 				return sol::nil;
 
@@ -103,14 +103,14 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<MatchComponent>().GetLayerIndex();
 		});
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(table);
+			entt::entity entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -134,7 +134,7 @@ namespace bw
 
 		elementTable["GetOwner"] = LuaFunction([](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(table);
+			entt::entity entity = AssertScriptEntity(table);
 
 			if (!entity->HasComponent<OwnerComponent>())
 				return sol::nil;
@@ -144,8 +144,8 @@ namespace bw
 
 		elementTable["SetParent"] = LuaFunction([](const sol::table& entityTable, const sol::table& parentTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
-			const Ndk::EntityHandle& parent = AssertScriptEntity(parentTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::entity parent = AssertScriptEntity(parentTable);
 
 			entity->GetComponent<Ndk::NodeComponent>().SetParent(parent, true);
 			if (entity->HasComponent<NetworkSyncComponent>())
@@ -153,7 +153,7 @@ namespace bw
 		});
 	}
 
-	void ServerElementLibrary::SetScale(const Ndk::EntityHandle& entity, float newScale)
+	void ServerElementLibrary::SetScale(entt::entity entity, float newScale)
 	{
 		if (entity->HasComponent<ScriptComponent>())
 		{
@@ -182,7 +182,7 @@ namespace bw
 		if (entity->HasComponent<WeaponWielderComponent>())
 		{
 			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
-			for (const Ndk::EntityHandle& weapon : wielderComponent.GetWeapons())
+			for (entt::entity weapon : wielderComponent.GetWeapons())
 				SetScale(weapon, newScale);
 		}
 	}

@@ -20,10 +20,10 @@ namespace bw
 			inline EditorEntityStore(MapCanvas& mapCanvas, ClientAssetStore& assetStore, const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~EditorEntityStore() = default;
 
-			std::optional<LayerVisualEntity> Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
+			std::optional<LayerVisualEntity> Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parent = entt::null) const;
 
 		private:
-			void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const override;
+			void BindCallbacks(const ScriptedEntity& entityClass, entt::entity entity) const override;
 
 			std::shared_ptr<ScriptedEntity> CreateElement() const override;
 			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override;

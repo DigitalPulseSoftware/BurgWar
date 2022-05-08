@@ -50,7 +50,7 @@ namespace bw
 	{
 		library["GetTexture"] = LuaFunction([this](const std::string& texturePath) -> std::optional<ServerTexture>
 		{
-			const Nz::ImageRef& image = m_assetStore.GetImage(texturePath);
+			const std::shared_ptr<Nz::Image>& image = m_assetStore.GetImage(texturePath);
 			if (image)
 				return ServerTexture(image);
 			else
@@ -211,7 +211,7 @@ namespace bw
 
 			EntityId uniqueId = match.AllocateUniqueId();
 
-			const Ndk::EntityHandle& entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
+			entt::entity entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
@@ -270,7 +270,7 @@ namespace bw
 			// Create weapon
 			EntityId uniqueId = match.AllocateUniqueId();
 
-			const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
+			entt::entity weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
 			if (!weapon)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
@@ -351,7 +351,7 @@ namespace bw
 			"new", sol::no_constructor,
 			"GetControlledEntity", LuaFunction([](const Player& player) -> sol::object
 			{
-				const Ndk::EntityHandle& controlledEntity = player.GetControlledEntity();
+				entt::entity controlledEntity = player.GetControlledEntity();
 				if (!controlledEntity)
 					return sol::nil;
 
@@ -381,12 +381,12 @@ namespace bw
 			{
 				if (entityTable)
 				{
-					const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable.value());
+					entt::entity entity = AssertScriptEntity(entityTable.value());
 
 					player.UpdateControlledEntity(entity);
 				}
 				else
-					player.UpdateControlledEntity(Ndk::EntityHandle::InvalidHandle);
+					player.UpdateControlledEntity(entt::null);
 			}),
 			"UpdateLayerVisibility", LuaFunction(&Player::UpdateLayerVisibility)
 		);

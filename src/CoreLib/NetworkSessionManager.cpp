@@ -13,7 +13,7 @@ namespace bw
 {
 	NetworkSessionManager::NetworkSessionManager(MatchSessions* owner, Nz::UInt16 port, std::size_t maxClient) :
 	SessionManager(owner),
-	m_reactor(0, Nz::NetProtocol_Any, port, maxClient)
+	m_reactor(0, Nz::NetProtocol::Any, port, maxClient)
 	{
 	}
 

@@ -15,7 +15,7 @@ namespace bw
 		m_widget->OnCommand.Connect([this](Ndk::Console*, const Nz::String& command)
 		{
 			if (m_callback)
-				m_callback(command.ToStdString());
+				m_callback(command);
 		});
 
 		// Connect every slot

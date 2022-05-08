@@ -8,7 +8,7 @@
 
 namespace bw
 {
-	inline LayerVisualEntity::LayerVisualEntity(const Ndk::EntityHandle& entity, LayerIndex layerIndex, EntityId uniqueId) :
+	inline LayerVisualEntity::LayerVisualEntity(entt::entity entity, LayerIndex layerIndex, EntityId uniqueId) :
 	m_entity(entity),
 	m_uniqueId(uniqueId),
 	m_layerIndex(layerIndex)
@@ -28,7 +28,7 @@ namespace bw
 			func(std::as_const(renderableData.renderable), std::as_const(renderableData.offsetMatrix), std::as_const(renderableData.renderOrder));
 	}
 
-	inline const Ndk::EntityHandle& LayerVisualEntity::GetEntity() const
+	inline entt::entity LayerVisualEntity::GetEntity() const
 	{
 		return m_entity;
 	}

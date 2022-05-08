@@ -50,7 +50,7 @@ namespace bw
 
 			try
 			{
-				const Ndk::EntityHandle& entity = entityStore.CreateEntity(*this, entityTypeIndex, entityData.uniqueId, entityData.position, entityData.rotation, entityData.properties);
+				entt::entity entity = entityStore.CreateEntity(*this, entityTypeIndex, entityData.uniqueId, entityData.position, entityData.rotation, entityData.properties);
 				if (entity)
 					match.RegisterEntity(entityData.uniqueId, entity);
 			}
@@ -64,7 +64,7 @@ namespace bw
 	void TerrainLayer::InitializeEntities()
 	{
 		auto& entityStore = GetMatch().GetEntityStore();
-		for (const Ndk::EntityHandle& entity : GetWorld().GetEntities())
+		for (entt::entity entity : GetWorld().GetEntities())
 		{
 			if (!entityStore.InitializeEntity(entity))
 				entity->Kill();

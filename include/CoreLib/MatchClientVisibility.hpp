@@ -17,7 +17,6 @@
 #include <Nazara/Core/Bitset.hpp>
 #include <Nazara/Core/Flags.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <NDK/EntityList.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 #include <limits>
@@ -99,7 +98,7 @@ namespace bw
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 			void FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData);
 			void HandleEntityCreation(LayerIndex layerIndex, const NetworkSyncSystem::EntityCreation& eventData);
-			void HandleEntityRemove(LayerIndex layerIndex, Ndk::EntityId entityId, bool deathEvent);
+			void HandleEntityRemove(LayerIndex layerIndex, entt::entity entityId, bool deathEvent);
 			template<typename E> void PushLayerEntities(std::vector<E>& packetEntities, LayerIndex layerIndex, PendingCreationEventMap& pendingCreationMap);
 			void SendMatchState();
 

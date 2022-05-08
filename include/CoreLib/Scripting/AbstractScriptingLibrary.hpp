@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_ABSTRACTSCRIPTINGLIBRARY_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 #include <sol/forward.hpp>
 #include <memory>
 

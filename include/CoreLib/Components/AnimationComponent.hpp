@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_COMPONENTS_ANIMATIONCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/Components/BaseComponent.hpp>
 #include <Nazara/Core/Signal.hpp>
-#include <NDK/Component.hpp>
 #include <memory>
 #include <optional>
 
@@ -17,12 +17,12 @@ namespace bw
 {
 	class AnimationStore;
 
-	class BURGWAR_CORELIB_API AnimationComponent : public Ndk::Component<AnimationComponent>
+	class BURGWAR_CORELIB_API AnimationComponent : public BaseComponent
 	{
 		friend class AnimationSystem;
 
 		public:
-			inline AnimationComponent(std::shared_ptr<AnimationStore> animStore);
+			inline AnimationComponent(entt::registry& registry, entt::entity entity, std::shared_ptr<AnimationStore> animStore);
 			inline AnimationComponent(const AnimationComponent& animation);
 			~AnimationComponent() = default;
 
@@ -33,8 +33,6 @@ namespace bw
 			inline bool IsPlaying() const;
 
 			void Play(std::size_t animId, Nz::UInt64 animStartTime);
-
-			static Ndk::ComponentIndex componentIndex;
 
 			NazaraSignal(OnAnimationEnd, AnimationComponent* /*emitter*/);
 			NazaraSignal(OnAnimationStart, AnimationComponent* /*emitter*/);

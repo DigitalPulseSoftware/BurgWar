@@ -24,7 +24,7 @@ namespace bw
 	{
 		entityMetatable["GetWeaponCount"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> std::size_t
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
@@ -34,7 +34,7 @@ namespace bw
 
 		entityMetatable["GiveWeapon"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, std::string weaponClass) -> bool
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
@@ -52,13 +52,13 @@ namespace bw
 				// Create weapon
 				std::size_t weaponEntityIndex = weaponStore.GetElementIndex(weaponClass); 
 				if (weaponEntityIndex == ServerEntityStore::InvalidIndex)
-					return Ndk::EntityHandle::InvalidHandle;
+					return entt::null;
 			
 				EntityId uniqueId = match.AllocateUniqueId();
 
-				const Ndk::EntityHandle& weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(entityMatch.GetLayerIndex()), weaponEntityIndex, uniqueId, {}, entity);
+				entt::entity weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(entityMatch.GetLayerIndex()), weaponEntityIndex, uniqueId, {}, entity);
 				if (!weapon)
-					return Ndk::EntityHandle::InvalidHandle;
+					return entt::null;
 
 				match.RegisterEntity(uniqueId, weapon);
 				if (entity->HasComponent<OwnerComponent>())
@@ -75,7 +75,7 @@ namespace bw
 
 		entityMetatable["HasWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
@@ -85,7 +85,7 @@ namespace bw
 
 		entityMetatable["RemoveWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
@@ -95,7 +95,7 @@ namespace bw
 
 		entityMetatable["SelectWeapon"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const std::string& weaponClass) -> bool
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::entity entity = AssertScriptEntity(entityTable);
 			if (!entity->HasComponent<WeaponWielderComponent>())
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
@@ -104,7 +104,7 @@ namespace bw
 		});
 	}
 	
-	void ServerEntityLibrary::SetDirection(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& upVector)
+	void ServerEntityLibrary::SetDirection(lua_State* L, entt::entity entity, const Nz::Vector2f& upVector)
 	{
 		SharedEntityLibrary::SetDirection(L, entity, upVector);
 
@@ -112,7 +112,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
 	}
 
-	void ServerEntityLibrary::SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia)
+	void ServerEntityLibrary::SetMass(lua_State* L, entt::entity entity, float mass, bool recomputeMomentOfInertia)
 	{
 		SharedEntityLibrary::SetMass(L, entity, mass, recomputeMomentOfInertia);
 
@@ -120,7 +120,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 	
-	void ServerEntityLibrary::SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia)
+	void ServerEntityLibrary::SetMomentOfInertia(lua_State* L, entt::entity entity, float momentOfInertia)
 	{
 		SharedEntityLibrary::SetMomentOfInertia(L, entity, momentOfInertia);
 
@@ -128,7 +128,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 
-	void ServerEntityLibrary::SetPosition(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& position)
+	void ServerEntityLibrary::SetPosition(lua_State* L, entt::entity entity, const Nz::Vector2f& position)
 	{
 		SharedEntityLibrary::SetPosition(L, entity, position);
 
@@ -136,7 +136,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
 	}
 
-	void ServerEntityLibrary::SetRotation(lua_State* L, const Ndk::EntityHandle& entity, const Nz::DegreeAnglef& rotation)
+	void ServerEntityLibrary::SetRotation(lua_State* L, entt::entity entity, const Nz::DegreeAnglef& rotation)
 	{
 		SharedEntityLibrary::SetRotation(L, entity, rotation);
 
@@ -144,7 +144,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyMovementUpdate(entity);
 	}
 
-	void ServerEntityLibrary::UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost)
+	void ServerEntityLibrary::UpdatePlayerJumpHeight(lua_State* L, entt::entity entity, float jumpHeight, float jumpHeightBoost)
 	{
 		SharedEntityLibrary::UpdatePlayerJumpHeight(L, entity, jumpHeight, jumpHeightBoost);
 
@@ -152,7 +152,7 @@ namespace bw
 		world->GetSystem<NetworkSyncSystem>().NotifyPhysicsUpdate(entity);
 	}
 
-	void ServerEntityLibrary::UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed)
+	void ServerEntityLibrary::UpdatePlayerMovement(lua_State* L, entt::entity entity, float movementSpeed)
 	{
 		SharedEntityLibrary::UpdatePlayerMovement(L, entity, movementSpeed);
 

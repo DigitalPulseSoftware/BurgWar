@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline ServerTexture::ServerTexture(Nz::ImageRef texture) :
+	inline ServerTexture::ServerTexture(std::shared_ptr<Nz::Image> texture) :
 	m_image(std::move(texture))
 	{
 	}

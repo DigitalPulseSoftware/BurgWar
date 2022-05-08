@@ -16,7 +16,7 @@ namespace bw
 
 	void InputSystem::OnUpdate(float /*elapsedTime*/)
 	{
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		for (entt::entity entity : GetEntities())
 		{
 			auto& inputComponent = entity->GetComponent<InputComponent>();
 			if (const auto& controller = inputComponent.GetController())

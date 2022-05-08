@@ -38,8 +38,8 @@ namespace bw
 		friend class LoggerProxy;
 
 		public:
-			inline Logger(BurgApp& app, LogSide logSide, std::size_t contextSize = sizeof(bw::LogContext));
-			inline Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::LogContext));
+			inline Logger(BurgApp& app, LogSide logSide);
+			inline Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent);
 			Logger(const Logger&) = delete;
 			Logger(Logger&&) noexcept = default;
 			~Logger() = default;
@@ -61,17 +61,16 @@ namespace bw
 			Logger& operator=(Logger&&) = delete;
 
 		protected:
-			template<typename T> T* AllocateContext(Nz::MemoryPool& pool) const;
+			template<typename T> T* AllocateContext() const;
 			template<typename T> LogContextPtr PushCustomContext() const;
 
 			virtual void InitializeContext(LogContext& context) const;
-			virtual LogContext* NewContext(Nz::MemoryPool& pool) const;
+			virtual LogContext* NewContext() const;
 			virtual void OverrideContent(const LogContext& context, std::string& content) const;
 
 		private:
 			void FreeContext(LogContext* context) const;
 
-			mutable Nz::MemoryPool m_contextPool;
 			BurgApp& m_app;
 			LogLevel m_minimumLogLevel;
 			Nz::MovablePtr<const AbstractLogger> m_logParent;

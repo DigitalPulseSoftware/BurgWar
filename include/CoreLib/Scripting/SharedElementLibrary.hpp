@@ -23,7 +23,7 @@ namespace bw
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		protected:
-			virtual void SetScale(const Ndk::EntityHandle& entity, float newScale) = 0;
+			virtual void SetScale(entt::entity entity, float newScale) = 0;
 
 		private:
 			void RegisterCommonLibrary(sol::table& elementMetatable);

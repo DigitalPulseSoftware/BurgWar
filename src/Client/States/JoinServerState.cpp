@@ -106,7 +106,7 @@ namespace bw
 
 	void JoinServerState::OnConnectionPressed()
 	{
-		std::string serverHostname = m_serverAddressArea->GetText().ToStdString();
+		std::string serverHostname = m_serverAddressArea->GetText();
 		if (serverHostname.empty())
 		{
 			UpdateStatus("Error: blank server address", Nz::Color::Red);
@@ -123,7 +123,7 @@ namespace bw
 		long long rawPort;
 		if (!serverPort.ToInteger(&rawPort) || rawPort <= 0 || rawPort > 0xFFFF)
 		{
-			UpdateStatus("Error: " + serverPort.ToStdString() + " is not a valid port", Nz::Color::Red);
+			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red);
 			return;
 		}
 
@@ -147,14 +147,14 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 3> widgets = {
+		std::array<Nz::BaseWidget*, 3> widgets = {
 			m_statusLabel,
 			m_serverAddressLayout,
 			m_connectionButton
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 			totalSize += widget->GetSize().y;
 
 		Nz::Vector2f cursor = center;

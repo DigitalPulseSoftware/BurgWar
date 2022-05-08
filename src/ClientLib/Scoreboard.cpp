@@ -11,19 +11,19 @@
 
 namespace bw
 {
-	Scoreboard::Scoreboard(Ndk::BaseWidget* parent, const Logger& logger) :
+	Scoreboard::Scoreboard(Nz::BaseWidget* parent, const Logger& logger) :
 	BaseWidget(parent),
 	m_logger(logger)
 	{
-		m_backgroundWidget = Add<Ndk::BaseWidget>();
+		m_backgroundWidget = Add<Nz::BaseWidget>();
 		m_backgroundWidget->EnableBackground(true);
 		m_backgroundWidget->SetBackgroundColor(Nz::Color(80, 80, 80, 200));
 
-		m_columnBackgroundWidget = Add<Ndk::BaseWidget>();
+		m_columnBackgroundWidget = Add<Nz::BaseWidget>();
 		m_columnBackgroundWidget->EnableBackground(true);
 		m_columnBackgroundWidget->SetBackgroundColor(Nz::Color(20, 20, 20, 127));
 
-		m_contentWidget = Add<Ndk::BaseWidget>();
+		m_contentWidget = Add<Nz::BaseWidget>();
 	
 		m_scrollArea = Add<Ndk::ScrollAreaWidget>(m_contentWidget);
 		m_scrollArea->EnableScrollbar(true);
@@ -63,7 +63,7 @@ namespace bw
 		teamData.color = color;
 		teamData.name = std::move(name);
 
-		teamData.background = m_contentWidget->Add<Ndk::BaseWidget>();
+		teamData.background = m_contentWidget->Add<Nz::BaseWidget>();
 
 		teamData.line = m_contentWidget->Add<Ndk::ImageWidget>();
 		teamData.line->SetColor(teamData.color);
@@ -85,7 +85,7 @@ namespace bw
 		UnregisterPlayer(playerIndex);
 
 		auto& playerData = m_players[playerIndex].emplace();
-		playerData.background = m_contentWidget->Add<Ndk::BaseWidget>();
+		playerData.background = m_contentWidget->Add<Nz::BaseWidget>();
 		playerData.background->EnableBackground(isLocalPlayer);
 		playerData.background->SetBackgroundColor(Nz::Color(255, 255, 255, 60));
 		playerData.color = color;

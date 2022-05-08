@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& SoundEntity::GetEntity() const
+	inline entt::entity SoundEntity::GetEntity() const
 	{
 		return m_entity;
 	}

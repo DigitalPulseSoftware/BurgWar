@@ -647,7 +647,7 @@ namespace bw
 			std::string filepathStr = filepath.generic_u8string();
 
 			Nz::File file(filepath.generic_u8string());
-			if (!file.Open(Nz::OpenMode_ReadOnly))
+			if (!file.Open(Nz::OpenMode::ReadOnly))
 			{
 				bwLog(GetLogger(), LogLevel::Warning, "failed to open script {} when preparing map test", filepathStr);
 				continue;
@@ -1173,7 +1173,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = AlignPosition(GetCameraCenter(), layer.positionAlignment);
 
-		createEntityDialog->Open(workingMap.GetFreeUniqueId(), layerIndex, entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		createEntityDialog->Open(workingMap.GetFreeUniqueId(), layerIndex, entityInfo, entt::null, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			Map& map = GetWorkingMapMut();
 			std::size_t entityIndex = map.GetEntityCount(layerIndex);

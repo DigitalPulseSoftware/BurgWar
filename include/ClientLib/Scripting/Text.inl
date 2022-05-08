@@ -26,7 +26,7 @@ namespace bw
 
 	inline std::string Text::GetText() const
 	{
-		return m_drawer.GetText().ToStdString();
+		return m_drawer.GetText();
 	}
 
 	inline void Text::Hide()

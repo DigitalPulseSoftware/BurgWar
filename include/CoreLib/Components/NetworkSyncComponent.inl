@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent) :
+	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass, entt::entity parent) :
 	m_parent(parent),
 	m_entityClass(entityClass)
 	{
@@ -17,7 +17,7 @@ namespace bw
 		return m_entityClass;
 	}
 
-	inline const Ndk::EntityHandle& NetworkSyncComponent::GetParent() const
+	inline entt::entity NetworkSyncComponent::GetParent() const
 	{
 		return m_parent;
 	}
@@ -27,7 +27,7 @@ namespace bw
 		OnInvalidated(this);
 	}
 	
-	inline void NetworkSyncComponent::UpdateParent(const Ndk::EntityHandle& parent)
+	inline void NetworkSyncComponent::UpdateParent(entt::entity parent)
 	{
 		m_parent = parent;
 		//TODO: network event

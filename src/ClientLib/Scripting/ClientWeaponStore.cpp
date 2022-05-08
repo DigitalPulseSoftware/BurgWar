@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	std::optional<ClientLayerEntity> ClientWeaponStore::InstantiateWeapon(ClientLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, const Ndk::EntityHandle& parent)
+	std::optional<ClientLayerEntity> ClientWeaponStore::InstantiateWeapon(ClientLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent)
 	{
 		const auto& weaponClass = GetElement(entityIndex);
 
@@ -33,7 +33,7 @@ namespace bw
 		Nz::Vector2f burgerSize = sprite->GetSize();
 		sprite->SetOrigin(weaponClass->spriteOrigin);
 
-		const Ndk::EntityHandle& weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
+		entt::entity weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
 		ClientLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);

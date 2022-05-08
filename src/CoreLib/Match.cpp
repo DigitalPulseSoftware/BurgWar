@@ -177,13 +177,12 @@ namespace bw
 		return player;
 	}
 
-	void Match::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	void Match::ForEachEntity(tl::function_ref<void(entt::entity entity)> func)
 	{
 		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
-			for (const Ndk::EntityHandle& entity : layer.GetWorld().GetEntities())
-				func(entity);
+			layer.GetWorld().each(func);
 		}
 	}
 
@@ -257,7 +256,7 @@ namespace bw
 	void Match::InitDebugGhosts()
 	{
 		m_debug.emplace(Debug{}); //< Weird clang bug
-		if (m_debug->socket.Create(Nz::NetProtocol_IPv4))
+		if (m_debug->socket.Create(Nz::NetProtocol::IPv4))
 			m_debug->socket.EnableBlocking(false);
 		else
 		{
@@ -271,18 +270,18 @@ namespace bw
 		if (m_clientAssets.find(assetPath) != m_clientAssets.end())
 			return;
 
-		VirtualDirectory::Entry entry;
+		Nz::VirtualDirectory::Entry entry;
 		if (!m_assetDirectory->GetEntry(assetPath, &entry))
 			throw std::runtime_error(assetPath + " is not a file");
 
 		std::vector<Nz::UInt8> content;
-		if (!std::holds_alternative<VirtualDirectory::PhysicalFileEntry>(entry))
+		if (!std::holds_alternative<Nz::VirtualDirectory::PhysicalFileEntry>(entry))
 			throw std::runtime_error(assetPath + " is not a file");
 
-		std::filesystem::path filepath = std::get<VirtualDirectory::PhysicalFileEntry>(entry);
+		std::filesystem::path filepath = std::get<Nz::VirtualDirectory::PhysicalFileEntry>(entry);
 
 		Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
-		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType_SHA1, filepath.generic_u8string());
+		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath.generic_u8string());
 
 		RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), std::move(filepath));
 	}
@@ -292,8 +291,8 @@ namespace bw
 		if (m_clientScripts.find(scriptPath) != m_clientScripts.end())
 			return;
 
-		VirtualDirectory::Entry entry;
-		if (!m_scriptDirectory->GetEntry(scriptPath, &entry))
+		Nz::VirtualDirectory::Entry entry;
+		if (!m_assetDirectory->GetEntry(scriptPath, &entry))
 			throw std::runtime_error(scriptPath + " is not a file");
 
 		std::vector<Nz::UInt8> content;
@@ -304,7 +303,7 @@ namespace bw
 			const std::filesystem::path& filepath = std::get<VirtualDirectory::PhysicalFileEntry>(entry);
 
 			Nz::File file(filepath.generic_u8string());
-			if (!file.Open(Nz::OpenMode_ReadOnly))
+			if (!file.Open(Nz::OpenMode::ReadOnly))
 				throw std::runtime_error("failed to open " + filepath.generic_u8string());
 
 			content.resize(file.GetSize());
@@ -325,7 +324,7 @@ namespace bw
 		m_clientScripts.emplace(std::move(scriptPath), std::move(clientScriptData));
 	}
 
-	void Match::RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity)
+	void Match::RegisterEntity(EntityId uniqueId, entt::entity entity)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 
@@ -506,7 +505,7 @@ namespace bw
 
 		if (m_terrain)
 		{
-			ForEachEntity([this](const Ndk::EntityHandle& entity)
+			ForEachEntity([this](entt::entity entity)
 			{
 				if (entity->HasComponent<ScriptComponent>())
 				{
@@ -623,16 +622,16 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 	}
 
-	const Ndk::EntityHandle& Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::entity Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
-			return Ndk::EntityHandle::InvalidHandle;
+			return entt::null;
 
 		return it.value().entity;
 	}
 
-	EntityId Match::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId Match::RetrieveUniqueIdByEntity(entt::entity entity) const
 	{
 		if (!entity || !entity->HasComponent<MatchComponent>())
 			return InvalidEntityId;
@@ -677,7 +676,7 @@ namespace bw
 			for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 			{
 				auto& layer = m_terrain->GetLayer(i);
-				layer.ForEachEntity([&](const Ndk::EntityHandle& entity)
+				layer.ForEachEntity([&](entt::entity entity)
 				{
 					if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
 						return;
@@ -817,7 +816,7 @@ namespace bw
 			if (player == newPlayer)
 				return;
 
-			const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+			entt::entity controlledEntity = player->GetControlledEntity();
 			if (!controlledEntity)
 				return;
 

@@ -15,6 +15,7 @@
 #include <CoreLib/Player.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/TerrainLayer.hpp>
+#include <CoreLib/Components/DestructionWatcherComponent.hpp>
 #include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
@@ -73,11 +74,11 @@ namespace bw
 
 			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 
-			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+			void ForEachEntity(tl::function_ref<void(entt::entity entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func, bool onlyReady = true);
 
 			inline BurgApp& GetApp();
-			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory() const;
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetAssetDirectory() const;
 			inline AssetStore& GetAssetStore();
 			bool GetClientAsset(const std::string& filePath, const ClientAsset** clientScriptData);
 			bool GetClientScript(const std::string& filePath, const ClientScript** clientScriptData);
@@ -93,7 +94,7 @@ namespace bw
 			inline const ModSettings& GetModSettings() const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline Player* GetPlayerByIndex(Nz::UInt16 playerIndex);
-			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory() const;
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetScriptDirectory() const;
 			inline const std::shared_ptr<ServerScriptingLibrary>& GetScriptingLibrary() const;
 			inline MatchSessions& GetSessions();
 			inline const MatchSessions& GetSessions() const;
@@ -108,7 +109,7 @@ namespace bw
 
 			void RegisterClientAsset(std::string assetPath);
 			void RegisterClientScript(std::string scriptPath);
-			void RegisterEntity(EntityId uniqueId, Ndk::EntityHandle entity);
+			void RegisterEntity(EntityId uniqueId, entt::entity entity);
 			void RegisterNetworkString(std::string string);
 
 			void ReloadAssets();
@@ -118,8 +119,8 @@ namespace bw
 			void RemovePlayer(Player* player, DisconnectionReason disconnection);
 			void ResetTerrain();
 
-			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
-			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
 
 			bool Update(float elapsedTime);
 
@@ -186,9 +187,9 @@ namespace bw
 
 			struct Entity
 			{
-				Ndk::EntityHandle entity;
+				entt::entity entity;
 
-				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
+				NazaraSlot(DestructionWatcherComponent, OnDestruction, onDestruction);
 			};
 
 			std::shared_ptr<ScriptingContext> m_scriptingContext; //< Must be over script based classes
@@ -199,8 +200,8 @@ namespace bw
 			std::size_t m_maxPlayerCount;
 			std::shared_ptr<ServerGamemode> m_gamemode;
 			std::shared_ptr<ServerScriptingLibrary> m_scriptingLibrary;
-			std::shared_ptr<VirtualDirectory> m_assetDirectory;
-			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_assetDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_scriptDirectory;
 			std::string m_name;
 			std::unique_ptr<Terrain> m_terrain;
 			std::vector<std::shared_ptr<Mod>> m_enabledMods;

@@ -8,7 +8,6 @@
 #define BURGWAR_CORELIB_COMPONENTS_WEAPONCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
@@ -20,14 +19,14 @@ namespace bw
 		Max = SingleShotRepeat
 	};
 
-	class BURGWAR_CORELIB_API WeaponComponent : public Ndk::Component<WeaponComponent>
+	class BURGWAR_CORELIB_API WeaponComponent
 	{
 		public:
-			inline WeaponComponent(Ndk::EntityHandle owner, WeaponAttackMode attackMode);
+			inline WeaponComponent(entt::entity owner, WeaponAttackMode attackMode);
 			~WeaponComponent() = default;
 
 			inline WeaponAttackMode GetAttackMode() const;
-			inline const Ndk::EntityHandle& GetOwner() const;
+			inline entt::entity GetOwner() const;
 
 			inline bool IsActive() const;
 			inline bool IsAttacking() const;
@@ -35,12 +34,10 @@ namespace bw
 			inline void SetActive(bool isActive);
 			inline void SetAttacking(bool isAttacking);
 
-			inline void UpdateOwner(Ndk::EntityHandle owner);
-
-			static Ndk::ComponentIndex componentIndex;
+			inline void UpdateOwner(entt::entity owner);
 
 		private:
-			Ndk::EntityHandle m_owner;
+			entt::entity m_owner;
 			WeaponAttackMode m_attackMode;
 			bool m_isActive;
 			bool m_isAttacking;

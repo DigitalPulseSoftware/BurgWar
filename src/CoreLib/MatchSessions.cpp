@@ -17,16 +17,9 @@ namespace bw
 	{
 	}
 
-	MatchSessions::~MatchSessions()
-	{
-		Clear();
-	}
-
 	void MatchSessions::Clear()
 	{
-		for (const auto& pair : m_sessionIdToSession)
-			m_sessionPool.Delete(pair.second);
-
+		m_sessionPool.Clear();
 		m_sessionIdToSession.clear();
 	}
 
@@ -39,7 +32,7 @@ namespace bw
 	MatchClientSession* MatchSessions::CreateSession(std::shared_ptr<SessionBridge> bridge)
 	{
 		std::size_t sessionId = m_nextSessionId++;
-		MatchClientSession* session = m_sessionPool.New<MatchClientSession>(m_match, sessionId, m_commandStore, std::move(bridge));
+		MatchClientSession* session = m_sessionPool.Allocate(m_match, sessionId, m_commandStore, std::move(bridge));
 
 		m_sessionIdToSession.insert_or_assign(sessionId, session);
 

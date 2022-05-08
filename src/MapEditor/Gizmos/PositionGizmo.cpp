@@ -44,7 +44,7 @@ namespace bw
 		m_allowedMovements[MovementType::YAxis].Set(0.f, 1.f);
 		m_allowedMovements[MovementType::XYAxis].Set(1.f, 1.f);
 
-		const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
+		entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
 		m_arrowEntity = selectionOverlayEntity->GetWorld()->CreateEntity();
 
 		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
@@ -167,7 +167,7 @@ namespace bw
 		{
 			Nz::Vector2f newPosition = ComputeNewPosition(mouseMoved.x, mouseMoved.y);
 
-			const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
+			entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
 			auto& node = selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
 			node.SetPosition(newPosition);
 

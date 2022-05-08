@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	bool ClientEditorEntityStore::InitializeEntity(const Ndk::EntityHandle& entity) const
+	bool ClientEditorEntityStore::InitializeEntity(entt::entity entity) const
 	{
 		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
 		if (!InitializeEntity(static_cast<const ScriptedEntity&>(*scriptComponent.GetElement()), entity))
@@ -27,14 +27,14 @@ namespace bw
 		return true;
 	}
 
-	const Ndk::EntityHandle& ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parentEntity) const
+	entt::entity ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
 		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
-		const Ndk::EntityHandle& entity = CreateEntity(world, entityClass, std::move(properties));
+		entt::entity entity = CreateEntity(world, entityClass, std::move(properties));
 
 		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
 		nodeComponent.SetPosition(position);

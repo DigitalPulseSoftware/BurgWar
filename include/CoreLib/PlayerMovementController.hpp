@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 
 namespace Nz
 {
@@ -28,7 +28,7 @@ namespace bw
 			PlayerMovementController() = default;
 			virtual ~PlayerMovementController();
 
-			virtual bool PreSolveCollision(PlayerMovementComponent& playerMovement, const Ndk::EntityHandle& collisionBody, Nz::Arbiter2D& arbiter) const;
+			virtual bool PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity collisionBody, Nz::Arbiter2D& arbiter) const;
 
 			virtual void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const = 0;
 	};
