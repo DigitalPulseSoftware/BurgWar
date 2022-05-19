@@ -43,12 +43,12 @@ namespace bw
 		return entityObject.as<entt::handle>();
 	}
 
-	std::optional<sol::object> TranslateEntityToLua(entt::registry& registry, entt::entity entity)
+	std::optional<sol::object> TranslateEntityToLua(entt::handle entity)
 	{
-		if (entity == entt::null)
+		if (!entity)
 			return std::nullopt;
 
-		if (ScriptComponent* scriptComponent = registry.try_get<ScriptComponent>(entity))
+		if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
 			return scriptComponent->GetTable();
 		else
 			return std::nullopt;

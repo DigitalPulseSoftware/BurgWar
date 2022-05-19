@@ -7,9 +7,8 @@
 
 namespace bw
 {
-	Constraint::Constraint(entt::registry& registry, entt::entity entity, Nz::Constraint2DHandle constraint) :
+	Constraint::Constraint(entt::handle entity, Nz::Constraint2DHandle constraint) :
 	m_entity(entity),
-	m_registry(registry),
 	m_constraint(std::move(constraint))
 	{
 		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
@@ -19,7 +18,6 @@ namespace bw
 
 	Constraint::Constraint(Constraint&& constraint) noexcept :
 	m_entity(constraint.m_entity),
-	m_registry(constraint.m_registry),
 	m_constraint(std::move(constraint.m_constraint))
 	{
 		constraint.m_onDestruction.Disconnect();
@@ -65,10 +63,10 @@ namespace bw
 		if (!IsValid())
 			return;
 
-		if (m_registry.valid(m_entity))
+		if (m_entity.valid())
 		{
-			if (!m_registry.get<ConstraintComponent2D>(m_entity).RemoveConstraint(m_constraint))
-				m_registry.destroy(m_entity);
+			if (!m_entity.get<ConstraintComponent2D>().RemoveConstraint(m_constraint))
+				m_entity.destroy();
 		}
 	}
 
@@ -92,8 +90,8 @@ namespace bw
 
 	void Constraint::KillEntity()
 	{
-		if (m_registry.valid(m_entity))
-			m_registry.destroy(m_entity);
+		if (m_entity.valid())
+			m_entity.destroy();
 	}
 
 

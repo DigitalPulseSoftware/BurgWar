@@ -14,21 +14,20 @@ namespace bw
 	class EntityOwner
 	{
 		public:
-			inline EntityOwner(entt::registry& registry, entt::entity entity);
+			inline EntityOwner(entt::handle entity);
 			EntityOwner(const EntityOwner&) = delete;
 			inline EntityOwner(EntityOwner&& entityOwner) noexcept;
 			inline ~EntityOwner();
 
-			inline entt::entity GetEntity() const;
+			inline entt::handle GetEntity() const;
 
-			operator entt::entity() const;
+			operator entt::handle() const;
 
 			EntityOwner& operator=(const EntityOwner&) = delete;
 			EntityOwner& operator=(EntityOwner&&) = delete;
 
 		private:
-			entt::entity m_entity;
-			entt::registry& m_registry;
+			entt::handle m_entity;
 	};
 }
 

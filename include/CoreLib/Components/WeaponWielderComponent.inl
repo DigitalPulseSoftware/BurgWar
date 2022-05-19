@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline WeaponWielderComponent::WeaponWielderComponent(entt::registry& registry, entt::entity entity) :
-	BaseComponent(registry, entity),
+	inline WeaponWielderComponent::WeaponWielderComponent(entt::handle entity) :
+	BaseComponent(entity),
 	m_activeWeaponIndex(NoWeapon),
 	m_weaponOffset(Nz::Vector2f::Zero())
 	{
@@ -20,13 +20,13 @@ namespace bw
 	m_weaponOffset(weaponWielder.m_weaponOffset)
 	{
 		//FIXME:
-		for (entt::entity entity : weaponWielder.m_weapons)
+		for (entt::handle entity : weaponWielder.m_weapons)
 			m_weapons.emplace_back(entity);
 	}
 	
-	inline entt::entity WeaponWielderComponent::GetActiveWeapon() const
+	inline entt::handle WeaponWielderComponent::GetActiveWeapon() const
 	{
-		return (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex].GetEntity() : entt::null;
+		return (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex].GetEntity() : entt::handle{};
 	}
 
 	inline std::size_t WeaponWielderComponent::GetSelectedWeapon() const
@@ -34,7 +34,7 @@ namespace bw
 		return m_activeWeaponIndex;
 	}
 
-	inline entt::entity WeaponWielderComponent::GetWeapon(std::size_t weaponIndex) const
+	inline entt::handle WeaponWielderComponent::GetWeapon(std::size_t weaponIndex) const
 	{
 		assert(weaponIndex < m_weapons.size());
 		return m_weapons[weaponIndex];

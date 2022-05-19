@@ -8,7 +8,6 @@
 #define BURGWAR_CORELIB_SCRIPTING_UTILS_HPP
 
 #include <CoreLib/Export.hpp>
-#include <CoreLib/entt::handle.hpp>
 #include <entt/entt.hpp>
 #include <sol/sol.hpp>
 #include <cstdlib>
@@ -24,7 +23,7 @@ namespace bw
 	BURGWAR_CORELIB_API std::shared_ptr<ScriptedElement> RetrieveScriptElement(const sol::table& entityTable);
 	BURGWAR_CORELIB_API entt::handle RetrieveScriptEntity(const sol::table& entityTable);
 
-	BURGWAR_CORELIB_API std::optional<sol::object> TranslateEntityToLua(entt::registry& registry, entt::entity entity);
+	BURGWAR_CORELIB_API std::optional<sol::object> TranslateEntityToLua(entt::handle entity);
 	template<typename... Args> [[noreturn]] void TriggerLuaError(lua_State* L, const char* format, Args&&... args);
 	[[noreturn]] BURGWAR_CORELIB_API void TriggerLuaError(lua_State* L, const std::string& errMessage);
 	[[noreturn]] BURGWAR_CORELIB_API void TriggerLuaArgError(lua_State* L, int argIndex, const char* errMessage);

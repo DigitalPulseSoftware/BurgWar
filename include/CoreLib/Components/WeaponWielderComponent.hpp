@@ -25,13 +25,13 @@ namespace bw
 		public:
 			using WeaponInitCallback = tl::function_ref<entt::entity (const std::string& /*weaponName*/)>;
 
-			inline WeaponWielderComponent(entt::registry& registry, entt::entity entity);
+			inline WeaponWielderComponent(entt::handle entity);
 			inline WeaponWielderComponent(const WeaponWielderComponent& weaponWielder);
 			~WeaponWielderComponent() = default;
 
-			inline entt::entity GetActiveWeapon() const;
+			inline entt::handle GetActiveWeapon() const;
 			inline std::size_t GetSelectedWeapon() const;
-			inline entt::entity GetWeapon(std::size_t weaponIndex) const;
+			inline entt::handle GetWeapon(std::size_t weaponIndex) const;
 			inline const std::vector<EntityOwner>& GetWeapons() const;
 			inline std::size_t GetWeaponCount() const;
 			inline const Nz::Vector2f& GetWeaponOffset() const;

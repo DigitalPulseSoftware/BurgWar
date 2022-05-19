@@ -20,7 +20,7 @@ namespace bw
 			InputController() = default;
 			virtual ~InputController();
 
-			virtual std::optional<PlayerInputData> GenerateInputs(entt::registry& registry, entt::entity entity) const = 0;
+			virtual std::optional<PlayerInputData> GenerateInputs(entt::handle entity) const = 0;
 	};
 }
 

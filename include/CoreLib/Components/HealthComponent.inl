@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	inline HealthComponent::HealthComponent(entt::registry& registry, entt::entity entity, Nz::UInt16 maxHealth) :
-	BaseComponent(registry, entity),
+	inline HealthComponent::HealthComponent(entt::handle entity, Nz::UInt16 maxHealth) :
+	BaseComponent(entity),
 	m_currentHealth(maxHealth),
 	m_maxHealth(maxHealth)
 	{

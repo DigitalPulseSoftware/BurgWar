@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	std::optional<PlayerInputData> LocalPlayerInputController::GenerateInputs(entt::registry& registry, entt::entity entity) const
+	std::optional<PlayerInputData> LocalPlayerInputController::GenerateInputs(entt::handle entity) const
 	{
 		assert(entity);
 		LocalPlayerControlledComponent* controlledComponent = registry.try_get<LocalPlayerControlledComponent>(entity);

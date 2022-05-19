@@ -6,9 +6,10 @@
 
 namespace bw
 {
-	inline NetworkSyncComponent::NetworkSyncComponent(std::string entityClass, entt::entity parent) :
+	inline NetworkSyncComponent::NetworkSyncComponent(Nz::UInt32 networkId, std::string entityClass, entt::handle parent) :
+	m_entityClass(entityClass),
 	m_parent(parent),
-	m_entityClass(entityClass)
+	m_networkId(networkId)
 	{
 	}
 
@@ -17,7 +18,12 @@ namespace bw
 		return m_entityClass;
 	}
 
-	inline entt::entity NetworkSyncComponent::GetParent() const
+	inline Nz::UInt32 NetworkSyncComponent::GetNetworkId() const
+	{
+		return m_networkId;
+	}
+
+	inline entt::handle NetworkSyncComponent::GetParent() const
 	{
 		return m_parent;
 	}
@@ -27,7 +33,7 @@ namespace bw
 		OnInvalidated(this);
 	}
 	
-	inline void NetworkSyncComponent::UpdateParent(entt::entity parent)
+	inline void NetworkSyncComponent::UpdateParent(entt::handle parent)
 	{
 		m_parent = parent;
 		//TODO: network event

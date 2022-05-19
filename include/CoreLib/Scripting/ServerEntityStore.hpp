@@ -23,7 +23,7 @@ namespace bw
 			~ServerEntityStore() = default;
 
 			entt::handle CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent = {}) const;
-			bool InitializeEntity(entt::registry& registry, entt::entity entity) const;
+			bool InitializeEntity(entt::handle entity) const;
 			entt::handle InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent = {}) const;
 
 		private:

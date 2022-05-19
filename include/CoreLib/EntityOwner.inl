@@ -6,29 +6,28 @@
 
 namespace bw
 {
-	inline EntityOwner::EntityOwner(entt::registry& registry, entt::entity entity) :
-	m_entity(entity),
-	m_registry(registry)
+	inline EntityOwner::EntityOwner(entt::handle entity) :
+	m_entity(entity)
 	{
 	}
 	
 	inline EntityOwner::EntityOwner(EntityOwner&& entityOwner) noexcept :
-	m_entity(entityOwner.m_entity),
-	m_registry(entityOwner.m_registry)
+	m_entity(entityOwner.m_entity)
 	{
 	}
 
 	inline EntityOwner::~EntityOwner()
 	{
-		m_registry.destroy(m_entity);
+		if (m_entity.valid())
+			m_entity.destroy();
 	}
 
-	inline entt::entity EntityOwner::GetEntity() const
+	inline entt::handle EntityOwner::GetEntity() const
 	{
 		return m_entity;
 	}
 	
-	inline EntityOwner::operator entt::entity() const
+	inline EntityOwner::operator entt::handle() const
 	{
 		return m_entity;
 	}

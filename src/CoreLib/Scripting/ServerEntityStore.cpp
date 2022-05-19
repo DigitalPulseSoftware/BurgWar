@@ -97,7 +97,7 @@ namespace bw
 		return entity;
 	}
 
-	bool ServerEntityStore::InitializeEntity(entt::registry& registry, entt::entity entity) const
+	bool ServerEntityStore::InitializeEntity(entt::handle entity) const
 	{
 		const auto& entityScript = registry.get<ScriptComponent>(entity);
 		return SharedEntityStore::InitializeEntity(static_cast<const ScriptedEntity&>(*entityScript.GetElement()), entity);
@@ -111,7 +111,7 @@ namespace bw
 		if (entity != entt::null)
 			return entt::null;
 
-		if (!InitializeEntity(registry, entity))
+		if (!InitializeEntity(entity))
 		{
 			registry.destroy(entity);
 			return entt::null;

@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
@@ -15,13 +16,15 @@ namespace bw
 	class BURGWAR_CORELIB_API PlayerMovementSystem
 	{
 		public:
-			PlayerMovementSystem();
+			PlayerMovementSystem(entt::registry& registry);
 			~PlayerMovementSystem() = default;
 
 		private:
 			void OnEntityAdded(Ndk::Entity* entity) override;
 			void OnEntityRemoved(Ndk::Entity* entity) override;
 			void OnUpdate(float elapsedTime) override;
+
+			entt::registry& m_registry;
 	};
 }
 

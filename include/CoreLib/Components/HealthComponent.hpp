@@ -16,7 +16,7 @@ namespace bw
 	class BURGWAR_CORELIB_API HealthComponent : public BaseComponent
 	{
 		public:
-			inline HealthComponent(entt::registry& registry, entt::entity entity, Nz::UInt16 maxHealth);
+			inline HealthComponent(entt::handle entity, Nz::UInt16 maxHealth);
 			inline HealthComponent(const HealthComponent& health);
 
 			inline void Damage(Nz::UInt16 damage, entt::entity attacker);

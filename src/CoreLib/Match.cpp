@@ -24,6 +24,7 @@
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <tsl/hopscotch_set.h>
 #include <cassert>
 #include <fstream>
@@ -674,19 +675,20 @@ namespace bw
 				auto& layer = m_terrain->GetLayer(i);
 				layer.ForEachEntity([&](entt::handle entity)
 				{
-					if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
+					Nz::NodeComponent* entityNode = entity.try_get<Nz::NodeComponent>();
+					NetworkSyncComponent* entitySync = entity.try_get<NetworkSyncComponent>();
+					if (!entityNode || !entitySync)
 						return;
-
-					auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
 
 					entityCount++;
 
 					CompressedUnsigned<Nz::UInt16> layerId(i);
-					CompressedUnsigned<Nz::UInt32> entityId(entity->GetId());
+					CompressedUnsigned<Nz::UInt32> entityId(entity->GetId()); //< TODO
 					debugPacket << layerId;
 					debugPacket << entityId;
 
-					bool isPhysical = entity->HasComponent<Ndk::PhysicsComponent2D>();
+					Nz::RigidBody2DComponent* entityPhys = entity.try_get<Nz::RigidBody2DComponent>();
+					bool isPhysical = (entityPhys != nullptr);
 
 					debugPacket << isPhysical;
 
@@ -695,17 +697,15 @@ namespace bw
 
 					if (isPhysical)
 					{
-						auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+						entityPosition = entityPhys->GetPosition();
+						entityRotation = entityPhys->GetRotation();
 
-						entityPosition = entityPhys.GetPosition();
-						entityRotation = entityPhys.GetRotation();
-
-						debugPacket << entityPhys.GetVelocity() << entityPhys.GetAngularVelocity();
+						debugPacket << entityPhys->GetVelocity() << entityPhys->GetAngularVelocity();
 					}
 					else
 					{
-						entityPosition = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
-						entityRotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Global));
+						entityPosition = Nz::Vector2f(entityNode->GetPosition(Nz::CoordSys::Global));
+						entityRotation = AngleFromQuaternion(entityNode->GetRotation(Nz::CoordSys::Global));
 					}
 
 					debugPacket << entityPosition << entityRotation;

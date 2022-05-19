@@ -18,7 +18,7 @@ namespace bw
 			LocalPlayerInputController() = default;
 			~LocalPlayerInputController() = default;
 
-			std::optional<PlayerInputData> GenerateInputs(entt::registry& registry, entt::entity entity) const override;
+			std::optional<PlayerInputData> GenerateInputs(entt::handle entity) const override;
 	};
 }
 

@@ -9,9 +9,9 @@
 
 namespace bw
 {
-	std::optional<PlayerInputData> CustomInputController::GenerateInputs(entt::registry& registry, entt::entity entity) const
+	std::optional<PlayerInputData> CustomInputController::GenerateInputs(entt::handle entity) const
 	{
-		auto entityTable = TranslateEntityToLua(registry, entity);
+		auto entityTable = TranslateEntityToLua(entity);
 		if (!entityTable)
 			return std::nullopt;
 
