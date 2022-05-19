@@ -22,7 +22,7 @@ namespace bw
 		friend class AnimationSystem;
 
 		public:
-			inline AnimationComponent(entt::registry& registry, entt::entity entity, std::shared_ptr<AnimationStore> animStore);
+			inline AnimationComponent(entt::handle entity, std::shared_ptr<AnimationStore> animStore);
 			inline AnimationComponent(const AnimationComponent& animation);
 			~AnimationComponent() = default;
 

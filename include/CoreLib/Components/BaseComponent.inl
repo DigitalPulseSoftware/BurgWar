@@ -7,41 +7,33 @@
 
 namespace bw
 {
-	inline BaseComponent::BaseComponent(entt::registry& registry, entt::entity entity) :
-	m_entity(entity),
-	m_registry(registry)
-	{
-	}
-
-	inline BaseComponent::BaseComponent(const BaseComponent& component) :
-	m_entity(component.m_entity),
-	m_registry(component.m_registry)
-	{
-	}
-
-	inline BaseComponent::BaseComponent(BaseComponent&& component) noexcept :
-	m_entity(component.m_entity),
-	m_registry(component.m_registry)
+	inline BaseComponent::BaseComponent(entt::handle handle) :
+	m_handle(handle)
 	{
 	}
 
 	inline entt::entity BaseComponent::GetEntity() const
 	{
-		return m_entity;
+		return m_handle;
 	}
 
-	inline entt::registry& BaseComponent::GetRegistry()
+	inline entt::handle BaseComponent::GetHandle() const
 	{
-		return m_registry;
+		return m_handle;
 	}
 
-	inline entt::registry& BaseComponent::GetRegistry() const
+	inline entt::registry* BaseComponent::GetRegistry()
 	{
-		return m_registry;
+		return m_handle.registry();
+	}
+
+	inline entt::registry* BaseComponent::GetRegistry() const
+	{
+		return m_handle.registry();
 	}
 
 	inline void BaseComponent::KillEntity()
 	{
-		m_registry.destroy(m_entity);
+		m_handle.destroy();
 	}
 }

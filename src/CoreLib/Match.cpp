@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Match.hpp>
-#include <Nazara/Network/Algorithm.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
@@ -22,7 +21,9 @@
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
+#include <Nazara/Network/Algorithm.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <tsl/hopscotch_set.h>
 #include <cassert>
 #include <fstream>
@@ -177,12 +178,16 @@ namespace bw
 		return player;
 	}
 
-	void Match::ForEachEntity(tl::function_ref<void(entt::entity entity)> func)
+	void Match::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
 	{
 		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{
 			auto& layer = m_terrain->GetLayer(i);
-			layer.GetWorld().each(func);
+			entt::registry& registry = layer.GetWorld();
+			registry.each([&](entt::entity entity)
+			{
+				func(entt::handle(registry, entity));
+			});
 		}
 	}
 
@@ -270,72 +275,59 @@ namespace bw
 		if (m_clientAssets.find(assetPath) != m_clientAssets.end())
 			return;
 
-		Nz::VirtualDirectory::Entry entry;
-		if (!m_assetDirectory->GetEntry(assetPath, &entry))
+		bool found = m_assetDirectory->GetEntry(assetPath, [&](const Nz::VirtualDirectory::Entry& entry)
+		{
+			if (!std::holds_alternative<Nz::VirtualDirectory::PhysicalFileEntry>(entry))
+				throw std::runtime_error(assetPath + " is not a file");
+
+			const std::filesystem::path& filepath = std::get<Nz::VirtualDirectory::PhysicalFileEntry>(entry).filePath;
+
+			Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
+			Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath.generic_u8string());
+
+			RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), filepath);
+		});
+
+		if (!found)
 			throw std::runtime_error(assetPath + " is not a file");
-
-		std::vector<Nz::UInt8> content;
-		if (!std::holds_alternative<Nz::VirtualDirectory::PhysicalFileEntry>(entry))
-			throw std::runtime_error(assetPath + " is not a file");
-
-		std::filesystem::path filepath = std::get<Nz::VirtualDirectory::PhysicalFileEntry>(entry);
-
-		Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
-		Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath.generic_u8string());
-
-		RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), std::move(filepath));
 	}
 
 	void Match::RegisterClientScript(std::string scriptPath)
 	{
 		if (m_clientScripts.find(scriptPath) != m_clientScripts.end())
 			return;
-
-		Nz::VirtualDirectory::Entry entry;
-		if (!m_assetDirectory->GetEntry(scriptPath, &entry))
-			throw std::runtime_error(scriptPath + " is not a file");
-
-		std::vector<Nz::UInt8> content;
-		if (std::holds_alternative<VirtualDirectory::FileContentEntry>(entry))
-			content = std::get<VirtualDirectory::FileContentEntry>(entry);
-		else if (std::holds_alternative<VirtualDirectory::PhysicalFileEntry>(entry))
+		
+		bool found = m_scriptDirectory->GetFileContent(scriptPath, [&](const void* data, std::size_t size)
 		{
-			const std::filesystem::path& filepath = std::get<VirtualDirectory::PhysicalFileEntry>(entry);
+			const Nz::UInt8* ptr = static_cast<const Nz::UInt8*>(data);
 
-			Nz::File file(filepath.generic_u8string());
-			if (!file.Open(Nz::OpenMode::ReadOnly))
-				throw std::runtime_error("failed to open " + filepath.generic_u8string());
+			auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
+			hash->Begin();
+			hash->Append(ptr, size);
 
-			content.resize(file.GetSize());
-			if (file.Read(content.data(), content.size()) != content.size())
-				throw std::runtime_error("failed to read " + filepath.generic_u8string());
-		}
-		else
+			ClientScript clientScriptData;
+			clientScriptData.checksum = hash->End();
+			clientScriptData.content.assign(ptr, ptr + size);
+
+			m_clientScripts.emplace(std::move(scriptPath), std::move(clientScriptData));
+		});
+
+		if (!found)
 			throw std::runtime_error(scriptPath + " is not a file");
-
-		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
-		hash->Begin();
-		hash->Append(content.data(), content.size());
-
-		ClientScript clientScriptData;
-		clientScriptData.checksum = hash->End();
-		clientScriptData.content = std::move(content);
-
-		m_clientScripts.emplace(std::move(scriptPath), std::move(clientScriptData));
 	}
 
-	void Match::RegisterEntity(EntityId uniqueId, entt::entity entity)
+	void Match::RegisterEntity(EntityId uniqueId, entt::handle entity)
 	{
 		assert(m_entitiesByUniqueId.find(uniqueId) == m_entitiesByUniqueId.end());
 
 		Entity& entityData = m_entitiesByUniqueId.emplace(uniqueId, Entity{}).first.value();
-		entityData.entity = std::move(entity);
-		entityData.onDestruction.Connect(entityData.entity->OnEntityDestruction, [this, uniqueId](Ndk::Entity* entity)
+		entityData.entity = entity;
+		entityData.onDestruction.Connect(entity.get<DestructionWatcherComponent>().OnDestruction, [this, entity, uniqueId]()
 		{
 			// Don't trigger the Destroyed event when resetting map
 			if (!m_isResetting)
 			{
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				auto& entityScript = entity.get<ScriptComponent>();
 				entityScript.ExecuteCallback<ElementEvent::Destroyed>();
 			}
 
@@ -358,7 +350,7 @@ namespace bw
 	{
 		const std::string& assetDirectory = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
-		m_assetDirectory = std::make_shared<VirtualDirectory>(assetDirectory);
+		m_assetDirectory = std::make_shared<Nz::VirtualDirectory>(assetDirectory);
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [assetPath, physicalPath] : modPtr->GetAssets())
@@ -395,7 +387,7 @@ namespace bw
 			Nz::ByteArray expectedChecksum(asset.sha1Checksum.size(), 0);
 			std::memcpy(expectedChecksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
 
-			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType_SHA1, assetPath.generic_u8string());
+			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType::SHA1, assetPath.generic_u8string());
 			if (fileChecksum != expectedChecksum)
 			{
 				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({0}): checksum doesn't match", asset.filepath, asset.size, fileSize);
@@ -430,7 +422,7 @@ namespace bw
 
 		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
-		m_scriptDirectory = std::make_shared<VirtualDirectory>(scriptFolder);
+		m_scriptDirectory = std::make_shared<Nz::VirtualDirectory>(scriptFolder);
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [scriptPath, physicalPath] : modPtr->GetScripts())
@@ -505,9 +497,9 @@ namespace bw
 
 		if (m_terrain)
 		{
-			ForEachEntity([this](entt::entity entity)
+			ForEachEntity([this](entt::handle entity)
 			{
-				if (entity->HasComponent<ScriptComponent>())
+				if (entity.try_get<ScriptComponent>())
 				{
 					// Warning: ugly (FIXME)
 					m_entityStore->UpdateEntityElement(entity);
@@ -622,7 +614,7 @@ namespace bw
 		m_gamemode->ExecuteCallback<GamemodeEvent::MapInit>();
 	}
 
-	entt::entity Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::handle Match::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
@@ -631,12 +623,16 @@ namespace bw
 		return it.value().entity;
 	}
 
-	EntityId Match::RetrieveUniqueIdByEntity(entt::entity entity) const
+	EntityId Match::RetrieveUniqueIdByEntity(entt::handle entity) const
 	{
-		if (!entity || !entity->HasComponent<MatchComponent>())
+		if (!entity)
 			return InvalidEntityId;
 
-		return entity->GetComponent<MatchComponent>().GetUniqueId();
+		MatchComponent* matchComponent = entity.try_get<MatchComponent>();
+		if (!matchComponent)
+			return InvalidEntityId;
+
+		return matchComponent->GetUniqueId();
 	}
 
 	bool Match::Update(float elapsedTime)
@@ -676,7 +672,7 @@ namespace bw
 			for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 			{
 				auto& layer = m_terrain->GetLayer(i);
-				layer.ForEachEntity([&](entt::entity entity)
+				layer.ForEachEntity([&](entt::handle entity)
 				{
 					if (!entity->HasComponent<Ndk::NodeComponent>() || !entity->HasComponent<NetworkSyncComponent>())
 						return;
@@ -708,8 +704,8 @@ namespace bw
 					}
 					else
 					{
-						entityPosition = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
-						entityRotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global));
+						entityPosition = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
+						entityRotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Global));
 					}
 
 					debugPacket << entityPosition << entityRotation;
@@ -816,11 +812,11 @@ namespace bw
 			if (player == newPlayer)
 				return;
 
-			entt::entity controlledEntity = player->GetControlledEntity();
+			entt::handle controlledEntity = player->GetControlledEntity();
 			if (!controlledEntity)
 				return;
 
-			auto& entityMatch = controlledEntity->GetComponent<MatchComponent>();
+			auto& entityMatch = controlledEntity.get<MatchComponent>();
 
 			Packets::PlayerControlEntity controlledEntityUpdate;
 			controlledEntityUpdate.playerIndex = static_cast<Nz::UInt16>(player->GetPlayerIndex());

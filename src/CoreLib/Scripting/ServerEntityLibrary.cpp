@@ -24,28 +24,29 @@ namespace bw
 	{
 		entityMetatable["GetWeaponCount"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> std::size_t
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			if (!entity->HasComponent<WeaponWielderComponent>())
+			entt::handle entity = AssertScriptEntity(entityTable);
+			WeaponWielderComponent* weaponWielder = entity.TryGetComponent<WeaponWielderComponent>();
+			if (!weaponWielder)
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
-			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
-			return weaponWielder.GetWeaponCount();
+			return weaponWielder->GetWeaponCount();
 		});
 
 		entityMetatable["GiveWeapon"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, std::string weaponClass) -> bool
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			if (!entity->HasComponent<WeaponWielderComponent>())
+			entt::handle entity = AssertScriptEntity(entityTable);
+			WeaponWielderComponent* weaponWielder = entity.TryGetComponent<WeaponWielderComponent>();
+			if (!weaponWielder)
 				TriggerLuaArgError(L, 1, "entity is not a weapon wielder");
 
-			assert(entity->HasComponent<MatchComponent>()); //< All scripted entities have a match component
-			auto& entityMatch = entity->GetComponent<MatchComponent>();
+			auto& entityMatch = entity.GetComponent<MatchComponent>();
 
-			auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
-			std::size_t weaponIndex = weaponWielder.GiveWeapon(weaponClass, [&] (const std::string& weaponClass) -> Ndk::EntityHandle
+			std::size_t weaponIndex = weaponWielder->GiveWeapon(weaponClass, [&] (const std::string& weaponClass) -> entt::entity
 			{
 				Match& match = entityMatch.GetMatch();
 				Terrain& terrain = match.GetTerrain();
+				TerrainLayer& terrainLayer = terrain.GetLayer(entityMatch.GetLayerIndex());
+				entt::registry& registry = terrainLayer.GetWorld();
 
 				ServerWeaponStore& weaponStore = match.GetWeaponStore();
 
@@ -56,15 +57,15 @@ namespace bw
 			
 				EntityId uniqueId = match.AllocateUniqueId();
 
-				entt::entity weapon = weaponStore.InstantiateWeapon(terrain.GetLayer(entityMatch.GetLayerIndex()), weaponEntityIndex, uniqueId, {}, entity);
-				if (!weapon)
+				entt::handle weapon = weaponStore.InstantiateWeapon(terrainLayer, weaponEntityIndex, uniqueId, {}, entity.GetEntity());
+				if (weapon == entt::null)
 					return entt::null;
 
-				match.RegisterEntity(uniqueId, weapon);
-				if (entity->HasComponent<OwnerComponent>())
+				match.RegisterEntity(uniqueId, entt::handle(registry, weapon));
+				if (OwnerComponent* ownerComponent = entity.TryGetComponent<OwnerComponent>())
 				{
-					if (Player* owner = entity->GetComponent<OwnerComponent>().GetOwner())
-						weapon->AddComponent<OwnerComponent>(owner->CreateHandle());
+					if (Player* owner = ownerComponent->GetOwner())
+						registry.emplace<OwnerComponent>(weapon, owner->CreateHandle());
 				}
 
 				return weapon;

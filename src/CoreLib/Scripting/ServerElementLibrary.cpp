@@ -51,7 +51,7 @@ namespace bw
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
 					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys::Global) - origin) * pushbackForce);
 				}
 			});
 		};

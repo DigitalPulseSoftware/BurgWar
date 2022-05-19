@@ -7,8 +7,8 @@
 
 namespace bw
 {
-	inline AnimationComponent::AnimationComponent(entt::registry& registry, entt::entity entity, std::shared_ptr<AnimationStore> animStore) :
-	BaseComponent(registry, entity),
+	inline AnimationComponent::AnimationComponent(entt::handle entity, std::shared_ptr<AnimationStore> animStore) :
+	BaseComponent(entity),
 	m_animationStore(std::move(animStore))
 	{
 	}

@@ -712,7 +712,7 @@ namespace bw
 		std::vector<Map::Asset>& assets = map.GetAssets();
 		assets.clear();
 
-		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+		auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 
 		for (const std::string& texturePath : textures)
 		{

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 
+#include <CoreLib/entt::handle.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
@@ -52,7 +53,7 @@ namespace bw
 
 		protected:
 			virtual std::shared_ptr<Element> CreateElement() const;
-			entt::entity CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const;
+			entt::handle CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const;
 			virtual void InitializeElementTable(sol::main_table& elementTable);
 			virtual void InitializeElement(sol::main_table& elementTable, Element& element) = 0;
 			bool InitializeEntity(const Element& entityClass, entt::entity entity) const;

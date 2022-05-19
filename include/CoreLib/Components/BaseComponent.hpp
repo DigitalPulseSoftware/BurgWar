@@ -16,23 +16,23 @@ namespace bw
 	class BURGWAR_CORELIB_API BaseComponent
 	{
 		public:
-			inline BaseComponent(entt::registry& registry, entt::entity entity);
-			inline BaseComponent(const BaseComponent& component);
-			inline BaseComponent(BaseComponent&& component) noexcept;
+			inline BaseComponent(entt::handle handle);
+			BaseComponent(const BaseComponent&) = default;
+			BaseComponent(BaseComponent&&) noexcept = default;
 			~BaseComponent() = default;
 
 			inline entt::entity GetEntity() const;
-			inline entt::registry& GetRegistry();
-			inline entt::registry& GetRegistry() const;
+			inline entt::handle GetHandle() const;
+			inline entt::registry* GetRegistry();
+			inline entt::registry* GetRegistry() const;
 
 			void KillEntity();
 
-			BaseComponent& operator=(const BaseComponent&) = delete;
-			BaseComponent& operator=(BaseComponent&&) = delete;
+			BaseComponent& operator=(const BaseComponent&) = default;
+			BaseComponent& operator=(BaseComponent&&) = default;
 
 		private:
-			entt::entity m_entity;
-			entt::registry& m_registry;
+			entt::handle m_handle;
 	};
 }
 

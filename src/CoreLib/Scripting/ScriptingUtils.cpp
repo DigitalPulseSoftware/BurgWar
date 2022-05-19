@@ -16,10 +16,10 @@ namespace bw
 		return element;
 	}
 
-	entt::entity AssertScriptEntity(entt::registry& registry, const sol::table& entityTable)
+	entt::handle AssertScriptEntity(const sol::table& entityTable)
 	{
-		entt::entity entity = RetrieveScriptEntity(entityTable);
-		if (entity == entt::null || !registry.try_get<ScriptComponent>(entity))
+		entt::handle entity = RetrieveScriptEntity(entityTable);
+		if (entity == entt::null)
 			TriggerLuaError(entityTable.lua_state(), "invalid entity");
 
 		return entity;
@@ -34,13 +34,13 @@ namespace bw
 		return entityObject.as<std::shared_ptr<ScriptedElement>>();
 	}
 
-	entt::entity RetrieveScriptEntity(const sol::table& entityTable)
+	entt::handle RetrieveScriptEntity(const sol::table& entityTable)
 	{
 		sol::object entityObject = entityTable["_Entity"];
 		if (!entityObject)
 			return entt::null;
 
-		return static_cast<entt::entity>(entityObject.as<entt::id_type>());
+		return entityObject.as<entt::handle>();
 	}
 
 	std::optional<sol::object> TranslateEntityToLua(entt::registry& registry, entt::entity entity)

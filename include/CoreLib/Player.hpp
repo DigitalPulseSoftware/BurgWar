@@ -39,7 +39,7 @@ namespace bw
 			Player(Player&&) noexcept = default;
 			~Player();
 
-			inline entt::entity GetControlledEntity() const;
+			inline entt::handle GetControlledEntity() const;
 			inline const PlayerInputData& GetInputs() const;
 			inline LayerIndex GetLayerIndex() const;
 			inline Nz::UInt8 GetLocalIndex() const;

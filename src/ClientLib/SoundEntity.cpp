@@ -66,8 +66,8 @@ namespace bw
 		visualNode.SetPosition(position);
 
 		// Make sure parenting doesn't change our depth
-		Nz::Vector3f globalPosition = visualNode.GetPosition(Nz::CoordSys_Global);
+		Nz::Vector3f globalPosition = visualNode.GetPosition(Nz::CoordSys::Global);
 		globalPosition.z = m_depth;
-		visualNode.SetPosition(globalPosition, Nz::CoordSys_Global);
+		visualNode.SetPosition(globalPosition, Nz::CoordSys::Global);
 	}
 }

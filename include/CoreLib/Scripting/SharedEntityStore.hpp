@@ -20,9 +20,9 @@ namespace bw
 			~SharedEntityStore() = default;
 
 		protected:
-			virtual void BindCallbacks(const ScriptedEntity& entityClass, entt::entity entity) const;
+			virtual void BindCallbacks(const ScriptedEntity& entityClass, entt::handle entity) const;
 			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override = 0;
-			bool InitializeEntity(const ScriptedEntity& entityClass, entt::entity entity) const;
+			bool InitializeEntity(const ScriptedEntity& entityClass, entt::handle entity) const;
 	};
 }
 

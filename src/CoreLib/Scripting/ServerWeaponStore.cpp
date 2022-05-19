@@ -19,11 +19,11 @@
 
 namespace bw
 {
-	entt::entity ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent)
+	entt::handle ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent)
 	{
 		const auto& weaponClass = GetElement(weaponIndex);
 
-		entt::entity weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
+		entt::handle weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 		weapon->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
 		weapon->AddComponent<NetworkSyncComponent>(weaponClass->fullName, parent);
 

@@ -30,7 +30,7 @@ namespace bw
 		for (std::size_t i = 0; i < maxSimultaneousDownload; ++i)
 		{
 			auto& request = m_requests.emplace_back();
-			request.hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+			request.hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 		}
 	}
 

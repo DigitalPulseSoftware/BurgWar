@@ -74,7 +74,7 @@ namespace bw
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
 					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
-					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys_Global) - origin) * pushbackForce);
+					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys::Global) - origin) * pushbackForce);
 				}
 			});
 		};
@@ -234,7 +234,7 @@ namespace bw
 			{
 				// Fallback on position
 				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
+				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys::Global));
 				return Nz::Rectf(position.x, position.y, 0.f, 0.f);
 			}
 

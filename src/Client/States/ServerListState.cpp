@@ -159,7 +159,7 @@ namespace bw
 
 		Nz::Vector2f cursor;
 		cursor.x = center.x - totalSize / 2.f;
-		cursor.y = m_serverListScrollbar->GetPosition(Nz::CoordSys_Global).y + m_serverListScrollbar->GetSize().y + padding;
+		cursor.y = m_serverListScrollbar->GetPosition(Nz::CoordSys::Global).y + m_serverListScrollbar->GetSize().y + padding;
 
 		m_backButton->SetPosition({ cursor.x, cursor.y, 0.f });
 		cursor.x += m_backButton->GetSize().x + padding;

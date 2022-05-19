@@ -72,7 +72,7 @@ namespace bw
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
 
-			Nz::Vector2f direction(nodeComponent.GetRotation(Nz::CoordSys_Global) * Nz::Vector2f::UnitX());
+			Nz::Vector2f direction(nodeComponent.GetRotation(Nz::CoordSys::Global) * Nz::Vector2f::UnitX());
 			if (nodeComponent.GetScale().x < 0.f)
 				direction = -direction;
 
@@ -84,7 +84,7 @@ namespace bw
 			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys_Global));
+			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys::Global));
 		});
 
 		elementMetatable["GetRotation"] = LuaFunction([](const sol::table& entityTable)
@@ -92,7 +92,7 @@ namespace bw
 			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys_Global))); //<FIXME: not very efficient
+			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys::Global))); //<FIXME: not very efficient
 		});
 
 		elementMetatable["GetScale"] = LuaFunction([](const sol::table& entityTable)
@@ -100,7 +100,7 @@ namespace bw
 			entt::entity entity = AssertScriptEntity(entityTable);
 
 			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys_Global));
+			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys::Global));
 			return std::abs(scale.y);
 		});
 

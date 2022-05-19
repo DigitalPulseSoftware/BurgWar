@@ -18,12 +18,11 @@ namespace bw
 		ReloadLibraries(); // This function creates the metatable
 	}
 
-	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, entt::entity entity) const
+	void SharedEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, entt::handle entity) const
 	{
-		if (entity->HasComponent<InputComponent>())
+		if (InputComponent* entityInputs = entity.try_get<InputComponent>())
 		{
-			InputComponent& entityInputs = entity->GetComponent<InputComponent>();
-			entityInputs.OnInputUpdate.Connect([](InputComponent* input)
+			entityInputs->OnInputUpdate.Connect([](InputComponent* input)
 			{
 				entt::entity entity = input->GetEntity();
 				auto& entityScript = entity->GetComponent<ScriptComponent>();

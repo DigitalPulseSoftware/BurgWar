@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline entt::entity Player::GetControlledEntity() const
+	inline entt::handle Player::GetControlledEntity() const
 	{
 		if (m_playerEntity)
 			return m_playerEntity->GetEntity();

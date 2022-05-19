@@ -257,9 +257,9 @@ namespace bw
 	}
 
 	template<typename Element>
-	entt::entity ScriptStore<Element>::CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
+	entt::handle ScriptStore<Element>::CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
 	{
-		entt::entity entity = registry.create();
+		entt::handle entity(registry, registry.create());
 
 		PropertyValueMap filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
 

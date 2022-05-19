@@ -50,16 +50,16 @@ namespace bw
 		visualNode.SetRotation(rotation);
 		visualNode.SetScale(scale);
 
-		Nz::Vector2f absolutePosition = Nz::Vector2f(visualNode.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f absolutePosition = Nz::Vector2f(visualNode.GetPosition(Nz::CoordSys::Global));
 		absolutePosition.x = std::floor(absolutePosition.x);
 		absolutePosition.y = std::floor(absolutePosition.y);
-		visualNode.SetPosition(absolutePosition, Nz::CoordSys_Global);
+		visualNode.SetPosition(absolutePosition, Nz::CoordSys::Global);
 
 		if (!m_hoveringRenderables.empty())
 		{
 			auto& visualGfx = m_entity->GetComponent<Ndk::GraphicsComponent>();
 
-			Nz::Vector3f absoluteScale = visualNode.GetScale(Nz::CoordSys_Global);
+			Nz::Vector3f absoluteScale = visualNode.GetScale(Nz::CoordSys::Global);
 			Nz::Vector2f positiveScale(std::abs(absoluteScale.x), std::abs(absoluteScale.y));
 
 			const Nz::Boxf& aabb = visualGfx.GetAABB();

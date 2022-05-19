@@ -89,7 +89,7 @@ namespace bw
 			}
 		}
 
-		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys::Global));
 
 		for (SoundEntity* soundEntity : m_soundEntities)
 			soundEntity->Update(position);
@@ -110,7 +110,7 @@ namespace bw
 		assert(std::find(m_soundEntities.begin(), m_soundEntities.end(), sound) == m_soundEntities.end());
 		m_soundEntities.push_back(sound);
 
-		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys::Global));
 		sound->Update(position);
 	}
 

@@ -74,7 +74,7 @@ namespace bw
 
 			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 
-			void ForEachEntity(tl::function_ref<void(entt::entity entity)> func) override;
+			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func, bool onlyReady = true);
 
 			inline BurgApp& GetApp();
@@ -109,7 +109,7 @@ namespace bw
 
 			void RegisterClientAsset(std::string assetPath);
 			void RegisterClientScript(std::string scriptPath);
-			void RegisterEntity(EntityId uniqueId, entt::entity entity);
+			void RegisterEntity(EntityId uniqueId, entt::handle entity);
 			void RegisterNetworkString(std::string string);
 
 			void ReloadAssets();
@@ -119,8 +119,8 @@ namespace bw
 			void RemovePlayer(Player* player, DisconnectionReason disconnection);
 			void ResetTerrain();
 
-			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
-			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
+			entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::handle entity) const override;
 
 			bool Update(float elapsedTime);
 
@@ -187,7 +187,7 @@ namespace bw
 
 			struct Entity
 			{
-				entt::entity entity;
+				entt::handle entity;
 
 				NazaraSlot(DestructionWatcherComponent, OnDestruction, onDestruction);
 			};

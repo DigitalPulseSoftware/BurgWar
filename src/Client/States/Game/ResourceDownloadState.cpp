@@ -215,7 +215,7 @@ namespace bw
 						if (fileSize != resource.size)
 							return false;
 
-						auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+						auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 						hash->Begin();
 						hash->Append(arg.data(), arg.size());
 
@@ -240,7 +240,7 @@ namespace bw
 							if (file.Read(content.data(), content.size()) != content.size())
 								return false;
 
-							auto fileHash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+							auto fileHash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 							fileHash->Begin();
 							fileHash->Append(content.data(), content.size());
 
@@ -256,7 +256,7 @@ namespace bw
 							if (fileSize != resource.size)
 								return false;
 
-							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType_SHA1, arg.generic_u8string()))
+							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType::SHA1, arg.generic_u8string()))
 								return false;
 
 							targetDir->StoreFile(resource.path, arg);
@@ -287,7 +287,7 @@ namespace bw
 				std::size_t fileSize = std::filesystem::file_size(cachePath);
 				if (fileSize == resource.size)
 				{
-					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType_SHA1, cachePath.generic_u8string()))
+					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType::SHA1, cachePath.generic_u8string()))
 					{
 						targetDir->StoreFile(resource.path, cachePath);
 						continue;

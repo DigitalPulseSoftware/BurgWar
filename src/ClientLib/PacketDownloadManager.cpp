@@ -11,7 +11,7 @@ namespace bw
 	m_clientSession(std::move(clientSession)),
 	m_nextFileIndex(0)
 	{
-		m_hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+		m_hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 
 		m_onDownloadFragmentSlot.Connect(m_clientSession->OnDownloadClientFileFragment, [this](ClientSession*, const Packets::DownloadClientFileFragment& packet)
 		{

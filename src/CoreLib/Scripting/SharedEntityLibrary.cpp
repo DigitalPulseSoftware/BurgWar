@@ -166,7 +166,7 @@ namespace bw
 		entityPhys.SetMass(mass);
 
 		// Temp fix because Nazara
-		entityPhys.SetRotation(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Global)));
+		entityPhys.SetRotation(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Global)));
 	}
 
 	void SharedEntityLibrary::SetDirection(lua_State* L, entt::entity entity, const Nz::Vector2f& upVector)
