@@ -9,6 +9,9 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.2.0")
 
+add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
+add_requires("nazarautils", "nzsl", { debug = is_mode("debug") })
+
 add_requires("cxxopts", "concurrentqueue", "entt", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
@@ -106,6 +109,7 @@ target("CoreLib")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "entt", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
 	add_packages("nazaraserver")
+	add_packages("nazarautils", { public = true })
 	add_packages("libcurl", { public = true, links = {} })
 
 if is_plat("windows") then
@@ -182,7 +186,7 @@ target("ClientLib")
 	add_headerfiles("include/(ClientLib/**.hpp)", "include/(ClientLib/**.inl)")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
-	add_packages("nazara", { public = true })
+	add_packages("nzsl", "nazara", { public = true })
 
 target("Main")
 	set_group("Common")

@@ -13,7 +13,7 @@
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/SessionManager.hpp>
-#include <Nazara/Core/MemoryPool.hpp>
+#include <Nazara/Utils/MemoryPool.hpp>
 #include <tsl/hopscotch_map.h>
 #include <vector>
 

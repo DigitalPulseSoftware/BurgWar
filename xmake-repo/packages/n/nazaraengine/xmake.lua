@@ -60,7 +60,7 @@ package("nazaraengine")
 
     on_load("windows", "linux", "macosx", "mingw", function (package)
         local nazaradir = os.getenv("NAZARA_ENGINE_PATH") or "C:/Projets/Perso/NazaraNext/NazaraEngine"
-        if not nazaradir then 
+        if not os.isdir(nazaradir) then 
             raise("missing NAZARA_ENGINE_PATH")
         end
         package:set("installdir", nazaradir)

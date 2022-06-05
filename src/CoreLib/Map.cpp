@@ -6,7 +6,7 @@
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>

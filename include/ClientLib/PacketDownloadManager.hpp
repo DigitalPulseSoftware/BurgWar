@@ -10,7 +10,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/DownloadManager.hpp>
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/AbstractHash.hpp>
 #include <filesystem>

@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Sound.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <NDK/System.hpp>
 #include <tsl/hopscotch_map.h>
 #include <vector>

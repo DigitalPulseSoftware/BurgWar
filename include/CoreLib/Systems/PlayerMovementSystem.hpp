@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
-#define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
+#ifndef BURGWAR_CORELIB_SYSTEMS_PLAYERMOVEMENT_HPP
+#define BURGWAR_CORELIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <CoreLib/Export.hpp>
 #include <entt/entt.hpp>
@@ -24,6 +24,13 @@ namespace bw
 			void OnEntityRemoved(Ndk::Entity* entity) override;
 			void OnUpdate(float elapsedTime) override;
 
+			entt::connection m_inputDestroyConnection;
+			entt::connection m_graphicsDestroyConnection;
+			entt::connection m_lightDestroyConnection;
+			entt::connection m_nodeDestroyConnection;
+			entt::observer m_cameraConstructObserver;
+			entt::observer m_graphicsConstructObserver;
+			entt::observer m_lightConstructObserver;
 			entt::registry& m_registry;
 	};
 }

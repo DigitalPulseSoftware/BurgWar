@@ -15,7 +15,7 @@
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <tsl/hopscotch_map.h>

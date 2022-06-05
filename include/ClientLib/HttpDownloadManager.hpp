@@ -12,7 +12,7 @@
 #include <ClientLib/DownloadManager.hpp>
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/File.hpp>
-#include <Nazara/Core/MovablePtr.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
 #include <functional>
 #include <vector>
 

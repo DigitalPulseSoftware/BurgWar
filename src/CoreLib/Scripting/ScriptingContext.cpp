@@ -6,7 +6,7 @@
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
+#include <Nazara/Utils/CallOnExit.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
 

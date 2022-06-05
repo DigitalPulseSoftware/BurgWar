@@ -11,7 +11,7 @@
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientCommandStore.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <memory>
 #include <optional>

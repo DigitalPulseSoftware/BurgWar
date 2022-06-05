@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <CoreLib/Components/BaseComponent.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>

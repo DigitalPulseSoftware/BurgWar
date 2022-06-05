@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_CHATBOX_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Entity.hpp>

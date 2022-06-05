@@ -8,7 +8,7 @@
 #define BURGWAR_MAPEDITOR_SCRIPTING_SELECTION_EDITOR_MODE_HPP
 
 #include <MapEditor/Logic/AbstractSelectionEditorMode.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 
 namespace bw
 {

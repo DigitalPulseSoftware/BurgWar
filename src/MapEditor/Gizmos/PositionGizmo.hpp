@@ -9,7 +9,7 @@
 
 #include <MapEditor/Gizmos/EditorGizmo.hpp>
 #include <Nazara/Core/Color.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <array>
 #include <vector>

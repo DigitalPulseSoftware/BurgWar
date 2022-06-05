@@ -12,8 +12,8 @@
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <CoreLib/LogSystem/LogContextPtr.hpp>
-#include <Nazara/Core/MovablePtr.hpp>
-#include <Nazara/Core/MemoryPool.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
+#include <Nazara/Utils/MemoryPool.hpp>
 #include <fmt/format.h>
 #include <memory>
 #include <vector>

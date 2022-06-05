@@ -7,7 +7,7 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
+#include <Nazara/Utils/CallOnExit.hpp>
 #include <cassert>
 #include <filesystem>
 #include <sstream>

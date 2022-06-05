@@ -22,7 +22,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
-#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>

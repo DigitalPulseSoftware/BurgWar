@@ -9,7 +9,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
+#include <Nazara/Utils/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <NDK/Components/NodeComponent.hpp>
 #include <stdexcept>

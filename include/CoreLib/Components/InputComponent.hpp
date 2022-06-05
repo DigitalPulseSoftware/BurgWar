@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/InputController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <array>
 #include <memory>
 

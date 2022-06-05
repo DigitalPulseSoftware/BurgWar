@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	PlayerMovementSystem::PlayerMovementSystem()
+	PlayerMovementSystem::PlayerMovementSystem(entt::registry& registry)
 	{
 		//Requires<InputComponent, PlayerMovementComponent, Ndk::PhysicsComponent2D>();
 		//SetUpdateOrder(50); //< Execute after physics but before rendering

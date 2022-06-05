@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
 #define BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
 
-#include <Nazara/Core/Bitset.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Bitset.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientEditorLayer.hpp>
