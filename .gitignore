@@ -5,6 +5,7 @@ Xmake.Custom.props
 Xmake.Custom.targets
 build
 src/CoreLib/VersionData.hpp
+vsxmake*/
 
 # Game binaries
 Assets/*
@@ -45,6 +46,7 @@ Makefile
 *.VC.opendb
 *.VC.db*
 *.leu
+*.vsidx
 
 # VS Code
 .vscode
