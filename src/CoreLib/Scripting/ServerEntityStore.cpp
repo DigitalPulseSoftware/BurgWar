@@ -20,7 +20,7 @@
 
 namespace bw
 {
-	entt::entity ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::entity parent) const
+	entt::handle ServerEntityStore::CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
@@ -29,68 +29,65 @@ namespace bw
 
 		entt::registry& registry = layer.GetWorld();
 
-		entt::entity entity = SharedEntityStore::CreateEntity(layer.GetWorld(), entityClass, properties);
-		registry.emplace<MatchComponent>(entity, layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
+		entt::handle entity = SharedEntityStore::CreateEntity(layer.GetWorld(), entityClass, properties);
+		entity.emplace<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
 
 		auto& node = registry.emplace<Nz::NodeComponent>(entity);
 		node.SetPosition(position);
 		node.SetRotation(rotation);
 
-		if (parent != entt::null)
-			node.SetParent(registry, parent);
+		if (parent)
+			node.SetParent(parent);
 
 		if (entityClass->maxHealth > 0)
 		{
-			auto& healthComponent = registry.emplace<HealthComponent>(entity, registry, entity, entityClass->maxHealth);
-			healthComponent.OnDamage.Connect([](HealthComponent* health, Nz::UInt16& damageValue, entt::entity source)
+			auto& healthComponent = entity.emplace<HealthComponent>(entity, entityClass->maxHealth);
+			healthComponent.OnDamage.Connect([](HealthComponent* health, Nz::UInt16& damageValue, entt::handle source)
 			{
-				entt::registry& registry = health->GetRegistry();
-				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
+				auto& entityScript = health->GetHandle().get<ScriptComponent>();
 
-				if (auto ret = entityScript.ExecuteCallback<ElementEvent::TakeDamage>(damageValue, TranslateEntityToLua(registry, source)); ret.has_value())
+				if (auto ret = entityScript.ExecuteCallback<ElementEvent::TakeDamage>(damageValue, TranslateEntityToLua(source)); ret.has_value())
 					damageValue = *ret;
 			});
 
-			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, entt::entity source)
+			healthComponent.OnHealthChange.Connect([](HealthComponent* health, Nz::UInt16 newHealth, entt::handle source)
 			{
-				entt::registry& registry = health->GetRegistry();
-				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
+				auto& entityScript = health->GetHandle().get<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, TranslateEntityToLua(registry, source));
+				entityScript.ExecuteCallback<ElementEvent::HealthUpdate>(newHealth, TranslateEntityToLua(source));
 			});
 
-			healthComponent.OnDying.Connect([&](HealthComponent* health, entt::entity attacker)
+			healthComponent.OnDying.Connect([&](HealthComponent* health, entt::handle attacker)
 			{
-				entt::registry& registry = health->GetRegistry();
-				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
+				auto& entityScript = health->GetHandle().get<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Death>(TranslateEntityToLua(registry, attacker));
+				entityScript.ExecuteCallback<ElementEvent::Death>(TranslateEntityToLua(attacker));
 			});
 
-			healthComponent.OnDie.Connect([&](const HealthComponent* health, entt::entity attacker)
+			healthComponent.OnDie.Connect([&](const HealthComponent* health, entt::handle attacker)
 			{
-				entt::registry& registry = health->GetRegistry();
-				auto& entityScript = registry.get<ScriptComponent>(health->GetEntity());
+				auto& entityScript = health->GetHandle().get<ScriptComponent>();
 
-				entityScript.ExecuteCallback<ElementEvent::Died>(TranslateEntityToLua(registry, attacker));
+				entityScript.ExecuteCallback<ElementEvent::Died>(TranslateEntityToLua(attacker));
 			});
 		}
 
 		if (entityClass->isNetworked)
 		{
 			// Not quite sure about this, maybe parent handling should be automatic?
+			NetworkSyncSystem& networkSyncSystem = layer.GetNetworkSyncSystem();
 
-			if (parent != entt::null && registry.try_get<NetworkSyncComponent>(parent))
-				registry.emplace<NetworkSyncComponent>(entity, entityClass->fullName, parent);
+			if (parent && parent.try_get<NetworkSyncComponent>())
+				entity.emplace<NetworkSyncComponent>(networkSyncSystem, entityClass->fullName, parent);
 			else
-				registry.emplace<NetworkSyncComponent>(entity, entityClass->fullName);
+				entity.emplace<NetworkSyncComponent>(networkSyncSystem, entityClass->fullName);
 		}
 
 		if (playerControlled)
-			registry.emplace<PlayerMovementComponent>(entity);
+			entity.emplace<PlayerMovementComponent>();
 
 		if (hasInputs)
-			registry.emplace<InputComponent>(entity, std::make_shared<PlayerInputController>());
+			entity.emplace<InputComponent>(entity, std::make_shared<PlayerInputController>());
 
 		bwLog(GetLogger(), LogLevel::Debug, "Created entity {} on layer {} of type {}", uniqueId, layer.GetLayerIndex(), GetElement(entityIndex)->fullName);
 
@@ -99,22 +96,22 @@ namespace bw
 
 	bool ServerEntityStore::InitializeEntity(entt::handle entity) const
 	{
-		const auto& entityScript = registry.get<ScriptComponent>(entity);
+		const auto& entityScript = entity.get<ScriptComponent>();
 		return SharedEntityStore::InitializeEntity(static_cast<const ScriptedEntity&>(*entityScript.GetElement()), entity);
 	}
 
-	entt::entity ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::entity parent) const
+	entt::handle ServerEntityStore::InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent) const
 	{
 		entt::registry& registry = layer.GetWorld();
 
-		entt::entity entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
-		if (entity != entt::null)
-			return entt::null;
+		entt::handle entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
+		if (entity)
+			return entt::handle{};
 
 		if (!InitializeEntity(entity))
 		{
 			registry.destroy(entity);
-			return entt::null;
+			return entt::handle{};
 		}
 
 		return entity;

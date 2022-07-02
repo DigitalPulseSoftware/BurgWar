@@ -11,8 +11,6 @@
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Physics2D/Arbiter2D.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
 
 namespace bw
 {
@@ -20,8 +18,8 @@ namespace bw
 	SharedLayer(match, layerIndex),
 	m_mapLayer(layerData)
 	{
-		Ndk::World& world = GetWorld();
-		world.AddSystem<NetworkSyncSystem>(*this);
+		Nz::SystemGraph& systemGraph = GetSystemGraph();
+		systemGraph.AddSystem<NetworkSyncSystem>(*this);
 
 		ResetEntities();
 	}
@@ -35,8 +33,8 @@ namespace bw
 	{
 		Match& match = GetMatch();
 		
-		Ndk::World& world = GetWorld();
-		world.Clear();
+		entt::registry& world = GetWorld();
+		world.clear();
 
 		auto& entityStore = match.GetEntityStore();
 		for (const Map::Entity& entityData : m_mapLayer.entities)
@@ -50,7 +48,7 @@ namespace bw
 
 			try
 			{
-				entt::entity entity = entityStore.CreateEntity(*this, entityTypeIndex, entityData.uniqueId, entityData.position, entityData.rotation, entityData.properties);
+				entt::handle entity = entityStore.CreateEntity(*this, entityTypeIndex, entityData.uniqueId, entityData.position, entityData.rotation, entityData.properties);
 				if (entity)
 					match.RegisterEntity(entityData.uniqueId, entity);
 			}
@@ -64,13 +62,11 @@ namespace bw
 	void TerrainLayer::InitializeEntities()
 	{
 		auto& entityStore = GetMatch().GetEntityStore();
-		for (entt::entity entity : GetWorld().GetEntities())
+		entt::registry& registry = GetWorld();
+		GetWorld().each([&](entt::entity entity)
 		{
-			if (!entityStore.InitializeEntity(entity))
-				entity->Kill();
-		}
-
-		Ndk::World& world = GetWorld();
-		world.Refresh();
+			if (!entityStore.InitializeEntity(entt::handle(registry, entity)))
+			registry.destroy(entity);
+		});
 	}
 }

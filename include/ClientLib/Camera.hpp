@@ -24,7 +24,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Camera : public Nz::HandledObject<Camera>
 	{
 		public:
-			Camera(Ndk::World& world, Nz::RenderTarget* renderTarget, bool perspective);
+			Camera(entt::registry& world, Nz::RenderTarget* renderTarget, bool perspective);
 			Camera(const Camera&) = delete;
 			Camera(Camera&&) = delete;
 			~Camera() = default;

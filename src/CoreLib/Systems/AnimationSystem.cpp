@@ -8,19 +8,15 @@
 
 namespace bw
 {
-	AnimationSystem::AnimationSystem(SharedMatch& match) :
-	m_match(match)
+	void AnimationSystem::Update(float /*elapsedTime*/)
 	{
-	}
+		Nz::UInt64 now = m_match.GetCurrentTime();
 
-	void AnimationSystem::OnUpdate(float /*elapsedTime*/)
-	{
-		/*Nz::UInt64 now = m_match.GetCurrentTime();
-
-		for (entt::entity entity : GetEntities())
+		auto view = m_registry.view<AnimationComponent>();
+		for (entt::entity entity : view)
 		{
-			auto& animComponent = entity->GetComponent<AnimationComponent>();
+			auto& animComponent = view.get<AnimationComponent>(entity);
 			animComponent.Update(now);
-		}*/
+		}
 	}
 }

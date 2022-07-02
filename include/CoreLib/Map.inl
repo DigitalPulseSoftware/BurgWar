@@ -136,7 +136,7 @@ namespace bw
 		return layer;
 	}
 
-	template<typename ...Args>
+	template<typename... Args>
 	auto Map::EmplaceEntity(LayerIndex layerIndex, std::size_t entityIndex, Args&&... args) -> Entity&
 	{
 		auto& layer = GetLayer(layerIndex);

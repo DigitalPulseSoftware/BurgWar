@@ -23,10 +23,11 @@ namespace bw
 	class BURGWAR_CORELIB_API WeaponWielderComponent : public BaseComponent
 	{
 		public:
-			using WeaponInitCallback = tl::function_ref<entt::entity (const std::string& /*weaponName*/)>;
+			using WeaponInitCallback = tl::function_ref<entt::handle (const std::string& /*weaponName*/)>;
 
 			inline WeaponWielderComponent(entt::handle entity);
 			inline WeaponWielderComponent(const WeaponWielderComponent& weaponWielder);
+			WeaponWielderComponent(WeaponWielderComponent&&) noexcept = default;
 			~WeaponWielderComponent() = default;
 
 			inline entt::handle GetActiveWeapon() const;
@@ -48,6 +49,9 @@ namespace bw
 			void SelectWeapon(std::size_t weaponId);
 			inline bool SelectWeapon(const std::string& weaponClass);
 			inline void SetWeaponOffset(const Nz::Vector2f& weaponOffset);
+
+			WeaponWielderComponent& operator=(const WeaponWielderComponent&) = delete;
+			WeaponWielderComponent& operator=(WeaponWielderComponent&&) noexcept = default;
 
 			static constexpr std::size_t NoWeapon = std::numeric_limits<std::size_t>::max();
 

@@ -10,7 +10,7 @@
 #include <Client/States/Game/ConnectionLostState.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -53,7 +53,7 @@ namespace bw
 		float cursor = 0.f;
 		if (m_connectionLostEntity)
 		{
-			auto& entityNode = m_connectionLostEntity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_connectionLostentity.get<Nz::NodeComponent>();
 			entityNode.SetPosition(windowSize.x - m_connectionLostSprite->GetSize().x - 10.f, cursor);
 
 			cursor += m_connectionLostSprite->GetSize().y;

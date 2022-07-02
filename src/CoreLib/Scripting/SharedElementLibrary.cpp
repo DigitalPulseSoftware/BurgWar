@@ -9,8 +9,8 @@
 #include <CoreLib/Scripting/ElementEventConnection.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
-#include <NDK/Components/LifetimeComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+//#include <NDK/Components/LifetimeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -26,27 +26,24 @@ namespace bw
 	{
 		elementMetatable["DeleteOnRemove"] = LuaFunction([](const sol::table& entityTable, const sol::table& targetEntityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entt::entity targetEntity = AssertScriptEntity(targetEntityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
+			entt::handle targetEntity = AssertScriptEntity(targetEntityTable);
 
-			if (!entity->HasComponent<EntityOwnerComponent>())
-				entity->AddComponent<EntityOwnerComponent>();
-
-			entity->GetComponent<EntityOwnerComponent>().Register(targetEntity);
+			entity.get_or_emplace<EntityOwnerComponent>(entity).Register(targetEntity);
 		});
 
 		elementMetatable["Disable"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entity->Disable();
+			entt::handle entity = AssertScriptEntity(entityTable);
+			//entity->Disable();
+			//TODO
 		});
 
 		elementMetatable["Disconnect"] = LuaFunction([&](const sol::table& entityTable, const ElementEventConnection& eventConnection)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entity->Invalidate();
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 			return std::visit([&](auto&& arg)
 			{
 				using T = std::decay_t<decltype(arg)>;
@@ -62,15 +59,16 @@ namespace bw
 
 		elementMetatable["Enable"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entity->Enable();
+			entt::handle entity = AssertScriptEntity(entityTable);
+			//entity->Enable();
+			//TODO
 		});
 
 		elementMetatable["GetDirection"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 
 			Nz::Vector2f direction(nodeComponent.GetRotation(Nz::CoordSys::Global) * Nz::Vector2f::UnitX());
 			if (nodeComponent.GetScale().x < 0.f)
@@ -81,59 +79,58 @@ namespace bw
 
 		elementMetatable["GetPosition"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys::Global));
 		});
 
 		elementMetatable["GetRotation"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			return Nz::DegreeAnglef(AngleFromQuaternion(nodeComponent.GetRotation(Nz::CoordSys::Global))); //<FIXME: not very efficient
 		});
 
 		elementMetatable["GetScale"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			Nz::Vector2f scale = Nz::Vector2f(nodeComponent.GetScale(Nz::CoordSys::Global));
 			return std::abs(scale.y);
 		});
 
 		elementMetatable["IsEnabled"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			return entity->IsEnabled();
+			entt::handle entity = AssertScriptEntity(entityTable);
+			//return entity->IsEnabled();
 		});
 
 		elementMetatable["IsLookingRight"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			return nodeComponent.GetScale().x > 0.f;
 		});
 
 		elementMetatable["IsValid"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = RetrieveScriptEntity(entityTable);
-			return entity.IsValid();
+			entt::handle entity = RetrieveScriptEntity(entityTable);
+			return entity.valid();
 		});
 		
 		elementMetatable["Kill"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			if (entity->HasComponent<HealthComponent>())
-			{
-				auto& entityHealth = entity->GetComponent<HealthComponent>();
-				entityHealth.Damage(entityHealth.GetHealth(), entity);
-			}
+			entt::handle entity = AssertScriptEntity(entityTable);
+
+			HealthComponent* entityHealth = entity.try_get<HealthComponent>();
+			if (entityHealth)
+				entityHealth->Damage(entityHealth->GetHealth(), entity);
 			else
-				entity->Kill();
+				entity.destroy();
 		});
 
 		elementMetatable["On"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const std::string_view& event, sol::main_protected_function callback)
@@ -148,37 +145,38 @@ namespace bw
 
 		elementMetatable["SetLifeTime"] = LuaFunction([](const sol::table& entityTable, float lifetime)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
+			entt::handle entity = AssertScriptEntity(entityTable);
+
+			//entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
 		});
 
 		elementMetatable["SetScale"] = LuaFunction([&](const sol::table& entityTable, float scale)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 			SetScale(entity, scale);
 		});
 
 		elementMetatable["ToLocalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& globalPosition)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToLocalPosition(globalPosition));
 		});
 
 		elementMetatable["ToGlobalPosition"] = LuaFunction([](const sol::table& entityTable, const Nz::Vector2f& localPosition)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			return Nz::Vector2f(nodeComponent.ToGlobalPosition(localPosition));
 		});
 
 		elementMetatable["Trigger"] = LuaFunction([](const sol::table& entityTable, const std::string_view& event, sol::variadic_args parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 			const auto& element = entityScript.GetElement();
 
 			std::string eventName = std::string(event);
@@ -210,9 +208,9 @@ namespace bw
 			return eventData.index;
 		};
 
-		if (entt::entity entity = RetrieveScriptEntity(entityTable))
+		if (entt::handle entity = RetrieveScriptEntity(entityTable))
 		{
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 			std::size_t eventIndex = RetrieveEventIndex(entityScript.GetElement());
 
 			std::size_t callbackId = entityScript.RegisterCallbackCustom(eventIndex, std::move(callback), async);
@@ -248,12 +246,10 @@ namespace bw
 		if (async && HasReturnValue(scriptingEvent))
 			TriggerLuaArgError(L, 2, "events returning a value cannot be async");
 
-		if (entt::entity entity = RetrieveScriptEntity(entityTable))
+		if (entt::handle entity = RetrieveScriptEntity(entityTable))
 		{
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 			std::size_t callbackId = entityScript.RegisterCallback(scriptingEvent, std::move(callback), async);
-
-			entity->Invalidate();
 
 			return ElementEventConnection{ scriptingEvent, callbackId };
 		}

@@ -10,7 +10,7 @@
 #include <ClientLib/LocalPlayerInputController.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
@@ -27,7 +27,7 @@ namespace bw
 		return true;
 	}
 
-	entt::entity ClientEditorEntityStore::InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parentEntity) const
+	entt::entity ClientEditorEntityStore::InstantiateEntity(entt::registry& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 

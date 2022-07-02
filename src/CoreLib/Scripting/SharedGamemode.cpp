@@ -6,8 +6,6 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Scripting/GamemodeEventConnection.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <cassert>

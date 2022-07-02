@@ -45,7 +45,7 @@ namespace bw
 					if (!match)
 						throw std::runtime_error("This context only accepts InvalidEntityId constant");
 
-					entt::entity entity = RetrieveScriptEntity(value);
+					entt::handle entity = RetrieveScriptEntity(value);
 					return match->RetrieveUniqueIdByEntity(entity);
 				}
 			}
@@ -92,12 +92,15 @@ namespace bw
 				if (uniqueId == InvalidEntityId)
 					return sol::make_object(lua, InvalidEntityId);
 
-				entt::entity entity = match->RetrieveEntityByUniqueId(uniqueId);
-				if (!entity || !entity->HasComponent<ScriptComponent>())
+				entt::handle entity = match->RetrieveEntityByUniqueId(uniqueId);
+				if (!entity)
 					return sol::make_object(lua, InvalidEntityId);
 
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				return sol::table(lua, entityScript.GetTable());
+				ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+				if (!entityScript)
+					return sol::make_object(lua, InvalidEntityId);
+
+				return sol::table(lua, entityScript->GetTable());
 			}
 		};
 

@@ -186,7 +186,7 @@ target("ClientLib")
 	add_headerfiles("include/(ClientLib/**.hpp)", "include/(ClientLib/**.inl)")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
-	add_packages("nzsl", "nazara", { public = true })
+	add_packages("nazarautils", "nzsl", "nazara", { public = true })
 
 target("Main")
 	set_group("Common")

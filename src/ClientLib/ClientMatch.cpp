@@ -365,7 +365,7 @@ namespace bw
 		sol::state& state = m_scriptingContext->GetLuaState();
 		state["engine_AnimateRotation"] = LuaFunction([&](const sol::table& entityTable, float fromAngle, float toAngle, float duration, sol::main_protected_function callback)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -373,7 +373,7 @@ namespace bw
 					return false;
 
 				float newAngle = Nz::Lerp(fromAngle, toAngle, ratio);
-				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				auto& nodeComponent = entity.get<Nz::NodeComponent>();
 				nodeComponent.SetRotation(Nz::DegreeAnglef(newAngle));
 
 				return true;
@@ -391,7 +391,7 @@ namespace bw
 
 		state["engine_AnimatePositionByOffsetSq"] = LuaFunction([&](const sol::table& entityTable, const Nz::Vector2f& fromOffset, const Nz::Vector2f& toOffset, float duration, sol::main_protected_function callback)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			m_animationManager.PushAnimation(duration, [=](float ratio)
 			{
@@ -399,7 +399,7 @@ namespace bw
 					return false;
 
 				Nz::Vector2f offset = Nz::Lerp(fromOffset, toOffset, ratio * ratio); //< FIXME
-				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				auto& nodeComponent = entity.get<Nz::NodeComponent>();
 				nodeComponent.SetInitialPosition(offset); //< FIXME
 
 				return true;

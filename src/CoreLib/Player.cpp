@@ -124,7 +124,7 @@ namespace bw
 
 							weaponEntity = world.CloneEntity(weaponEntity);
 							weaponEntity->AddComponent<MatchComponent>(m_match, layerIndex, weaponUniqueId);
-							weaponEntity->GetComponent<Ndk::NodeComponent>().SetParent(newPlayerEntity);
+							weaponentity.get<Nz::NodeComponent>().SetParent(newPlayerEntity);
 							weaponEntity->GetComponent<NetworkSyncComponent>().UpdateParent(newPlayerEntity);
 							weaponEntity->GetComponent<WeaponComponent>().UpdateOwner(newPlayerEntity);
 
@@ -170,22 +170,19 @@ namespace bw
 			Nz::Bitset<Nz::UInt64> weaponIds;
 			if (m_playerEntity)
 			{
-				entt::registry& registry = m_playerEntity->GetRegistry();
-				if (WeaponWielderComponent* weaponWielder = registry.try_get<WeaponWielderComponent>(m_playerEntity->GetEntity()))
+				entt::registry* registry = m_playerEntity->GetEntity().registry();
+				if (WeaponWielderComponent* weaponWielder = registry->try_get<WeaponWielderComponent>(m_playerEntity->GetEntity()))
 				{
-					for (entt::entity weapon : weaponWielder->GetWeapons())
+					for (entt::handle weapon : weaponWielder->GetWeapons())
 					{
-						assert(registry.valid(weapon));
+						assert(weapon.valid());
 
-						weaponPacket.weaponEntities.emplace_back(Nz::UInt32(weapon->GetId()));
-						weaponIds.UnboundedSet(weapon->GetId());
+						auto& weaponNetwork = weapon.get<NetworkSyncComponent>();
+
+						weaponPacket.weaponEntities.emplace_back(weaponNetwork.GetNetworkId());
+						weaponIds.UnboundedSet(weaponNetwork.GetNetworkId());
 					}
 				}
-			}
-			//	&& m_playerEntity->HasComponent<WeaponWielderComponent>())
-			{
-				auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-
 			}
 
 			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));
@@ -204,21 +201,24 @@ namespace bw
 		return "Player(" + m_name + ")";
 	}
 
-	void Player::UpdateControlledEntity(entt::entity entity, bool sendPacket, bool ignoreLayerUpdate)
+	void Player::UpdateControlledEntity(entt::handle entity, bool sendPacket, bool ignoreLayerUpdate)
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
 		if (m_playerEntity)
 		{
-			m_playerEntity->RemoveComponent<OwnerComponent>();
-			m_playerEntity->RemoveComponent<PlayerControlledComponent>();
+			EntityOwner& playerEntity = *m_playerEntity;
 
-			auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
-			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), false);
+			playerEntity->remove<OwnerComponent>();
+			playerEntity->remove<PlayerControlledComponent>();
+
+			auto& matchComponent = playerEntity->get<MatchComponent>();
+			auto& networkComponent = playerEntity->get<NetworkSyncComponent>();
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), networkComponent.GetNetworkId(), false);
 		}
 
-		m_playerEntity = entt::null;
-		m_onPlayerEntityDied.Disconnect();
+		m_playerEntity.reset();
+		m_onPlayerEntityDie.Disconnect();
 		m_onPlayerEntityDestruction.Disconnect();
 		m_onWeaponAdded.Disconnect();
 		m_onWeaponRemove.Disconnect();
@@ -226,7 +226,7 @@ namespace bw
 		EntityId entityUniqueId = InvalidEntityId;
 		if (entity)
 		{
-			auto& matchComponent = entity->GetComponent<MatchComponent>();
+			auto& matchComponent = entity.get<MatchComponent>();
 			if (!ignoreLayerUpdate)
 				MoveToLayer(matchComponent.GetLayerIndex());
 
@@ -234,38 +234,36 @@ namespace bw
 
 			m_playerEntity = entity; //< FIXME (deferred because of MoveToLayer)
 
-			if (m_playerEntity->HasComponent<WeaponWielderComponent>())
+			if (WeaponWielderComponent* weaponWielder = entity.try_get<WeaponWielderComponent>())
 			{
-				auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
-
 				auto onWeaponSetUpdate = [&](WeaponWielderComponent* /*wielder*/, const std::string& /*weaponClass*/, std::size_t /*weaponIndex*/)
 				{
 					m_shouldSendWeapons = true;
 				};
 
-				m_onWeaponAdded.Connect(weaponWielder.OnWeaponAdded, onWeaponSetUpdate);
-				m_onWeaponRemove.Connect(weaponWielder.OnWeaponRemove, onWeaponSetUpdate);
+				m_onWeaponAdded.Connect(weaponWielder->OnWeaponAdded, onWeaponSetUpdate);
+				m_onWeaponRemove.Connect(weaponWielder->OnWeaponRemove, onWeaponSetUpdate);
 			}
 
-			m_playerEntity->AddComponent<OwnerComponent>(CreateHandle());
-			m_playerEntity->AddComponent<PlayerControlledComponent>(CreateHandle());
+			entity.emplace<OwnerComponent>(CreateHandle());
+			entity.emplace<PlayerControlledComponent>(CreateHandle());
 
-			if (m_playerEntity->HasComponent<HealthComponent>())
+			if (HealthComponent* healthComponent = entity.try_get<HealthComponent>())
 			{
-				auto& healthComponent = m_playerEntity->GetComponent<HealthComponent>();
-
-				m_onPlayerEntityDied.Connect(healthComponent.OnDied, [this](const HealthComponent* /*health*/, entt::entity attacker)
+				m_onPlayerEntityDie.Connect(healthComponent->OnDie, [this](const HealthComponent* /*health*/, entt::handle attacker)
 				{
 					OnDeath(attacker);
 				});
 			}
 
-			m_onPlayerEntityDestruction.Connect(m_playerEntity->OnEntityDestruction, [this](Ndk::Entity* /*entity*/)
+			auto& destructionWatcher = entity.get_or_emplace<DestructionWatcherComponent>(entity);
+			m_onPlayerEntityDestruction.Connect(destructionWatcher.OnDestruction, [this](DestructionWatcherComponent* /*destructionWatcher*/)
 			{
-				OnDeath(entt::null);
+				OnDeath({});
 			});
 
-			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), m_playerEntity->GetId(), true);
+			auto& networkComponent = entity.get<NetworkSyncComponent>();
+			visibility.SetEntityControlledStatus(matchComponent.GetLayerIndex(), networkComponent.GetNetworkId(), true);
 		}
 
 		if (sendPacket)
@@ -274,10 +272,13 @@ namespace bw
 			controlEntity.localIndex = m_localIndex;
 			if (m_playerEntity)
 			{
-				auto& matchComponent = m_playerEntity->GetComponent<MatchComponent>();
+				EntityOwner& playerEntity = *m_playerEntity;
+
+				auto& matchComponent = playerEntity->get<MatchComponent>();
+				auto& networkComponent = playerEntity->get<NetworkSyncComponent>();
 
 				controlEntity.layerIndex = matchComponent.GetLayerIndex();
-				controlEntity.entityId = static_cast<Nz::UInt32>(entity->GetId());
+				controlEntity.entityId = networkComponent.GetNetworkId();
 
 				visibility.PushEntityPacket(matchComponent.GetLayerIndex(), controlEntity.entityId, controlEntity);
 			}
@@ -325,19 +326,23 @@ namespace bw
 		m_match.BroadcastPacket(nameUpdatePacket);
 	}
 
-	void Player::OnDeath(entt::entity attacker)
+	void Player::OnDeath(entt::handle attacker)
 	{
 		assert(m_playerEntity);
 
-		UpdateControlledEntity(entt::null, false);
+		UpdateControlledEntity(entt::handle{}, false);
 
 		Packets::ChatMessage chatPacket;
-		if (attacker && attacker->HasComponent<OwnerComponent>())
+		if (attacker)
 		{
-			auto& ownerComponent = attacker->GetComponent<OwnerComponent>();
-			Player* playerKiller = ownerComponent.GetOwner();
-			if (playerKiller != this)
-				chatPacket.content = playerKiller->GetName() + " killed " + GetName();
+			if (OwnerComponent* ownerComponent = attacker.try_get<OwnerComponent>())
+			{
+				Player* playerKiller = ownerComponent->GetOwner();
+				if (playerKiller != this)
+					chatPacket.content = playerKiller->GetName() + " killed " + GetName();
+				else
+					chatPacket.content = GetName() + " suicided";
+			}
 			else
 				chatPacket.content = GetName() + " suicided";
 		}
@@ -349,10 +354,12 @@ namespace bw
 			otherPlayer->SendPacket(chatPacket);
 		});
 
-		if (attacker && attacker->HasComponent<ScriptComponent>())
+		if (attacker)
 		{
-			auto& attackerScript = attacker->GetComponent<ScriptComponent>();
-			m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), attackerScript.GetTable());
+			if (ScriptComponent* attackerScript = attacker.try_get<ScriptComponent>())
+				m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), attackerScript->GetTable());
+			else
+				m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), sol::nil);
 		}
 		else
 			m_match.GetGamemode()->ExecuteCallback<GamemodeEvent::PlayerDeath>(CreateHandle(), sol::nil);

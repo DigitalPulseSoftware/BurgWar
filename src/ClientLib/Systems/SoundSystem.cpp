@@ -6,7 +6,7 @@
 #include <CoreLib/ConfigFile.hpp>
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <array>
 
@@ -113,7 +113,7 @@ namespace bw
 		{
 			m_movableEntities.Insert(entity);
 	
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = entity.get<Nz::NodeComponent>();
 			auto& soundEmitterComponent = entity->GetComponent<SoundEmitterComponent>();
 
 			soundEmitterComponent.UpdateLastPosition(nodeComponent.GetPosition());
@@ -134,7 +134,7 @@ namespace bw
 
 		for (entt::entity movableEntity : m_movableEntities)
 		{
-			auto& nodeComponent = movableEntity->GetComponent<Ndk::NodeComponent>();
+			auto& nodeComponent = movableentity.get<Nz::NodeComponent>();
 			auto& soundEmitterComponent = movableEntity->GetComponent<SoundEmitterComponent>();
 
 			Nz::Vector3f entityPos = nodeComponent.GetPosition();

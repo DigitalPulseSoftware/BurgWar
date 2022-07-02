@@ -16,17 +16,17 @@ namespace bw
 		return m_layer;
 	}
 
-	inline void NetworkSyncSystem::NotifyPhysicsUpdate(entt::entity entity)
-	{
-		if (m_physicsEntities.contains(entity))
-			m_physicsUpdateEntities.insert(entity);
-	}
-
 	inline void NetworkSyncSystem::NotifyMovementUpdate(entt::entity entity)
 	{
 		// Dynamic entities are sent regulary, only send static for now (TODO: Handle teleportation this way)
 		if (m_staticEntities.contains(entity))
 			m_movedStaticEntities.insert(entity);
+	}
+
+	inline void NetworkSyncSystem::NotifyPhysicsUpdate(entt::entity entity)
+	{
+		if (m_physicsEntities.contains(entity))
+			m_physicsUpdateEntities.insert(entity);
 	}
 
 	inline void NetworkSyncSystem::NotifyScaleUpdate(entt::entity entity)

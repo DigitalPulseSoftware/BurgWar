@@ -7,25 +7,16 @@
 
 namespace bw
 {
-	InputSystem::InputSystem()
+	void InputSystem::Update(float /*elapsedTime*/)
 	{
-		Requires<InputComponent>();
-		SetMaximumUpdateRate(0);
-		SetUpdateOrder(-100);
-	}
-
-	void InputSystem::OnUpdate(float /*elapsedTime*/)
-	{
-		for (entt::entity entity : GetEntities())
+		auto view = m_registry.view<InputComponent>();
+		for (auto [entity, inputComponent] : view.each())
 		{
-			auto& inputComponent = entity->GetComponent<InputComponent>();
 			if (const auto& controller = inputComponent.GetController())
 			{
-				if (auto inputOpt = controller->GenerateInputs(entity))
+				if (auto inputOpt = controller->GenerateInputs(entt::handle(m_registry, entity)))
 					inputComponent.UpdateInputs(*inputOpt);
 			}
 		}
 	}
-
-	Ndk::SystemIndex InputSystem::systemIndex;
 }

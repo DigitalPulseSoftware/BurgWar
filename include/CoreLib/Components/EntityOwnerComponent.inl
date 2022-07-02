@@ -6,9 +6,9 @@
 
 namespace bw
 {
-	inline void EntityOwnerComponent::Register(entt::entity entity)
+	inline void EntityOwnerComponent::Register(entt::handle entity)
 	{
 		// Try to reuse expired handles before adding an entry
-		m_ownedEntities.emplace_back(GetRegistry(), entity);
+		m_ownedEntities.emplace_back(entity);
 	}
 }

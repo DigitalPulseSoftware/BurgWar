@@ -13,11 +13,9 @@
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
-#include <NDK/World.hpp>
-#include <NDK/Components/NodeComponent.hpp>
-#include <NDK/Components/CollisionComponent2D.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -33,12 +31,10 @@ namespace bw
 	{
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 damage, Nz::Rectf damageZone, float pushbackForce = 0.f)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			Ndk::World* world = entity->GetWorld();
-			assert(world);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
-			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](entt::entity hitEntity)
+			/*Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
+			world->GetSystem<Ndk::PhysicsSystem2D>().RegionQuery(damageZone, 0, 0xFFFFFFFF, 0xFFFFFFFF, [&](entt::handle hitEntity)
 			{
 				if (hitEntities.Has(hitEntity))
 					return;
@@ -53,7 +49,9 @@ namespace bw
 					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
 					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys::Global) - origin) * pushbackForce);
 				}
-			});
+			});*/
+
+			// Entt FIXME
 		};
 
 		elementTable["DealDamage"] = sol::overload(
@@ -62,32 +60,32 @@ namespace bw
 
 		elementTable["DumpCreationInfo"] = LuaFunction([](sol::this_state L, const sol::table& entityTable) -> sol::object
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			if (!entity->HasComponent<ScriptComponent>() || !entity->HasComponent<MatchComponent>() || !entity->HasComponent<Ndk::NodeComponent>())
-				return sol::nil;
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-			auto& entityMatch = entity->GetComponent<MatchComponent>();
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			Nz::NodeComponent* entityNode = entity.try_get<Nz::NodeComponent>();
+			MatchComponent* entityMatch = entity.try_get<MatchComponent>();
+			ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+			if (!entityScript || !entityMatch || !entityNode)
+				return sol::nil;
 			
-			Match& match = entityMatch.GetMatch();
-			const auto& element = entityScript.GetElement();
+			Match& match = entityMatch->GetMatch();
+			const auto& element = entityScript->GetElement();
 
 			sol::state_view state(L);
 
 			sol::table resultTable = state.create_table(6, 0);
 			resultTable["Type"] = element->fullName;
-			resultTable["LayerIndex"] = entityMatch.GetLayerIndex();
-			resultTable["Position"] = Nz::Vector2f(entityNode.GetPosition());
-			resultTable["Rotation"] = AngleFromQuaternion(entityNode.GetRotation());
+			resultTable["LayerIndex"] = entityMatch->GetLayerIndex();
+			resultTable["Position"] = Nz::Vector2f(entityNode->GetPosition());
+			resultTable["Rotation"] = AngleFromQuaternion(entityNode->GetRotation());
 
-			if (entity->HasComponent<OwnerComponent>())
+			if (OwnerComponent* entityOwner = entity.try_get<OwnerComponent>())
 			{
-				if (Player* owner = entity->GetComponent<OwnerComponent>().GetOwner())
+				if (Player* owner = entityOwner->GetOwner())
 					resultTable["Owner"] = owner->CreateHandle();
 			}
 
-			const auto& entityProperties = entityScript.GetProperties();
+			const auto& entityProperties = entityScript->GetProperties();
 			if (!entityProperties.empty())
 			{
 				sol::table propertyTable = state.create_table(int(entityProperties.size()), 0);
@@ -103,16 +101,16 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			return entity->GetComponent<MatchComponent>().GetLayerIndex();
+			return entity.get<MatchComponent>().GetLayerIndex();
 		});
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			entt::entity entity = AssertScriptEntity(table);
+			entt::handle entity = AssertScriptEntity(table);
 
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 
 			auto propertyVal = entityScript.GetProperty(propertyName);
 			if (propertyVal.has_value())
@@ -121,8 +119,8 @@ namespace bw
 				const PropertyValue& property = propertyVal.value();
 
 				Match* match;
-				if (entity->HasComponent<MatchComponent>())
-					match = &entity->GetComponent<MatchComponent>().GetMatch();
+				if (MatchComponent* entityMatch = entity.try_get<MatchComponent>())
+					match = &entityMatch->GetMatch();
 				else
 					match = nullptr;
 
@@ -134,55 +132,52 @@ namespace bw
 
 		elementTable["GetOwner"] = LuaFunction([](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			entt::entity entity = AssertScriptEntity(table);
+			entt::handle entity = AssertScriptEntity(table);
 
-			if (!entity->HasComponent<OwnerComponent>())
+			OwnerComponent* entityOwner = entity.try_get<OwnerComponent>();
+			if (!entityOwner)
 				return sol::nil;
 
-			return sol::make_object(s, entity->GetComponent<OwnerComponent>().GetOwner()->CreateHandle());
+			return sol::make_object(s, entityOwner->GetOwner()->CreateHandle());
 		});
 
 		elementTable["SetParent"] = LuaFunction([](const sol::table& entityTable, const sol::table& parentTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
-			entt::entity parent = AssertScriptEntity(parentTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
+			entt::handle parent = AssertScriptEntity(parentTable);
 
-			entity->GetComponent<Ndk::NodeComponent>().SetParent(parent, true);
-			if (entity->HasComponent<NetworkSyncComponent>())
-				entity->GetComponent<NetworkSyncComponent>().UpdateParent(parent);
+			entity.get<Nz::NodeComponent>().SetParent(parent, true);
+			if (NetworkSyncComponent* syncComponent = entity.try_get<NetworkSyncComponent>())
+				syncComponent->UpdateParent(parent);
 		});
 	}
 
-	void ServerElementLibrary::SetScale(entt::entity entity, float newScale)
+	void ServerElementLibrary::SetScale(entt::handle entity, float newScale)
 	{
-		if (entity->HasComponent<ScriptComponent>())
-		{
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
-		}
+		if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
+			scriptComponent->ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
 
-		auto& node = entity->GetComponent<Ndk::NodeComponent>();
+		auto& node = entity.get<Nz::NodeComponent>();
 		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
-		node.SetScale(scale, Nz::CoordSys_Local);
+		node.SetScale(scale, Nz::CoordSys::Local);
 
-		if (entity->HasComponent<CollisionDataComponent>())
+		if (CollisionDataComponent* entityCollData = entity.try_get<CollisionDataComponent>())
 		{
-			auto& entityCollData = entity->GetComponent<CollisionDataComponent>();
-			auto& entityCollider = entity->GetComponent<Ndk::CollisionComponent2D>();
+			auto& entityCollider = entity.get<Nz::RigidBody2DComponent>();
 
-			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
+			entityCollider.SetGeom(entityCollData->BuildCollider(newScale), false, false);
 		}
 
-		Ndk::World* world = entity->GetWorld();
-		world->GetSystem<NetworkSyncSystem>().NotifyScaleUpdate(entity);
+		// entt FIXME
+		//entt::registry* world = entity->GetWorld();
+		//world->GetSystem<NetworkSyncSystem>().NotifyScaleUpdate(entity);
 
-		if (entity->HasComponent<WeaponWielderComponent>())
+		if (WeaponWielderComponent* wielderComponent = entity.try_get<WeaponWielderComponent>())
 		{
-			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
-			for (entt::entity weapon : wielderComponent.GetWeapons())
+			for (entt::handle weapon : wielderComponent->GetWeapons())
 				SetScale(weapon, newScale);
 		}
 	}

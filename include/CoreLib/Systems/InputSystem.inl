@@ -6,4 +6,8 @@
 
 namespace bw
 {
+	inline InputSystem::InputSystem(entt::registry& registry) :
+	m_registry(registry)
+	{
+	}
 }

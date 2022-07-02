@@ -13,7 +13,7 @@
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/LifetimeSystem.hpp>
 
@@ -25,7 +25,7 @@ namespace bw
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.AddSystem<FrameCallbackSystem>();
 		world.AddSystem<PostFrameCallbackSystem>();
 		world.AddSystem<VisualInterpolationSystem>();

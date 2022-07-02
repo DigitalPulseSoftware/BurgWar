@@ -34,7 +34,7 @@ namespace bw
 		friend PlayerCommandStore;
 
 		public:
-			MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge);
+			MatchClientSession(Match& match, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge);
 			MatchClientSession(const MatchClientSession&) = delete;
 			MatchClientSession(MatchClientSession&&) = delete;
 			~MatchClientSession();
@@ -46,7 +46,6 @@ namespace bw
 			inline Nz::UInt16 GetLastInputTick() const;
 			inline Nz::UInt32 GetPing() const;
 			inline const SessionBridge& GetSessionBridge() const;
-			inline std::size_t GetSessionId() const;
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;
 
@@ -92,7 +91,6 @@ namespace bw
 			CircularBuffer<Input> m_queuedInputs;
 			Match& m_match;
 			PlayerCommandStore& m_commandStore;
-			std::size_t m_sessionId;
 			std::shared_ptr<SessionBridge> m_bridge;
 			std::unique_ptr<MatchClientVisibility> m_visibility;
 			//std::vector<PendingAssetRequest> m_pendingAssetRequest;

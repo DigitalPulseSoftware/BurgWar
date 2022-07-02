@@ -88,7 +88,7 @@ namespace bw
 			inline ParticleRegistry& GetParticleRegistry();
 			inline const ParticleRegistry& GetParticleRegistry() const;
 			inline ClientPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
-			inline Ndk::World& GetRenderWorld();
+			inline entt::registry& GetRenderWorld();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
@@ -286,7 +286,7 @@ namespace bw
 			std::vector<TickPrediction> m_tickPredictions;
 			Ndk::Canvas* m_canvas;
 			Ndk::EntityHandle m_currentLayer;
-			Ndk::World m_renderWorld;
+			entt::registry m_renderWorld;
 			Nz::ColorBackgroundRef m_colorBackground;
 			EntityId m_freeClientId;
 			Nz::RenderTarget* m_renderTarget;

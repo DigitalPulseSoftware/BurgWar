@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_COMPONENTS_WEAPONCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
@@ -22,11 +23,11 @@ namespace bw
 	class BURGWAR_CORELIB_API WeaponComponent
 	{
 		public:
-			inline WeaponComponent(entt::entity owner, WeaponAttackMode attackMode);
+			inline WeaponComponent(entt::handle owner, WeaponAttackMode attackMode);
 			~WeaponComponent() = default;
 
 			inline WeaponAttackMode GetAttackMode() const;
-			inline entt::entity GetOwner() const;
+			inline entt::handle GetOwner() const;
 
 			inline bool IsActive() const;
 			inline bool IsAttacking() const;
@@ -34,10 +35,10 @@ namespace bw
 			inline void SetActive(bool isActive);
 			inline void SetAttacking(bool isAttacking);
 
-			inline void UpdateOwner(entt::entity owner);
+			inline void UpdateOwner(entt::handle owner);
 
 		private:
-			entt::entity m_owner;
+			entt::handle m_owner;
 			WeaponAttackMode m_attackMode;
 			bool m_isActive;
 			bool m_isAttacking;

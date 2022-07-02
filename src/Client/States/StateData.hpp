@@ -20,7 +20,7 @@ namespace bw
 	{
 		std::optional<Ndk::Canvas> canvas;
 		ClientApp* app;
-		Ndk::WorldHandle world;
+		entt::registryHandle world;
 		Nz::RenderWindow* window;
 	};
 }

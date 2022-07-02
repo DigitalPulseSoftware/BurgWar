@@ -41,12 +41,10 @@ namespace bw
 			void Poll();
 
 		private:
-			std::size_t m_nextSessionId;
 			std::vector<std::unique_ptr<SessionManager>> m_managers;
 			Match& m_match;
 			PlayerCommandStore m_commandStore;
 			Nz::MemoryPool<MatchClientSession> m_sessionPool;
-			tsl::hopscotch_map<std::size_t /*sessionId*/, MatchClientSession* /*session*/> m_sessionIdToSession;
 	};
 }
 

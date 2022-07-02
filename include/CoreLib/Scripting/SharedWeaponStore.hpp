@@ -21,7 +21,7 @@ namespace bw
 
 		protected:
 			void InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon) override = 0;
-			bool InitializeWeapon(const ScriptedWeapon& weaponClass, entt::entity entity, entt::entity parent);
+			bool InitializeWeapon(const ScriptedWeapon& weaponClass, entt::handle entity, entt::handle parent);
 	};
 }
 

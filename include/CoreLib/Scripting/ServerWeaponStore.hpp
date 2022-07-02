@@ -21,7 +21,7 @@ namespace bw
 			inline ServerWeaponStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerWeaponStore() = default;
 
-			entt::handle InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent);
+			entt::handle InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::handle parent);
 
 		private:
 			void InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon) override;

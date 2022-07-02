@@ -13,7 +13,7 @@ namespace bw
 	ClientEditorLayer::ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex) :
 	SharedLayer(match, layerIndex)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.AddSystem<FrameCallbackSystem>();
 		world.AddSystem<PostFrameCallbackSystem>();
 		world.AddSystem<VisualInterpolationSystem>();
@@ -21,7 +21,7 @@ namespace bw
 	
 	void ClientEditorLayer::FrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -35,7 +35,7 @@ namespace bw
 
 	void ClientEditorLayer::PreFrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -48,7 +48,7 @@ namespace bw
 
 	void ClientEditorLayer::PostFrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -61,7 +61,7 @@ namespace bw
 
 	void ClientEditorLayer::TickUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(true);

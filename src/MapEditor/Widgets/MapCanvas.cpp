@@ -22,7 +22,7 @@
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/ListenerSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
@@ -35,7 +35,7 @@ namespace bw
 	m_editor(editor),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.AddSystem<Ndk::ListenerSystem>();
 		world.AddSystem<Ndk::PhysicsSystem2D>();
 
@@ -568,7 +568,7 @@ namespace bw
 		auto& gfxComponent = m_gridEntity->GetComponent<Ndk::GraphicsComponent>();
 		gfxComponent.Clear();
 
-		auto& nodeComponent = m_gridEntity->GetComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = m_gridentity.get<Nz::NodeComponent>();
 		nodeComponent.SetPosition(camPos);
 
 		auto AddGrid = [&](float lineWidth, float gridSize, Nz::Color color, int renderOrder)

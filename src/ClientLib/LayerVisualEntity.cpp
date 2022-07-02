@@ -11,7 +11,7 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/VisualEntity.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -102,7 +102,7 @@ namespace bw
 
 	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
 	{
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_entity.get<Nz::NodeComponent>();
 		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, entityNode.GetTransformMatrix());
 
 		Nz::Vector3f globalPos = worldMatrix.GetTranslation();
@@ -160,7 +160,7 @@ namespace bw
 
 	void LayerVisualEntity::SyncVisuals()
 	{
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_entity.get<Nz::NodeComponent>();
 
 		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
 		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
@@ -221,12 +221,12 @@ namespace bw
 			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
 		}
 
-		auto& node = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& node = m_entity.get<Nz::NodeComponent>();
 		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
-		node.SetScale(scale, Nz::CoordSys_Local);
+		node.SetScale(scale, Nz::CoordSys::Local);
 
 		if (m_entity->HasComponent<CollisionDataComponent>())
 		{
@@ -247,7 +247,7 @@ namespace bw
 		}
 		else
 		{
-			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_entity.get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -265,7 +265,7 @@ namespace bw
 		}
 		else
 		{
-			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_entity.get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -286,7 +286,7 @@ namespace bw
 
 		visualEntity->Enable(IsEnabled());
 
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_entity.get<Nz::NodeComponent>();
 		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
 		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
 		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);

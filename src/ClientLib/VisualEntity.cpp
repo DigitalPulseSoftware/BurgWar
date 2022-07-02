@@ -5,12 +5,12 @@
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/LayerVisualEntity.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	VisualEntity::VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder) :
+	VisualEntity::VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder) :
 	m_entity(renderWorld.CreateEntity()),
 	m_visualEntity(std::move(visualEntityHandle)),
 	m_baseRenderOrder(baseRenderOrder)
@@ -21,10 +21,10 @@ namespace bw
 		m_visualEntity->RegisterVisualEntity(this);
 	}
 	
-	VisualEntity::VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder) :
+	VisualEntity::VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder) :
 	VisualEntity(renderWorld, std::move(visualEntityHandle), baseRenderOrder)
 	{
-		m_entity->GetComponent<Ndk::NodeComponent>().SetParent(parentNode);
+		m_entity.get<Nz::NodeComponent>().SetParent(parentNode);
 	}
 
 	VisualEntity::VisualEntity(VisualEntity&& entity) noexcept :
@@ -45,7 +45,7 @@ namespace bw
 
 	void VisualEntity::Update(const Nz::Vector2f& position, const Nz::Quaternionf& rotation, const Nz::Vector2f& scale)
 	{
-		auto& visualNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& visualNode = m_entity.get<Nz::NodeComponent>();
 		visualNode.SetPosition(position);
 		visualNode.SetRotation(rotation);
 		visualNode.SetScale(scale);
@@ -68,7 +68,7 @@ namespace bw
 
 			for (auto& hoveringRenderable : m_hoveringRenderables)
 			{
-				auto& node = hoveringRenderable.entity->GetComponent<Ndk::NodeComponent>();
+				auto& node = hoveringRenderable.entity.get<Nz::NodeComponent>();
 				node.SetPosition(center.x, center.y - halfHeight - absoluteScale.y * hoveringRenderable.offset);
 				node.SetScale(positiveScale);
 			}

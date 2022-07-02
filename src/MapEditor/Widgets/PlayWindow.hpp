@@ -30,7 +30,7 @@ namespace bw
 
 			void resizeEvent(QResizeEvent* event) override;
 
-			Ndk::World m_world;
+			entt::registry m_world;
 			Ndk::Canvas m_canvas;
 			std::optional<ClientMatch> m_clientMatch;
 			std::optional<Match> m_match;

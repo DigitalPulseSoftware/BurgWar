@@ -11,7 +11,7 @@ namespace bw
 		if (m_playerEntity)
 			return m_playerEntity->GetEntity();
 		else
-			return entt::null;
+			return {};
 	}
 
 	inline const PlayerInputData& Player::GetInputs() const

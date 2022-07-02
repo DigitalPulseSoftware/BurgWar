@@ -10,6 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/SharedLayer.hpp>
+#include <CoreLib/Systems/NetworkSyncSystem.hpp>
 
 namespace bw
 {
@@ -27,6 +28,7 @@ namespace bw
 			~TerrainLayer() = default;
 
 			Match& GetMatch();
+			inline NetworkSyncSystem& GetNetworkSyncSystem();
 
 			void ResetEntities();
 

@@ -4,58 +4,62 @@
 
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Physics2D/Arbiter2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
+#include <cassert>
 
 namespace bw
 {
-	PlayerMovementSystem::PlayerMovementSystem(entt::registry& registry)
+	PlayerMovementSystem::PlayerMovementSystem(entt::registry& registry) :
+	m_controllerObserver(registry, entt::collector.group<InputComponent, PlayerMovementComponent, Nz::RigidBody2DComponent>()),
+	m_registry(registry)
 	{
-		//Requires<InputComponent, PlayerMovementComponent, Ndk::PhysicsComponent2D>();
-		//SetUpdateOrder(50); //< Execute after physics but before rendering
+		m_inputDestroyConnection = registry.on_destroy<InputComponent>().connect<&PlayerMovementSystem::OnInputDestroy>(this);
+		m_movementDestroyConnection = registry.on_destroy<PlayerMovementComponent>().connect<&PlayerMovementSystem::OnMovementDestroy>(this);
+	}
+
+	PlayerMovementSystem::~PlayerMovementSystem()
+	{
+		m_inputDestroyConnection.release();
+		m_movementDestroyConnection.release();
 	}
 	
-	void PlayerMovementSystem::OnEntityAdded(Ndk::Entity* entity)
+	void PlayerMovementSystem::Update(float /*elapsedTime*/)
 	{
-		/*Ndk::PhysicsComponent2D& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-		entityPhys.SetVelocityFunction([entity = entity->CreateHandle()](Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt)
+		m_controllerObserver.each([&](entt::entity entity)
 		{
-			auto& movementComponent = entity->GetComponent<PlayerMovementComponent>();
+			assert(m_inputControlledEntities.find(entity) == m_inputControlledEntities.end());
 
-			const auto& controller = movementComponent.GetController();
-			if (controller)
+			auto& entityPhys = m_registry.get<Nz::RigidBody2DComponent>(entity);
+			entityPhys.SetVelocityFunction([handle = entt::handle(m_registry, entity)](Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt)
 			{
-				auto& inputComponent = entity->GetComponent<InputComponent>();
-				const auto& inputs = inputComponent.GetInputs();
+				auto& movementComponent = handle.get<PlayerMovementComponent>();
 
-				controller->UpdateVelocity(inputs, movementComponent, rigidBody, gravity, damping, dt);
-			}
-			else
-				rigidBody.UpdateVelocity(gravity, damping, dt);
-		});*/
-	}
+				const auto& controller = movementComponent.GetController();
+				if (controller)
+				{
+					auto& inputComponent = handle.get<InputComponent>();
+					const auto& inputs = inputComponent.GetInputs();
 
-	void PlayerMovementSystem::OnEntityRemoved(Ndk::Entity* entity)
-	{
-		/*if (!entity->HasComponent<Ndk::PhysicsComponent2D>())
-			return;
+					controller->UpdateVelocity(inputs, movementComponent, rigidBody, gravity, damping, dt);
+				}
+				else
+					rigidBody.UpdateVelocity(gravity, damping, dt);
+			});
 
-		Ndk::PhysicsComponent2D& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-		if (!entityPhys.IsValid())
-			return;
+			m_inputControlledEntities.emplace(entity);
+		});
 
-		entityPhys.ResetVelocityFunction();*/
-	}
-
-	void PlayerMovementSystem::OnUpdate(float /*elapsedTime*/)
-	{
-		/*for (entt::entity entity : GetEntities())
+		auto view = m_registry.view<InputComponent, PlayerMovementComponent, Nz::NodeComponent, Nz::RigidBody2DComponent>();
+		for (entt::entity entity : view)
 		{
-			auto& inputComponent = entity->GetComponent<InputComponent>();
-			auto& playerMovement = entity->GetComponent<PlayerMovementComponent>();
-			auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& inputComponent = view.get<InputComponent>(entity);
+			auto& playerMovement = view.get<PlayerMovementComponent>(entity);
+			auto& nodeComponent = view.get<Nz::NodeComponent>(entity);
+			auto& entityPhys = view.get<Nz::RigidBody2DComponent>(entity);
 
 			const auto& inputs = inputComponent.GetInputs();
 			
@@ -74,6 +78,30 @@ namespace bw
 
 			if (playerMovement.UpdateFacingRightState(inputs.isLookingRight))
 				nodeComponent.Scale(-1.f, 1.f);
-		}*/
+		}
+	}
+	
+	void PlayerMovementSystem::OnMovementDestroy(entt::registry& registry, entt::entity entity)
+	{
+		auto it = m_inputControlledEntities.find(entity);
+		if (it == m_inputControlledEntities.end())
+			return;
+
+		auto& entityPhys = registry.get<Nz::RigidBody2DComponent>(entity);
+		entityPhys.ResetVelocityFunction();
+
+		m_inputControlledEntities.erase(it);
+	}
+	
+	void PlayerMovementSystem::OnInputDestroy(entt::registry& registry, entt::entity entity)
+	{
+		auto it = m_inputControlledEntities.find(entity);
+		if (it == m_inputControlledEntities.end())
+			return;
+
+		auto& entityPhys = registry.get<Nz::RigidBody2DComponent>(entity);
+		entityPhys.ResetVelocityFunction();
+
+		m_inputControlledEntities.erase(it);
 	}
 }

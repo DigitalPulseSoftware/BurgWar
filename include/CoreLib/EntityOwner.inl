@@ -31,4 +31,21 @@ namespace bw
 	{
 		return m_entity;
 	}
+
+	inline entt::handle* EntityOwner::operator->()
+	{
+		return &m_entity;
+	}
+
+	inline const entt::handle* EntityOwner::operator->() const
+	{
+		return &m_entity;
+	}
+
+	inline EntityOwner& EntityOwner::operator=(EntityOwner&& entityOwner) noexcept
+	{
+		m_entity = entityOwner.m_entity;
+
+		return *this;
+	}
 }

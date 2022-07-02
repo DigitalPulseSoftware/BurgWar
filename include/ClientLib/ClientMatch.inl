@@ -112,7 +112,7 @@ namespace bw
 		return &m_matchPlayers[playerIndex].value();
 	}
 
-	inline Ndk::World& ClientMatch::GetRenderWorld()
+	inline entt::registry& ClientMatch::GetRenderWorld()
 	{
 		return m_renderWorld;
 	}

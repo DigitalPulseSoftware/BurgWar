@@ -8,25 +8,23 @@
 #define BURGWAR_CORELIB_SYSTEMS_WEAPONSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/EntityList.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
 {
 	class SharedMatch;
 
-	class BURGWAR_CORELIB_API WeaponSystem : public Ndk::System<WeaponSystem>
+	class BURGWAR_CORELIB_API WeaponSystem
 	{
 		public:
-			WeaponSystem(SharedMatch& match);
+			inline WeaponSystem(entt::registry& registry, SharedMatch& match);
 			~WeaponSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
+			void Update(float elapsedTime);
 
 		private:
-			void OnUpdate(float elapsedTime) override;
-
+			entt::registry& m_registry;
 			SharedMatch& m_match;
 	};
 }

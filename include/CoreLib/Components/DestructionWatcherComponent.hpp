@@ -19,7 +19,11 @@ namespace bw
 		public:
 			using BaseComponent::BaseComponent;
 			DestructionWatcherComponent(const DestructionWatcherComponent&) = delete;
+			DestructionWatcherComponent(DestructionWatcherComponent&&) noexcept = default;
 			inline ~DestructionWatcherComponent();
+
+			DestructionWatcherComponent& operator=(const DestructionWatcherComponent&) = delete;
+			DestructionWatcherComponent& operator=(DestructionWatcherComponent&&) noexcept = default;
 
 			NazaraSignal(OnDestruction, DestructionWatcherComponent* /*emitter*/);
 	};

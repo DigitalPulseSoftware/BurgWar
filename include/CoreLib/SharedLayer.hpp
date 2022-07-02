@@ -9,6 +9,8 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
+#include <Nazara/Core/Systems/SystemGraph.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
 #include <entt/entt.hpp>
 
 namespace bw
@@ -27,6 +29,7 @@ namespace bw
 
 			inline LayerIndex GetLayerIndex() const;
 			inline SharedMatch& GetMatch();
+			inline Nz::Physics2DSystem& GetPhysicsSystem();
 			inline entt::registry& GetWorld();
 			inline const entt::registry& GetWorld() const;
 
@@ -35,9 +38,13 @@ namespace bw
 			SharedLayer& operator=(const SharedLayer&) = delete;
 			SharedLayer& operator=(SharedLayer&&) = delete;
 
+		protected:
+			inline Nz::SystemGraph& GetSystemGraph();
+
 		private:
 			SharedMatch& m_match;
 			entt::registry m_registry;
+			Nz::SystemGraph m_systemGraph;
 			LayerIndex m_layerIndex;
 	};
 }

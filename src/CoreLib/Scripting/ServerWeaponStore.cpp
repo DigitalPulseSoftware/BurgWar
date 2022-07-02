@@ -13,19 +13,18 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Utility/Image.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
-	entt::handle ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent)
+	entt::handle ServerWeaponStore::InstantiateWeapon(TerrainLayer& layer, std::size_t weaponIndex, EntityId uniqueId, const PropertyValueMap& properties, entt::handle parent)
 	{
 		const auto& weaponClass = GetElement(weaponIndex);
 
+		auto& networkSyncSystem = layer.GetNetworkSyncSystem();
+
 		entt::handle weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
-		weapon->AddComponent<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
-		weapon->AddComponent<NetworkSyncComponent>(weaponClass->fullName, parent);
+		weapon.emplace<MatchComponent>(layer.GetMatch(), layer.GetLayerIndex(), uniqueId);
+		weapon.emplace<NetworkSyncComponent>(networkSyncSystem, weaponClass->fullName, parent);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 

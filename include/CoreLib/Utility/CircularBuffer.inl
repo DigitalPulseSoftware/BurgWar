@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Utility/CircularBuffer.hpp>
-#include <Nazara/Core/MemoryHelper.hpp>
+#include <Nazara/Utils/MemoryHelper.hpp>
 #include <cassert>
 
 namespace bw
@@ -43,7 +43,7 @@ namespace bw
 	}
 
 	template<typename T>
-	template<typename ...Args>
+	template<typename... Args>
 	void CircularBuffer<T>::Enqueue(Args&&... args)
 	{
 		if (IsFull())

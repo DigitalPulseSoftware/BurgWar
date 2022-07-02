@@ -11,7 +11,7 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Nazara/Utils/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <stdexcept>
 
 namespace bw
@@ -58,35 +58,32 @@ namespace bw
 		weapon.animationStartFunction = elementTable.get_or("OnAnimationStart", sol::main_protected_function{});
 	}
 
-	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, entt::entity entity, entt::entity parent)
+	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, entt::handle entity, entt::handle parent)
 	{
-		entity->AddComponent<CooldownComponent>(weaponClass.cooldown);
+		entity.emplace<CooldownComponent>(weaponClass.cooldown);
 
-		entity->AddComponent<WeaponComponent>(parent, weaponClass.attackMode);
+		entity.emplace<WeaponComponent>(parent, weaponClass.attackMode);
 
-		auto& weaponNode = entity->AddComponent<Ndk::NodeComponent>();
+		auto& weaponNode = entity.emplace<Nz::NodeComponent>();
 		weaponNode.SetParent(parent);
 		weaponNode.SetInheritRotation(false);
 		weaponNode.SetInheritScale(false);
 
-		if (parent->HasComponent<WeaponWielderComponent>())
-		{
-			auto& wielderComponent = parent->GetComponent<WeaponWielderComponent>();
-			weaponNode.SetPosition(wielderComponent.GetWeaponOffset());
-		}
+		if (WeaponWielderComponent* parentWeaponWielder = parent.try_get<WeaponWielderComponent>())
+			weaponNode.SetPosition(parentWeaponWielder->GetWeaponOffset());
 		else
-			bwLog(GetLogger(), LogLevel::Warning, "Weapon owner (Entity #{0}) has not been initialized as a wielder", parent->GetId());
+			bwLog(GetLogger(), LogLevel::Warning, "Weapon owner (Entity #<TODO>) has not been initialized as a wielder");
 
 		if (weaponClass.animations)
 		{
-			auto& anim = entity->AddComponent<AnimationComponent>(weaponClass.animations);
+			auto& anim = entity.emplace<AnimationComponent>(entity, weaponClass.animations);
 
 			if (weaponClass.animationStartFunction)
 			{
 				anim.OnAnimationStart.Connect([this, callback = weaponClass.animationStartFunction](AnimationComponent* anim)
 				{
-					entt::entity entity = anim->GetEntity();
-					auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+					entt::handle entity = anim->GetHandle();
+					auto& scriptComponent = entity.get<ScriptComponent>();
 
 					auto co = scriptComponent.GetContext()->CreateCoroutine(callback);
 

@@ -20,7 +20,7 @@ namespace bw
 	{
 	}
 
-	inline void HealthComponent::Damage(Nz::UInt16 damage, entt::entity attacker)
+	inline void HealthComponent::Damage(Nz::UInt16 damage, entt::handle attacker)
 	{
 		OnDamage(this, damage, attacker);
 
@@ -62,7 +62,7 @@ namespace bw
 		return m_maxHealth;
 	}
 
-	inline void HealthComponent::Heal(Nz::UInt16 heal, entt::entity healer)
+	inline void HealthComponent::Heal(Nz::UInt16 heal, entt::handle healer)
 	{
 		Nz::UInt16 newHealth = m_currentHealth + heal;
 		if (newHealth < m_currentHealth)

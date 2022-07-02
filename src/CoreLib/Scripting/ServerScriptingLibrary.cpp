@@ -187,7 +187,7 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 
-			Ndk::EntityHandle lifeOwner;
+			entt::handle lifeOwner;
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
 				lifeOwner = AssertScriptEntity(*lifeOwnerEntitytable);
 
@@ -205,30 +205,25 @@ namespace bw
 				}
 			}
 
-			Ndk::EntityHandle parentEntity;
+			entt::handle parentEntity;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AssertScriptEntity(propertyTableOpt.value());
 
 			EntityId uniqueId = match.AllocateUniqueId();
 
-			entt::entity entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
+			entt::handle entity = entityStore.InstantiateEntity(match.GetLayer(layerIndex), elementIndex, uniqueId, position, rotation, entityProperties, parentEntity);
 			if (!entity)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
 			if (owner)
-				entity->AddComponent<OwnerComponent>(std::move(owner));
+				entity.emplace<OwnerComponent>(std::move(owner));
 
 			match.RegisterEntity(uniqueId, entity);
 
 			if (lifeOwner)
-			{
-				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
-					lifeOwner->AddComponent<EntityOwnerComponent>();
+				lifeOwner.get_or_emplace<EntityOwnerComponent>(lifeOwner).Register(entity);
 
-				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
-			}
-
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			auto& scriptComponent = entity.get<ScriptComponent>();
 			return scriptComponent.GetTable();
 		});
 
@@ -261,8 +256,8 @@ namespace bw
 				}
 			}
 
-			Ndk::EntityHandle owner = AssertScriptEntity(parameters["Owner"]);
-			auto& ownerMatchComponent = owner->GetComponent<MatchComponent>();
+			entt::handle owner = AssertScriptEntity(parameters["Owner"]);
+			auto& ownerMatchComponent = owner.get<MatchComponent>();
 
 			LayerIndex layerIndex = ownerMatchComponent.GetLayerIndex();
 			auto& layer = match.GetTerrain().GetLayer(layerIndex);
@@ -270,21 +265,21 @@ namespace bw
 			// Create weapon
 			EntityId uniqueId = match.AllocateUniqueId();
 
-			entt::entity weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
+			entt::handle weapon = weaponStore.InstantiateWeapon(layer, elementIndex, uniqueId, std::move(entityProperties), owner);
 			if (!weapon)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
-			weapon->GetComponent<WeaponComponent>().SetActive(true);
+			weapon.get<WeaponComponent>().SetActive(true);
 
 			match.RegisterEntity(uniqueId, weapon);
 
-			if (owner->HasComponent<OwnerComponent>())
+			if (OwnerComponent* ownerComponent = owner.try_get<OwnerComponent>())
 			{
-				if (Player* ownerPlayer = owner->GetComponent<OwnerComponent>().GetOwner())
-					weapon->AddComponent<OwnerComponent>(ownerPlayer->CreateHandle());
+				if (Player* ownerPlayer = ownerComponent->GetOwner())
+					weapon.emplace<OwnerComponent>(ownerPlayer->CreateHandle());
 			}
 
-			auto& scriptComponent = weapon->GetComponent<ScriptComponent>();
+			auto& scriptComponent = weapon.get<ScriptComponent>();
 			return scriptComponent.GetTable();
 		});
 
@@ -351,11 +346,11 @@ namespace bw
 			"new", sol::no_constructor,
 			"GetControlledEntity", LuaFunction([](const Player& player) -> sol::object
 			{
-				entt::entity controlledEntity = player.GetControlledEntity();
+				entt::handle controlledEntity = player.GetControlledEntity();
 				if (!controlledEntity)
 					return sol::nil;
 
-				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
+				auto& scriptComponent = controlledEntity.get<ScriptComponent>();
 				return scriptComponent.GetTable();
 			}),
 			"GetLayerIndex", LuaFunction(&Player::GetLayerIndex),
@@ -381,12 +376,12 @@ namespace bw
 			{
 				if (entityTable)
 				{
-					entt::entity entity = AssertScriptEntity(entityTable.value());
+					entt::handle entity = AssertScriptEntity(entityTable.value());
 
 					player.UpdateControlledEntity(entity);
 				}
 				else
-					player.UpdateControlledEntity(entt::null);
+					player.UpdateControlledEntity(entt::handle{});
 			}),
 			"UpdateLayerVisibility", LuaFunction(&Player::UpdateLayerVisibility)
 		);

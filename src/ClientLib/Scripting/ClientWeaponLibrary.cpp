@@ -11,7 +11,7 @@
 #include <NDK/World.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Components/VelocityComponent.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -30,8 +30,8 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			entt::entity entity = AssertScriptEntity(weaponTable);
-			Ndk::World* world = entity->GetWorld();
+			entt::handle entity = AssertScriptEntity(weaponTable);
+			entt::registry* world = entity->GetWorld();
 			assert(world);
 
 			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();

@@ -12,6 +12,7 @@
 #include <CoreLib/LayerIndex.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/ScriptingEnvironment.hpp>
+#include <CoreLib/Components/DestructionWatcherComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
@@ -65,7 +66,7 @@ namespace bw
 
 			std::string ToString() const;
 
-			void UpdateControlledEntity(entt::entity entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
+			void UpdateControlledEntity(entt::handle entity, bool sendPacket = true, bool ignoreLayerUpdate = false);
 			void UpdateLayerVisibility(LayerIndex layerIndex, bool isVisible);
 			inline void UpdateInputs(const PlayerInputData& inputData);
 			void UpdateName(std::string newName);
@@ -77,10 +78,10 @@ namespace bw
 			static constexpr std::size_t NoWeapon = WeaponWielderComponent::NoWeapon;
 
 		private:
-			void OnDeath(entt::entity attacker);
+			void OnDeath(entt::handle attacker);
 			void SetReady();
 
-			//NazaraSlot(Ndk::Entity, OnEntityDestruction, m_onPlayerEntityDestruction);
+			NazaraSlot(DestructionWatcherComponent, OnDestruction, m_onPlayerEntityDestruction);
 			NazaraSlot(HealthComponent, OnDie, m_onPlayerEntityDie);
 			NazaraSlot(WeaponWielderComponent, OnWeaponAdded, m_onWeaponAdded);
 			NazaraSlot(WeaponWielderComponent, OnWeaponRemove, m_onWeaponRemove);

@@ -38,7 +38,7 @@ namespace bw
 
 		private:
 			Map& m_map;
-			std::vector<TerrainLayer> m_layers; //< Shouldn't resize because of raw pointer in Player
+			std::vector<std::unique_ptr<TerrainLayer>> m_layers;
 	};
 }
 

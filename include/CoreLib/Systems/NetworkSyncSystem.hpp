@@ -15,9 +15,11 @@
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
+#include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 #include <optional>
@@ -32,12 +34,17 @@ namespace bw
 
 	class BURGWAR_CORELIB_API NetworkSyncSystem
 	{
+		friend class NetworkSyncComponent;
+
 		public:
+			static constexpr Nz::Int64 ExecutionOrder = 100;
+
 			struct EntityCreation;
 			struct EntityDestruction;
 			struct EntityMovement;
 
-			NetworkSyncSystem(TerrainLayer& layer);
+			NetworkSyncSystem(entt::registry& registry, TerrainLayer& layer);
+			NetworkSyncSystem(const NetworkSyncSystem&) = delete;
 			~NetworkSyncSystem() = default;
 
 			void CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const;
@@ -48,9 +55,13 @@ namespace bw
 			
 			void MoveEntities(const std::function<void(const EntityMovement* entityMovement, std::size_t entityCount)>& callback) const;
 
-			inline void NotifyPhysicsUpdate(entt::entity entity);
 			inline void NotifyMovementUpdate(entt::entity entity);
+			inline void NotifyPhysicsUpdate(entt::entity entity);
 			inline void NotifyScaleUpdate(entt::entity entity);
+
+			void Update(float elapsedTime);
+
+			NetworkSyncSystem& operator=(const NetworkSyncSystem&) = delete;
 
 			struct HealthProperties
 			{
@@ -74,49 +85,49 @@ namespace bw
 
 			struct EntityPlayAnimation
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				std::size_t animId;
 				Nz::UInt64 startTime;
 			};
 
 			struct EntityCreation
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				EntityId uniqueId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				float scale;
 				Player* playerOwner;
-				std::optional<entt::entity> parent;
-				std::optional<entt::entity> weapon;
+				std::optional<Nz::UInt32> parent;
+				std::optional<Nz::UInt32> weapon;
 				std::optional<HealthProperties> healthProperties;
 				std::optional<PlayerInputData> inputs;
 				std::optional<PlayerMovementData> playerMovement;
 				std::optional<PhysicsProperties> physicsProperties;
 				std::string entityClass;
 				tsl::hopscotch_map<std::string /*key*/, PropertyValue> properties;
-				std::vector<std::pair<LayerIndex, entt::entity>> dependentIds;
+				std::vector<std::pair<LayerIndex, Nz::UInt32>> dependentIds;
 			};
 
 			struct EntityDeath
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 			};
 
 			struct EntityDestruction
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 			};
 
 			struct EntityHealth
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				Nz::UInt16 currentHealth;
 			};
 
 			struct EntityInputs
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				PlayerInputData inputs;
 			};
 
@@ -129,7 +140,7 @@ namespace bw
 					float movementSpeed;
 				};
 
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				bool isAsleep;
 				float mass;
 				float momentOfInertia;
@@ -138,19 +149,19 @@ namespace bw
 
 			struct EntityScale
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				float newScale;
 			};
 
 			struct EntityWeapon
 			{
-				entt::entity entityId;
-				std::optional<entt::entity> weaponId;
+				Nz::UInt32 entityId;
+				std::optional<Nz::UInt32> weaponId;
 			};
 
 			struct EntityMovement
 			{
-				entt::entity entityId;
+				Nz::UInt32 entityId;
 				Nz::RadianAnglef rotation;
 				Nz::Vector2f position;
 				std::optional<PlayerMovementData> playerMovement;
@@ -169,14 +180,17 @@ namespace bw
 			NazaraSignal(OnEntitiesWeaponUpdate, NetworkSyncSystem* /*emitter*/, const EntityWeapon* /*events*/, std::size_t /*entityCount*/);
 
 		private:
+			Nz::UInt32 AllocateNetworkId();
+			
 			void BuildEvent(EntityCreation& creationEvent, entt::entity entity) const;
 			void BuildEvent(EntityDeath& deathEvent, entt::entity entity) const;
 			void BuildEvent(EntityDestruction& deleteEvent, entt::entity entity) const;
 			void BuildEvent(EntityMovement& movementEvent, entt::entity entity) const;
 
-			//void OnEntityAdded(entt::entity entity) override;
-			//void OnEntityRemoved(entt::entity entity) override;
-			//void OnUpdate(float elapsedTime) override;
+			void FreeNetworkId(Nz::UInt32 networkId);
+
+			void HandleNewEntity(entt::entity entity);
+			void OnComponentRemoved(entt::entity entity);
 
 			struct EntitySlots
 			{
@@ -188,8 +202,10 @@ namespace bw
 				NazaraSlot(WeaponWielderComponent, OnNewWeaponSelection, onNewWeaponSelection);
 			};
 
+			entt::observer m_observer;
+			entt::registry& m_registry;
+			Nz::Bitset<Nz::UInt64> m_freeNetworkIds;
 			tsl::hopscotch_map<entt::entity, EntitySlots> m_entitySlots;
-
 			tsl::hopscotch_set<entt::entity> m_inputUpdateEntities;
 			tsl::hopscotch_set<entt::entity> m_healthUpdateEntities;
 			tsl::hopscotch_set<entt::entity> m_movedStaticEntities;

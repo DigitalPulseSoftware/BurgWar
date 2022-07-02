@@ -7,12 +7,12 @@
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Camera& camera, Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment) :
+	PositionGizmo::PositionGizmo(Camera& camera, entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment) :
 	EditorGizmo(renderWorld, std::move(entities)),
 	m_camera(camera),
 	m_hoveredAction(MovementType::None),
@@ -168,7 +168,7 @@ namespace bw
 			Nz::Vector2f newPosition = ComputeNewPosition(mouseMoved.x, mouseMoved.y);
 
 			entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
-			auto& node = selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
+			auto& node = selectionOverlayentity.get<Nz::NodeComponent>();
 			node.SetPosition(newPosition);
 
 			const std::vector<LayerVisualEntityHandle>& targetEntities = GetTargetEntities();

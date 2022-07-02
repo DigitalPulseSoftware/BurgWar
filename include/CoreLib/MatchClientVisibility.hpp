@@ -15,7 +15,7 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Core/Flags.hpp>
+#include <Nazara/Utils/Flags.hpp>
 #include <Nazara/Utils/Signal.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
@@ -98,7 +98,7 @@ namespace bw
 			void BuildMovementPacket(Packets::MatchState::Entity& packetData, const NetworkSyncSystem::EntityMovement& eventData);
 			void FillEntityData(const NetworkSyncSystem::EntityCreation& creationEvent, Packets::Helper::EntityData& entityData);
 			void HandleEntityCreation(LayerIndex layerIndex, const NetworkSyncSystem::EntityCreation& eventData);
-			void HandleEntityRemove(LayerIndex layerIndex, entt::entity entityId, bool deathEvent);
+			void HandleEntityRemove(LayerIndex layerIndex, Nz::UInt32 networkId, bool deathEvent);
 			template<typename E> void PushLayerEntities(std::vector<E>& packetEntities, LayerIndex layerIndex, PendingCreationEventMap& pendingCreationMap);
 			void SendMatchState();
 
@@ -125,16 +125,16 @@ namespace bw
 				std::size_t visibilityCounter = 1;
 
 				PendingCreationEventMap creationEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityInputs> inputUpdateEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityHealth> healthUpdateEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityMovement> staticMovementUpdateEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPlayAnimation> playAnimationEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityPhysics> physicsEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityScale> scaleEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, NetworkSyncSystem::EntityWeapon> weaponEvents;
-				tsl::hopscotch_map<Nz::UInt32 /*entityId*/, VisibleEntityData> visibleEntities;
-				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> deathEvents;
-				tsl::hopscotch_set<Nz::UInt32 /*entityId*/> destructionEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityInputs> inputUpdateEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityHealth> healthUpdateEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityMovement> staticMovementUpdateEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityPlayAnimation> playAnimationEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityPhysics> physicsEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityScale> scaleEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, NetworkSyncSystem::EntityWeapon> weaponEvents;
+				tsl::hopscotch_map<Nz::UInt32 /*networkId*/, VisibleEntityData> visibleEntities;
+				tsl::hopscotch_set<Nz::UInt32 /*networkId*/> deathEvents;
+				tsl::hopscotch_set<Nz::UInt32 /*networkId*/> destructionEvents;
 
 				NazaraSlot(NetworkSyncSystem, OnEntityCreated,         onEntityCreatedSlot);
 				NazaraSlot(NetworkSyncSystem, OnEntityDeath,           onEntityDeath);
@@ -153,8 +153,8 @@ namespace bw
 			Nz::Bitset<Nz::UInt64> m_clientVisibleLayers;
 			Nz::Flags<VisibilityEventType> m_pendingEvents;
 			tsl::hopscotch_map<LayerIndex /*layerId*/, std::unique_ptr<Layer>> m_layers;
-			tsl::hopscotch_map<Nz::UInt64 /*layerId|entityId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;
-			tsl::hopscotch_set<Nz::UInt64 /*layerId|entityId*/> m_controlledEntities;
+			tsl::hopscotch_map<Nz::UInt64 /*layerId|networkId*/, std::vector<EntityPacketSendFunction>> m_pendingEntitiesEvent;
+			tsl::hopscotch_set<Nz::UInt64 /*layerId|networkId*/> m_controlledEntities;
 			std::vector<PendingLayerUpdate> m_pendingLayerUpdates;
 			std::vector<PendingMultipleEntities> m_multiplePendingEntitiesEvent;
 			std::vector<PriorityMovementData> m_priorityMovementData;

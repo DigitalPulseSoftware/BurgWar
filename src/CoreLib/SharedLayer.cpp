@@ -12,33 +12,36 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
-#include <NDK/Systems/LifetimeSystem.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
-#include <NDK/Systems/VelocitySystem.hpp>
+#include <Nazara/Core/Systems/LifetimeSystem.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
+#include <Nazara/Utility/Systems/VelocitySystem.hpp>
 #include <cassert>
 
 namespace bw
 {
 	SharedLayer::SharedLayer(SharedMatch& match, LayerIndex layerIndex) :
 	m_match(match),
+	m_systemGraph(m_registry),
 	m_layerIndex(layerIndex)
 	{
-		m_world.AddSystem<Ndk::LifetimeSystem>();
-		m_world.AddSystem<Ndk::PhysicsSystem2D>();
-		m_world.AddSystem<Ndk::VelocitySystem>();
+		m_systemGraph.AddSystem<Nz::LifetimeSystem>();
+		m_systemGraph.AddSystem<Nz::Physics2DSystem>();
+		m_systemGraph.AddSystem<Nz::VelocitySystem>();
 
-		m_world.AddSystem<AnimationSystem>(match);
-		m_world.AddSystem<InputSystem>();
-		m_world.AddSystem<PlayerMovementSystem>();
-		m_world.AddSystem<TickCallbackSystem>(match);
-		m_world.AddSystem<WeaponSystem>(match);
+		m_systemGraph.AddSystem<AnimationSystem>(match);
+		m_systemGraph.AddSystem<InputSystem>();
+		m_systemGraph.AddSystem<PlayerMovementSystem>();
+		m_systemGraph.AddSystem<TickCallbackSystem>(match);
+		m_systemGraph.AddSystem<WeaponSystem>(match);
 
-		Ndk::PhysicsSystem2D& physics = m_world.GetSystem<Ndk::PhysicsSystem2D>();
+		Nz::PhysWorld2D& physics = m_systemGraph.GetSystem<Nz::Physics2DSystem>().GetPhysWorld();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 192.f));
 		physics.SetMaxStepCount(1);
 		physics.SetSleepTime(0.f);
 		physics.SetStepSize(match.GetTickDuration());
 
+		// EnTT FIXME
+#if 0
 		Ndk::PhysicsSystem2D::Callback triggerCallbacks;
 		triggerCallbacks.startCallback = [](Ndk::PhysicsSystem2D& /*world*/, Nz::Arbiter2D& /*arbiter*/, entt::entity bodyA, entt::entity bodyB, void* /*userdata*/)
 		{
@@ -108,12 +111,13 @@ namespace bw
 			system.SetFixedUpdateRate(0.f);
 			system.SetMaximumUpdateRate(0.f);
 		});
+#endif
 	}
 
 	SharedLayer::~SharedLayer() = default;
 
 	void SharedLayer::TickUpdate(float elapsedTime)
 	{
-		m_world.Update(elapsedTime);
+		m_systemGraph.Update(elapsedTime);
 	}
 }

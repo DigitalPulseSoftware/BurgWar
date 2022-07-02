@@ -32,11 +32,6 @@ namespace bw
 		return *m_bridge;
 	}
 
-	inline std::size_t MatchClientSession::GetSessionId() const
-	{
-		return m_sessionId;
-	}
-
 	inline MatchClientVisibility& MatchClientSession::GetVisibility()
 	{
 		return *m_visibility;

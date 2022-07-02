@@ -8,6 +8,8 @@ package("nazaraengine")
     add_versions("2021.06.10", "4989fbe2d28aa37dc11d24bdcc395431932a2f11")
     add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
 
+    add_deps("nzsl")
+
     add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
     add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
     add_configs("network",       {description = "Includes the network module", default = true, type = "boolean"})

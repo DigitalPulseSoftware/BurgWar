@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_ANIMATIONSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
@@ -17,12 +18,13 @@ namespace bw
 	class BURGWAR_CORELIB_API AnimationSystem
 	{
 		public:
-			AnimationSystem(SharedMatch& match);
+			inline AnimationSystem(entt::registry& registry, SharedMatch& match);
 			~AnimationSystem() = default;
 
-		private:
-			void OnUpdate(float elapsedTime);
+			void Update(float elapsedTime);
 
+		private:
+			entt::registry& m_registry;
 			SharedMatch& m_match;
 	};
 }

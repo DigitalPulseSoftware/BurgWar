@@ -21,7 +21,7 @@
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Math/EulerAngles.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
@@ -45,7 +45,7 @@ namespace bw
 	{
 		elementMetatable["AddLayer"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			auto& clientMatch = entity->GetComponent<ClientMatchComponent>().GetClientMatch();
 
@@ -66,7 +66,7 @@ namespace bw
 
 		elementMetatable["AddTilemap"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -137,7 +137,7 @@ namespace bw
 
 		elementMetatable["ClearLayers"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			if (entity->HasComponent<VisibleLayerComponent>())
 				entity->GetComponent<VisibleLayerComponent>().Clear();

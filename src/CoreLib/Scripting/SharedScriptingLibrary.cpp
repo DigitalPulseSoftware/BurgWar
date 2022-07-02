@@ -2,6 +2,8 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#if 0
+
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/BasicPlayerMovementController.hpp>
 #include <CoreLib/CustomInputController.hpp>
@@ -158,11 +160,14 @@ namespace bw
 			"ReadEntity", LuaFunction([&](IncomingNetworkPacket& incomingPacket) -> sol::object
 			{
 				Nz::Int64 entityId = incomingPacket.ReadCompressedInteger();
-				entt::entity entity = m_match.RetrieveEntityByUniqueId(entityId);
-				if (entity && entity->HasComponent<ScriptComponent>())
-					return entity->GetComponent<ScriptComponent>().GetTable();
-				else
-					return sol::nil;
+				entt::handle entity = m_match.RetrieveEntityByUniqueId(entityId);
+				if (entity)
+				{
+					if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
+						return scriptComponent->GetTable();
+				}
+
+				return sol::nil;
 			})
 		);
 
@@ -180,7 +185,7 @@ namespace bw
 
 			"WriteEntity", LuaFunction([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
 			{
-				entt::entity entity = AssertScriptEntity(entityTable);
+				entt::handle entity = AssertScriptEntity(entityTable);
 				outgoingPacket.WriteCompressedInteger(m_match.RetrieveUniqueIdByEntity(entity));
 			})
 		);
@@ -239,13 +244,13 @@ namespace bw
 			sol::table result = state.create_table();
 
 			std::size_t index = 1;
-			auto entityFunc = [&](entt::entity entity)
+			auto entityFunc = [&](entt::handle entity)
 			{
-				if (!entity->HasComponent<ScriptComponent>())
+				ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+				if (!entityScript)
 					return;
 
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				result[index++] = entityScript.GetTable();
+				result[index++] = entityScript->GetTable();
 			};
 
 			if (layerIndexOpt)
@@ -268,14 +273,14 @@ namespace bw
 			sol::table result = state.create_table();
 
 			std::size_t index = 1;
-			auto entityFunc = [&](entt::entity entity)
+			auto entityFunc = [&](entt::handle entity)
 			{
-				if (!entity->HasComponent<ScriptComponent>())
+				ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+				if (!entityScript)
 					return;
 
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				if (entityScript.GetElement()->fullName == entityClass)
-					result[index++] = entityScript.GetTable();
+				if (entityScript->GetElement()->fullName == entityClass)
+					result[index++] = entityScript->GetTable();
 			};
 
 			if (layerIndexOpt)
@@ -344,56 +349,57 @@ namespace bw
 	{
 		library["CreateDampenedSpringConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
-			entt::entity firstEntity = AssertScriptEntity(firstEntityTable);
-			entt::entity secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			entt::entity constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::registry& registry = *firstEntity.registry();
+			entt::entity constraintEntity = registry.create();
+			auto& constraintComponent = registry.emplace<ConstraintComponent2D>(constraintEntity);
 
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		});
 
 		library["CreatePinConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			entt::entity firstEntity = AssertScriptEntity(firstEntityTable);
-			entt::entity secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			entt::entity constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreatePivotConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			entt::entity firstEntity = AssertScriptEntity(firstEntityTable);
-			entt::entity secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			entt::entity constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreateRotaryLimitConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
 		{
-			entt::entity firstEntity = AssertScriptEntity(firstEntityTable);
-			entt::entity secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			entt::entity constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		});
@@ -403,7 +409,7 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
@@ -435,7 +441,7 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
@@ -462,7 +468,7 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
@@ -517,3 +523,5 @@ namespace bw
 		});
 	}
 }
+
+#endif

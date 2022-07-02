@@ -21,7 +21,7 @@ namespace bw
 	class PositionGizmo : public EditorGizmo
 	{
 		public:
-			PositionGizmo(Camera& camera, Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment);
+			PositionGizmo(Camera& camera, entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment);
 			~PositionGizmo() = default;
 
 			bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) override;

@@ -25,8 +25,8 @@ namespace bw
 		friend LayerVisualEntity;
 
 		public:
-			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
-			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
+			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
+			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
 			VisualEntity(const VisualEntity&) = delete;
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();

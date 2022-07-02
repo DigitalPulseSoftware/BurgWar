@@ -10,7 +10,7 @@ namespace bw
 {
 	std::optional<PlayerInputData> PlayerInputController::GenerateInputs(entt::handle entity) const
 	{
-		PlayerControlledComponent* playerControlled = registry.try_get<PlayerControlledComponent>(entity);
+		PlayerControlledComponent* playerControlled = entity.try_get<PlayerControlledComponent>();
 		if (!playerControlled)
 			return std::nullopt;
 

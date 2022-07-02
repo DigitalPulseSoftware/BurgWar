@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline WeaponComponent::WeaponComponent(entt::entity owner, WeaponAttackMode attackMode) :
+	inline WeaponComponent::WeaponComponent(entt::handle owner, WeaponAttackMode attackMode) :
 	m_owner(owner),
 	m_attackMode(attackMode),
 	m_isActive(false),
@@ -19,7 +19,7 @@ namespace bw
 		return m_attackMode;
 	}
 
-	inline entt::entity WeaponComponent::GetOwner() const
+	inline entt::handle WeaponComponent::GetOwner() const
 	{
 		return m_owner;
 	}
@@ -46,7 +46,7 @@ namespace bw
 		m_isAttacking = isAttacking;
 	}
 
-	inline void WeaponComponent::UpdateOwner(entt::entity owner)
+	inline void WeaponComponent::UpdateOwner(entt::handle owner)
 	{
 		m_owner = owner;
 	}

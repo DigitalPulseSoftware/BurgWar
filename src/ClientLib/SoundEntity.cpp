@@ -5,12 +5,12 @@
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/ClientLayerSound.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	SoundEntity::SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerSoundHandle, float depth) :
+	SoundEntity::SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerSoundHandle, float depth) :
 	m_entity(renderWorld.CreateEntity()),
 	m_layerSound(std::move(layerSoundHandle)),
 	m_depth(depth)
@@ -21,10 +21,10 @@ namespace bw
 		m_layerSound->RegisterAudibleSound(this);
 	}
 	
-	SoundEntity::SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerSoundHandle, const Nz::Node& parentNode, float depth) :
+	SoundEntity::SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerSoundHandle, const Nz::Node& parentNode, float depth) :
 	SoundEntity(renderWorld, std::move(layerSoundHandle), depth)
 	{
-		m_entity->GetComponent<Ndk::NodeComponent>().SetParent(parentNode);
+		m_entity.get<Nz::NodeComponent>().SetParent(parentNode);
 	}
 
 	SoundEntity::SoundEntity(SoundEntity&& entity) noexcept :
@@ -47,7 +47,7 @@ namespace bw
 		if (soundIndex >= m_soundIds.size())
 			m_soundIds.resize(soundIndex + 1);
 
-		auto& nodeComponent = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = m_entity.get<Nz::NodeComponent>();
 		auto& soundEmitterComponent = m_entity->GetComponent<SoundEmitterComponent>();
 		m_soundIds[soundIndex] = soundEmitterComponent.PlaySound(soundBuffer, nodeComponent.GetPosition(), true, isLooping, isSpatialized);
 	}
@@ -62,7 +62,7 @@ namespace bw
 
 	void SoundEntity::Update(const Nz::Vector2f& position)
 	{
-		auto& visualNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& visualNode = m_entity.get<Nz::NodeComponent>();
 		visualNode.SetPosition(position);
 
 		// Make sure parenting doesn't change our depth

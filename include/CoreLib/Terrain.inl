@@ -10,13 +10,13 @@ namespace bw
 	inline TerrainLayer& Terrain::GetLayer(LayerIndex layerIndex)
 	{
 		assert(layerIndex < m_layers.size());
-		return m_layers[layerIndex];
+		return *m_layers[layerIndex];
 	}
 
 	inline const TerrainLayer& Terrain::GetLayer(LayerIndex layerIndex) const
 	{
 		assert(layerIndex < m_layers.size());
-		return m_layers[layerIndex];
+		return *m_layers[layerIndex];
 	}
 
 	inline LayerIndex Terrain::GetLayerCount() const

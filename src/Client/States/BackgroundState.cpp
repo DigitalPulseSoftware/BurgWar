@@ -6,7 +6,7 @@
 #include <Nazara/Core/Directory.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 #include <NDK/Entity.hpp>
 #include <random>
@@ -67,7 +67,7 @@ namespace bw
 
 			m_backgroundSprite->SetSize(newSize);
 
-			m_spriteEntity->GetComponent<Ndk::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
+			m_spriteentity.get<Nz::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
 		}
 	}
 }

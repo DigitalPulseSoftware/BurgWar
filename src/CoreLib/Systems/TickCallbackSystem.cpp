@@ -6,36 +6,44 @@
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <cassert>
 
 namespace bw
 {
-	TickCallbackSystem::TickCallbackSystem(SharedMatch& match) :
+	TickCallbackSystem::TickCallbackSystem(entt::registry& registry, SharedMatch& match) :
+	m_registry(registry),
+	m_scriptObserver(registry, entt::collector.update<ScriptComponent>()),
 	m_match(match)
 	{
-		Requires<ScriptComponent>();
-		SetMaximumUpdateRate(0);
+		m_scriptDestroyConnection = m_registry.on_destroy<ScriptComponent>().connect<&TickCallbackSystem::OnScriptDestroy>(this);
 	}
 
-	void TickCallbackSystem::OnEntityRemoved(Ndk::Entity* entity)
+	TickCallbackSystem::~TickCallbackSystem()
 	{
-		m_tickableEntities.Remove(entity);
+		m_scriptDestroyConnection.release();
 	}
 
-	void TickCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
+	void TickCallbackSystem::OnScriptDestroy(entt::registry& registry, entt::entity entity)
 	{
-		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+		assert(&m_registry == &registry);
 
-		if (scriptComponent.HasCallbacks(ElementEvent::Tick))
-			m_tickableEntities.Insert(entity);
-		else
-			m_tickableEntities.Remove(entity);
+		m_tickableEntities.erase(entity);
 	}
 
-	void TickCallbackSystem::OnUpdate(float elapsedTime)
+	void TickCallbackSystem::Update(float elapsedTime)
 	{
+		for (entt::entity entity : m_scriptObserver)
+		{
+			auto& scriptComponent = m_registry.get<ScriptComponent>(entity);
+			if (scriptComponent.HasCallbacks(ElementEvent::Tick))
+				m_tickableEntities.emplace(entity);
+			else
+				m_tickableEntities.erase(entity);
+		}
+
 		for (entt::entity entity : m_tickableEntities)
 		{
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			auto& scriptComponent = m_registry.get<ScriptComponent>(entity);
 			if (!scriptComponent.CanTriggerTick(elapsedTime)) //<FIXME: Due to reconciliation, this is not right
 				continue;
 
@@ -56,6 +64,4 @@ namespace bw
 			}*/
 		}
 	}
-
-	Ndk::SystemIndex TickCallbackSystem::systemIndex;
 }

@@ -19,7 +19,7 @@ namespace bw
 	entt::handle AssertScriptEntity(const sol::table& entityTable)
 	{
 		entt::handle entity = RetrieveScriptEntity(entityTable);
-		if (entity == entt::null)
+		if (!entity)
 			TriggerLuaError(entityTable.lua_state(), "invalid entity");
 
 		return entity;
@@ -38,7 +38,7 @@ namespace bw
 	{
 		sol::object entityObject = entityTable["_Entity"];
 		if (!entityObject)
-			return entt::null;
+			return {};
 
 		return entityObject.as<entt::handle>();
 	}

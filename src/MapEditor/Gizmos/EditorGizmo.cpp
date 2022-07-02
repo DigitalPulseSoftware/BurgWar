@@ -8,11 +8,11 @@
 #include <Nazara/Utility/StaticMesh.hpp>
 #include <Nazara/Utility/VertexBuffer.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	EditorGizmo::EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
+	EditorGizmo::EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
 	m_targetEntities(std::move(entities))
 	{
 		m_selectionOverlayEntity = renderWorld.CreateEntity();
@@ -46,7 +46,7 @@ namespace bw
 
 		Nz::Vector3f origin = globalAABB.GetCenter();
 
-		auto& node = m_selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
+		auto& node = m_selectionOverlayentity.get<Nz::NodeComponent>();
 		node.SetPosition(origin);
 
 		auto& gfx = m_selectionOverlayEntity->GetComponent<Ndk::GraphicsComponent>();

@@ -17,7 +17,7 @@ namespace bw
 	class EditorGizmo
 	{
 		public:
-			EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities);
+			EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities);
 			virtual ~EditorGizmo();
 
 			inline entt::entity GetSelectionOverlayEntity() const;

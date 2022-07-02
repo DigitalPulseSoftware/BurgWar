@@ -60,7 +60,7 @@ namespace bw
 		m_mainWindow->EnableVerticalSync(vsync);
 		m_mainWindow->SetFramerateLimit(fpsLimit);
 
-		Ndk::World& world = AddWorld();
+		entt::registry& world = AddWorld();
 
 		Ndk::RenderSystem& renderSystem = world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetDefaultBackground(nullptr);

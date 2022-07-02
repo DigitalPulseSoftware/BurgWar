@@ -68,38 +68,23 @@ namespace bw
 	}
 
 	template<typename Element>
-	inline void ScriptStore<Element>::UpdateEntityElement(entt::entity entity)
-	{
-		assert(entity->HasComponent<ScriptComponent>());
-
-		auto& entityScript = entity->GetComponent<ScriptComponent>();
-		const auto& entityElement = entityScript.GetElement();
-
-		if (auto it = m_elementsByName.find(entityElement->fullName); it != m_elementsByName.end())
-		{
-			const auto& newElement = m_elements[it->second];
-
-			sol::table& entityTable = entityScript.GetTable();
-			entityTable[sol::metatable_key] = newElement->elementTable;
-
-			entityScript.UpdateElement(newElement);
-		}
-	}
-
-	template<typename Element>
 	void ScriptStore<Element>::LoadDirectory(const std::filesystem::path& directoryPath)
 	{
 		const auto& scriptDir = m_context->GetScriptDirectory();
 
-		VirtualDirectory::Entry entry;
-		if (scriptDir->GetEntry(directoryPath.generic_u8string(), &entry) && std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry))
+		auto callback = [&](const Nz::VirtualDirectory::Entry& entry)
 		{
-			VirtualDirectory::DirectoryEntry& directory = std::get<VirtualDirectory::DirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const Nz::VirtualDirectory::Entry& entry)
+			if (std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry))
 			{
-				LoadElement(std::holds_alternative<VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
-			});
-		}
+				const Nz::VirtualDirectory::DirectoryEntry& directoryEntry = std::get<Nz::VirtualDirectory::DirectoryEntry>(entry);
+				directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
+				{
+					LoadElement(std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
+				});
+			}
+		};
+
+		scriptDir->GetEntry(directoryPath.generic_u8string(), callback);
 	}
 
 	template<typename Element>
@@ -251,6 +236,23 @@ namespace bw
 	}
 
 	template<typename Element>
+	void ScriptStore<Element>::UpdateEntityElement(entt::handle entity)
+	{
+		auto& entityScript = entity.get<ScriptComponent>();
+		const auto& entityElement = entityScript.GetElement();
+
+		if (auto it = m_elementsByName.find(entityElement->fullName); it != m_elementsByName.end())
+		{
+			const auto& newElement = m_elements[it->second];
+
+			sol::table& entityTable = entityScript.GetTable();
+			entityTable[sol::metatable_key] = newElement->elementTable;
+
+			entityScript.UpdateElement(newElement);
+		}
+	}
+
+	template<typename Element>
 	std::shared_ptr<Element> ScriptStore<Element>::CreateElement() const
 	{
 		return std::make_shared<Element>();
@@ -312,7 +314,7 @@ namespace bw
 		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 
-		registry.emplace<ScriptComponent>(m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
+		registry.emplace<ScriptComponent>(entity, m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
 
 		return entity;
 	}
@@ -526,9 +528,9 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, entt::entity entity) const
+	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, entt::handle entity) const
 	{
-		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		auto& entityScript = entity.get<ScriptComponent>();
 		if (!entityScript.ExecuteCallback<ElementEvent::Init>())
 		{
 			//TODO: Retrieve error message

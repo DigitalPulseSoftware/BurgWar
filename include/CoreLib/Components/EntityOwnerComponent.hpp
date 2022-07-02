@@ -18,9 +18,13 @@ namespace bw
 		public:
 			using BaseComponent::BaseComponent;
 			EntityOwnerComponent(const EntityOwnerComponent&) = delete;
+			EntityOwnerComponent(EntityOwnerComponent&&) noexcept = default;
 			~EntityOwnerComponent() = default;
 
-			inline void Register(entt::entity entity);
+			inline void Register(entt::handle entity);
+
+			EntityOwnerComponent& operator=(const EntityOwnerComponent&) = delete;
+			EntityOwnerComponent& operator=(EntityOwnerComponent&&) noexcept = default;
 
 		private:
 			std::vector<EntityOwner> m_ownedEntities;

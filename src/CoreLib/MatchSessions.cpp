@@ -10,17 +10,15 @@
 namespace bw
 {
 	MatchSessions::MatchSessions(Match& match) :
-	m_nextSessionId(0),
 	m_match(match),
 	m_commandStore(m_match.GetLogger()),
-	m_sessionPool(sizeof(MatchClientSession))
+	m_sessionPool(1024)
 	{
 	}
 
 	void MatchSessions::Clear()
 	{
 		m_sessionPool.Clear();
-		m_sessionIdToSession.clear();
 	}
 
 	void MatchSessions::Poll()
@@ -31,23 +29,19 @@ namespace bw
 
 	MatchClientSession* MatchSessions::CreateSession(std::shared_ptr<SessionBridge> bridge)
 	{
-		std::size_t sessionId = m_nextSessionId++;
-		MatchClientSession* session = m_sessionPool.Allocate(m_match, sessionId, m_commandStore, std::move(bridge));
+		std::size_t allocationIndex;
+		MatchClientSession* session = m_sessionPool.Allocate(allocationIndex, m_match, m_commandStore, std::move(bridge));
 
-		m_sessionIdToSession.insert_or_assign(sessionId, session);
-
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Created session #{0}", sessionId);
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Created session #{0}", allocationIndex);
 
 		return session;
 	}
 
 	void MatchSessions::DeleteSession(MatchClientSession* session)
 	{
-		std::size_t sessionId = session->GetSessionId();
-		m_sessionIdToSession.erase(sessionId);
+		std::size_t allocationIndex = m_sessionPool.RetrieveEntryIndex(session);
+		m_sessionPool.Free(allocationIndex);
 
-		m_sessionPool.Delete(session);
-
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Deleted session #{0}", sessionId);
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Deleted session #{0}", allocationIndex);
 	}
 }

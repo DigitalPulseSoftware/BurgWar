@@ -31,7 +31,7 @@ namespace bw
 
 		elementMetatable["AddLayer"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			MapCanvas& mapCanvas = *m_editorWindow.GetMapCanvas();
 

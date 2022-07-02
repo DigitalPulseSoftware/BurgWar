@@ -22,10 +22,9 @@ namespace bw
 	{
 		if (InputComponent* entityInputs = entity.try_get<InputComponent>())
 		{
-			entityInputs->OnInputUpdate.Connect([](InputComponent* input)
+			entityInputs->OnInputUpdate.Connect([entity](InputComponent* input)
 			{
-				entt::entity entity = input->GetEntity();
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
+				auto& entityScript = entity.get<ScriptComponent>();
 
 				entityScript.ExecuteCallback<ElementEvent::InputUpdate>(input->GetInputs());
 			});
@@ -36,13 +35,12 @@ namespace bw
 	{
 	}
 
-	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, entt::entity entity) const
+	bool SharedEntityStore::InitializeEntity(const ScriptedEntity& entityClass, entt::handle entity) const
 	{
 		if (!ScriptStore::InitializeEntity(entityClass, entity))
 			return false;
 
 		BindCallbacks(entityClass, entity);
-
 		return true;
 	}
 }

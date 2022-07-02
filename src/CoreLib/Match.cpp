@@ -323,11 +323,13 @@ namespace bw
 
 		Entity& entityData = m_entitiesByUniqueId.emplace(uniqueId, Entity{}).first.value();
 		entityData.entity = entity;
-		entityData.onDestruction.Connect(entity.get<DestructionWatcherComponent>().OnDestruction, [this, entity, uniqueId]()
+		entityData.onDestruction.Connect(entity.get<DestructionWatcherComponent>().OnDestruction, [this, uniqueId](DestructionWatcherComponent* watcher)
 		{
 			// Don't trigger the Destroyed event when resetting map
 			if (!m_isResetting)
 			{
+				entt::handle entity = watcher->GetHandle();
+
 				auto& entityScript = entity.get<ScriptComponent>();
 				entityScript.ExecuteCallback<ElementEvent::Destroyed>();
 			}
@@ -619,7 +621,7 @@ namespace bw
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
-			return entt::null;
+			return {};
 
 		return it.value().entity;
 	}
@@ -683,7 +685,7 @@ namespace bw
 					entityCount++;
 
 					CompressedUnsigned<Nz::UInt16> layerId(i);
-					CompressedUnsigned<Nz::UInt32> entityId(entity->GetId()); //< TODO
+					CompressedUnsigned<Nz::UInt32> entityId(entitySync->GetNetworkId());
 					debugPacket << layerId;
 					debugPacket << entityId;
 
@@ -830,9 +832,9 @@ namespace bw
 	{
 		float elapsedTime = GetTickDuration();
 
-		m_sessions.ForEachSession([&](MatchClientSession* session)
+		m_sessions.ForEachSession([&](MatchClientSession& session)
 		{
-			session->OnTick(elapsedTime);
+			session.OnTick(elapsedTime);
 		});
 
 		ForEachPlayer([&](Player* player)
@@ -844,9 +846,9 @@ namespace bw
 
 		m_terrain->Update(elapsedTime);
 
-		m_sessions.ForEachSession([&](MatchClientSession* session)
+		m_sessions.ForEachSession([&](MatchClientSession& session)
 		{
-			session->Update(elapsedTime);
+			session.Update(elapsedTime);
 		});
 	}
 

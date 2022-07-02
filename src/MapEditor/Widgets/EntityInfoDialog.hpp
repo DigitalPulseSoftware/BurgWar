@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
-#include <Nazara/Core/Flags.hpp>
+#include <Nazara/Utils/Flags.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Map.hpp>

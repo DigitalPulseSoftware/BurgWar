@@ -6,7 +6,7 @@
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <Nazara/Math/Algorithm.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cmath>
 
@@ -19,7 +19,7 @@ namespace bw
 
 	void VisualInterpolationSystem::OnEntityAdded(Ndk::Entity* entity)
 	{
-		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = entity.get<Nz::NodeComponent>();
 		auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
 
 		entityLerp.UpdateLastStates(Nz::Vector2f(entityNode.GetPosition()), AngleFromQuaternion(entityNode.GetRotation()));
@@ -33,7 +33,7 @@ namespace bw
 		for (entt::entity entity : GetEntities())
 		{
 			auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = entity.get<Nz::NodeComponent>();
 			auto& entityPhysics = entity->GetComponent<Ndk::PhysicsComponent2D>();
 
 			// x = x + (target-x) * (1-Exp(-deltaTime*C))

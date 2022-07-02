@@ -23,8 +23,8 @@ namespace bw
 		friend ClientLayerSound;
 
 		public:
-			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, float depth = 0.f);
-			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
+			SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerEntityHandle, float depth = 0.f);
+			SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
 			SoundEntity(const SoundEntity&) = delete;
 			SoundEntity(SoundEntity&& entity) noexcept;
 			~SoundEntity();

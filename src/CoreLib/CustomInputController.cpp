@@ -18,7 +18,7 @@ namespace bw
 		sol::protected_function_result result = m_callback(*entityTable);
 		if (!result.valid())
 		{
-			auto& entityScript = registry.get<ScriptComponent>(entity);
+			auto& entityScript = entity.get<ScriptComponent>();
 
 			sol::error err = result;
 			bwLog(entityScript.GetLogger(), LogLevel::Error, "CustomInputController failed: {}", err.what());
@@ -28,7 +28,7 @@ namespace bw
 		auto inputsOpt = result.get<std::optional<PlayerInputData>>();
 		if (!inputsOpt)
 		{
-			auto& entityScript = registry.get<ScriptComponent>(entity);
+			auto& entityScript = entity.get<ScriptComponent>();
 			bwLog(entityScript.GetLogger(), LogLevel::Error, "CustomInputController must return players inputs");
 
 			return PlayerInputData{};

@@ -16,7 +16,7 @@
 #include <ClientLib/Scripting/Text.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol/sol.hpp>
@@ -34,7 +34,7 @@ namespace bw
 	{
 		elementTable["AddModel"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			std::string modelPath = parameters["ModelPath"];
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -58,8 +58,8 @@ namespace bw
 			if (Nz::NumberEquals(pushbackForce, 0.f))
 				return;
 
-			entt::entity entity = AssertScriptEntity(entityTable);
-			Ndk::World* world = entity->GetWorld();
+			entt::handle entity = AssertScriptEntity(entityTable);
+			entt::registry* world = entity->GetWorld();
 			assert(world);
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
@@ -81,7 +81,7 @@ namespace bw
 		
 		elementTable["AddSprite"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			std::string texturePath = parameters.get_or("TexturePath", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -166,7 +166,7 @@ namespace bw
 
 		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			std::string fontName = parameters.get_or("Font", std::string{});
 			int renderOrder = parameters.get_or("RenderOrder", 0);
@@ -226,14 +226,14 @@ namespace bw
 
 		elementTable["GetGlobalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 			auto& visualComponent = entity->GetComponent<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
 			if (!layerVisualHandle)
 			{
 				// Fallback on position
-				auto& nodeComponent = entity->GetComponent<Ndk::NodeComponent>();
+				auto& nodeComponent = entity.get<Nz::NodeComponent>();
 				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys::Global));
 				return Nz::Rectf(position.x, position.y, 0.f, 0.f);
 			}
@@ -244,14 +244,14 @@ namespace bw
 
 		elementTable["GetLayerIndex"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			return entity->GetComponent<ClientMatchComponent>().GetLayerIndex();
 		});
 		
 		elementTable["GetLocalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 			auto& visualComponent = entity->GetComponent<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
@@ -264,7 +264,7 @@ namespace bw
 		
 		elementTable["GetOwner"] = LuaFunction([](sol::this_state s, const sol::table& table) -> sol::object
 		{
-			entt::entity entity = AssertScriptEntity(table);
+			entt::handle entity = AssertScriptEntity(table);
 
 			if (!entity->HasComponent<ClientOwnerComponent>())
 				return sol::nil;
@@ -274,7 +274,7 @@ namespace bw
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
-			entt::entity entity = AssertScriptEntity(table);
+			entt::handle entity = AssertScriptEntity(table);
 
 			auto& entityScript = entity->GetComponent<ScriptComponent>();
 
@@ -298,14 +298,14 @@ namespace bw
 
 		elementTable["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
-			entt::entity entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<ClientMatchComponent>();
 
 			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
 				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
 
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = entity.get<Nz::NodeComponent>();
 
 			auto& layer = entityMatch.GetLayer();
 

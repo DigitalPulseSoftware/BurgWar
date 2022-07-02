@@ -11,7 +11,7 @@
 
 namespace bw
 {
-	std::optional<LayerVisualEntity> EditorEntityStore::Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parent) const
+	std::optional<LayerVisualEntity> EditorEntityStore::Instantiate(LayerIndex layerIndex, entt::registry& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parent) const
 	{
 		entt::entity entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
 		if (!entity)

@@ -13,13 +13,13 @@ namespace bw
 		if (HasWeapon(weaponClass))
 			return NoWeapon;
 
-		entt::entity weapon = callback(weaponClass);
-		if (weapon == entt::null)
+		entt::handle weapon = callback(weaponClass);
+		if (!weapon)
 			return NoWeapon;
 
 		//FIXME: New weapons should be resized to match the player size
 
-		assert(GetRegistry().try_get<WeaponComponent>(weapon));
+		assert(weapon.try_get<WeaponComponent>());
 
 		std::size_t weaponIndex = m_weapons.size();
 		m_weapons.emplace_back(weapon);
@@ -65,15 +65,15 @@ namespace bw
 		assert(weaponId < m_weapons.size() || weaponId == NoWeapon);
 		if (m_activeWeaponIndex != weaponId)
 		{
-			auto& registry = GetRegistry();
+			entt::registry* registry = GetRegistry();
 
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				entt::entity previousWeapon = m_weapons[m_activeWeaponIndex];
-				auto& weaponComponent = registry.get<WeaponComponent>(previousWeapon);
+				entt::handle previousWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = registry->get<WeaponComponent>(previousWeapon);
 				weaponComponent.SetActive(false);
 
-				if (ScriptComponent* scriptComponent = registry.try_get<ScriptComponent>(previousWeapon))
+				if (ScriptComponent* scriptComponent = registry->try_get<ScriptComponent>(previousWeapon))
 					scriptComponent->ExecuteCallback<ElementEvent::SwitchOff>();
 			}
 
@@ -82,11 +82,11 @@ namespace bw
 
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				entt::entity newWeapon = m_weapons[m_activeWeaponIndex];
-				auto& weaponComponent = registry.get<WeaponComponent>(newWeapon);
+				entt::handle newWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = registry->get<WeaponComponent>(newWeapon);
 				weaponComponent.SetActive(true);
 
-				if (ScriptComponent* scriptComponent = registry.try_get<ScriptComponent>(newWeapon))
+				if (ScriptComponent* scriptComponent = registry->try_get<ScriptComponent>(newWeapon))
 					scriptComponent->ExecuteCallback<ElementEvent::SwitchOn>();
 			}
 		}

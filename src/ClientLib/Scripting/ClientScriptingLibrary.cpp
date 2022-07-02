@@ -249,7 +249,7 @@ namespace bw
 			if (!layout)
 				TriggerLuaArgError(L, 2, "Invalid particle type \"" + particleType + "\"");
 
-			Ndk::World& world = match.GetRenderWorld();
+			entt::registry& world = match.GetRenderWorld();
 			entt::entity particleGroupEntity = world.CreateEntity();
 			auto& particleGroup = particleGroupEntity->AddComponent<Ndk::ParticleGroupComponent>(maxParticleCount, layout);
 

@@ -10,7 +10,7 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMessageBox>
 
@@ -255,7 +255,7 @@ namespace bw
 		{
 			m_tileSelectionEntity->Enable();
 
-			auto& node = m_tileSelectionEntity->GetComponent<Ndk::NodeComponent>();
+			auto& node = m_tileSelectionentity.get<Nz::NodeComponent>();
 			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tilemapData.tileSize + m_tilemapData.origin);
 
 			std::size_t selectionWidth = std::min<std::size_t>(m_tilemapData.mapSize.x - tilePosition->x, m_selection.width);

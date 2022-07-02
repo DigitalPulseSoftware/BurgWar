@@ -24,7 +24,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public Ndk::Component<VisibleLayerComponent>
 	{
 		public:
-			inline VisibleLayerComponent(Ndk::World& renderWorld);
+			inline VisibleLayerComponent(entt::registry& renderWorld);
 			~VisibleLayerComponent() = default;
 
 			void Clear();
@@ -68,7 +68,7 @@ namespace bw
 
 			//FIXME (shared_ptr => unique_ptr)
 			std::vector<std::shared_ptr<VisibleLayer>> m_visibleLayers;
-			Ndk::World& m_renderWorld;
+			entt::registry& m_renderWorld;
 	};
 }
 

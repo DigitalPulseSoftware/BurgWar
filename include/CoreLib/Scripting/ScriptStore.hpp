@@ -7,12 +7,12 @@
 #ifndef BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTSTORE_HPP
 
-#include <CoreLib/entt::handle.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
 #include <memory>
@@ -47,7 +47,7 @@ namespace bw
 
 			void Resolve();
 			
-			void UpdateEntityElement(entt::entity entity);
+			void UpdateEntityElement(entt::handle entity);
 
 			static constexpr std::size_t InvalidIndex = std::numeric_limits<std::size_t>::max();
 
@@ -56,7 +56,7 @@ namespace bw
 			entt::handle CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const;
 			virtual void InitializeElementTable(sol::main_table& elementTable);
 			virtual void InitializeElement(sol::main_table& elementTable, Element& element) = 0;
-			bool InitializeEntity(const Element& entityClass, entt::entity entity) const;
+			bool InitializeEntity(const Element& entityClass, entt::handle entity) const;
 
 			sol::state& GetLuaState();
 			const std::shared_ptr<ScriptingContext>& GetScriptingContext() const;

@@ -5,11 +5,11 @@
 #include <ClientLib/Camera.hpp>
 #include <NDK/World.hpp>
 #include <NDK/Components/CameraComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	Camera::Camera(Ndk::World& world, Nz::RenderTarget* renderTarget, bool perspective) :
+	Camera::Camera(entt::registry& world, Nz::RenderTarget* renderTarget, bool perspective) :
 	m_isPerspective(!perspective), // To enable it after
 	m_zoomFactor(1.f)
 	{
@@ -49,7 +49,7 @@ namespace bw
 
 	Nz::Vector2f Camera::GetPosition() const
 	{
-		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_cameraentity.get<Nz::NodeComponent>();
 		return Nz::Vector2f(entityNode.GetPosition());
 	}
 
@@ -73,7 +73,7 @@ namespace bw
 
 	void Camera::MoveBy(const Nz::Vector2f& offset)
 	{
-		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_cameraentity.get<Nz::NodeComponent>();
 		MoveToPosition(Nz::Vector2f(entityNode.GetPosition()) + offset);
 	}
 
@@ -86,7 +86,7 @@ namespace bw
 
 		OnCameraMove(this, position);
 
-		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_cameraentity.get<Nz::NodeComponent>();
 		entityNode.SetPosition(position);
 	}
 
@@ -147,7 +147,7 @@ namespace bw
 	void Camera::UpdateZoomFactor()
 	{
 		auto& entityCamera = m_cameraEntity->GetComponent<Ndk::CameraComponent>();
-		auto& entityNode = m_cameraEntity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_cameraentity.get<Nz::NodeComponent>();
 
 		Nz::Vector2f viewportSize = Nz::Vector2f(entityCamera.GetTarget()->GetSize()) / m_zoomFactor;
 		//viewportSize.x = std::round(viewportSize.x);

@@ -10,16 +10,17 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/InputController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
+#include <CoreLib/Components/BaseComponent.hpp>
 #include <Nazara/Utils/Signal.hpp>
 #include <array>
 #include <memory>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API InputComponent
+	class BURGWAR_CORELIB_API InputComponent : public BaseComponent
 	{
 		public:
-			inline InputComponent(std::shared_ptr<InputController> inputController);
+			inline InputComponent(entt::handle handle, std::shared_ptr<InputController> inputController);
 
 			inline const std::shared_ptr<InputController>& GetController() const;
 			inline const PlayerInputData& GetInputs() const;
