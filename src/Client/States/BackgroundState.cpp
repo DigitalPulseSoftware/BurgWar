@@ -20,7 +20,7 @@ namespace bw
 		StateData& stateData = GetStateData();
 		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(131, 180, 205)));
 
-		if (Nz::TextureRef backgroundTexture = Nz::TextureLibrary::Get("MenuBackground"))
+		if (std::shared_ptr<Nz::Texture> backgroundTexture = Nz::TextureLibrary::Get("MenuBackground"))
 		{
 			m_backgroundSprite = Nz::Sprite::New();
 			m_backgroundSprite->SetTexture(backgroundTexture);

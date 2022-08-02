@@ -10,7 +10,7 @@
 #include <ClientLib/ClientSession.hpp>
 #include <Client/States/Game/CancelableState.hpp>
 #include <Nazara/Network/IpAddress.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 #include <tl/expected.hpp>
 #include <optional>
 #include <thread>

@@ -162,6 +162,8 @@ namespace bw
 
 	void SharedEntityLibrary::InitRigidBody(lua_State* /*L*/, entt::handle entity, float mass)
 	{
+		entity.remove<Nz::RigidBody2DComponent>();
+
 		auto& entityMatch = entity.get<MatchComponent>();
 		auto& physics = entityMatch.GetMatch().GetLayer(entityMatch.GetLayerIndex()).GetPhysicsSystem();
 
@@ -531,7 +533,10 @@ namespace bw
 
 			Nz::RigidBody2DComponent* physComponent = entity.try_get<Nz::RigidBody2DComponent>();
 			if (!physComponent)
+			{
 				InitRigidBody(L, entity, 0.f);
+				physComponent = &entity.get<Nz::RigidBody2DComponent>();
+			}
 
 			physComponent->SetGeom(std::move(collider));
 		});

@@ -12,7 +12,7 @@
 #include <Client/States/AbstractState.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 #include <optional>
 #include <variant>
 

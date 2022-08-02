@@ -14,7 +14,7 @@ namespace bw
 	class EntityOwner
 	{
 		public:
-			inline EntityOwner(entt::handle entity);
+			inline EntityOwner(entt::handle entity = entt::handle{});
 			EntityOwner(const EntityOwner&) = delete;
 			inline EntityOwner(EntityOwner&& entityOwner) noexcept;
 			inline ~EntityOwner();

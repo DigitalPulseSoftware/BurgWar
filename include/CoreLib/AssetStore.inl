@@ -54,7 +54,7 @@ namespace bw
 					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.filePath.generic_u8string());
 					return (resource = ResourceType::LoadFromFile(arg.filePath.generic_u8string(), params)) != nullptr;
 				}
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
 					return false;
 				}

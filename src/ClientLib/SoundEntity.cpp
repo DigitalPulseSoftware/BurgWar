@@ -42,7 +42,7 @@ namespace bw
 			m_layerSound->UnregisterAudibleSound(this);
 	}
 
-	void SoundEntity::PlaySound(std::size_t soundIndex, const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized)
+	void SoundEntity::PlaySound(std::size_t soundIndex, const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized)
 	{
 		if (soundIndex >= m_soundIds.size())
 			m_soundIds.resize(soundIndex + 1);

@@ -41,8 +41,12 @@ namespace bw
 
 			auto& entityMatch = entity.get<MatchComponent>();
 
+			assert(entity.valid());
+
 			std::size_t weaponIndex = weaponWielder->GiveWeapon(weaponClass, [&] (const std::string& weaponClass) -> entt::handle
 			{
+				assert(entity.valid());
+
 				Match& match = entityMatch.GetMatch();
 				Terrain& terrain = match.GetTerrain();
 				TerrainLayer& terrainLayer = terrain.GetLayer(entityMatch.GetLayerIndex());
@@ -57,6 +61,7 @@ namespace bw
 			
 				EntityId uniqueId = match.AllocateUniqueId();
 
+				assert(entity.valid());
 				entt::handle weapon = weaponStore.InstantiateWeapon(terrainLayer, weaponEntityIndex, uniqueId, {}, entity);
 				if (!weapon)
 					return entt::handle{};

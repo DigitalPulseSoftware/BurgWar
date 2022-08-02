@@ -8,7 +8,7 @@
 
 namespace bw
 {
-	Nz::UInt32 SoundEmitterComponent::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
+	Nz::UInt32 SoundEmitterComponent::PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
 	{
 		entt::entity entity = GetEntity();
 		if (!entity)

@@ -6,45 +6,46 @@
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Utility/Font.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Widgets.hpp>
 
 namespace bw
 {
 	static constexpr std::size_t maxChatLines = 100;
 
-	Chatbox::Chatbox(const Logger& logger, Nz::RenderTarget* rt, Ndk::Canvas* canvas) :
+	Chatbox::Chatbox(const Logger& logger, Nz::RenderTarget* rt, Nz::Canvas* canvas) :
 	m_chatEnteringBox(nullptr),
 	m_logger(logger)
 	{
-		Nz::FontRef chatboxFont = Nz::FontLibrary::Get("BW_Chatbox");
-		assert(chatboxFont);
+		//TODO
+		//Nz::FontRef chatboxFont = Nz::FontLibrary::Get("BW_Chatbox");
+		//assert(chatboxFont);
 
-		m_chatBox = canvas->Add<Ndk::RichTextAreaWidget>();
+		m_chatBox = canvas->Add<Nz::RichTextAreaWidget>();
 		m_chatBox->EnableBackground(false);
 		m_chatBox->EnableLineWrap(true);
 		m_chatBox->SetBackgroundColor(Nz::Color(0, 0, 0, 50));
 		m_chatBox->SetCharacterSize(22);
 		m_chatBox->SetTextColor(Nz::Color::White);
-		m_chatBox->SetTextFont(chatboxFont);
+		//m_chatBox->SetTextFont(chatboxFont);
 		m_chatBox->SetTextOutlineColor(Nz::Color::Black);
 		m_chatBox->SetTextOutlineThickness(1.f);
 		m_chatBox->SetReadOnly(true);
 
-		m_chatboxScrollArea = canvas->Add<Ndk::ScrollAreaWidget>(m_chatBox);
+		m_chatboxScrollArea = canvas->Add<Nz::ScrollAreaWidget>(m_chatBox);
 		m_chatboxScrollArea->Resize({ 480.f, 0.f });
 		m_chatboxScrollArea->EnableScrollbar(false);
 
-		m_chatEnteringBox = canvas->Add<Ndk::TextAreaWidget>();
+		m_chatEnteringBox = canvas->Add<Nz::TextAreaWidget>();
 		m_chatEnteringBox->EnableBackground(true);
 		m_chatEnteringBox->SetBackgroundColor(Nz::Color(255, 255, 255, 150));
 		m_chatEnteringBox->SetTextColor(Nz::Color::Black);
-		m_chatEnteringBox->SetTextFont(chatboxFont);
+		//m_chatEnteringBox->SetTextFont(chatboxFont);
 		m_chatEnteringBox->Hide();
 
 		// Connect every slot
 		m_onTargetChangeSizeSlot.Connect(rt->OnRenderTargetSizeChange, this, &Chatbox::OnRenderTargetSizeChange);
 
-		OnRenderTargetSizeChange(rt);
+		OnRenderTargetSizeChange(rt, rt->GetSize());
 	}
 
 	Chatbox::~Chatbox()
@@ -114,14 +115,14 @@ namespace bw
 
 	void Chatbox::SendMessage()
 	{
-		Nz::String text = m_chatEnteringBox->GetText();
-		if (!text.IsEmpty())
+		std::string text = m_chatEnteringBox->GetText();
+		if (!text.empty())
 			OnChatMessage(text);
 	}
 
-	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget)
+	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget, const Nz::Vector2ui& newSize)
 	{
-		Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
+		Nz::Vector2f size = Nz::Vector2f(newSize);
 
 		m_chatEnteringBox->Resize({ size.x, 40.f });
 		m_chatEnteringBox->SetPosition({ 0.f, size.y - m_chatEnteringBox->GetHeight() - 5.f, 0.f });

@@ -31,7 +31,7 @@
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <NDK/Canvas.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 #include <memory>

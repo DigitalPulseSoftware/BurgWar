@@ -114,7 +114,10 @@ namespace bw
 #endif
 	}
 
-	SharedLayer::~SharedLayer() = default;
+	SharedLayer::~SharedLayer()
+	{
+		m_registry.clear();
+	}
 
 	void SharedLayer::TickUpdate(float elapsedTime)
 	{

@@ -9,9 +9,9 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/ImageWidget.hpp>
-#include <NDK/Widgets/ScrollAreaWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/ImageWidget.hpp>
+#include <Nazara/Widgets/ScrollAreaWidget.hpp>
 #include <optional>
 
 namespace bw

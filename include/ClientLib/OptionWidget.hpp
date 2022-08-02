@@ -10,10 +10,10 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Utils/Signal.hpp>
 #include <NDK/Canvas.hpp>
-#include <NDK/Widgets/ButtonWidget.hpp>
-#include <NDK/Widgets/CheckboxWidget.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Widgets/ButtonWidget.hpp>
+#include <Nazara/Widgets/CheckboxWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/TextAreaWidget.hpp>
 #include <variant>
 
 namespace bw

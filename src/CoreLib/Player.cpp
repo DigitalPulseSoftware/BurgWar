@@ -24,8 +24,6 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <Nazara/Utils/CallOnExit.hpp>
-#include <Nazara/Graphics/Material.hpp>
-#include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 
 namespace bw

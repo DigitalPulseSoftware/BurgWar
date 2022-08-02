@@ -75,7 +75,7 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset)
+	void VisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset)
 	{
 		auto& hoveringRenderable = m_hoveringRenderables.emplace_back();
 		hoveringRenderable.entity = m_entity->GetWorld()->CreateEntity();
@@ -87,12 +87,12 @@ namespace bw
 		gfxComponent.Attach(hoveringRenderable.renderable, offsetMatrix, renderOrder);
 	}
 
-	void VisualEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
+	void VisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().Attach(std::move(renderable), offsetMatrix, m_baseRenderOrder + renderOrder);
 	}
 
-	void VisualEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
+	void VisualEntity::DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		for (auto it = m_hoveringRenderables.begin(); it != m_hoveringRenderables.end(); ++it)
 		{
@@ -106,12 +106,12 @@ namespace bw
 		}
 	}
 	
-	void VisualEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
+	void VisualEntity::DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().Detach(renderable);
 	}
 
-	void VisualEntity::UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight)
+	void VisualEntity::UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight)
 	{
 		for (auto& hoveringRenderable : m_hoveringRenderables)
 		{
@@ -123,7 +123,7 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void VisualEntity::UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		for (auto& hoveringRenderable : m_hoveringRenderables)
 		{
@@ -135,7 +135,7 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::UpdateHoveringRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder)
+	void VisualEntity::UpdateHoveringRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder)
 	{
 		for (auto& hoveringRenderable : m_hoveringRenderables)
 		{
@@ -147,12 +147,12 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void VisualEntity::UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().UpdateLocalMatrix(renderable, offsetMatrix);
 	}
 
-	void VisualEntity::UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder)
+	void VisualEntity::UpdateRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder)
 	{
 		m_entity->GetComponent<Ndk::GraphicsComponent>().UpdateRenderOrder(renderable, m_baseRenderOrder + renderOrder);
 	}

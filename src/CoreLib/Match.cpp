@@ -323,7 +323,7 @@ namespace bw
 
 		Entity& entityData = m_entitiesByUniqueId.emplace(uniqueId, Entity{}).first.value();
 		entityData.entity = entity;
-		entityData.onDestruction.Connect(entity.get<DestructionWatcherComponent>().OnDestruction, [this, uniqueId](DestructionWatcherComponent* watcher)
+		entityData.onDestruction.Connect(entity.get_or_emplace<DestructionWatcherComponent>(entity).OnDestruction, [this, uniqueId](DestructionWatcherComponent* watcher)
 		{
 			// Don't trigger the Destroyed event when resetting map
 			if (!m_isResetting)

@@ -42,7 +42,7 @@ namespace bw
 			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
 			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
 
-			Nz::ModelRef model = m_assetStore.GetModel(modelPath);
+			std::shared_ptr<Nz::Model> model = m_assetStore.GetModel(modelPath);
 			if (!model)
 				return;
 
@@ -301,7 +301,7 @@ namespace bw
 			entt::handle entity = AssertScriptEntity(entityTable);
 			auto& entityMatch = entity->GetComponent<ClientMatchComponent>();
 
-			const Nz::SoundBufferRef& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
+			const std::shared_ptr<Nz::SoundBuffer>& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
 				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
 

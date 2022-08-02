@@ -15,7 +15,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Texture
 	{
 		public:
-			inline Texture(Nz::TextureRef texture);
+			inline Texture(std::shared_ptr<Nz::Texture> texture);
 			Texture(const Texture&) = default;
 			Texture(Texture&&) = default;
 			~Texture() = default;
@@ -26,7 +26,7 @@ namespace bw
 			Texture& operator=(Texture&&) = default;
 
 		private:
-			Nz::TextureRef m_texture;
+			std::shared_ptr<Nz::Texture> m_texture;
 	};
 }
 

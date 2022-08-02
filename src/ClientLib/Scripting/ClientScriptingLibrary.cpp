@@ -221,7 +221,7 @@ namespace bw
 			if (layerIndex >= match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
 
-			const Nz::SoundBufferRef& soundBuffer = match.GetAssetStore().GetSoundBuffer(soundPath);
+			const std::shared_ptr<Nz::SoundBuffer>& soundBuffer = match.GetAssetStore().GetSoundBuffer(soundPath);
 			if (!soundBuffer)
 				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
 

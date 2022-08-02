@@ -11,7 +11,7 @@
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Utility/Node.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -31,7 +31,7 @@ namespace bw
 
 			inline entt::entity GetEntity() const;
 
-			void PlaySound(std::size_t soundIndex, const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized);
+			void PlaySound(std::size_t soundIndex, const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized);
 
 			void StopSound(std::size_t soundIndex);
 

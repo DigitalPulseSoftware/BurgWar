@@ -15,7 +15,7 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/Cursor.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <optional>
 
 class QDockWidget;

@@ -52,7 +52,7 @@ namespace bw
 		auto& gfx = m_selectionOverlayEntity->GetComponent<Ndk::GraphicsComponent>();
 		gfx.Clear();
 
-		Nz::ModelRef aabbModel = GenerateBoxModel();
+		std::shared_ptr<Nz::Model> aabbModel = GenerateBoxModel();
 
 		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), std::numeric_limits<int>::max());
 
@@ -63,7 +63,7 @@ namespace bw
 		}
 	}
 
-	Nz::ModelRef EditorGizmo::GenerateBoxModel()
+	std::shared_ptr<Nz::Model> EditorGizmo::GenerateBoxModel()
 	{
 		std::array<Nz::UInt16, 24> indices = {
 			{
@@ -117,7 +117,7 @@ namespace bw
 		translucent->SetDiffuseColor(Nz::Color::Orange);
 		translucent->EnableDepthBuffer(false);
 
-		Nz::ModelRef model = Nz::Model::New();
+		std::shared_ptr<Nz::Model> model = Nz::Model::New();
 		model->SetMesh(mesh);
 		model->SetMaterial(0, translucent);
 

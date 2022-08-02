@@ -26,7 +26,7 @@ namespace bw
 		});
 	}
 
-	Nz::UInt32 SoundSystem::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
+	Nz::UInt32 SoundSystem::PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
 	{
 		Nz::UInt32 soundId = m_nextSoundId++;
 		// Prevent sound id to be invalid sound id

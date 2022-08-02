@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_STATUSSTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 
 namespace bw
 {

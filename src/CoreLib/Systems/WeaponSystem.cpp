@@ -24,7 +24,7 @@ namespace bw
 			if (entt::entity owner = weaponComponent.GetOwner(); owner != entt::null)
 			{
 				InputComponent& ownerInputs = m_registry.get<InputComponent>(owner);
-				Nz::NodeComponent& ownerNode = view.get<Nz::NodeComponent>(owner);
+				Nz::NodeComponent& ownerNode = m_registry.get<Nz::NodeComponent>(owner);
 				Nz::NodeComponent& weaponNode = view.get<Nz::NodeComponent>(weapon);
 
 				const auto& inputs = ownerInputs.GetInputs();

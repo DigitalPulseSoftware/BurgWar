@@ -11,7 +11,7 @@
 #include <Nazara/Graphics/Material.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Platform/Event.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <QtWidgets/QWidget>
 #include <optional>
 #include <vector>

@@ -41,7 +41,7 @@ namespace bw
 			LayerIndex GetLayerIndex() const;
 			inline Nz::Vector2f GetPosition() const;
 
-			std::size_t PlaySound(const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized);
+			std::size_t PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized);
 			void StopSound(std::size_t soundIndex);
 
 			bool Update(float elapsedTime);
@@ -60,7 +60,7 @@ namespace bw
 
 			struct PlayingSound
 			{
-				Nz::SoundBufferRef soundBuffer;
+				std::shared_ptr<Nz::SoundBuffer> soundBuffer;
 				float currentOffset = 0.f;
 				float duration = 0.f;
 				bool isLooping;

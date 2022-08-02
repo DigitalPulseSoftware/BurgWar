@@ -10,7 +10,7 @@
 #include <ClientLib/DownloadManager.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Client/States/Game/CancelableState.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 #include <tsl/hopscotch_map.h>
 #include <memory>
 #include <optional>

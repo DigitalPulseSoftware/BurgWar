@@ -10,7 +10,7 @@
 #include <ClientLib/LayerVisualEntity.hpp>
 #include <Nazara/Platform/Event.hpp>
 #include <Nazara/Graphics/Model.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -30,7 +30,7 @@ namespace bw
 			void Refresh();
 
 		private:
-			static Nz::ModelRef GenerateBoxModel();
+			static std::shared_ptr<Nz::Model> GenerateBoxModel();
 
 			Ndk::EntityOwner m_selectionOverlayEntity;
 			std::vector<LayerVisualEntityHandle> m_targetEntities;

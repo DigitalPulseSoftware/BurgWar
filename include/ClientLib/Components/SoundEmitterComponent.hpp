@@ -26,7 +26,7 @@ namespace bw
 			SoundEmitterComponent(SoundEmitterComponent&&) = default;
 			~SoundEmitterComponent() = default;
 
-			Nz::UInt32 PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
+			Nz::UInt32 PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
 			void StopSound(Nz::UInt32 soundId);
 
 			static Ndk::ComponentIndex componentIndex;

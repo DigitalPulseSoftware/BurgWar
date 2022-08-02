@@ -10,12 +10,11 @@
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/Match.hpp>
 #include <Server/ServerAppConfig.hpp>
-#include <NDK/Application.hpp>
 #include <memory>
 
 namespace bw
 {
-	class ServerApp : public Ndk::Application, public BurgApp
+	class ServerApp : public BurgApp
 	{
 		public:
 			ServerApp(int argc, char* argv[]);
@@ -25,8 +24,9 @@ namespace bw
 			void Quit() override;
 
 		private:
-			ServerAppConfig m_configFile;
 			std::unique_ptr<Match> m_match;
+			ServerAppConfig m_configFile;
+			bool m_running;
 	};
 }
 

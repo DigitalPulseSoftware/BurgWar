@@ -8,12 +8,12 @@
 
 namespace bw
 {
-	inline LayerVisualEntity::LayerVisualEntity(entt::entity entity, LayerIndex layerIndex, EntityId uniqueId) :
+	inline LayerVisualEntity::LayerVisualEntity(entt::handle entity, LayerIndex layerIndex, EntityId uniqueId) :
 	m_entity(entity),
 	m_uniqueId(uniqueId),
 	m_layerIndex(layerIndex)
 	{
-		assert(m_entity);
+		assert(m_entity.GetEntity());
 	}
 
 	inline void LayerVisualEntity::Disable()
@@ -28,9 +28,9 @@ namespace bw
 			func(std::as_const(renderableData.renderable), std::as_const(renderableData.offsetMatrix), std::as_const(renderableData.renderOrder));
 	}
 
-	inline entt::entity LayerVisualEntity::GetEntity() const
+	inline entt::handle LayerVisualEntity::GetEntity() const
 	{
-		return m_entity;
+		return m_entity.GetEntity();
 	}
 
 	inline LayerIndex LayerVisualEntity::GetLayerIndex() const

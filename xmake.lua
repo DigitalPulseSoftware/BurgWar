@@ -12,11 +12,11 @@ set_version("0.2.0")
 add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
 add_requires("nazarautils", "nzsl", { debug = is_mode("debug") })
 
-add_requires("cxxopts", "concurrentqueue", "entt", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "entt 3.10.1", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
 add_requires("nazaraengine", { alias = "nazara" })
-add_requires("nazaraengine~server", { alias = "nazaraserver", configs = { audio = false, graphics = false, platform = false, renderer = false } })
+add_requires("nazaraengine~server", { alias = "nazaraserver", configs = { audio = false, graphics = false, platform = false, renderer = false, widget = false } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then

@@ -45,7 +45,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
 					return LoadFile(file, arg);
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					return tl::unexpected(file.generic_u8string() + " is a directory, expected a file");
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -80,7 +80,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
 					return LoadFile(file, arg, Async{});
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
 					bwLog(m_logger, LogLevel::Error, "{0} is a directory, expected a file", file.generic_u8string());
 					return {};
@@ -110,7 +110,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
 					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -137,7 +137,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
 					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -310,7 +310,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
 					return LoadFile(entryPath, arg);
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalDirectoryEntry>)
+				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
 					LoadDirectory(entryPath, arg);
 					return sol::nil;
@@ -323,20 +323,6 @@ namespace bw
 			if (!result)
 				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath.generic_u8string(), result.error());
 		});
-	}
-
-	void ScriptingContext::LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalDirectoryEntry& folder)
-	{
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(folder.filePath))
-		{
-			if (!entry.is_regular_file())
-				continue;
-
-			Nz::VirtualDirectory::PhysicalFileEntry physicalEntry;
-			physicalEntry.filePath = entry.path();
-
-			LoadFile(physicalEntry.filePath.parent_path(), physicalEntry);
-		}
 	}
 
 	std::string ScriptingContext::ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::PhysicalFileEntry& entry)

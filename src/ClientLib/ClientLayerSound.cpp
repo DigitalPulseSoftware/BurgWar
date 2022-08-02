@@ -23,7 +23,7 @@ namespace bw
 		return m_layer.GetLayerIndex();
 	}
 
-	std::size_t ClientLayerSound::PlaySound(const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized)
+	std::size_t ClientLayerSound::PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized)
 	{
 		// Find first finished sound
 		std::size_t soundIndex = 0;

@@ -8,7 +8,6 @@
 namespace bw
 {
 	ServerApp::ServerApp(int argc, char* argv[]) :
-	Application(argc, argv),
 	BurgApp(LogSide::Server, m_configFile),
 	m_configFile(*this)
 	{
@@ -59,17 +58,19 @@ namespace bw
 
 	int ServerApp::Run()
 	{
+		m_running = true;
+
 		Nz::Clock updateClock;
 		Nz::UInt64 tickDuration = static_cast<Nz::UInt64>(m_match->GetTickDuration() * 1'000'000);
 
-		while (Application::Run())
+		while (m_running)
 		{
 			BurgApp::Update();
 
-			if (!m_match->Update(GetUpdateTime()))
+			Nz::UInt64 elapsedTime = updateClock.Restart();
+			if (!m_match->Update(elapsedTime / 1'000'000.f))
 				break;
 
-			Nz::UInt64 elapsedTime = updateClock.Restart();
 			if (tickDuration > elapsedTime)
 			{
 				// Since OS sleep is not that precise, let some time between the wakeup time and the tick
@@ -89,6 +90,6 @@ namespace bw
 	
 	void ServerApp::Quit()
 	{
-		Application::Quit();
+		m_running = false;
 	}
 }

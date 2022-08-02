@@ -39,7 +39,7 @@ namespace bw
 
 	LayerVisualEntity::~LayerVisualEntity() = default;
 
-	void LayerVisualEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
+	void LayerVisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
 	{
 		auto& renderableData = m_attachedHoveringRenderables.emplace_back();
 		renderableData.hoveringHeight = hoveringHeight;
@@ -51,7 +51,7 @@ namespace bw
 			visualEntity->AttachHoveringRenderable(renderableData.data.renderable, renderableData.data.offsetMatrix, renderableData.data.renderOrder, hoveringHeight);
 	}
 
-	void LayerVisualEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
+	void LayerVisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		auto& renderableData = m_attachedRenderables.emplace_back();
 		renderableData.offsetMatrix = offsetMatrix;
@@ -62,7 +62,7 @@ namespace bw
 			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
 	}
 
-	void LayerVisualEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
+	void LayerVisualEntity::DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		for (auto it = m_attachedHoveringRenderables.begin(); it != m_attachedHoveringRenderables.end(); ++it)
 		{
@@ -78,7 +78,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
+	void LayerVisualEntity::DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())
@@ -170,7 +170,7 @@ namespace bw
 			visualEntity->Update(position, rotation, scale);
 	}
 
-	void LayerVisualEntity::UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight)
+	void LayerVisualEntity::UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight)
 	{
 		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
 		{
@@ -185,7 +185,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
 		{
@@ -200,7 +200,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())

@@ -13,6 +13,7 @@ namespace bw
 
 	inline bool Console::IsVisible() const
 	{
-		return m_widget->IsVisible();
+		return false;
+		//return m_widget->IsVisible();
 	}
 }

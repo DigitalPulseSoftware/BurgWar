@@ -9,7 +9,7 @@
 
 #include <Client/States/AbstractState.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {

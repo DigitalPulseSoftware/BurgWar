@@ -27,7 +27,6 @@ namespace bw
 	}
 
 	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
-	ClientApplication(argc, argv),
 	BurgApp(side, configFile),
 	m_playerSettings(*this)
 	{
@@ -42,26 +41,14 @@ namespace bw
 		{
 			Nz::Audio::SetGlobalVolume(float(newValue));
 		});
-
-		Ndk::InitializeComponent<VisualComponent>("LayrEnt");
-		Ndk::InitializeComponent<ClientMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<ClientOwnerComponent>("LclOwner");
-		Ndk::InitializeComponent<LocalPlayerControlledComponent>("LclPly");
-		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
-		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
-		Ndk::InitializeComponent<VisualInterpolationComponent>("Interp");
-		Ndk::InitializeSystem<FrameCallbackSystem>();
-		Ndk::InitializeSystem<PostFrameCallbackSystem>();
-		Ndk::InitializeSystem<SoundSystem>();
-		Ndk::InitializeSystem<VisualInterpolationSystem>();
 	}
 
 	ClientEditorApp::~ClientEditorApp()
 	{
-		Nz::FontLibrary::Clear();
+		/*Nz::FontLibrary::Clear();
 		Nz::MaterialLibrary::Clear();
 		Nz::SpriteLibrary::Clear();
-		Nz::TextureLibrary::Clear();
+		Nz::TextureLibrary::Clear();*/
 	}
 
 	void ClientEditorApp::SavePlayerConfig()
@@ -72,14 +59,14 @@ namespace bw
 
 	void ClientEditorApp::Quit()
 	{
-		ClientApplication::Quit();
+		//ClientApplication::Quit();
 	}
 
 	void ClientEditorApp::FillStores()
 	{
 		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
 
-		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
+		/*Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
 		spriteNoDepthMat->EnableDepthBuffer(false);
 		spriteNoDepthMat->EnableFaceCulling(false);
 
@@ -117,6 +104,6 @@ namespace bw
 
 		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
 		Nz::FontLibrary::Register("BW_Names", grandstander);
-		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());
+		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());*/
 	}
 }

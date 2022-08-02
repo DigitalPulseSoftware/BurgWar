@@ -2,8 +2,6 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#if 0
-
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/BasicPlayerMovementController.hpp>
 #include <CoreLib/CustomInputController.hpp>
@@ -20,8 +18,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
-#include <NDK/Components/ConstraintComponent2D.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <CoreLib/SharedMatch.hpp>
 
 namespace bw
@@ -347,6 +344,8 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
+		// EnTT TODO
+#if 0
 		library["CreateDampenedSpringConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
 			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
@@ -500,6 +499,7 @@ namespace bw
 
 			physSystem.RaycastQuery(startPos, endPos, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
 		});
+#endif
 	}
 
 	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& /*context*/, sol::table& /*library*/)
@@ -523,5 +523,3 @@ namespace bw
 		});
 	}
 }
-
-#endif

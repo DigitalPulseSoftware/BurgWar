@@ -18,6 +18,7 @@ package("nazaraengine")
     add_configs("platform",      {description = "Includes the platform module", default = true, type = "boolean"})
     add_configs("renderer",      {description = "Includes the renderer module", default = true, type = "boolean"})
     add_configs("utility",       {description = "Includes the utility module", default = true, type = "boolean"})
+    add_configs("widget",        {description = "Includes the widget module", default = true, type = "boolean"})
     add_configs("plugin-assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
 
     if is_plat("linux") then
@@ -54,6 +55,10 @@ package("nazaraengine")
 
     local function has_utility(package)
         return package:config("utility") or has_platform(package)
+    end
+
+    local function has_widget(package)
+        return package:config("widget")
     end
 
     local function has_assimp_plugin(package)
@@ -101,6 +106,10 @@ package("nazaraengine")
 
         if has_physics3d(package) then
             table.insert(links, prefix .. "Physics3D" .. suffix)
+        end
+
+        if has_widget(package) then
+            table.insert(links, prefix .. "Widget" .. suffix)
         end
 
         if has_graphics(package) then

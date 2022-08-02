@@ -12,8 +12,8 @@
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <NDK/Canvas.hpp>
 #include <NDK/Entity.hpp>
-#include <NDK/EntityOwner.hpp>
-#include <NDK/Widgets/ButtonWidget.hpp>
+#include <CoreLib/EntityOwner.hpp>
+#include <Nazara/Widgets/ButtonWidget.hpp>
 
 namespace bw
 {

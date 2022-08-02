@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_CANCELABLESTATE_HPP
 
 #include <Client/States/Game/StatusState.hpp>
-#include <NDK/Widgets/ButtonWidget.hpp>
+#include <Nazara/Widgets/ButtonWidget.hpp>
 #include <memory>
 
 namespace bw

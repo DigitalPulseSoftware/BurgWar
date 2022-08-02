@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <sol/forward.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {

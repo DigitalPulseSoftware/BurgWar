@@ -9,13 +9,12 @@
 
 #include <CoreLib/BurgApp.hpp>
 #include <ClientLib/PlayerConfig.hpp>
-#include <NDK/ClientApplication.hpp>
 
 namespace bw
 {
 	class SharedAppConfig;
 
-	class BURGWAR_CLIENTLIB_API ClientEditorApp : public Ndk::ClientApplication, public BurgApp
+	class BURGWAR_CLIENTLIB_API ClientEditorApp : public BurgApp
 	{
 		public:
 			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);

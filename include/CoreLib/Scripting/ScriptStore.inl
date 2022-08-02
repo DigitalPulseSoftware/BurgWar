@@ -72,19 +72,16 @@ namespace bw
 	{
 		const auto& scriptDir = m_context->GetScriptDirectory();
 
-		auto callback = [&](const Nz::VirtualDirectory::Entry& entry)
+		auto callback = [&](const Nz::VirtualDirectory::DirectoryEntry& directoryEntry)
 		{
-			if (std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry))
+			directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
 			{
-				const Nz::VirtualDirectory::DirectoryEntry& directoryEntry = std::get<Nz::VirtualDirectory::DirectoryEntry>(entry);
-				directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
-				{
-					LoadElement(std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry), directoryPath / entryName);
-				});
-			}
+				bool isDirectory = std::holds_alternative<Nz::VirtualDirectory::PhysicalDirectoryEntry>(entry) || std::holds_alternative<Nz::VirtualDirectory::VirtualDirectoryEntry>(entry);
+				LoadElement(isDirectory, directoryPath / entryName);
+			});
 		};
 
-		scriptDir->GetEntry(directoryPath.generic_u8string(), callback);
+		scriptDir->GetDirectoryEntry(directoryPath.generic_u8string(), callback);
 	}
 
 	template<typename Element>

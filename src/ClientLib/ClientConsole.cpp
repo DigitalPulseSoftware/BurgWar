@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	ClientConsole::ClientConsole(const Logger& logger, Nz::RenderTarget* window, Ndk::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir) :
+	ClientConsole::ClientConsole(const Logger& logger, Nz::RenderTarget* window, Nz::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir) :
 	Console(window, canvas),
 	m_environment(logger, std::move(scriptingLibrary), scriptDir)
 	{

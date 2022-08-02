@@ -74,7 +74,6 @@ namespace bw
 			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
 			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::DirectoryEntry& folder);
-			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalDirectoryEntry& folder);
 			std::string ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::PhysicalFileEntry& entry);
 
 			std::filesystem::path m_currentFile;
