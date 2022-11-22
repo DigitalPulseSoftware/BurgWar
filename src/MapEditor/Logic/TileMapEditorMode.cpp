@@ -10,19 +10,19 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMessageBox>
 
 namespace bw
 {
-	TileMapEditorMode::TileMapEditorMode(EditorWindow& editor, const Ndk::EntityHandle& targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) :
+	TileMapEditorMode::TileMapEditorMode(EditorWindow& editor, entt::entity targetEntity, TileMapData tilemapData, const std::vector<TileMaterialData>& materials, const std::vector<TileData>& tiles) :
 	EntityEditorMode(targetEntity, editor),
 	m_editionMode(EditionMode::None),
 	m_tilemapData(std::move(tilemapData)),
 	m_clearMode(false)
 	{
-		Nz::ImageRef eraserImage = Nz::ImageLibrary::Get("Eraser");
+		std::shared_ptr<Nz::Image> eraserImage = Nz::ImageLibrary::Get("Eraser");
 		if (eraserImage)
 		{
 			m_eraserCursor = Nz::Cursor::New();
@@ -255,7 +255,7 @@ namespace bw
 		{
 			m_tileSelectionEntity->Enable();
 
-			auto& node = m_tileSelectionEntity->GetComponent<Ndk::NodeComponent>();
+			auto& node = m_tileSelectionentity.get<Nz::NodeComponent>();
 			node.SetPosition(Nz::Vector2f(*tilePosition) * m_tilemapData.tileSize + m_tilemapData.origin);
 
 			std::size_t selectionWidth = std::min<std::size_t>(m_tilemapData.mapSize.x - tilePosition->x, m_selection.width);

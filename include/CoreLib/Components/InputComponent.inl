@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline InputComponent::InputComponent(std::shared_ptr<InputController> inputController) :
+	inline InputComponent::InputComponent(entt::handle handle, std::shared_ptr<InputController> inputController) :
+	BaseComponent(handle),
 	m_inputIndex(0),
 	m_inputController(std::move(inputController))
 	{
@@ -43,7 +44,7 @@ namespace bw
 		if (++m_inputIndex >= m_inputData.size())
 			m_inputIndex = 0;
 
-		m_inputData[m_inputIndex] = std::move(inputData);
+		m_inputData[m_inputIndex] = inputData;
 
 		OnInputUpdate(this);
 	}

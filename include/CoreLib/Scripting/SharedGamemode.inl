@@ -82,7 +82,7 @@ namespace bw
 		return combinedResult;
 	}
 
-	template<typename ...Args>
+	template<typename... Args>
 	std::optional<sol::object> bw::SharedGamemode::ExecuteCustomCallback(std::size_t eventIndex, Args... args) //< FIXME: Not const because of a bug in sol
 	{
 		if (eventIndex >= m_customEventCallbacks.size())

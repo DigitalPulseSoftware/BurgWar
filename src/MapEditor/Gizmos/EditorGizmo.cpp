@@ -8,11 +8,11 @@
 #include <Nazara/Utility/StaticMesh.hpp>
 #include <Nazara/Utility/VertexBuffer.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	EditorGizmo::EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
+	EditorGizmo::EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
 	m_targetEntities(std::move(entities))
 	{
 		m_selectionOverlayEntity = renderWorld.CreateEntity();
@@ -46,13 +46,13 @@ namespace bw
 
 		Nz::Vector3f origin = globalAABB.GetCenter();
 
-		auto& node = m_selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
+		auto& node = m_selectionOverlayentity.get<Nz::NodeComponent>();
 		node.SetPosition(origin);
 
 		auto& gfx = m_selectionOverlayEntity->GetComponent<Ndk::GraphicsComponent>();
 		gfx.Clear();
 
-		Nz::ModelRef aabbModel = GenerateBoxModel();
+		std::shared_ptr<Nz::Model> aabbModel = GenerateBoxModel();
 
 		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), std::numeric_limits<int>::max());
 
@@ -63,7 +63,7 @@ namespace bw
 		}
 	}
 
-	Nz::ModelRef EditorGizmo::GenerateBoxModel()
+	std::shared_ptr<Nz::Model> EditorGizmo::GenerateBoxModel()
 	{
 		std::array<Nz::UInt16, 24> indices = {
 			{
@@ -117,7 +117,7 @@ namespace bw
 		translucent->SetDiffuseColor(Nz::Color::Orange);
 		translucent->EnableDepthBuffer(false);
 
-		Nz::ModelRef model = Nz::Model::New();
+		std::shared_ptr<Nz::Model> model = Nz::Model::New();
 		model->SetMesh(mesh);
 		model->SetMaterial(0, translucent);
 

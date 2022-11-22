@@ -8,9 +8,9 @@
 
 namespace bw
 {
-	Nz::UInt32 SoundEmitterComponent::PlaySound(const Nz::SoundBufferRef& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
+	Nz::UInt32 SoundEmitterComponent::PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized)
 	{
-		const Ndk::EntityHandle& entity = GetEntity();
+		entt::entity entity = GetEntity();
 		if (!entity)
 			return SoundSystem::InvalidSoundId;
 
@@ -30,7 +30,7 @@ namespace bw
 		if (it == m_sounds.end())
 			return; //< Sound can have been removed by the sound system
 
-		const Ndk::EntityHandle& entity = GetEntity();
+		entt::entity entity = GetEntity();
 		if (entity)
 		{
 			auto& soundSystem = entity->GetWorld()->GetSystem<SoundSystem>();

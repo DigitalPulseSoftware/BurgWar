@@ -6,7 +6,7 @@
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Core/Bitset.hpp>
+#include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
@@ -105,12 +105,12 @@ namespace bw
 
 	bool Map::Compile(const std::filesystem::path& outputPath)
 	{
-		Nz::File infoFile(outputPath.generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+		Nz::File infoFile(outputPath.generic_u8string(), Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
 		Nz::ByteStream stream(&infoFile);
-		stream.SetDataEndianness(Nz::Endianness_LittleEndian);
+		stream.SetDataEndianness(Nz::Endianness::LittleEndian);
 
 		stream.Write("Burgrmap", 8);
 		stream << MapFileVersion;
@@ -233,7 +233,7 @@ namespace bw
 
 		std::string content = Serialize(*this).dump(1, '\t');
 
-		Nz::File infoFile((mapFolderPath / "info.json").generic_u8string(), Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+		Nz::File infoFile((mapFolderPath / "info.json").generic_u8string(), Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
@@ -447,14 +447,14 @@ namespace bw
 
 	void Map::LoadFromBinaryInternal(const std::filesystem::path& mapFile)
 	{
-		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode::ReadOnly);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open map file");
 
-		Nz::ErrorFlags errFlags(Nz::ErrorFlag_ThrowException);
+		Nz::ErrorFlags errFlags(Nz::ErrorMode::ThrowException);
 
 		Nz::ByteStream stream(&infoFile);
-		stream.SetDataEndianness(Nz::Endianness_LittleEndian);
+		stream.SetDataEndianness(Nz::Endianness::LittleEndian);
 
 		std::array<char, 8> signature;
 		if (stream.Read(signature.data(), signature.size()) != signature.size())
@@ -605,7 +605,7 @@ namespace bw
 	{
 		std::vector<Nz::UInt8> content;
 
-		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode::ReadOnly);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open info.json file");
 
@@ -629,7 +629,7 @@ namespace bw
 				std::string filepathStr = filepath.generic_u8string();
 
 				Nz::File file(filepath.generic_u8string());
-				if (!file.Open(Nz::OpenMode_ReadOnly))
+				if (!file.Open(Nz::OpenMode::ReadOnly))
 					throw std::runtime_error("failed to open map script " + filepathStr);
 
 				content.resize(file.GetSize());

@@ -8,8 +8,7 @@
 #define BURGWAR_STATES_ABSTRACTSTATE_HPP
 
 #include <Client/States/StateData.hpp>
-#include <NDK/BaseWidget.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <Nazara/Widgets/BaseWidget.hpp>
 #include <NDK/State.hpp>
 #include <functional>
 #include <memory>
@@ -25,9 +24,9 @@ namespace bw
 
 		protected:
 			template<typename T, typename... Args> void ConnectSignal(T& signal, Args&&... args);
-			inline const Ndk::EntityHandle& CreateEntity();
+			inline entt::entity CreateEntity();
 			template<typename T, typename... Args> T* CreateWidget(Args&&... args);
-			inline void DestroyWidget(Ndk::BaseWidget* widget);
+			inline void DestroyWidget(Nz::BaseWidget* widget);
 
 			inline StateData& GetStateData();
 			inline const StateData& GetStateData() const;
@@ -44,14 +43,14 @@ namespace bw
 
 			struct WidgetEntry
 			{
-				Ndk::BaseWidget* widget;
+				Nz::BaseWidget* widget;
 				bool wasVisible = true;
 			};
 
 			std::shared_ptr<StateData> m_stateData;
 			std::vector<std::function<void()>> m_cleanupFunctions;
 			std::vector<WidgetEntry> m_widgets;
-			std::vector<Ndk::EntityOwner> m_entities;
+			std::vector<EntityOwner> m_entities;
 			bool m_isVisible;
 	};
 }

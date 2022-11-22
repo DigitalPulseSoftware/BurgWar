@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
-#include <NDK/Components.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Utils.hpp>
@@ -13,22 +12,27 @@
 #include <CoreLib/Components/OwnerComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	NetworkSyncSystem::NetworkSyncSystem(TerrainLayer& layer) :
+	NetworkSyncSystem::NetworkSyncSystem(entt::registry& registry, TerrainLayer& layer) :
+	m_registry(registry),
 	m_layer(layer)
 	{
-		Requires<NetworkSyncComponent, Ndk::NodeComponent>();
-		SetMaximumUpdateRate(30.f);
-		SetUpdateOrder(100); //< Execute after every other system
+		m_freeNetworkIds.Resize(1024, true);
+
+		m_observer.connect(m_registry, entt::collector.group<NetworkSyncComponent, Nz::NodeComponent>());
+		//Requires<NetworkSyncComponent, Nz::NodeComponent>();
+		//SetMaximumUpdateRate(30.f);
 	}
 
 	void NetworkSyncSystem::CreateEntities(const std::function<void(const EntityCreation* entityCreation, std::size_t entityCount)>& callback) const
 	{
 		m_creationEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		auto view = m_registry.view<NetworkSyncComponent, Nz::NodeComponent>();
+		for (entt::entity entity : view)
 		{
 			EntityCreation& creationEvent = m_creationEvents.emplace_back();
 			BuildEvent(creationEvent, entity);
@@ -41,7 +45,8 @@ namespace bw
 	{
 		m_destructionEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		auto view = m_registry.view<NetworkSyncComponent, Nz::NodeComponent>();
+		for (entt::entity entity : view)
 		{
 			EntityDestruction& destructionEvent = m_destructionEvents.emplace_back();
 			BuildEvent(destructionEvent, entity);
@@ -54,9 +59,9 @@ namespace bw
 	{
 		m_movementEvents.clear();
 
-		for (const Ndk::EntityHandle& entity : m_physicsEntities)
+		for (entt::entity entity : m_physicsEntities)
 		{
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = m_registry.get<Nz::RigidBody2DComponent>(entity);
 			if (entityPhys.IsSleeping())
 				continue;
 
@@ -66,81 +71,82 @@ namespace bw
 		callback(m_movementEvents.data(), m_movementEvents.size());
 	}
 
-	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, Ndk::Entity* entity) const
+	Nz::UInt32 NetworkSyncSystem::AllocateNetworkId()
 	{
-		const NetworkSyncComponent& syncComponent = entity->GetComponent<NetworkSyncComponent>();
+		std::size_t freeId = m_freeNetworkIds.FindFirst();
+		if (freeId == m_freeNetworkIds.npos)
+		{
+			freeId = m_freeNetworkIds.GetSize();
+			m_freeNetworkIds.Resize(m_freeNetworkIds.GetSize() * 2, true);
+		}
 
-		creationEvent.entityId = entity->GetId();
+		m_freeNetworkIds.Set(freeId, false);
+		return Nz::SafeCast<Nz::UInt32>(freeId);
+	}
+
+	void NetworkSyncSystem::BuildEvent(EntityCreation& creationEvent, entt::entity entity) const
+	{
+		const NetworkSyncComponent& syncComponent = m_registry.get<NetworkSyncComponent>(entity);
+
+		creationEvent.entityId = syncComponent.GetNetworkId();
 		creationEvent.entityClass = syncComponent.GetEntityClass();
 
-		auto& entityMatch = entity->GetComponent<MatchComponent>();
+		auto& entityMatch = m_registry.get<MatchComponent>(entity);
 		creationEvent.uniqueId = entityMatch.GetUniqueId();
 
-		if (const Ndk::EntityHandle& parent = syncComponent.GetParent())
+		if (entt::handle parent = syncComponent.GetParent())
 		{
-			assert(parent->GetWorld() == entity->GetWorld());
-			creationEvent.parent = parent->GetId();
+			assert(parent.registry() == &m_registry);
+			creationEvent.parent = parent.get<NetworkSyncComponent>().GetNetworkId();
 		}
 
-		if (entity->HasComponent<HealthComponent>())
+		if (HealthComponent* healthComponent = m_registry.try_get<HealthComponent>(entity))
 		{
-			auto& entityHealth = entity->GetComponent<HealthComponent>();
-
 			creationEvent.healthProperties.emplace();
-			creationEvent.healthProperties->currentHealth = entityHealth.GetHealth();
-			creationEvent.healthProperties->maxHealth = entityHealth.GetMaxHealth();
+			creationEvent.healthProperties->currentHealth = healthComponent->GetHealth();
+			creationEvent.healthProperties->maxHealth = healthComponent->GetMaxHealth();
 		}
 
-		if (entity->HasComponent<InputComponent>())
-		{
-			auto& entityInputs = entity->GetComponent<InputComponent>();
+		if (InputComponent* entityInputs = m_registry.try_get<InputComponent>(entity))
+			creationEvent.inputs = entityInputs->GetInputs();
 
-			creationEvent.inputs = entityInputs.GetInputs();
-		}
-
-		if (entity->HasComponent<OwnerComponent>())
-			creationEvent.playerOwner = entity->GetComponent<OwnerComponent>().GetOwner();
+		if (OwnerComponent* entityOwner = m_registry.try_get<OwnerComponent>(entity))
+			creationEvent.playerOwner = entityOwner->GetOwner();
 		else
 			creationEvent.playerOwner = nullptr;
 
-		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
 		creationEvent.scale = entityNode.GetScale().y; //< x is affected by the "looking right" flag
 
-		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		if (Nz::RigidBody2DComponent* entityPhys = m_registry.try_get<Nz::RigidBody2DComponent>(entity))
 		{
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-
-			creationEvent.position = entityPhys.GetPosition();
-			creationEvent.rotation = entityPhys.GetRotation();
+			creationEvent.position = entityPhys->GetPosition();
+			creationEvent.rotation = entityPhys->GetRotation();
 
 			creationEvent.physicsProperties.emplace();
-			creationEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
-			creationEvent.physicsProperties->isSleeping = entityPhys.IsSleeping();
-			creationEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
-			creationEvent.physicsProperties->mass = entityPhys.GetMass();
-			creationEvent.physicsProperties->momentOfInertia = entityPhys.GetMomentOfInertia();
+			creationEvent.physicsProperties->angularVelocity = entityPhys->GetAngularVelocity();
+			creationEvent.physicsProperties->isSleeping = entityPhys->IsSleeping();
+			creationEvent.physicsProperties->linearVelocity = entityPhys->GetVelocity();
+			creationEvent.physicsProperties->mass = entityPhys->GetMass();
+			creationEvent.physicsProperties->momentOfInertia = entityPhys->GetMomentOfInertia();
 		}
 		else
 		{
-			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local))); //< Erk
+			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Local));
+			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Local))); //< Eww
 		}
 
-		if (entity->HasComponent<PlayerMovementComponent>())
+		if (PlayerMovementComponent* entityPlayerMovement = m_registry.try_get<PlayerMovementComponent>(entity))
 		{
-			auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
-
 			creationEvent.playerMovement.emplace();
-			creationEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
+			creationEvent.playerMovement->isFacingRight = entityPlayerMovement->IsFacingRight();
 		}
 
-		if (entity->HasComponent<ScriptComponent>())
+		if (ScriptComponent* scriptComponent = m_registry.try_get<ScriptComponent>(entity))
 		{
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			const auto& element = scriptComponent->GetElement();
 
-			const auto& element = scriptComponent.GetElement();
-
-			for (const auto& [key, value] : scriptComponent.GetProperties())
+			for (const auto& [key, value] : scriptComponent->GetProperties())
 			{
 				auto it = element->properties.find(key);
 				assert(it != element->properties.end());
@@ -152,11 +158,13 @@ namespace bw
 
 				auto RegisterDependentId = [&](EntityId entityId)
 				{
-					const Ndk::EntityHandle& propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
+					entt::handle propertyEntity = m_layer.GetMatch().RetrieveEntityByUniqueId(entityId);
 					if (propertyEntity)
 					{
-						auto& propertyEntityMatch = propertyEntity->GetComponent<MatchComponent>();
-						creationEvent.dependentIds.emplace_back(propertyEntityMatch.GetLayerIndex(), propertyEntity->GetId());
+						Nz::UInt32 networkId = propertyEntity.get<NetworkSyncComponent>().GetNetworkId();
+
+						auto& propertyEntityMatch = propertyEntity.get<MatchComponent>();
+						creationEvent.dependentIds.emplace_back(propertyEntityMatch.GetLayerIndex(), networkId);
 					}
 				};
 
@@ -181,91 +189,98 @@ namespace bw
 			}
 		}
 
-		if (entity->HasComponent<WeaponWielderComponent>())
+		if (WeaponWielderComponent* entityWeaponWielder = m_registry.try_get<WeaponWielderComponent>(entity))
 		{
-			auto& entityWeaponWielder = entity->GetComponent<WeaponWielderComponent>();
-
-			if (const Ndk::EntityHandle& activeWeapon = entityWeaponWielder.GetActiveWeapon())
-				creationEvent.weapon = activeWeapon->GetId();
+			if (entt::handle activeWeapon = entityWeaponWielder->GetActiveWeapon())
+			{
+				Nz::UInt32 networkId = activeWeapon.get<NetworkSyncComponent>().GetNetworkId();
+				creationEvent.weapon = networkId;
+			}
 		}
 	}
 
-	void NetworkSyncSystem::BuildEvent(EntityDeath& deathEvent, Ndk::Entity* entity) const
+	void NetworkSyncSystem::BuildEvent(EntityDeath& deathEvent, entt::entity entity) const
 	{
-		deathEvent.entityId = entity->GetId();
+		const NetworkSyncComponent& syncComponent = m_registry.get<NetworkSyncComponent>(entity);
+		deathEvent.entityId = syncComponent.GetNetworkId();
 	}
 
-	void NetworkSyncSystem::BuildEvent(EntityDestruction& deleteEvent, Ndk::Entity* entity) const
+	void NetworkSyncSystem::BuildEvent(EntityDestruction& deleteEvent, entt::entity entity) const
 	{
-		deleteEvent.entityId = entity->GetId();
+		const NetworkSyncComponent& syncComponent = m_registry.get<NetworkSyncComponent>(entity);
+		deleteEvent.entityId = syncComponent.GetNetworkId();
 	}
 
-	void NetworkSyncSystem::BuildEvent(EntityMovement& movementEvent, Ndk::Entity* entity) const
+	void NetworkSyncSystem::BuildEvent(EntityMovement& movementEvent, entt::entity entity) const
 	{
-		movementEvent.entityId = entity->GetId();
+		const NetworkSyncComponent& syncComponent = m_registry.get<NetworkSyncComponent>(entity);
+		movementEvent.entityId = syncComponent.GetNetworkId();
 
-		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
+		if (Nz::RigidBody2DComponent* entityPhys = m_registry.try_get<Nz::RigidBody2DComponent>(entity))
 		{
 			//TODO: Handle parents?
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
-			movementEvent.position = entityPhys.GetPosition();
-			movementEvent.rotation = entityPhys.GetRotation();
+			movementEvent.position = entityPhys->GetPosition();
+			movementEvent.rotation = entityPhys->GetRotation();
 
 			movementEvent.physicsProperties.emplace();
-			movementEvent.physicsProperties->angularVelocity = entityPhys.GetAngularVelocity();
-			movementEvent.physicsProperties->isSleeping = entityPhys.IsSleeping();
-			movementEvent.physicsProperties->linearVelocity = entityPhys.GetVelocity();
-			movementEvent.physicsProperties->mass = entityPhys.GetMass();
+			movementEvent.physicsProperties->angularVelocity = entityPhys->GetAngularVelocity();
+			movementEvent.physicsProperties->isSleeping = entityPhys->IsSleeping();
+			movementEvent.physicsProperties->linearVelocity = entityPhys->GetVelocity();
+			movementEvent.physicsProperties->mass = entityPhys->GetMass();
 		}
 		else
 		{
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Local));
-			movementEvent.rotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys_Local)); //< Erk
+			auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
+			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Local));
+			movementEvent.rotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Local)); //< Ew
 		}
 
-		if (entity->HasComponent<PlayerMovementComponent>())
+		if (PlayerMovementComponent* entityPlayerMovement = m_registry.try_get<PlayerMovementComponent>(entity))
 		{
-			auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
-
 			movementEvent.playerMovement.emplace();
-			movementEvent.playerMovement->isFacingRight = entityPlayerMovement.IsFacingRight();
+			movementEvent.playerMovement->isFacingRight = entityPlayerMovement->IsFacingRight();
 		}
 	}
 
-	void NetworkSyncSystem::OnEntityAdded(Ndk::Entity* entity)
+	void NetworkSyncSystem::FreeNetworkId(Nz::UInt32 networkId)
+	{
+		assert(!m_freeNetworkIds.UnboundedTest(networkId));
+		m_freeNetworkIds.Set(networkId, true);
+	}
+
+	void NetworkSyncSystem::HandleNewEntity(entt::entity entity)
 	{
 		EntityCreation creationEvent;
 		BuildEvent(creationEvent, entity);
 
 		OnEntityCreated(this, creationEvent);
 
-		assert(m_entitySlots.find(entity->GetId()) == m_entitySlots.end());
-		auto& slots = m_entitySlots.emplace(entity->GetId(), EntitySlots()).first.value();
+		assert(m_entitySlots.find(entity) == m_entitySlots.end());
+		auto& slots = m_entitySlots.emplace(entity, EntitySlots()).first.value();
 
-		if (entity->HasComponent<Ndk::PhysicsComponent2D>())
-			m_physicsEntities.Insert(entity);
+		if (m_registry.try_get<Nz::RigidBody2DComponent>(entity))
+			m_physicsEntities.insert(entity);
 		else
-			m_staticEntities.Insert(entity);
+			m_staticEntities.insert(entity);
 
-		if (entity->HasComponent<AnimationComponent>())
+		Nz::UInt32 networkId = creationEvent.entityId;
+
+		if (AnimationComponent* entityAnim = m_registry.try_get<AnimationComponent>(entity))
 		{
-			slots.onAnimationStart.Connect(entity->GetComponent<AnimationComponent>().OnAnimationStart, [&](AnimationComponent* anim)
+			slots.onAnimationStart.Connect(entityAnim->OnAnimationStart, [this, networkId](AnimationComponent* anim)
 			{
 				EntityPlayAnimation event;
 				event.animId = anim->GetAnimId();
-				event.entityId = anim->GetEntity()->GetId();
+				event.entityId = networkId;
 				event.startTime = anim->GetStartTime();
 
 				OnEntityPlayAnimation(this, event);
 			});
 		}
 
-		if (entity->HasComponent<HealthComponent>())
+		if (HealthComponent* entityHealth = m_registry.try_get<HealthComponent>(entity))
 		{
-			auto& entityHealth = entity->GetComponent<HealthComponent>();
-
-			slots.onDied.Connect(entityHealth.OnDied, [&](const HealthComponent* health, const Ndk::EntityHandle& /*attacker*/)
+			slots.onDied.Connect(entityHealth->OnDie, [this](const HealthComponent* health, entt::entity /*attacker*/)
 			{
 				EntityDeath deathEvent;
 				BuildEvent(deathEvent, health->GetEntity());
@@ -273,63 +288,64 @@ namespace bw
 				OnEntityDeath(this, deathEvent);
 			});
 
-			slots.onHealthChange.Connect(entityHealth.OnHealthChange, [&](HealthComponent* health, Nz::UInt16 /*newHealth*/, const Ndk::EntityHandle& /*dealer*/)
+			slots.onHealthChange.Connect(entityHealth->OnHealthChange, [this, networkId](HealthComponent* health, Nz::UInt16 /*newHealth*/, entt::entity /*dealer*/)
 			{
-				m_healthUpdateEntities.Insert(health->GetEntity());
+				m_healthUpdateEntities.insert(health->GetEntity());
 			});
 		}
 
-		if (entity->HasComponent<InputComponent>())
+		if (InputComponent* entityInput = m_registry.try_get<InputComponent>(entity))
 		{
-			slots.onInputUpdate.Connect(entity->GetComponent<InputComponent>().OnInputUpdate, [&](InputComponent* input)
+			slots.onInputUpdate.Connect(entityInput->OnInputUpdate, [this](InputComponent* input)
 			{
-				m_inputUpdateEntities.Insert(input->GetEntity());
+				m_inputUpdateEntities.insert(input->GetEntity());
 			});
 		}
 
-		if (entity->HasComponent<WeaponWielderComponent>())
+		if (WeaponWielderComponent* entityWeaponWielder = m_registry.try_get<WeaponWielderComponent>(entity))
 		{
-			auto& entityWeaponWielder = entity->GetComponent<WeaponWielderComponent>();
-
-			slots.onNewWeaponSelection.Connect(entityWeaponWielder.OnNewWeaponSelection, [&](WeaponWielderComponent* wielder, std::size_t /*newWeaponIndex*/)
+			slots.onNewWeaponSelection.Connect(entityWeaponWielder->OnNewWeaponSelection, [this](WeaponWielderComponent* wielder, std::size_t /*newWeaponIndex*/)
 			{
-				m_weaponUpdateEntities.Insert(wielder->GetEntity());
+				m_weaponUpdateEntities.insert(wielder->GetEntity());
 			});
 		}
 	}
 
-	void NetworkSyncSystem::OnEntityRemoved(Ndk::Entity* entity)
+	void NetworkSyncSystem::OnComponentRemoved(entt::entity entity)
 	{
 		EntityDestruction destructionEvent;
 		BuildEvent(destructionEvent, entity);
 
 		OnEntityDeleted(this, destructionEvent);
 
-		m_healthUpdateEntities.Remove(entity);
-		m_inputUpdateEntities.Remove(entity);
-		m_physicsEntities.Remove(entity);
-		m_physicsUpdateEntities.Remove(entity);
-		m_staticEntities.Remove(entity);
-		m_weaponUpdateEntities.Remove(entity);
+		m_healthUpdateEntities.erase(entity);
+		m_inputUpdateEntities.erase(entity);
+		m_physicsEntities.erase(entity);
+		m_physicsUpdateEntities.erase(entity);
+		m_staticEntities.erase(entity);
+		m_weaponUpdateEntities.erase(entity);
 
-		auto it = m_entitySlots.find(entity->GetId());
+		auto it = m_entitySlots.find(entity);
 		assert(it != m_entitySlots.end());
 		m_entitySlots.erase(it);
 	}
 
-	void NetworkSyncSystem::OnUpdate(float /*elapsedTime*/)
+	void NetworkSyncSystem::Update(float /*elapsedTime*/)
 	{
 		if (!m_healthUpdateEntities.empty())
 		{
 			m_healthEvents.clear();
 
-			for (const auto& entity : m_healthUpdateEntities)
+			for (entt::entity entity : m_healthUpdateEntities)
 			{
+				const auto& entityHealth = m_registry.get<HealthComponent>(entity);
+				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
+
 				EntityHealth& healthEvent = m_healthEvents.emplace_back();
-				healthEvent.entityId = entity->GetId();
-				healthEvent.currentHealth = entity->GetComponent<HealthComponent>().GetHealth();
+				healthEvent.entityId = entityNetwork.GetNetworkId();
+				healthEvent.currentHealth = entityHealth.GetHealth();
 			}
-			m_healthUpdateEntities.Clear();
+			m_healthUpdateEntities.clear();
 
 			OnEntitiesHealthUpdate(this, m_healthEvents.data(), m_healthEvents.size());
 		}
@@ -338,14 +354,17 @@ namespace bw
 		{
 			m_inputEvents.clear();
 
-			for (const auto& entity : m_inputUpdateEntities)
+			for (entt::entity entity : m_inputUpdateEntities)
 			{
+				const auto& entityInputs = m_registry.get<InputComponent>(entity);
+				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
+
 				EntityInputs& inputEvent = m_inputEvents.emplace_back();
-				inputEvent.entityId = entity->GetId();
-				inputEvent.inputs = entity->GetComponent<InputComponent>().GetInputs();
+				inputEvent.entityId = entityNetwork.GetNetworkId();
+				inputEvent.inputs = entityInputs.GetInputs();
 			}
 
-			m_inputUpdateEntities.Clear();
+			m_inputUpdateEntities.clear();
 
 			OnEntitiesInputUpdate(this, m_inputEvents.data(), m_inputEvents.size());
 		}
@@ -360,35 +379,36 @@ namespace bw
 				OnEntityInvalidated(this, movementEvent);
 			}
 
-			m_movedStaticEntities.Clear();
+			m_movedStaticEntities.clear();
 		}
 
 		if (!m_physicsUpdateEntities.empty())
 		{
 			m_physicsEvent.clear();
 
-			for (const auto& entity : m_physicsUpdateEntities)
+			for (entt::entity entity : m_physicsUpdateEntities)
 			{
-				EntityPhysics& physicsEvent = m_physicsEvent.emplace_back();
-				physicsEvent.entityId = entity->GetId();
+				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
+				const auto& entityPhysics = m_registry.get<Nz::RigidBody2DComponent>(entity);
 
-				auto& entityPhysics = entity->GetComponent<Ndk::PhysicsComponent2D>();
+				EntityPhysics& physicsEvent = m_physicsEvent.emplace_back();
+				physicsEvent.entityId = entityNetwork.GetNetworkId();
+
 				physicsEvent.isAsleep = entityPhysics.IsSleeping();
 				physicsEvent.mass = entityPhysics.GetMass();
 				physicsEvent.momentOfInertia = entityPhysics.GetMomentOfInertia();
 
-				if (entity->HasComponent<PlayerMovementComponent>())
+				if (PlayerMovementComponent* entityPlayerMovement = m_registry.try_get<PlayerMovementComponent>(entity))
 				{
 					auto& playerMovementData = physicsEvent.playerMovement.emplace();
 				
-					auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
-					playerMovementData.jumpHeight = entityPlayerMovement.GetJumpHeight();
-					playerMovementData.jumpHeightBoost = entityPlayerMovement.GetJumpBoostHeight();
-					playerMovementData.movementSpeed = entityPlayerMovement.GetMovementSpeed();
+					playerMovementData.jumpHeight = entityPlayerMovement->GetJumpHeight();
+					playerMovementData.jumpHeightBoost = entityPlayerMovement->GetJumpBoostHeight();
+					playerMovementData.movementSpeed = entityPlayerMovement->GetMovementSpeed();
 				}
 			}
 
-			m_physicsUpdateEntities.Clear();
+			m_physicsUpdateEntities.clear();
 
 			OnEntitiesPhysicsUpdate(this, m_physicsEvent.data(), m_physicsEvent.size());
 		}
@@ -397,16 +417,17 @@ namespace bw
 		{
 			m_scaleEvent.clear();
 
-			for (const auto& entity : m_scaleUpdateEntities)
+			for (entt::entity entity : m_scaleUpdateEntities)
 			{
-				auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
+				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
+				const auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
 
 				EntityScale& scaleEvent = m_scaleEvent.emplace_back();
-				scaleEvent.entityId = entity->GetId();
+				scaleEvent.entityId = entityNetwork.GetNetworkId();
 				scaleEvent.newScale = entityNode.GetScale().y;
 			}
 
-			m_scaleUpdateEntities.Clear();
+			m_scaleUpdateEntities.clear();
 
 			OnEntitiesScaleUpdate(this, m_scaleEvent.data(), m_scaleEvent.size());
 		}
@@ -415,24 +436,23 @@ namespace bw
 		{
 			m_weaponEvents.clear();
 
-			for (const auto& entity : m_weaponUpdateEntities)
+			for (entt::entity entity : m_weaponUpdateEntities)
 			{
-				auto& weaponWielder = entity->GetComponent<WeaponWielderComponent>();
+				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
+				const auto& entityWeaponWielder = m_registry.get<WeaponWielderComponent>(entity);
 
-				std::size_t selectedWeapon = weaponWielder.GetSelectedWeapon();
+				std::size_t selectedWeapon = entityWeaponWielder.GetSelectedWeapon();
 
 				EntityWeapon& weaponEvent = m_weaponEvents.emplace_back();
-				weaponEvent.entityId = entity->GetId();
+				weaponEvent.entityId = entityNetwork.GetNetworkId();
 
 				if (selectedWeapon != WeaponWielderComponent::NoWeapon)
-					weaponEvent.weaponId = weaponWielder.GetWeapon(selectedWeapon)->GetId();
+					weaponEvent.weaponId = entityWeaponWielder.GetWeapon(selectedWeapon).get<NetworkSyncComponent>().GetNetworkId();
 			}
 
-			m_weaponUpdateEntities.Clear();
+			m_weaponUpdateEntities.clear();
 
 			OnEntitiesWeaponUpdate(this, m_weaponEvents.data(), m_weaponEvents.size());
 		}
 	}
-
-	Ndk::SystemIndex NetworkSyncSystem::systemIndex;
 }

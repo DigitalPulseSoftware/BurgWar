@@ -6,4 +6,9 @@
 
 namespace bw
 {
+	inline AnimationSystem::AnimationSystem(entt::registry& registry, SharedMatch& match) :
+	m_registry(registry),
+	m_match(match)
+	{
+	}
 }

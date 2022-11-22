@@ -16,8 +16,8 @@ namespace bw
 	template<typename F>
 	void MatchSessions::ForEachSession(F&& cb)
 	{
-		for (const auto& pair : m_sessionIdToSession)
-			cb(pair.second);
+		for (MatchClientSession& session : m_sessionPool)
+			cb(session);
 	}
 
 	inline Match& MatchSessions::GetMatch()

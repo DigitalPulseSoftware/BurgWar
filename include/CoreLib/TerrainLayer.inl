@@ -6,4 +6,8 @@
 
 namespace bw
 {
+	inline NetworkSyncSystem& TerrainLayer::GetNetworkSyncSystem()
+	{
+		return GetSystemGraph().GetSystem<NetworkSyncSystem>();
+	}
 }

@@ -28,24 +28,24 @@ namespace bw
 
 	void WebRequest::ForceProtocol(Nz::NetProtocol protocol)
 	{
-		assert(protocol != Nz::NetProtocol_Unknown);
+		assert(protocol != Nz::NetProtocol::Unknown);
 
 		auto& libcurl = WebService::GetLibcurl();
 		switch (protocol)
 		{
-			case Nz::NetProtocol_Any:
+			case Nz::NetProtocol::Any:
 				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_WHATEVER);
 				break;
 
-			case Nz::NetProtocol_IPv4:
+			case Nz::NetProtocol::IPv4:
 				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 				break;
 
-			case Nz::NetProtocol_IPv6:
+			case Nz::NetProtocol::IPv6:
 				libcurl.easy_setopt(m_curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
 				break;
 
-			case Nz::NetProtocol_Unknown:
+			case Nz::NetProtocol::Unknown:
 				break;
 		}
 	}

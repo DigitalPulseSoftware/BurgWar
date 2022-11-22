@@ -8,14 +8,13 @@
 #define BURGWAR_CLIENTLIB_CHATBOX_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
-#include <NDK/Canvas.hpp>
-#include <NDK/Entity.hpp>
-#include <NDK/EntityOwner.hpp>
-#include <NDK/Widgets/RichTextAreaWidget.hpp>
-#include <NDK/Widgets/ScrollAreaWidget.hpp>
-#include <NDK/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
+#include <CoreLib/EntityOwner.hpp>
+#include <Nazara/Widgets/RichTextAreaWidget.hpp>
+#include <Nazara/Widgets/ScrollAreaWidget.hpp>
+#include <Nazara/Widgets/TextAreaWidget.hpp>
 #include <variant>
 
 namespace bw
@@ -37,7 +36,7 @@ namespace bw
 
 			using Item = std::variant<ColorItem, TextItem>;
 
-			Chatbox(const Logger& logger, Nz::RenderTarget* rt, Ndk::Canvas* canvas);
+			Chatbox(const Logger& logger, Nz::RenderTarget* rt, Nz::Canvas* canvas);
 			Chatbox(const Chatbox&) = delete;
 			Chatbox(Chatbox&&) = delete;
 			~Chatbox();
@@ -60,15 +59,15 @@ namespace bw
 			NazaraSignal(OnChatMessage, const std::string& /*message*/);
 
 		private:
-			void OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget);
+			void OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget, const Nz::Vector2ui& newSize);
 			void Refresh();
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
 			std::vector<std::vector<Item>> m_chatLines;
-			Ndk::ScrollAreaWidget* m_chatboxScrollArea;
-			Ndk::RichTextAreaWidget* m_chatBox;
-			Ndk::TextAreaWidget* m_chatEnteringBox;
+			Nz::RichTextAreaWidget* m_chatBox;
+			Nz::ScrollAreaWidget* m_chatboxScrollArea;
+			Nz::TextAreaWidget* m_chatEnteringBox;
 			const Logger& m_logger;
 	};
 }

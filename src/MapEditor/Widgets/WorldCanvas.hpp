@@ -28,8 +28,8 @@ namespace bw
 			inline const CameraMovement& GetCameraController() const;
 			inline Camera& GetCamera();
 			inline const Camera& GetCamera() const;
-			inline Ndk::World& GetWorld();
-			inline const Ndk::World& GetWorld() const;
+			inline entt::registry& GetWorld();
+			inline const entt::registry& GetWorld() const;
 
 			void UpdateBackgroundColor(Nz::Color color);
 
@@ -51,7 +51,7 @@ namespace bw
 		private:
 			std::optional<CameraMovement> m_cameraMovement;
 			Nz::Color m_backgroundColor;
-			Ndk::World m_world;
+			entt::registry m_world;
 			Camera m_camera;
 	};
 }

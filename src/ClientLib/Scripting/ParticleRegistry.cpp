@@ -2,6 +2,8 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#if 0
+
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
@@ -331,7 +333,7 @@ namespace bw
 					auto velPtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Velocity);
 
 					auto& gen = GetRandomGenerator();
-					std::uniform_real_distribution<float> disAngle(-float(M_PI), float(M_PI));
+					std::uniform_real_distribution<float> disAngle(-Nz::Pi<float>, Nz::Pi<float>);
 					std::uniform_real_distribution<float> disLength(minSpeed, maxSpeed);
 
 					for (unsigned int i = startId; i <= endId; ++i)
@@ -409,3 +411,5 @@ namespace bw
 		return factory(parameters);
 	}
 }
+
+#endif

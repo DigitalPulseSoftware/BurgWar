@@ -9,7 +9,7 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <NDK/Components/CameraComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 #include <QtGui/QResizeEvent>
 
@@ -28,7 +28,7 @@ namespace bw
 		renderSystem.SetDefaultBackground(nullptr);
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
-		const Ndk::EntityHandle& camera2D = m_world.CreateEntity();
+		entt::entity camera2D = m_world.CreateEntity();
 		camera2D->AddComponent<Ndk::NodeComponent>();
 
 		auto& cameraComponent2D = camera2D->AddComponent<Ndk::CameraComponent>();

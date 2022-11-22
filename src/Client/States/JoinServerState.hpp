@@ -37,10 +37,10 @@ namespace bw
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
 			Ndk::BoxLayout* m_serverAddressLayout;
-			Ndk::ButtonWidget* m_backButton;
-			Ndk::ButtonWidget* m_connectionButton;
-			Ndk::LabelWidget* m_serverLabel;
-			Ndk::LabelWidget* m_statusLabel;
+			Nz::ButtonWidget* m_backButton;
+			Nz::ButtonWidget* m_connectionButton;
+			Nz::LabelWidget* m_serverLabel;
+			Nz::LabelWidget* m_statusLabel;
 			Ndk::TextAreaWidget* m_serverAddressArea;
 			Ndk::TextAreaWidget* m_serverPortArea;
 	};

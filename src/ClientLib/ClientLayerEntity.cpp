@@ -14,11 +14,11 @@
 #include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/Components.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	ClientLayerEntity::ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
+	ClientLayerEntity::ClientLayerEntity(ClientLayer& layer, entt::handle entity, Nz::UInt32 serverEntityId, EntityId uniqueId) :
 	LayerVisualEntity(entity, layer.GetLayerIndex(), uniqueId),
 	m_serverEntityId(serverEntityId),
 	m_layer(layer)
@@ -39,7 +39,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetAngularVelocity();
 	}
 
@@ -47,12 +47,12 @@ namespace bw
 	{
 		if (!m_ghostEntity)
 		{
-			const Ndk::EntityHandle& ghostEntity = GetEntity()->GetWorld()->CreateEntity();
-			ghostEntity->AddComponent<Ndk::NodeComponent>();
+			/*entt::entity ghostEntity = GetEntity()->GetWorld()->CreateEntity();
+			ghostEntity->AddComponent<Nz::NodeComponent>();
 
 			m_ghostEntity = std::make_unique<ClientLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetClientMatch().AllocateClientUniqueId());
 
-			/*for (auto& renderable : m_attachedRenderables)
+			for (auto& renderable : m_attachedRenderables)
 			{
 				if (std::unique_ptr<Nz::InstancedRenderable> clonedRenderable = renderable.renderable->Clone())
 				{
@@ -86,7 +86,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetVelocity();
 	}
 
@@ -94,7 +94,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 		
-		auto& entityPhys = GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetPosition();
 	}
 
@@ -102,19 +102,19 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetRotation();
 	}
 
 	Nz::Vector2f ClientLayerEntity::GetPosition() const
 	{
-		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = GetEntity().get<Nz::NodeComponent>();
 		return Nz::Vector2f(entityNode.GetPosition()); //< FIXME
 	}
 
 	Nz::RadianAnglef ClientLayerEntity::GetRotation() const
 	{
-		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = GetEntity().get<Nz::NodeComponent>();
 		return AngleFromQuaternion(entityNode.GetRotation()); //< FIXME
 	}
 
@@ -125,13 +125,13 @@ namespace bw
 		healthData.maxHealth = maxHealth;
 		healthData.spriteWidth = GetLocalBounds().width * 0.85f;
 
-		Nz::SpriteRef lostHealthBar = Nz::Sprite::New();
+		/*std::shared_ptr<Nz::Sprite> lostHealthBar = Nz::Sprite::New();
 		lostHealthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
 		lostHealthBar->SetSize(healthData.spriteWidth, 10);
 		lostHealthBar->SetColor(Nz::Color::Red);
 		lostHealthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, lostHealthBar->GetSize().y));
 
-		Nz::SpriteRef healthBar = Nz::Sprite::New();
+		std::shared_ptr<Nz::Sprite> healthBar = Nz::Sprite::New();
 		healthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
 		healthBar->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
 		healthBar->SetColor(Nz::Color::Green);
@@ -139,30 +139,30 @@ namespace bw
 
 		healthData.lostHealthSprite = lostHealthBar;
 		healthData.healthSprite = healthBar;
-
+		*/
 		if (currentHealth != maxHealth)
 			ShowHealthBar();
 	}
 
 	bool ClientLayerEntity::IsFacingRight() const
 	{
-		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = GetEntity().get<Nz::NodeComponent>();
 		return entityNode.GetScale().x > 0.f;
 	}
 
 	void ClientLayerEntity::UpdateAnimation(Nz::UInt8 animationId)
 	{
-		auto& animComponent = GetEntity()->GetComponent<AnimationComponent>();
+		auto& animComponent = GetEntity().get<AnimationComponent>();
 		animComponent.Play(animationId, m_layer.GetMatch().GetCurrentTime());
 	}
 
 	void ClientLayerEntity::UpdatePlayerMovement(bool isFacingRight)
 	{
-		auto& playerMovementComponent = GetEntity()->GetComponent<PlayerMovementComponent>();
+		auto& playerMovementComponent = GetEntity().get<PlayerMovementComponent>();
 
 		if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
 		{
-			auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = GetEntity().get<Nz::NodeComponent>();
 			entityNode.Scale(-1.f, 1.f);
 		}
 	}
@@ -176,34 +176,33 @@ namespace bw
 			return;
 
 		m_health->currentHealth = newHealth;
-		m_health->healthSprite->SetSize(m_health->spriteWidth * m_health->currentHealth / m_health->maxHealth, 10);
+		m_health->healthSprite->SetSize(Nz::Vector2f(m_health->spriteWidth * m_health->currentHealth / m_health->maxHealth, 10));
 
 		if (m_health->currentHealth == m_health->maxHealth)
 			HideHealthBar();
 		else
 			ShowHealthBar();
 
-		if (GetEntity()->HasComponent<ScriptComponent>())
+		if (ScriptComponent* scriptComponent = GetEntity().try_get<ScriptComponent>())
 		{
-			auto& scriptComponent = GetEntity()->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ElementEvent::HealthUpdate>(oldHealth, newHealth);
+			scriptComponent->ExecuteCallback<ElementEvent::HealthUpdate>(oldHealth, newHealth);
 
 			if (newHealth == 0)
 			{
-				scriptComponent.ExecuteCallback<ElementEvent::Death>();
-				scriptComponent.ExecuteCallback<ElementEvent::Died>();
+				scriptComponent->ExecuteCallback<ElementEvent::Death>();
+				scriptComponent->ExecuteCallback<ElementEvent::Died>();
 			}
 		}
 	}
 
 	void ClientLayerEntity::UpdateInputs(const PlayerInputData& inputData)
 	{
-		GetEntity()->GetComponent<InputComponent>().UpdateInputs(inputData);
+		GetEntity().get<InputComponent>().UpdateInputs(inputData);
 	}
 
 	void ClientLayerEntity::UpdateParent(const ClientLayerEntity* newParent)
 	{
-		auto& entityNode = GetEntity()->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = GetEntity().get<Nz::NodeComponent>();
 		if (newParent)
 			entityNode.SetParent(newParent->GetEntity(), true);
 		else
@@ -214,7 +213,7 @@ namespace bw
 	{
 		if (m_weaponEntity)
 		{
-			auto& entityWeapon = m_weaponEntity->GetEntity()->GetComponent<WeaponComponent>();
+			auto& entityWeapon = m_weaponEntity->GetEntity().get<WeaponComponent>();
 			entityWeapon.SetActive(false);
 
 			m_weaponEntity->Disable();
@@ -223,7 +222,7 @@ namespace bw
 		m_weaponEntity = entity;
 		if (m_weaponEntity)
 		{
-			auto& entityWeapon = m_weaponEntity->GetEntity()->GetComponent<WeaponComponent>();
+			auto& entityWeapon = m_weaponEntity->GetEntity().get<WeaponComponent>();
 			entityWeapon.SetActive(true);
 
 			m_weaponEntity->Enable();

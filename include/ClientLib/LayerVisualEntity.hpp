@@ -15,7 +15,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -32,22 +32,22 @@ namespace bw
 		friend VisualEntity;
 
 		public:
-			inline LayerVisualEntity(const Ndk::EntityHandle& entity, LayerIndex layerIndex, EntityId uniqueId);
+			inline LayerVisualEntity(entt::handle entity, LayerIndex layerIndex, EntityId uniqueId);
 			LayerVisualEntity(const LayerVisualEntity&) = delete;
 			LayerVisualEntity(LayerVisualEntity&& entity) noexcept;
 			virtual ~LayerVisualEntity();
 
-			void AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight);
-			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
-			void DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable);
-			void DetachRenderable(const Nz::InstancedRenderableRef& renderable);
+			void AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight);
+			void AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
+			void DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
+			void DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
 
 			inline void Disable();
 			void Enable(bool enable = true);
 
 			template<typename Func> void ForEachRenderable(Func&& func) const;
 
-			inline const Ndk::EntityHandle& GetEntity() const;
+			inline entt::handle GetEntity() const;
 			Nz::Boxf GetGlobalBounds() const;
 			inline LayerIndex GetLayerIndex() const;
 			Nz::Boxf GetLocalBounds() const;
@@ -58,9 +58,9 @@ namespace bw
 
 			void SyncVisuals();
 
-			void UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight);
-			void UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
-			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight);
+			void UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
 			void UpdateScale(float newScale);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel);
@@ -75,7 +75,7 @@ namespace bw
 
 			struct RenderableData
 			{
-				Nz::InstancedRenderableRef renderable;
+				std::shared_ptr<Nz::InstancedRenderable> renderable;
 				Nz::Matrix4f offsetMatrix;
 				int renderOrder;
 			};
@@ -89,7 +89,7 @@ namespace bw
 			std::vector<HoveringRenderableData> m_attachedHoveringRenderables;
 			std::vector<RenderableData> m_attachedRenderables;
 			std::vector<VisualEntity*> m_visualEntities;
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			EntityId m_uniqueId;
 			LayerIndex m_layerIndex;
 	};

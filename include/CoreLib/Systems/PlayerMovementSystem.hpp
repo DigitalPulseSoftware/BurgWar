@@ -8,23 +8,31 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
+#include <unordered_set>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API PlayerMovementSystem : public Ndk::System<PlayerMovementSystem>
+	class BURGWAR_CORELIB_API PlayerMovementSystem
 	{
-		public:
-			PlayerMovementSystem();
-			~PlayerMovementSystem() = default;
+		static constexpr Nz::Int64 ExecutionOrder = 50;
 
-			static Ndk::SystemIndex systemIndex;
+		public:
+			PlayerMovementSystem(entt::registry& registry);
+			~PlayerMovementSystem();
+
+			void Update(float elapsedTime);
 
 		private:
-			void OnEntityAdded(Ndk::Entity* entity) override;
-			void OnEntityRemoved(Ndk::Entity* entity) override;
-			void OnUpdate(float elapsedTime) override;
+			void OnMovementDestroy(entt::registry& registry, entt::entity entity);
+			void OnInputDestroy(entt::registry& registry, entt::entity entity);
+
+			entt::connection m_inputDestroyConnection;
+			entt::connection m_movementDestroyConnection;
+			entt::observer m_controllerObserver;
+			entt::registry& m_registry;
+			std::unordered_set<entt::entity> m_inputControlledEntities;
 	};
 }
 

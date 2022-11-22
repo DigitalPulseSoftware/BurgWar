@@ -8,24 +8,23 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_ANIMATIONSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
 {
 	class SharedMatch;
 
-	class BURGWAR_CORELIB_API AnimationSystem : public Ndk::System<AnimationSystem>
+	class BURGWAR_CORELIB_API AnimationSystem
 	{
 		public:
-			AnimationSystem(SharedMatch& match);
+			inline AnimationSystem(entt::registry& registry, SharedMatch& match);
 			~AnimationSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
+			void Update(float elapsedTime);
 
 		private:
-			void OnUpdate(float elapsedTime) override;
-
+			entt::registry& m_registry;
 			SharedMatch& m_match;
 	};
 }

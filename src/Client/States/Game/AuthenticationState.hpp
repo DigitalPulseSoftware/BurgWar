@@ -10,7 +10,7 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <Client/States/Game/CancelableState.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 #include <optional>
 
 namespace bw

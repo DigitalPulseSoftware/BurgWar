@@ -6,15 +6,16 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& VisualEntity::GetEntity() const
+	inline entt::handle VisualEntity::GetEntity() const
 	{
 		return m_entity;
 	}
 
 	inline void VisualEntity::Enable(bool enable)
 	{
-		m_entity->Enable(enable);
+		// TODO
+		/*m_entity->Enable(enable);
 		for (auto& hoveringRenderable : m_hoveringRenderables)
-			hoveringRenderable.entity->Enable(enable);
+			hoveringRenderable.entity->Enable(enable);*/
 	}
 }

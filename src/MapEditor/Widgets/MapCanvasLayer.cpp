@@ -6,7 +6,7 @@
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <MapEditor/Components/CanvasComponent.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -39,7 +39,7 @@ namespace bw
 		{
 			bwLog(m_mapCanvas.GetLogger(), LogLevel::Error, "Failed to instantiate entity of type {}: {}", entityClass, e.what());
 
-			const Ndk::EntityHandle& dummyEntity = GetWorld().CreateEntity();
+			entt::entity dummyEntity = GetWorld().CreateEntity();
 			dummyEntity->AddComponent<Ndk::NodeComponent>();
 
 			LayerVisualEntity visualEntity(dummyEntity, GetLayerIndex(), uniqueId);

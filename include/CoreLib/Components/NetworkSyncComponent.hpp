@@ -8,32 +8,43 @@
 #define BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
-#include <NDK/Component.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
+#include <Nazara/Utils/Signal.hpp>
+#include <entt/entt.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API NetworkSyncComponent : public Ndk::Component<NetworkSyncComponent>
+	class NetworkSyncSystem;
+
+	class BURGWAR_CORELIB_API NetworkSyncComponent
 	{
 		public:
-			inline NetworkSyncComponent(std::string entityClass, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle);
-			~NetworkSyncComponent() = default;
+			NetworkSyncComponent(NetworkSyncSystem& networkSync, std::string entityClass, entt::handle parent = {});
+			NetworkSyncComponent(const NetworkSyncComponent&) = delete;
+			inline NetworkSyncComponent(NetworkSyncComponent&& networkComponent) noexcept;
+			~NetworkSyncComponent();
 
 			inline const std::string& GetEntityClass() const;
-			inline const Ndk::EntityHandle& GetParent() const;
+			inline Nz::UInt32 GetNetworkId() const;
+			inline entt::handle GetParent() const;
 
 			inline void Invalidate();
 
-			inline void UpdateParent(const Ndk::EntityHandle& parent);
+			inline void UpdateParent(entt::handle parent);
 
-			static Ndk::ComponentIndex componentIndex;
+			NetworkSyncComponent& operator=(const NetworkSyncComponent&) = delete;
+			inline NetworkSyncComponent& operator=(NetworkSyncComponent&& networkComponent) noexcept;
 
 			NazaraSignal(OnInvalidated, NetworkSyncComponent* /*emitter*/);
 
 		private:
-			Ndk::EntityHandle m_parent;
+			static constexpr Nz::UInt32 InvalidNetworkId = 0xFFFFFFFF;
+
 			std::string m_entityClass;
+			entt::handle m_parent;
+			Nz::MovablePtr<NetworkSyncSystem> m_networkSystem;
+			Nz::UInt32 m_networkId;
 	};
 }
 

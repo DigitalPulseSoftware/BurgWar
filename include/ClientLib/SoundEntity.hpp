@@ -11,7 +11,7 @@
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Utility/Node.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -23,15 +23,15 @@ namespace bw
 		friend ClientLayerSound;
 
 		public:
-			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, float depth = 0.f);
-			SoundEntity(Ndk::World& renderWorld, ClientLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
+			SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerEntityHandle, float depth = 0.f);
+			SoundEntity(entt::registry& renderWorld, ClientLayerSoundHandle layerEntityHandle, const Nz::Node& parentNode, float depth = 0.f);
 			SoundEntity(const SoundEntity&) = delete;
 			SoundEntity(SoundEntity&& entity) noexcept;
 			~SoundEntity();
 
-			inline const Ndk::EntityHandle& GetEntity() const;
+			inline entt::handle GetEntity() const;
 
-			void PlaySound(std::size_t soundIndex, const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized);
+			void PlaySound(std::size_t soundIndex, const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized);
 
 			void StopSound(std::size_t soundIndex);
 
@@ -42,7 +42,7 @@ namespace bw
 
 		private:
 			std::vector<Nz::UInt32> m_soundIds;
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			ClientLayerSoundHandle m_layerSound;
 			float m_depth;
 	};

@@ -9,13 +9,11 @@ namespace bw
 {
 	ClientLayer& ClientMatchComponent::GetLayer()
 	{
-		return m_clientMatch.GetLayer(m_layerIndex);
+		return m_clientMatch->GetLayer(m_layerIndex);
 	}
 
 	const ClientLayer& ClientMatchComponent::GetLayer() const
 	{
-		return m_clientMatch.GetLayer(m_layerIndex);
+		return m_clientMatch->GetLayer(m_layerIndex);
 	}
-
-	Ndk::ComponentIndex ClientMatchComponent::componentIndex;
 }

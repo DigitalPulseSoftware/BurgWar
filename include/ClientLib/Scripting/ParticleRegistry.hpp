@@ -7,11 +7,9 @@
 #ifndef BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEREGISTRY_HPP
 #define BURGWAR_CLIENTLIB_SCRIPTING_PARTICLEREGISTRY_HPP
 
+#if 0
+
 #include <ClientLib/Export.hpp>
-#include <Nazara/Graphics/ParticleController.hpp>
-#include <Nazara/Graphics/ParticleDeclaration.hpp>
-#include <Nazara/Graphics/ParticleGenerator.hpp>
-#include <Nazara/Graphics/ParticleRenderer.hpp>
 #include <tsl/hopscotch_map.h>
 #include <sol/sol.hpp>
 #include <string>
@@ -54,5 +52,7 @@ namespace bw
 }
 
 #include <ClientLib/Scripting/ParticleRegistry.inl>
+
+#endif
 
 #endif

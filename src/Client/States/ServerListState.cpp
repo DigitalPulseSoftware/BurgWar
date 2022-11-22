@@ -30,27 +30,27 @@ namespace bw
 		else
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
 
-		m_serverListWidget = GetStateData().canvas->Add<Ndk::BaseWidget>();
+		m_serverListWidget = GetStateData().canvas->Add<Nz::BaseWidget>();
 
-		m_serverListScrollbar = CreateWidget<Ndk::ScrollAreaWidget>(m_serverListWidget);
+		m_serverListScrollbar = CreateWidget<Nz::ScrollAreaWidget>(m_serverListWidget);
 		m_serverListScrollbar->EnableBackground(true);
 		m_serverListScrollbar->SetBackgroundColor(Nz::Color(0, 0, 0, 80));
 		m_serverListScrollbar->EnableScrollbar(true);
 
-		m_backButton = CreateWidget<Ndk::ButtonWidget>();
+		m_backButton = CreateWidget<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
 		m_backButton->Resize(m_backButton->GetPreferredSize());
 		
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnBackPressed();
 		});
 
-		m_directConnectButton = CreateWidget<Ndk::ButtonWidget>();
+		m_directConnectButton = CreateWidget<Nz::ButtonWidget>();
 		m_directConnectButton->UpdateText(Nz::SimpleTextDrawer::Draw("Direct connection...", 24));
 		m_directConnectButton->Resize(m_directConnectButton->GetPreferredSize());
 		
-		m_directConnectButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_directConnectButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnDirectConnectionPressed();
 		});
@@ -148,18 +148,18 @@ namespace bw
 
 		m_serverListWidget->Resize({ maxWidth, heightCursor.y });
 
-		std::array<Ndk::BaseWidget*, 2> widgets = {
+		std::array<Nz::BaseWidget*, 2> widgets = {
 			m_backButton,
 			m_directConnectButton
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 			totalSize += widget->GetSize().x;
 
 		Nz::Vector2f cursor;
 		cursor.x = center.x - totalSize / 2.f;
-		cursor.y = m_serverListScrollbar->GetPosition(Nz::CoordSys_Global).y + m_serverListScrollbar->GetSize().y + padding;
+		cursor.y = m_serverListScrollbar->GetPosition(Nz::CoordSys::Global).y + m_serverListScrollbar->GetSize().y + padding;
 
 		m_backButton->SetPosition({ cursor.x, cursor.y, 0.f });
 		cursor.x += m_backButton->GetSize().x + padding;
@@ -347,15 +347,15 @@ namespace bw
 					bwLog(stateData.app->GetLogger(), LogLevel::Debug, "server {0} appeared (from {1})", uuid, masterServer);
 
 				// New server
-				serverData.connectButton = m_serverListWidget->Add<Ndk::ButtonWidget>();
+				serverData.connectButton = m_serverListWidget->Add<Nz::ButtonWidget>();
 				serverData.connectButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect", 24));
 				serverData.connectButton->Resize(serverData.connectButton->GetPreferredSize());
-				serverData.connectButton->OnButtonTrigger.Connect([this, masterServer, uuid](const Ndk::ButtonWidget* /*button*/)
+				serverData.connectButton->OnButtonTrigger.Connect([this, masterServer, uuid](const Nz::ButtonWidget* /*button*/)
 				{
 					OnServerConnectionPressed(masterServer, uuid);
 				});
 
-				serverData.infoLabel = m_serverListWidget->Add<Ndk::LabelWidget>();
+				serverData.infoLabel = m_serverListWidget->Add<Nz::LabelWidget>();
 			}
 
 			Nz::RichTextDrawer infoDrawer;

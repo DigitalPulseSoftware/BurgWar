@@ -18,8 +18,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
-#include <NDK/Components/ConstraintComponent2D.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <CoreLib/SharedMatch.hpp>
 
 namespace bw
@@ -158,11 +157,14 @@ namespace bw
 			"ReadEntity", LuaFunction([&](IncomingNetworkPacket& incomingPacket) -> sol::object
 			{
 				Nz::Int64 entityId = incomingPacket.ReadCompressedInteger();
-				const Ndk::EntityHandle& entity = m_match.RetrieveEntityByUniqueId(entityId);
-				if (entity && entity->HasComponent<ScriptComponent>())
-					return entity->GetComponent<ScriptComponent>().GetTable();
-				else
-					return sol::nil;
+				entt::handle entity = m_match.RetrieveEntityByUniqueId(entityId);
+				if (entity)
+				{
+					if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
+						return scriptComponent->GetTable();
+				}
+
+				return sol::nil;
 			})
 		);
 
@@ -180,7 +182,7 @@ namespace bw
 
 			"WriteEntity", LuaFunction([&](OutgoingNetworkPacket& outgoingPacket, const sol::table& entityTable)
 			{
-				const Ndk::EntityHandle& entity = AssertScriptEntity(entityTable);
+				entt::handle entity = AssertScriptEntity(entityTable);
 				outgoingPacket.WriteCompressedInteger(m_match.RetrieveUniqueIdByEntity(entity));
 			})
 		);
@@ -239,13 +241,13 @@ namespace bw
 			sol::table result = state.create_table();
 
 			std::size_t index = 1;
-			auto entityFunc = [&](const Ndk::EntityHandle& entity)
+			auto entityFunc = [&](entt::handle entity)
 			{
-				if (!entity->HasComponent<ScriptComponent>())
+				ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+				if (!entityScript)
 					return;
 
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				result[index++] = entityScript.GetTable();
+				result[index++] = entityScript->GetTable();
 			};
 
 			if (layerIndexOpt)
@@ -268,14 +270,14 @@ namespace bw
 			sol::table result = state.create_table();
 
 			std::size_t index = 1;
-			auto entityFunc = [&](const Ndk::EntityHandle& entity)
+			auto entityFunc = [&](entt::handle entity)
 			{
-				if (!entity->HasComponent<ScriptComponent>())
+				ScriptComponent* entityScript = entity.try_get<ScriptComponent>();
+				if (!entityScript)
 					return;
 
-				auto& entityScript = entity->GetComponent<ScriptComponent>();
-				if (entityScript.GetElement()->fullName == entityClass)
-					result[index++] = entityScript.GetTable();
+				if (entityScript->GetElement()->fullName == entityClass)
+					result[index++] = entityScript->GetTable();
 			};
 
 			if (layerIndexOpt)
@@ -342,58 +344,61 @@ namespace bw
 
 	void SharedScriptingLibrary::RegisterPhysicsLibrary(ScriptingContext& /*context*/, sol::table& library)
 	{
+		// EnTT TODO
+#if 0
 		library["CreateDampenedSpringConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor, float restLength, float stiffness, float damping)
 		{
-			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::registry& registry = *firstEntity.registry();
+			entt::entity constraintEntity = registry.create();
+			auto& constraintComponent = registry.emplace<ConstraintComponent2D>(constraintEntity);
 
 			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		});
 
 		library["CreatePinConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreatePivotConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
 		{
-			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreateRotaryLimitConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
 		{
-			const Ndk::EntityHandle& firstEntity = AssertScriptEntity(firstEntityTable);
-			const Ndk::EntityHandle& secondEntity = AssertScriptEntity(secondEntityTable);
+			entt::handle firstEntity = AssertScriptEntity(firstEntityTable);
+			entt::handle secondEntity = AssertScriptEntity(secondEntityTable);
 
 			if (firstEntity == secondEntity)
 				TriggerLuaArgError(L, 1, "Cannot apply a constraint to the same entity");
 
-			const Ndk::EntityHandle& constraintEntity = firstEntity->GetWorld()->CreateEntity();
-			auto& constraintComponent = constraintEntity->AddComponent<Ndk::ConstraintComponent2D>();
+			entt::entity constraintEntity = firstEntity.registry()->create();
+			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
 			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		});
@@ -403,13 +408,13 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
 
 			sol::state_view state(L);
-			auto resultCallback = [&](const Ndk::EntityHandle& hitEntity)
+			auto resultCallback = [&](entt::entity hitEntity)
 			{
 				if (hitEntities.Has(hitEntity))
 					return;
@@ -435,7 +440,7 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::PhysicsSystem2D::RaycastHit hitInfo;
@@ -447,7 +452,7 @@ namespace bw
 				result["hitPos"] = hitInfo.hitPos;
 				result["hitNormal"] = hitInfo.hitNormal;
 
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				entt::entity hitEntity = hitInfo.body;
 				if (hitEntity->HasComponent<ScriptComponent>())
 					result["hitEntity"] = hitEntity->GetComponent<ScriptComponent>().GetTable();
 
@@ -462,7 +467,7 @@ namespace bw
 			if (layer >= m_match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "invalid layer index");
 
-			Ndk::World& world = m_match.GetLayer(layer).GetWorld();
+			entt::registry& world = m_match.GetLayer(layer).GetWorld();
 			auto& physSystem = world.GetSystem<Ndk::PhysicsSystem2D>();
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
@@ -470,7 +475,7 @@ namespace bw
 			sol::state_view state(L);
 			auto resultCallback = [&](const Ndk::PhysicsSystem2D::RaycastHit& hitInfo)
 			{
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				entt::entity hitEntity = hitInfo.body;
 				if (hitEntities.Has(hitEntity))
 					return;
 
@@ -494,6 +499,7 @@ namespace bw
 
 			physSystem.RaycastQuery(startPos, endPos, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, resultCallback);
 		});
+#endif
 	}
 
 	void SharedScriptingLibrary::RegisterScriptLibrary(ScriptingContext& /*context*/, sol::table& /*library*/)

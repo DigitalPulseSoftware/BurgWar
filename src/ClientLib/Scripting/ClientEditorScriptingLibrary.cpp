@@ -36,7 +36,7 @@ namespace bw
 	{
 		library["GetTexture"] = [this](const std::string& texturePath) -> std::optional<Texture>
 		{
-			const Nz::TextureRef& texture = m_assetStore.GetTexture(texturePath);
+			const std::shared_ptr<Nz::Texture>& texture = m_assetStore.GetTexture(texturePath);
 			if (texture)
 				return Texture(texture);
 			else

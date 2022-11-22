@@ -16,10 +16,10 @@ namespace bw
 		return element;
 	}
 
-	Ndk::EntityHandle AssertScriptEntity(const sol::table& entityTable)
+	entt::handle AssertScriptEntity(const sol::table& entityTable)
 	{
-		Ndk::EntityHandle entity = RetrieveScriptEntity(entityTable);
-		if (!entity || !entity->HasComponent<ScriptComponent>())
+		entt::handle entity = RetrieveScriptEntity(entityTable);
+		if (!entity)
 			TriggerLuaError(entityTable.lua_state(), "invalid entity");
 
 		return entity;
@@ -34,22 +34,24 @@ namespace bw
 		return entityObject.as<std::shared_ptr<ScriptedElement>>();
 	}
 
-	Ndk::EntityHandle RetrieveScriptEntity(const sol::table& entityTable)
+	entt::handle RetrieveScriptEntity(const sol::table& entityTable)
 	{
 		sol::object entityObject = entityTable["_Entity"];
 		if (!entityObject)
-			return Ndk::EntityHandle::InvalidHandle;
+			return {};
 
-		return entityObject.as<Ndk::EntityHandle>();
+		return entityObject.as<entt::handle>();
 	}
 
-	std::optional<sol::object> TranslateEntityToLua(const Ndk::EntityHandle& entity)
+	std::optional<sol::object> TranslateEntityToLua(entt::handle entity)
 	{
-		if (!entity || !entity->HasComponent<ScriptComponent>())
+		if (!entity)
 			return std::nullopt;
 
-		auto& entityScript = entity->GetComponent<ScriptComponent>();
-		return entityScript.GetTable();
+		if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
+			return scriptComponent->GetTable();
+		else
+			return std::nullopt;
 	}
 
 	[[noreturn]] void TriggerLuaError(lua_State* L, const std::string& errMessage)

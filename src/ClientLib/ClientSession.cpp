@@ -5,10 +5,10 @@
 #include <ClientLib/ClientSession.hpp>
 #include <CoreLib/BurgApp.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 
 namespace bw

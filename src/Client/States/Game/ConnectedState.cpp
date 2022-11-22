@@ -10,7 +10,7 @@
 #include <Client/States/Game/ConnectionLostState.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -53,13 +53,13 @@ namespace bw
 		float cursor = 0.f;
 		if (m_connectionLostEntity)
 		{
-			auto& entityNode = m_connectionLostEntity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_connectionLostentity.get<Nz::NodeComponent>();
 			entityNode.SetPosition(windowSize.x - m_connectionLostSprite->GetSize().x - 10.f, cursor);
 
 			cursor += m_connectionLostSprite->GetSize().y;
 		}
 
-		for (Ndk::LabelWidget* label : { m_pingLabel, m_downloadSpeedLabel, m_uploadSpeedLabel })
+		for (Nz::LabelWidget* label : { m_pingLabel, m_downloadSpeedLabel, m_uploadSpeedLabel })
 		{
 			if (label)
 			{
@@ -172,7 +172,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::DownloadSpeed)
-			m_downloadSpeedLabel = CreateWidget<Ndk::LabelWidget>();
+			m_downloadSpeedLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_downloadSpeedLabel)
 		{
 			DestroyWidget(m_downloadSpeedLabel);
@@ -180,7 +180,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::Ping)
-			m_pingLabel = CreateWidget<Ndk::LabelWidget>();
+			m_pingLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_pingLabel)
 		{
 			DestroyWidget(m_pingLabel);
@@ -188,7 +188,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::UploadSpeed)
-			m_uploadSpeedLabel = CreateWidget<Ndk::LabelWidget>();
+			m_uploadSpeedLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_uploadSpeedLabel)
 		{
 			DestroyWidget(m_uploadSpeedLabel);

@@ -11,7 +11,6 @@
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/SharedEntityStore.hpp>
 #include <Nazara/Math/Angle.hpp>
-#include <NDK/Entity.hpp>
 
 namespace bw
 {
@@ -23,9 +22,9 @@ namespace bw
 			inline ServerEntityStore(const Logger& logger, std::shared_ptr<ScriptingContext> context);
 			~ServerEntityStore() = default;
 
-			const Ndk::EntityHandle& CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
-			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
-			const Ndk::EntityHandle& InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, const Ndk::EntityHandle& parent = Ndk::EntityHandle::InvalidHandle) const;
+			entt::handle CreateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent = {}) const;
+			bool InitializeEntity(entt::handle entity) const;
+			entt::handle InstantiateEntity(TerrainLayer& layer, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, const PropertyValueMap& properties, entt::handle parent = {}) const;
 
 		private:
 			void InitializeElementTable(sol::main_table& elementTable) override;

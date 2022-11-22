@@ -6,35 +6,37 @@
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
 #include <Nazara/Math/Algorithm.hpp>
-#include <NDK/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <cmath>
 
 namespace bw
 {
-	VisualInterpolationSystem::VisualInterpolationSystem()
+	VisualInterpolationSystem::VisualInterpolationSystem(entt::registry& registry) :
+	m_registry(registry)
 	{
-		Requires<VisualInterpolationComponent, Ndk::PhysicsComponent2D, Ndk::NodeComponent>();
+		m_observer.connect(m_registry, entt::collector.group<Nz::NodeComponent, VisualInterpolationComponent>());
 	}
 
-	void VisualInterpolationSystem::OnEntityAdded(Ndk::Entity* entity)
+	void VisualInterpolationSystem::Update(float elapsedTime)
 	{
-		auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-		auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
+		m_observer.each([&](entt::entity entity)
+		{
+			auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
+			auto& entityLerp = m_registry.get<VisualInterpolationComponent>(entity);
 
-		entityLerp.UpdateLastStates(Nz::Vector2f(entityNode.GetPosition()), AngleFromQuaternion(entityNode.GetRotation()));
-	}
+			entityLerp.UpdateLastStates(Nz::Vector2f(entityNode.GetPosition()), AngleFromQuaternion(entityNode.GetRotation()));
+		});
 
-	void VisualInterpolationSystem::OnUpdate(float elapsedTime)
-	{
 		float C = 10.f;
 		float factor = 1.f - std::exp(-elapsedTime * C);
 
-		for (const Ndk::EntityHandle& entity : GetEntities())
+		auto view = m_registry.view<VisualInterpolationComponent, Nz::RigidBody2DComponent, Nz::NodeComponent>();
+		for (entt::entity entity : view)
 		{
-			auto& entityLerp = entity->GetComponent<VisualInterpolationComponent>();
-			auto& entityNode = entity->GetComponent<Ndk::NodeComponent>();
-			auto& entityPhysics = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityLerp = m_registry.get<VisualInterpolationComponent>(entity);
+			auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
+			auto& entityPhysics = m_registry.get<Nz::RigidBody2DComponent>(entity);
 
 			// x = x + (target-x) * (1-Exp(-deltaTime*C))
 			Nz::RadianAnglef sourceRot = entityLerp.GetLastRotation();
@@ -51,6 +53,4 @@ namespace bw
 			entityLerp.UpdateLastStates(position, rotation);
 		}
 	}
-
-	Ndk::SystemIndex VisualInterpolationSystem::systemIndex;
 }

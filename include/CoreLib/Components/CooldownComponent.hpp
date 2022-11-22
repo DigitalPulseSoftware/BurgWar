@@ -8,11 +8,10 @@
 #define BURGWAR_CORELIB_COMPONENTS_COOLDOWNCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API CooldownComponent : public Ndk::Component<CooldownComponent>
+	class BURGWAR_CORELIB_API CooldownComponent
 	{
 		public:
 			inline CooldownComponent(Nz::UInt32 cooldown);
@@ -22,8 +21,6 @@ namespace bw
 			inline void SetNextTriggerTime(Nz::UInt64 time);
 
 			inline bool Trigger(Nz::UInt64 currentTime);
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			Nz::UInt32 m_cooldown;

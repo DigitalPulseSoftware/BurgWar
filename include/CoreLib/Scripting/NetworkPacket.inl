@@ -10,14 +10,14 @@ namespace bw
 {
 	inline NetworkPacket::NetworkPacket(std::string packetName) :
 	m_content(std::make_unique<Nz::ByteArray>()),
-	m_stream(m_content.get(), Nz::OpenModeFlags(Nz::OpenMode_WriteOnly)),
+	m_stream(m_content.get(), Nz::OpenModeFlags(Nz::OpenMode::WriteOnly)),
 	m_packetName(std::move(packetName))
 	{
 	}
 	
 	inline NetworkPacket::NetworkPacket(std::string packetName, const std::vector<Nz::UInt8>& content) :
 	m_content(std::make_unique<Nz::ByteArray>(content.data(), content.size())),
-	m_stream(m_content.get(), Nz::OpenModeFlags(Nz::OpenMode_ReadOnly)),
+	m_stream(m_content.get(), Nz::OpenModeFlags(Nz::OpenMode::ReadOnly)),
 	m_packetName(std::move(packetName))
 	{
 	}

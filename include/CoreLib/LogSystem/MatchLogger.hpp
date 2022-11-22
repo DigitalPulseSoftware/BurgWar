@@ -16,8 +16,8 @@ namespace bw
 	class BURGWAR_CORELIB_API MatchLogger : public Logger
 	{
 		public:
-			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, std::size_t contextSize = sizeof(bw::MatchLogContext));
-			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent, std::size_t contextSize = sizeof(bw::MatchLogContext));
+			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide);
+			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent);
 			MatchLogger(const MatchLogger&) = delete;
 			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;
@@ -26,7 +26,7 @@ namespace bw
 
 		private:
 			void InitializeContext(LogContext& context) const override;
-			LogContext* NewContext(Nz::MemoryPool& pool) const override;
+			LogContext* NewContext() const override;
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 
 			SharedMatch& m_sharedMatch;

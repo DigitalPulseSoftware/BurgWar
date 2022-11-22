@@ -133,7 +133,7 @@ namespace bw
 			if (!entityOpt)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
-			const Ndk::EntityHandle& entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
+			entt::entity entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
 
 			if (lifeOwner)
 			{
@@ -221,7 +221,7 @@ namespace bw
 			if (layerIndex >= match.GetLayerCount())
 				TriggerLuaArgError(L, 1, "layer out of range (" + std::to_string(layerIndex) + " > " + std::to_string(match.GetLayerCount()) + ")");
 
-			const Nz::SoundBufferRef& soundBuffer = match.GetAssetStore().GetSoundBuffer(soundPath);
+			const std::shared_ptr<Nz::SoundBuffer>& soundBuffer = match.GetAssetStore().GetSoundBuffer(soundPath);
 			if (!soundBuffer)
 				TriggerLuaArgError(L, 1, "failed to load " + soundPath);
 
@@ -249,8 +249,8 @@ namespace bw
 			if (!layout)
 				TriggerLuaArgError(L, 2, "Invalid particle type \"" + particleType + "\"");
 
-			Ndk::World& world = match.GetRenderWorld();
-			const Ndk::EntityHandle& particleGroupEntity = world.CreateEntity();
+			entt::registry& world = match.GetRenderWorld();
+			entt::entity particleGroupEntity = world.CreateEntity();
 			auto& particleGroup = particleGroupEntity->AddComponent<Ndk::ParticleGroupComponent>(maxParticleCount, layout);
 
 			particleGroup.SetRenderer(Nz::ParticleFunctionRenderer::New([](const Nz::ParticleGroup& /*group*/, const Nz::ParticleMapper& /*mapper*/, unsigned int /*startId*/, unsigned int /*endId*/, Nz::AbstractRenderQueue* /*renderQueue*/)
@@ -288,17 +288,17 @@ namespace bw
 			bool loaded = std::visit([&](auto&& arg)
 			{
 				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
+				if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileContentEntry>)
 				{
 					bwLog(m_logger, LogLevel::Info, "Loading asset from memory");
 					return music.OpenFromMemory(arg.data(), arg.size());
 				}
-				else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+				else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::PhysicalFileEntry>)
 				{
 					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.generic_u8string());
 					return music.OpenFromFile(arg.generic_u8string());
 				}
-				else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+				else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::DirectoryEntry>)
 				{
 					return false;
 				}
@@ -382,7 +382,7 @@ namespace bw
 				if (controlledEntityId == InvalidEntityId)
 					return sol::nil;
 
-				const Ndk::EntityHandle& controlledEntity = GetMatch().RetrieveEntityByUniqueId(controlledEntityId);
+				entt::entity controlledEntity = GetMatch().RetrieveEntityByUniqueId(controlledEntityId);
 				if (!controlledEntity)
 					return sol::nil;
 

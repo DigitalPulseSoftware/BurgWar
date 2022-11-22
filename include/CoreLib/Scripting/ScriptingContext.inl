@@ -5,7 +5,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
+#include <Nazara/Utils/CallOnExit.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <cassert>
@@ -63,7 +63,7 @@ namespace bw
 		return m_luaState;
 	}
 
-	inline const std::shared_ptr<VirtualDirectory>& ScriptingContext::GetScriptDirectory() const
+	inline const std::shared_ptr<Nz::VirtualDirectory>& ScriptingContext::GetScriptDirectory() const
 	{
 		return m_scriptDirectory;
 	}
@@ -78,7 +78,7 @@ namespace bw
 		m_printFunction = std::move(function);
 	}
 
-	inline void ScriptingContext::UpdateScriptDirectory(std::shared_ptr<VirtualDirectory> scriptDir)
+	inline void ScriptingContext::UpdateScriptDirectory(std::shared_ptr<Nz::VirtualDirectory> scriptDir)
 	{
 		m_scriptDirectory = std::move(scriptDir);
 	}

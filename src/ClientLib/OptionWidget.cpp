@@ -15,7 +15,7 @@ namespace bw
 		constexpr float optionSpace = 10.f;
 	}
 
-	OptionWidget::OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig) :
+	OptionWidget::OptionWidget(Nz::BaseWidget* parent, ConfigFile& playerConfig) :
 	BaseWidget(parent),
 	m_activeSection(nullptr),
 	m_playerConfig(playerConfig),
@@ -35,26 +35,26 @@ namespace bw
 
 		LoadConfigValues();
 
-		m_applyButton = Add<Ndk::ButtonWidget>();
+		m_applyButton = Add<Nz::ButtonWidget>();
 		m_applyButton->UpdateText(Nz::SimpleTextDrawer::Draw("Apply", 24));
 		m_applyButton->Resize(m_applyButton->GetPreferredSize());
-		m_applyButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_applyButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnApply();
 		});
 		
-		m_backButton = Add<Ndk::ButtonWidget>();
+		m_backButton = Add<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
 		m_backButton->Resize(m_backButton->GetPreferredSize());
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnBack();
 		});
 		
-		m_resetButton = Add<Ndk::ButtonWidget>();
+		m_resetButton = Add<Nz::ButtonWidget>();
 		m_resetButton->UpdateText(Nz::SimpleTextDrawer::Draw("Reset", 24));
 		m_resetButton->Resize(m_resetButton->GetPreferredSize());
-		m_resetButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_resetButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnReset();
 		});
@@ -73,12 +73,12 @@ namespace bw
 
 		auto it = m_sections.emplace(std::move(sectionName), Section{}).first;
 		Section& section = it->second;
-		section.button = Add<Ndk::ButtonWidget>();
+		section.button = Add<Nz::ButtonWidget>();
 		section.button->UpdateText(Nz::SimpleTextDrawer::Draw(it->first, 36));
 		section.button->Resize(section.button->GetPreferredSize());
 		section.button->SetPosition(0.f, cursor);
 
-		section.onTriggerSlot.Connect(section.button->OnButtonTrigger, [this, sectionName = it->first](const Ndk::ButtonWidget*)
+		section.onTriggerSlot.Connect(section.button->OnButtonTrigger, [this, sectionName = it->first](const Nz::ButtonWidget*)
 		{
 			UpdateSection(sectionName);
 		});
@@ -184,7 +184,7 @@ namespace bw
 			if (m_ignoreWidgetUpdate)
 				return;
 
-			m_updatedValues[keyName] = text.ToStdString();
+			m_updatedValues[keyName] = text;
 		});
 
 		m_activeSection->options.emplace_back(std::move(option));
@@ -220,7 +220,7 @@ namespace bw
 	{
 		option.keyName = std::move(keyName);
 
-		option.label = Add<Ndk::LabelWidget>();
+		option.label = Add<Nz::LabelWidget>();
 		option.label->UpdateText(Nz::SimpleTextDrawer::Draw(std::string(label), 24)); //< FIXME: Nazara-next
 		option.label->Resize(option.label->GetPreferredSize());
 	}
@@ -247,7 +247,7 @@ namespace bw
 		}
 
 		float cursor = size.x;
-		for (Ndk::ButtonWidget* button : { m_applyButton, m_resetButton, m_backButton })
+		for (Nz::ButtonWidget* button : { m_applyButton, m_resetButton, m_backButton })
 		{
 			button->SetPosition(cursor - button->GetWidth(), size.y - button->GetHeight());
 			cursor -= button->GetWidth() + 10.f;

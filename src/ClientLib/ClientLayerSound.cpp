@@ -23,7 +23,7 @@ namespace bw
 		return m_layer.GetLayerIndex();
 	}
 
-	std::size_t ClientLayerSound::PlaySound(const Nz::SoundBufferRef& soundBuffer, bool isLooping, bool isSpatialized)
+	std::size_t ClientLayerSound::PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized)
 	{
 		// Find first finished sound
 		std::size_t soundIndex = 0;
@@ -89,7 +89,7 @@ namespace bw
 			}
 		}
 
-		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys::Global));
 
 		for (SoundEntity* soundEntity : m_soundEntities)
 			soundEntity->Update(position);
@@ -110,7 +110,7 @@ namespace bw
 		assert(std::find(m_soundEntities.begin(), m_soundEntities.end(), sound) == m_soundEntities.end());
 		m_soundEntities.push_back(sound);
 
-		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f position = Nz::Vector2f(m_node.GetPosition(Nz::CoordSys::Global));
 		sound->Update(position);
 	}
 

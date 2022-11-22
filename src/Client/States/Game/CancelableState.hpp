@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_CANCELABLESTATE_HPP
 
 #include <Client/States/Game/StatusState.hpp>
-#include <NDK/Widgets/ButtonWidget.hpp>
+#include <Nazara/Widgets/ButtonWidget.hpp>
 #include <memory>
 
 namespace bw
@@ -35,7 +35,7 @@ namespace bw
 
 			std::function<void(Ndk::StateMachine& fsm)> m_nextStateCallback;
 			std::shared_ptr<AbstractState> m_originalState;
-			Ndk::ButtonWidget* m_cancelButton;
+			Nz::ButtonWidget* m_cancelButton;
 			float m_nextStateDelay;
 	};
 }

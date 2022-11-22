@@ -5,7 +5,7 @@
 #include <MapEditor/Widgets/ScrollCanvas.hpp>
 #include <MapEditor/Widgets/WorldCanvas.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QScrollBar>
 
@@ -63,12 +63,12 @@ namespace bw
 		return m_canvas->GetCamera();
 	}
 
-	Ndk::World& ScrollCanvas::GetWorld()
+	entt::registry& ScrollCanvas::GetWorld()
 	{
 		return m_canvas->GetWorld();
 	}
 
-	const Ndk::World& ScrollCanvas::GetWorld() const
+	const entt::registry& ScrollCanvas::GetWorld() const
 	{
 		return m_canvas->GetWorld();
 	}

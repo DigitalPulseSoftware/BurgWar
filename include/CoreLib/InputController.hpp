@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerInputData.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 #include <optional>
 
 namespace bw
@@ -20,7 +20,7 @@ namespace bw
 			InputController() = default;
 			virtual ~InputController();
 
-			virtual std::optional<PlayerInputData> GenerateInputs(const Ndk::EntityHandle& entity) const = 0;
+			virtual std::optional<PlayerInputData> GenerateInputs(entt::handle entity) const = 0;
 	};
 }
 

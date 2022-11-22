@@ -7,8 +7,8 @@
 namespace bw
 {
 	inline MatchComponent::MatchComponent(Match& match, LayerIndex layerIndex, EntityId uniqueId) :
+	m_match(&match),
 	m_uniqueId(uniqueId),
-	m_match(match),
 	m_layerIndex(layerIndex)
 	{
 	}
@@ -20,7 +20,7 @@ namespace bw
 
 	inline Match& MatchComponent::GetMatch() const
 	{
-		return m_match;
+		return *m_match;
 	}
 
 	inline EntityId MatchComponent::GetUniqueId() const

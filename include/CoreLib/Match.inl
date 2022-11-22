@@ -42,7 +42,7 @@ namespace bw
 		return m_app;
 	}
 
-	inline const std::shared_ptr<VirtualDirectory>& Match::GetAssetDirectory() const
+	inline const std::shared_ptr<Nz::VirtualDirectory>& Match::GetAssetDirectory() const
 	{
 		return m_assetDirectory;
 	}
@@ -105,7 +105,7 @@ namespace bw
 		return m_settings;
 	}
 
-	inline const std::shared_ptr<VirtualDirectory>& Match::GetScriptDirectory() const
+	inline const std::shared_ptr<Nz::VirtualDirectory>& Match::GetScriptDirectory() const
 	{
 		return m_scriptDirectory;
 	}

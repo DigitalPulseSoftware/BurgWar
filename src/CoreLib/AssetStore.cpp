@@ -13,7 +13,7 @@ namespace bw
 		m_images.clear();
 	}
 
-	const Nz::ImageRef& AssetStore::GetImage(const std::string& imagePath) const
+	const std::shared_ptr<Nz::Image>& AssetStore::GetImage(const std::string& imagePath) const
 	{
 		Nz::ImageParams loaderParameters;
 

@@ -9,9 +9,8 @@
 
 namespace bw
 {
-	std::optional<PlayerInputData> CustomInputController::GenerateInputs(const Ndk::EntityHandle& entity) const
+	std::optional<PlayerInputData> CustomInputController::GenerateInputs(entt::handle entity) const
 	{
-		assert(entity);
 		auto entityTable = TranslateEntityToLua(entity);
 		if (!entityTable)
 			return std::nullopt;
@@ -19,7 +18,7 @@ namespace bw
 		sol::protected_function_result result = m_callback(*entityTable);
 		if (!result.valid())
 		{
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 
 			sol::error err = result;
 			bwLog(entityScript.GetLogger(), LogLevel::Error, "CustomInputController failed: {}", err.what());
@@ -29,7 +28,7 @@ namespace bw
 		auto inputsOpt = result.get<std::optional<PlayerInputData>>();
 		if (!inputsOpt)
 		{
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 			bwLog(entityScript.GetLogger(), LogLevel::Error, "CustomInputController must return players inputs");
 
 			return PlayerInputData{};

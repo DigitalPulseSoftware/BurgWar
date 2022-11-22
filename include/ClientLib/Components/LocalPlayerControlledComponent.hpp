@@ -9,14 +9,13 @@
 
 #include <ClientLib/Export.hpp>
 #include <CoreLib/Player.hpp>
-#include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
 	class ClientMatch;
 
-	class BURGWAR_CLIENTLIB_API LocalPlayerControlledComponent : public Ndk::Component<LocalPlayerControlledComponent>
+	class BURGWAR_CLIENTLIB_API LocalPlayerControlledComponent
 	{
 		public:
 			inline LocalPlayerControlledComponent(ClientMatch& clientMatch, Nz::UInt8 localPlayerIndex);
@@ -24,8 +23,6 @@ namespace bw
 
 			inline ClientMatch& GetClientMatch() const;
 			inline Nz::UInt8 GetLocalPlayerIndex() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			ClientMatch& m_clientMatch;

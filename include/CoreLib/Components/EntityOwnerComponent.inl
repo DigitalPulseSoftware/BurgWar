@@ -6,25 +6,9 @@
 
 namespace bw
 {
-	inline EntityOwnerComponent::EntityOwnerComponent(const EntityOwnerComponent&)
+	inline void EntityOwnerComponent::Register(entt::handle entity)
 	{
-	}
-
-	inline void EntityOwnerComponent::Register(const Ndk::EntityHandle& entity)
-	{
-		if (entity)
-		{
-			// Try to reuse expired handles before adding an entry
-			for (auto& ownerHandle : m_ownedEntities)
-			{
-				if (!ownerHandle)
-				{
-					ownerHandle = entity;
-					return;
-				}
-			}
-
-			m_ownedEntities.emplace_back(entity);
-		}
+		// Try to reuse expired handles before adding an entry
+		m_ownedEntities.emplace_back(entity);
 	}
 }

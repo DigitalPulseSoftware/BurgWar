@@ -21,7 +21,7 @@ namespace bw
 	class EntityEditorMode : public EditorMode
 	{
 		public:
-			EntityEditorMode(const Ndk::EntityHandle& targetEntity, EditorWindow& editorWindow);
+			EntityEditorMode(entt::entity targetEntity, EditorWindow& editorWindow);
 			~EntityEditorMode() = default;
 
 			void OnEnter() override;

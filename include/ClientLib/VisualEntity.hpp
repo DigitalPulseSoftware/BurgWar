@@ -11,7 +11,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/InstancedRenderable.hpp>
 #include <Nazara/Utility/Node.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <vector>
 
 namespace bw
@@ -25,13 +25,13 @@ namespace bw
 		friend LayerVisualEntity;
 
 		public:
-			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
-			VisualEntity(Ndk::World& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
+			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
+			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
 			VisualEntity(const VisualEntity&) = delete;
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();
 
-			inline const Ndk::EntityHandle& GetEntity() const;
+			inline entt::handle GetEntity() const;
 
 			void Update(const Nz::Vector2f& position, const Nz::Quaternionf& rotation, const Nz::Vector2f& scale);
 
@@ -39,29 +39,29 @@ namespace bw
 			VisualEntity& operator=(VisualEntity&& entity) = delete;
 
 		private:
-			void AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset);
-			void AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
-			void DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable);
-			void DetachRenderable(const Nz::InstancedRenderableRef& renderable);
+			void AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset);
+			void AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
+			void DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
+			void DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
 
 			inline void Enable(bool enable);
 
-			void UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight);
-			void UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
-			void UpdateHoveringRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder);
+			void UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight);
+			void UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateHoveringRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder);
 
-			void UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix);
-			void UpdateRenderableRenderOrder(const Nz::InstancedRenderableRef& renderable, int renderOrder);
+			void UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder);
 
 			struct HoveringRenderable
 			{
 				float offset;
-				Ndk::EntityOwner entity;
-				Nz::InstancedRenderableRef renderable;
+				EntityOwner entity;
+				std::shared_ptr<Nz::InstancedRenderable> renderable;
 			};
 
 			std::vector<HoveringRenderable> m_hoveringRenderables;
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			LayerVisualEntityHandle m_visualEntity;
 			int m_baseRenderOrder;
 	};

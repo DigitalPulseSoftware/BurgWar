@@ -11,7 +11,9 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/VisualEntity.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Math/BoundingVolume.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -39,7 +41,7 @@ namespace bw
 
 	LayerVisualEntity::~LayerVisualEntity() = default;
 
-	void LayerVisualEntity::AttachHoveringRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
+	void LayerVisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
 	{
 		auto& renderableData = m_attachedHoveringRenderables.emplace_back();
 		renderableData.hoveringHeight = hoveringHeight;
@@ -51,7 +53,7 @@ namespace bw
 			visualEntity->AttachHoveringRenderable(renderableData.data.renderable, renderableData.data.offsetMatrix, renderableData.data.renderOrder, hoveringHeight);
 	}
 
-	void LayerVisualEntity::AttachRenderable(Nz::InstancedRenderableRef renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
+	void LayerVisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
 	{
 		auto& renderableData = m_attachedRenderables.emplace_back();
 		renderableData.offsetMatrix = offsetMatrix;
@@ -62,7 +64,7 @@ namespace bw
 			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
 	}
 
-	void LayerVisualEntity::DetachHoveringRenderable(const Nz::InstancedRenderableRef& renderable)
+	void LayerVisualEntity::DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		for (auto it = m_attachedHoveringRenderables.begin(); it != m_attachedHoveringRenderables.end(); ++it)
 		{
@@ -78,7 +80,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::DetachRenderable(const Nz::InstancedRenderableRef& renderable)
+	void LayerVisualEntity::DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())
@@ -95,15 +97,16 @@ namespace bw
 		if (IsEnabled() == enable)
 			return;
 
-		m_entity->Enable(enable);
+		// TODO
+		//m_entity->Enable(enable);
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Enable(enable);
 	}
 
 	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
 	{
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, entityNode.GetTransformMatrix());
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
+		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, entityNode.GetTransformMatrix());
 
 		Nz::Vector3f globalPos = worldMatrix.GetTranslation();
 
@@ -112,10 +115,10 @@ namespace bw
 		Nz::Boxf aabb(globalPos.x, globalPos.y, globalPos.z, 0.f, 0.f, 0.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(worldMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(worldMatrix, r.offsetMatrix));
 
 				if (first)
 					aabb.Set(boundingVolume.aabb);
@@ -136,10 +139,10 @@ namespace bw
 		Nz::Boxf aabb(-1.f, -1.f, -1.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, r.offsetMatrix));
 
 				if (first)
 					aabb.Set(boundingVolume.aabb);
@@ -155,22 +158,22 @@ namespace bw
 
 	bool LayerVisualEntity::IsPhysical() const
 	{
-		return m_entity->HasComponent<Ndk::PhysicsComponent2D>(); //< TODO: Cache this?
+		return m_entity->try_get<Nz::RigidBody2D>() != nullptr; //< TODO: Cache this?
 	}
 
 	void LayerVisualEntity::SyncVisuals()
 	{
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
 
-		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
-		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys_Global));
-		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys_Global);
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
+		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);
 
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Update(position, rotation, scale);
 	}
 
-	void LayerVisualEntity::UpdateHoveringRenderableHoveringHeight(const Nz::InstancedRenderableRef& renderable, float newHoveringHeight)
+	void LayerVisualEntity::UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight)
 	{
 		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
 		{
@@ -185,7 +188,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::UpdateHoveringRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
 		{
@@ -200,7 +203,7 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::UpdateRenderableMatrix(const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())
@@ -215,25 +218,21 @@ namespace bw
 
 	void LayerVisualEntity::UpdateScale(float newScale)
 	{
-		if (m_entity->HasComponent<ScriptComponent>())
-		{
-			auto& scriptComponent = m_entity->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
-		}
+		if (ScriptComponent* scriptComponent = m_entity->try_get<ScriptComponent>())
+			scriptComponent->ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
 
-		auto& node = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& node = m_entity->get<Nz::NodeComponent>();
 		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
-		node.SetScale(scale, Nz::CoordSys_Local);
+		node.SetScale(scale, Nz::CoordSys::Local);
 
-		if (m_entity->HasComponent<CollisionDataComponent>())
+		if (CollisionDataComponent* entityCollData = m_entity->try_get<CollisionDataComponent>())
 		{
-			auto& entityCollData = m_entity->GetComponent<CollisionDataComponent>();
-			auto& entityCollider = m_entity->GetComponent<Ndk::CollisionComponent2D>();
+			auto& entityCollider = m_entity->get<Nz::RigidBody2DComponent>();
 
-			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
+			entityCollider.SetGeom(entityCollData->BuildCollider(newScale), false, false);
 		}
 	}
 
@@ -241,13 +240,13 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);
 		}
 		else
 		{
-			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_entity->get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -257,7 +256,7 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
 			entityPhys.SetAngularVelocity(angularVel);
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);
@@ -265,7 +264,7 @@ namespace bw
 		}
 		else
 		{
-			auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = m_entity->get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -286,10 +285,10 @@ namespace bw
 
 		visualEntity->Enable(IsEnabled());
 
-		auto& entityNode = m_entity->GetComponent<Ndk::NodeComponent>();
-		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global));
-		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys_Global));
-		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys_Global);
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
+		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);
 
 		visualEntity->Update(position, rotation, scale);
 

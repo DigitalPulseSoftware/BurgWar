@@ -49,7 +49,7 @@ namespace bw
 	{
 		std::vector<Nz::UInt8> content;
 
-		Nz::File infoFile((modDirectory / "info.json").generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File infoFile((modDirectory / "info.json").generic_u8string(), Nz::OpenMode::ReadOnly);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open info.json file");
 

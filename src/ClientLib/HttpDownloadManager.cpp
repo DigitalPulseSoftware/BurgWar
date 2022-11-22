@@ -30,7 +30,7 @@ namespace bw
 		for (std::size_t i = 0; i < maxSimultaneousDownload; ++i)
 		{
 			auto& request = m_requests.emplace_back();
-			request.hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+			request.hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 		}
 	}
 
@@ -200,7 +200,7 @@ namespace bw
 
 				request.fileIndex = m_nextFileIndex;
 				request.hash->Begin();
-				request.file.Open(filePath, Nz::OpenMode_WriteOnly | Nz::OpenMode_Truncate);
+				request.file.Open(filePath, Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 				request.keepInMemory = pendingDownload.keepInMemory;
 
 				m_webService.AddRequest(std::move(webRequest));

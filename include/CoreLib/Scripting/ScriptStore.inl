@@ -6,9 +6,8 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
-#include <Nazara/Core/CallOnExit.hpp>
-#include <NDK/World.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
+#include <Nazara/Utils/CallOnExit.hpp>
 #include <cassert>
 #include <filesystem>
 #include <sstream>
@@ -69,38 +68,20 @@ namespace bw
 	}
 
 	template<typename Element>
-	inline void ScriptStore<Element>::UpdateEntityElement(const Ndk::EntityHandle& entity)
-	{
-		assert(entity->HasComponent<ScriptComponent>());
-
-		auto& entityScript = entity->GetComponent<ScriptComponent>();
-		const auto& entityElement = entityScript.GetElement();
-
-		if (auto it = m_elementsByName.find(entityElement->fullName); it != m_elementsByName.end())
-		{
-			const auto& newElement = m_elements[it->second];
-
-			sol::table& entityTable = entityScript.GetTable();
-			entityTable[sol::metatable_key] = newElement->elementTable;
-
-			entityScript.UpdateElement(newElement);
-		}
-	}
-
-	template<typename Element>
 	void ScriptStore<Element>::LoadDirectory(const std::filesystem::path& directoryPath)
 	{
 		const auto& scriptDir = m_context->GetScriptDirectory();
 
-		VirtualDirectory::Entry entry;
-		if (scriptDir->GetEntry(directoryPath.generic_u8string(), &entry) && std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry))
+		auto callback = [&](const Nz::VirtualDirectory::DirectoryEntry& directoryEntry)
 		{
-			VirtualDirectory::VirtualDirectoryEntry& directory = std::get<VirtualDirectory::VirtualDirectoryEntry>(entry);
-			directory->Foreach([&](const std::string& entryName, const VirtualDirectory::Entry& entry)
+			directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
 			{
-				LoadElement(std::holds_alternative<VirtualDirectory::VirtualDirectoryEntry>(entry), directoryPath / entryName);
+				bool isDirectory = std::holds_alternative<Nz::VirtualDirectory::PhysicalDirectoryEntry>(entry) || std::holds_alternative<Nz::VirtualDirectory::VirtualDirectoryEntry>(entry);
+				LoadElement(isDirectory, directoryPath / entryName);
 			});
-		}
+		};
+
+		scriptDir->GetDirectoryEntry(directoryPath.generic_u8string(), callback);
 	}
 
 	template<typename Element>
@@ -252,15 +233,32 @@ namespace bw
 	}
 
 	template<typename Element>
+	void ScriptStore<Element>::UpdateEntityElement(entt::handle entity)
+	{
+		auto& entityScript = entity.get<ScriptComponent>();
+		const auto& entityElement = entityScript.GetElement();
+
+		if (auto it = m_elementsByName.find(entityElement->fullName); it != m_elementsByName.end())
+		{
+			const auto& newElement = m_elements[it->second];
+
+			sol::table& entityTable = entityScript.GetTable();
+			entityTable[sol::metatable_key] = newElement->elementTable;
+
+			entityScript.UpdateElement(newElement);
+		}
+	}
+
+	template<typename Element>
 	std::shared_ptr<Element> ScriptStore<Element>::CreateElement() const
 	{
 		return std::make_shared<Element>();
 	}
 
 	template<typename Element>
-	const Ndk::EntityHandle& ScriptStore<Element>::CreateEntity(Ndk::World& world, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
+	entt::handle ScriptStore<Element>::CreateEntity(entt::registry& registry, std::shared_ptr<const ScriptedElement> element, PropertyValueMap properties) const
 	{
-		const Ndk::EntityHandle& entity = world.CreateEntity();
+		entt::handle entity(registry, registry.create());
 
 		PropertyValueMap filteredProperties; //< Without potential unused properties (FIXME: Is it really necessary?)
 
@@ -313,7 +311,7 @@ namespace bw
 		entityTable["_Entity"] = entity;
 		entityTable[sol::metatable_key] = element->elementTable;
 
-		entity->AddComponent<ScriptComponent>(m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
+		registry.emplace<ScriptComponent>(entity, m_logger, std::move(element), scriptingContext, std::move(entityTable), std::move(filteredProperties));
 
 		return entity;
 	}
@@ -527,9 +525,9 @@ namespace bw
 	}
 
 	template<typename Element>
-	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, const Ndk::EntityHandle& entity) const
+	bool ScriptStore<Element>::InitializeEntity(const Element& entityClass, entt::handle entity) const
 	{
-		auto& entityScript = entity->GetComponent<ScriptComponent>();
+		auto& entityScript = entity.get<ScriptComponent>();
 		if (!entityScript.ExecuteCallback<ElementEvent::Init>())
 		{
 			//TODO: Retrieve error message

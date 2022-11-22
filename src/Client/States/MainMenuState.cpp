@@ -17,9 +17,9 @@
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/StateMachine.hpp>
-#include <NDK/Widgets/CheckboxWidget.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Widgets/CheckboxWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/TextAreaWidget.hpp>
 #include <cassert>
 #include <chrono>
 
@@ -28,38 +28,38 @@ namespace bw
 	MainMenuState::MainMenuState(std::shared_ptr<StateData> stateData) :
 	AbstractState(std::move(stateData))
 	{
-		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
+		m_startServerButton = CreateWidget<Nz::ButtonWidget>();
 		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server...", 24));
 		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
 		
-		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_startServerButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnStartServerPressed();
 		});
 
-		m_joinServerButton = CreateWidget<Ndk::ButtonWidget>();
+		m_joinServerButton = CreateWidget<Nz::ButtonWidget>();
 		m_joinServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Join server...", 24));
 		m_joinServerButton->Resize(m_joinServerButton->GetPreferredSize());
 
-		m_joinServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_joinServerButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnJoinServerPressed();
 		});
 		
-		m_optionButton = CreateWidget<Ndk::ButtonWidget>();
+		m_optionButton = CreateWidget<Nz::ButtonWidget>();
 		m_optionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Option", 24));
 		m_optionButton->Resize(m_optionButton->GetPreferredSize());
 		
-		m_optionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_optionButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnOptionPressed();
 		});
 
-		m_quitButton = CreateWidget<Ndk::ButtonWidget>();
+		m_quitButton = CreateWidget<Nz::ButtonWidget>();
 		m_quitButton->UpdateText(Nz::SimpleTextDrawer::Draw("Quit", 24));
 		m_quitButton->Resize(m_quitButton->GetPreferredSize());
 		
-		m_quitButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_quitButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnQuitPressed();
 		});
@@ -103,7 +103,7 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 4> widgets = {
+		std::array<Nz::BaseWidget*, 4> widgets = {
 			m_startServerButton,
 			m_joinServerButton,
 			m_optionButton,
@@ -112,7 +112,7 @@ namespace bw
 
 		float maxWidth = 0.f;
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 		{
 			Nz::Vector2f size = widget->GetSize();
 
@@ -123,7 +123,7 @@ namespace bw
 		Nz::Vector2f cursor = center;
 		cursor.y -= totalSize / 2.f;
 
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 		{
 			widget->Resize({ maxWidth, widget->GetHeight() });
 			widget->SetPosition({ 0.f, cursor.y, 0.f });

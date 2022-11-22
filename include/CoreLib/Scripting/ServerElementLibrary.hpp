@@ -23,7 +23,7 @@ namespace bw
 		private:
 			void RegisterServerLibrary(sol::table& elementTable);
 
-			void SetScale(const Ndk::EntityHandle& entity, float newScale) override;
+			void SetScale(entt::handle entity, float newScale) override;
 	};
 }
 

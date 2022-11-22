@@ -18,11 +18,11 @@
 #include <ClientLib/Utility/TileMapData.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <Nazara/Graphics/TileMap.hpp>
+//#include <Nazara/Graphics/TileMap.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Math/EulerAngles.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
+#include <Nazara/Physics2D/RigidBody2D.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -33,21 +33,21 @@ namespace bw
 		RegisterClientLibrary(elementMetatable);
 	}
 
-	void ClientEntityLibrary::InitRigidBody(lua_State* L, const Ndk::EntityHandle& entity, float mass)
+	void ClientEntityLibrary::InitRigidBody(lua_State* L, entt::handle entity, float mass)
 	{
 		SharedEntityLibrary::InitRigidBody(L, entity, mass);
 
-		entity->GetComponent<Ndk::PhysicsComponent2D>().EnableNodeSynchronization(false);
-		entity->AddComponent<VisualInterpolationComponent>();
+		//entity.get<Nz::RigidBody2DComponent>().EnableNodeSynchronization(false);
+		entity.emplace<VisualInterpolationComponent>();
 	}
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
 	{
 		elementMetatable["AddLayer"] = LuaFunction([](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			auto& clientMatch = entity->GetComponent<ClientMatchComponent>().GetClientMatch();
+			auto& clientMatch = entity.get<ClientMatchComponent>().GetClientMatch();
 
 			LayerIndex layerIndex = parameters["LayerIndex"];
 			if (layerIndex >= clientMatch.GetLayerCount())
@@ -57,16 +57,13 @@ namespace bw
 			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
 
-			if (!entity->HasComponent<VisibleLayerComponent>())
-				entity->AddComponent<VisibleLayerComponent>(clientMatch.GetRenderWorld());
-
-			auto& visibleLayer = entity->GetComponent<VisibleLayerComponent>();
+			auto& visibleLayer = entity.get_or_emplace<VisibleLayerComponent>(clientMatch.GetRenderWorld());
 			visibleLayer.RegisterLocalLayer(clientMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		});
 
 		elementMetatable["AddTilemap"] = LuaFunction([this](const sol::table& entityTable, const Nz::Vector2ui& mapSize, const Nz::Vector2f& cellSize, const sol::table& content, const std::vector<TileData>& tiles, int renderOrder = 0) -> sol::optional<Tilemap>
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			// Compute tilemap
 			tsl::hopscotch_map<std::string /*materialPath*/, std::size_t /*materialIndex*/> materials;
@@ -80,7 +77,7 @@ namespace bw
 			if (materials.empty())
 				return {};
 
-			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
+			/*Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
 				Nz::MaterialRef material = Nz::Material::New(); //< FIXME
@@ -132,15 +129,16 @@ namespace bw
 			Tilemap scriptTilemap(visualComponent.GetLayerVisual(), std::move(tileMap), transformMatrix, renderOrder);
 			scriptTilemap.Show();
 
-			return scriptTilemap;
+			return scriptTilemap;*/
+			return {};
 		});
 
 		elementMetatable["ClearLayers"] = LuaFunction([](const sol::table& entityTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (entity->HasComponent<VisibleLayerComponent>())
-				entity->GetComponent<VisibleLayerComponent>().Clear();
+			if (VisibleLayerComponent* visibleLayer = entity.try_get<VisibleLayerComponent>())
+				visibleLayer->Clear();
 		});
 	}
 }

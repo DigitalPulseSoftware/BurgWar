@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Text::Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering) :
+	inline Text::Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, std::shared_ptr<Nz::TextSprite> textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering) :
 	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_drawer(std::move(drawer)),
@@ -26,7 +26,7 @@ namespace bw
 
 	inline std::string Text::GetText() const
 	{
-		return m_drawer.GetText().ToStdString();
+		return m_drawer.GetText();
 	}
 
 	inline void Text::Hide()

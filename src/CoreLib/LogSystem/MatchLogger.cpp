@@ -24,9 +24,9 @@ namespace bw
 		Logger::OverrideContent(context, content);
 	}
 
-	LogContext* MatchLogger::NewContext(Nz::MemoryPool& pool) const
+	LogContext* MatchLogger::NewContext() const
 	{
-		return AllocateContext<MatchLogContext>(pool);
+		return AllocateContext<MatchLogContext>();
 	}
 
 	void MatchLogger::InitializeContext(LogContext& context) const

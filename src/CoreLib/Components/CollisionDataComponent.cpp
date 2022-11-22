@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	Nz::Collider2DRef CollisionDataComponent::BuildCollider(float scale) const
+	std::shared_ptr<Nz::Collider2D> CollisionDataComponent::BuildCollider(float scale) const
 	{
 		if (m_colliders.empty())
 		{
@@ -23,29 +23,29 @@ namespace bw
 		{
 			// Multiple colliders
 
-			std::vector<Nz::Collider2DRef> simpleColliders;
+			std::vector<std::shared_ptr<Nz::Collider2D>> simpleColliders;
 			simpleColliders.reserve(m_colliders.size());
 
 			for (const auto& collider : m_colliders)
 				simpleColliders.emplace_back(ToCollider(collider, scale));
 
-			Nz::CompoundCollider2DRef compound = Nz::CompoundCollider2D::New(std::move(simpleColliders));
+			std::shared_ptr<Nz::CompoundCollider2D> compound = std::make_shared<Nz::CompoundCollider2D>(std::move(simpleColliders));
 			compound->OverridesCollisionProperties(false);
 
 			return compound;
 		}
 	}
 
-	Nz::Collider2DRef CollisionDataComponent::ToCollider(const Collider& collider, float scale)
+	std::shared_ptr<Nz::Collider2D> CollisionDataComponent::ToCollider(const Collider& collider, float scale)
 	{
-		return std::visit([&](auto&& arg) -> Nz::Collider2DRef
+		return std::visit([&](auto&& arg) -> std::shared_ptr<Nz::Collider2D>
 		{
 			using T = std::decay_t<decltype(arg)>;
 
-			Nz::Collider2DRef collider;
+			std::shared_ptr<Nz::Collider2D> collider;
 
 			if constexpr (std::is_same_v<T, CircleCollider>)
-				collider = Nz::CircleCollider2D::New(arg.radius * scale, arg.offset * scale);
+				collider = std::make_shared<Nz::CircleCollider2D>(arg.radius * scale, arg.offset * scale);
 			else if constexpr (std::is_same_v<T, RectangleCollider>)
 			{
 				Nz::Rectf scaledRect = arg.data;
@@ -54,10 +54,10 @@ namespace bw
 				scaledRect.width *= scale;
 				scaledRect.height *= scale;
 
-				collider = Nz::BoxCollider2D::New(scaledRect);
+				collider = std::make_shared<Nz::BoxCollider2D>(scaledRect);
 			}
 			else if constexpr (std::is_same_v<T, SegmentCollider>)
-				collider = Nz::SegmentCollider2D::New(arg.from * scale, arg.fromNeighbor * scale, arg.to * scale, arg.toNeighbor * scale);
+				collider = std::make_shared<Nz::SegmentCollider2D>(arg.from * scale, arg.fromNeighbor * scale, arg.to * scale, arg.toNeighbor * scale);
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
@@ -71,7 +71,5 @@ namespace bw
 
 		}, collider);
 	}
-
-	Ndk::ComponentIndex CollisionDataComponent::componentIndex;
 }
 

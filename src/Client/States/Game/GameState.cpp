@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	GameState::GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData, std::shared_ptr<VirtualDirectory> assetDirectory, std::shared_ptr<VirtualDirectory> scriptDirectory) :
+	GameState::GameState(std::shared_ptr<StateData> stateDataPtr, std::shared_ptr<ClientSession> clientSession, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData, std::shared_ptr<Nz::VirtualDirectory> assetDirectory, std::shared_ptr<Nz::VirtualDirectory> scriptDirectory) :
 	AbstractState(std::move(stateDataPtr)),
 	m_clientSession(std::move(clientSession))
 	{

@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Music.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 
 namespace bw
 {

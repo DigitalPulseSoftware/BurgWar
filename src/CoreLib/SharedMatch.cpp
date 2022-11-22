@@ -7,7 +7,6 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/LogSystem/EntityLogContext.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
 #include <cassert>
 
 namespace bw
@@ -19,7 +18,7 @@ namespace bw
 
 	SharedMatch::SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration) :
 	m_name(std::move(matchName)),
-	m_logger(app, *this, side, app.GetLogger(), sizeof(EntityLogContext)),
+	m_logger(app, *this, side, app.GetLogger()),
 	m_scriptPacketHandler(m_logger),
 	m_currentTick(0),
 	m_currentTime(0),

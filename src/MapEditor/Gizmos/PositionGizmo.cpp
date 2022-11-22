@@ -7,12 +7,12 @@
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/World.hpp>
 
 namespace bw
 {
-	PositionGizmo::PositionGizmo(Camera& camera, Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment) :
+	PositionGizmo::PositionGizmo(Camera& camera, entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities, const Nz::Vector2f& positionAlignment) :
 	EditorGizmo(renderWorld, std::move(entities)),
 	m_camera(camera),
 	m_hoveredAction(MovementType::None),
@@ -44,7 +44,7 @@ namespace bw
 		m_allowedMovements[MovementType::YAxis].Set(0.f, 1.f);
 		m_allowedMovements[MovementType::XYAxis].Set(1.f, 1.f);
 
-		const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
+		entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
 		m_arrowEntity = selectionOverlayEntity->GetWorld()->CreateEntity();
 
 		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
@@ -57,12 +57,12 @@ namespace bw
 		node.SetInheritScale(false);
 		node.SetParent(selectionOverlayEntity);
 
-		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global));
+		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys::Global));
 
 		for (const LayerVisualEntityHandle& visualEntity : GetTargetEntities())
 		{
 			auto& entityNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
-			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys_Global)) - arrowPosition);
+			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global)) - arrowPosition);
 		}
 	}
 
@@ -95,7 +95,7 @@ namespace bw
 		if (m_movementType != MovementType::None)
 		{
 			auto& node = GetSelectionOverlayEntity()->GetComponent<Ndk::NodeComponent>();
-			m_originalPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys_Global));
+			m_originalPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys::Global));
 			m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 
 			return true;
@@ -167,15 +167,15 @@ namespace bw
 		{
 			Nz::Vector2f newPosition = ComputeNewPosition(mouseMoved.x, mouseMoved.y);
 
-			const Ndk::EntityHandle& selectionOverlayEntity = GetSelectionOverlayEntity();
-			auto& node = selectionOverlayEntity->GetComponent<Ndk::NodeComponent>();
+			entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
+			auto& node = selectionOverlayentity.get<Nz::NodeComponent>();
 			node.SetPosition(newPosition);
 
 			const std::vector<LayerVisualEntityHandle>& targetEntities = GetTargetEntities();
 			for (std::size_t i = 0; i < targetEntities.size(); ++i)
 			{
 				auto& entityNode = targetEntities[i]->GetEntity()->GetComponent<Ndk::NodeComponent>();
-				entityNode.SetPosition(newPosition + m_entitiesOffsets[i], Nz::CoordSys_Global);
+				entityNode.SetPosition(newPosition + m_entitiesOffsets[i], Nz::CoordSys::Global);
 
 				targetEntities[i]->SyncVisuals();
 			}

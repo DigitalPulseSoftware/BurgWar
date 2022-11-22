@@ -9,20 +9,17 @@
 
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientPlayer.hpp>
-#include <NDK/Component.hpp>
 #include <vector>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API ClientOwnerComponent : public Ndk::Component<ClientOwnerComponent>
+	class BURGWAR_CLIENTLIB_API ClientOwnerComponent
 	{
 		public:
 			ClientOwnerComponent(ClientPlayerHandle owner);
 			~ClientOwnerComponent() = default;
 
 			inline ClientPlayer* GetOwner() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			ClientPlayerHandle m_owner;

@@ -3,11 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MatchClientVisibility.hpp>
-#include <Nazara/Core/StackArray.hpp>
-#include <Nazara/Core/StackVector.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Terrain.hpp>
+#include <Nazara/Utils/StackArray.hpp>
+#include <Nazara/Utils/StackVector.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <cassert>
 #include <queue>
 
@@ -78,7 +79,7 @@ namespace bw
 
 			/* Create all newly visible entities */
 			TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-			NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
+			NetworkSyncSystem& syncSystem = terrainLayer.GetNetworkSyncSystem();
 			
 			layer.onEntityCreatedSlot.Connect(syncSystem.OnEntityCreated, [this](NetworkSyncSystem* syncSystem, const NetworkSyncSystem::EntityCreation& entityCreation)
 			{
@@ -279,7 +280,7 @@ namespace bw
 
 				/* Create all newly visible entities */
 				TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-				NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
+				entt::registry& registry = terrainLayer.GetWorld();
 
 				auto layerIt = m_layers.find(layerIndex);
 				assert(layerIt != m_layers.end());
@@ -287,8 +288,9 @@ namespace bw
 
 				if (m_clientVisibleLayers.UnboundedTest(i))
 				{
-					for (const Ndk::EntityHandle& entity : syncSystem.GetEntities())
-						layer.visibleEntities.emplace(entity->GetId(), Layer::VisibleEntityData{});
+					auto view = registry.view<NetworkSyncComponent, Nz::NodeComponent>();
+					for (entt::entity entity : view)
+						layer.visibleEntities.emplace(view.get<NetworkSyncComponent>(entity).GetNetworkId(), Layer::VisibleEntityData{});
 
 					continue;
 				}
@@ -635,7 +637,7 @@ namespace bw
 					weaponPacket.stateTick = networkTick;
 
 					auto& weaponData = pair.second;
-					weaponPacket.weaponEntityId = (weaponData.weaponId.has_value()) ? weaponData.weaponId.value() : Packets::EntityWeapon::NoWeapon;
+					weaponPacket.weaponEntityId = weaponData.weaponId.value_or(Packets::EntityWeapon::NoWeapon);
 
 					m_session.SendPacket(weaponPacket);
 				}
@@ -720,13 +722,13 @@ namespace bw
 		m_pendingEvents.Set(VisibilityEventType::Creation);
 	}
 
-	void MatchClientVisibility::HandleEntityRemove(LayerIndex layerIndex, Ndk::EntityId entityId, bool deathEvent)
+	void MatchClientVisibility::HandleEntityRemove(LayerIndex layerIndex, Nz::UInt32 networkId, bool deathEvent)
 	{
 		assert(m_layers.find(layerIndex) != m_layers.end());
 		Layer& layer = *m_layers[layerIndex];
 
 		// Only send entity destruction packet if this entity was already created client-side
-		auto it = layer.creationEvents.find(entityId);
+		auto it = layer.creationEvents.find(networkId);
 		if (it != layer.creationEvents.end())
 			layer.creationEvents.erase(it);
 		else
@@ -736,26 +738,26 @@ namespace bw
 
 			if (deathEvent)
 			{
-				layer.deathEvents.insert(entityId);
+				layer.deathEvents.insert(networkId);
 				m_pendingEvents.Set(VisibilityEventType::Death);
 			}
 			else
 			{
-				layer.destructionEvents.insert(entityId);
+				layer.destructionEvents.insert(networkId);
 				m_pendingEvents.Set(VisibilityEventType::Destruction);
 			}
 		}
 
-		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | entityId;
+		Nz::UInt64 entityKey = Nz::UInt64(layerIndex) << 32 | networkId;
 		m_controlledEntities.erase(entityKey);
 
-		layer.inputUpdateEvents.erase(entityId);
-		layer.healthUpdateEvents.erase(entityId);
-		layer.physicsEvents.erase(entityId);
-		layer.playAnimationEvents.erase(entityId);
-		layer.staticMovementUpdateEvents.erase(entityId);
-		layer.visibleEntities.erase(entityId);
-		layer.weaponEvents.erase(entityId);
+		layer.inputUpdateEvents.erase(networkId);
+		layer.healthUpdateEvents.erase(networkId);
+		layer.physicsEvents.erase(networkId);
+		layer.playAnimationEvents.erase(networkId);
+		layer.staticMovementUpdateEvents.erase(networkId);
+		layer.visibleEntities.erase(networkId);
+		layer.weaponEvents.erase(networkId);
 	}
 
 	template<typename E>
@@ -765,7 +767,7 @@ namespace bw
 		assert(layerIndex < terrain.GetLayerCount());
 
 		TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-		NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
+		NetworkSyncSystem& syncSystem = terrainLayer.GetNetworkSyncSystem();
 
 		auto layerIt = m_layers.find(layerIndex);
 		assert(layerIt != m_layers.end());
@@ -866,7 +868,7 @@ namespace bw
 			layer.staticMovementUpdateEvents.clear();
 
 			TerrainLayer& terrainLayer = terrain.GetLayer(layerIndex);
-			const NetworkSyncSystem& syncSystem = terrainLayer.GetWorld().GetSystem<NetworkSyncSystem>();
+			const NetworkSyncSystem& syncSystem = terrainLayer.GetNetworkSyncSystem();
 
 			syncSystem.MoveEntities([&](const NetworkSyncSystem::EntityMovement* entitiesMovement, std::size_t entityCount)
 			{

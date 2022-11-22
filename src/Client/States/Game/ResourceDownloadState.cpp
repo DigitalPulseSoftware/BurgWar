@@ -3,12 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/ResourceDownloadState.hpp>
-#include <CoreLib/Utility/VirtualDirectory.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/PacketDownloadManager.hpp>
 #include <Client/ClientApp.hpp>
 #include <Client/States/Game/GameState.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <sstream>
 
 namespace bw
@@ -191,7 +191,7 @@ namespace bw
 		m_clientSession->Disconnect();
 	}
 
-	void ResourceDownloadState::RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<VirtualDirectory>& resourceDir, const std::shared_ptr<VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory)
+	void ResourceDownloadState::RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<Nz::VirtualDirectory>& resourceDir, const std::shared_ptr<Nz::VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory)
 	{
 		assert(!m_downloadManagers.empty());
 
@@ -209,13 +209,13 @@ namespace bw
 				bool isFilePresent = std::visit([&](auto&& arg)
 				{
 					using T = std::decay_t<decltype(arg)>;
-					if constexpr (std::is_same_v<T, VirtualDirectory::FileContentEntry>)
+					if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileContentEntry>)
 					{
 						std::size_t fileSize = arg.size();
 						if (fileSize != resource.size)
 							return false;
 
-						auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+						auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 						hash->Begin();
 						hash->Append(arg.data(), arg.size());
 
@@ -225,7 +225,7 @@ namespace bw
 						targetDir->StoreFile(resource.path, arg);
 						return true;
 					}
-					else if constexpr (std::is_same_v<T, VirtualDirectory::PhysicalFileEntry>)
+					else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::PhysicalFileEntry>)
 					{
 						if (keepInMemory)
 						{
@@ -233,14 +233,14 @@ namespace bw
 							std::vector<Nz::UInt8> content;
 
 							Nz::File file(arg.generic_u8string());
-							if (!file.Open(Nz::OpenMode_ReadOnly))
+							if (!file.Open(Nz::OpenMode::ReadOnly))
 								return false;
 
 							content.resize(file.GetSize());
 							if (file.Read(content.data(), content.size()) != content.size())
 								return false;
 
-							auto fileHash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+							auto fileHash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 							fileHash->Begin();
 							fileHash->Append(content.data(), content.size());
 
@@ -256,14 +256,14 @@ namespace bw
 							if (fileSize != resource.size)
 								return false;
 
-							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType_SHA1, arg.generic_u8string()))
+							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType::SHA1, arg.generic_u8string()))
 								return false;
 
 							targetDir->StoreFile(resource.path, arg);
 							return true;
 						}
 					}
-					else if constexpr (std::is_same_v<T, VirtualDirectory::VirtualDirectoryEntry>)
+					else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::DirectoryEntry>)
 					{
 						return false;
 					}
@@ -277,7 +277,7 @@ namespace bw
 			}
 
 			// Try to find file in cache
-			std::string hexChecksum = expectedChecksum.ToHex().ToStdString();
+			std::string hexChecksum = expectedChecksum.ToHex();
 
 			std::filesystem::path cachePath = cacheDir / std::filesystem::u8path(resource.path);
 			cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
@@ -287,7 +287,7 @@ namespace bw
 				std::size_t fileSize = std::filesystem::file_size(cachePath);
 				if (fileSize == resource.size)
 				{
-					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType_SHA1, cachePath.generic_u8string()))
+					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType::SHA1, cachePath.generic_u8string()))
 					{
 						targetDir->StoreFile(resource.path, cachePath);
 						continue;

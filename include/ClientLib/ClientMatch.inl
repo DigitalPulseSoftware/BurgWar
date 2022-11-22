@@ -91,7 +91,7 @@ namespace bw
 		assert(localPlayerIndex < m_localPlayers.size());
 		return m_localPlayers[localPlayerIndex].lastInputData;
 	}
-
+	/*
 	inline ParticleRegistry& ClientMatch::GetParticleRegistry()
 	{
 		assert(m_particleRegistry);
@@ -103,7 +103,7 @@ namespace bw
 		assert(m_particleRegistry);
 		return *m_particleRegistry;
 	}
-
+	*/
 	inline ClientPlayer* ClientMatch::GetPlayerByIndex(Nz::UInt16 playerIndex)
 	{
 		if (playerIndex >= m_matchPlayers.size() || !m_matchPlayers[playerIndex].has_value())
@@ -112,9 +112,9 @@ namespace bw
 		return &m_matchPlayers[playerIndex].value();
 	}
 
-	inline Ndk::World& ClientMatch::GetRenderWorld()
+	inline entt::registry& ClientMatch::GetRenderWorld()
 	{
-		return m_renderWorld;
+		return m_renderWorld.registry;
 	}
 
 	inline void ClientMatch::Quit()

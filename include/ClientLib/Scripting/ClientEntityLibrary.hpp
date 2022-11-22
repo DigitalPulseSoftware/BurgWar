@@ -24,7 +24,7 @@ namespace bw
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		protected:
-			void InitRigidBody(lua_State* L, const Ndk::EntityHandle& entity, float mass) override;
+			void InitRigidBody(lua_State* L, entt::handle entity, float mass) override;
 
 		private:
 			void RegisterClientLibrary(sol::table& elementMetatable);

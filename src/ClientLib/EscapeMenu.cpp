@@ -9,38 +9,38 @@
 
 namespace bw
 {
-	EscapeMenu::EscapeMenu(ClientEditorApp& clientEditorApp, Ndk::Canvas* canvas) :
+	EscapeMenu::EscapeMenu(ClientEditorApp& clientEditorApp, Nz::Canvas* canvas) :
 	m_app(clientEditorApp)
 	{
-		m_backgroundWidget = canvas->Add<Ndk::BaseWidget>();
+		m_backgroundWidget = canvas->Add<Nz::BaseWidget>();
 		m_backgroundWidget->EnableBackground(true);
 		m_backgroundWidget->SetBackgroundColor(Nz::Color(0, 0, 0, 160));
 
-		m_closeMenuButton = m_backgroundWidget->Add<Ndk::ButtonWidget>();
+		m_closeMenuButton = m_backgroundWidget->Add<Nz::ButtonWidget>();
 		m_closeMenuButton->UpdateText(Nz::SimpleTextDrawer::Draw("Close", 30));
 		m_closeMenuButton->Resize(m_closeMenuButton->GetPreferredSize());
-		m_closeMenuButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*) {
+		m_closeMenuButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*) {
 			Hide();
 		});
 
-		m_optionsButton = m_backgroundWidget->Add<Ndk::ButtonWidget>();
+		m_optionsButton = m_backgroundWidget->Add<Nz::ButtonWidget>();
 		m_optionsButton->UpdateText(Nz::SimpleTextDrawer::Draw("Options", 30));
 		m_optionsButton->Resize(m_optionsButton->GetPreferredSize());
-		m_optionsButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*) {
+		m_optionsButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*) {
 			OnOptionButtonPressed();
 		});
 
-		m_leaveMatchButton = m_backgroundWidget->Add<Ndk::ButtonWidget>();
+		m_leaveMatchButton = m_backgroundWidget->Add<Nz::ButtonWidget>();
 		m_leaveMatchButton->UpdateText(Nz::SimpleTextDrawer::Draw("Leave match", 30));
 		m_leaveMatchButton->Resize(m_leaveMatchButton->GetPreferredSize());
-		m_leaveMatchButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*) {
+		m_leaveMatchButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*) {
 			OnLeaveMatch(this);
 		});
 
-		m_quitAppButton = m_backgroundWidget->Add<Ndk::ButtonWidget>();
+		m_quitAppButton = m_backgroundWidget->Add<Nz::ButtonWidget>();
 		m_quitAppButton->UpdateText(Nz::SimpleTextDrawer::Draw("Exit application", 30));
 		m_quitAppButton->Resize(m_quitAppButton->GetPreferredSize());
-		m_quitAppButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*) {
+		m_quitAppButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*) {
 			OnQuitApp(this);
 		});
 
@@ -108,11 +108,11 @@ namespace bw
 			constexpr float padding = 20.f;
 			constexpr float buttonPadding = 10.f;
 
-			std::array<Ndk::ButtonWidget*, 4> buttons = { m_closeMenuButton, m_optionsButton, m_leaveMatchButton, m_quitAppButton };
+			std::array<Nz::ButtonWidget*, 4> buttons = { m_closeMenuButton, m_optionsButton, m_leaveMatchButton, m_quitAppButton };
 
 			float maxWidth = 0.f;
 			float height = 0.f;
-			for (Ndk::ButtonWidget* button : buttons)
+			for (Nz::ButtonWidget* button : buttons)
 			{
 				maxWidth = std::max(maxWidth, button->GetWidth());
 				height += button->GetHeight();
@@ -123,7 +123,7 @@ namespace bw
 			m_backgroundWidget->Resize({ maxWidth, height });
 
 			float cursor = padding;
-			for (Ndk::ButtonWidget* button : buttons)
+			for (Nz::ButtonWidget* button : buttons)
 			{
 				button->SetPosition(0.f, cursor);
 				button->CenterHorizontal();

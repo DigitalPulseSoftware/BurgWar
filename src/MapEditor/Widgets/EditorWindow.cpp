@@ -21,7 +21,7 @@
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/FileDescDialog.hpp>
 #include <MapEditor/Widgets/PlayWindow.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
 #include <QtCore/QStringBuilder>
 #include <QtGui/QKeyEvent>
@@ -647,7 +647,7 @@ namespace bw
 			std::string filepathStr = filepath.generic_u8string();
 
 			Nz::File file(filepath.generic_u8string());
-			if (!file.Open(Nz::OpenMode_ReadOnly))
+			if (!file.Open(Nz::OpenMode::ReadOnly))
 			{
 				bwLog(GetLogger(), LogLevel::Warning, "failed to open script {} when preparing map test", filepathStr);
 				continue;
@@ -712,7 +712,7 @@ namespace bw
 		std::vector<Map::Asset>& assets = map.GetAssets();
 		assets.clear();
 
-		auto hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+		auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 
 		for (const std::string& texturePath : textures)
 		{
@@ -1173,7 +1173,7 @@ namespace bw
 		EntityInfo entityInfo;
 		entityInfo.position = AlignPosition(GetCameraCenter(), layer.positionAlignment);
 
-		createEntityDialog->Open(workingMap.GetFreeUniqueId(), layerIndex, entityInfo, Ndk::EntityHandle::InvalidHandle, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
+		createEntityDialog->Open(workingMap.GetFreeUniqueId(), layerIndex, entityInfo, entt::null, [this, layerIndex](EntityInfoDialog* /*createEntityDialog*/, EntityInfo&& entityInfo, EntityInfoUpdateFlags /*dummy*/)
 		{
 			Map& map = GetWorkingMapMut();
 			std::size_t entityIndex = map.GetEntityCount(layerIndex);

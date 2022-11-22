@@ -10,8 +10,6 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedEntity.hpp>
 #include <CoreLib/Scripting/ScriptStore.hpp>
-#include <NDK/Entity.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
@@ -22,9 +20,9 @@ namespace bw
 			~SharedEntityStore() = default;
 
 		protected:
-			virtual void BindCallbacks(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
+			virtual void BindCallbacks(const ScriptedEntity& entityClass, entt::handle entity) const;
 			void InitializeElement(sol::main_table& elementTable, ScriptedEntity& element) override = 0;
-			bool InitializeEntity(const ScriptedEntity& entityClass, const Ndk::EntityHandle& entity) const;
+			bool InitializeEntity(const ScriptedEntity& entityClass, entt::handle entity) const;
 	};
 }
 

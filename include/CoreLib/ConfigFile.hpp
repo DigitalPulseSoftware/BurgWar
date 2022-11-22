@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_CONFIGFILE_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Core/Bitset.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Bitset.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <sol/forward.hpp>
 #include <tl/expected.hpp>
 #include <filesystem>

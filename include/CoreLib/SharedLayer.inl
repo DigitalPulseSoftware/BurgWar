@@ -10,8 +10,10 @@ namespace bw
 	template<typename F>
 	void SharedLayer::ForEachEntity(F&& func)
 	{
-		for (const Ndk::EntityHandle& entity : m_world.GetEntities())
-			func(entity);
+		m_registry.each([&](entt::entity entity)
+		{
+			func(entt::handle(m_registry, entity));
+		});
 	}
 
 	inline LayerIndex SharedLayer::GetLayerIndex() const
@@ -23,14 +25,24 @@ namespace bw
 	{
 		return m_match;
 	}
-	
-	inline Ndk::World& SharedLayer::GetWorld()
+
+	inline Nz::Physics2DSystem& SharedLayer::GetPhysicsSystem()
 	{
-		return m_world;
+		return m_systemGraph.GetSystem<Nz::Physics2DSystem>();
+	}
+	
+	inline entt::registry& SharedLayer::GetWorld()
+	{
+		return m_registry;
 	}
 
-	inline const Ndk::World& SharedLayer::GetWorld() const
+	inline const entt::registry& SharedLayer::GetWorld() const
 	{
-		return m_world;
+		return m_registry;
+	}
+
+	inline Nz::SystemGraph& SharedLayer::GetSystemGraph()
+	{
+		return m_systemGraph;
 	}
 }

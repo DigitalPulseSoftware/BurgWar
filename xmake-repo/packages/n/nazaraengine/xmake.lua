@@ -1,310 +1,153 @@
 package("nazaraengine")
-    set_homepage("https://github.com/DigitalPulseSoftware/NazaraEngine")
-    set_description("A fast, complete, cross-platform and object-oriented engine which can help you in your daily developper life")
+    set_homepage("https://github.com/NazaraEngine/NazaraEngine")
+    set_description("Nazara Engine is a cross-platform framework aimed at (but not limited to) real-time applications requiring audio, 2D and 3D rendering, network and more (such as video games).")
+    set_license("MIT")
+    set_policy("package.librarydeps.strict_compatibility", true)
 
-    set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
+    set_urls("https://github.com/NazaraEngine/NazaraEngine.git")
 
-    add_versions("2021.08.28", "8d7e99456ce5e76993cd2037a017018f982e2206")
-    add_versions("2021.06.10", "4989fbe2d28aa37dc11d24bdcc395431932a2f11")
-    add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
+    add_versions("2022.11.05", "45d4195527d6f2a79d3230a08bf1269cf254f9b9")
 
-    add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
-    add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
-    add_configs("lua",           {description = "Includes the lua module", default = true, type = "boolean"})
-    add_configs("network",       {description = "Includes the network module", default = true, type = "boolean"})
-    add_configs("physics2d",     {description = "Includes the 2D physics module", default = true, type = "boolean"})
-    add_configs("physics3d",     {description = "Includes the 3D physics module", default = true, type = "boolean"})
-    add_configs("platform",      {description = "Includes the platform module", default = true, type = "boolean"})
-    add_configs("renderer",      {description = "Includes the renderer module", default = true, type = "boolean"})
-    add_configs("noise",         {description = "Includes the noise module", default = true, type = "boolean"})
-    add_configs("sdk",           {description = "Includes the SDK", default = true, type = "boolean"})
-    add_configs("server",        {description = "Only includes server modules (takes priority over other options)", default = false, type = "boolean"})
-    add_configs("utility",       {description = "Includes the utility module", default = true, type = "boolean"})
-    add_configs("clientsdk",     {description = "Includes the Client SDK", default = true, type = "boolean"})
-    add_configs("plugin-assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
+    add_deps("nazarautils")
+    add_deps("chipmunk2d", "dr_wav", "efsw", "fmt", "frozen", "kiwisolver", "libflac", "libsdl", "minimp3", "ordered_map", "stb", { private = true })
+    add_deps("libvorbis", { private = true, configs = { with_vorbisenc = false } })
+    add_deps("openal-soft", { private = true, configs = { shared = true }})
 
-    if is_plat("linux") then
-        add_syslinks("pthread")
+    -- static compilation is not supported for now
+    add_configs("shared", {description = "Build shared library.", default = true, type = "boolean", readonly = true})
+
+    -- all modules have their own config
+    add_configs("plugin_assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
+    add_configs("plugin_ffmpeg", {description = "Includes the ffmpeg plugin", default = false, type = "boolean"})
+    add_configs("entt",          {description = "Includes EnTT to use components and systems", default = true, type = "boolean"})
+    add_configs("with_symbols",  {description = "Enable debug symbols in release", default = false, type = "boolean"})
+
+    local components = {
+        { 
+            name = "Audio",
+            deps = { "core" }
+        },
+        {
+            name = "Core",
+            custom = function (package, component)
+                if package:is_plat("linux") then
+                    component:add("syslinks", "pthread", "dl")
+                end
+            end
+        },
+        { 
+            name = "Graphics",
+            deps = { "renderer" }
+        },
+        { 
+            name = "Network",
+            deps = { "core" }
+        },
+        { 
+            name = "Physics2D",
+            deps = { "core" }
+        },
+        { 
+            name = "Physics3D",
+            deps = { "core" }
+        },
+        { 
+            name = "Platform",
+            deps = { "utility" }
+        },
+        { 
+            name = "Renderer",
+            deps = { "platform", "utility" },
+            custom = function (package, component)
+                if package:is_plat("windows", "mingw") then
+                    component:add("syslinks", "gdi32", "user32", "advapi32")
+                end
+            end
+        },
+        { 
+            name = "Utility",
+            deps = { "core" }
+        },
+        { 
+            name = "Widgets",
+            deps = { "graphics" }
+        },
+    }
+
+    for _, comp in ipairs(components) do
+        local componentName = comp.name:lower()
+        add_configs(componentName, { description = "Includes the " .. comp.name .. " module", default = true, type = "boolean" })
+
+        on_component(componentName, function (package, component)
+            local prefix = "Nazara"
+            local suffix = package:config("shared") and "" or "-s"
+            if package:debug() then
+                suffix = suffix .. "-d"
+            end
+
+            component:add("deps", table.unwrap(comp.deps))
+            component:add("links", prefix .. comp.name .. suffix)
+            if comp.custom then
+                comp.custom(package, component)
+            end
+        end)
     end
 
-    local function has_clientsdk(package)
-        return not package:config("server") or package:config("sdk")
-    end
-
-    local function has_sdk(package)
-        return package:config("sdk") or has_clientsdk(package)
-    end
-
-    local function has_audio(package)
-        return not package:config("server") and (package:config("audio") or has_sdk(package))
-    end
-
-    local function has_graphics(package)
-        return not package:config("server") and (package:config("graphics") or has_sdk(package))
-    end
-
-    local function has_lua(package)
-        return package:config("lua") or has_sdk(package)
-    end
-
-    local function has_network(package)
-        return package:config("network")
-    end
-
-    local function has_noise(package)
-        return package:config("noise")
-    end
-
-    local function has_renderer(package)
-        return not package:config("server") and (package:config("renderer") or has_graphics(package))
-    end
-
-    local function has_platform(package)
-        return not package:config("server") and (package:config("platform") or has_renderer(package))
-    end
-
-    local function has_physics2d(package)
-        return package:config("physics2d") or has_sdk(package)
-    end
-
-    local function has_physics3d(package)
-        return package:config("physics3d") or has_sdk(package)
-    end
-
-    local function has_utility(package)
-        return package:config("utility") or has_platform(package)
-    end
-
-    local function has_assimp_plugin(package)
-        return package:config("plugin-assimp")
-    end
-
-    on_load("windows", "linux", "macosx", "mingw", function (package)
-        local prefix = "Nazara"
-        local suffix = package:config("shared") and "" or "-s"
-
-        if package:debug() then
-            suffix = suffix .. "-d"
+    on_load(function (package)
+        for _, comp in ipairs(components) do
+            local componentName = comp.name:lower()
+            if package:config(componentName) then
+                package:add("components", componentName)
+            end
         end
 
         if not package:config("shared") then
             package:add("defines", "NAZARA_STATIC")
         end
 
-        if has_clientsdk(package) then
-            package:add("links", prefix .. "ClientSDK" .. suffix)
+        package:add("deps", "nzsl", { debug = package:debug(), configs = { with_symbols = package:config("with_symbols") or package:debug(), shared = true } })
+        package:add("deps", "freetype", { private = true, configs = { bzip2 = true, png = true, woff2 = true, zlib = true, debug = package:debug() } })
+        package:add("deps", "newtondynamics3", { private = true, debug = is_plat("windows") and package:debug() })
+        if package:config("entt") then
+            package:add("deps", "entt 3.10.1")
         end
-
-        if has_sdk(package) then
-            package:add("links", prefix .. "SDK" .. suffix)
+        if package:config("plugin_assimp") then
+            package:add("deps", "assimp v5.2.3", { private = true })
         end
-
-        if has_audio(package) then
-            package:add("links", prefix .. "Audio" .. suffix)
+        if package:config("plugin_ffmpeg") then
+            package:add("deps", "ffmpeg", { private = true, configs = { shared = true }})
         end
-
-        if has_lua(package) then
-            --package:add("deps", "lua")
-            package:add("links", prefix .. "Lua" .. suffix)
-        end
-
-        if has_network(package) then
-            package:add("links", prefix .. "Network" .. suffix)
-        end
-
-        if has_noise(package) then
-            package:add("links", prefix .. "Noise" .. suffix)
-        end
-
-        if has_physics2d(package) then
-            package:add("links", prefix .. "Physics2D" .. suffix)
-        end
-
-        if has_physics3d(package) then
-            package:add("links", prefix .. "Physics3D" .. suffix)
-        end
-
-        if has_graphics(package) then
-            package:add("links", prefix .. "Graphics" .. suffix)
-        end
-
-        if has_renderer(package) then
-            package:add("links", prefix .. "Renderer" .. suffix)
-            if package:is_plat("windows", "mingw") then
-                package:add("syslinks", "gdi32", "user32", "advapi32")
-            end
-        end
-
-        if has_platform(package) then
-            --if package:is_plat("linux") then
-            --    package:add("deps", "libsdl")
-            --end
-
-            package:add("links", prefix .. "Platform" .. suffix)
-        end
-
-        if has_utility(package) then
-            --if package:is_plat("linux") then
-            --    package:add("deps", "freetype")
-            --end
-
-            package:add("links", prefix .. "Utility" .. suffix)
-        end
-
-        if has_assimp_plugin(package) then
-            if package:is_plat("linux") then
-                package:add("deps", "assimp")
-            end
-        end
-
-        package:add("links", prefix .. "Core" .. suffix)
     end)
 
-    on_install("windows", "linux", "mingw", function (package)
-        -- Remove potential leftovers from previous build
-        os.rm("lib")
+    on_install("windows", "mingw", "linux", "macosx", function (package)
+        local configs = {}
+        configs.assimp = package:config("plugin_assimp")
+        configs.ffmpeg = package:config("plugin_ffmpeg")
+        configs.examples = false
+        configs.override_runtime = false
 
-        local premakeOptions = {"--verbose", "--excludes-examples", " --excludes-tests"}
-        if not has_audio(package) then
-            table.insert(premakeOptions, "--excludes-module-audio")
+        if not package:config("shared") then
+            configs.embed_rendererbackends = true
         end
 
-        if not has_graphics(package) then
-            table.insert(premakeOptions, "--excludes-module-graphics")
-        end
-
-        if not has_lua(package) then
-            table.insert(premakeOptions, "--excludes-externlib-lua")
-            table.insert(premakeOptions, "--excludes-module-lua")
-        end
-
-        if not has_network(package) then
-            table.insert(premakeOptions, "--excludes-module-network")
-        end
-
-        if not has_noise(package) then
-            table.insert(premakeOptions, "--excludes-module-noise")
-        end
-
-        if not has_platform(package) then
-            table.insert(premakeOptions, "--excludes-module-platform")
-        end
-
-        if not has_physics2d(package) then
-            table.insert(premakeOptions, "--excludes-externlib-chipmunk")
-            table.insert(premakeOptions, "--excludes-module-physics2d")
-        end
-
-        if not has_physics3d(package) then
-            table.insert(premakeOptions, "--excludes-externlib-newton")
-            table.insert(premakeOptions, "--excludes-module-physics3d")
-        end
-
-        if not has_renderer(package) then
-            table.insert(premakeOptions, "--excludes-module-renderer")
-        end
-
-        if not has_utility(package) then
-            table.insert(premakeOptions, "--excludes-externlib-stb_image")
-            table.insert(premakeOptions, "--excludes-module-utility")
-        end
-
-        if not has_assimp_plugin(package) then
-            table.insert(premakeOptions, "--excludes-tool-assimp")
-        end
-
-        if not has_sdk(package) then
-            table.insert(premakeOptions, "--excludes-tool-sdk")
-        end
-
-        if not has_clientsdk(package) then
-            table.insert(premakeOptions, "--excludes-tool-clientsdk")
-        end
-
-        local archName = {
-            x86 = "x86",
-            x86_64 = "x64",
-            x64 = "x64"
-        }
-
-        local premakeArch = assert(archName[package:arch()])
-        local libDir
-
-        local premakeExecutable = is_host("windows") and "./premake5.exe" or "./premake5-linux64"
-
-        -- patch Newton MinGW defines check
-        io.replace("thirdparty/src/newton/dgCore/dgTypes.cpp", [[#if (defined (_MSC_VER) || defined (_MINGW_32_VER) || defined (_MINGW_64_VER))]], [[#if (defined (_MSC_VER) || defined (__MINGW32__) || defined (__MINGW64__))]], {plain=true})
-
-        os.cd("build")
-        if package:is_plat("windows") then
-            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " vs2019")
-            os.cd("vs2019")
-
-            local configs = {}
-            local arch = package:is_arch("x86") and "Win32" or "x64"
-            local mode = (package:debug() and "Debug" or "Release") .. (package:config("shared") and "Dynamic" or "Static")
-
-            table.insert(configs, "/property:Configuration=" .. mode)
-            table.insert(configs, "/property:Platform=" .. arch)
-
-            import("package.tools.msbuild").build(package, configs)
-
-            libDir = "msvc"
-        elseif package:is_plat("linux", "mingw") then
-            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " gmake2")
-            os.cd("gmake2")
-
-            local configs = {}
-            table.insert(configs, "config=" .. (package:debug() and "debug" or "release") .. (package:config("shared") and "dynamic" or "static") .. "_" .. premakeArch)
-
-             -- mingw-make doesn't seem to like parallel building (or maybe it's premake?)
-            if package:is_plat("mingw") then
-                local opt = package:is_plat("mingw") and {jobs=1} or nil
-                import("package.tools.make").build(package, table.join(configs, {"chipmunk"}), opt)
-            end
-
-            import("package.tools.make").build(package, configs, opt)
-
-            libDir = package:is_plat("mingw") and "mingw" or "gmake"
+        if package:is_debug() then
+            configs.mode = "debug"
+        elseif package:config("with_symbols") then
+            configs.mode = "releasedbg"
         else
-            os.raise("unexpected platform")
+            configs.mode = "release"
         end
-
-        os.cd("../../")
-        os.cp("include/Nazara", package:installdir("include"))
-        os.cp("SDK/include/NDK", package:installdir("include"))
-
-        if package:is_plat("windows") then
-            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*.dll", package:installdir("bin"))
-            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*.lib", package:installdir("lib"))
-        else
-            os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
-        end
-
-        if package:is_plat("windows", "mingw") then
-            if has_audio(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/soft_oal.dll", package:installdir("bin"))
-            end
-
-            if has_platform(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/SDL2.dll", package:installdir("bin"))
-            end
-
-            if has_utility(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/libsndfile-1.dll", package:installdir("bin"))
-            end
-
-            if has_assimp_plugin(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/assimp.dll", package:installdir("bin"))
-            end
-        end
+        import("package.tools.xmake").install(package, configs)
     end)
 
     on_test(function (package)
-        assert(package:check_cxxsnippets({test = [[
-            void test(int args, char** argv) {
-                Nz::Clock c;
-                c.Restart();
-            }
-        ]]}, {includes = "Nazara/Core.hpp"}))
+        for _, comp in ipairs(components) do
+            if package:config(comp.name:lower()) then
+                assert(package:check_cxxsnippets({test = [[
+                    void test() {
+                        Nz::Modules<Nz::]] .. comp.name .. [[> nazara;
+                    }
+                ]]}, {configs = {languages = "c++17"}, includes = "Nazara/" .. comp.name .. ".hpp"}))
+            end
+        end
     end)

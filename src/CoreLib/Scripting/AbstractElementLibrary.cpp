@@ -3,8 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
-#include <CoreLib/Components/ScriptComponent.hpp>
-#include <cassert>
 
 namespace bw
 {

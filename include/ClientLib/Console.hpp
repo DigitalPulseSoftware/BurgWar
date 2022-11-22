@@ -8,10 +8,9 @@
 #define BURGWAR_CLIENTLIB_CONSOLE_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
-#include <NDK/Canvas.hpp>
-#include <NDK/Console.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
 #include <functional>
 #include <memory>
 
@@ -22,7 +21,7 @@ namespace bw
 		public:
 			using ExecuteCallback = std::function<bool(const std::string& command)>;
 
-			Console(Nz::RenderTarget* window, Ndk::Canvas* canvas);
+			Console(Nz::RenderTarget* window, Nz::Canvas* canvas);
 			Console(const Console&) = delete;
 			Console(Console&&) = delete;
 			~Console();
@@ -47,7 +46,7 @@ namespace bw
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetChangeSizeSlot);
 
 			ExecuteCallback m_callback;
-			Ndk::Console* m_widget;
+			//Nz::Console* m_widget;
 	};
 }
 

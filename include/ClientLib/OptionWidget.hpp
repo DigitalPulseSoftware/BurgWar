@@ -8,22 +8,22 @@
 #define BURGWAR_CLIENTLIB_OPTIONMENU_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
-#include <NDK/Canvas.hpp>
-#include <NDK/Widgets/ButtonWidget.hpp>
-#include <NDK/Widgets/CheckboxWidget.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Utils/Signal.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
+#include <Nazara/Widgets/ButtonWidget.hpp>
+#include <Nazara/Widgets/CheckboxWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/TextAreaWidget.hpp>
 #include <variant>
 
 namespace bw
 {
 	class ConfigFile;
 
-	class BURGWAR_CLIENTLIB_API OptionWidget : public Ndk::BaseWidget
+	class BURGWAR_CLIENTLIB_API OptionWidget : public Nz::BaseWidget
 	{
 		public:
-			OptionWidget(Ndk::BaseWidget* parent, ConfigFile& playerConfig);
+			OptionWidget(Nz::BaseWidget* parent, ConfigFile& playerConfig);
 			OptionWidget(const OptionWidget&) = delete;
 			OptionWidget(OptionWidget&&) = delete;
 			~OptionWidget() = default;
@@ -61,7 +61,7 @@ namespace bw
 			struct Option
 			{
 				std::string keyName;
-				Ndk::LabelWidget* label;
+				Nz::LabelWidget* label;
 			};
 
 			struct BoolOption : Option
@@ -97,18 +97,18 @@ namespace bw
 
 			struct Section
 			{
-				Ndk::ButtonWidget* button;
+				Nz::ButtonWidget* button;
 				std::vector<OptionType> options;
 
-				NazaraSlot(Ndk::ButtonWidget, OnButtonTrigger, onTriggerSlot);
+				NazaraSlot(Nz::ButtonWidget, OnButtonTrigger, onTriggerSlot);
 			};
 
 			std::unordered_map<std::string /*section*/, Section> m_sections;
 			std::unordered_map<std::string /*optionName*/, OptionValue> m_updatedValues;
 			Section* m_activeSection;
-			Ndk::ButtonWidget* m_applyButton;
-			Ndk::ButtonWidget* m_backButton;
-			Ndk::ButtonWidget* m_resetButton;
+			Nz::ButtonWidget* m_applyButton;
+			Nz::ButtonWidget* m_backButton;
+			Nz::ButtonWidget* m_resetButton;
 			ConfigFile& m_playerConfig;
 			bool m_ignoreWidgetUpdate;
 	};

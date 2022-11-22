@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	EntityEditorMode::EntityEditorMode(const Ndk::EntityHandle& targetEntity, EditorWindow& editorWindow) :
+	EntityEditorMode::EntityEditorMode(entt::entity targetEntity, EditorWindow& editorWindow) :
 	EditorMode(editorWindow),
 	m_targetEntity(targetEntity)
 	{
@@ -26,7 +26,7 @@ namespace bw
 			auto& entityData = m_entities.emplace_back();
 			entityData.layerEntity = visualEntity.CreateHandle();
 
-			visualEntity.ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
+			visualEntity.ForEachRenderable([&](const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
 			{
 				auto& renderableData = entityData.renderables.emplace_back();
 
@@ -53,7 +53,7 @@ namespace bw
 				continue;
 
 			std::size_t i = 0;
-			entityData.layerEntity->ForEachRenderable([&](const Nz::InstancedRenderableRef& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
+			entityData.layerEntity->ForEachRenderable([&](const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& /*localMatrix*/, int /*renderOrder*/)
 			{
 				auto& renderableData = entityData.renderables[i];
 				for (std::size_t j = 0; j < renderable->GetMaterialCount(); ++j)

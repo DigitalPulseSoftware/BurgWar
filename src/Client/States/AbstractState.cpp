@@ -38,7 +38,7 @@ namespace bw
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			const Ndk::EntityHandle& entity = *it;
+			entt::entity entity = *it;
 			if (entity)
 			{
 				entity->Enable();
@@ -63,7 +63,7 @@ namespace bw
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			const Ndk::EntityHandle& entity = *it;
+			entt::entity entity = *it;
 			if (entity)
 			{
 				entity->Disable();

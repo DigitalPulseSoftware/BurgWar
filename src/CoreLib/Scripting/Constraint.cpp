@@ -3,12 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/Constraint.hpp>
-#include <NDK/Components/ConstraintComponent2D.hpp>
+#include <CoreLib/Components/ConstraintComponent2D.hpp>
 
 namespace bw
 {
-	Constraint::Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint) :
-	m_entity(std::move(entity)),
+	Constraint::Constraint(entt::handle entity, Nz::Constraint2DHandle constraint) :
+	m_entity(entity),
 	m_constraint(std::move(constraint))
 	{
 		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
@@ -17,7 +17,7 @@ namespace bw
 	}
 
 	Constraint::Constraint(Constraint&& constraint) noexcept :
-	m_entity(std::move(constraint.m_entity)),
+	m_entity(constraint.m_entity),
 	m_constraint(std::move(constraint.m_constraint))
 	{
 		constraint.m_onDestruction.Disconnect();
@@ -63,8 +63,11 @@ namespace bw
 		if (!IsValid())
 			return;
 
-		if (m_entity && !m_entity->GetComponent<Ndk::ConstraintComponent2D>().RemoveConstraint(m_constraint))
-			m_entity->Kill();
+		if (m_entity.valid())
+		{
+			if (!m_entity.get<ConstraintComponent2D>().RemoveConstraint(m_constraint))
+				m_entity.destroy();
+		}
 	}
 
 	void Constraint::SetErrorBias(float errorBias)
@@ -87,8 +90,8 @@ namespace bw
 
 	void Constraint::KillEntity()
 	{
-		if (m_entity)
-			m_entity->Kill();
+		if (m_entity.valid())
+			m_entity.destroy();
 	}
 
 

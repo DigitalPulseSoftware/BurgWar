@@ -13,9 +13,9 @@
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/StateMachine.hpp>
-#include <NDK/Widgets/CheckboxWidget.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Widgets/CheckboxWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/TextAreaWidget.hpp>
 #include <cassert>
 #include <chrono>
 
@@ -25,10 +25,10 @@ namespace bw
 	AbstractState(std::move(stateData)),
 	m_previousState(std::move(previousState))
 	{
-		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
+		m_statusLabel = CreateWidget<Nz::LabelWidget>();
 		m_statusLabel->Hide();
 
-		m_serverLabel = CreateWidget<Ndk::LabelWidget>();
+		m_serverLabel = CreateWidget<Nz::LabelWidget>();
 		m_serverLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Server: ", 24));
 
 		m_serverAddressLayout = CreateWidget<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -55,20 +55,20 @@ namespace bw
 		});
 
 
-		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
+		m_connectionButton = CreateWidget<Nz::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
 		m_connectionButton->Resize(m_connectionButton->GetPreferredSize());
 
-		m_connectionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_connectionButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnConnectionPressed();
 		});
 		
-		m_backButton = CreateWidget<Ndk::ButtonWidget>();
+		m_backButton = CreateWidget<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
 		m_backButton->Resize(m_backButton->GetPreferredSize());
 		
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnBackPressed();
 		});
@@ -106,7 +106,7 @@ namespace bw
 
 	void JoinServerState::OnConnectionPressed()
 	{
-		std::string serverHostname = m_serverAddressArea->GetText().ToStdString();
+		std::string serverHostname = m_serverAddressArea->GetText();
 		if (serverHostname.empty())
 		{
 			UpdateStatus("Error: blank server address", Nz::Color::Red);
@@ -123,7 +123,7 @@ namespace bw
 		long long rawPort;
 		if (!serverPort.ToInteger(&rawPort) || rawPort <= 0 || rawPort > 0xFFFF)
 		{
-			UpdateStatus("Error: " + serverPort.ToStdString() + " is not a valid port", Nz::Color::Red);
+			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red);
 			return;
 		}
 
@@ -147,14 +147,14 @@ namespace bw
 
 		constexpr float padding = 10.f;
 
-		std::array<Ndk::BaseWidget*, 3> widgets = {
+		std::array<Nz::BaseWidget*, 3> widgets = {
 			m_statusLabel,
 			m_serverAddressLayout,
 			m_connectionButton
 		};
 
 		float totalSize = padding * (widgets.size() - 1);
-		for (Ndk::BaseWidget* widget : widgets)
+		for (Nz::BaseWidget* widget : widgets)
 			totalSize += widget->GetSize().y;
 
 		Nz::Vector2f cursor = center;

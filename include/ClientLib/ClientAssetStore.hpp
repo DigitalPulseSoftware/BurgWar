@@ -23,14 +23,14 @@ namespace bw
 
 			void Clear() override;
 
-			const Nz::ModelRef& GetModel(const std::string& modelPath) const;
-			const Nz::SoundBufferRef& GetSoundBuffer(const std::string& soundPath) const;
-			const Nz::TextureRef& GetTexture(const std::string& texturePath) const;
+			const std::shared_ptr<Nz::Model>& GetModel(const std::string& modelPath) const;
+			const std::shared_ptr<Nz::SoundBuffer>& GetSoundBuffer(const std::string& soundPath) const;
+			const std::shared_ptr<Nz::Texture>& GetTexture(const std::string& texturePath) const;
 
 		private:
-			mutable tsl::hopscotch_map<std::string, Nz::ModelRef> m_models;
-			mutable tsl::hopscotch_map<std::string, Nz::SoundBufferRef> m_soundBuffers;
-			mutable tsl::hopscotch_map<std::string, Nz::TextureRef> m_textures;
+			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::Model>> m_models;
+			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::SoundBuffer>> m_soundBuffers;
+			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::Texture>> m_textures;
 	};
 }
 

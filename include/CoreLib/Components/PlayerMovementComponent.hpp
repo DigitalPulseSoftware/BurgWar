@@ -9,7 +9,6 @@
 
 #include <CoreLib/Export.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Component.hpp>
 #include <memory>
 #include <vector>
 
@@ -17,7 +16,7 @@ namespace bw
 {
 	class PlayerMovementController;
 
-	class BURGWAR_CORELIB_API PlayerMovementComponent : public Ndk::Component<PlayerMovementComponent>
+	class BURGWAR_CORELIB_API PlayerMovementComponent
 	{
 		public:
 			PlayerMovementComponent();
@@ -46,8 +45,6 @@ namespace bw
 			inline void UpdateWasJumpingState(bool isJumping);
 
 			inline bool WasJumping() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			std::shared_ptr<PlayerMovementController> m_controller;

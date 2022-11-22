@@ -6,13 +6,13 @@
 
 namespace bw
 {
-	inline EntityLogger::EntityLogger(Ndk::EntityHandle entity, const Logger& logParent) :
+	inline EntityLogger::EntityLogger(entt::entity entity, const Logger& logParent) :
 	LoggerProxy(logParent),
 	m_entity(std::move(entity))
 	{
 	}
 
-	inline void EntityLogger::UpdateEntity(Ndk::EntityHandle newEntity)
+	inline void EntityLogger::UpdateEntity(entt::entity newEntity)
 	{
 		m_entity = newEntity;
 	}

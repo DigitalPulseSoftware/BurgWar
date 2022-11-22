@@ -13,7 +13,7 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -24,7 +24,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Camera : public Nz::HandledObject<Camera>
 	{
 		public:
-			Camera(Ndk::World& world, Nz::RenderTarget* renderTarget, bool perspective);
+			Camera(entt::registry& registry, Nz::RenderTarget* renderTarget, bool perspective);
 			Camera(const Camera&) = delete;
 			Camera(Camera&&) = delete;
 			~Camera() = default;
@@ -59,10 +59,11 @@ namespace bw
 		private:
 			void UpdateProjection();
 			void UpdateZoomFactor();
+			void UpdateZoomFactor(const Nz::Vector2ui& newRenderTargetSize);
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetSizeChanged);
 
-			Ndk::EntityOwner m_cameraEntity;
+			EntityOwner m_cameraEntity;
 			bool m_isPerspective;
 			float m_projectedDepth;
 			float m_invFovTan;

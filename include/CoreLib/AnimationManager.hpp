@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_ANIMATIONMANAGER_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <memory>
 #include <vector>
 

@@ -13,7 +13,6 @@
 #include <CoreLib/Scripting/ElementEvents.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
-#include <NDK/Component.hpp>
 #include <array>
 #include <functional>
 #include <optional>
@@ -22,12 +21,14 @@
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API ScriptComponent : public Ndk::Component<ScriptComponent>
+	class BURGWAR_CORELIB_API ScriptComponent
 	{
 		friend class TickCallbackSystem;
 
 		public:
 			ScriptComponent(const Logger& logger, std::shared_ptr<const ScriptedElement> element, std::shared_ptr<ScriptingContext> context, sol::table entityTable, PropertyValueMap properties);
+			ScriptComponent(const ScriptComponent&) = delete;
+			ScriptComponent(ScriptComponent&&) noexcept = default;
 			~ScriptComponent();
 
 			template<ElementEvent Event, typename... Args>
@@ -57,21 +58,23 @@ namespace bw
 			inline bool UnregisterCallbackCustom(std::size_t eventIndex, std::size_t callbackId);
 
 			inline void UpdateElement(std::shared_ptr<const ScriptedElement> element);
-			void UpdateEntity(const Ndk::EntityHandle& entity);
+			void UpdateEntity(entt::entity entity);
 
-			static Ndk::ComponentIndex componentIndex;
+			ScriptComponent& operator=(const ScriptComponent&) = delete;
+			ScriptComponent& operator=(ScriptComponent&&) noexcept = default;
+
+			static constexpr auto in_place_delete = true;
 
 		private:
 			inline bool CanTriggerTick(float elapsedTime);
-			void OnAttached() override;
 
 			std::array<std::vector<ScriptedElement::Callback>, ElementEventCount> m_eventCallbacks;
 			std::vector<std::vector<ScriptedElement::Callback>> m_customEventCallbacks;
 			std::shared_ptr<const ScriptedElement> m_element;
 			std::shared_ptr<ScriptingContext> m_context;
+			std::unique_ptr<EntityLogger> m_logger;
 			std::size_t m_nextCallbackId;
 			sol::table m_entityTable;
-			EntityLogger m_logger;
 			PropertyValueMap m_properties;
 			float m_timeBeforeTick;
 	};

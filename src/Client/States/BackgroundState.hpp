@@ -9,7 +9,7 @@
 
 #include <Client/States/AbstractState.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -26,8 +26,8 @@ namespace bw
 
 			void LayoutWidgets() override;
 
-			Ndk::EntityOwner m_spriteEntity;
-			Nz::SpriteRef m_backgroundSprite;
+			EntityOwner m_spriteEntity;
+			std::shared_ptr<Nz::Sprite> m_backgroundSprite;
 	};
 }
 

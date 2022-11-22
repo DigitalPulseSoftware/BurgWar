@@ -103,7 +103,7 @@ namespace bw
 		std::unique_ptr<CurlLibrary> libcurl = std::make_unique<CurlLibrary>();
 		for (const char* libname : { "libcurl" NAZARA_DYNLIB_EXTENSION, "libcurl-d" NAZARA_DYNLIB_EXTENSION })
 		{
-			Nz::ErrorFlags errFlags(Nz::ErrorFlag_Silent);
+			Nz::ErrorFlags errFlags(Nz::ErrorMode::Silent);
 			if (libcurl->library.Load(libname))
 				break;
 		}
@@ -111,16 +111,16 @@ namespace bw
 		if (!libcurl->library.IsLoaded())
 		{
 			if (error)
-				*error = "failed to load libcurl: " + libcurl->library.GetLastError().ToStdString();
+				*error = "failed to load libcurl: " + libcurl->library.GetLastError();
 
 			return false;
 		}
 
-		auto LoadFunction = [&](auto& funcPtr, const std::string& symbolName)
+		auto LoadFunction = [&](auto& funcPtr, const char* symbolName)
 		{
 			funcPtr = reinterpret_cast<std::decay_t<decltype(funcPtr)>>(libcurl->library.GetSymbol(symbolName));
 			if (!funcPtr)
-				throw std::runtime_error("failed to load " + symbolName + " from curl");
+				throw std::runtime_error("failed to load " + std::string(symbolName) + " from curl");
 		};
 
 		try

@@ -8,9 +8,6 @@
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
-#include <NDK/World.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -26,32 +23,35 @@ namespace bw
 	{
 		elementMetatable["IsPlayingAnimation"] = LuaFunction([](const sol::table& weaponTable)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
-			if (!entity->HasComponent<AnimationComponent>())
+			entt::handle entity = AssertScriptEntity(weaponTable);
+
+			AnimationComponent* entityAnimation = entity.try_get<AnimationComponent>();
+			if (!entityAnimation)
 				return false;
 
-			return entity->GetComponent<AnimationComponent>().IsPlaying();
+			return entityAnimation->IsPlaying();
 		});
 
 		elementMetatable["PlayAnim"] = LuaFunction([&](const sol::table& weaponTable, const std::string& animationName)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
-			if (!entity->HasComponent<AnimationComponent>())
+			entt::handle entity = AssertScriptEntity(weaponTable);
+
+			AnimationComponent* entityAnimation = entity.try_get<AnimationComponent>();
+			if (!entityAnimation)
 				throw std::runtime_error("Entity has no animations");
 
-			auto& entityAnimation = entity->GetComponent<AnimationComponent>();
-			const auto& animationStore = entityAnimation.GetAnimationStore();
+			const auto& animationStore = entityAnimation->GetAnimationStore();
 
 			if (std::size_t animId = animationStore->FindAnimationByName(animationName); animId != animationStore->InvalidId)
-				entityAnimation.Play(animId, m_match.GetCurrentTime());
+				entityAnimation->Play(animId, m_match.GetCurrentTime());
 			else
 				throw std::runtime_error("Entity has no animation \"" + animationName + "\"");
 		});
 
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 damage, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
-			Ndk::World* world = entity->GetWorld();
+			entt::handle entity = AssertScriptEntity(weaponTable);
+			/*entt::registry* world = entity->GetWorld();
 			assert(world);
 
 			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
@@ -60,7 +60,7 @@ namespace bw
 
 			if (physSystem.RaycastQueryFirst(startPos, startPos + direction * 1000.f, 1.f, 0, 0xFFFFFFFF, 0xFFFFFFFF, &hitInfo))
 			{
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				entt::entity hitEntity = hitInfo.body;
 
 				if (hitEntity->HasComponent<HealthComponent>())
 					hitEntity->GetComponent<HealthComponent>().Damage(damage, entity);
@@ -70,7 +70,7 @@ namespace bw
 					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
 					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitInfo.hitPos - startPos) * pushbackForce);
 				}
-			}
+			}*/
 		};
 
 		elementMetatable["Shoot"] = sol::overload(

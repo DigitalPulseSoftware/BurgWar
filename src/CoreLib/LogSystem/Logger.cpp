@@ -37,9 +37,9 @@ namespace bw
 		return true;
 	}
 
-	LogContext* Logger::NewContext(Nz::MemoryPool& pool) const
+	LogContext* Logger::NewContext() const
 	{
-		return AllocateContext<LogContext>(pool);
+		return AllocateContext<LogContext>();
 	}
 
 	void Logger::InitializeContext(LogContext& context) const
@@ -104,6 +104,6 @@ namespace bw
 
 	void Logger::FreeContext(LogContext* context) const
 	{
-		m_contextPool.Delete(context);
+		delete context;
 	}
 }

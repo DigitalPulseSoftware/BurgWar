@@ -27,7 +27,6 @@ namespace bw
 	}
 
 	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
-	ClientApplication(argc, argv),
 	BurgApp(side, configFile),
 	m_playerSettings(*this)
 	{
@@ -37,31 +36,22 @@ namespace bw
 			m_playerSettings.SaveToFile(PlayerSettingsFile);
 		}
 
-		Nz::Audio::SetGlobalVolume(m_playerSettings.GetIntegerValue<Nz::UInt8>("Sound.GlobalVolume"));
+		const auto& defaultDevice = Nz::Audio::Instance()->GetDefaultDevice();
+
+		defaultDevice->SetGlobalVolume(m_playerSettings.GetIntegerValue<Nz::UInt8>("Sound.GlobalVolume"));
 		m_playerSettings.GetIntegerUpdateSignal("Sound.GlobalVolume").Connect([](long long newValue)
 		{
-			Nz::Audio::SetGlobalVolume(float(newValue));
+			const auto& defaultDevice = Nz::Audio::Instance()->GetDefaultDevice();
+			defaultDevice->SetGlobalVolume(float(newValue));
 		});
-
-		Ndk::InitializeComponent<VisualComponent>("LayrEnt");
-		Ndk::InitializeComponent<ClientMatchComponent>("LclMatch");
-		Ndk::InitializeComponent<ClientOwnerComponent>("LclOwner");
-		Ndk::InitializeComponent<LocalPlayerControlledComponent>("LclPly");
-		Ndk::InitializeComponent<SoundEmitterComponent>("SndEmtr");
-		Ndk::InitializeComponent<VisibleLayerComponent>("VsbLayrs");
-		Ndk::InitializeComponent<VisualInterpolationComponent>("Interp");
-		Ndk::InitializeSystem<FrameCallbackSystem>();
-		Ndk::InitializeSystem<PostFrameCallbackSystem>();
-		Ndk::InitializeSystem<SoundSystem>();
-		Ndk::InitializeSystem<VisualInterpolationSystem>();
 	}
 
 	ClientEditorApp::~ClientEditorApp()
 	{
-		Nz::FontLibrary::Clear();
+		/*Nz::FontLibrary::Clear();
 		Nz::MaterialLibrary::Clear();
 		Nz::SpriteLibrary::Clear();
-		Nz::TextureLibrary::Clear();
+		Nz::TextureLibrary::Clear();*/
 	}
 
 	void ClientEditorApp::SavePlayerConfig()
@@ -72,14 +62,14 @@ namespace bw
 
 	void ClientEditorApp::Quit()
 	{
-		ClientApplication::Quit();
+		//ClientApplication::Quit();
 	}
 
 	void ClientEditorApp::FillStores()
 	{
 		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
 
-		Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
+		/*Nz::MaterialRef spriteNoDepthMat = Nz::Material::New();
 		spriteNoDepthMat->EnableDepthBuffer(false);
 		spriteNoDepthMat->EnableFaceCulling(false);
 
@@ -90,7 +80,7 @@ namespace bw
 		//FIXME: Should be part of ClientLib too
 		Nz::Color trailColor(242, 255, 168);
 
-		Nz::SpriteRef trailSprite = Nz::Sprite::New();
+		std::shared_ptr<Nz::Sprite> trailSprite = Nz::Sprite::New();
 		trailSprite->SetMaterial(Nz::Material::New("Translucent2D"));
 		trailSprite->SetCornerColor(Nz::RectCorner_LeftBottom, trailColor * Nz::Color(128, 128, 128, 0));
 		trailSprite->SetCornerColor(Nz::RectCorner_LeftTop, trailColor * Nz::Color(128, 128, 128, 0));
@@ -117,6 +107,6 @@ namespace bw
 
 		Nz::FontLibrary::Register("BW_Chatbox", barthowheel);
 		Nz::FontLibrary::Register("BW_Names", grandstander);
-		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());
+		Nz::FontLibrary::Register("BW_ScoreMenu", Nz::Font::GetDefault());*/
 	}
 }

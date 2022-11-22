@@ -9,8 +9,8 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
-#include <NDK/World.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <entt/entt.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -24,20 +24,20 @@ namespace bw
 	{
 		elementMetatable["GetOwnerEntity"] = LuaFunction([](const sol::table& weaponTable) -> sol::object
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
+			entt::handle entity = AssertScriptEntity(weaponTable);
 
-			const Ndk::EntityHandle& ownerEntity = entity->GetComponent<WeaponComponent>().GetOwner();
+			entt::handle ownerEntity = entity.get<WeaponComponent>().GetOwner();
 			if (!ownerEntity)
 				return sol::nil;
 
-			return ownerEntity->GetComponent<ScriptComponent>().GetTable();
+			return ownerEntity.get<ScriptComponent>().GetTable();
 		});
 
 		elementMetatable["SetNextTriggerTime"] = LuaFunction([](const sol::table& weaponTable, Nz::UInt64 nextTriggerTime)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
+			entt::handle entity = AssertScriptEntity(weaponTable);
 			
-			entity->GetComponent<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
+			entity.get<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
 		});
 	}
 }

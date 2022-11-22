@@ -6,7 +6,7 @@
 #include <Client/States/MainMenuState.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <NDK/StateMachine.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 
 namespace bw
 {
@@ -14,7 +14,7 @@ namespace bw
 	AbstractState(std::move(stateData)),
 	m_timer(5.f)
 	{
-		Ndk::LabelWidget* labelWidget = CreateWidget<Ndk::LabelWidget>();
+		Nz::LabelWidget* labelWidget = CreateWidget<Nz::LabelWidget>();
 		labelWidget->UpdateText(Nz::SimpleTextDrawer::Draw("Connection lost.", 36, Nz::TextStyle_Regular, Nz::Color::Red));
 		labelWidget->Center();
 	}

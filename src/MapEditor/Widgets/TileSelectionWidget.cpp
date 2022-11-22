@@ -9,7 +9,7 @@
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/EventHandler.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolBar>
@@ -88,7 +88,7 @@ namespace bw
 				matIndex++;
 			}
 
-			const Ndk::EntityHandle& tilemapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
+			entt::entity tilemapEntity = m_tileSelectionCanvas->GetWorld().CreateEntity();
 			tilemapEntity->AddComponent<Ndk::NodeComponent>();
 			tilemapEntity->AddComponent<Ndk::GraphicsComponent>().Attach(tileMap);
 			tilemapEntity->Disable();
@@ -190,7 +190,7 @@ namespace bw
 		Nz::Vector2f firstPosition = Nz::Vector2f(firstX, firstY) * m_tileSize;
 		Nz::Vector2f lastPosition = Nz::Vector2f(lastX, lastY) * m_tileSize;
 
-		auto& selectedEntityNode = m_selectedEntity->GetComponent<Ndk::NodeComponent>();
+		auto& selectedEntityNode = m_selectedentity.get<Nz::NodeComponent>();
 		selectedEntityNode.SetPosition(firstPosition);
 		m_selectedSprite->SetSize(lastPosition - firstPosition + m_tileSize);
 
@@ -333,7 +333,7 @@ namespace bw
 				Nz::Vector2f lastPosition = Nz::Vector2f(lastX, lastY) * m_tileSize;
 
 				m_selectionEntity->Enable();
-				auto& selectionEntityNode = m_selectionEntity->GetComponent<Ndk::NodeComponent>();
+				auto& selectionEntityNode = m_selectionentity.get<Nz::NodeComponent>();
 				selectionEntityNode.SetPosition(firstPosition);
 				m_selectionSprite->SetSize(lastPosition - firstPosition + m_tileSize);
 			};
@@ -350,7 +350,7 @@ namespace bw
 			Nz::Vector2f firstPosition = Nz::Vector2f(selectionLastRect % currentGroup.mapSize.x, selectionLastRect / currentGroup.mapSize.x) * m_tileSize;
 
 			m_selectionEntity->Enable();
-			auto& selectionEntityNode = m_selectionEntity->GetComponent<Ndk::NodeComponent>();
+			auto& selectionEntityNode = m_selectionentity.get<Nz::NodeComponent>();
 			selectionEntityNode.SetPosition(firstPosition);
 			m_selectionSprite->SetSize(m_tileSize);
 		}

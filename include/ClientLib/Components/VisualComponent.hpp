@@ -9,19 +9,16 @@
 
 #include <ClientLib/Export.hpp>
 #include <ClientLib/LayerVisualEntity.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API VisualComponent : public Ndk::Component<VisualComponent>
+	class BURGWAR_CLIENTLIB_API VisualComponent
 	{
 		public:
 			inline VisualComponent(LayerVisualEntityHandle visualEntity);
 			~VisualComponent() = default;
 
 			inline const LayerVisualEntityHandle& GetLayerVisual() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			LayerVisualEntityHandle m_visualEntity;

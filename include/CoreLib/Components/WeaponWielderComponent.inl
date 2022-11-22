@@ -6,25 +6,27 @@
 
 namespace bw
 {
-	inline WeaponWielderComponent::WeaponWielderComponent() :
-	m_weaponOffset(Nz::Vector2f::Zero()),
-	m_activeWeaponIndex(NoWeapon)
+	inline WeaponWielderComponent::WeaponWielderComponent(entt::handle entity) :
+	BaseComponent(entity),
+	m_activeWeaponIndex(NoWeapon),
+	m_weaponOffset(Nz::Vector2f::Zero())
 	{
 	}
 
 	inline WeaponWielderComponent::WeaponWielderComponent(const WeaponWielderComponent& weaponWielder) :
-	m_weaponOffset(weaponWielder.m_weaponOffset),
+	BaseComponent(weaponWielder),
 	m_activeWeaponIndex(weaponWielder.m_activeWeaponIndex),
-	m_weaponByName(weaponWielder.m_weaponByName)
+	m_weaponByName(weaponWielder.m_weaponByName),
+	m_weaponOffset(weaponWielder.m_weaponOffset)
 	{
 		//FIXME:
-		for (const Ndk::EntityHandle& entity : weaponWielder.m_weapons)
+		for (entt::handle entity : weaponWielder.m_weapons)
 			m_weapons.emplace_back(entity);
 	}
 	
-	inline const Ndk::EntityHandle& WeaponWielderComponent::GetActiveWeapon() const
+	inline entt::handle WeaponWielderComponent::GetActiveWeapon() const
 	{
-		return (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex] : Ndk::EntityHandle::InvalidHandle;
+		return (m_activeWeaponIndex != NoWeapon) ? m_weapons[m_activeWeaponIndex].GetEntity() : entt::handle{};
 	}
 
 	inline std::size_t WeaponWielderComponent::GetSelectedWeapon() const
@@ -32,13 +34,13 @@ namespace bw
 		return m_activeWeaponIndex;
 	}
 
-	inline const Ndk::EntityHandle& WeaponWielderComponent::GetWeapon(std::size_t weaponIndex) const
+	inline entt::handle WeaponWielderComponent::GetWeapon(std::size_t weaponIndex) const
 	{
 		assert(weaponIndex < m_weapons.size());
 		return m_weapons[weaponIndex];
 	}
 
-	inline const std::vector<Ndk::EntityOwner>& WeaponWielderComponent::GetWeapons() const
+	inline const std::vector<EntityOwner>& WeaponWielderComponent::GetWeapons() const
 	{
 		return m_weapons;
 	}

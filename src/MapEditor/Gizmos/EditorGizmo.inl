@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline const Ndk::EntityHandle& EditorGizmo::GetSelectionOverlayEntity() const
+	inline entt::entity EditorGizmo::GetSelectionOverlayEntity() const
 	{
 		return m_selectionOverlayEntity;
 	}

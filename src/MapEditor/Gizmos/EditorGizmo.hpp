@@ -10,17 +10,17 @@
 #include <ClientLib/LayerVisualEntity.hpp>
 #include <Nazara/Platform/Event.hpp>
 #include <Nazara/Graphics/Model.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
 	class EditorGizmo
 	{
 		public:
-			EditorGizmo(Ndk::World& renderWorld, std::vector<LayerVisualEntityHandle> entities);
+			EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities);
 			virtual ~EditorGizmo();
 
-			inline const Ndk::EntityHandle& GetSelectionOverlayEntity() const;
+			inline entt::entity GetSelectionOverlayEntity() const;
 			inline const std::vector<LayerVisualEntityHandle>& GetTargetEntities() const;
 
 			virtual bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;
@@ -30,9 +30,9 @@ namespace bw
 			void Refresh();
 
 		private:
-			static Nz::ModelRef GenerateBoxModel();
+			static std::shared_ptr<Nz::Model> GenerateBoxModel();
 
-			Ndk::EntityOwner m_selectionOverlayEntity;
+			EntityOwner m_selectionOverlayEntity;
 			std::vector<LayerVisualEntityHandle> m_targetEntities;
 	};
 }

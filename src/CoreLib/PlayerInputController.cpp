@@ -8,13 +8,13 @@
 
 namespace bw
 {
-	std::optional<PlayerInputData> PlayerInputController::GenerateInputs(const Ndk::EntityHandle& entity) const
+	std::optional<PlayerInputData> PlayerInputController::GenerateInputs(entt::handle entity) const
 	{
-		assert(entity);
-		if (!entity->HasComponent<PlayerControlledComponent>())
+		PlayerControlledComponent* playerControlled = entity.try_get<PlayerControlledComponent>();
+		if (!playerControlled)
 			return std::nullopt;
 
-		Player* player = entity->GetComponent<PlayerControlledComponent>().GetOwner();
+		Player* player = playerControlled->GetOwner();
 		if (!player)
 			// TODO: Log error
 			return PlayerInputData{};

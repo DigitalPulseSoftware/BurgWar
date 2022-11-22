@@ -13,7 +13,8 @@
 #include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptHandlerRegistry.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
+#include <tl/function_ref.hpp>
 
 namespace bw
 {
@@ -32,7 +33,7 @@ namespace bw
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
 
-			virtual void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) = 0;
+			virtual void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) = 0;
 
 			inline Nz::UInt64 GetCurrentTick() const;
 			inline Nz::UInt64 GetCurrentTime() const;
@@ -54,8 +55,8 @@ namespace bw
 			virtual SharedWeaponStore& GetWeaponStore() = 0;
 			virtual const SharedWeaponStore& GetWeaponStore() const = 0;
 
-			virtual const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const = 0;
-			virtual EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const = 0;
+			virtual entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const = 0;
+			virtual EntityId RetrieveUniqueIdByEntity(entt::handle entity) const = 0;
 
 			void Update(float elapsedTime);
 

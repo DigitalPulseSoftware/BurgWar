@@ -9,14 +9,14 @@
 
 #include <CoreLib/Export.hpp>
 #include <Nazara/Physics2D/Constraint2D.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
 	class BURGWAR_CORELIB_API Constraint
 	{
 		public:
-			Constraint(Ndk::EntityHandle entity, Nz::Constraint2DHandle constraint);
+			Constraint(entt::handle entity, Nz::Constraint2DHandle constraint);
 			Constraint(const Constraint&) = delete;
 			Constraint(Constraint&& constraint) noexcept;
 			virtual ~Constraint();
@@ -47,14 +47,14 @@ namespace bw
 		private:
 			NazaraSlot(Nz::HandledObject<Nz::Constraint2D>, OnHandledObjectDestruction, m_onDestruction);
 
-			Ndk::EntityHandle m_entity;
+			entt::handle m_entity;
 			Nz::Constraint2DHandle m_constraint;
 	};
 
 	class BURGWAR_CORELIB_API DampedSpringConstraint : public Constraint
 	{
 		public:
-			inline DampedSpringConstraint(Ndk::EntityHandle entity, Nz::DampedSpringConstraint2D* constraint);
+			inline DampedSpringConstraint(entt::handle entity, Nz::DampedSpringConstraint2D* constraint);
 			DampedSpringConstraint(DampedSpringConstraint&&) noexcept = default;
 			~DampedSpringConstraint() = default;
 
@@ -65,7 +65,7 @@ namespace bw
 	class BURGWAR_CORELIB_API PinConstraint : public Constraint
 	{
 		public:
-			inline PinConstraint(Ndk::EntityHandle entity, Nz::PinConstraint2D* constraint);
+			inline PinConstraint(entt::handle entity, Nz::PinConstraint2D* constraint);
 			PinConstraint(PinConstraint&&) noexcept = default;
 			~PinConstraint() = default;
 
@@ -80,7 +80,7 @@ namespace bw
 	class BURGWAR_CORELIB_API PivotConstraint : public Constraint
 	{
 		public:
-			inline PivotConstraint(Ndk::EntityHandle entity, Nz::PivotConstraint2D* constraint);
+			inline PivotConstraint(entt::handle entity, Nz::PivotConstraint2D* constraint);
 			PivotConstraint(PivotConstraint&&) noexcept = default;
 			~PivotConstraint() = default;
 
@@ -91,7 +91,7 @@ namespace bw
 	class BURGWAR_CORELIB_API RotaryLimitConstraint : public Constraint
 	{
 		public:
-			inline RotaryLimitConstraint(Ndk::EntityHandle entity, Nz::RotaryLimitConstraint2D* constraint);
+			inline RotaryLimitConstraint(entt::handle entity, Nz::RotaryLimitConstraint2D* constraint);
 			RotaryLimitConstraint(RotaryLimitConstraint&&) noexcept = default;
 			~RotaryLimitConstraint() = default;
 

@@ -9,15 +9,15 @@
 
 namespace bw
 {
-	std::optional<PlayerInputData> LocalPlayerInputController::GenerateInputs(const Ndk::EntityHandle& entity) const
+	std::optional<PlayerInputData> LocalPlayerInputController::GenerateInputs(entt::handle entity) const
 	{
 		assert(entity);
-		if (!entity->HasComponent<LocalPlayerControlledComponent>())
+		LocalPlayerControlledComponent* controlledComponent = registry.try_get<LocalPlayerControlledComponent>(entity);
+		if (!controlledComponent)
 			return std::nullopt; //< Don't override inputs (for non-local player controlled entities)
 
-		LocalPlayerControlledComponent& controlledComponent = entity->GetComponent<LocalPlayerControlledComponent>();
-		ClientMatch& clientMatch = controlledComponent.GetClientMatch();
-		Nz::UInt8 localPlayerIndex = controlledComponent.GetLocalPlayerIndex();
+		ClientMatch& clientMatch = controlledComponent->GetClientMatch();
+		Nz::UInt8 localPlayerIndex = controlledComponent->GetLocalPlayerIndex();
 
 		return clientMatch.GetLocalPlayerInputs(localPlayerIndex);
 	}

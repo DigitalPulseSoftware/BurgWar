@@ -8,24 +8,26 @@
 #define BURGWAR_CORELIB_COMPONENTS_ENTITYOWNERCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/Component.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
+#include <CoreLib/Components/BaseComponent.hpp>
 
 namespace bw
 {
-	class BURGWAR_CORELIB_API EntityOwnerComponent : public Ndk::Component<EntityOwnerComponent>
+	class BURGWAR_CORELIB_API EntityOwnerComponent : public BaseComponent
 	{
 		public:
-			EntityOwnerComponent() = default;
-			inline EntityOwnerComponent(const EntityOwnerComponent&);
+			using BaseComponent::BaseComponent;
+			EntityOwnerComponent(const EntityOwnerComponent&) = delete;
+			EntityOwnerComponent(EntityOwnerComponent&&) noexcept = default;
 			~EntityOwnerComponent() = default;
 
-			inline void Register(const Ndk::EntityHandle& entity);
+			inline void Register(entt::handle entity);
 
-			static Ndk::ComponentIndex componentIndex;
+			EntityOwnerComponent& operator=(const EntityOwnerComponent&) = delete;
+			EntityOwnerComponent& operator=(EntityOwnerComponent&&) noexcept = default;
 
 		private:
-			std::vector<Ndk::EntityOwner> m_ownedEntities;
+			std::vector<EntityOwner> m_ownedEntities;
 	};
 }
 

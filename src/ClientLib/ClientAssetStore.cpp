@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientAssetStore.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
 
 namespace bw
 {
@@ -15,18 +16,21 @@ namespace bw
 		m_textures.clear();
 	}
 
-	const Nz::ModelRef& ClientAssetStore::GetModel(const std::string& modelPath) const
+	const std::shared_ptr<Nz::Model>& ClientAssetStore::GetModel(const std::string& modelPath) const
 	{
-		Nz::ModelParameters loaderParameters;
+		static std::shared_ptr<Nz::Model> dummy;
+		return dummy;
+		// TODO
+		/*Nz::ModelParameters loaderParameters;
 		loaderParameters.material.shaderName = "Basic";
 		loaderParameters.mesh.animated = false;
 		loaderParameters.mesh.center = true;
 		loaderParameters.mesh.storage = Nz::DataStorage_Hardware;
 
-		return GetResource(modelPath, m_models, loaderParameters);
+		return GetResource(modelPath, m_models, loaderParameters);*/
 	}
 
-	const Nz::SoundBufferRef& ClientAssetStore::GetSoundBuffer(const std::string& soundPath) const
+	const std::shared_ptr<Nz::SoundBuffer>& ClientAssetStore::GetSoundBuffer(const std::string& soundPath) const
 	{
 		Nz::SoundBufferParams loaderParameters;
 		loaderParameters.forceMono = true;
@@ -34,9 +38,10 @@ namespace bw
 		return GetResource(soundPath, m_soundBuffers, loaderParameters);
 	}
 
-	const Nz::TextureRef& ClientAssetStore::GetTexture(const std::string& texturePath) const
+	const std::shared_ptr<Nz::Texture>& ClientAssetStore::GetTexture(const std::string& texturePath) const
 	{
-		Nz::ImageParams loaderParameters;
+		Nz::TextureParams loaderParameters;
+		loaderParameters.renderDevice = Nz::Graphics::Instance()->GetRenderDevice();
 
 		return GetResource(texturePath, m_textures, loaderParameters);
 	}

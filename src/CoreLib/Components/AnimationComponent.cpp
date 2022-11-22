@@ -30,6 +30,4 @@ namespace bw
 			m_playingAnimation.reset();
 		}
 	}
-
-	Ndk::ComponentIndex AnimationComponent::componentIndex;
 }

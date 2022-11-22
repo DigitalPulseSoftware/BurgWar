@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
-#include <Nazara/Core/Flags.hpp>
+#include <Nazara/Utils/Flags.hpp>
 #include <NDK/Entity.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Map.hpp>
@@ -59,9 +59,9 @@ namespace bw
 
 			const PropertyValue& GetProperty(const std::string& propertyName) const;
 			std::pair<PropertyType, bool> GetPropertyType(const std::string& propertyName) const;
-			inline const Ndk::EntityHandle& GetTargetEntity() const;
+			inline entt::entity GetTargetEntity() const;
 
-			void Open(EntityId uniqueId, LayerIndex layerIndex, std::optional<EntityInfo> info, const Ndk::EntityHandle& targetEntity, Callback callback);
+			void Open(EntityId uniqueId, LayerIndex layerIndex, std::optional<EntityInfo> info, entt::entity targetEntity, Callback callback);
 
 			void UpdatePosition(const Nz::Vector2f& position);
 			void UpdateRotation(const Nz::DegreeAnglef& rotation);

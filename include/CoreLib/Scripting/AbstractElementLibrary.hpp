@@ -9,7 +9,6 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <NDK/Entity.hpp>
 #include <sol/forward.hpp>
 #include <memory>
 

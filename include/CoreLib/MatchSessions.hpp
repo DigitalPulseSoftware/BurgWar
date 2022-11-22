@@ -8,11 +8,12 @@
 #define BURGWAR_SERVER_SESSIONMANAGER_HPP
 
 #include <CoreLib/Export.hpp>
+#include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/NetworkReactor.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <CoreLib/SessionBridge.hpp>
 #include <CoreLib/SessionManager.hpp>
-#include <Nazara/Core/MemoryPool.hpp>
+#include <Nazara/Utils/MemoryPool.hpp>
 #include <tsl/hopscotch_map.h>
 #include <vector>
 
@@ -20,13 +21,12 @@ namespace bw
 {
 	class Logger;
 	class Match;
-	class MatchClientSession;
 
 	class BURGWAR_CORELIB_API MatchSessions
 	{
 		public:
 			MatchSessions(Match& match);
-			~MatchSessions();
+			~MatchSessions() = default;
 
 			void Clear();
 
@@ -41,12 +41,10 @@ namespace bw
 			void Poll();
 
 		private:
-			std::size_t m_nextSessionId;
 			std::vector<std::unique_ptr<SessionManager>> m_managers;
 			Match& m_match;
 			PlayerCommandStore m_commandStore;
-			Nz::MemoryPool m_sessionPool;
-			tsl::hopscotch_map<std::size_t /*sessionId*/, MatchClientSession* /*session*/> m_sessionIdToSession;
+			Nz::MemoryPool<MatchClientSession> m_sessionPool;
 	};
 }
 

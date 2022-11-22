@@ -8,40 +8,34 @@
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	WeaponSystem::WeaponSystem(SharedMatch& match) :
-	m_match(match)
+	void WeaponSystem::Update(float /*elapsedTime*/)
 	{
-		Requires<CooldownComponent, ScriptComponent, WeaponComponent, Ndk::NodeComponent>();
-		SetMaximumUpdateRate(0);
-	}
-
-	void WeaponSystem::OnUpdate(float /*elapsedTime*/)
-	{
-		for (const Ndk::EntityHandle& weapon : GetEntities())
+		auto view = m_registry.view<CooldownComponent, ScriptComponent, WeaponComponent, Nz::NodeComponent>();
+		for (entt::entity weapon : view)
 		{
-			auto& weaponComponent = weapon->GetComponent<WeaponComponent>();
+			auto& weaponComponent = view.get<WeaponComponent>(weapon);
 			if (!weaponComponent.IsActive())
 				continue;
 
-			if (const Ndk::EntityHandle& owner = weaponComponent.GetOwner())
+			if (entt::entity owner = weaponComponent.GetOwner(); owner != entt::null)
 			{
-				InputComponent& ownerInputs = owner->GetComponent<InputComponent>();
-				Ndk::NodeComponent& ownerNode = owner->GetComponent<Ndk::NodeComponent>();
-				Ndk::NodeComponent& weaponNode = weapon->GetComponent<Ndk::NodeComponent>();
+				InputComponent& ownerInputs = m_registry.get<InputComponent>(owner);
+				Nz::NodeComponent& ownerNode = m_registry.get<Nz::NodeComponent>(owner);
+				Nz::NodeComponent& weaponNode = view.get<Nz::NodeComponent>(weapon);
 
 				const auto& inputs = ownerInputs.GetInputs();
 				const auto& previousInputs = ownerInputs.GetPreviousInputs();
 
 				Nz::RadianAnglef angle(std::atan2(inputs.aimDirection.y, inputs.aimDirection.x));
-				if (std::signbit(ownerNode.GetScale(Nz::CoordSys_Global).x) != std::signbit(weaponNode.GetScale(Nz::CoordSys_Global).x))
+				if (std::signbit(ownerNode.GetScale(Nz::CoordSys::Global).x) != std::signbit(weaponNode.GetScale(Nz::CoordSys::Global).x))
 					weaponNode.Scale(-1.f, 1.f);
 
 				if (weaponNode.GetScale().x < 0.f)
-					angle += Nz::RadianAnglef(float(M_PI));
+					angle += Nz::RadianAnglef(Nz::Pi<float>);
 
 				weaponNode.SetRotation(angle);
 
@@ -59,10 +53,10 @@ namespace bw
 
 				if (isAttacking)
 				{
-					auto& weaponCooldown = weapon->GetComponent<CooldownComponent>();
+					auto& weaponCooldown = view.get<CooldownComponent>(weapon);
 					if (weaponCooldown.Trigger(m_match.GetCurrentTime()))
 					{
-						auto& weaponScript = weapon->GetComponent<ScriptComponent>();
+						auto& weaponScript = view.get<ScriptComponent>(weapon);
 						weaponScript.ExecuteCallback<ElementEvent::Attack>(weaponScript.GetTable());
 
 						weaponComponent.SetAttacking(true);
@@ -70,7 +64,7 @@ namespace bw
 				}
 				else if (!inputs.isAttacking && weaponComponent.IsAttacking())
 				{
-					auto& weaponScript = weapon->GetComponent<ScriptComponent>();
+					auto& weaponScript = view.get<ScriptComponent>(weapon);
 					weaponScript.ExecuteCallback<ElementEvent::AttackFinish>(weaponScript.GetTable());
 
 					weaponComponent.SetAttacking(false);
@@ -79,5 +73,4 @@ namespace bw
 		}
 	}
 
-	Ndk::SystemIndex WeaponSystem::systemIndex;
 }

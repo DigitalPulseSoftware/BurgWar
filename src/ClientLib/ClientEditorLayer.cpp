@@ -6,22 +6,22 @@
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
-#include <NDK/Systems/LifetimeSystem.hpp>
+#include <Nazara/Core/Systems/LifetimeSystem.hpp>
 
 namespace bw
 {
 	ClientEditorLayer::ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex) :
 	SharedLayer(match, layerIndex)
 	{
-		Ndk::World& world = GetWorld();
-		world.AddSystem<FrameCallbackSystem>();
-		world.AddSystem<PostFrameCallbackSystem>();
-		world.AddSystem<VisualInterpolationSystem>();
+		auto& systemGraph = GetSystemGraph();
+		systemGraph.AddSystem<FrameCallbackSystem>();
+		systemGraph.AddSystem<PostFrameCallbackSystem>();
+		systemGraph.AddSystem<VisualInterpolationSystem>();
 	}
-	
-	void ClientEditorLayer::FrameUpdate(float elapsedTime)
+
+	/*void ClientEditorLayer::FrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -35,7 +35,7 @@ namespace bw
 
 	void ClientEditorLayer::PreFrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -48,7 +48,7 @@ namespace bw
 
 	void ClientEditorLayer::PostFrameUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(false);
@@ -61,7 +61,7 @@ namespace bw
 
 	void ClientEditorLayer::TickUpdate(float elapsedTime)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
 		{
 			system.Enable(true);
@@ -72,5 +72,5 @@ namespace bw
 		world.GetSystem<VisualInterpolationSystem>().Enable(false);
 
 		SharedLayer::TickUpdate(elapsedTime);
-	}
+	}*/
 }

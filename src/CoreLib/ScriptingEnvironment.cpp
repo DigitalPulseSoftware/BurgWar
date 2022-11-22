@@ -3,12 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/ScriptingEnvironment.hpp>
-#include <CoreLib/Player.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 
 namespace bw
 {
-	ScriptingEnvironment::ScriptingEnvironment(const Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<VirtualDirectory>& scriptDir)
+	ScriptingEnvironment::ScriptingEnvironment(const Logger& logger, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir)
 	{
 		m_scriptingContext = std::make_shared<ScriptingContext>(logger, scriptDir);
 		m_scriptingContext->LoadLibrary(std::move(scriptingLibrary));

@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline VisibleLayerComponent::VisibleLayerComponent(Ndk::World& renderWorld) :
+	inline VisibleLayerComponent::VisibleLayerComponent(entt::registry& renderWorld) :
 	m_renderWorld(renderWorld)
 	{
 	}

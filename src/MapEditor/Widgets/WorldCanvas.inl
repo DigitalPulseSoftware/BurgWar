@@ -26,12 +26,12 @@ namespace bw
 		return m_camera;
 	}
 
-	inline Ndk::World& WorldCanvas::GetWorld()
+	inline entt::registry& WorldCanvas::GetWorld()
 	{
 		return m_world;
 	}
 
-	inline const Ndk::World& WorldCanvas::GetWorld() const
+	inline const entt::registry& WorldCanvas::GetWorld() const
 	{
 		return m_world;
 	}

@@ -13,13 +13,13 @@ namespace bw
 		if (HasWeapon(weaponClass))
 			return NoWeapon;
 
-		Ndk::EntityHandle weapon = callback(weaponClass);
+		entt::handle weapon = callback(weaponClass);
 		if (!weapon)
 			return NoWeapon;
 
 		//FIXME: New weapons should be resized to match the player size
 
-		assert(weapon->HasComponent<WeaponComponent>());
+		assert(weapon.try_get<WeaponComponent>());
 
 		std::size_t weaponIndex = m_weapons.size();
 		m_weapons.emplace_back(weapon);
@@ -29,7 +29,7 @@ namespace bw
 		return weaponIndex;
 	}
 
-	void WeaponWielderComponent::OverrideEntities(const std::function<void(Ndk::EntityOwner& owner)>& callback)
+	void WeaponWielderComponent::OverrideEntities(const std::function<void(EntityOwner& owner)>& callback)
 	{
 		for (auto& weapon : m_weapons)
 			callback(weapon);
@@ -65,17 +65,16 @@ namespace bw
 		assert(weaponId < m_weapons.size() || weaponId == NoWeapon);
 		if (m_activeWeaponIndex != weaponId)
 		{
+			entt::registry* registry = GetRegistry();
+
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				const Ndk::EntityHandle& previousWeapon = m_weapons[m_activeWeaponIndex];
-				auto& weaponComponent = previousWeapon->GetComponent<WeaponComponent>();
+				entt::handle previousWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = registry->get<WeaponComponent>(previousWeapon);
 				weaponComponent.SetActive(false);
 
-				if (previousWeapon->HasComponent<ScriptComponent>())
-				{
-					auto& weaponScript = previousWeapon->GetComponent<ScriptComponent>();
-					weaponScript.ExecuteCallback<ElementEvent::SwitchOff>();
-				}
+				if (ScriptComponent* scriptComponent = registry->try_get<ScriptComponent>(previousWeapon))
+					scriptComponent->ExecuteCallback<ElementEvent::SwitchOff>();
 			}
 
 			OnNewWeaponSelection(this, weaponId);
@@ -83,18 +82,13 @@ namespace bw
 
 			if (m_activeWeaponIndex != NoWeapon)
 			{
-				const Ndk::EntityHandle& newWeapon = m_weapons[m_activeWeaponIndex];
-				auto& weaponComponent = newWeapon->GetComponent<WeaponComponent>();
+				entt::handle newWeapon = m_weapons[m_activeWeaponIndex];
+				auto& weaponComponent = registry->get<WeaponComponent>(newWeapon);
 				weaponComponent.SetActive(true);
 
-				if (newWeapon->HasComponent<ScriptComponent>())
-				{
-					auto& weaponScript = newWeapon->GetComponent<ScriptComponent>();
-					weaponScript.ExecuteCallback<ElementEvent::SwitchOn>();
-				}
+				if (ScriptComponent* scriptComponent = registry->try_get<ScriptComponent>(newWeapon))
+					scriptComponent->ExecuteCallback<ElementEvent::SwitchOn>();
 			}
 		}
 	}
-
-	Ndk::ComponentIndex WeaponWielderComponent::componentIndex;
 }

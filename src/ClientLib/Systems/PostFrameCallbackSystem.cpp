@@ -3,43 +3,31 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
-#include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <ClientLib/ClientMatch.hpp>
 
 namespace bw
 {
-	PostFrameCallbackSystem::PostFrameCallbackSystem()
+	PostFrameCallbackSystem::PostFrameCallbackSystem(entt::registry& registry) :
+	m_registry(registry)
 	{
-		Requires<ScriptComponent>();
-		SetMaximumUpdateRate(0);
-		SetUpdateOrder(100);
+		m_scriptDestroyConnection = m_registry.on_destroy<ScriptComponent>().connect<&PostFrameCallbackSystem::OnScriptDestroy>(this);
 	}
 
-	void PostFrameCallbackSystem::OnEntityRemoved(Ndk::Entity* entity)
+	void PostFrameCallbackSystem::Update(float /*elapsedTime*/)
 	{
-		m_frameUpdateEntities.Remove(entity);
-	}
-
-	void PostFrameCallbackSystem::OnEntityValidation(Ndk::Entity* entity, bool /*justAdded*/)
-	{
-		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
-
-		if (scriptComponent.HasCallbacks(ElementEvent::PostFrame))
-			m_frameUpdateEntities.Insert(entity);
-		else
-			m_frameUpdateEntities.Remove(entity);
-	}
-
-	void PostFrameCallbackSystem::OnUpdate(float /*elapsedTime*/)
-	{
-		for (const Ndk::EntityHandle& entity : m_frameUpdateEntities)
+		for (entt::entity entity : m_frameUpdateEntities)
 		{
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			auto& scriptComponent = m_registry.get<ScriptComponent>(entity);
 
-			scriptComponent.ExecuteCallback<ElementEvent::PostFrame>();
+			scriptComponent.ExecuteCallback<ElementEvent::Frame>();
 		}
 	}
 
-	Ndk::SystemIndex PostFrameCallbackSystem::systemIndex;
+	void PostFrameCallbackSystem::OnScriptDestroy(entt::registry& registry, entt::entity entity)
+	{
+		assert(&m_registry == &registry);
+
+		m_frameUpdateEntities.erase(entity);
+	}
 }

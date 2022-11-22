@@ -6,7 +6,7 @@
 #include <Nazara/Core/Directory.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 #include <NDK/Entity.hpp>
 #include <random>
@@ -20,7 +20,7 @@ namespace bw
 		StateData& stateData = GetStateData();
 		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(131, 180, 205)));
 
-		if (Nz::TextureRef backgroundTexture = Nz::TextureLibrary::Get("MenuBackground"))
+		if (std::shared_ptr<Nz::Texture> backgroundTexture = Nz::TextureLibrary::Get("MenuBackground"))
 		{
 			m_backgroundSprite = Nz::Sprite::New();
 			m_backgroundSprite->SetTexture(backgroundTexture);
@@ -67,7 +67,7 @@ namespace bw
 
 			m_backgroundSprite->SetSize(newSize);
 
-			m_spriteEntity->GetComponent<Ndk::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
+			m_spriteentity.get<Nz::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
 		}
 	}
 }

@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <sol/forward.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 
 namespace bw
 {
@@ -18,7 +18,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API ParticleGroup
 	{
 		public:
-			ParticleGroup(const ParticleRegistry& particleRegistry, const Ndk::EntityHandle& particleGroup);
+			ParticleGroup(const ParticleRegistry& particleRegistry, entt::entity particleGroup);
 			ParticleGroup(const ParticleGroup&) = delete;
 			ParticleGroup(ParticleGroup&&) noexcept = default;
 			~ParticleGroup() = default;
@@ -38,7 +38,7 @@ namespace bw
 			ParticleGroup& operator=(ParticleGroup&&) noexcept = default;
 
 		private:
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			const ParticleRegistry& m_registry;
 	};
 }

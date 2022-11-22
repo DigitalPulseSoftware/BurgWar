@@ -21,20 +21,20 @@ namespace bw
 			if (!m_host.Create(protocol, port, maxClient, NetworkChannelCount))
 				throw std::runtime_error("failed to start reactor");
 		}
-		else if (!m_host.Create((protocol == Nz::NetProtocol_IPv4) ? Nz::IpAddress::LoopbackIpV4 : Nz::IpAddress::LoopbackIpV6, maxClient, NetworkChannelCount))
+		else if (!m_host.Create((protocol == Nz::NetProtocol::IPv4) ? Nz::IpAddress::LoopbackIpV4 : Nz::IpAddress::LoopbackIpV6, maxClient, NetworkChannelCount))
 			throw std::runtime_error("failed to start reactor");
 
 		m_clients.resize(maxClient, nullptr);
 
 		m_running.store(true, std::memory_order_release);
-		m_thread = Nz::Thread(&NetworkReactor::WorkerThread, this);
-		m_thread.SetName("NetworkReactor");
+		m_thread = std::thread(&NetworkReactor::WorkerThread, this);
+		//m_thread.SetName("NetworkReactor");
 	}
 
 	NetworkReactor::~NetworkReactor()
 	{
 		m_running.store(false, std::memory_order_relaxed);
-		m_thread.Join();
+		m_thread.join();
 	}
 
 	std::size_t NetworkReactor::ConnectTo(Nz::IpAddress address, Nz::UInt32 data)

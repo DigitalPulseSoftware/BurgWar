@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	bool BasicPlayerMovementController::PreSolveCollision(PlayerMovementComponent& playerMovement, const Ndk::EntityHandle& /*collisionBody*/, Nz::Arbiter2D& arbiter) const
+	bool BasicPlayerMovementController::PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity /*collisionBody*/, Nz::Arbiter2D& arbiter) const
 	{
 		Nz::Vector2f up = Nz::Vector2f::UnitY();
 

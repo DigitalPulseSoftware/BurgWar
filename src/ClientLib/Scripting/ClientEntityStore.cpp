@@ -6,19 +6,19 @@
 #include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	std::optional<ClientLayerEntity> ClientEntityStore::InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, const Ndk::EntityHandle& parentEntity) const
+	std::optional<ClientLayerEntity> ClientEntityStore::InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, entt::entity parentEntity) const
 	{
-		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, scale, properties, parentEntity);
+		entt::handle entity = ClientEditorEntityStore::InstantiateEntity(layer.GetWorld(), elementIndex, position, rotation, scale, properties, parentEntity);
 		if (!entity)
 			return std::nullopt;
 
 		ClientLayerEntity layerEntity(layer, entity, serverId, uniqueId);
-		entity->AddComponent<VisualComponent>(layerEntity.CreateHandle());
-		entity->AddComponent<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);
+		entity.emplace<VisualComponent>(layerEntity.CreateHandle());
+		entity.emplace<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);
 
 		if (!InitializeEntity(entity))
 			return std::nullopt;

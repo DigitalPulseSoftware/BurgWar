@@ -31,8 +31,8 @@ namespace bw
 
 			Camera& GetCamera();
 			const Camera& GetCamera() const;
-			Ndk::World& GetWorld();
-			const Ndk::World& GetWorld() const;
+			entt::registry& GetWorld();
+			const entt::registry& GetWorld() const;
 			inline WorldCanvas* GetWorldCanvas();
 			inline const WorldCanvas* GetWorldCanvas() const;
 

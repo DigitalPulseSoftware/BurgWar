@@ -13,25 +13,18 @@ namespace bw
 	m_context(std::move(context)),
 	m_nextCallbackId(m_element->nextCallbackId),
 	m_entityTable(std::move(entityTable)),
-	m_logger(Ndk::EntityHandle::InvalidHandle, logger),
 	m_properties(std::move(properties)),
 	m_timeBeforeTick(0.f)
 	{
+		m_logger = std::make_unique<EntityLogger>(entt::null, logger);
 	}
 
 	ScriptComponent::~ScriptComponent() = default;
 
-	void ScriptComponent::UpdateEntity(const Ndk::EntityHandle& entity)
+	void ScriptComponent::UpdateEntity(entt::entity entity)
 	{
 		m_entityTable["_Entity"] = entity;
-		m_logger.UpdateEntity(entity);
+		m_logger->UpdateEntity(entity);
 	}
-
-	void ScriptComponent::OnAttached()
-	{
-		UpdateEntity(m_entity);
-	}
-
-	Ndk::ComponentIndex ScriptComponent::componentIndex;
 }
 

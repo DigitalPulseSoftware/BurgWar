@@ -60,13 +60,13 @@ namespace bw
 		m_mainWindow->EnableVerticalSync(vsync);
 		m_mainWindow->SetFramerateLimit(fpsLimit);
 
-		Ndk::World& world = AddWorld();
+		entt::registry& world = AddWorld();
 
 		Ndk::RenderSystem& renderSystem = world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetDefaultBackground(nullptr);
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
-		const Ndk::EntityHandle& camera2D = world.CreateEntity();
+		entt::entity camera2D = world.CreateEntity();
 
 		auto& cameraComponent2D = camera2D->AddComponent<Ndk::CameraComponent>();
 		cameraComponent2D.SetProjectionType(Nz::ProjectionType_Orthogonal);
@@ -85,7 +85,7 @@ namespace bw
 
 		if (m_config.GetBoolValue("Debug.ShowVersion"))
 		{
-			Ndk::LabelWidget* versionLabel = m_stateData->canvas->Add<Ndk::LabelWidget>();
+			Nz::LabelWidget* versionLabel = m_stateData->canvas->Add<Nz::LabelWidget>();
 			versionLabel->UpdateText(Nz::SimpleTextDrawer::Draw(std::to_string(GameMajorVersion) + "." + std::to_string(GameMinorVersion) + "." + std::to_string(GamePatchVersion), 14));
 			versionLabel->Resize(versionLabel->GetPreferredSize());
 

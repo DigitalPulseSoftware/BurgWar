@@ -32,7 +32,7 @@ namespace bw
 			if (!callbackResult.valid())
 			{
 				sol::error err = callbackResult;
-				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
+				bwLog(*m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
 
 				if constexpr (!EventData::FatalError)
 					continue;
@@ -63,7 +63,7 @@ namespace bw
 			if (!callbackResult.valid())
 			{
 				sol::error err = callbackResult;
-				bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
+				bwLog(*m_logger, LogLevel::Error, "{} callback failed: {}", ToString(Event), err.what());
 
 				if constexpr (!EventData::FatalError)
 					continue;
@@ -110,7 +110,7 @@ namespace bw
 				if (!callbackResult.valid())
 				{
 					sol::error err = callbackResult;
-					bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
+					bwLog(*m_logger, LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
 
 					continue;
 				}
@@ -135,7 +135,7 @@ namespace bw
 				if (!callbackResult.valid())
 				{
 					sol::error err = callbackResult;
-					bwLog(m_logger, LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
+					bwLog(*m_logger, LogLevel::Error, "{} callback failed: {}", eventData.name, err.what());
 
 					continue;
 				}
@@ -146,7 +146,7 @@ namespace bw
 					if (!callbackResult.valid())
 					{
 						sol::error err = callbackResult;
-						bwLog(m_logger, LogLevel::Error, "{} combinator failed: {}", eventData.name, err.what());
+						bwLog(*m_logger, LogLevel::Error, "{} combinator failed: {}", eventData.name, err.what());
 
 						continue;
 					}
@@ -173,7 +173,8 @@ namespace bw
 
 	inline const EntityLogger& ScriptComponent::GetLogger() const
 	{
-		return m_logger;
+		assert(m_logger);
+		return *m_logger;
 	}
 
 	inline std::optional<std::reference_wrapper<const PropertyValue>> ScriptComponent::GetProperty(const std::string& keyName) const

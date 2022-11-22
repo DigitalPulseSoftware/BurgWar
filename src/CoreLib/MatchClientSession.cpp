@@ -24,11 +24,10 @@ namespace
 
 namespace bw
 {
-	MatchClientSession::MatchClientSession(Match& match, std::size_t sessionId, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge) :
+	MatchClientSession::MatchClientSession(Match& match, PlayerCommandStore& commandStore, std::shared_ptr<SessionBridge> bridge) :
 	m_queuedInputs(4),
 	m_match(match),
 	m_commandStore(commandStore),
-	m_sessionId(sessionId),
 	m_bridge(std::move(bridge)),
 	m_ping(0),
 	m_peerInfoUpdateCounter(0.f)
@@ -253,11 +252,11 @@ namespace bw
 
 		Player* player = m_players[packet.localIndex];
 
-		const Ndk::EntityHandle& controlledEntity = player->GetControlledEntity();
+		entt::handle controlledEntity = player->GetControlledEntity();
 		if (!controlledEntity)
 			return;
 
-		auto& entityWeapons = controlledEntity->GetComponent<WeaponWielderComponent>();
+		auto& entityWeapons = controlledEntity.get<WeaponWielderComponent>();
 
 		if (packet.newWeaponIndex >= entityWeapons.GetWeaponCount() && packet.newWeaponIndex != packet.NoWeapon)
 			return;
@@ -309,7 +308,7 @@ namespace bw
 		}
 
 		//FIXME: Use fragments instead of sending the whole file at once
-		Nz::File file(filePath.generic_u8string(), Nz::OpenMode_ReadOnly);
+		Nz::File file(filePath.generic_u8string(), Nz::OpenMode::ReadOnly);
 		if (!file.IsOpen())
 		{
 			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to open {}", filePath.generic_u8string());

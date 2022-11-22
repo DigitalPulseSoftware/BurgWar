@@ -16,7 +16,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
-#include <NDK/EntityOwner.hpp>
+#include <CoreLib/EntityOwner.hpp>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -31,7 +31,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API ClientLayerEntity final : public LayerVisualEntity
 	{
 		public:
-			ClientLayerEntity(ClientLayer& layer, const Ndk::EntityHandle& entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
+			ClientLayerEntity(ClientLayer& layer, entt::handle entity, Nz::UInt32 serverEntityId, EntityId uniqueId);
 			ClientLayerEntity(const ClientLayerEntity&) = delete;
 			ClientLayerEntity(ClientLayerEntity&& entity) noexcept = default;
 			~ClientLayerEntity();
@@ -72,7 +72,7 @@ namespace bw
 
 			struct DebugEntityIdData
 			{
-				Nz::TextSpriteRef entityIdSprite;
+				std::shared_ptr<Nz::TextSprite> entityIdSprite;
 			};
 
 			struct HealthData
@@ -80,8 +80,8 @@ namespace bw
 				float spriteWidth;
 				Nz::UInt16 currentHealth;
 				Nz::UInt16 maxHealth;
-				Nz::SpriteRef healthSprite;
-				Nz::SpriteRef lostHealthSprite;
+				std::shared_ptr<Nz::Sprite> healthSprite;
+				std::shared_ptr<Nz::Sprite> lostHealthSprite;
 			};
 
 			std::unique_ptr<ClientLayerEntity> m_ghostEntity;

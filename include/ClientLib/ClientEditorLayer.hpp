@@ -10,8 +10,8 @@
 #include <CoreLib/SharedLayer.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/VisualLayer.hpp>
-#include <Nazara/Core/Bitset.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Bitset.hpp>
+#include <Nazara/Utils/Signal.hpp>
 
 namespace bw
 {
@@ -20,7 +20,7 @@ namespace bw
 		public:
 			ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex);
 			ClientEditorLayer(const ClientEditorLayer&) = delete;
-			ClientEditorLayer(ClientEditorLayer&&) noexcept = default;
+			ClientEditorLayer(ClientEditorLayer&&) = delete;
 			~ClientEditorLayer() = default;
 
 			virtual void FrameUpdate(float elapsedTime);

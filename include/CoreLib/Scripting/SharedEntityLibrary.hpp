@@ -10,6 +10,7 @@
 #include <Nazara/Math/Angle.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractElementLibrary.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
@@ -22,14 +23,14 @@ namespace bw
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		protected:
-			virtual void InitRigidBody(lua_State* L, const Ndk::EntityHandle& entity, float mass);
-			virtual void SetDirection(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& upVector);
-			virtual void SetMass(lua_State* L, const Ndk::EntityHandle& entity, float mass, bool recomputeMomentOfInertia);
-			virtual void SetMomentOfInertia(lua_State* L, const Ndk::EntityHandle& entity, float momentOfInertia);
-			virtual void SetPosition(lua_State* L, const Ndk::EntityHandle& entity, const Nz::Vector2f& position);
-			virtual void SetRotation(lua_State* L, const Ndk::EntityHandle& entity, const Nz::DegreeAnglef& rotation);
-			virtual void UpdatePlayerJumpHeight(lua_State* L, const Ndk::EntityHandle& entity, float jumpHeight, float jumpHeightBoost);
-			virtual void UpdatePlayerMovement(lua_State* L, const Ndk::EntityHandle& entity, float movementSpeed);
+			virtual void InitRigidBody(lua_State* L, entt::handle entity, float mass);
+			virtual void SetDirection(lua_State* L, entt::handle entity, const Nz::Vector2f& upVector);
+			virtual void SetMass(lua_State* L, entt::handle entity, float mass, bool recomputeMomentOfInertia);
+			virtual void SetMomentOfInertia(lua_State* L, entt::handle entity, float momentOfInertia);
+			virtual void SetPosition(lua_State* L, entt::handle entity, const Nz::Vector2f& position);
+			virtual void SetRotation(lua_State* L, entt::handle entity, const Nz::DegreeAnglef& rotation);
+			virtual void UpdatePlayerJumpHeight(lua_State* L, entt::handle entity, float jumpHeight, float jumpHeightBoost);
+			virtual void UpdatePlayerMovement(lua_State* L, entt::handle entity, float movementSpeed);
 
 		private:
 			void RegisterSharedLibrary(sol::table& elementMetatable);

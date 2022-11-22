@@ -4,7 +4,7 @@
 
 #include <ClientLib/Components/VisibleLayerComponent.hpp>
 #include <ClientLib/ClientMatch.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -69,7 +69,7 @@ namespace bw
 	{
 		assert(visibleLayer);
 
-		auto& nodeComponent = m_entity->GetComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = m_entity.get<Nz::NodeComponent>();
 
 		visibleLayer->baseNode.SetParent(nodeComponent);
 		visibleLayer->baseNode.SetScale(scale);

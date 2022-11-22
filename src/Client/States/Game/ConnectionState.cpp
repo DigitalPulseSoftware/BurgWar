@@ -100,7 +100,7 @@ namespace bw
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Debug, "resolving {0}:{1}...", m_resolvingData->serverName.hostname, name.port);
 
 			Nz::ResolveError resolveError;
-			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol_Any, m_resolvingData->serverName.hostname, Nz::String::Number(name.port), &resolveError);
+			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol::Any, m_resolvingData->serverName.hostname, Nz::String::Number(name.port), &resolveError);
 			if (serverAddresses.empty())
 			{
 				m_resolvingData->result = tl::unexpected<std::string>(Nz::ErrorToString(resolveError));
@@ -128,7 +128,7 @@ namespace bw
 		ClientApp* app = GetStateData().app;
 		auto& networkManager = app->GetReactorManager();
 
-		bwLog(GetStateData().app->GetLogger(), LogLevel::Debug, "connecting to {0}...", address.ToString().ToStdString());
+		bwLog(GetStateData().app->GetLogger(), LogLevel::Debug, "connecting to {0}...", address.ToString());
 
 		auto sessionBridge = networkManager.ConnectToServer(address, 0);
 		if (sessionBridge)
@@ -136,7 +136,7 @@ namespace bw
 			m_clientSession->Connect(std::move(sessionBridge));
 			m_timeBeforeGivingUp = 10.f;
 
-			UpdateStatus("Connecting to " + address.ToString().ToStdString() + "...", Nz::Color::White);
+			UpdateStatus("Connecting to " + address.ToString() + "...", Nz::Color::White);
 		}
 		else
 			HandleConnectionFailure();

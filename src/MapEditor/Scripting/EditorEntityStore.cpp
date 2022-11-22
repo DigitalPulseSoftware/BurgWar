@@ -11,9 +11,9 @@
 
 namespace bw
 {
-	std::optional<LayerVisualEntity> EditorEntityStore::Instantiate(LayerIndex layerIndex, Ndk::World& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parent) const
+	std::optional<LayerVisualEntity> EditorEntityStore::Instantiate(LayerIndex layerIndex, entt::registry& world, std::size_t entityIndex, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parent) const
 	{
-		const Ndk::EntityHandle& entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
+		entt::entity entity = ClientEditorEntityStore::InstantiateEntity(world, entityIndex, position, rotation, scale, std::move(properties), parent);
 		if (!entity)
 			return std::nullopt;
 
@@ -27,7 +27,7 @@ namespace bw
 		return visualEntity;
 	}
 
-	void EditorEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, const Ndk::EntityHandle& /*entity*/) const
+	void EditorEntityStore::BindCallbacks(const ScriptedEntity& /*entityClass*/, entt::entity /*entity*/) const
 	{
 		// Don't bind any callback in the editor
 	}

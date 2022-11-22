@@ -11,7 +11,7 @@
 #include <NDK/World.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
 #include <NDK/Components/LifetimeComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Components/PhysicsComponent2D.hpp>
 #include <NDK/Components/VelocityComponent.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
@@ -30,8 +30,8 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(weaponTable);
-			Ndk::World* world = entity->GetWorld();
+			entt::handle entity = AssertScriptEntity(weaponTable);
+			entt::registry* world = entity->GetWorld();
 			assert(world);
 
 			auto& physSystem = world->GetSystem<Ndk::PhysicsSystem2D>();
@@ -44,7 +44,7 @@ namespace bw
 			{
 				hitDistance *= hitInfo.fraction;
 
-				const Ndk::EntityHandle& hitEntity = hitInfo.body;
+				entt::entity hitEntity = hitInfo.body;
 
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
@@ -55,7 +55,7 @@ namespace bw
 
 			const float trailSpeed = 500.f;
 
-			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
+			const std::shared_ptr<Nz::Sprite>& trailSprite = Nz::SpriteLibrary::Get("Trail");
 			if (!trailSprite)
 				return;
 

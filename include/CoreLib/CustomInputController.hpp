@@ -18,7 +18,7 @@ namespace bw
 			inline CustomInputController(sol::main_protected_function callback);
 			~CustomInputController() = default;
 
-			std::optional<PlayerInputData> GenerateInputs(const Ndk::EntityHandle& entity) const override;
+			std::optional<PlayerInputData> GenerateInputs(entt::handle entity) const override;
 
 		private:
 			sol::main_protected_function m_callback;

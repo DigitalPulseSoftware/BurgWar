@@ -8,7 +8,7 @@
 #define BURGWAR_STATES_GAME_STATUSSTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 
 namespace bw
 {
@@ -24,7 +24,7 @@ namespace bw
 			void UpdateStatus(const std::string& status, const Nz::Color& color);
 
 		private:
-			Ndk::LabelWidget* m_statusLabel;
+			Nz::LabelWidget* m_statusLabel;
 	};
 }
 

@@ -12,7 +12,6 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
@@ -26,8 +25,8 @@ namespace bw
 			ClientEditorEntityStore(ClientEditorEntityStore&&) = delete;
 			~ClientEditorEntityStore() = default;
 
-			bool InitializeEntity(const Ndk::EntityHandle& entity) const;
-			virtual const Ndk::EntityHandle& InstantiateEntity(Ndk::World& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, const Ndk::EntityHandle& parentEntity = Ndk::EntityHandle::InvalidHandle) const;
+			bool InitializeEntity(entt::handle entity) const;
+			virtual entt::handle InstantiateEntity(entt::registry& registry, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::handle parentEntity = {}) const;
 
 		protected:
 			void InitializeElementTable(sol::main_table& elementTable) override;

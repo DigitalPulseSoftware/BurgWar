@@ -12,7 +12,7 @@
 #include <Client/States/AbstractState.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
 #include <optional>
 #include <variant>
 
@@ -47,12 +47,12 @@ namespace bw
 			std::optional<SessionBridge::SessionInfo> m_lastSessionInfo;
 			std::shared_ptr<AbstractState> m_firstState;
 			std::shared_ptr<ClientSession> m_clientSession;
-			Ndk::EntityOwner m_connectionLostEntity;
-			Ndk::LabelWidget* m_downloadSpeedLabel;
-			Ndk::LabelWidget* m_pingLabel;
-			Ndk::LabelWidget* m_uploadSpeedLabel;
+			EntityOwner m_connectionLostEntity;
+			Nz::LabelWidget* m_downloadSpeedLabel;
+			Nz::LabelWidget* m_pingLabel;
+			Nz::LabelWidget* m_uploadSpeedLabel;
 			Nz::Clock m_lastSessionClock;
-			Nz::SpriteRef m_connectionLostSprite;
+			std::shared_ptr<Nz::Sprite> m_connectionLostSprite;
 			Nz::UInt8 m_connectionInfoFlags;
 			Nz::UInt32 m_queryId;
 			AverageValues<double> m_downloadSpeed;

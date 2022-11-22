@@ -8,28 +8,29 @@
 #define BURGWAR_CORELIB_SYSTEMS_TICKCALLBACKSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
-#include <NDK/EntityList.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
+#include <unordered_set>
 #include <vector>
 
 namespace bw
 {
 	class SharedMatch;
 
-	class BURGWAR_CORELIB_API TickCallbackSystem : public Ndk::System<TickCallbackSystem>
+	class BURGWAR_CORELIB_API TickCallbackSystem
 	{
 		public:
-			TickCallbackSystem(SharedMatch& match);
+			TickCallbackSystem(entt::registry& registry, SharedMatch& match);
 			~TickCallbackSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
+			void Update(float elapsedTime);
 
 		private:
-			void OnEntityRemoved(Ndk::Entity* entity) override;
-			void OnEntityValidation(Ndk::Entity* entity, bool justAdded) override;
-			void OnUpdate(float elapsedTime) override;
+			void OnScriptDestroy(entt::registry& registry, entt::entity entity);
 
-			Ndk::EntityList m_tickableEntities;
+			std::unordered_set<entt::entity> m_tickableEntities;
+			entt::observer m_scriptObserver;
+			entt::scoped_connection m_scriptDestroyConnection;
+			entt::registry& m_registry;
 			SharedMatch& m_match;
 	};
 }

@@ -9,7 +9,9 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <NDK/World.hpp>
+#include <Nazara/Core/Systems/SystemGraph.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
@@ -27,17 +29,22 @@ namespace bw
 
 			inline LayerIndex GetLayerIndex() const;
 			inline SharedMatch& GetMatch();
-			Ndk::World& GetWorld();
-			const Ndk::World& GetWorld() const;
+			inline Nz::Physics2DSystem& GetPhysicsSystem();
+			inline entt::registry& GetWorld();
+			inline const entt::registry& GetWorld() const;
 
 			virtual void TickUpdate(float elapsedTime);
 
 			SharedLayer& operator=(const SharedLayer&) = delete;
 			SharedLayer& operator=(SharedLayer&&) = delete;
 
+		protected:
+			inline Nz::SystemGraph& GetSystemGraph();
+
 		private:
 			SharedMatch& m_match;
-			Ndk::World m_world;
+			entt::registry m_registry;
+			Nz::SystemGraph m_systemGraph;
 			LayerIndex m_layerIndex;
 	};
 }

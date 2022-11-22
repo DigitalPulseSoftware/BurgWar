@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/WebRequest.hpp>
-#include <Nazara/Core/MovablePtr.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
 #include <tsl/hopscotch_map.h>
 
 using CURLM = void;

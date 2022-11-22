@@ -5,7 +5,6 @@
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Components.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <cassert>

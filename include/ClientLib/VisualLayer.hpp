@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_VISUALLAYER_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 
 namespace bw
 {

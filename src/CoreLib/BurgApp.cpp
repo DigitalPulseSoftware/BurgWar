@@ -27,7 +27,6 @@
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
 #include <Nazara/Core/Clock.hpp>
-#include <Nazara/Core/Thread.hpp>
 #include <cassert>
 #include <thread>
 
@@ -63,27 +62,6 @@ namespace bw
 
 		m_logger.RegisterSink(std::make_shared<StdSink>());
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
-
-		Ndk::InitializeComponent<AnimationComponent>("Anim");
-		Ndk::InitializeComponent<CollisionDataComponent>("CollData");
-		Ndk::InitializeComponent<CooldownComponent>("Cooldown");
-		Ndk::InitializeComponent<EntityOwnerComponent>("EntOwner");
-		Ndk::InitializeComponent<HealthComponent>("Health");
-		Ndk::InitializeComponent<InputComponent>("Input");
-		Ndk::InitializeComponent<MatchComponent>("Match");
-		Ndk::InitializeComponent<NetworkSyncComponent>("NetSync");
-		Ndk::InitializeComponent<OwnerComponent>("Owner");
-		Ndk::InitializeComponent<PlayerControlledComponent>("PlyCtrl");
-		Ndk::InitializeComponent<PlayerMovementComponent>("PlyMvt");
-		Ndk::InitializeComponent<ScriptComponent>("Script");
-		Ndk::InitializeComponent<WeaponComponent>("Weapon");
-		Ndk::InitializeComponent<WeaponWielderComponent>("WepnWiel");
-		Ndk::InitializeSystem<AnimationSystem>();
-		Ndk::InitializeSystem<InputSystem>();
-		Ndk::InitializeSystem<NetworkSyncSystem>();
-		Ndk::InitializeSystem<PlayerMovementSystem>();
-		Ndk::InitializeSystem<TickCallbackSystem>();
-		Ndk::InitializeSystem<WeaponSystem>();
 
 		std::string error;
 		if (WebService::Initialize(&error))

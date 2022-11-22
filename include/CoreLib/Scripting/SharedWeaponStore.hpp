@@ -10,8 +10,6 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/ScriptedWeapon.hpp>
 #include <CoreLib/Scripting/ScriptStore.hpp>
-#include <NDK/Entity.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
@@ -23,7 +21,7 @@ namespace bw
 
 		protected:
 			void InitializeElement(sol::main_table& elementTable, ScriptedWeapon& weapon) override = 0;
-			bool InitializeWeapon(const ScriptedWeapon& weaponClass, const Ndk::EntityHandle& entity, const Ndk::EntityHandle& parent);
+			bool InitializeWeapon(const ScriptedWeapon& weaponClass, entt::handle entity, entt::handle parent);
 	};
 }
 

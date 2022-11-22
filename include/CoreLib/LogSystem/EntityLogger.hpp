@@ -10,25 +10,26 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LoggerProxy.hpp>
 #include <CoreLib/LogSystem/EntityLogContext.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
 	class BURGWAR_CORELIB_API EntityLogger : public LoggerProxy
 	{
 		public:
-			inline EntityLogger(Ndk::EntityHandle entity, const Logger& logParent);
+			inline EntityLogger(entt::entity entity, const Logger& logParent);
 			EntityLogger(const EntityLogger&) = default;
 			EntityLogger(EntityLogger&&) = default;
 			~EntityLogger() = default;
 
 			void InitializeContext(LogContext& context) const override;
 
-			inline void UpdateEntity(Ndk::EntityHandle newEntity);
+			inline void UpdateEntity(entt::entity newEntity);
 
 		private:
 			void OverrideContent(const LogContext& context, std::string& content) const override;
 
-			Ndk::EntityHandle m_entity;
+			entt::entity m_entity;
 	};
 }
 

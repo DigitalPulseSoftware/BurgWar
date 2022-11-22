@@ -38,19 +38,19 @@ namespace bw
 			void Clear();
 			void ClearEntitySelection();
 
-			const Ndk::EntityHandle& CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties);
+			entt::entity CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties);
 			void DeleteEntity(EntityId uniqueId);
 
 			void EditEntitiesPosition(const std::vector<EntityId>& entityIds);
 			void EnablePhysicsDebugDraw(bool enable);
 
-			void ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func) override;
+			void ForEachEntity(std::function<void(entt::entity entity)> func) override;
 			template<typename F> void ForEachEntity(F&& func);
 			template<typename F> void ForEachMapEntity(F&& func);
 
 			MapCanvasLayer* GetActiveLayer();
 			const MapCanvasLayer* GetActiveLayer() const;
-			inline const std::shared_ptr<VirtualDirectory>& GetAssetDirectory();
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetAssetDirectory();
 			EditorEntityStore& GetEntityStore() override;
 			const EditorEntityStore& GetEntityStore() const override;
 			MapCanvasLayer& GetLayer(LayerIndex layerIndex) override;
@@ -59,7 +59,7 @@ namespace bw
 			const NetworkStringStore& GetNetworkStringStore() const override;
 			inline ScriptingContext& GetScriptingContext();
 			inline const ScriptingContext& GetScriptingContext() const;
-			inline const std::shared_ptr<VirtualDirectory>& GetScriptDirectory();
+			inline const std::shared_ptr<Nz::VirtualDirectory>& GetScriptDirectory();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
@@ -67,9 +67,9 @@ namespace bw
 			void ReloadScripts();
 			void ResetLayers(std::size_t layerCount);
 
-			const Ndk::EntityHandle& RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
 			const LayerVisualEntityHandle& RetrieveLayerEntityByUniqueId(EntityId uniqueId) const;
-			EntityId RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
 
 			void ShowGrid(bool show);
 
@@ -113,14 +113,14 @@ namespace bw
 			std::optional<LayerIndex> m_currentLayer;
 			std::shared_ptr<EditorGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
-			std::shared_ptr<VirtualDirectory> m_assetDirectory;
-			std::shared_ptr<VirtualDirectory> m_scriptDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_assetDirectory;
+			std::shared_ptr<Nz::VirtualDirectory> m_scriptDirectory;
 			tsl::hopscotch_map<EntityId, LayerVisualEntityHandle> m_entitiesByUniqueId;
 			std::vector<MapCanvasLayer> m_layers;
 			std::unique_ptr<EditorGizmo> m_entityGizmo;
 			EditorWindow& m_editor;
-			Ndk::EntityOwner m_currentLayerEntity;
-			Ndk::EntityOwner m_gridEntity;
+			EntityOwner m_currentLayerEntity;
+			EntityOwner m_gridEntity;
 			bool m_isPhysicsDebugDrawEnabled;
 	};
 }

@@ -9,9 +9,9 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <NDK/Widgets/LabelWidget.hpp>
-#include <NDK/Widgets/ImageWidget.hpp>
-#include <NDK/Widgets/ScrollAreaWidget.hpp>
+#include <Nazara/Widgets/LabelWidget.hpp>
+#include <Nazara/Widgets/ImageWidget.hpp>
+#include <Nazara/Widgets/ScrollAreaWidget.hpp>
 #include <optional>
 
 namespace bw
@@ -21,10 +21,10 @@ namespace bw
 
 	using ScoreboardHandle = Nz::ObjectHandle<Scoreboard>;
 
-	class BURGWAR_CLIENTLIB_API Scoreboard : public Ndk::BaseWidget, public Nz::HandledObject<Scoreboard>
+	class BURGWAR_CLIENTLIB_API Scoreboard : public Nz::BaseWidget, public Nz::HandledObject<Scoreboard>
 	{
 		public:
-			Scoreboard(Ndk::BaseWidget* parent, const Logger& logger);
+			Scoreboard(Nz::BaseWidget* parent, const Logger& logger);
 			Scoreboard(const Scoreboard&) = delete;
 			Scoreboard(Scoreboard&&) = delete;
 			~Scoreboard();
@@ -34,7 +34,7 @@ namespace bw
 
 			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, std::optional<Nz::Color> color = {}, bool isLocalPlayer = false);
 
-			Nz::String ToString() const;
+			std::string ToString() const;
 
 			void UnregisterPlayer(std::size_t playerIndex);
 
@@ -54,10 +54,10 @@ namespace bw
 				struct ColumnData
 				{
 					std::string value;
-					Ndk::LabelWidget* label;
+					Nz::LabelWidget* label;
 				};
 
-				Ndk::BaseWidget* background;
+				Nz::BaseWidget* background;
 				std::optional<Nz::Color> color;
 				std::size_t teamId;
 				std::vector<ColumnData> values;
@@ -66,25 +66,25 @@ namespace bw
 			struct ColumnData
 			{
 				std::string name;
-				Ndk::LabelWidget* widget;
+				Nz::LabelWidget* widget;
 			};
 
 			struct TeamData
 			{
 				std::string name;
 				Nz::Color color;
-				Ndk::BaseWidget* background;
-				Ndk::ImageWidget* line;
-				Ndk::LabelWidget* widget;
+				Nz::BaseWidget* background;
+				Nz::ImageWidget* line;
+				Nz::LabelWidget* widget;
 			};
 
 			std::vector<ColumnData> m_columns;
 			std::vector<std::optional<PlayerData>> m_players;
 			std::vector<TeamData> m_teams;
-			Ndk::BaseWidget* m_backgroundWidget;
-			Ndk::BaseWidget* m_columnBackgroundWidget;
-			Ndk::BaseWidget* m_contentWidget;
-			Ndk::ScrollAreaWidget* m_scrollArea;
+			Nz::BaseWidget* m_backgroundWidget;
+			Nz::BaseWidget* m_columnBackgroundWidget;
+			Nz::BaseWidget* m_contentWidget;
+			Nz::ScrollAreaWidget* m_scrollArea;
 			const Logger& m_logger;
 	};
 }

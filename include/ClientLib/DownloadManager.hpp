@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/ByteArray.hpp>
-#include <Nazara/Core/Signal.hpp>
+#include <Nazara/Utils/Signal.hpp>
 #include <array>
 #include <filesystem>
 #include <string>

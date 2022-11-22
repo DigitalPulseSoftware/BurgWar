@@ -10,19 +10,16 @@
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientLayerEntity.hpp>
 #include <Nazara/Math/Angle.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API VisualInterpolationComponent : public Ndk::Component<VisualInterpolationComponent>
+	class BURGWAR_CLIENTLIB_API VisualInterpolationComponent
 	{
 		friend class VisualInterpolationSystem;
 
 		public:
 			inline VisualInterpolationComponent();
 			~VisualInterpolationComponent() = default;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			inline const Nz::Vector2f& GetLastPosition();

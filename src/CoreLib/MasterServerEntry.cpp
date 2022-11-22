@@ -115,7 +115,7 @@ namespace bw
 									bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}: {1}", m_masterServerURL, result.GetErrorMessage());
 							});
 
-							request->ForceProtocol(Nz::NetProtocol_IPv4); //< Just in case
+							request->ForceProtocol(Nz::NetProtocol::IPv4); //< Just in case
 
 							nlohmann::json requestData;
 							requestData["update_token"] = updateToken;

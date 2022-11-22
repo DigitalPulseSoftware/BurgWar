@@ -22,7 +22,7 @@
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/NodeComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/ListenerSystem.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
@@ -35,7 +35,7 @@ namespace bw
 	m_editor(editor),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
-		Ndk::World& world = GetWorld();
+		entt::registry& world = GetWorld();
 		world.AddSystem<Ndk::ListenerSystem>();
 		world.AddSystem<Ndk::PhysicsSystem2D>();
 
@@ -99,7 +99,7 @@ namespace bw
 		m_entityGizmo.reset();
 	}
 
-	const Ndk::EntityHandle& MapCanvas::CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties)
+	entt::entity MapCanvas::CreateEntity(LayerIndex layerIndex, EntityId uniqueId, const std::string& entityClass, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, PropertyValueMap properties)
 	{
 		assert(layerIndex < m_layers.size());
 		auto& layer = m_layers[layerIndex];
@@ -170,11 +170,11 @@ namespace bw
 		m_isPhysicsDebugDrawEnabled = enable;
 	}
 
-	void MapCanvas::ForEachEntity(std::function<void(const Ndk::EntityHandle& entity)> func)
+	void MapCanvas::ForEachEntity(std::function<void(entt::entity entity)> func)
 	{
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
 		{
-			const Ndk::EntityHandle& entity = visualEntityHandle->GetEntity();
+			entt::entity entity = visualEntityHandle->GetEntity();
 			if (!entity)
 				continue;
 
@@ -284,7 +284,7 @@ namespace bw
 		m_weaponStore->LoadDirectory("weapons");
 		m_weaponStore->Resolve();
 
-		ForEachEntity([this](const Ndk::EntityHandle& entity)
+		ForEachEntity([this](entt::entity entity)
 		{
 			if (entity->HasComponent<ScriptComponent>())
 				m_entityStore->UpdateEntityElement(entity);
@@ -307,11 +307,11 @@ namespace bw
 			m_layers.emplace_back(*this, LayerIndex(i));
 	}
 
-	const Ndk::EntityHandle& MapCanvas::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::entity MapCanvas::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
-			return Ndk::EntityHandle::InvalidHandle;
+			return entt::null;
 
 		return it.value()->GetEntity();
 	}
@@ -325,7 +325,7 @@ namespace bw
 		return it->second;
 	}
 
-	EntityId MapCanvas::RetrieveUniqueIdByEntity(const Ndk::EntityHandle& entity) const
+	EntityId MapCanvas::RetrieveUniqueIdByEntity(entt::entity entity) const
 	{
 		if (!entity || !entity->HasComponent<CanvasComponent>())
 			return InvalidEntityId;
@@ -568,7 +568,7 @@ namespace bw
 		auto& gfxComponent = m_gridEntity->GetComponent<Ndk::GraphicsComponent>();
 		gfxComponent.Clear();
 
-		auto& nodeComponent = m_gridEntity->GetComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = m_gridentity.get<Nz::NodeComponent>();
 		nodeComponent.SetPosition(camPos);
 
 		auto AddGrid = [&](float lineWidth, float gridSize, Nz::Color color, int renderOrder)
@@ -584,7 +584,7 @@ namespace bw
 
 			auto AddLine = [&](const Nz::Vector2f& origin, const Nz::Vector2f& size)
 			{
-				Nz::SpriteRef lineSprite = Nz::Sprite::New();
+				std::shared_ptr<Nz::Sprite> lineSprite = Nz::Sprite::New();
 				lineSprite->SetColor(color);
 				lineSprite->SetSize(size);
 

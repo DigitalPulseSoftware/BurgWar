@@ -11,7 +11,7 @@ namespace bw
 	m_clientSession(std::move(clientSession)),
 	m_nextFileIndex(0)
 	{
-		m_hash = Nz::AbstractHash::Get(Nz::HashType_SHA1);
+		m_hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
 
 		m_onDownloadFragmentSlot.Connect(m_clientSession->OnDownloadClientFileFragment, [this](ClientSession*, const Packets::DownloadClientFileFragment& packet)
 		{
@@ -124,7 +124,7 @@ namespace bw
 						throw std::runtime_error("failed to create client script cache directory: " + clientFolderPath.generic_u8string());
 				}
 
-				if (!m_outputFile.Open(filePath, Nz::OpenMode_Truncate | Nz::OpenMode_WriteOnly))
+				if (!m_outputFile.Open(filePath, Nz::OpenMode::Truncate | Nz::OpenMode::WriteOnly))
 					throw std::runtime_error("failed to open file " + filePath);
 			}
 			else if constexpr (std::is_same_v<T, Packets::DownloadClientFileResponse::Failure>)

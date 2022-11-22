@@ -14,25 +14,23 @@
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/VisualLayer.hpp>
 #include <Nazara/Utility/Node.hpp>
-#include <NDK/Component.hpp>
 #include <memory>
 
 namespace bw
 {
 	class ClientLayerEntity;
 
-	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public Ndk::Component<VisibleLayerComponent>
+	class BURGWAR_CLIENTLIB_API VisibleLayerComponent
 	{
 		public:
-			inline VisibleLayerComponent(Ndk::World& renderWorld);
+			inline VisibleLayerComponent(entt::registry& renderWorld);
+			VisibleLayerComponent(VisibleLayerComponent&&) noexcept = default;
 			~VisibleLayerComponent() = default;
 
 			void Clear();
 
 			void RegisterLocalLayer(ClientLayer& localLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
 			void RegisterVisibleLayer(Camera& camera, VisualLayer& visualLayer, int renderOrder, const Nz::Vector2f& scale, const Nz::Vector2f& parallaxFactor);
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			struct VisibleLayer;
@@ -68,7 +66,7 @@ namespace bw
 
 			//FIXME (shared_ptr => unique_ptr)
 			std::vector<std::shared_ptr<VisibleLayer>> m_visibleLayers;
-			Ndk::World& m_renderWorld;
+			entt::registry& m_renderWorld;
 	};
 }
 

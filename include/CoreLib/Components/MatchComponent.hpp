@@ -10,27 +10,30 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <NDK/Component.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
 
 namespace bw
 {
 	class Match;
 
-	class BURGWAR_CORELIB_API MatchComponent : public Ndk::Component<MatchComponent>
+	class BURGWAR_CORELIB_API MatchComponent
 	{
 		public:
 			inline MatchComponent(Match& match, LayerIndex layerIndex, EntityId uniqueId);
+			MatchComponent(const MatchComponent&) = delete;
+			MatchComponent(MatchComponent&&) noexcept = default;
 			~MatchComponent() = default;
 
 			inline LayerIndex GetLayerIndex() const;
 			inline Match& GetMatch() const;
 			inline EntityId GetUniqueId() const;
 
-			static Ndk::ComponentIndex componentIndex;
+			MatchComponent& operator=(const MatchComponent&) = delete;
+			MatchComponent& operator=(MatchComponent&&) noexcept = default;
 
 		private:
+			Nz::MovablePtr<Match> m_match;
 			EntityId m_uniqueId;
-			Match& m_match;
 			LayerIndex m_layerIndex;
 	};
 }

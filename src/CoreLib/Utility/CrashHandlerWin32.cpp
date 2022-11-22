@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Nazara/Prerequisites.hpp>
+#include <Nazara/Core/Core.hpp>
+#include <Nazara/Core/Error.hpp>
 
 #ifdef NAZARA_PLATFORM_WINDOWS
 
@@ -109,7 +111,7 @@ namespace bw
 			if (success)
 				std::fwprintf(stderr, L"Unhandled exception triggered: crashDump %ls generated\n", filename);
 			else
-				std::fprintf(stderr, "CrashDump: MiniDumpWriteDump failed: %u (%s)\n", GetLastError(), Nz::Error::GetLastSystemError().GetConstBuffer());
+				std::fprintf(stderr, "CrashDump: MiniDumpWriteDump failed: %u (%s)\n", GetLastError(), Nz::Error::GetLastSystemError().c_str());
 		}
 
 		void GenerateCrashlog(const wchar_t* filename, EXCEPTION_POINTERS* e, DWORD /*crashedThread*/)
@@ -172,7 +174,10 @@ namespace bw
 			ss << "Game version: " << GameMajorVersion << "." << GameMinorVersion << "." << GamePatchVersion << " (" << GameVersion << ")" << "\n";
 			ss << "Build info: " << GetBuildInfo() << "\n";
 
-			ss << "CPU: " << Nz::HardwareInfo::GetProcessorBrandString().ToStdString() << "\n";
+			const Nz::HardwareInfo& hardwareInfo = Nz::Core::Instance()->GetHardwareInfo();
+			ss << "CPU: " << hardwareInfo.GetCpuBrandString() << " - " << hardwareInfo.GetCpuVendorName() << "\n";
+			ss << "Thread count: " << hardwareInfo.GetCpuThreadCount() << "\n";
+			ss << "Memory: " << hardwareInfo.GetSystemTotalMemory() << "\n";
 
 			ss << "\n";
 
@@ -321,7 +326,7 @@ namespace bw
 		{
 			if (!m_windbg.Load("Dbghelp.dll"))
 			{
-				fprintf(stderr, "failed to load Dbghelp.dll: %s\nCrashDump will not be generated.\n", m_windbg.GetLastError().GetConstBuffer());
+				fprintf(stderr, "failed to load Dbghelp.dll: %s\nCrashDump will not be generated.\n", m_windbg.GetLastError().c_str());
 				return false;
 			}
 

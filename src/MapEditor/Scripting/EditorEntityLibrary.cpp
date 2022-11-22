@@ -20,7 +20,7 @@ namespace bw
 		RegisterEditorLibrary(elementMetatable);
 	}
 
-	void EditorEntityLibrary::InitRigidBody(lua_State* /*L*/, const Ndk::EntityHandle& /*entity*/, float /*mass*/)
+	void EditorEntityLibrary::InitRigidBody(lua_State* /*L*/, entt::entity /*entity*/, float /*mass*/)
 	{
 		// Do nothing
 	}
@@ -31,7 +31,7 @@ namespace bw
 
 		elementMetatable["AddLayer"] = LuaFunction([&](sol::this_state L, const sol::table& entityTable, const sol::table& parameters)
 		{
-			Ndk::EntityHandle entity = AssertScriptEntity(entityTable);
+			entt::handle entity = AssertScriptEntity(entityTable);
 
 			MapCanvas& mapCanvas = *m_editorWindow.GetMapCanvas();
 
