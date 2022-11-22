@@ -31,7 +31,7 @@ namespace bw
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();
 
-			inline entt::entity GetEntity() const;
+			inline entt::handle GetEntity() const;
 
 			void Update(const Nz::Vector2f& position, const Nz::Quaternionf& rotation, const Nz::Vector2f& scale);
 
@@ -56,12 +56,12 @@ namespace bw
 			struct HoveringRenderable
 			{
 				float offset;
-				Ndk::EntityOwner entity;
+				EntityOwner entity;
 				std::shared_ptr<Nz::InstancedRenderable> renderable;
 			};
 
 			std::vector<HoveringRenderable> m_hoveringRenderables;
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			LayerVisualEntityHandle m_visualEntity;
 			int m_baseRenderOrder;
 	};

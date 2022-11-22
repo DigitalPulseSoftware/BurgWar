@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline entt::entity SoundEntity::GetEntity() const
+	inline entt::handle SoundEntity::GetEntity() const
 	{
 		return m_entity;
 	}

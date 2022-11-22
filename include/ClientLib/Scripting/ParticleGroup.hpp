@@ -38,7 +38,7 @@ namespace bw
 			ParticleGroup& operator=(ParticleGroup&&) noexcept = default;
 
 		private:
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			const ParticleRegistry& m_registry;
 	};
 }

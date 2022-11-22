@@ -34,7 +34,7 @@ namespace bw
 
 			void RegisterPlayer(std::size_t playerIndex, std::size_t teamId, std::vector<std::string> values, std::optional<Nz::Color> color = {}, bool isLocalPlayer = false);
 
-			Nz::String ToString() const;
+			std::string ToString() const;
 
 			void UnregisterPlayer(std::size_t playerIndex);
 
@@ -54,7 +54,7 @@ namespace bw
 				struct ColumnData
 				{
 					std::string value;
-					Ndk::LabelWidget* label;
+					Nz::LabelWidget* label;
 				};
 
 				Nz::BaseWidget* background;
@@ -66,7 +66,7 @@ namespace bw
 			struct ColumnData
 			{
 				std::string name;
-				Ndk::LabelWidget* widget;
+				Nz::LabelWidget* widget;
 			};
 
 			struct TeamData
@@ -74,8 +74,8 @@ namespace bw
 				std::string name;
 				Nz::Color color;
 				Nz::BaseWidget* background;
-				Ndk::ImageWidget* line;
-				Ndk::LabelWidget* widget;
+				Nz::ImageWidget* line;
+				Nz::LabelWidget* widget;
 			};
 
 			std::vector<ColumnData> m_columns;
@@ -84,7 +84,7 @@ namespace bw
 			Nz::BaseWidget* m_backgroundWidget;
 			Nz::BaseWidget* m_columnBackgroundWidget;
 			Nz::BaseWidget* m_contentWidget;
-			Ndk::ScrollAreaWidget* m_scrollArea;
+			Nz::ScrollAreaWidget* m_scrollArea;
 			const Logger& m_logger;
 	};
 }

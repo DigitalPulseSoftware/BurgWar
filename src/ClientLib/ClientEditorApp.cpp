@@ -36,10 +36,13 @@ namespace bw
 			m_playerSettings.SaveToFile(PlayerSettingsFile);
 		}
 
-		Nz::Audio::SetGlobalVolume(m_playerSettings.GetIntegerValue<Nz::UInt8>("Sound.GlobalVolume"));
+		const auto& defaultDevice = Nz::Audio::Instance()->GetDefaultDevice();
+
+		defaultDevice->SetGlobalVolume(m_playerSettings.GetIntegerValue<Nz::UInt8>("Sound.GlobalVolume"));
 		m_playerSettings.GetIntegerUpdateSignal("Sound.GlobalVolume").Connect([](long long newValue)
 		{
-			Nz::Audio::SetGlobalVolume(float(newValue));
+			const auto& defaultDevice = Nz::Audio::Instance()->GetDefaultDevice();
+			defaultDevice->SetGlobalVolume(float(newValue));
 		});
 	}
 
@@ -77,7 +80,7 @@ namespace bw
 		//FIXME: Should be part of ClientLib too
 		Nz::Color trailColor(242, 255, 168);
 
-		Nz::SpriteRef trailSprite = Nz::Sprite::New();
+		std::shared_ptr<Nz::Sprite> trailSprite = Nz::Sprite::New();
 		trailSprite->SetMaterial(Nz::Material::New("Translucent2D"));
 		trailSprite->SetCornerColor(Nz::RectCorner_LeftBottom, trailColor * Nz::Color(128, 128, 128, 0));
 		trailSprite->SetCornerColor(Nz::RectCorner_LeftTop, trailColor * Nz::Color(128, 128, 128, 0));

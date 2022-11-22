@@ -20,7 +20,7 @@ namespace bw
 		public:
 			ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex);
 			ClientEditorLayer(const ClientEditorLayer&) = delete;
-			ClientEditorLayer(ClientEditorLayer&&) noexcept = default;
+			ClientEditorLayer(ClientEditorLayer&&) = delete;
 			~ClientEditorLayer() = default;
 
 			virtual void FrameUpdate(float elapsedTime);

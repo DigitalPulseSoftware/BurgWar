@@ -45,6 +45,8 @@ namespace bw
 
 	inline bool LayerVisualEntity::IsEnabled() const
 	{
-		return m_entity->IsEnabled();
+		return true;
+		// TODO
+		//return m_entity->IsEnabled();
 	}
 }

@@ -73,10 +73,10 @@ namespace bw
 			SelectedTiles m_selection;
 			std::vector<TileSelectionWidget::TilesetGroup> m_tilesetGroups;
 			std::vector<Tiles> m_tiles;
-			Ndk::EntityOwner m_tileSelectionEntity;
-			Ndk::EntityOwner m_tilemapEntity;
+			EntityOwner m_tileSelectionEntity;
+			EntityOwner m_tilemapEntity;
 			Nz::CursorRef m_eraserCursor;
-			Nz::SpriteRef m_hoveringTileSprite;
+			std::shared_ptr<Nz::Sprite> m_hoveringTileSprite;
 			Nz::TileMapRef m_tileMap;
 			EditionMode m_editionMode;
 			TileMapData m_tilemapData;

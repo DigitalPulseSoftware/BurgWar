@@ -59,7 +59,7 @@ namespace bw
 			cursor += m_connectionLostSprite->GetSize().y;
 		}
 
-		for (Ndk::LabelWidget* label : { m_pingLabel, m_downloadSpeedLabel, m_uploadSpeedLabel })
+		for (Nz::LabelWidget* label : { m_pingLabel, m_downloadSpeedLabel, m_uploadSpeedLabel })
 		{
 			if (label)
 			{
@@ -172,7 +172,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::DownloadSpeed)
-			m_downloadSpeedLabel = CreateWidget<Ndk::LabelWidget>();
+			m_downloadSpeedLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_downloadSpeedLabel)
 		{
 			DestroyWidget(m_downloadSpeedLabel);
@@ -180,7 +180,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::Ping)
-			m_pingLabel = CreateWidget<Ndk::LabelWidget>();
+			m_pingLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_pingLabel)
 		{
 			DestroyWidget(m_pingLabel);
@@ -188,7 +188,7 @@ namespace bw
 		}
 
 		if (m_connectionInfoFlags & InfoFlags::UploadSpeed)
-			m_uploadSpeedLabel = CreateWidget<Ndk::LabelWidget>();
+			m_uploadSpeedLabel = CreateWidget<Nz::LabelWidget>();
 		else if (m_uploadSpeedLabel)
 		{
 			DestroyWidget(m_uploadSpeedLabel);

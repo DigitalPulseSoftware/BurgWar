@@ -27,7 +27,7 @@ namespace bw
 		auto& sampler = mat->GetDiffuseSampler();
 		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
 
-		Nz::SpriteRef sprite = Nz::Sprite::New();
+		std::shared_ptr<Nz::Sprite> sprite = Nz::Sprite::New();
 		sprite->SetMaterial(mat);
 		sprite->SetSize(sprite->GetSize() * weaponClass->scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();

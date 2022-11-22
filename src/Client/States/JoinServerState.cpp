@@ -25,10 +25,10 @@ namespace bw
 	AbstractState(std::move(stateData)),
 	m_previousState(std::move(previousState))
 	{
-		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
+		m_statusLabel = CreateWidget<Nz::LabelWidget>();
 		m_statusLabel->Hide();
 
-		m_serverLabel = CreateWidget<Ndk::LabelWidget>();
+		m_serverLabel = CreateWidget<Nz::LabelWidget>();
 		m_serverLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Server: ", 24));
 
 		m_serverAddressLayout = CreateWidget<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -55,20 +55,20 @@ namespace bw
 		});
 
 
-		m_connectionButton = CreateWidget<Ndk::ButtonWidget>();
+		m_connectionButton = CreateWidget<Nz::ButtonWidget>();
 		m_connectionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Connect to server", 24));
 		m_connectionButton->Resize(m_connectionButton->GetPreferredSize());
 
-		m_connectionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_connectionButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnConnectionPressed();
 		});
 		
-		m_backButton = CreateWidget<Ndk::ButtonWidget>();
+		m_backButton = CreateWidget<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
 		m_backButton->Resize(m_backButton->GetPreferredSize());
 		
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnBackPressed();
 		});

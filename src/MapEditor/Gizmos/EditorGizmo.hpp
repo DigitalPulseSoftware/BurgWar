@@ -32,7 +32,7 @@ namespace bw
 		private:
 			static std::shared_ptr<Nz::Model> GenerateBoxModel();
 
-			Ndk::EntityOwner m_selectionOverlayEntity;
+			EntityOwner m_selectionOverlayEntity;
 			std::vector<LayerVisualEntityHandle> m_targetEntities;
 	};
 }

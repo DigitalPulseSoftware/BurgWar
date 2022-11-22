@@ -7,8 +7,8 @@
 namespace bw
 {
 	inline ClientMatchComponent::ClientMatchComponent(ClientMatch& clientMatch, LayerIndex layerIndex, EntityId uniqueId) :
+	m_clientMatch(&clientMatch),
 	m_uniqueId(uniqueId),
-	m_clientMatch(clientMatch),
 	m_layerIndex(layerIndex)
 	{
 	}
@@ -20,7 +20,7 @@ namespace bw
 
 	inline ClientMatch& ClientMatchComponent::GetClientMatch() const
 	{
-		return m_clientMatch;
+		return *m_clientMatch;
 	}
 
 	inline EntityId ClientMatchComponent::GetUniqueId() const

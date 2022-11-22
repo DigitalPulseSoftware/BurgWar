@@ -12,7 +12,7 @@ namespace bw
 	StatusState::StatusState(std::shared_ptr<StateData> stateData) :
 	AbstractState(std::move(stateData))
 	{
-		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
+		m_statusLabel = CreateWidget<Nz::LabelWidget>();
 	}
 
 	void StatusState::Enter(Ndk::StateMachine& fsm)

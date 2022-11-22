@@ -9,34 +9,34 @@
 #include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/LocalPlayerInputController.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
 
 namespace bw
 {
-	bool ClientEditorEntityStore::InitializeEntity(entt::entity entity) const
+	bool ClientEditorEntityStore::InitializeEntity(entt::handle entity) const
 	{
-		auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+		auto& scriptComponent = entity.get<ScriptComponent>();
 		if (!InitializeEntity(static_cast<const ScriptedEntity&>(*scriptComponent.GetElement()), entity))
 		{
-			entity->Kill();
+			entity.destroy();
 			return false;
 		}
 
 		return true;
 	}
 
-	entt::entity ClientEditorEntityStore::InstantiateEntity(entt::registry& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parentEntity) const
+	entt::handle ClientEditorEntityStore::InstantiateEntity(entt::registry& world, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::handle parentEntity) const
 	{
 		const auto& entityClass = GetElement(entityIndex);
 
 		bool hasInputs = entityClass->elementTable.get_or("HasInputs", false);
 		bool playerControlled = entityClass->elementTable.get_or("PlayerControlled", false);
 
-		entt::entity entity = CreateEntity(world, entityClass, std::move(properties));
+		entt::handle entity = CreateEntity(world, entityClass, std::move(properties));
 
-		auto& nodeComponent = entity->AddComponent<Ndk::NodeComponent>();
+		auto& nodeComponent = entity.emplace<Nz::NodeComponent>();
 		nodeComponent.SetPosition(position);
 		nodeComponent.SetRotation(rotation);
 		nodeComponent.SetScale(scale);
@@ -45,10 +45,10 @@ namespace bw
 			nodeComponent.SetParent(parentEntity);
 
 		if (playerControlled)
-			entity->AddComponent<PlayerMovementComponent>();
+			entity.emplace<PlayerMovementComponent>();
 
 		if (hasInputs)
-			entity->AddComponent<InputComponent>(std::make_shared<LocalPlayerInputController>());
+			entity.emplace<InputComponent>(std::make_shared<LocalPlayerInputController>());
 
 		return entity;
 	}

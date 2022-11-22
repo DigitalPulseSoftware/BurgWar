@@ -45,13 +45,13 @@ namespace bw
 			};
 
 			std::array<Nz::Color, 3> m_spriteDefaultColors;
-			std::array<Nz::SpriteRef, 3> m_sprites;
+			std::array<std::shared_ptr<Nz::Sprite>, 3> m_sprites;
 			std::array<Nz::Vector2f, 3> m_allowedMovements;
 			std::vector<Nz::Vector2f> m_entitiesOffsets;
 			Camera& m_camera;
 			MovementType m_hoveredAction;
 			MovementType m_movementType;
-			Ndk::EntityOwner m_arrowEntity;
+			EntityOwner m_arrowEntity;
 			Nz::Vector2f m_movementStartPos;
 			Nz::Vector2f m_originalPosition;
 			Nz::Vector2f m_positionAlignment;

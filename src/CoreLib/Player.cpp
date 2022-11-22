@@ -116,7 +116,7 @@ namespace bw
 					{
 						auto& weaponWielder = m_playerEntity->GetComponent<WeaponWielderComponent>();
 
-						weaponWielder.OverrideEntities([&](Ndk::EntityOwner& weaponEntity)
+						weaponWielder.OverrideEntities([&](EntityOwner& weaponEntity)
 						{
 							EntityId weaponUniqueId = m_match.AllocateUniqueId();
 

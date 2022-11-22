@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Sprite::Sprite(LayerVisualEntityHandle visualEntity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Sprite::Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
 	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_sprite(std::move(sprite)),

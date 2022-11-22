@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientLayer.hpp>
+#include <CoreLib/Components/DestructionWatcherComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/ClientMatch.hpp>
@@ -13,9 +14,9 @@
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
+#include <Nazara/Core/Components/LifetimeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
-#include <NDK/Systems/LifetimeSystem.hpp>
 
 namespace bw
 {
@@ -25,10 +26,10 @@ namespace bw
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
 	{
-		entt::registry& world = GetWorld();
-		world.AddSystem<FrameCallbackSystem>();
-		world.AddSystem<PostFrameCallbackSystem>();
-		world.AddSystem<VisualInterpolationSystem>();
+		Nz::SystemGraph& systemGraph = GetSystemGraph();
+		systemGraph.AddSystem<FrameCallbackSystem>();
+		systemGraph.AddSystem<PostFrameCallbackSystem>();
+		systemGraph.AddSystem<VisualInterpolationSystem>();
 
 		OnEntityCreated.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
 		{
@@ -41,34 +42,6 @@ namespace bw
 		});
 	}
 	
-	ClientLayer::ClientLayer(ClientLayer&& layer) noexcept :
-	ClientEditorLayer(std::move(layer)),
-	m_entities(std::move(layer.m_entities)),
-	m_serverEntityIds(std::move(layer.m_serverEntityIds)),
-	m_backgroundColor(layer.m_backgroundColor),
-	m_isEnabled(layer.m_isEnabled),
-	m_isPredictionEnabled(layer.m_isPredictionEnabled)
-	{
-		for (auto it = m_entities.begin(); it != m_entities.end(); ++it)
-		{
-			EntityData& entity = it.value();
-			entity.onDestruction.Connect(entity.layerEntity.GetEntity()->OnEntityDestruction, [this, uniqueId = entity.layerEntity.GetUniqueId()](Ndk::Entity*)
-			{
-				HandleEntityDestruction(uniqueId);
-			});
-		}
-		
-		OnEntityCreated.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
-		{
-			OnEntityVisualCreated(layer, layerEntity);
-		});
-
-		OnEntityDelete.Connect([this](ClientLayer* layer, ClientLayerEntity& layerEntity)
-		{
-			OnEntityVisualDelete(layer, layerEntity);
-		});
-	}
-
 	ClientLayer::~ClientLayer()
 	{
 		Enable(false);
@@ -88,9 +61,6 @@ namespace bw
 			OnDisabled(this);
 			m_sounds.clear();
 			m_freeSoundIds.Clear();
-
-			// Since we are disabled, refresh won't be called until we are enabled, refresh the world now to kill entities
-			GetWorld().Clear();
 
 			assert(m_entities.empty());
 			assert(m_serverEntityIds.empty());
@@ -139,7 +109,7 @@ namespace bw
 	ClientLayerEntity& ClientLayer::RegisterEntity(ClientLayerEntity layerEntity)
 	{
 		assert(layerEntity.GetEntity());
-		assert(layerEntity.GetEntity()->GetWorld() == &GetWorld());
+		assert(layerEntity.GetEntity().registry() == &GetWorld());
 
 		EntityId uniqueId = layerEntity.GetUniqueId();
 
@@ -154,7 +124,8 @@ namespace bw
 		auto it = m_entities.emplace(uniqueId, std::move(layerEntity)).first;
 
 		EntityData& entity = it.value();
-		entity.onDestruction.Connect(entity.layerEntity.GetEntity()->OnEntityDestruction, [this, uniqueId](Ndk::Entity*)
+		entt::handle handle = entity.layerEntity.GetEntity();
+		entity.onDestruction.Connect(handle.get_or_emplace<DestructionWatcherComponent>(handle).OnDestruction, [this, uniqueId](DestructionWatcherComponent*)
 		{
 			HandleEntityDestruction(uniqueId);
 		});
@@ -245,7 +216,7 @@ namespace bw
 				// Entity
 				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
 				{
-					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, scale, properties, (parent) ? parent->GetEntity() : entt::null);
+					auto entity = entityStore.InstantiateEntity(*this, elementIndex, entityId, uniqueId, entityData.position, entityData.rotation, scale, properties, (parent) ? parent->GetEntity() : entt::handle{});
 					if (!entity)
 					{
 						bwLog(GetMatch().GetLogger(), LogLevel::Error, "Failed to instantiate entity {0} of type {1}", uniqueId, entityClass);
@@ -304,7 +275,7 @@ namespace bw
 		if (entityData.ownerPlayerIndex)
 		{
 			if (ClientPlayer* player = GetClientMatch().GetPlayerByIndex(*entityData.ownerPlayerIndex))
-				layerEntity->GetEntity()->AddComponent<ClientOwnerComponent>(player->CreateHandle());
+				layerEntity->GetEntity().emplace<ClientOwnerComponent>(player->CreateHandle());
 		}
 
 		if (entityData.health)
@@ -314,16 +285,15 @@ namespace bw
 		{
 			auto& physProperties = *entityData.physicsProperties;
 
-			if (layerEntity->GetEntity()->HasComponent<Ndk::PhysicsComponent2D>())
+			if (Nz::RigidBody2DComponent* entityPhys = layerEntity->GetEntity().try_get<Nz::RigidBody2DComponent>())
 			{
-				auto& entityPhys = layerEntity->GetEntity()->GetComponent<Ndk::PhysicsComponent2D>();
-				entityPhys.SetMass(physProperties.mass, false);
-				entityPhys.SetMomentOfInertia(physProperties.momentOfInertia);
-				entityPhys.SetAngularVelocity(physProperties.angularVelocity);
-				entityPhys.SetVelocity(physProperties.linearVelocity);
+				entityPhys->SetMass(physProperties.mass, false);
+				entityPhys->SetMomentOfInertia(physProperties.momentOfInertia);
+				entityPhys->SetAngularVelocity(physProperties.angularVelocity);
+				entityPhys->SetVelocity(physProperties.linearVelocity);
 
 				if (physProperties.isAsleep)
-					entityPhys.ForceSleep();
+					entityPhys->ForceSleep();
 			}
 			else
 				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {0} has physical properties but is not physical client-side");
@@ -350,10 +320,10 @@ namespace bw
 		OnEntityDelete(this, entity.layerEntity);
 
 		// Don't trigger the Destroyed event on disabling layers
-		if (IsEnabled() && entity.layerEntity.GetEntity()->HasComponent<ScriptComponent>())
+		if (IsEnabled())
 		{
-			auto& scriptComponent = entity.layerEntity.GetEntity()->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ElementEvent::Destroyed>();
+			if (ScriptComponent* scriptComponent = entity.layerEntity.GetEntity().try_get<ScriptComponent>())
+				scriptComponent->ExecuteCallback<ElementEvent::Destroyed>();
 		}
 		// `it` and `entity` are no longer valid here (as a new entity could have been created by the destroyed callback)
 
@@ -485,9 +455,9 @@ namespace bw
 		ClientLayerEntity& localEntity = *entityOpt;
 		if (localEntity.IsPhysical())
 		{
-			entt::entity entity = localEntity.GetEntity();
+			entt::handle entity = localEntity.GetEntity();
 
-			auto& entityPhys = entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = entity.get<Nz::RigidBody2DComponent>();
 			entityPhys.SetMass(packet.mass, false);
 			entityPhys.SetMomentOfInertia(packet.momentOfInertia);
 
@@ -498,12 +468,11 @@ namespace bw
 			{
 				auto& packetPlayerMovement = packet.playerMovement.value();
 
-				if (entity->HasComponent<PlayerMovementComponent>())
+				if (PlayerMovementComponent* entityPlayerMovement = entity.try_get<PlayerMovementComponent>())
 				{
-					auto& entityPlayerMovement = entity->GetComponent<PlayerMovementComponent>();
-					entityPlayerMovement.UpdateJumpBoostHeight(packetPlayerMovement.jumpHeightBoost);
-					entityPlayerMovement.UpdateJumpHeight(packetPlayerMovement.jumpHeight);
-					entityPlayerMovement.UpdateMovementSpeed(packetPlayerMovement.movementSpeed);
+					entityPlayerMovement->UpdateJumpBoostHeight(packetPlayerMovement.jumpHeightBoost);
+					entityPlayerMovement->UpdateJumpHeight(packetPlayerMovement.jumpHeight);
+					entityPlayerMovement->UpdateMovementSpeed(packetPlayerMovement.movementSpeed);
 				}
 			}
 		}

@@ -25,8 +25,8 @@ namespace bw
 			ClientEditorEntityStore(ClientEditorEntityStore&&) = delete;
 			~ClientEditorEntityStore() = default;
 
-			bool InitializeEntity(entt::entity entity) const;
-			virtual entt::entity InstantiateEntity(entt::registry& registry, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::entity parentEntity = entt::null) const;
+			bool InitializeEntity(entt::handle entity) const;
+			virtual entt::handle InstantiateEntity(entt::registry& registry, std::size_t entityIndex, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, PropertyValueMap properties, entt::handle parentEntity = {}) const;
 
 		protected:
 			void InitializeElementTable(sol::main_table& elementTable) override;

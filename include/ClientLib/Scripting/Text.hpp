@@ -20,7 +20,7 @@ namespace bw
 	class Text
 	{
 		public:
-			inline Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, Nz::TextSpriteRef textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering);
+			inline Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, std::shared_ptr<Nz::TextSprite> textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering);
 			Text(const Text&) = delete;
 			Text(Text&&) = default;
 			~Text() = default;
@@ -50,7 +50,7 @@ namespace bw
 			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
 			Nz::SimpleTextDrawer m_drawer;
-			Nz::TextSpriteRef m_textSprite;
+			std::shared_ptr<Nz::TextSprite> m_textSprite;
 			bool m_isHovering;
 			bool m_isVisible;
 			float m_hoveringHeight;

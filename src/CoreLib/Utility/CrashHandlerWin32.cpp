@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Nazara/Prerequisites.hpp>
+#include <Nazara/Core/Core.hpp>
 #include <Nazara/Core/Error.hpp>
 
 #ifdef NAZARA_PLATFORM_WINDOWS
@@ -173,7 +174,10 @@ namespace bw
 			ss << "Game version: " << GameMajorVersion << "." << GameMinorVersion << "." << GamePatchVersion << " (" << GameVersion << ")" << "\n";
 			ss << "Build info: " << GetBuildInfo() << "\n";
 
-			ss << "CPU: " << Nz::HardwareInfo::GetProcessorBrandString() << "\n";
+			const Nz::HardwareInfo& hardwareInfo = Nz::Core::Instance()->GetHardwareInfo();
+			ss << "CPU: " << hardwareInfo.GetCpuBrandString() << " - " << hardwareInfo.GetCpuVendorName() << "\n";
+			ss << "Thread count: " << hardwareInfo.GetCpuThreadCount() << "\n";
+			ss << "Memory: " << hardwareInfo.GetSystemTotalMemory() << "\n";
 
 			ss << "\n";
 

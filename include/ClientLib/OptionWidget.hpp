@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Utils/Signal.hpp>
-#include <NDK/Canvas.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
 #include <Nazara/Widgets/ButtonWidget.hpp>
 #include <Nazara/Widgets/CheckboxWidget.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
@@ -61,7 +61,7 @@ namespace bw
 			struct Option
 			{
 				std::string keyName;
-				Ndk::LabelWidget* label;
+				Nz::LabelWidget* label;
 			};
 
 			struct BoolOption : Option
@@ -97,18 +97,18 @@ namespace bw
 
 			struct Section
 			{
-				Ndk::ButtonWidget* button;
+				Nz::ButtonWidget* button;
 				std::vector<OptionType> options;
 
-				NazaraSlot(Ndk::ButtonWidget, OnButtonTrigger, onTriggerSlot);
+				NazaraSlot(Nz::ButtonWidget, OnButtonTrigger, onTriggerSlot);
 			};
 
 			std::unordered_map<std::string /*section*/, Section> m_sections;
 			std::unordered_map<std::string /*optionName*/, OptionValue> m_updatedValues;
 			Section* m_activeSection;
-			Ndk::ButtonWidget* m_applyButton;
-			Ndk::ButtonWidget* m_backButton;
-			Ndk::ButtonWidget* m_resetButton;
+			Nz::ButtonWidget* m_applyButton;
+			Nz::ButtonWidget* m_backButton;
+			Nz::ButtonWidget* m_resetButton;
 			ConfigFile& m_playerConfig;
 			bool m_ignoreWidgetUpdate;
 	};

@@ -20,7 +20,7 @@ namespace bw
 	{
 		public:
 			TickCallbackSystem(entt::registry& registry, SharedMatch& match);
-			~TickCallbackSystem();
+			~TickCallbackSystem() = default;
 
 			void Update(float elapsedTime);
 
@@ -28,8 +28,8 @@ namespace bw
 			void OnScriptDestroy(entt::registry& registry, entt::entity entity);
 
 			std::unordered_set<entt::entity> m_tickableEntities;
-			entt::connection m_scriptDestroyConnection;
 			entt::observer m_scriptObserver;
+			entt::scoped_connection m_scriptDestroyConnection;
 			entt::registry& m_registry;
 			SharedMatch& m_match;
 	};

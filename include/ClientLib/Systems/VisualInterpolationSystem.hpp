@@ -8,21 +8,21 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_VISUALINTERPOLATIONSYSTEM_HPP
 
 #include <ClientLib/Export.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
 
 namespace bw
 {
-	class BURGWAR_CLIENTLIB_API VisualInterpolationSystem : public Ndk::System<VisualInterpolationSystem>
+	class BURGWAR_CLIENTLIB_API VisualInterpolationSystem
 	{
 		public:
-			VisualInterpolationSystem();
+			VisualInterpolationSystem(entt::registry& registry);
 			~VisualInterpolationSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
+			void Update(float elapsedTime);
 
 		private:
-			void OnEntityAdded(Ndk::Entity* entity) override;
-			void OnUpdate(float elapsedTime) override;
+			entt::observer m_observer;
+			entt::registry& m_registry;
 	};
 }
 

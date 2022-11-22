@@ -14,11 +14,9 @@
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Text.hpp>
-#include <NDK/World.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -48,7 +46,7 @@ namespace bw
 
 			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
 
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 			visualComponent.GetLayerVisual()->AttachRenderable(model, transformMatrix, renderOrder);
 		});
 
@@ -59,7 +57,7 @@ namespace bw
 				return;
 
 			entt::handle entity = AssertScriptEntity(entityTable);
-			entt::registry* world = entity->GetWorld();
+			/*entt::registry* world = entity->GetWorld();
 			assert(world);
 
 			Ndk::EntityList hitEntities; //< FIXME: RegionQuery hit multiples entities
@@ -73,10 +71,10 @@ namespace bw
 
 				if (hitEntity->HasComponent<Ndk::PhysicsComponent2D>())
 				{
-					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity->GetComponent<Ndk::PhysicsComponent2D>();
+					Ndk::PhysicsComponent2D& hitEntityPhys = hitEntity.get<Ndk::PhysicsComponent2D>();
 					hitEntityPhys.AddImpulse(Nz::Vector2f::Normalize(hitEntityPhys.GetMassCenter(Nz::CoordSys::Global) - origin) * pushbackForce);
 				}
-			});
+			});*/
 		};
 		
 		elementTable["AddSprite"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
@@ -101,7 +99,7 @@ namespace bw
 				color = Nz::Color::White;
 
 			//TODO: Don't create a material everytime
-			Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
+			/*Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
 			if (!texturePath.empty())
 				mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
 
@@ -110,9 +108,8 @@ namespace bw
 			if (repeatTexture)
 				sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
 
-			Nz::SpriteRef sprite = Nz::Sprite::New();
+			std::shared_ptr<Nz::Sprite> sprite = std::make_shared<Nz::Sprite>();
 			sprite->SetColor(color);
-			sprite->SetMaterial(mat);
 			sprite->SetTextureCoords(textureCoords);
 
 			if (std::optional<sol::table> cornerColorTable = parameters.get_or<std::optional<sol::table>>("CornerColor", std::nullopt); cornerColorTable)
@@ -127,19 +124,19 @@ namespace bw
 					{
 						{
 							"TopLeft",
-							Nz::RectCorner_LeftTop
+							Nz::RectCorner::LeftTop
 						},
 						{
 							"TopRight",
-							Nz::RectCorner_RightTop
+							Nz::RectCorner::RightTop
 						},
 						{
 							"BottomLeft",
-							Nz::RectCorner_LeftBottom
+							Nz::RectCorner::LeftBottom
 						},
 						{
 							"BottomRight",
-							Nz::RectCorner_RightBottom
+							Nz::RectCorner::RightBottom
 						}
 					}
 				};
@@ -156,12 +153,12 @@ namespace bw
 			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
 
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 
 			Sprite scriptSprite(visualComponent.GetLayerVisual(), sprite, transformMatrix, renderOrder);
 			scriptSprite.Show();
 
-			return scriptSprite;
+			return scriptSprite;*/
 		});
 
 		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)
@@ -191,13 +188,13 @@ namespace bw
 			else
 				outlineColor = Nz::Color::Black;
 
-			Nz::FontRef font;
+			/*Nz::FontRef font;
 			if (!fontName.empty())
 			{
 				font = Nz::FontLibrary::Get(fontName);
 				if (!font)
 					bwLog(GetLogger(), LogLevel::Warning, "unknown font \"{}\"", fontName);
-			}
+			}*/
 
 			Nz::SimpleTextDrawer drawer;
 			drawer.SetColor(color);
@@ -205,13 +202,13 @@ namespace bw
 			drawer.SetOutlineThickness(outlineThickness);
 			drawer.SetText(text);
 
-			if (font)
-				drawer.SetFont(font);
+			//if (font)
+			//	drawer.SetFont(font);
 
-			Nz::TextSpriteRef textSprite = Nz::TextSprite::New();
+			std::shared_ptr<Nz::TextSprite> textSprite = Nz::TextSprite::New();
 			textSprite->Update(drawer);
 
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 
 			Text scriptText(visualComponent.GetLayerVisual(), std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
 			scriptText.Show();
@@ -227,7 +224,7 @@ namespace bw
 		elementTable["GetGlobalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
 			if (!layerVisualHandle)
@@ -246,13 +243,13 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			return entity->GetComponent<ClientMatchComponent>().GetLayerIndex();
+			return entity.get<ClientMatchComponent>().GetLayerIndex();
 		});
 		
 		elementTable["GetLocalBounds"] = LuaFunction([](const sol::table& entityTable)
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 			
 			const auto& layerVisualHandle = visualComponent.GetLayerVisual();
 			if (!layerVisualHandle)
@@ -266,17 +263,17 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(table);
 
-			if (!entity->HasComponent<ClientOwnerComponent>())
+			if (ClientOwnerComponent* clientOwner = entity.try_get<ClientOwnerComponent>())
+				return sol::make_object(s, clientOwner->GetOwner()->CreateHandle());
+			else
 				return sol::nil;
-
-			return sol::make_object(s, entity->GetComponent<ClientOwnerComponent>().GetOwner()->CreateHandle());
 		});
 
 		elementTable["GetProperty"] = LuaFunction([](sol::this_state s, const sol::table& table, const std::string& propertyName) -> sol::object
 		{
 			entt::handle entity = AssertScriptEntity(table);
 
-			auto& entityScript = entity->GetComponent<ScriptComponent>();
+			auto& entityScript = entity.get<ScriptComponent>();
 
 			auto propertyVal = entityScript.GetProperty(propertyName);
 			if (propertyVal.has_value())
@@ -285,8 +282,8 @@ namespace bw
 				const PropertyValue& property = propertyVal.value();
 
 				ClientMatch* match;
-				if (entity->HasComponent<ClientMatchComponent>())
-					match = &entity->GetComponent<ClientMatchComponent>().GetClientMatch();
+				if (ClientMatchComponent* matchComponent = entity.try_get<ClientMatchComponent>())
+					match = &matchComponent->GetClientMatch();
 				else
 					match = nullptr;
 
@@ -299,7 +296,7 @@ namespace bw
 		elementTable["PlaySound"] = LuaFunction([this](sol::this_state L, const sol::table& entityTable, const std::string& soundPath, bool isAttachedToEntity, bool isLooping, bool isSpatialized)
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
-			auto& entityMatch = entity->GetComponent<ClientMatchComponent>();
+			auto& entityMatch = entity.get<ClientMatchComponent>();
 
 			const std::shared_ptr<Nz::SoundBuffer>& soundBuffer = m_assetStore.GetSoundBuffer(soundPath);
 			if (!soundBuffer)
@@ -322,15 +319,14 @@ namespace bw
 		});
 	}
 
-	void ClientElementLibrary::SetScale(entt::entity entity, float newScale)
+	void ClientElementLibrary::SetScale(entt::handle entity, float newScale)
 	{
-		auto& visualComponent = entity->GetComponent<VisualComponent>();
+		auto& visualComponent = entity.get<VisualComponent>();
 		visualComponent.GetLayerVisual()->UpdateScale(newScale);
 
-		if (entity->HasComponent<WeaponWielderComponent>())
+		if (WeaponWielderComponent* wielderComponent = entity.try_get<WeaponWielderComponent>())
 		{
-			auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
-			for (entt::entity weapon : wielderComponent.GetWeapons())
+			for (const EntityOwner& weapon : wielderComponent->GetWeapons())
 				SetScale(weapon, newScale);
 		}
 	}

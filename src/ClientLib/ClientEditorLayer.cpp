@@ -6,20 +6,20 @@
 #include <ClientLib/Systems/FrameCallbackSystem.hpp>
 #include <ClientLib/Systems/PostFrameCallbackSystem.hpp>
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
-#include <NDK/Systems/LifetimeSystem.hpp>
+#include <Nazara/Core/Systems/LifetimeSystem.hpp>
 
 namespace bw
 {
 	ClientEditorLayer::ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex) :
 	SharedLayer(match, layerIndex)
 	{
-		entt::registry& world = GetWorld();
-		world.AddSystem<FrameCallbackSystem>();
-		world.AddSystem<PostFrameCallbackSystem>();
-		world.AddSystem<VisualInterpolationSystem>();
+		auto& systemGraph = GetSystemGraph();
+		systemGraph.AddSystem<FrameCallbackSystem>();
+		systemGraph.AddSystem<PostFrameCallbackSystem>();
+		systemGraph.AddSystem<VisualInterpolationSystem>();
 	}
-	
-	void ClientEditorLayer::FrameUpdate(float elapsedTime)
+
+	/*void ClientEditorLayer::FrameUpdate(float elapsedTime)
 	{
 		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
@@ -72,5 +72,5 @@ namespace bw
 		world.GetSystem<VisualInterpolationSystem>().Enable(false);
 
 		SharedLayer::TickUpdate(elapsedTime);
-	}
+	}*/
 }

@@ -11,6 +11,8 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <Nazara/Math/BoundingVolume.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
@@ -95,15 +97,16 @@ namespace bw
 		if (IsEnabled() == enable)
 			return;
 
-		m_entity->Enable(enable);
+		// TODO
+		//m_entity->Enable(enable);
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Enable(enable);
 	}
 
 	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
 	{
-		auto& entityNode = m_entity.get<Nz::NodeComponent>();
-		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, entityNode.GetTransformMatrix());
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
+		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, entityNode.GetTransformMatrix());
 
 		Nz::Vector3f globalPos = worldMatrix.GetTranslation();
 
@@ -112,10 +115,10 @@ namespace bw
 		Nz::Boxf aabb(globalPos.x, globalPos.y, globalPos.z, 0.f, 0.f, 0.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(worldMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(worldMatrix, r.offsetMatrix));
 
 				if (first)
 					aabb.Set(boundingVolume.aabb);
@@ -136,10 +139,10 @@ namespace bw
 		Nz::Boxf aabb(-1.f, -1.f, -1.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetBoundingVolume();
+			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateAffine(s_coordinateMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, r.offsetMatrix));
 
 				if (first)
 					aabb.Set(boundingVolume.aabb);
@@ -155,12 +158,12 @@ namespace bw
 
 	bool LayerVisualEntity::IsPhysical() const
 	{
-		return m_entity->HasComponent<Ndk::PhysicsComponent2D>(); //< TODO: Cache this?
+		return m_entity->try_get<Nz::RigidBody2D>() != nullptr; //< TODO: Cache this?
 	}
 
 	void LayerVisualEntity::SyncVisuals()
 	{
-		auto& entityNode = m_entity.get<Nz::NodeComponent>();
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
 
 		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
 		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
@@ -215,25 +218,21 @@ namespace bw
 
 	void LayerVisualEntity::UpdateScale(float newScale)
 	{
-		if (m_entity->HasComponent<ScriptComponent>())
-		{
-			auto& scriptComponent = m_entity->GetComponent<ScriptComponent>();
-			scriptComponent.ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
-		}
+		if (ScriptComponent* scriptComponent = m_entity->try_get<ScriptComponent>())
+			scriptComponent->ExecuteCallback<ElementEvent::ScaleUpdate>(newScale);
 
-		auto& node = m_entity.get<Nz::NodeComponent>();
+		auto& node = m_entity->get<Nz::NodeComponent>();
 		Nz::Vector2f scale = Nz::Vector2f(node.GetScale());
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
 		node.SetScale(scale, Nz::CoordSys::Local);
 
-		if (m_entity->HasComponent<CollisionDataComponent>())
+		if (CollisionDataComponent* entityCollData = m_entity->try_get<CollisionDataComponent>())
 		{
-			auto& entityCollData = m_entity->GetComponent<CollisionDataComponent>();
-			auto& entityCollider = m_entity->GetComponent<Ndk::CollisionComponent2D>();
+			auto& entityCollider = m_entity->get<Nz::RigidBody2DComponent>();
 
-			entityCollider.SetGeom(entityCollData.BuildCollider(newScale), false, false);
+			entityCollider.SetGeom(entityCollData->BuildCollider(newScale), false, false);
 		}
 	}
 
@@ -241,13 +240,13 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);
 		}
 		else
 		{
-			auto& entityNode = m_entity.get<Nz::NodeComponent>();
+			auto& entityNode = m_entity->get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -257,7 +256,7 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->GetComponent<Ndk::PhysicsComponent2D>();
+			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
 			entityPhys.SetAngularVelocity(angularVel);
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);
@@ -265,7 +264,7 @@ namespace bw
 		}
 		else
 		{
-			auto& entityNode = m_entity.get<Nz::NodeComponent>();
+			auto& entityNode = m_entity->get<Nz::NodeComponent>();
 			entityNode.SetPosition(position);
 			entityNode.SetRotation(rotation);
 		}
@@ -286,7 +285,7 @@ namespace bw
 
 		visualEntity->Enable(IsEnabled());
 
-		auto& entityNode = m_entity.get<Nz::NodeComponent>();
+		auto& entityNode = m_entity->get<Nz::NodeComponent>();
 		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
 		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
 		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);

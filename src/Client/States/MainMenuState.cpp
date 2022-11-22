@@ -28,38 +28,38 @@ namespace bw
 	MainMenuState::MainMenuState(std::shared_ptr<StateData> stateData) :
 	AbstractState(std::move(stateData))
 	{
-		m_startServerButton = CreateWidget<Ndk::ButtonWidget>();
+		m_startServerButton = CreateWidget<Nz::ButtonWidget>();
 		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server...", 24));
 		m_startServerButton->Resize(m_startServerButton->GetPreferredSize());
 		
-		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_startServerButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnStartServerPressed();
 		});
 
-		m_joinServerButton = CreateWidget<Ndk::ButtonWidget>();
+		m_joinServerButton = CreateWidget<Nz::ButtonWidget>();
 		m_joinServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Join server...", 24));
 		m_joinServerButton->Resize(m_joinServerButton->GetPreferredSize());
 
-		m_joinServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_joinServerButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnJoinServerPressed();
 		});
 		
-		m_optionButton = CreateWidget<Ndk::ButtonWidget>();
+		m_optionButton = CreateWidget<Nz::ButtonWidget>();
 		m_optionButton->UpdateText(Nz::SimpleTextDrawer::Draw("Option", 24));
 		m_optionButton->Resize(m_optionButton->GetPreferredSize());
 		
-		m_optionButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_optionButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnOptionPressed();
 		});
 
-		m_quitButton = CreateWidget<Ndk::ButtonWidget>();
+		m_quitButton = CreateWidget<Nz::ButtonWidget>();
 		m_quitButton->UpdateText(Nz::SimpleTextDrawer::Draw("Quit", 24));
 		m_quitButton->Resize(m_quitButton->GetPreferredSize());
 		
-		m_quitButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_quitButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnQuitPressed();
 		});

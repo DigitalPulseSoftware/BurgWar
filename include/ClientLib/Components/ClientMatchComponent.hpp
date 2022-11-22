@@ -10,14 +10,14 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <ClientLib/Export.hpp>
-#include <NDK/Component.hpp>
+#include <Nazara/Utils/MovablePtr.hpp>
 
 namespace bw
 {
 	class ClientLayer;
 	class ClientMatch;
 
-	class BURGWAR_CLIENTLIB_API ClientMatchComponent : public Ndk::Component<ClientMatchComponent>
+	class BURGWAR_CLIENTLIB_API ClientMatchComponent
 	{
 		public:
 			inline ClientMatchComponent(ClientMatch& clientMatch, LayerIndex layerIndex, EntityId uniqueId);
@@ -29,11 +29,9 @@ namespace bw
 			inline ClientMatch& GetClientMatch() const;
 			inline EntityId GetUniqueId() const;
 
-			static Ndk::ComponentIndex componentIndex;
-
 		private:
+			Nz::MovablePtr<ClientMatch> m_clientMatch;
 			EntityId m_uniqueId;
-			ClientMatch& m_clientMatch;
 			LayerIndex m_layerIndex;
 	};
 }

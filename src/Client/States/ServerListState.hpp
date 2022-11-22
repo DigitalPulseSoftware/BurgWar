@@ -41,8 +41,8 @@ namespace bw
 
 			struct ServerData
 			{
-				Ndk::ButtonWidget* connectButton;
-				Ndk::LabelWidget* infoLabel;
+				Nz::ButtonWidget* connectButton;
+				Nz::LabelWidget* infoLabel;
 				std::string serverName;
 			};
 
@@ -54,9 +54,9 @@ namespace bw
 			};
 
 			Nz::BaseWidget* m_serverListWidget;
-			Ndk::ButtonWidget* m_backButton;
-			Ndk::ButtonWidget* m_directConnectButton;
-			Ndk::ScrollAreaWidget* m_serverListScrollbar;
+			Nz::ButtonWidget* m_backButton;
+			Nz::ButtonWidget* m_directConnectButton;
+			Nz::ScrollAreaWidget* m_serverListScrollbar;
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;

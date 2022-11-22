@@ -119,8 +119,8 @@ namespace bw
 			std::vector<MapCanvasLayer> m_layers;
 			std::unique_ptr<EditorGizmo> m_entityGizmo;
 			EditorWindow& m_editor;
-			Ndk::EntityOwner m_currentLayerEntity;
-			Ndk::EntityOwner m_gridEntity;
+			EntityOwner m_currentLayerEntity;
+			EntityOwner m_gridEntity;
 			bool m_isPhysicsDebugDrawEnabled;
 	};
 }

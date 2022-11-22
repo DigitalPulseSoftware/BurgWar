@@ -26,12 +26,12 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
-#include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
-#include <NDK/Canvas.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
 #include <CoreLib/EntityOwner.hpp>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 #include <memory>
@@ -54,7 +54,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			ClientMatch(const ClientMatch&) = delete;
 			ClientMatch(ClientMatch&&) = delete;
 			~ClientMatch();
@@ -65,7 +65,7 @@ namespace bw
 
 			Nz::UInt64 EstimateServerTick() const;
 
-			void ForEachEntity(std::function<void(entt::entity entity)> func) override;
+			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
 
 			inline Nz::UInt16 GetActiveLayer();
@@ -85,8 +85,8 @@ namespace bw
 			inline std::size_t GetLocalPlayerCount() const;
 			inline const PlayerInputData& GetLocalPlayerInputs(std::size_t localPlayerIndex) const;
 			const NetworkStringStore& GetNetworkStringStore() const override;
-			inline ParticleRegistry& GetParticleRegistry();
-			inline const ParticleRegistry& GetParticleRegistry() const;
+			//inline ParticleRegistry& GetParticleRegistry();
+			//inline const ParticleRegistry& GetParticleRegistry() const;
 			inline ClientPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
 			inline entt::registry& GetRenderWorld();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
@@ -101,9 +101,9 @@ namespace bw
 			inline void Quit();
 
 			void RegisterEntity(EntityId uniqueId, ClientLayerEntityHandle entity);
-			
-			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
-			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
+
+			entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::handle entity) const override;
 
 			void UnregisterEntity(EntityId uniqueId);
 
@@ -141,7 +141,7 @@ namespace bw
 
 			void BindEscapeMenu();
 			void BindPackets();
-			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas);
+			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::Canvas* canvas);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
 			void HandleEntityCreated(ClientLayer* layer, ClientLayerEntity& entity);
@@ -245,6 +245,17 @@ namespace bw
 				std::vector<LayerData> layers;
 			};
 
+			struct RenderWorld
+			{
+				RenderWorld() :
+				systemGraph(registry)
+				{
+				}
+
+				entt::registry registry;
+				Nz::SystemGraph systemGraph;
+			};
+
 			struct TickPrediction
 			{
 				Nz::UInt16 serverTick;
@@ -260,8 +271,8 @@ namespace bw
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onRenderTargetSizeChange);
 			NazaraSlot(Nz::EventHandler, OnGainedFocus, m_onGainedFocus);
 			NazaraSlot(Nz::EventHandler, OnLostFocus, m_onLostFocus);
-			NazaraSlot(Ndk::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
-			NazaraSlot(Ndk::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
+			NazaraSlot(Nz::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
+			NazaraSlot(Nz::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
 			NazaraSlot(ClientLayer, OnEntityCreated, m_onEntityCreated);
 			NazaraSlot(ClientLayer, OnEntityDelete, m_onEntityDelete);
 
@@ -274,7 +285,7 @@ namespace bw
 			std::optional<Console> m_remoteConsole;
 			std::optional<Debug> m_debug;
 			std::optional<ClientConsole> m_localConsole;
-			std::optional<ParticleRegistry> m_particleRegistry;
+			//std::optional<ParticleRegistry> m_particleRegistry;
 			std::shared_ptr<ClientGamemode> m_gamemode;
 			std::shared_ptr<ScriptingContext> m_scriptingContext;
 			std::string m_gamemodeName;
@@ -284,10 +295,9 @@ namespace bw
 			std::vector<PredictedInput> m_predictedInputs;
 			std::vector<TickPacket> m_tickedPackets;
 			std::vector<TickPrediction> m_tickPredictions;
-			Ndk::Canvas* m_canvas;
-			Ndk::EntityHandle m_currentLayer;
-			entt::registry m_renderWorld;
-			Nz::ColorBackgroundRef m_colorBackground;
+			Nz::Canvas* m_canvas;
+			entt::handle m_currentLayer;
+			RenderWorld m_renderWorld;
 			EntityId m_freeClientId;
 			Nz::RenderTarget* m_renderTarget;
 			Nz::RenderWindow* m_window;

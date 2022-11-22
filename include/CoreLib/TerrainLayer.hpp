@@ -24,7 +24,7 @@ namespace bw
 		public:
 			TerrainLayer(Match& match, LayerIndex layerIndex, const Map::Layer& layerData);
 			TerrainLayer(const TerrainLayer&) = delete;
-			TerrainLayer(TerrainLayer&&) noexcept = default;
+			TerrainLayer(TerrainLayer&&) = delete;
 			~TerrainLayer() = default;
 
 			Match& GetMatch();

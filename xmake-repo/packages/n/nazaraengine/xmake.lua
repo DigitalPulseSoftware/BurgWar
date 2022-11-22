@@ -1,145 +1,153 @@
 package("nazaraengine")
-    set_homepage("https://github.com/DigitalPulseSoftware/NazaraEngine")
-    set_description("A fast, complete, cross-platform and object-oriented engine which can help you in your daily developper life")
+    set_homepage("https://github.com/NazaraEngine/NazaraEngine")
+    set_description("Nazara Engine is a cross-platform framework aimed at (but not limited to) real-time applications requiring audio, 2D and 3D rendering, network and more (such as video games).")
+    set_license("MIT")
+    set_policy("package.librarydeps.strict_compatibility", true)
 
-    set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
+    set_urls("https://github.com/NazaraEngine/NazaraEngine.git")
 
-    add_versions("2021.08.28", "8d7e99456ce5e76993cd2037a017018f982e2206")
-    add_versions("2021.06.10", "4989fbe2d28aa37dc11d24bdcc395431932a2f11")
-    add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
+    add_versions("2022.11.05", "45d4195527d6f2a79d3230a08bf1269cf254f9b9")
 
-    add_deps("nzsl")
+    add_deps("nazarautils")
+    add_deps("chipmunk2d", "dr_wav", "efsw", "fmt", "frozen", "kiwisolver", "libflac", "libsdl", "minimp3", "ordered_map", "stb", { private = true })
+    add_deps("libvorbis", { private = true, configs = { with_vorbisenc = false } })
+    add_deps("openal-soft", { private = true, configs = { shared = true }})
 
-    add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
-    add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
-    add_configs("network",       {description = "Includes the network module", default = true, type = "boolean"})
-    add_configs("physics2d",     {description = "Includes the 2D physics module", default = true, type = "boolean"})
-    add_configs("physics3d",     {description = "Includes the 3D physics module", default = true, type = "boolean"})
-    add_configs("platform",      {description = "Includes the platform module", default = true, type = "boolean"})
-    add_configs("renderer",      {description = "Includes the renderer module", default = true, type = "boolean"})
-    add_configs("utility",       {description = "Includes the utility module", default = true, type = "boolean"})
-    add_configs("widget",        {description = "Includes the widget module", default = true, type = "boolean"})
-    add_configs("plugin-assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
+    -- static compilation is not supported for now
+    add_configs("shared", {description = "Build shared library.", default = true, type = "boolean", readonly = true})
 
-    if is_plat("linux") then
-        add_syslinks("pthread")
+    -- all modules have their own config
+    add_configs("plugin_assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
+    add_configs("plugin_ffmpeg", {description = "Includes the ffmpeg plugin", default = false, type = "boolean"})
+    add_configs("entt",          {description = "Includes EnTT to use components and systems", default = true, type = "boolean"})
+    add_configs("with_symbols",  {description = "Enable debug symbols in release", default = false, type = "boolean"})
+
+    local components = {
+        { 
+            name = "Audio",
+            deps = { "core" }
+        },
+        {
+            name = "Core",
+            custom = function (package, component)
+                if package:is_plat("linux") then
+                    component:add("syslinks", "pthread", "dl")
+                end
+            end
+        },
+        { 
+            name = "Graphics",
+            deps = { "renderer" }
+        },
+        { 
+            name = "Network",
+            deps = { "core" }
+        },
+        { 
+            name = "Physics2D",
+            deps = { "core" }
+        },
+        { 
+            name = "Physics3D",
+            deps = { "core" }
+        },
+        { 
+            name = "Platform",
+            deps = { "utility" }
+        },
+        { 
+            name = "Renderer",
+            deps = { "platform", "utility" },
+            custom = function (package, component)
+                if package:is_plat("windows", "mingw") then
+                    component:add("syslinks", "gdi32", "user32", "advapi32")
+                end
+            end
+        },
+        { 
+            name = "Utility",
+            deps = { "core" }
+        },
+        { 
+            name = "Widgets",
+            deps = { "graphics" }
+        },
+    }
+
+    for _, comp in ipairs(components) do
+        local componentName = comp.name:lower()
+        add_configs(componentName, { description = "Includes the " .. comp.name .. " module", default = true, type = "boolean" })
+
+        on_component(componentName, function (package, component)
+            local prefix = "Nazara"
+            local suffix = package:config("shared") and "" or "-s"
+            if package:debug() then
+                suffix = suffix .. "-d"
+            end
+
+            component:add("deps", table.unwrap(comp.deps))
+            component:add("links", prefix .. comp.name .. suffix)
+            if comp.custom then
+                comp.custom(package, component)
+            end
+        end)
     end
 
-    local function has_audio(package)
-        return not package:config("server") and (package:config("audio"))
-    end
-
-    local function has_graphics(package)
-        return not package:config("server") and (package:config("graphics"))
-    end
-
-    local function has_network(package)
-        return package:config("network")
-    end
-
-    local function has_renderer(package)
-        return not package:config("server") and (package:config("renderer") or has_graphics(package))
-    end
-
-    local function has_platform(package)
-        return not package:config("server") and (package:config("platform") or has_renderer(package))
-    end
-
-    local function has_physics2d(package)
-        return package:config("physics2d")
-    end
-
-    local function has_physics3d(package)
-        return package:config("physics3d")
-    end
-
-    local function has_utility(package)
-        return package:config("utility") or has_platform(package)
-    end
-
-    local function has_widget(package)
-        return package:config("widget")
-    end
-
-    local function has_assimp_plugin(package)
-        return package:config("plugin-assimp")
-    end
-
-    on_load("windows", "linux", "macosx", "mingw", function (package)
-        local nazaradir = os.getenv("NAZARA_ENGINE_PATH") or "C:/Projets/Perso/NazaraNext/NazaraEngine"
-        if not os.isdir(nazaradir) then 
-            raise("missing NAZARA_ENGINE_PATH")
-        end
-        package:set("installdir", nazaradir)
-    end)
-
-    on_fetch(function (package)
-        local defines = {}
-        local includedirs = package:installdir("include")
-        local links = {}
-        local libprefix = package:debug() and "debug" or "releasedbg"
-        local linkdirs = package:installdir("bin/" .. package:plat() .. "_" .. package:arch() .. "_" .. libprefix)
-        local syslinks = {}
-
-        local prefix = "Nazara"
-        local suffix = package:config("shared") and "" or "-s"
-
-        if package:debug() then
-            suffix = suffix .. "-d"
-        end
-
-        if not package:config("shared") then
-            table.insert(defines, "NAZARA_STATIC")
-        end
-
-        if has_audio(package) then
-            table.insert(links, prefix .. "Audio" .. suffix)
-        end
-
-        if has_network(package) then
-            table.insert(links, prefix .. "Network" .. suffix)
-        end
-
-        if has_physics2d(package) then
-            table.insert(links, prefix .. "Physics2D" .. suffix)
-        end
-
-        if has_physics3d(package) then
-            table.insert(links, prefix .. "Physics3D" .. suffix)
-        end
-
-        if has_widget(package) then
-            table.insert(links, prefix .. "Widget" .. suffix)
-        end
-
-        if has_graphics(package) then
-            table.insert(links, prefix .. "Graphics" .. suffix)
-        end
-
-        if has_renderer(package) then
-            table.insert(links, prefix .. "Renderer" .. suffix)
-            if package:is_plat("windows", "mingw") then
-                table.insert(syslinks, "gdi32")
-                table.insert(syslinks, "user32")
-                table.insert(syslinks, "advapi32")
+    on_load(function (package)
+        for _, comp in ipairs(components) do
+            local componentName = comp.name:lower()
+            if package:config(componentName) then
+                package:add("components", componentName)
             end
         end
 
-        if has_platform(package) then
-            table.insert(links, prefix .. "Platform" .. suffix)
+        if not package:config("shared") then
+            package:add("defines", "NAZARA_STATIC")
         end
 
-        if has_utility(package) then
-            table.insert(links, prefix .. "Utility" .. suffix)
+        package:add("deps", "nzsl", { debug = package:debug(), configs = { with_symbols = package:config("with_symbols") or package:debug(), shared = true } })
+        package:add("deps", "freetype", { private = true, configs = { bzip2 = true, png = true, woff2 = true, zlib = true, debug = package:debug() } })
+        package:add("deps", "newtondynamics3", { private = true, debug = is_plat("windows") and package:debug() })
+        if package:config("entt") then
+            package:add("deps", "entt 3.10.1")
+        end
+        if package:config("plugin_assimp") then
+            package:add("deps", "assimp v5.2.3", { private = true })
+        end
+        if package:config("plugin_ffmpeg") then
+            package:add("deps", "ffmpeg", { private = true, configs = { shared = true }})
+        end
+    end)
+
+    on_install("windows", "mingw", "linux", "macosx", function (package)
+        local configs = {}
+        configs.assimp = package:config("plugin_assimp")
+        configs.ffmpeg = package:config("plugin_ffmpeg")
+        configs.examples = false
+        configs.override_runtime = false
+
+        if not package:config("shared") then
+            configs.embed_rendererbackends = true
         end
 
-        table.insert(links, prefix .. "Core" .. suffix)
+        if package:is_debug() then
+            configs.mode = "debug"
+        elseif package:config("with_symbols") then
+            configs.mode = "releasedbg"
+        else
+            configs.mode = "release"
+        end
+        import("package.tools.xmake").install(package, configs)
+    end)
 
-        return {
-            defines = defines,
-            includedirs = includedirs,
-            links = links,
-            linkdirs = linkdirs,
-            syslinks = syslinks
-        }
+    on_test(function (package)
+        for _, comp in ipairs(components) do
+            if package:config(comp.name:lower()) then
+                assert(package:check_cxxsnippets({test = [[
+                    void test() {
+                        Nz::Modules<Nz::]] .. comp.name .. [[> nazara;
+                    }
+                ]]}, {configs = {languages = "c++17"}, includes = "Nazara/" .. comp.name .. ".hpp"}))
+            end
+        end
     end)

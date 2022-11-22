@@ -10,7 +10,7 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Utils/Signal.hpp>
-#include <NDK/System.hpp>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <vector>
 
@@ -18,26 +18,24 @@ namespace bw
 {
 	class ConfigFile;
 
-	class BURGWAR_CLIENTLIB_API SoundSystem : public Ndk::System<SoundSystem>
+	class BURGWAR_CLIENTLIB_API SoundSystem
 	{
 		friend class SoundEmitterComponent;
 
 		public:
-			SoundSystem(ConfigFile& playerSettings);
+			SoundSystem(entt::registry& registry, ConfigFile& playerSettings);
 			~SoundSystem() = default;
 
-			static Ndk::SystemIndex systemIndex;
+			void Update(float elapsedTime);
 
 			static constexpr Nz::UInt32 InvalidSoundId = 0;
 
 		private:
+			void OnSoundDestroy(entt::registry& registry, entt::entity entity);
+
 			Nz::UInt32 PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, const Nz::Vector3f& soundPosition, bool attachedToEntity, bool isLooping, bool isSpatialized);
 			void StopSound(Nz::UInt32 soundId);
 			void UpdateVolume(float newVolume);
-
-			void OnEntityRemoved(Ndk::Entity* entity) override;
-			void OnEntityValidation(Ndk::Entity* entity, bool justAdded) override;
-			void OnUpdate(float elapsedTime) override;
 
 			struct SoundData
 			{
@@ -47,12 +45,16 @@ namespace bw
 			};
 
 			std::size_t m_maxSoundInPool;
+			std::unordered_set<entt::entity> m_movableEntities;
 			std::vector<SoundData> m_soundPool;
 			tsl::hopscotch_map<Nz::UInt32 /*soundId*/, std::size_t /*soundIndex*/> m_playingSounds;
+			entt::observer m_observer;
+			entt::scoped_connection m_nodeDestroyConnection;
+			entt::scoped_connection m_soundEmitterDestroyConnection;
+			entt::registry& m_registry;
 			typename Nz::Signal<long long>::ConnectionGuard m_effectVolumeUpdateSlot;
 			Nz::Vector3f m_soundOffset;
 			Nz::UInt32 m_nextSoundId;
-			Ndk::EntityList m_movableEntities;
 			float m_volume;
 	};
 }

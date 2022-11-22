@@ -8,8 +8,8 @@
 #define BURGWAR_STATES_STATEDATA_HPP
 
 #include <Nazara/Renderer/RenderWindow.hpp>
-#include <NDK/Canvas.hpp>
-#include <NDK/World.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
+#include <entt/fwd.hpp>
 #include <optional>
 
 namespace bw
@@ -18,9 +18,9 @@ namespace bw
 
 	struct StateData
 	{
-		std::optional<Ndk::Canvas> canvas;
+		std::optional<Nz::Canvas> canvas;
 		ClientApp* app;
-		entt::registryHandle world;
+		entt::registry* world;
 		Nz::RenderWindow* window;
 	};
 }

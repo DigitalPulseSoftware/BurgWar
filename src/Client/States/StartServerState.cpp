@@ -27,7 +27,7 @@ namespace bw
 	AbstractState(std::move(stateData)),
 	m_previousState(std::move(previousState))
 	{
-		m_statusLabel = CreateWidget<Ndk::LabelWidget>();
+		m_statusLabel = CreateWidget<Nz::LabelWidget>();
 		m_statusLabel->Hide();
 
 		m_background = CreateWidget<Nz::BaseWidget>();
@@ -37,13 +37,13 @@ namespace bw
 		m_serverConfigLayout = m_background->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Vertical);
 		m_serverConfigLayout->SetPosition(10.f, 10.f);
 
-		m_title = m_serverConfigLayout->Add<Ndk::LabelWidget>();
+		m_title = m_serverConfigLayout->Add<Nz::LabelWidget>();
 		m_title->UpdateText(Nz::SimpleTextDrawer::Draw("Server configuration", 36));
 		m_title->CenterHorizontal();
 
 		Ndk::BoxLayout* gamemodeLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		Ndk::LabelWidget* gamemodeLabel = gamemodeLayout->Add<Ndk::LabelWidget>();
+		Nz::LabelWidget* gamemodeLabel = gamemodeLayout->Add<Nz::LabelWidget>();
 		gamemodeLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Gamemode: ", 24));
 
 		m_gamemodeArea = gamemodeLayout->Add<Ndk::TextAreaWidget>();
@@ -54,7 +54,7 @@ namespace bw
 
 		Ndk::BoxLayout* mapLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		Ndk::LabelWidget* mapLabel = mapLayout->Add<Ndk::LabelWidget>();
+		Nz::LabelWidget* mapLabel = mapLayout->Add<Nz::LabelWidget>();
 		mapLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Map: ", 24));
 
 		m_mapArea = mapLayout->Add<Ndk::TextAreaWidget>();
@@ -65,7 +65,7 @@ namespace bw
 
 		Ndk::BoxLayout* portLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		Ndk::LabelWidget* portLabel = portLayout->Add<Ndk::LabelWidget>();
+		Nz::LabelWidget* portLabel = portLayout->Add<Nz::LabelWidget>();
 		portLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Port: ", 24));
 
 		m_portArea = portLayout->Add<Ndk::TextAreaWidget>();
@@ -86,7 +86,7 @@ namespace bw
 
 		m_nameLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		Ndk::LabelWidget* nameLabel = m_nameLayout->Add<Ndk::LabelWidget>();
+		Nz::LabelWidget* nameLabel = m_nameLayout->Add<Nz::LabelWidget>();
 		nameLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Name: ", 24));
 
 		m_nameArea = m_nameLayout->Add<Ndk::TextAreaWidget>();
@@ -97,7 +97,7 @@ namespace bw
 
 		m_descriptionLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		Ndk::LabelWidget* descLabel = m_descriptionLayout->Add<Ndk::LabelWidget>();
+		Nz::LabelWidget* descLabel = m_descriptionLayout->Add<Nz::LabelWidget>();
 		descLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Description: ", 24));
 
 		m_descriptionArea = m_descriptionLayout->Add<Ndk::TextAreaWidget>();
@@ -108,18 +108,18 @@ namespace bw
 
 		Ndk::BoxLayout* buttonLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		m_backButton = buttonLayout->Add<Ndk::ButtonWidget>();
+		m_backButton = buttonLayout->Add<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
 
-		m_backButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_backButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnBackPressed();
 		});
 
-		m_startServerButton = buttonLayout->Add<Ndk::ButtonWidget>();
+		m_startServerButton = buttonLayout->Add<Nz::ButtonWidget>();
 		m_startServerButton->UpdateText(Nz::SimpleTextDrawer::Draw("Start server", 24));
 		
-		m_startServerButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_startServerButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			OnStartServerPressed();
 		});

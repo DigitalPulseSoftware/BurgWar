@@ -24,7 +24,7 @@ namespace bw
 			void UpdateStatus(const std::string& status, const Nz::Color& color);
 
 		private:
-			Ndk::LabelWidget* m_statusLabel;
+			Nz::LabelWidget* m_statusLabel;
 	};
 }
 

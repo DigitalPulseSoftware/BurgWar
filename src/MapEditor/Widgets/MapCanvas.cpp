@@ -584,7 +584,7 @@ namespace bw
 
 			auto AddLine = [&](const Nz::Vector2f& origin, const Nz::Vector2f& size)
 			{
-				Nz::SpriteRef lineSprite = Nz::Sprite::New();
+				std::shared_ptr<Nz::Sprite> lineSprite = Nz::Sprite::New();
 				lineSprite->SetColor(color);
 				lineSprite->SetSize(size);
 

@@ -35,7 +35,7 @@ namespace bw
 
 			std::function<void(Ndk::StateMachine& fsm)> m_nextStateCallback;
 			std::shared_ptr<AbstractState> m_originalState;
-			Ndk::ButtonWidget* m_cancelButton;
+			Nz::ButtonWidget* m_cancelButton;
 			float m_nextStateDelay;
 	};
 }

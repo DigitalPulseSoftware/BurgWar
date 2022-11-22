@@ -13,11 +13,11 @@ namespace bw
 	StatusState(std::move(stateData)),
 	m_originalState(std::move(originalState))
 	{
-		m_cancelButton = CreateWidget<Ndk::ButtonWidget>();
+		m_cancelButton = CreateWidget<Nz::ButtonWidget>();
 		m_cancelButton->UpdateText(Nz::SimpleTextDrawer::Draw("Cancel", 24));
 		m_cancelButton->Resize(m_cancelButton->GetPreferredSize());
 
-		m_cancelButton->OnButtonTrigger.Connect([this](const Ndk::ButtonWidget*)
+		m_cancelButton->OnButtonTrigger.Connect([this](const Nz::ButtonWidget*)
 		{
 			Cancel();
 		});

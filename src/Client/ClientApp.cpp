@@ -85,7 +85,7 @@ namespace bw
 
 		if (m_config.GetBoolValue("Debug.ShowVersion"))
 		{
-			Ndk::LabelWidget* versionLabel = m_stateData->canvas->Add<Ndk::LabelWidget>();
+			Nz::LabelWidget* versionLabel = m_stateData->canvas->Add<Nz::LabelWidget>();
 			versionLabel->UpdateText(Nz::SimpleTextDrawer::Draw(std::to_string(GameMajorVersion) + "." + std::to_string(GameMinorVersion) + "." + std::to_string(GamePatchVersion), 14));
 			versionLabel->Resize(versionLabel->GetPreferredSize());
 

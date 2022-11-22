@@ -9,6 +9,7 @@
 
 #include <Nazara/Utils/Bitset.hpp>
 #include <Nazara/Utils/Signal.hpp>
+#include <CoreLib/Components/DestructionWatcherComponent.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientEditorLayer.hpp>
@@ -30,7 +31,7 @@ namespace bw
 		public:
 			ClientLayer(ClientMatch& match, LayerIndex layerIndex, const Nz::Color& backgroundColor);
 			ClientLayer(const ClientLayer&) = delete;
-			ClientLayer(ClientLayer&&) noexcept;
+			ClientLayer(ClientLayer&&) = delete;
 			~ClientLayer();
 
 			inline void Disable();
@@ -91,7 +92,7 @@ namespace bw
 
 				ClientLayerEntity layerEntity;
 
-				NazaraSlot(Ndk::Entity, OnEntityDestruction, onDestruction);
+				NazaraSlot(DestructionWatcherComponent, OnDestruction, onDestruction);
 			};
 
 			struct SoundData

@@ -50,7 +50,7 @@ namespace bw
 			std::shared_ptr<StateData> m_stateData;
 			std::vector<std::function<void()>> m_cleanupFunctions;
 			std::vector<WidgetEntry> m_widgets;
-			std::vector<Ndk::EntityOwner> m_entities;
+			std::vector<EntityOwner> m_entities;
 			bool m_isVisible;
 	};
 }

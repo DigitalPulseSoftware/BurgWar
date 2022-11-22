@@ -10,10 +10,9 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Utils/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
-#include <NDK/Canvas.hpp>
-#include <NDK/Entity.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <Nazara/Widgets/ButtonWidget.hpp>
+#include <Nazara/Widgets/Canvas.hpp>
 
 namespace bw
 {
@@ -23,7 +22,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API EscapeMenu
 	{
 		public:
-			EscapeMenu(ClientEditorApp& clientEditorApp, Ndk::Canvas* canvas);
+			EscapeMenu(ClientEditorApp& clientEditorApp, Nz::Canvas* canvas);
 			EscapeMenu(const EscapeMenu&) = delete;
 			EscapeMenu(EscapeMenu&&) = delete;
 			~EscapeMenu();
@@ -46,10 +45,10 @@ namespace bw
 
 			void Layout();
 
-			Ndk::ButtonWidget* m_closeMenuButton;
-			Ndk::ButtonWidget* m_leaveMatchButton;
-			Ndk::ButtonWidget* m_optionsButton;
-			Ndk::ButtonWidget* m_quitAppButton;
+			Nz::ButtonWidget* m_closeMenuButton;
+			Nz::ButtonWidget* m_leaveMatchButton;
+			Nz::ButtonWidget* m_optionsButton;
+			Nz::ButtonWidget* m_quitAppButton;
 			Nz::BaseWidget* m_backgroundWidget;
 			ClientEditorApp& m_app;
 			OptionWidget* m_optionWidget;

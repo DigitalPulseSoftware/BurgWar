@@ -2,6 +2,8 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#if 0
+
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <ClientLib/ClientAssetStore.hpp>
@@ -409,3 +411,5 @@ namespace bw
 		return factory(parameters);
 	}
 }
+
+#endif

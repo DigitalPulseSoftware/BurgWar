@@ -55,7 +55,7 @@ namespace bw
 
 			const float trailSpeed = 500.f;
 
-			const Nz::SpriteRef& trailSprite = Nz::SpriteLibrary::Get("Trail");
+			const std::shared_ptr<Nz::Sprite>& trailSprite = Nz::SpriteLibrary::Get("Trail");
 			if (!trailSprite)
 				return;
 

@@ -39,11 +39,11 @@ namespace bw
 			Ndk::BoxLayout* m_nameLayout;
 			Ndk::BoxLayout* m_serverConfigLayout;
 			Nz::BaseWidget* m_background;
-			Ndk::ButtonWidget* m_backButton;
-			Ndk::ButtonWidget* m_startServerButton;
+			Nz::ButtonWidget* m_backButton;
+			Nz::ButtonWidget* m_startServerButton;
 			Ndk::CheckboxWidget* m_listServerCheckbox;
-			Ndk::LabelWidget* m_title;
-			Ndk::LabelWidget* m_statusLabel;
+			Nz::LabelWidget* m_title;
+			Nz::LabelWidget* m_statusLabel;
 			Ndk::TextAreaWidget* m_descriptionArea;
 			Ndk::TextAreaWidget* m_gamemodeArea;
 			Ndk::TextAreaWidget* m_mapArea;

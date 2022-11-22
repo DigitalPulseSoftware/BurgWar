@@ -12,7 +12,6 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <NDK/Entity.hpp>
 #include <sol/forward.hpp>
 
 namespace bw
@@ -20,7 +19,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Sprite
 	{
 		public:
-			inline Sprite(LayerVisualEntityHandle visualEntity, Nz::SpriteRef sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
 			Sprite(const Sprite&) = delete;
 			Sprite(Sprite&&) noexcept = default;
 			~Sprite() = default;
@@ -49,7 +48,7 @@ namespace bw
 
 			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
-			Nz::SpriteRef m_sprite;
+			std::shared_ptr<Nz::Sprite> m_sprite;
 			int m_renderOrder;
 			bool m_isVisible;
 	};

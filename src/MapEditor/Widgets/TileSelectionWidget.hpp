@@ -67,7 +67,7 @@ namespace bw
 
 			struct GroupData
 			{
-				Ndk::EntityOwner tilemap;
+				EntityOwner tilemap;
 				Nz::Vector2i contentSize;
 				Nz::Vector2ui mapSize;
 				std::vector<std::size_t> materialFirstRectIndices;
@@ -81,11 +81,11 @@ namespace bw
 			std::size_t m_lastSelectedTile;
 			std::optional<std::size_t> m_currentSelectionFirstRect;
 			std::vector<GroupData> m_groups;
-			Ndk::EntityOwner m_selectedEntity;
-			Ndk::EntityOwner m_selectionEntity;
+			EntityOwner m_selectedEntity;
+			EntityOwner m_selectionEntity;
 			Nz::Bitset<Nz::UInt64> m_activeTiles;
-			Nz::SpriteRef m_selectedSprite;
-			Nz::SpriteRef m_selectionSprite;
+			std::shared_ptr<Nz::Sprite> m_selectedSprite;
+			std::shared_ptr<Nz::Sprite> m_selectionSprite;
 			Nz::Vector2f m_tileSize;
 			ScrollCanvas* m_tileSelectionCanvas;
 	};

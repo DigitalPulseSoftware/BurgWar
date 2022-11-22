@@ -29,7 +29,7 @@ namespace bw
 			SoundEntity(SoundEntity&& entity) noexcept;
 			~SoundEntity();
 
-			inline entt::entity GetEntity() const;
+			inline entt::handle GetEntity() const;
 
 			void PlaySound(std::size_t soundIndex, const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized);
 
@@ -42,7 +42,7 @@ namespace bw
 
 		private:
 			std::vector<Nz::UInt32> m_soundIds;
-			Ndk::EntityOwner m_entity;
+			EntityOwner m_entity;
 			ClientLayerSoundHandle m_layerSound;
 			float m_depth;
 	};

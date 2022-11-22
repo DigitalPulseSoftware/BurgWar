@@ -32,22 +32,20 @@
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
-#include <Nazara/Graphics/ColorBackground.hpp>
-#include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
+#include <Nazara/Graphics/Systems/RenderSystem.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <cassert>
 #include <fstream>
 
 namespace bw
 {
-	ClientMatch::ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Ndk::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	ClientMatch::ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
@@ -96,25 +94,16 @@ namespace bw
 
 		auto& playerSettings = burgApp.GetPlayerSettings();
 
-		m_renderWorld.AddSystem<Ndk::DebugSystem>();
-		m_renderWorld.AddSystem<Ndk::ListenerSystem>();
-		m_renderWorld.AddSystem<Ndk::ParticleSystem>();
-		m_renderWorld.AddSystem<Ndk::RenderSystem>();
-		m_renderWorld.AddSystem<AnimationSystem>(*this);
-		m_renderWorld.AddSystem<SoundSystem>(playerSettings);
-
-		m_colorBackground = Nz::ColorBackground::New(Nz::Color::Black);
-
-		Ndk::RenderSystem& renderSystem = m_renderWorld.GetSystem<Ndk::RenderSystem>();
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
-		renderSystem.SetDefaultBackground(m_colorBackground);
+		m_renderWorld.systemGraph.AddSystem<Nz::RenderSystem>();
+		m_renderWorld.systemGraph.AddSystem<AnimationSystem>(*this);
+		m_renderWorld.systemGraph.AddSystem<SoundSystem>(playerSettings);
 
 		m_camera.emplace(m_renderWorld, renderTarget, true);
 		m_camera->SetZoomFactor(0.8f);
 
-		m_currentLayer = m_renderWorld.CreateEntity();
-		m_currentLayer->AddComponent<Ndk::NodeComponent>();
-		m_currentLayer->AddComponent<VisibleLayerComponent>(m_renderWorld);
+		m_currentLayer = entt::handle(m_renderWorld.registry, m_renderWorld.registry.create());
+		m_currentLayer.emplace<Nz::NodeComponent>();
+		//m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld);
 
 		InitializeRemoteConsole();
 
@@ -198,7 +187,7 @@ namespace bw
 		m_gamemode.reset();
 	}
 
-	void ClientMatch::ForEachEntity(std::function<void(entt::entity entity)> func)
+	void ClientMatch::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
 	{
 		for (auto& layer : m_layers)
 		{
@@ -268,11 +257,11 @@ namespace bw
 			{
 				localhost.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
-				if (m_debug->socket.Bind(localhost) == Nz::SocketState_Bound)
+				if (m_debug->socket.Bind(localhost) == Nz::SocketState::Bound)
 					break;
 			}
 
-			if (m_debug->socket.GetState() == Nz::SocketState_Bound)
+			if (m_debug->socket.GetState() == Nz::SocketState::Bound)
 			{
 				bwLog(GetLogger(), LogLevel::Info, "Debug socket bound to port {0}", m_debug->socket.GetBoundPort());
 			}
@@ -294,7 +283,7 @@ namespace bw
 		if (!m_assetStore)
 		{
 			m_assetStore.emplace(GetLogger(), std::move(assetDir));
-			m_particleRegistry.emplace(m_assetStore.value());
+			//m_particleRegistry.emplace(m_assetStore.value());
 		}
 		else
 		{
@@ -453,9 +442,9 @@ namespace bw
 			m_localPlayers[localIndex].inputPoller = std::move(inputPoller);
 		});
 
-		ForEachEntity([this](entt::entity entity)
+		ForEachEntity([this](entt::handle entity)
 		{
-			if (entity->HasComponent<ScriptComponent>())
+			if (ScriptComponent* scriptComponent = entity.try_get<ScriptComponent>())
 			{
 				// Warning: ugly (FIXME)
 				m_entityStore->UpdateEntityElement(entity);
@@ -480,21 +469,25 @@ namespace bw
 		m_entitiesByUniqueId.emplace(uniqueId, std::move(entity));
 	}
 
-	entt::entity ClientMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::handle ClientMatch::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
-			return entt::null;
+			return {};
 
 		return it.value()->GetEntity();
 	}
 
-	EntityId ClientMatch::RetrieveUniqueIdByEntity(entt::entity entity) const
+	EntityId ClientMatch::RetrieveUniqueIdByEntity(entt::handle entity) const
 	{
-		if (!entity || !entity->HasComponent<ClientMatchComponent>())
+		if (!entity)
 			return InvalidEntityId;
 
-		return entity->GetComponent<ClientMatchComponent>().GetUniqueId();
+		ClientMatchComponent* matchComponent = entity.try_get<ClientMatchComponent>();
+		if (!matchComponent)
+			return InvalidEntityId;
+
+		return matchComponent->GetUniqueId();
 	}
 
 	void ClientMatch::UnregisterEntity(EntityId uniqueId)
@@ -617,7 +610,7 @@ namespace bw
 				layerPtr->SyncVisuals();
 		}
 
-		m_renderWorld.Update(elapsedTime);
+		m_renderWorld.systemGraph.Update(elapsedTime);
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback<GamemodeEvent::PostFrame>(elapsedTime);
@@ -797,7 +790,7 @@ namespace bw
 		});
 	}
 
-	void ClientMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Ndk::Canvas* canvas)
+	void ClientMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::Canvas* canvas)
 	{
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
@@ -895,7 +888,7 @@ namespace bw
 			};
 		});
 
-		m_onRenderTargetSizeChange.Connect(window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
+		m_onRenderTargetSizeChange.Connect(window->GetRenderTarget()->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
 		{
 			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
 
@@ -1128,8 +1121,8 @@ namespace bw
 		if (localPlayer.controlledEntity)
 		{
 			auto& controlledEntity = localPlayer.controlledEntity;
-			controlledEntity->GetEntity()->RemoveComponent<Ndk::ListenerComponent>();
-			controlledEntity->GetEntity()->RemoveComponent<LocalPlayerControlledComponent>();
+			//controlledEntity->GetEntity().remove<Nz::ListenerComponent>();
+			controlledEntity->GetEntity().remove<LocalPlayerControlledComponent>();
 
 			m_layers[controlledEntity->GetLayerIndex()]->EnablePrediction(false);
 		}
@@ -1140,8 +1133,8 @@ namespace bw
 			ClientLayerEntity& layerEntity = layerEntityOpt.value();
 
 			localPlayer.controlledEntity = layerEntity.CreateHandle<ClientLayerEntity>();
-			localPlayer.controlledEntity->GetEntity()->AddComponent<Ndk::ListenerComponent>();
-			localPlayer.controlledEntity->GetEntity()->AddComponent<LocalPlayerControlledComponent>(*this, packet.localIndex);
+			//localPlayer.controlledEntity->GetEntity().emplace<Ndk::ListenerComponent>();
+			localPlayer.controlledEntity->GetEntity().emplace<LocalPlayerControlledComponent>(*this, packet.localIndex);
 
 			HandlePlayerControlEntity(localPlayer.playerIndex, layerEntity.GetUniqueId());
 		}
@@ -1486,17 +1479,17 @@ namespace bw
 				auto& controllerData = m_localPlayers[i];
 				if (controllerData.controlledEntity)
 				{
-					auto& controlledEntity = controllerData.controlledEntity->GetEntity();
+					entt::handle controlledEntity = controllerData.controlledEntity->GetEntity();
 
-					InputComponent& entityInputs = controlledEntity->GetComponent<InputComponent>();
+					InputComponent& entityInputs = controlledEntity.get<InputComponent>();
 					const auto& playerInputData = input.inputs[i];
 					entityInputs.UpdateInputs(playerInputData.input);
 					entityInputs.UpdatePreviousInputs(playerInputData.previousInput);
 
 					if (playerInputData.movement)
 					{
-						auto& playerMovement = controlledEntity->GetComponent<PlayerMovementComponent>();
-						auto& playerPhysics = controlledEntity->GetComponent<Ndk::PhysicsComponent2D>();
+						auto& playerMovement = controlledEntity.get<PlayerMovementComponent>();
+						auto& playerPhysics = controlledEntity.get<Nz::RigidBody2DComponent>();
 						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
 						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
 						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
@@ -1505,13 +1498,9 @@ namespace bw
 						playerPhysics.SetSurfaceVelocity(0, playerInputData.movement->surfaceVelocity);
 					}
 
-					for (auto&& weaponData : playerInputData.weapons)
-					{
-						if (!weaponData.entity)
-							continue;
-
-						weaponData.entity->GetComponent<WeaponComponent>().SetAttacking(weaponData.isAttacking);
-					}
+					// WTF?
+					//for (auto&& weaponData : playerInputData.weapons)
+					//	 weaponData.entity->GetComponent<WeaponComponent>().SetAttacking(weaponData.isAttacking);
 				}
 			}
 
@@ -1594,8 +1583,8 @@ namespace bw
 
 		auto& layer = m_layers[m_activeLayerIndex];
 
-		m_colorBackground->SetColor(layer->GetBackgroundColor());
-		auto& visibleLayer = m_currentLayer->GetComponent<VisibleLayerComponent>();
+		//m_colorBackground->SetColor(layer->GetBackgroundColor());
+		auto& visibleLayer = m_currentLayer.get<VisibleLayerComponent>();
 		visibleLayer.Clear();
 		visibleLayer.RegisterLocalLayer(*layer, 0, Nz::Vector2f::Unit(), Nz::Vector2f::Unit());
 	}
@@ -1619,9 +1608,9 @@ namespace bw
 
 			ClientLayerEntity& layerEntity = entityOpt.value();
 
-			assert(layerEntity.GetEntity()->HasComponent<WeaponComponent>());
+			assert(layerEntity.GetEntity().try_get<WeaponComponent>());
 
-			auto& scriptComponent = layerEntity.GetEntity()->GetComponent<ScriptComponent>();
+			auto& scriptComponent = layerEntity.GetEntity().get<ScriptComponent>();
 			const ScriptedWeapon& weaponData = static_cast<const ScriptedWeapon&>(*scriptComponent.GetElement());
 
 			auto& weapon = playerData.weapons.emplace_back();
@@ -1738,30 +1727,28 @@ namespace bw
 
 				if (controllerData.controlledEntity)
 				{
-					auto& entity = controllerData.controlledEntity->GetEntity();
-					if (entity->HasComponent<PlayerMovementComponent>())
+					auto entity = controllerData.controlledEntity->GetEntity();
+					if (PlayerMovementComponent* playerMovement = entity.try_get<PlayerMovementComponent>())
 					{
-						auto& playerMovement = entity->GetComponent<PlayerMovementComponent>();
-						auto& playerPhysics = entity->GetComponent<Ndk::PhysicsComponent2D>();
+						auto& playerPhysics = entity.get<Nz::RigidBody2DComponent>();
 
 						auto& movementData = playerData.movement.emplace();
-						movementData.isOnGround = playerMovement.IsOnGround();
-						movementData.jumpTime = playerMovement.GetJumpTime();
-						movementData.wasJumping = playerMovement.WasJumping();
+						movementData.isOnGround = playerMovement->IsOnGround();
+						movementData.jumpTime = playerMovement->GetJumpTime();
+						movementData.wasJumping = playerMovement->WasJumping();
 
 						movementData.friction = playerPhysics.GetFriction(0);
 						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
 					}
 
-					if (entity->HasComponent<InputComponent>())
+					if (InputComponent* inputComponent = entity.try_get<InputComponent>())
 					{
-						auto& entityInputs = entity->GetComponent<InputComponent>();
-						playerData.input = entityInputs.GetInputs();
-						playerData.previousInput = entityInputs.GetPreviousInputs();
+						playerData.input = inputComponent->GetInputs();
+						playerData.previousInput = inputComponent->GetPreviousInputs();
 					}
 				}
 
-				for (auto&& weapon : controllerData.weapons)
+				/*for (auto&& weapon : controllerData.weapons)
 				{
 					if (!weapon.entity || !weapon.entity->HasComponent<WeaponComponent>())
 						continue;
@@ -1769,7 +1756,7 @@ namespace bw
 					auto& weaponData = playerData.weapons.emplace_back();
 					weaponData.entity = weapon.entity;
 					weaponData.isAttacking = weapon.entity->GetComponent<WeaponComponent>().IsAttacking();
-				}
+				}*/
 			}
 
 			for (auto& layer : m_layers)

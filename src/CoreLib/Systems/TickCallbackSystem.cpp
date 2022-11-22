@@ -18,11 +18,6 @@ namespace bw
 		m_scriptDestroyConnection = m_registry.on_destroy<ScriptComponent>().connect<&TickCallbackSystem::OnScriptDestroy>(this);
 	}
 
-	TickCallbackSystem::~TickCallbackSystem()
-	{
-		m_scriptDestroyConnection.release();
-	}
-
 	void TickCallbackSystem::OnScriptDestroy(entt::registry& registry, entt::entity entity)
 	{
 		assert(&m_registry == &registry);

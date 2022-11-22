@@ -32,10 +32,10 @@ namespace bw
 
 			std::shared_ptr<AbstractState> m_nextState;
 			Ndk::BoxLayout* m_serverAddressLayout;
-			Ndk::ButtonWidget* m_joinServerButton;
-			Ndk::ButtonWidget* m_optionButton;
-			Ndk::ButtonWidget* m_quitButton;
-			Ndk::ButtonWidget* m_startServerButton;
+			Nz::ButtonWidget* m_joinServerButton;
+			Nz::ButtonWidget* m_optionButton;
+			Nz::ButtonWidget* m_quitButton;
+			Nz::ButtonWidget* m_startServerButton;
 	};
 }
 

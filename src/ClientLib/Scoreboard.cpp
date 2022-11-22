@@ -7,7 +7,7 @@
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Utils/StackArray.hpp>
 #include <Nazara/Utility/Font.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Utility/SimpleTextDrawer.hpp>
 
 namespace bw
 {
@@ -25,7 +25,7 @@ namespace bw
 
 		m_contentWidget = Add<Nz::BaseWidget>();
 	
-		m_scrollArea = Add<Ndk::ScrollAreaWidget>(m_contentWidget);
+		m_scrollArea = Add<Nz::ScrollAreaWidget>(m_contentWidget);
 		m_scrollArea->EnableScrollbar(true);
 	}
 
@@ -36,14 +36,15 @@ namespace bw
 
 	std::size_t Scoreboard::AddColumn(std::string name)
 	{
-		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		std::shared_ptr<Nz::Font> scoreMenuFont = Nz::Font::GetDefault();
+		//Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
 
 		std::size_t columnIndex = m_columns.size();
 
 		auto& columnData = m_columns.emplace_back();
 		columnData.name = std::move(name);
-		columnData.widget = Add<Ndk::LabelWidget>();
+		columnData.widget = Add<Nz::LabelWidget>();
 		columnData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.name, 24, 0));
 		columnData.widget->Resize(columnData.widget->GetPreferredSize());
 
@@ -54,7 +55,8 @@ namespace bw
 
 	std::size_t Scoreboard::AddTeam(std::string name, Nz::Color color)
 	{
-		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		std::shared_ptr<Nz::Font> scoreMenuFont = Nz::Font::GetDefault();
+		//Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
 
 		std::size_t teamIndex = m_teams.size();
@@ -65,10 +67,10 @@ namespace bw
 
 		teamData.background = m_contentWidget->Add<Nz::BaseWidget>();
 
-		teamData.line = m_contentWidget->Add<Ndk::ImageWidget>();
+		teamData.line = m_contentWidget->Add<Nz::ImageWidget>();
 		teamData.line->SetColor(teamData.color);
 
-		teamData.widget = m_contentWidget->Add<Ndk::LabelWidget>();
+		teamData.widget = m_contentWidget->Add<Nz::LabelWidget>();
 		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, teamData.name, 24, 0, teamData.color));
 		teamData.widget->Resize(teamData.widget->GetPreferredSize());
 
@@ -97,14 +99,15 @@ namespace bw
 		else if (teamId < m_teams.size())
 			playerColor = m_teams[teamId].color;
 
-		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
+		std::shared_ptr<Nz::Font> scoreMenuFont = Nz::Font::GetDefault();
+		//Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 		assert(scoreMenuFont);
 
 		for (std::string& value : values)
 		{
 			auto& columnData = playerData.values.emplace_back();
 			columnData.value = std::move(value);
-			columnData.label = m_contentWidget->Add<Ndk::LabelWidget>();
+			columnData.label = m_contentWidget->Add<Nz::LabelWidget>();
 			columnData.label->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, columnData.value, 18, 0, playerColor));
 			columnData.label->Resize(columnData.label->GetPreferredSize());
 		}
@@ -112,7 +115,7 @@ namespace bw
 		Layout();
 	}
 
-	Nz::String Scoreboard::ToString() const
+	std::string Scoreboard::ToString() const
 	{
 		return "Scoreboard";
 	}
@@ -148,8 +151,8 @@ namespace bw
 			if (teamId < m_teams.size())
 				teamColor = m_teams[teamId].color;
 
-			Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
-			assert(scoreMenuFont);
+			std::shared_ptr<Nz::Font> scoreMenuFont = Nz::Font::GetDefault();
+			//Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 
 			for (auto& playerColumn : playerData->values)
 			{
@@ -176,8 +179,8 @@ namespace bw
 		else if (playerData.teamId < m_teams.size())
 			playerColor = m_teams[playerData.teamId].color;
 
-		Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
-		assert(scoreMenuFont);
+		std::shared_ptr<Nz::Font> scoreMenuFont = Nz::Font::GetDefault();
+		//Nz::FontRef scoreMenuFont = Nz::FontLibrary::Get("BW_ScoreMenu");
 
 		auto& columnData = playerData.values[valueIndex];
 		columnData.value = std::move(value);
