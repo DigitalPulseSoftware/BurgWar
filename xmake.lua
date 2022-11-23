@@ -9,11 +9,11 @@ add_repositories("burgwar-repo xmake-repo")
 set_project("BurgWar")
 set_version("0.2.0")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "openal-soft", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
-add_requires("nazaraengine 2021.08.28", { alias = "nazara" })
-add_requires("nazaraengine~server 2021.08.28", { alias = "nazaraserver", configs = { server = true } })
+add_requires("nazaraengine 2022.11.23", { alias = "nazara" })
+add_requires("nazaraengine~server 2022.11.23", { alias = "nazaraserver", configs = { server = true } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
@@ -183,6 +183,7 @@ target("ClientLib")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("nazara", { public = true })
+	add_packages("openal-soft", { links = {} })
 
 target("Main")
 	set_group("Common")

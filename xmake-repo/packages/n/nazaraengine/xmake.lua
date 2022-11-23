@@ -1,12 +1,10 @@
 package("nazaraengine")
-    set_homepage("https://github.com/DigitalPulseSoftware/NazaraEngine")
+    set_homepage("https://github.com/NazaraEngine/NazaraEngine")
     set_description("A fast, complete, cross-platform and object-oriented engine which can help you in your daily developper life")
 
-    set_urls("https://github.com/DigitalPulseSoftware/NazaraEngine.git")
+    set_urls("https://github.com/NazaraEngine/NazaraEngine.git")
 
-    add_versions("2021.08.28", "8d7e99456ce5e76993cd2037a017018f982e2206")
-    add_versions("2021.06.10", "4989fbe2d28aa37dc11d24bdcc395431932a2f11")
-    add_versions("2021.04.01", "aef225d8784396035e1f92a029a685e654320e73")
+    add_versions("2022.11.23", "040e49c1cd462ca22e1673171d80db6b0f18bd68")
 
     add_configs("audio",         {description = "Includes the audio module", default = true, type = "boolean"})
     add_configs("graphics",      {description = "Includes the graphics module", default = true, type = "boolean"})
@@ -22,6 +20,8 @@ package("nazaraengine")
     add_configs("utility",       {description = "Includes the utility module", default = true, type = "boolean"})
     add_configs("clientsdk",     {description = "Includes the Client SDK", default = true, type = "boolean"})
     add_configs("plugin-assimp", {description = "Includes the assimp plugin", default = false, type = "boolean"})
+
+    add_deps("premake5")
 
     if is_plat("linux") then
         add_syslinks("pthread")
@@ -100,6 +100,7 @@ package("nazaraengine")
         end
 
         if has_audio(package) then
+            package:add("deps", "openal-soft", "libsndfile", { configs = { shared = true }})
             package:add("links", prefix .. "Audio" .. suffix)
         end
 
@@ -136,25 +137,19 @@ package("nazaraengine")
         end
 
         if has_platform(package) then
-            --if package:is_plat("linux") then
-            --    package:add("deps", "libsdl")
-            --end
+            package:add("deps", "libsdl")
 
             package:add("links", prefix .. "Platform" .. suffix)
         end
 
         if has_utility(package) then
-            --if package:is_plat("linux") then
-            --    package:add("deps", "freetype")
-            --end
+            package:add("deps", "freetype", "zlib")
 
             package:add("links", prefix .. "Utility" .. suffix)
         end
 
         if has_assimp_plugin(package) then
-            if package:is_plat("linux") then
-                package:add("deps", "assimp")
-            end
+            package:add("deps", "assimp")
         end
 
         package:add("links", prefix .. "Core" .. suffix)
@@ -230,15 +225,36 @@ package("nazaraengine")
         local premakeArch = assert(archName[package:arch()])
         local libDir
 
-        local premakeExecutable = is_host("windows") and "./premake5.exe" or "./premake5-linux64"
+        local includedirs, linkdir
+        for _, depname in ipairs({ "assimp", "freetype", "zlib", "libsndfile", "libsdl" }) do
+            local dep = package:dep(depname)
+            if dep then
+                local fetchinfo = dep:fetch({external = false})
+                if fetchinfo then
+                    includedirs = table.join(includedirs or {}, fetchinfo.includedirs)
+                    includedirs = table.join(includedirs or {}, fetchinfo.sysincludedirs)
+                    linkdir = table.join(linkdir or {}, fetchinfo.linkdirs)
+                end
+            end
+        end
 
         -- patch Newton MinGW defines check
         io.replace("thirdparty/src/newton/dgCore/dgTypes.cpp", [[#if (defined (_MSC_VER) || defined (_MINGW_32_VER) || defined (_MINGW_64_VER))]], [[#if (defined (_MSC_VER) || defined (__MINGW32__) || defined (__MINGW64__))]], {plain=true})
 
         os.cd("build")
+
+        local conf_file = io.open("config.lua", "a")
+        if includedirs then
+            conf_file:print("ExtlibIncludeDirs = {[[%s]]}", table.concat(includedirs, "]],[["))
+        end
+        if linkdir then
+            conf_file:print("ExtlibLinkDirs = {[[%s]]}", table.concat(linkdir, "]],[["))
+        end
+        conf_file:close()
+
         if package:is_plat("windows") then
-            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " vs2019")
-            os.cd("vs2019")
+            os.vrun("premake5 " .. table.concat(premakeOptions, " ") .. " vs2022")
+            os.cd("vs2022")
 
             local configs = {}
             local arch = package:is_arch("x86") and "Win32" or "x64"
@@ -251,7 +267,7 @@ package("nazaraengine")
 
             libDir = "msvc"
         elseif package:is_plat("linux", "mingw") then
-            os.vrun(premakeExecutable .. " " .. table.concat(premakeOptions, " ") .. " gmake2")
+            os.vrun("premake5 " .. table.concat(premakeOptions, " ") .. " gmake2")
             os.cd("gmake2")
 
             local configs = {}
@@ -279,24 +295,6 @@ package("nazaraengine")
             os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*.lib", package:installdir("lib"))
         else
             os.cp("lib/" .. libDir .. "/" .. premakeArch .. "/*", package:installdir("lib"))
-        end
-
-        if package:is_plat("windows", "mingw") then
-            if has_audio(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/soft_oal.dll", package:installdir("bin"))
-            end
-
-            if has_platform(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/SDL2.dll", package:installdir("bin"))
-            end
-
-            if has_utility(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/libsndfile-1.dll", package:installdir("bin"))
-            end
-
-            if has_assimp_plugin(package) then
-                os.cp("thirdparty/lib/common/" .. premakeArch .. "/assimp.dll", package:installdir("bin"))
-            end
         end
     end)
 
