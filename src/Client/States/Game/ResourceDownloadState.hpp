@@ -41,7 +41,7 @@ namespace bw
 			void OnCancelled() override;
 
 			void RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<Nz::VirtualDirectory>& resourceDir, const std::shared_ptr<Nz::VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory);
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			using CancelableState::UpdateStatus;
 			void UpdateStatus();

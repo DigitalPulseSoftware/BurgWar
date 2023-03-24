@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	SharedAppConfig::SharedAppConfig(BurgApp& app) :
+	SharedAppConfig::SharedAppConfig(BurgAppComponent& app) :
 	ConfigFile(app)
 	{
 		RegisterStringOption("Resources.AssetDirectory");

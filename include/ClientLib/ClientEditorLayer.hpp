@@ -10,8 +10,8 @@
 #include <CoreLib/SharedLayer.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/VisualLayer.hpp>
-#include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/Signal.hpp>
 
 namespace bw
 {
@@ -23,11 +23,11 @@ namespace bw
 			ClientEditorLayer(ClientEditorLayer&&) = delete;
 			~ClientEditorLayer() = default;
 
-			virtual void FrameUpdate(float elapsedTime);
-			virtual void PreFrameUpdate(float elapsedTime);
-			virtual void PostFrameUpdate(float elapsedTime);
+			virtual void FrameUpdate(Nz::Time elapsedTime);
+			virtual void PreFrameUpdate(Nz::Time elapsedTime);
+			virtual void PostFrameUpdate(Nz::Time elapsedTime);
 
-			void TickUpdate(float elapsedTime) override;
+			void TickUpdate(Nz::Time elapsedTime) override;
 
 			ClientEditorLayer& operator=(const ClientEditorLayer&) = delete;
 			ClientEditorLayer& operator=(ClientEditorLayer&&) = delete;

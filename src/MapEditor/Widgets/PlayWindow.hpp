@@ -26,7 +26,7 @@ namespace bw
 			~PlayWindow() = default;
 
 		private:
-			void OnUpdate(float elapsedTime) override;
+			void OnUpdate(Nz::Time elapsedTime) override;
 
 			void resizeEvent(QResizeEvent* event) override;
 

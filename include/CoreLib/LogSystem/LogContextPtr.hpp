@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 
 namespace bw
 {

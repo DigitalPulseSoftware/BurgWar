@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
 #define BURGWAR_CLIENTLIB_CLIENTLAYER_HPP
 
-#include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <CoreLib/Components/DestructionWatcherComponent.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/Export.hpp>
@@ -51,7 +51,7 @@ namespace bw
 			bool IsEnabled() const override;
 			inline bool IsPredictionEnabled() const;
 
-			void PostFrameUpdate(float elapsedTime) override;
+			void PostFrameUpdate(Nz::Time elapsedTime) override;
 
 			ClientLayerEntity& RegisterEntity(ClientLayerEntity layerEntity);
 			ClientLayerSound& RegisterSound(ClientLayerSound layerEntity);

@@ -10,7 +10,7 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>

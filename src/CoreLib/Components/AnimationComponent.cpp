@@ -7,19 +7,19 @@
 
 namespace bw
 {
-	void AnimationComponent::Play(std::size_t animId, Nz::UInt64 animStartTime)
+	void AnimationComponent::Play(std::size_t animId, Nz::Time animStartTime)
 	{
 		const auto& animData = m_animationStore->GetAnimation(animId);
 
 		auto& playingAnim = m_playingAnimation.emplace();
 		playingAnim.animId = animId;
-		playingAnim.endTime = animStartTime + animData.duration.count();
+		playingAnim.endTime = animStartTime + animData.duration;
 		playingAnim.startTime = animStartTime;
 
 		OnAnimationStart(this);
 	}
 
-	void AnimationComponent::Update(Nz::UInt64 now)
+	void AnimationComponent::Update(Nz::Time now)
 	{
 		if (!IsPlaying())
 			return;

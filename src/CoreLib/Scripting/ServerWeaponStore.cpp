@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/TerrainLayer.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
 #include <CoreLib/Components/MatchComponent.hpp>

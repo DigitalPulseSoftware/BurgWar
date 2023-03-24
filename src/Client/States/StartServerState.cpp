@@ -49,7 +49,7 @@ namespace bw
 		m_gamemodeArea = gamemodeLayout->Add<Ndk::TextAreaWidget>();
 		m_gamemodeArea->EnableBackground(true);
 		m_gamemodeArea->SetBackgroundColor(Nz::Color::White);
-		m_gamemodeArea->SetTextColor(Nz::Color::Black);
+		m_gamemodeArea->SetTextColor(Nz::Color::Black());
 		m_gamemodeArea->SetMaximumHeight(m_gamemodeArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* mapLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -60,7 +60,7 @@ namespace bw
 		m_mapArea = mapLayout->Add<Ndk::TextAreaWidget>();
 		m_mapArea->EnableBackground(true);
 		m_mapArea->SetBackgroundColor(Nz::Color::White);
-		m_mapArea->SetTextColor(Nz::Color::Black);
+		m_mapArea->SetTextColor(Nz::Color::Black());
 		m_mapArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* portLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -71,7 +71,7 @@ namespace bw
 		m_portArea = portLayout->Add<Ndk::TextAreaWidget>();
 		m_portArea->EnableBackground(true);
 		m_portArea->SetBackgroundColor(Nz::Color::White);
-		m_portArea->SetTextColor(Nz::Color::Black);
+		m_portArea->SetTextColor(Nz::Color::Black());
 		m_portArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 		m_portArea->SetCharacterFilter([](Nz::UInt32 character)
 		{
@@ -92,7 +92,7 @@ namespace bw
 		m_nameArea = m_nameLayout->Add<Ndk::TextAreaWidget>();
 		m_nameArea->EnableBackground(true);
 		m_nameArea->SetBackgroundColor(Nz::Color::White);
-		m_nameArea->SetTextColor(Nz::Color::Black);
+		m_nameArea->SetTextColor(Nz::Color::Black());
 		m_nameArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
 		m_descriptionLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -103,7 +103,7 @@ namespace bw
 		m_descriptionArea = m_descriptionLayout->Add<Ndk::TextAreaWidget>();
 		m_descriptionArea->EnableBackground(true);
 		m_descriptionArea->SetBackgroundColor(Nz::Color::White);
-		m_descriptionArea->SetTextColor(Nz::Color::Black);
+		m_descriptionArea->SetTextColor(Nz::Color::Black());
 		m_descriptionArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
 		Ndk::BoxLayout* buttonLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -139,7 +139,7 @@ namespace bw
 		m_portArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("StartServer.Port")));
 	}
 
-	bool StartServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool StartServerState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -164,28 +164,28 @@ namespace bw
 		std::string gamemode = m_gamemodeArea->GetText();
 		if (gamemode.empty())
 		{
-			UpdateStatus("Error: blank gamemode", Nz::Color::Red);
+			UpdateStatus("Error: blank gamemode", Nz::Color::Red());
 			return;
 		}
 
 		std::string map = m_mapArea->GetText();
 		if (map.empty())
 		{
-			UpdateStatus("Error: blank map", Nz::Color::Red);
+			UpdateStatus("Error: blank map", Nz::Color::Red());
 			return;
 		}
 
 		Nz::String serverPort = m_portArea->GetText();
 		if (serverPort.IsEmpty())
 		{
-			UpdateStatus("Error: blank server port", Nz::Color::Red);
+			UpdateStatus("Error: blank server port", Nz::Color::Red());
 			return;
 		}
 
 		long long rawPort;
 		if (!serverPort.ToInteger(&rawPort) || rawPort < 0 || rawPort > 0xFFFF)
 		{
-			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red);
+			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red());
 			return;
 		}
 
@@ -199,20 +199,20 @@ namespace bw
 			serverName = m_nameArea->GetText();
 			if (serverName.empty())
 			{
-				UpdateStatus("Error: blank server name", Nz::Color::Red);
+				UpdateStatus("Error: blank server name", Nz::Color::Red());
 				return;
 			}
 
 			if (serverName.size() > 32)
 			{
-				UpdateStatus("Error: server name is too long", Nz::Color::Red);
+				UpdateStatus("Error: server name is too long", Nz::Color::Red());
 				return;
 			}
 
 			serverDesc = m_descriptionArea->GetText();
 			if (serverDesc.size() > 1024)
 			{
-				UpdateStatus("Error: server description is too long", Nz::Color::Red);
+				UpdateStatus("Error: server description is too long", Nz::Color::Red());
 				return;
 			}
 
@@ -263,7 +263,7 @@ namespace bw
 		}
 		catch (const std::exception& e)
 		{
-			UpdateStatus("Failed to start server: " + std::string(e.what()), Nz::Color::Red);
+			UpdateStatus("Failed to start server: " + std::string(e.what()), Nz::Color::Red());
 		}
 	}
 

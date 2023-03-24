@@ -29,7 +29,7 @@ namespace bw
 		Initialize();
 	}
 
-	void Terrain::Update(float elapsedTime)
+	void Terrain::Update(Nz::Time elapsedTime)
 	{
 		for (auto& layerPtr : m_layers)
 			layerPtr->TickUpdate(elapsedTime);

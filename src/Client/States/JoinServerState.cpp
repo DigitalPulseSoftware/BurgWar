@@ -38,14 +38,14 @@ namespace bw
 		m_serverAddressArea->SetBackgroundColor(Nz::Color::White);
 		m_serverAddressArea->Resize({ 400.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
-		m_serverAddressArea->SetTextColor(Nz::Color::Black);
+		m_serverAddressArea->SetTextColor(Nz::Color::Black());
 
 		m_serverPortArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
 		m_serverPortArea->EnableBackground(true);
 		m_serverPortArea->SetBackgroundColor(Nz::Color::White);
 		m_serverPortArea->Resize({ 50.f, 36.f });
 		m_serverPortArea->SetMaximumWidth(100.f);
-		m_serverPortArea->SetTextColor(Nz::Color::Black);
+		m_serverPortArea->SetTextColor(Nz::Color::Black());
 		m_serverPortArea->SetCharacterFilter([](Nz::UInt32 character) 
 		{
 			if (character < U'0' || character > U'9')
@@ -86,7 +86,7 @@ namespace bw
 		AbstractState::Leave(fsm);
 	}
 
-	bool JoinServerState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool JoinServerState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -109,21 +109,21 @@ namespace bw
 		std::string serverHostname = m_serverAddressArea->GetText();
 		if (serverHostname.empty())
 		{
-			UpdateStatus("Error: blank server address", Nz::Color::Red);
+			UpdateStatus("Error: blank server address", Nz::Color::Red());
 			return;
 		}
 
 		Nz::String serverPort = m_serverPortArea->GetText();
 		if (serverPort.IsEmpty())
 		{
-			UpdateStatus("Error: blank server port", Nz::Color::Red);
+			UpdateStatus("Error: blank server port", Nz::Color::Red());
 			return;
 		}
 
 		long long rawPort;
 		if (!serverPort.ToInteger(&rawPort) || rawPort <= 0 || rawPort > 0xFFFF)
 		{
-			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red);
+			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red());
 			return;
 		}
 

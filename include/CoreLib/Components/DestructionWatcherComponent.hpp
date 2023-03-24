@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <CoreLib/Components/BaseComponent.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 
 namespace bw
 {

@@ -76,7 +76,7 @@ namespace bw
 		RegisterController("life", [](const sol::table& /*parameters*/) -> Nz::ParticleControllerRef
 		{
 			return Nz::ParticleFunctionController::New(
-				[](Nz::ParticleGroup& group, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, float elapsedTime)
+				[](Nz::ParticleGroup& group, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, Nz::Time elapsedTime)
 				{
 					auto lifePtr = mapper.GetComponentPtr<float>(Nz::ParticleComponent_Life);
 
@@ -97,7 +97,7 @@ namespace bw
 			Nz::Vector2f growth = parameters["size"];
 
 			return Nz::ParticleFunctionController::New(
-				[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, float elapsedTime)
+				[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, Nz::Time elapsedTime)
 				{
 					auto sizePtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Size);
 
@@ -114,7 +114,7 @@ namespace bw
 			if (Nz::NumberEquals(damping, 1.f))
 			{
 				return Nz::ParticleFunctionController::New(
-					[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, float elapsedTime)
+					[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, Nz::Time elapsedTime)
 					{
 						auto posPtr = mapper.GetComponentPtr<Nz::Vector3f>(Nz::ParticleComponent_Position);
 						auto velPtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Velocity);
@@ -127,7 +127,7 @@ namespace bw
 			else
 			{
 				return Nz::ParticleFunctionController::New(
-					[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, float elapsedTime)
+					[=](Nz::ParticleGroup& /*group*/, Nz::ParticleMapper& mapper, unsigned int startId, unsigned int endId, Nz::Time elapsedTime)
 					{
 						auto posPtr = mapper.GetComponentPtr<Nz::Vector3f>(Nz::ParticleComponent_Position);
 						auto velPtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Velocity);

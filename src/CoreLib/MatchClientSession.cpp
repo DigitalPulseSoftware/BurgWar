@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/MatchClientSession.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
@@ -30,7 +30,7 @@ namespace bw
 	m_commandStore(commandStore),
 	m_bridge(std::move(bridge)),
 	m_ping(0),
-	m_peerInfoUpdateCounter(0.f)
+	m_peerInfoUpdateCounter(Nz::Time::Zero())
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
 		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
@@ -57,7 +57,7 @@ namespace bw
 		m_commandStore.UnserializePacket(*this, packet);
 	}
 
-	void MatchClientSession::OnTick(float /*elapsedTime*/)
+	void MatchClientSession::OnTick(Nz::Time /*elapsedTime*/)
 	{
 		if (!m_queuedInputs.IsEmpty())
 		{
@@ -77,14 +77,14 @@ namespace bw
 			bwLog(m_match.GetLogger(), LogLevel::Warning, "Player session #{} has no input for this tick", m_sessionId);*/
 	}
 
-	void MatchClientSession::Update(float elapsedTime)
+	void MatchClientSession::Update(Nz::Time elapsedTime)
 	{
 		m_visibility->Update();
 
 		m_peerInfoUpdateCounter += elapsedTime;
-		if (m_peerInfoUpdateCounter >= 1.f)
+		if (m_peerInfoUpdateCounter >= Nz::Time::Second())
 		{
-			m_peerInfoUpdateCounter = 0.f;
+			m_peerInfoUpdateCounter = Nz::Time::Zero();
 
 			m_bridge->QueryInfo([clientSession = CreateHandle()](const SessionBridge::SessionInfo& info)
 			{

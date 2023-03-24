@@ -19,7 +19,7 @@ namespace bw
 		systemGraph.AddSystem<VisualInterpolationSystem>();
 	}
 
-	/*void ClientEditorLayer::FrameUpdate(float elapsedTime)
+	/*void ClientEditorLayer::FrameUpdate(Nz::Time elapsedTime)
 	{
 		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
@@ -33,7 +33,7 @@ namespace bw
 		world.Update(elapsedTime);
 	}
 
-	void ClientEditorLayer::PreFrameUpdate(float elapsedTime)
+	void ClientEditorLayer::PreFrameUpdate(Nz::Time elapsedTime)
 	{
 		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
@@ -46,7 +46,7 @@ namespace bw
 		world.Update(elapsedTime);
 	}
 
-	void ClientEditorLayer::PostFrameUpdate(float elapsedTime)
+	void ClientEditorLayer::PostFrameUpdate(Nz::Time elapsedTime)
 	{
 		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)
@@ -59,7 +59,7 @@ namespace bw
 		world.Update(elapsedTime);
 	}
 
-	void ClientEditorLayer::TickUpdate(float elapsedTime)
+	void ClientEditorLayer::TickUpdate(Nz::Time elapsedTime)
 	{
 		entt::registry& world = GetWorld();
 		world.ForEachSystem([](Ndk::BaseSystem& system)

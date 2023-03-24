@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_ANIMATIONMANAGER_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <memory>
 #include <vector>
 
@@ -25,7 +25,7 @@ namespace bw
 
 			inline void PushAnimation(float duration, UpdateCallback update, FinishCallback finish);
 
-			inline void Update(float elapsedTime);
+			inline void Update(Nz::Time elapsedTime);
 
 		private:
 			struct Animation

@@ -21,7 +21,7 @@ namespace bw
 			~MainMenuState() = default;
 
 		private:
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 

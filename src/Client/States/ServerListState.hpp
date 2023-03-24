@@ -28,7 +28,7 @@ namespace bw
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
 			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 
@@ -36,7 +36,7 @@ namespace bw
 			void OnDirectConnectionPressed();
 			void OnServerConnectionPressed(const std::string& masterServer, const std::string& uuid);
 
-			void RefreshServers(float elapsedTime);
+			void RefreshServers(Nz::Time elapsedTime);
 			void UpdateServerList(const std::string& masterServer, const nlohmann::json& serverListDoc);
 
 			struct ServerData

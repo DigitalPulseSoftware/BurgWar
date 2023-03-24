@@ -14,7 +14,7 @@ namespace bw
 	m_nextCallbackId(m_element->nextCallbackId),
 	m_entityTable(std::move(entityTable)),
 	m_properties(std::move(properties)),
-	m_timeBeforeTick(0.f)
+	m_timeBeforeTick(Nz::Time::Zero())
 	{
 		m_logger = std::make_unique<EntityLogger>(entt::null, logger);
 	}

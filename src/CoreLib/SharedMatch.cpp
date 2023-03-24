@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/SharedMatch.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/LogSystem/EntityLogContext.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
@@ -16,46 +16,38 @@ namespace bw
 		unsigned int MaxDelayedTick = 10;
 	}
 
-	SharedMatch::SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration) :
+	SharedMatch::SharedMatch(BurgAppComponent& app, LogSide side, std::string matchName, Nz::Time tickDuration) :
 	m_name(std::move(matchName)),
 	m_logger(app, *this, side, app.GetLogger()),
 	m_scriptPacketHandler(m_logger),
-	m_currentTick(0),
-	m_currentTime(0),
-	m_floatingTime(0.f),
-	m_maxTickTimer(MaxDelayedTick * tickDuration),
+	m_currentTime(Nz::Time::Zero()),
+	m_tickTimer(Nz::Time::Zero()),
 	m_tickDuration(tickDuration),
-	m_tickTimer(0.f)
+	m_currentTick(0)
 	{
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 	}
 
 	SharedMatch::~SharedMatch() = default;
 
-	void SharedMatch::Update(float elapsedTime)
+	void SharedMatch::Update(Nz::Time elapsedTime)
 	{
 		m_tickTimer += elapsedTime;
-		if (m_tickTimer > m_maxTickTimer)
+		std::size_t tickCount = static_cast<Nz::Int64>(m_tickTimer / m_tickDuration);
+		if (tickCount > MaxDelayedTick)
 		{
-			float lostTicks = (m_tickTimer - m_maxTickTimer) / m_tickDuration;
-			bwLog(m_logger, LogLevel::Warning, "Update is too slow, {} ticks have been discarded to preserve realtime", lostTicks);
-
-			m_tickTimer = m_maxTickTimer;
+			bwLog(m_logger, LogLevel::Warning, "Update is too slow, {} ticks have been discarded to preserve realtime", tickCount - MaxDelayedTick);
+			tickCount = MaxDelayedTick;
 		}
 
-		while (m_tickTimer >= m_tickDuration)
+		for (std::size_t i = 0; i < tickCount; ++i)
 		{
 			m_tickTimer -= m_tickDuration;
+			m_currentTime += m_tickDuration;
 
 			m_timerManager.Update(m_currentTime);
 
 			OnTick(m_tickTimer < m_tickDuration);
-
-			m_currentTick++;
-			m_floatingTime += m_tickDuration * 1000.f;
-			Nz::UInt64 elapsedTimeMs = static_cast<Nz::UInt64>(m_floatingTime);
-			m_currentTime += elapsedTimeMs;
-			m_floatingTime -= elapsedTimeMs;
 		}
 	}
 }

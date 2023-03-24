@@ -120,7 +120,7 @@ namespace bw
 		{
 			m_mainWindow->Display();
 
-			BurgApp::Update();
+			BurgAppComponent::Update();
 
 			m_networkReactors.Update();
 

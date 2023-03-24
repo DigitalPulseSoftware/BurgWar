@@ -27,7 +27,7 @@ namespace bw
 		protected:
 			virtual void OnHide();
 			virtual void OnShow();
-			virtual void OnUpdate(float elapsedTime);
+			virtual void OnUpdate(Nz::Time elapsedTime);
 
 			void closeEvent(QCloseEvent *event) override;
 			void hideEvent(QHideEvent *event) override;

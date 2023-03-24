@@ -6,18 +6,18 @@
 
 namespace bw
 {
-	inline CooldownComponent::CooldownComponent(Nz::UInt32 cooldown) :
+	inline CooldownComponent::CooldownComponent(Nz::Time cooldown) :
 	m_cooldown(cooldown),
-	m_nextTriggerTime(0)
+	m_nextTriggerTime(Nz::Time::Zero())
 	{
 	}
 
-	inline void CooldownComponent::SetNextTriggerTime(Nz::UInt64 time)
+	inline void CooldownComponent::SetNextTriggerTime(Nz::Time time)
 	{
 		m_nextTriggerTime = time;
 	}
 
-	inline bool CooldownComponent::Trigger(Nz::UInt64 currentTime)
+	inline bool CooldownComponent::Trigger(Nz::Time currentTime)
 	{
 		if (currentTime < m_nextTriggerTime)
 			return false;

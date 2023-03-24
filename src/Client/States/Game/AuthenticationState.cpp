@@ -15,7 +15,7 @@ namespace bw
 	{
 		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
-			UpdateStatus("Failed to authenticate", Nz::Color::Red);
+			UpdateStatus("Failed to authenticate", Nz::Color::Red());
 			Cancel(3.f);
 		});
 
@@ -29,7 +29,7 @@ namespace bw
 		{
 			if (!m_authSuccessPacket)
 			{
-				UpdateStatus("Protocol error", Nz::Color::Red);
+				UpdateStatus("Protocol error", Nz::Color::Red());
 				Cancel(3.f);
 				return;
 			}

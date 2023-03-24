@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	inline Logger::Logger(BurgApp& app, LogSide logSide) :
+	inline Logger::Logger(BurgAppComponent& app, LogSide logSide) :
 	AbstractLogger(logSide),
 	m_app(app),
 	m_minimumLogLevel(LogLevel::Debug),
@@ -15,7 +15,7 @@ namespace bw
 	{
 	}
 
-	inline Logger::Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent) :
+	inline Logger::Logger(BurgAppComponent& app, LogSide logSide, const AbstractLogger& logParent) :
 	Logger(app, logSide)
 	{
 		m_logParent = &logParent;

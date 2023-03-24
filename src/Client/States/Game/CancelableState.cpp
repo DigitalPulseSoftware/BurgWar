@@ -54,7 +54,7 @@ namespace bw
 		m_cancelButton->SetPosition(canvasSize.x / 2.f - m_cancelButton->GetWidth() / 2.f, canvasSize.y - 10.f - m_cancelButton->GetHeight());
 	}
 
-	bool CancelableState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool CancelableState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!StatusState::Update(fsm, elapsedTime))
 			return false;

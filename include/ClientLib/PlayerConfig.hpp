@@ -12,12 +12,12 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 
 	class BURGWAR_CLIENTLIB_API PlayerConfig : public ConfigFile
 	{
 		public:
-			PlayerConfig(BurgApp& app);
+			PlayerConfig(BurgAppComponent& app);
 			~PlayerConfig() = default;
 	};
 }

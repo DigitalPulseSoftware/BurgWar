@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/ConfigFile.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <sol/sol.hpp>
 #include <fstream>

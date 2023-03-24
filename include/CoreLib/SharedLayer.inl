@@ -41,7 +41,7 @@ namespace bw
 		return m_registry;
 	}
 
-	inline Nz::SystemGraph& SharedLayer::GetSystemGraph()
+	inline Nz::EnttSystemGraph& SharedLayer::GetSystemGraph()
 	{
 		return m_systemGraph;
 	}

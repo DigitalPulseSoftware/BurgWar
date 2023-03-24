@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 	class TerrainLayer;
 
 	class BURGWAR_CORELIB_API ServerWeaponStore : public SharedWeaponStore

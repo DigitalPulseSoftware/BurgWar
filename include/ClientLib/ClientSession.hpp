@@ -11,21 +11,21 @@
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientCommandStore.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <memory>
 #include <optional>
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 
 	class BURGWAR_CLIENTLIB_API ClientSession
 	{
 		friend class ClientCommandStore;
 
 		public:
-			inline ClientSession(BurgApp& app);
+			inline ClientSession(BurgAppComponent& app);
 			ClientSession(const ClientSession&) = delete;
 			ClientSession(ClientSession&&) = delete;
 			virtual ~ClientSession();
@@ -33,8 +33,8 @@ namespace bw
 			bool Connect(std::shared_ptr<SessionBridge> sessionBridge);
 			void Disconnect();
 
-			inline BurgApp& GetApp();
-			inline const BurgApp& GetApp() const;
+			inline BurgAppComponent& GetApp();
+			inline const BurgAppComponent& GetApp() const;
 			inline const NetworkStringStore& GetNetworkStringStore() const;
 
 			inline bool IsConnected() const;
@@ -95,7 +95,7 @@ namespace bw
 			NazaraSlot(SessionBridge, OnIncomingPacket, m_onIncomingPacketSlot);
 
 			std::shared_ptr<SessionBridge> m_bridge;
-			BurgApp& m_application;
+			BurgAppComponent& m_application;
 			ClientCommandStore m_commandStore;
 			NetworkStringStore m_stringStore;
 	};

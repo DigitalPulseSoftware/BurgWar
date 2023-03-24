@@ -6,8 +6,8 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/Terrain.hpp>
-#include <Nazara/Utils/StackArray.hpp>
-#include <Nazara/Utils/StackVector.hpp>
+#include <NazaraUtils/StackArray.hpp>
+#include <NazaraUtils/StackVector.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <cassert>
 #include <queue>

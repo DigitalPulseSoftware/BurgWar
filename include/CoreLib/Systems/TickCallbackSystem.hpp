@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_SYSTEMS_TICKCALLBACKSYSTEM_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <entt/entt.hpp>
 #include <unordered_set>
 #include <vector>
@@ -22,7 +23,7 @@ namespace bw
 			TickCallbackSystem(entt::registry& registry, SharedMatch& match);
 			~TickCallbackSystem() = default;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 		private:
 			void OnScriptDestroy(entt::registry& registry, entt::entity entity);

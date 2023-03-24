@@ -7,29 +7,27 @@
 #ifndef BURGWAR_SERVERAPP_HPP
 #define BURGWAR_SERVERAPP_HPP
 
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Match.hpp>
 #include <Server/ServerAppConfig.hpp>
 #include <memory>
 
 namespace bw
 {
-	class ServerApp : public BurgApp
+	class ServerAppComponent : public BurgAppComponent
 	{
 		public:
-			ServerApp(int argc, char* argv[]);
-			~ServerApp() = default;
+			ServerAppComponent(Nz::ApplicationBase& app);
+			~ServerAppComponent() = default;
 
-			int Run();
-			void Quit() override;
+			void Update(Nz::Time elapsedTime) override;
 
 		private:
 			std::unique_ptr<Match> m_match;
 			ServerAppConfig m_configFile;
-			bool m_running;
 	};
 }
 
-#include <Server/ServerApp.inl>
+#include <Server/ServerAppComponent.inl>
 
 #endif

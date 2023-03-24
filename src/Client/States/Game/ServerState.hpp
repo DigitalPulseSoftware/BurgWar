@@ -28,7 +28,7 @@ namespace bw
 
 		private:
 			void Enter(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			std::optional<Match> m_match;
 			std::shared_ptr<AbstractState> m_originalState;

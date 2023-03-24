@@ -71,7 +71,7 @@ namespace bw
 		{
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Error, "no more addresses available, connection failed");
 
-			UpdateStatus("Failed to connect to server", Nz::Color::Red);
+			UpdateStatus("Failed to connect to server", Nz::Color::Red());
 			Cancel(3.f);
 			return;
 		}
@@ -149,7 +149,7 @@ namespace bw
 		m_timeBeforeGivingUp = 3.f; //< Should be instant
 	}
 	
-	bool ConnectionState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool ConnectionState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!CancelableState::Update(fsm, elapsedTime))
 			return false;

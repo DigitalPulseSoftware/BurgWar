@@ -99,7 +99,7 @@ namespace bw
 			if (m_eraserCursor)
 				canvas->SetCursor(m_eraserCursor);
 
-			m_hoveringTileSprite->SetColor(Nz::Color::Red);
+			m_hoveringTileSprite->SetColor(Nz::Color::Red());
 		}
 		else
 		{

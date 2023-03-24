@@ -12,12 +12,12 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 
 	class BURGWAR_CORELIB_API SharedAppConfig : public ConfigFile
 	{
 		public:
-			SharedAppConfig(BurgApp& app);
+			SharedAppConfig(BurgAppComponent& app);
 			~SharedAppConfig() = default;
 	};
 }

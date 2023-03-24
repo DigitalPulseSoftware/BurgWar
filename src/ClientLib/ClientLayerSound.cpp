@@ -58,7 +58,7 @@ namespace bw
 			soundEntity->StopSound(soundIndex);
 	}
 
-	bool ClientLayerSound::Update(float elapsedTime)
+	bool ClientLayerSound::Update(Nz::Time elapsedTime)
 	{
 		bool hasActiveSounds = false;
 		for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it)

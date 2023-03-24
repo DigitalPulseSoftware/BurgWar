@@ -44,7 +44,7 @@ namespace bw
 			std::size_t PlaySound(const std::shared_ptr<Nz::SoundBuffer>& soundBuffer, bool isLooping, bool isSpatialized);
 			void StopSound(std::size_t soundIndex);
 
-			bool Update(float elapsedTime);
+			bool Update(Nz::Time elapsedTime);
 
 			inline void UpdatePosition(const Nz::Vector2f& position);
 

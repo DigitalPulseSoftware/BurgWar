@@ -42,7 +42,7 @@ namespace bw
 			void PollSessionInfo();
 			void RefreshFlags();
 			void UpdateSessionInfo();
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			std::optional<SessionBridge::SessionInfo> m_lastSessionInfo;
 			std::shared_ptr<AbstractState> m_firstState;

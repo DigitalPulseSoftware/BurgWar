@@ -12,8 +12,8 @@
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
 #include <CoreLib/LogSystem/LogContextPtr.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
-#include <Nazara/Utils/MemoryPool.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
+#include <NazaraUtils/MemoryPool.hpp>
 #include <fmt/format.h>
 #include <memory>
 #include <vector>
@@ -29,7 +29,7 @@ while (false)
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 	class LogSink;
 
 	class BURGWAR_CORELIB_API Logger : public AbstractLogger
@@ -38,8 +38,8 @@ namespace bw
 		friend class LoggerProxy;
 
 		public:
-			inline Logger(BurgApp& app, LogSide logSide);
-			inline Logger(BurgApp& app, LogSide logSide, const AbstractLogger& logParent);
+			inline Logger(BurgAppComponent& app, LogSide logSide);
+			inline Logger(BurgAppComponent& app, LogSide logSide, const AbstractLogger& logParent);
 			Logger(const Logger&) = delete;
 			Logger(Logger&&) noexcept = default;
 			~Logger() = default;
@@ -71,7 +71,7 @@ namespace bw
 		private:
 			void FreeContext(LogContext* context) const;
 
-			BurgApp& m_app;
+			BurgAppComponent& m_app;
 			LogLevel m_minimumLogLevel;
 			Nz::MovablePtr<const AbstractLogger> m_logParent;
 			std::vector<std::shared_ptr<LogSink>> m_sinks;

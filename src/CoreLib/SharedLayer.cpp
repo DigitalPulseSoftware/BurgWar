@@ -26,7 +26,7 @@ namespace bw
 	{
 		m_systemGraph.AddSystem<Nz::LifetimeSystem>();
 		m_systemGraph.AddSystem<Nz::Physics2DSystem>();
-		m_systemGraph.AddSystem<Nz::VelocitySystem>();
+		//m_systemGraph.AddSystem<Nz::VelocitySystem>();
 
 		m_systemGraph.AddSystem<AnimationSystem>(match);
 		m_systemGraph.AddSystem<InputSystem>();
@@ -37,7 +37,7 @@ namespace bw
 		Nz::PhysWorld2D& physics = m_systemGraph.GetSystem<Nz::Physics2DSystem>().GetPhysWorld();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 192.f));
 		physics.SetMaxStepCount(1);
-		physics.SetSleepTime(0.f);
+		physics.SetSleepTime(Nz::Time::Zero());
 		physics.SetStepSize(match.GetTickDuration());
 
 		// EnTT FIXME
@@ -119,7 +119,7 @@ namespace bw
 		m_registry.clear();
 	}
 
-	void SharedLayer::TickUpdate(float elapsedTime)
+	void SharedLayer::TickUpdate(Nz::Time elapsedTime)
 	{
 		m_systemGraph.Update(elapsedTime);
 	}

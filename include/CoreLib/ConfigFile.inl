@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	inline ConfigFile::ConfigFile(BurgApp& app) :
+	inline ConfigFile::ConfigFile(BurgAppComponent& app) :
 	m_app(app)
 	{
 	}

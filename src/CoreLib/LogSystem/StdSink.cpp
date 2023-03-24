@@ -4,8 +4,8 @@
 
 #include <CoreLib/LogSystem/StdSink.hpp>
 #include <CoreLib/LogSystem/LogContext.hpp>
-#include <Nazara/Prerequisites.hpp>
-#include <Nazara/Utils/StackArray.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
+#include <NazaraUtils/StackArray.hpp>
 #include <cstring>
 #include <cwchar>
 #include <vector>

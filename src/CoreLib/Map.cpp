@@ -6,7 +6,7 @@
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Utils/Bitset.hpp>
+#include <NazaraUtils/Bitset.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>
@@ -356,7 +356,7 @@ namespace bw
 		for (auto&& entry : mapJson["layers"])
 		{
 			Layer& layer = layers.emplace_back();
-			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black);
+			layer.backgroundColor = entry.value("backgroundColor", Nz::Color::Black());
 			layer.name = entry.value("name", "");
 
 			for (auto&& entityInfo : entry["entities"])

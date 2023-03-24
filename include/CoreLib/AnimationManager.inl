@@ -20,7 +20,7 @@ namespace bw
 		anim.updateCallback = std::move(update);
 	}
 
-	inline void AnimationManager::Update(float elapsedTime)
+	inline void AnimationManager::Update(Nz::Time elapsedTime)
 	{
 		std::move(m_newAnimations.begin(), m_newAnimations.end(), std::back_inserter(m_playingAnimations));
 		m_newAnimations.clear();

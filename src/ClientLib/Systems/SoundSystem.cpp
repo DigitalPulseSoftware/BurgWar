@@ -30,7 +30,7 @@ namespace bw
 		m_soundEmitterDestroyConnection = m_registry.on_destroy<SoundEmitterComponent>().connect<&SoundSystem::OnSoundDestroy>(this);
 	}
 	
-	void SoundSystem::Update(float elapsedTime)
+	void SoundSystem::Update(Nz::Time elapsedTime)
 	{
 		float invElapsedTime = 1.f / elapsedTime;
 

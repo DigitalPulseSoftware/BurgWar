@@ -11,7 +11,7 @@
 #include <CoreLib/InputController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/Components/BaseComponent.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <array>
 #include <memory>
 

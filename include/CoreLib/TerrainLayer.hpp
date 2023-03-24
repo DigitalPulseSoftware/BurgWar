@@ -14,7 +14,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 	class Match;
 
 	class BURGWAR_CORELIB_API TerrainLayer : public SharedLayer

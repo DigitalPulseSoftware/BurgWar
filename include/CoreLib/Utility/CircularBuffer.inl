@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Utility/CircularBuffer.hpp>
-#include <Nazara/Utils/MemoryHelper.hpp>
+#include <NazaraUtils/MemoryHelper.hpp>
 #include <cassert>
 
 namespace bw

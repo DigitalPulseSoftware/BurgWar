@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_WEBREQUESTRESULT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>
 #include <string>

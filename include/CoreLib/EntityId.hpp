@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_ENTITYID_HPP
 #define BURGWAR_CORELIB_ENTITYID_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 
 namespace bw
 {

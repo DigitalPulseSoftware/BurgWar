@@ -14,6 +14,7 @@
 #include <CoreLib/Utility/CircularBuffer.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -51,11 +52,11 @@ namespace bw
 
 			void HandleIncomingPacket(Nz::NetPacket& packet);
 
-			void OnTick(float elapsedTime);
+			void OnTick(Nz::Time elapsedTime);
 
 			template<typename T> void SendPacket(const T& packet);
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			MatchClientSession& operator=(const MatchClientSession&) = delete;
 			MatchClientSession& operator=(MatchClientSession&&) = delete;
@@ -95,9 +96,9 @@ namespace bw
 			std::unique_ptr<MatchClientVisibility> m_visibility;
 			//std::vector<PendingAssetRequest> m_pendingAssetRequest;
 			std::vector<PlayerHandle> m_players;
+			Nz::Time m_peerInfoUpdateCounter;
 			Nz::UInt16 m_lastInputTick;
 			Nz::UInt32 m_ping;
-			float m_peerInfoUpdateCounter;
 	};
 }
 

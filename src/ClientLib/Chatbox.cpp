@@ -27,7 +27,7 @@ namespace bw
 		m_chatBox->SetCharacterSize(22);
 		m_chatBox->SetTextColor(Nz::Color::White);
 		//m_chatBox->SetTextFont(chatboxFont);
-		m_chatBox->SetTextOutlineColor(Nz::Color::Black);
+		m_chatBox->SetTextOutlineColor(Nz::Color::Black());
 		m_chatBox->SetTextOutlineThickness(1.f);
 		m_chatBox->SetReadOnly(true);
 
@@ -38,7 +38,7 @@ namespace bw
 		m_chatEnteringBox = canvas->Add<Nz::TextAreaWidget>();
 		m_chatEnteringBox->EnableBackground(true);
 		m_chatEnteringBox->SetBackgroundColor(Nz::Color(255, 255, 255, 150));
-		m_chatEnteringBox->SetTextColor(Nz::Color::Black);
+		m_chatEnteringBox->SetTextColor(Nz::Color::Black());
 		//m_chatEnteringBox->SetTextFont(chatboxFont);
 		m_chatEnteringBox->Hide();
 

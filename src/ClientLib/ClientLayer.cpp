@@ -85,7 +85,7 @@ namespace bw
 		return m_isEnabled;
 	}
 
-	void ClientLayer::PostFrameUpdate(float elapsedTime)
+	void ClientLayer::PostFrameUpdate(Nz::Time elapsedTime)
 	{
 		ClientEditorLayer::PostFrameUpdate(elapsedTime);
 

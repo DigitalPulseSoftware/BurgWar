@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_LAYERINDEX_HPP
 #define BURGWAR_CORELIB_LAYERINDEX_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 #include <limits>
 
 namespace bw

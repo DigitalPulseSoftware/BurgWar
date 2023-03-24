@@ -123,7 +123,7 @@ namespace bw
 
 			struct Layer
 			{
-				Nz::Color backgroundColor = Nz::Color::Black;
+				Nz::Color backgroundColor = Nz::Color::Black();
 				Nz::Vector2f positionAlignment = Nz::Vector2f::Unit();
 				std::string name = "unnamed layer";
 				std::vector<Entity> entities;

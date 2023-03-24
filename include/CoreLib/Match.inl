@@ -37,7 +37,7 @@ namespace bw
 		}
 	}
 
-	inline BurgApp& Match::GetApp()
+	inline BurgAppComponent& Match::GetApp()
 	{
 		return m_app;
 	}

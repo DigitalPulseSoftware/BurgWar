@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/NetworkReactor.hpp>
 #include <CoreLib/SessionManager.hpp>
-#include <Nazara/Utils/MemoryPool.hpp>
+#include <NazaraUtils/MemoryPool.hpp>
 #include <vector>
 
 namespace bw

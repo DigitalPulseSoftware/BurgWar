@@ -32,7 +32,7 @@ namespace bw
 
 			void Reset();
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			Terrain& operator=(const Terrain&) = delete;
 

@@ -21,7 +21,7 @@ namespace bw
 			PostFrameCallbackSystem(entt::registry& registry);
 			~PostFrameCallbackSystem() = default;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 		private:
 			void OnScriptDestroy(entt::registry& registry, entt::entity entity);

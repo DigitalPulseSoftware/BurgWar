@@ -18,7 +18,7 @@ namespace bw
 			VisualInterpolationSystem(entt::registry& registry);
 			~VisualInterpolationSystem() = default;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 		private:
 			entt::observer m_observer;

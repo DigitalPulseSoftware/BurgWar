@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/LogSystem/LogSink.hpp>
 #include <array>
 #include <charconv>
@@ -44,7 +44,7 @@ namespace bw
 
 	void Logger::InitializeContext(LogContext& context) const
 	{
-		context.elapsedTime = m_app.GetLogTime() / 1'000'000.f;
+		context.elapsedTime = m_app.GetLogTime().AsSeconds();
 		context.side = GetSide();
 	}
 
@@ -66,7 +66,7 @@ namespace bw
 #else
 		// libstdc++ doesn't support std::to_chars for floating-point values :(
 
-		auto TimePart = [](float elapsedTime) -> std::string
+		auto TimePart = [](Nz::Time elapsedTime) -> std::string
 		{
 			std::stringstream ss;
 			ss.setf(std::ios::fixed, std::ios::floatfield);

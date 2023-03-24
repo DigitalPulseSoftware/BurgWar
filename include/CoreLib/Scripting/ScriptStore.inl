@@ -7,7 +7,7 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
-#include <Nazara/Utils/CallOnExit.hpp>
+#include <NazaraUtils/CallOnExit.hpp>
 #include <cassert>
 #include <filesystem>
 #include <sstream>
@@ -76,7 +76,7 @@ namespace bw
 		{
 			directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
 			{
-				bool isDirectory = std::holds_alternative<Nz::VirtualDirectory::PhysicalDirectoryEntry>(entry) || std::holds_alternative<Nz::VirtualDirectory::VirtualDirectoryEntry>(entry);
+				bool isDirectory = std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry);
 				LoadElement(isDirectory, directoryPath / entryName);
 			});
 		};

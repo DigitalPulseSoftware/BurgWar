@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_ENUMS_HPP
 #define BURGWAR_MAPEDITOR_ENUMS_HPP
 
-#include <Nazara/Utils/Flags.hpp>
+#include <NazaraUtils/Flags.hpp>
 
 namespace bw
 {

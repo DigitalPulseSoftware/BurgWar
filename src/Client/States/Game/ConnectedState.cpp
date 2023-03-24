@@ -245,7 +245,7 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	bool ConnectedState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool ConnectedState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

@@ -497,7 +497,7 @@ namespace bw
 		m_entitiesByUniqueId.erase(it);
 	}
 
-	bool ClientMatch::Update(float elapsedTime)
+	bool ClientMatch::Update(Nz::Time elapsedTime)
 	{
 		if (m_isLeavingMatch)
 			return false;

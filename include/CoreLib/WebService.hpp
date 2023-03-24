@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/WebRequest.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 #include <tsl/hopscotch_map.h>
 
 using CURLM = void;
@@ -21,7 +21,7 @@ namespace bw
 
 	class BURGWAR_CORELIB_API WebService
 	{
-		friend class BurgApp;
+		friend class BurgAppComponent;
 		friend class WebRequest;
 		friend class WebRequestResult;
 

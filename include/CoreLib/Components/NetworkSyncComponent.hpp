@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_COMPONENTS_NETWORKSYNCCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <entt/entt.hpp>
 #include <vector>
 

@@ -39,7 +39,7 @@ namespace bw
 				{
 					sol::error err = result;
 					if (m_outputCallback)
-						m_outputCallback(err.what(), Nz::Color::Red);
+						m_outputCallback(err.what(), Nz::Color::Red());
 
 					return false;
 				}
@@ -48,7 +48,7 @@ namespace bw
 			{
 				sol::error err = loadResult;
 				if (m_outputCallback)
-					m_outputCallback(err.what(), Nz::Color::Red);
+					m_outputCallback(err.what(), Nz::Color::Red());
 
 				return false;
 			}
@@ -58,7 +58,7 @@ namespace bw
 		catch (const std::exception& e)
 		{
 			if (m_outputCallback)
-				m_outputCallback("PANIC: " + std::string(e.what()), Nz::Color::Red);
+				m_outputCallback("PANIC: " + std::string(e.what()), Nz::Color::Red());
 
 			return false;
 		}

@@ -9,7 +9,8 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Components/BaseComponent.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <memory>
 #include <optional>
 
@@ -28,23 +29,23 @@ namespace bw
 
 			inline std::size_t GetAnimId() const;
 			inline const std::shared_ptr<AnimationStore>& GetAnimationStore() const;
-			inline Nz::UInt64 GetEndTime() const;
-			inline Nz::UInt64 GetStartTime() const;
+			inline Nz::Time GetEndTime() const;
+			inline Nz::Time GetStartTime() const;
 			inline bool IsPlaying() const;
 
-			void Play(std::size_t animId, Nz::UInt64 animStartTime);
+			void Play(std::size_t animId, Nz::Time animStartTime);
 
 			NazaraSignal(OnAnimationEnd, AnimationComponent* /*emitter*/);
 			NazaraSignal(OnAnimationStart, AnimationComponent* /*emitter*/);
 
 		private:
-			void Update(Nz::UInt64 now);
+			void Update(Nz::Time now);
 
 			struct ActiveAnimation
 			{
 				std::size_t animId;
-				Nz::UInt64 endTime;
-				Nz::UInt64 startTime;
+				Nz::Time endTime;
+				Nz::Time startTime;
 			};
 
 			std::optional<ActiveAnimation> m_playingAnimation;

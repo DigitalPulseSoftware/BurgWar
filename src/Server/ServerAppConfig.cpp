@@ -3,11 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerAppConfig.hpp>
-#include <Server/ServerApp.hpp>
+#include <Server/ServerAppComponent.hpp>
 
 namespace bw
 {
-	ServerAppConfig::ServerAppConfig(ServerApp& app) :
+	ServerAppConfig::ServerAppConfig(ServerAppComponent& app) :
 	SharedAppConfig(app)
 	{
 		RegisterStringOption("ServerSettings.Gamemode");

@@ -37,7 +37,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(weaponTable);
 			
-			entity.get<CooldownComponent>().SetNextTriggerTime(nextTriggerTime);
+			entity.get<CooldownComponent>().SetNextTriggerTime(Nz::Time::Milliseconds(nextTriggerTime));
 		});
 	}
 }

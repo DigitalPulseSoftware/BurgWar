@@ -593,7 +593,7 @@ namespace bw
 
 		m_undoStack.clear();
 
-		m_canvas->UpdateBackgroundColor(Nz::Color::Black);
+		m_canvas->UpdateBackgroundColor(Nz::Color::Black());
 
 		if (hasWorkingMap)
 			RebuildCanvas();
@@ -985,7 +985,7 @@ namespace bw
 						m_canvas->UpdateBackgroundColor(m_workingMap.GetLayer(*m_currentLayer).backgroundColor);
 				}
 				else
-					m_canvas->UpdateBackgroundColor(Nz::Color::Black);
+					m_canvas->UpdateBackgroundColor(Nz::Color::Black());
 
 				QSettings().setValue(settings_showBackgroundColor, checked);
 			});
@@ -1423,7 +1423,7 @@ namespace bw
 			m_currentLayer.reset();
 			m_entityIndices.clear();
 			m_canvas->UpdateActiveLayer({});
-			m_canvas->UpdateBackgroundColor(Nz::Color::Black);
+			m_canvas->UpdateBackgroundColor(Nz::Color::Black());
 
 			m_entityList.listWidget->clear();
 

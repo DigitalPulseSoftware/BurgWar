@@ -2,7 +2,8 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
+#include <Nazara/Core/Application.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Mod.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
@@ -26,7 +27,6 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
-#include <Nazara/Core/Clock.hpp>
 #include <cassert>
 #include <thread>
 
@@ -48,12 +48,12 @@
 
 namespace bw
 {
-	BurgApp::BurgApp(LogSide side, const ConfigFile& config) :
+	BurgAppComponent::BurgAppComponent(Nz::ApplicationBase& app, LogSide side, const ConfigFile& config) :
+	ApplicationComponent(app),
 	m_logger(*this, side),
 	m_config(config),
-	m_appTime(0),
-	m_lastTime(Nz::GetElapsedMicroseconds()),
-	m_startTime(m_lastTime)
+	m_appTime(Nz::Time::Zero()),
+	m_startTime(Nz::GetElapsedNanoseconds())
 	{
 		assert(!s_application);
 		s_application = this;
@@ -73,7 +73,7 @@ namespace bw
 			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services ({0}), some functionalities will not work", error);
 	}
 
-	BurgApp::~BurgApp()
+	BurgAppComponent::~BurgAppComponent()
 	{
 		m_webService.reset();
 		WebService::Uninitialize();
@@ -82,26 +82,23 @@ namespace bw
 		s_application = nullptr;
 	}
 
-	void BurgApp::Update()
+	void BurgAppComponent::Update(Nz::Time elapsedTime)
 	{
-		Nz::UInt64 now = Nz::GetElapsedMicroseconds();
-		Nz::UInt64 elapsedTime = now - m_lastTime;
-		m_appTime += elapsedTime / 1000;
-		m_lastTime = now;
+		m_appTime += elapsedTime;
 
 		if (m_webService)
 			m_webService->Poll();
 	}
 
-	void BurgApp::HandleInterruptSignal(const char* signalName)
+	void BurgAppComponent::HandleInterruptSignal(const char* signalName)
 	{
 		assert(s_application);
 		bwLog(s_application->GetLogger(), LogLevel::Info, "received interruption signal {0}, exiting...", signalName);
 
-		s_application->Quit();
+		s_application->GetApp().Quit();
 	}
 
-	void BurgApp::InstallInterruptHandlers()
+	void BurgAppComponent::InstallInterruptHandlers()
 	{
 		bool succeeded = false;
 
@@ -144,7 +141,7 @@ namespace bw
 			bwLog(GetLogger(), LogLevel::Error, "failed to install interruption signal handlers");
 	}
 	
-	void BurgApp::LoadMods()
+	void BurgAppComponent::LoadMods()
 	{
 		const std::string& modDir = m_config.GetStringValue("Resources.ModDirectory");
 		if (modDir.empty())
@@ -158,5 +155,5 @@ namespace bw
 		}
 	}
 
-	BurgApp* BurgApp::s_application = nullptr;
+	BurgAppComponent* BurgAppComponent::s_application = nullptr;
 }

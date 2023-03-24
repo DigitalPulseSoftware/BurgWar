@@ -161,8 +161,8 @@ namespace bw
 		}
 
 		// Use a timeout to prevent hanging on silent peers
-		Nz::Clock c;
-		while (c.GetMilliseconds() < 1000)
+		Nz::MillisecondClock c;
+		while (c.GetElapsedTime() < Nz::Time::Milliseconds(1000))
 		{
 			Nz::ENetEvent event;
 			if (m_host.Service(&event, 1) > 0)

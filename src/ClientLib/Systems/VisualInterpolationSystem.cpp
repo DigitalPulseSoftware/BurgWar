@@ -18,7 +18,7 @@ namespace bw
 		m_observer.connect(m_registry, entt::collector.group<Nz::NodeComponent, VisualInterpolationComponent>());
 	}
 
-	void VisualInterpolationSystem::Update(float elapsedTime)
+	void VisualInterpolationSystem::Update(Nz::Time elapsedTime)
 	{
 		m_observer.each([&](entt::entity entity)
 		{

@@ -9,6 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/WebService.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
 #include <string>
@@ -27,7 +28,7 @@ namespace bw
 			MasterServerEntry(MasterServerEntry&&) = delete;
 			~MasterServerEntry() = default;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			MasterServerEntry& operator=(const MasterServerEntry&) = delete;
 			MasterServerEntry& operator=(MasterServerEntry&&) = delete;
@@ -44,7 +45,7 @@ namespace bw
 			std::string m_updateToken;
 			Match& m_match;
 			WebService m_webService;
-			float m_timeBeforeRefresh;
+			Nz::Time m_timeBeforeRefresh;
 	};
 }
 

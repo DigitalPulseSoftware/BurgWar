@@ -5,7 +5,7 @@
 #include <ClientLib/Scoreboard.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <Nazara/Utils/StackArray.hpp>
+#include <NazaraUtils/StackArray.hpp>
 #include <Nazara/Utility/Font.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 

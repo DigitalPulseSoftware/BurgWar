@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_CONSOLE_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <functional>

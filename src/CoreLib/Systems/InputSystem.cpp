@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	void InputSystem::Update(float /*elapsedTime*/)
+	void InputSystem::Update(Nz::Time /*elapsedTime*/)
 	{
 		auto view = m_registry.view<InputComponent>();
 		for (auto [entity, inputComponent] : view.each())

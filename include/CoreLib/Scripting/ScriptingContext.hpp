@@ -46,7 +46,7 @@ namespace bw
 			bool LoadDirectoryOpt(const std::filesystem::path& folder);
 			void LoadLibrary(std::shared_ptr<AbstractScriptingLibrary> library);
 
-			inline void Print(const std::string& str, const Nz::Color& color = Nz::Color::White);
+			inline void Print(const std::string& str, const Nz::Color& color = Nz::Color::White());
 
 			void ReloadLibraries();
 
@@ -65,16 +65,12 @@ namespace bw
 		private:
 			sol::thread& CreateThread();
 
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry);
-			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry, Async);
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry);
-			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry, Async);
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry);
-			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry, Async);
+			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry);
+			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry, Async);
 			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
 			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::DirectoryEntry& folder);
-			std::string ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::PhysicalFileEntry& entry);
+			std::string ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::FileEntry& entry);
 
 			std::filesystem::path m_currentFile;
 			std::filesystem::path m_currentFolder;

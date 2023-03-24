@@ -107,7 +107,7 @@ namespace bw
 
 			void UnregisterEntity(EntityId uniqueId);
 
-			bool Update(float elapsedTime);
+			bool Update(Nz::Time elapsedTime);
 
 			ClientMatch& operator=(const ClientMatch&) = delete;
 			ClientMatch& operator=(ClientMatch&&) = delete;

@@ -12,7 +12,7 @@
 
 namespace bw
 {
-	void WeaponSystem::Update(float /*elapsedTime*/)
+	void WeaponSystem::Update(Nz::Time /*elapsedTime*/)
 	{
 		auto view = m_registry.view<CooldownComponent, ScriptComponent, WeaponComponent, Nz::NodeComponent>();
 		for (entt::entity weapon : view)

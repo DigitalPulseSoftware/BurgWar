@@ -10,7 +10,7 @@
 #include <CoreLib/PlayerInputData.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientLayerEntity.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 
 namespace bw
 {

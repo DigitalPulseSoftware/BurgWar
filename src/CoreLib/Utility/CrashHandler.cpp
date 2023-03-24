@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Utility/CrashHandler.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 
 #ifdef NAZARA_PLATFORM_WINDOWS
 #include <CoreLib/Utility/CrashHandlerWin32.hpp>

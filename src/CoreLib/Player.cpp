@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Player.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Map.hpp>
 #include <CoreLib/Match.hpp>
@@ -23,7 +23,8 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Scripting/ServerGamemode.hpp>
-#include <Nazara/Utils/CallOnExit.hpp>
+#include <NazaraUtils/CallOnExit.hpp>
+#include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
 #include <Nazara/Physics2D/Collider2D.hpp>
 
 namespace bw
@@ -57,7 +58,7 @@ namespace bw
 		{
 			const std::string& scriptFolder = m_match.GetApp().GetConfig().GetStringValue("Resources.ScriptDirectory");
 
-			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<Nz::VirtualDirectory>(scriptFolder));
+			m_scriptingEnvironment.emplace(m_match.GetLogger(), m_match.GetScriptingLibrary(), std::make_shared<Nz::VirtualDirectory>(std::make_shared<Nz::VirtualDirectoryFilesystemResolver>(scriptFolder)));
 			m_scriptingEnvironment->SetOutputCallback([ply = CreateHandle()](const std::string& text, Nz::Color color)
 			{
 				if (!ply)

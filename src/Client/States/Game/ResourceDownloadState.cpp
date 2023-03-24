@@ -139,7 +139,7 @@ namespace bw
 		}
 	}
 
-	bool ResourceDownloadState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool ResourceDownloadState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!CancelableState::Update(fsm, elapsedTime))
 			return false;

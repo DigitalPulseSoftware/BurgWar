@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_CONFIGFILE_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <sol/forward.hpp>
 #include <tl/expected.hpp>
 #include <filesystem>
@@ -21,12 +21,12 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 
 	class BURGWAR_CORELIB_API ConfigFile
 	{
 		public:
-			ConfigFile(BurgApp& app);
+			ConfigFile(BurgAppComponent& app);
 			ConfigFile(const ConfigFile&) = delete;
 			ConfigFile(ConfigFile&&) noexcept = default;
 			~ConfigFile() = default;
@@ -130,7 +130,7 @@ namespace bw
 
 			std::vector<ConfigOption> m_options;
 			std::unordered_map<std::string, std::size_t> m_optionByName;
-			BurgApp& m_app;
+			BurgAppComponent& m_app;
 			ConfigSection m_globalSection;
 	};
 }

@@ -86,7 +86,7 @@ namespace bw
 		m_serverListWidget->Hide();
 	}
 
-	bool ServerListState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool ServerListState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -247,7 +247,7 @@ namespace bw
 		m_webService->AddRequest(std::move(request));
 	}
 
-	void ServerListState::RefreshServers(float elapsedTime)
+	void ServerListState::RefreshServers(Nz::Time elapsedTime)
 	{
 		for (auto it = m_masterServers.begin(); it != m_masterServers.end(); ++it)
 		{

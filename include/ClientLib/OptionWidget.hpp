@@ -8,7 +8,7 @@
 #define BURGWAR_CLIENTLIB_OPTIONMENU_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <Nazara/Widgets/ButtonWidget.hpp>
 #include <Nazara/Widgets/CheckboxWidget.hpp>

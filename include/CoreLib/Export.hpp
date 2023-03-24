@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CORELIB_EXPORT_HPP
 #define BURGWAR_CORELIB_EXPORT_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 
 #ifdef BURGWAR_CORELIB_STATIC
     #define BURGWAR_CORELIB_API

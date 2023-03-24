@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_TILESELECTIONWIDGET_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_TILESELECTIONWIDGET_HPP
 
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <Nazara/Graphics/Material.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Platform/Event.hpp>

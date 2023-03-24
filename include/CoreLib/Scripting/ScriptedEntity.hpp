@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SCRIPTEDENTITY_HPP
 
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 
 namespace bw
 {

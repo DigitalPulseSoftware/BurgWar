@@ -19,7 +19,7 @@ namespace bw
 			CancelableState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> originalState);
 			~CancelableState() = default;
 
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 		protected:
 			void Cancel(float delay = 0.f);

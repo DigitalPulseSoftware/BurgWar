@@ -96,7 +96,7 @@ namespace bw
 			void OnMouseLeft() override;
 			void OnMouseMoved(const Nz::WindowEvent::MouseMoveEvent& mouseMoved) override;
 			void OnTick(bool /*lastTick*/) override;
-			void OnUpdate(float elapsedTime) override;
+			void OnUpdate(Nz::Time elapsedTime) override;
 			inline void UnregisterEntity(EntityId uniqueId);
 			void UpdateGrid();
 

@@ -43,7 +43,7 @@ namespace bw
 		*/
 	}
 
-	bool BackgroundState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool BackgroundState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

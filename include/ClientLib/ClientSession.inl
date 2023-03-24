@@ -3,23 +3,23 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientSession.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <Nazara/Network/NetPacket.hpp>
 
 namespace bw
 {
-	inline ClientSession::ClientSession(BurgApp& application) :
+	inline ClientSession::ClientSession(BurgAppComponent& application) :
 	m_application(application),
 	m_commandStore(m_application.GetLogger())
 	{
 	}
 
-	inline BurgApp& ClientSession::GetApp()
+	inline BurgAppComponent& ClientSession::GetApp()
 	{
 		return m_application;
 	}
 
-	inline const BurgApp& ClientSession::GetApp() const
+	inline const BurgAppComponent& ClientSession::GetApp() const
 	{
 		return m_application;
 	}

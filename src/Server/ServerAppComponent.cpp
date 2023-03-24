@@ -2,13 +2,13 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Server/ServerApp.hpp>
-#include <thread>
+#include <Server/ServerAppComponent.hpp>
+#include <Nazara/Core/ApplicationBase.hpp>
 
 namespace bw
 {
-	ServerApp::ServerApp(int argc, char* argv[]) :
-	BurgApp(LogSide::Server, m_configFile),
+	ServerAppComponent::ServerAppComponent(Nz::ApplicationBase& app) :
+	BurgAppComponent(app, LogSide::Server, m_configFile),
 	m_configFile(*this)
 	{
 		if (!m_configFile.LoadFromFile("serverconfig.lua"))
@@ -34,7 +34,7 @@ namespace bw
 		matchSettings.maxPlayerCount = maxPlayerCount;
 		matchSettings.name = serverName;
 		matchSettings.port = serverPort;
-		matchSettings.tickDuration = 1.f / tickRate;
+		matchSettings.tickDuration = Nz::Time::Seconds(1.f / tickRate);
 
 		// Load map
 		if (!EndsWith(mapPath, ".bmap"))
@@ -56,40 +56,28 @@ namespace bw
 		m_match = std::make_unique<Match>(*this, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
 	}
 
-	int ServerApp::Run()
+	void ServerAppComponent::Update(Nz::Time elapsedTime)
 	{
-		m_running = true;
+		BurgAppComponent::Update(elapsedTime);
 
-		Nz::Clock updateClock;
-		Nz::UInt64 tickDuration = static_cast<Nz::UInt64>(m_match->GetTickDuration() * 1'000'000);
-
-		while (m_running)
+		if (!m_match->Update(elapsedTime))
 		{
-			BurgApp::Update();
-
-			Nz::UInt64 elapsedTime = updateClock.Restart();
-			if (!m_match->Update(elapsedTime / 1'000'000.f))
-				break;
-
-			if (tickDuration > elapsedTime)
-			{
-				// Since OS sleep is not that precise, let some time between the wakeup time and the tick
-				constexpr Nz::UInt64 wakeUpTime = 3'000;
-
-				Nz::UInt64 remainingTime = tickDuration - elapsedTime;
-				if (remainingTime > wakeUpTime)
-				{
-					Nz::UInt64 sleepTime = remainingTime - wakeUpTime;
-					std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime / 1'000));
-				}
-			}
+			GetApp().Quit();
+			return;
 		}
 
-		return 0;
-	}
-	
-	void ServerApp::Quit()
-	{
-		m_running = false;
+		Nz::Time tickDuration = m_match->GetTickDuration();
+		if (elapsedTime < tickDuration)
+		{
+			// Since OS sleep is not that precise, let some time between the wakeup time and the tick
+			constexpr Nz::Time wakeUpTime = Nz::Time::Milliseconds(3);
+
+			Nz::Time remainingTime = tickDuration - elapsedTime;
+			if (remainingTime > wakeUpTime)
+			{
+				Nz::Time sleepTime = remainingTime - wakeUpTime;
+				std::this_thread::sleep_for(sleepTime.AsDuration<std::chrono::milliseconds>());
+			}
+		}
 	}
 }

@@ -4,7 +4,6 @@ set_xmakever("2.5.6")
 option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
 
 set_policy("package.requires_lock", true)
-add_repositories("burgwar-repo xmake-repo")
 
 set_project("BurgWar")
 set_version("0.2.0")
@@ -220,8 +219,6 @@ target("BurgWarServer")
 
 	set_kind("binary")
 	add_rules("install_symbolfile", "install_metadata")
-
-	add_defines("NDK_SERVER")
 
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/Server/**.hpp", "src/Server/**.inl")

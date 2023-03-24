@@ -71,7 +71,7 @@ namespace bw
 			"GetLastForce", LuaFunction([&](Constraint& constraint)
 			{
 				float lastImpulse = constraint.GetLastImpulse();
-				return lastImpulse / m_match.GetTickDuration();
+				return lastImpulse / m_match.GetTickDuration().AsSeconds();
 			}),
 			"GetLastImpulse", LuaFunction(&Constraint::GetLastImpulse),
 			"GetMaxForce", LuaFunction(&Constraint::GetMaxForce),
@@ -311,7 +311,7 @@ namespace bw
 
 		library["GetSeconds"] = LuaFunction([this]()
 		{
-			return m_match.GetCurrentTime() / 1000.f;
+			return m_match.GetCurrentTime().AsSeconds();
 		});
 
 		library["GetTickDuration"] = LuaFunction([&]()
@@ -511,7 +511,7 @@ namespace bw
 	{
 		library["Create"] = LuaFunction([&](Nz::UInt64 time, sol::main_protected_function callback)
 		{
-			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + time, [this, callback = std::move(callback)]()
+			m_match.GetTimerManager().PushCallback(m_match.GetCurrentTime() + Nz::Time::Milliseconds(time), [this, callback = std::move(callback)]()
 			{
 				auto result = callback();
 				if (!result.valid())

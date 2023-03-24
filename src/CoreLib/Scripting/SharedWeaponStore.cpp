@@ -9,7 +9,7 @@
 #include <CoreLib/Components/ScriptComponent.hpp>
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
-#include <Nazara/Utils/CallOnExit.hpp>
+#include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <stdexcept>
@@ -49,7 +49,7 @@ namespace bw
 
 				auto& anim = animData.emplace_back();
 				anim.animationName = animTable[1];
-				anim.duration = static_cast<std::chrono::milliseconds>(static_cast<long long>(double(animTable[2]) * 1000.0));
+				anim.duration = Nz::Time::Seconds(static_cast<double>(animTable[2]));
 			}
 
 			weapon.animations = std::make_shared<AnimationStore>(std::move(animData));
@@ -60,7 +60,7 @@ namespace bw
 
 	bool SharedWeaponStore::InitializeWeapon(const ScriptedWeapon& weaponClass, entt::handle entity, entt::handle parent)
 	{
-		entity.emplace<CooldownComponent>(weaponClass.cooldown);
+		entity.emplace<CooldownComponent>(Nz::Time::Milliseconds(weaponClass.cooldown));
 
 		entity.emplace<WeaponComponent>(parent, weaponClass.attackMode);
 

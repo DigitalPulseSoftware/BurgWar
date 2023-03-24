@@ -22,7 +22,7 @@
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ServerEntityStore.hpp>
 #include <CoreLib/Scripting/ServerWeaponStore.hpp>
-#include <Nazara/Utils/Bitset.hpp>
+#include <NazaraUtils/Bitset.hpp>
 #include <Nazara/Core/ByteArray.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
@@ -34,7 +34,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 	class Mod;
 	class ServerGamemode;
 	class ServerScriptingLibrary;
@@ -58,7 +58,7 @@ namespace bw
 			struct MatchSettings;
 			struct ModSettings;
 
-			Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings);
+			Match(BurgAppComponent& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings);
 			Match(const Match&) = delete;
 			Match(Match&&) = delete;
 			~Match();
@@ -77,7 +77,7 @@ namespace bw
 			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func, bool onlyReady = true);
 
-			inline BurgApp& GetApp();
+			inline BurgAppComponent& GetApp();
 			inline const std::shared_ptr<Nz::VirtualDirectory>& GetAssetDirectory() const;
 			inline AssetStore& GetAssetStore();
 			bool GetClientAsset(const std::string& filePath, const ClientAsset** clientScriptData);
@@ -122,7 +122,7 @@ namespace bw
 			entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const override;
 			EntityId RetrieveUniqueIdByEntity(entt::handle entity) const override;
 
-			bool Update(float elapsedTime);
+			bool Update(Nz::Time elapsedTime);
 
 			inline void Quit();
 
@@ -147,11 +147,11 @@ namespace bw
 				std::size_t maxPlayerCount;
 				std::string name;
 				std::string description;
+				Nz::Time tickDuration;
 				Nz::UInt16 port = 0;
 				Map map;
 				bool sleepWhenEmpty = true;
 				bool registerToMasterServer = true;
-				float tickDuration;
 			};
 
 			struct ModSettings
@@ -182,7 +182,7 @@ namespace bw
 				Debug() = default;
 
 				Nz::UdpSocket socket;
-				Nz::UInt64 lastBroadcastTime = 0;
+				Nz::Time lastBroadcastTime = Nz::Time::Zero();
 			};
 
 			struct Entity
@@ -213,8 +213,8 @@ namespace bw
 			tsl::hopscotch_map<EntityId, Entity> m_entitiesByUniqueId;
 			Nz::Bitset<> m_freePlayerId;
 			EntityId m_nextUniqueId;
-			Nz::UInt64 m_lastPingUpdate;
-			BurgApp& m_app;
+			Nz::Time m_lastPingUpdate;
+			BurgAppComponent& m_app;
 			GamemodeSettings m_gamemodeSettings;
 			Map m_map;
 			MatchSessions m_sessions;

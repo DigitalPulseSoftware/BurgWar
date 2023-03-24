@@ -272,7 +272,7 @@ namespace bw
 				EntityPlayAnimation event;
 				event.animId = anim->GetAnimId();
 				event.entityId = networkId;
-				event.startTime = anim->GetStartTime();
+				event.startTime = anim->GetStartTime().AsMicroseconds();
 
 				OnEntityPlayAnimation(this, event);
 			});
@@ -330,7 +330,7 @@ namespace bw
 		m_entitySlots.erase(it);
 	}
 
-	void NetworkSyncSystem::Update(float /*elapsedTime*/)
+	void NetworkSyncSystem::Update(Nz::Time /*elapsedTime*/)
 	{
 		if (!m_healthUpdateEntities.empty())
 		{

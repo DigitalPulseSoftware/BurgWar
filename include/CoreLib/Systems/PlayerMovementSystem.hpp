@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_PLAYERMOVEMENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <entt/entt.hpp>
 #include <unordered_set>
 #include <vector>
@@ -22,7 +23,7 @@ namespace bw
 			PlayerMovementSystem(entt::registry& registry);
 			~PlayerMovementSystem();
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 		private:
 			void OnMovementDestroy(entt::registry& registry, entt::entity entity);

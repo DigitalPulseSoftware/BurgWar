@@ -128,7 +128,7 @@ namespace bw
 		/*std::shared_ptr<Nz::Sprite> lostHealthBar = Nz::Sprite::New();
 		lostHealthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
 		lostHealthBar->SetSize(healthData.spriteWidth, 10);
-		lostHealthBar->SetColor(Nz::Color::Red);
+		lostHealthBar->SetColor(Nz::Color::Red());
 		lostHealthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, lostHealthBar->GetSize().y));
 
 		std::shared_ptr<Nz::Sprite> healthBar = Nz::Sprite::New();

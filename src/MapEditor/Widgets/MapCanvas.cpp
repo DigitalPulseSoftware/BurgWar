@@ -497,7 +497,7 @@ namespace bw
 			layer.TickUpdate(GetTickDuration());
 	}
 
-	void MapCanvas::OnUpdate(float elapsedTime)
+	void MapCanvas::OnUpdate(Nz::Time elapsedTime)
 	{
 		Update(elapsedTime);
 	

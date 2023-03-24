@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_TIMERMANAGER_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 #include <functional>
 #include <vector>
 
@@ -26,15 +26,15 @@ namespace bw
 
 			inline void Clear();
 
-			inline void PushCallback(Nz::UInt64 expirationTime, Callback finish);
+			inline void PushCallback(Nz::Time expirationTime, Callback finish);
 
-			inline void Update(Nz::UInt64 now);
+			inline void Update(Nz::Time now);
 
 		private:
 			struct Timer
 			{
 				Callback callback;
-				Nz::UInt64 expirationTime;
+				Nz::Time expirationTime;
 			};
 
 			std::vector<Timer> m_pendingTimers;

@@ -9,7 +9,7 @@
 
 #include <CoreLib/SessionManager.hpp>
 #include <ClientLib/Export.hpp>
-#include <Nazara/Utils/MemoryPool.hpp>
+#include <NazaraUtils/MemoryPool.hpp>
 #include <optional>
 #include <vector>
 

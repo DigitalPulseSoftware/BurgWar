@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/ClientSession.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/NetworkSessionBridge.hpp>
 #include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>

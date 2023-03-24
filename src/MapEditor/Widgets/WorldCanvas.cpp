@@ -13,7 +13,7 @@ namespace bw
 {
 	WorldCanvas::WorldCanvas(QWidget* parent) :
 	NazaraCanvas(parent),
-	m_backgroundColor(Nz::Color::Black),
+	m_backgroundColor(Nz::Color::Black()),
 	m_camera(m_world, this, true)
 	{
 		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
@@ -86,7 +86,7 @@ namespace bw
 		m_world.GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(color));
 	}
 
-	void WorldCanvas::OnUpdate(float elapsedTime)
+	void WorldCanvas::OnUpdate(Nz::Time elapsedTime)
 	{
 		SetActive(true);
 		m_world.Update(elapsedTime);

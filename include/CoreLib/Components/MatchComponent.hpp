@@ -10,7 +10,7 @@
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 
 namespace bw
 {

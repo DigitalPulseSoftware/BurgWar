@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_COMPONENTS_BASECOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <entt/entt.hpp>
 
 namespace bw

@@ -31,13 +31,13 @@ namespace bw
 		return m_animationStore;
 	}
 
-	inline Nz::UInt64 AnimationComponent::GetEndTime() const
+	inline Nz::Time AnimationComponent::GetEndTime() const
 	{
 		assert(IsPlaying());
 		return m_playingAnimation->endTime;
 	}
 
-	inline Nz::UInt64 AnimationComponent::GetStartTime() const
+	inline Nz::Time AnimationComponent::GetStartTime() const
 	{
 		assert(IsPlaying());
 		return m_playingAnimation->startTime;

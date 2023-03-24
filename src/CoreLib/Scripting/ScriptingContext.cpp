@@ -6,7 +6,7 @@
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Utils.hpp>
-#include <Nazara/Utils/CallOnExit.hpp>
+#include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
 
@@ -43,7 +43,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					return LoadFile(file, arg);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					return tl::unexpected(file.generic_u8string() + " is a directory, expected a file");
@@ -78,7 +78,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					return LoadFile(file, arg, Async{});
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
@@ -108,7 +108,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
@@ -135,7 +135,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
@@ -218,27 +218,7 @@ namespace bw
 		return (!m_availableThreads.empty()) ? PopThread() : AllocateThread();
 	}
 
-	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry)
-	{
-		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data), entry.size));
-	}
-
-	auto ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::DataPointerEntry& entry, Async) -> std::optional<FileLoadCoroutine>
-	{
-		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data), entry.size), Async{});
-	}
-
-	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry)
-	{
-		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data.data()), entry.data.size()));
-	}
-
-	auto ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileContentEntry& entry, Async) -> std::optional<FileLoadCoroutine>
-	{
-		return LoadFile(std::move(path), std::string_view(reinterpret_cast<const char*>(entry.data.data()), entry.data.size()), Async{});
-	}
-
-	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry)
+	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry)
 	{
 		std::string fileContent = ReadFile(path, entry);
 		if (fileContent.empty())
@@ -247,7 +227,7 @@ namespace bw
 		return LoadFile(std::move(path), std::string_view(fileContent));
 	}
 
-	auto ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::PhysicalFileEntry& entry, Async) -> std::optional<FileLoadCoroutine>
+	auto ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry, Async) -> std::optional<FileLoadCoroutine>
 	{
 		std::string fileContent = ReadFile(path, entry);
 		if (fileContent.empty())
@@ -308,7 +288,7 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry> || std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry> || std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					return LoadFile(entryPath, arg);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
@@ -325,17 +305,17 @@ namespace bw
 		});
 	}
 
-	std::string ScriptingContext::ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::PhysicalFileEntry& entry)
+	std::string ScriptingContext::ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::FileEntry& entry)
 	{
-		Nz::File file(entry.filePath.generic_u8string());
-		if (!file.Open(Nz::OpenMode::ReadOnly))
+		Nz::UInt64 fileSize = entry.stream->GetSize();
+		if (fileSize == 0)
 		{
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to open file", path.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: unhandled streaming", path.generic_u8string());
 			return {};
 		}
 
-		std::string content(file.GetSize(), '\0');
-		if (file.Read(content.data(), content.size()) != content.size())
+		std::string content(fileSize, '\0');
+		if (entry.stream->Read(&content[0], fileSize) != fileSize)
 		{
 			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", path.generic_u8string());
 			return {};

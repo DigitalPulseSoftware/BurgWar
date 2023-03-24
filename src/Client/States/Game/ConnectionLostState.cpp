@@ -15,11 +15,11 @@ namespace bw
 	m_timer(5.f)
 	{
 		Nz::LabelWidget* labelWidget = CreateWidget<Nz::LabelWidget>();
-		labelWidget->UpdateText(Nz::SimpleTextDrawer::Draw("Connection lost.", 36, Nz::TextStyle_Regular, Nz::Color::Red));
+		labelWidget->UpdateText(Nz::SimpleTextDrawer::Draw("Connection lost.", 36, Nz::TextStyle_Regular, Nz::Color::Red()));
 		labelWidget->Center();
 	}
 
-	bool ConnectionLostState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool ConnectionLostState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

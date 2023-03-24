@@ -231,7 +231,7 @@ namespace bw
 		return callbackData.callbackId;
 	}
 
-	inline void ScriptComponent::SetNextTick(float seconds)
+	inline void ScriptComponent::SetNextTick(Nz::Time seconds)
 	{
 		m_timeBeforeTick = seconds;
 	}
@@ -276,9 +276,9 @@ namespace bw
 		m_element = std::move(element);
 	}
 
-	inline bool ScriptComponent::CanTriggerTick(float elapsedTime)
+	inline bool ScriptComponent::CanTriggerTick(Nz::Time elapsedTime)
 	{
 		m_timeBeforeTick -= elapsedTime;
-		return m_timeBeforeTick < 0.f;
+		return m_timeBeforeTick < Nz::Time::Zero();
 	}
 }

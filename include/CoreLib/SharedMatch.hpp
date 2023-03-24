@@ -18,7 +18,7 @@
 
 namespace bw
 {
-	class BurgApp;
+	class BurgAppComponent;
 	class ScriptingContext;
 	class SharedEntityStore;
 	class SharedLayer;
@@ -28,7 +28,7 @@ namespace bw
 	class BURGWAR_CORELIB_API SharedMatch
 	{
 		public:
-			SharedMatch(BurgApp& app, LogSide side, std::string matchName, float tickDuration);
+			SharedMatch(BurgAppComponent& app, LogSide side, std::string matchName, Nz::Time tickDuration);
 			SharedMatch(const SharedMatch&) = delete;
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
@@ -36,7 +36,7 @@ namespace bw
 			virtual void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) = 0;
 
 			inline Nz::UInt64 GetCurrentTick() const;
-			inline Nz::UInt64 GetCurrentTime() const;
+			inline Nz::Time GetCurrentTime() const;
 			virtual SharedEntityStore& GetEntityStore() = 0;
 			virtual const SharedEntityStore& GetEntityStore() const = 0;
 			inline MatchLogger& GetLogger();
@@ -50,7 +50,7 @@ namespace bw
 			inline ScriptHandlerRegistry& GetScriptPacketHandlerRegistry();
 			inline const ScriptHandlerRegistry& GetScriptPacketHandlerRegistry() const;
 			virtual std::shared_ptr<const SharedGamemode> GetSharedGamemode() const = 0;
-			inline float GetTickDuration() const;
+			inline Nz::Time GetTickDuration() const;
 			inline TimerManager& GetTimerManager();
 			virtual SharedWeaponStore& GetWeaponStore() = 0;
 			virtual const SharedWeaponStore& GetWeaponStore() const = 0;
@@ -58,7 +58,7 @@ namespace bw
 			virtual entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const = 0;
 			virtual EntityId RetrieveUniqueIdByEntity(entt::handle entity) const = 0;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			SharedMatch& operator=(const SharedMatch&) = delete;
 			SharedMatch& operator=(SharedMatch&&) = delete;
@@ -71,12 +71,10 @@ namespace bw
 			MatchLogger m_logger;
 			ScriptHandlerRegistry m_scriptPacketHandler;
 			TimerManager m_timerManager;
+			Nz::Time m_currentTime;
+			Nz::Time m_tickTimer;
+			Nz::Time m_tickDuration;
 			Nz::UInt64 m_currentTick;
-			Nz::UInt64 m_currentTime;
-			float m_floatingTime;
-			float m_maxTickTimer;
-			float m_tickDuration;
-			float m_tickTimer;
 	};
 }
 

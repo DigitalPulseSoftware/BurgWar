@@ -8,9 +8,9 @@
 
 namespace bw
 {
-	void AnimationSystem::Update(float /*elapsedTime*/)
+	void AnimationSystem::Update(Nz::Time /*elapsedTime*/)
 	{
-		Nz::UInt64 now = m_match.GetCurrentTime();
+		Nz::Time now = m_match.GetCurrentTime();
 
 		auto view = m_registry.view<AnimationComponent>();
 		for (entt::entity entity : view)

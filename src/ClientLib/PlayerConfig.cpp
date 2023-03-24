@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	PlayerConfig::PlayerConfig(BurgApp& app) :
+	PlayerConfig::PlayerConfig(BurgAppComponent& app) :
 	ConfigFile(app)
 	{
 		RegisterStringOption("JoinServer.Address", "localhost");

@@ -16,8 +16,8 @@ namespace bw
 	class BURGWAR_CORELIB_API MatchLogger : public Logger
 	{
 		public:
-			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide);
-			inline MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent);
+			inline MatchLogger(BurgAppComponent& app, SharedMatch& sharedMatch, LogSide logSide);
+			inline MatchLogger(BurgAppComponent& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent);
 			MatchLogger(const MatchLogger&) = delete;
 			MatchLogger(MatchLogger&&) noexcept = default;
 			~MatchLogger() = default;

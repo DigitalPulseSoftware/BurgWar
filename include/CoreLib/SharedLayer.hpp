@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <Nazara/Core/Systems/SystemGraph.hpp>
+#include <Nazara/Core/EnttSystemGraph.hpp>
 #include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
 #include <entt/entt.hpp>
 
@@ -33,18 +33,18 @@ namespace bw
 			inline entt::registry& GetWorld();
 			inline const entt::registry& GetWorld() const;
 
-			virtual void TickUpdate(float elapsedTime);
+			virtual void TickUpdate(Nz::Time elapsedTime);
 
 			SharedLayer& operator=(const SharedLayer&) = delete;
 			SharedLayer& operator=(SharedLayer&&) = delete;
 
 		protected:
-			inline Nz::SystemGraph& GetSystemGraph();
+			inline Nz::EnttSystemGraph& GetSystemGraph();
 
 		private:
 			SharedMatch& m_match;
 			entt::registry m_registry;
-			Nz::SystemGraph m_systemGraph;
+			Nz::EnttSystemGraph m_systemGraph;
 			LayerIndex m_layerIndex;
 	};
 }

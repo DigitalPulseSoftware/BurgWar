@@ -14,9 +14,9 @@
 #include <CoreLib/Protocol/Packets.hpp>
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
-#include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Utils/Flags.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/Flags.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <tsl/hopscotch_map.h>
 #include <tsl/hopscotch_set.h>
 #include <limits>

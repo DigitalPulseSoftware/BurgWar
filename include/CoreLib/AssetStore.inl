@@ -39,20 +39,10 @@ namespace bw
 			{
 				using T = std::decay_t<decltype(arg)>;
 
-				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DataPointerEntry>)
+				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from memory");
-					return (resource = ResourceType::LoadFromMemory(arg.data, arg.size, params)) != nullptr;
-				}
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileContentEntry>)
-				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from memory");
-					return (resource = ResourceType::LoadFromMemory(arg.data.data(), arg.data.size(), params)) != nullptr;
-				}
-				else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::PhysicalFileEntry>)
-				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.filePath.generic_u8string());
-					return (resource = ResourceType::LoadFromFile(arg.filePath.generic_u8string(), params)) != nullptr;
+					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath().generic_u8string());
+					return (resource = ResourceType::LoadFromStream(*arg.stream, params)) != nullptr;
 				}
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{

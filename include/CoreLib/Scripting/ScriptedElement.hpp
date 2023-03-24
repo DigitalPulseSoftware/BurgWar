@@ -11,7 +11,7 @@
 #include <CoreLib/Scripting/ElementEvents.hpp>
 #include <CoreLib/Scripting/ScriptedEvent.hpp>
 #include <CoreLib/Scripting/ScriptedProperty.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 #include <tsl/hopscotch_map.h>
 #include <sol/sol.hpp>
 #include <array>

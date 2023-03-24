@@ -6,13 +6,13 @@
 
 namespace bw
 {
-	inline MatchLogger::MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide) :
+	inline MatchLogger::MatchLogger(BurgAppComponent& app, SharedMatch& sharedMatch, LogSide logSide) :
 	Logger(app, logSide),
 	m_sharedMatch(sharedMatch)
 	{
 	}
 
-	inline MatchLogger::MatchLogger(BurgApp& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent) :
+	inline MatchLogger::MatchLogger(BurgAppComponent& app, SharedMatch& sharedMatch, LogSide logSide, const AbstractLogger& logParent) :
 	Logger(app, logSide, logParent),
 	m_sharedMatch(sharedMatch)
 	{

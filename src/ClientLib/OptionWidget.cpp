@@ -109,7 +109,7 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
-		option.optionWidget->SetTextColor(Nz::Color::Black);
+		option.optionWidget->SetTextColor(Nz::Color::Black());
 
 		option.optionWidget->SetCharacterFilter([](char32_t character)
 		{
@@ -143,7 +143,7 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
-		option.optionWidget->SetTextColor(Nz::Color::Black);
+		option.optionWidget->SetTextColor(Nz::Color::Black());
 		
 		option.optionWidget->SetCharacterFilter([](char32_t character)
 		{
@@ -177,7 +177,7 @@ namespace bw
 
 		option.optionWidget = Add<Ndk::TextAreaWidget>();
 		option.optionWidget->Resize({ 200.f, option.optionWidget->GetPreferredHeight() });
-		option.optionWidget->SetTextColor(Nz::Color::Black);
+		option.optionWidget->SetTextColor(Nz::Color::Black());
 		
 		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
 		{

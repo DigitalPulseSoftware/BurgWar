@@ -32,7 +32,7 @@ namespace bw
 			m_clientSession->Disconnect();
 	}
 
-	bool GameState::Update(Ndk::StateMachine& fsm, float elapsedTime)
+	bool GameState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

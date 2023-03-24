@@ -18,7 +18,7 @@ namespace bw
 	SharedLayer(match, layerIndex),
 	m_mapLayer(layerData)
 	{
-		Nz::SystemGraph& systemGraph = GetSystemGraph();
+		Nz::EnttSystemGraph& systemGraph = GetSystemGraph();
 		systemGraph.AddSystem<NetworkSyncSystem>(*this);
 
 		ResetEntities();

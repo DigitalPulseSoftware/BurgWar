@@ -27,7 +27,7 @@ namespace bw
 	}
 
 	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
-	BurgApp(side, configFile),
+	BurgAppComponent(side, configFile),
 	m_playerSettings(*this)
 	{
 		if (!m_playerSettings.LoadFromFile(PlayerSettingsFile))

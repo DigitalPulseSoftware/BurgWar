@@ -8,23 +8,24 @@
 #define BURGWAR_CORELIB_COMPONENTS_COOLDOWNCOMPONENT_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 
 namespace bw
 {
 	class BURGWAR_CORELIB_API CooldownComponent
 	{
 		public:
-			inline CooldownComponent(Nz::UInt32 cooldown);
+			inline CooldownComponent(Nz::Time cooldown);
 			CooldownComponent(const CooldownComponent&) = default;
 			~CooldownComponent() = default;
 
-			inline void SetNextTriggerTime(Nz::UInt64 time);
+			inline void SetNextTriggerTime(Nz::Time time);
 
-			inline bool Trigger(Nz::UInt64 currentTime);
+			inline bool Trigger(Nz::Time currentTime);
 
 		private:
-			Nz::UInt32 m_cooldown;
-			Nz::UInt64 m_nextTriggerTime;
+			Nz::Time m_cooldown;
+			Nz::Time m_nextTriggerTime;
 	};
 }
 

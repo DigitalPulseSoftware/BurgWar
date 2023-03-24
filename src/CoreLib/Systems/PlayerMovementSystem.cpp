@@ -27,7 +27,7 @@ namespace bw
 		m_movementDestroyConnection.release();
 	}
 	
-	void PlayerMovementSystem::Update(float /*elapsedTime*/)
+	void PlayerMovementSystem::Update(Nz::Time /*elapsedTime*/)
 	{
 		m_controllerObserver.each([&](entt::entity entity)
 		{

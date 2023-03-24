@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/WebRequestResult.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 #include <Nazara/Network/Enums.hpp>
 #include <tsl/hopscotch_map.h>
 #include <functional>

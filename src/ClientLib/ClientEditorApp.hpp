@@ -7,14 +7,14 @@
 #ifndef BURGWAR_CLIENTLIB_CLIENTEDITORAPP_HPP
 #define BURGWAR_CLIENTLIB_CLIENTEDITORAPP_HPP
 
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <ClientLib/PlayerConfig.hpp>
 
 namespace bw
 {
 	class SharedAppConfig;
 
-	class BURGWAR_CLIENTLIB_API ClientEditorApp : public BurgApp
+	class BURGWAR_CLIENTLIB_API ClientEditorApp : public BurgAppComponent
 	{
 		public:
 			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);

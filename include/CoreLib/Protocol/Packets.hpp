@@ -13,7 +13,7 @@
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Protocol/CompressedInteger.hpp>
 #include <CoreLib/Protocol/PacketSerializer.hpp>
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Box.hpp>

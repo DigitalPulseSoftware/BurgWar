@@ -16,7 +16,7 @@
 #include <CoreLib/Components/HealthComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Utils/MovablePtr.hpp>
+#include <NazaraUtils/MovablePtr.hpp>
 #include <tsl/hopscotch_map.h>
 #include <limits>
 #include <optional>

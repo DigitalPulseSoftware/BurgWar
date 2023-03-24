@@ -25,7 +25,7 @@ namespace bw
 		m_tickableEntities.erase(entity);
 	}
 
-	void TickCallbackSystem::Update(float elapsedTime)
+	void TickCallbackSystem::Update(Nz::Time elapsedTime)
 	{
 		for (entt::entity entity : m_scriptObserver)
 		{

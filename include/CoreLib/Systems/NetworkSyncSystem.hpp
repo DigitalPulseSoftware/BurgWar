@@ -15,8 +15,8 @@
 #include <CoreLib/Components/NetworkSyncComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
-#include <Nazara/Utils/Bitset.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <Nazara/Math/Angle.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <entt/entt.hpp>
@@ -59,7 +59,7 @@ namespace bw
 			inline void NotifyPhysicsUpdate(entt::entity entity);
 			inline void NotifyScaleUpdate(entt::entity entity);
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			NetworkSyncSystem& operator=(const NetworkSyncSystem&) = delete;
 

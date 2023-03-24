@@ -86,7 +86,7 @@ namespace bw
 		m_session->SendPacket(authPacket);
 	}
 
-	void PlayWindow::OnUpdate(float elapsedTime)
+	void PlayWindow::OnUpdate(Nz::Time elapsedTime)
 	{
 		NazaraCanvas::OnUpdate(elapsedTime);
 

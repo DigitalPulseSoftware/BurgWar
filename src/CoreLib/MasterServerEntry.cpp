@@ -24,12 +24,12 @@ namespace bw
 	{
 	}
 
-	void MasterServerEntry::Update(float elapsedTime)
+	void MasterServerEntry::Update(Nz::Time elapsedTime)
 	{
 		m_webService.Poll();
 
 		m_timeBeforeRefresh -= elapsedTime;
-		if (m_timeBeforeRefresh >= 0.f)
+		if (m_timeBeforeRefresh >= Nz::Time::Zero())
 			return;
 
 		if (!m_updateToken.empty())
@@ -134,7 +134,7 @@ namespace bw
 
 				bwLog(m_match.GetLogger(), LogLevel::Info, (refresh) ? "successfully refreshed server to {0}" : "successfully registered server to {0}", m_masterServerURL);
 				m_updateToken = std::move(updateToken);
-				m_timeBeforeRefresh = 30.f;
+				m_timeBeforeRefresh = Nz::Time::Seconds(30.f);
 				break;
 			}
 
@@ -144,7 +144,7 @@ namespace bw
 				{
 					bwLog(m_match.GetLogger(), LogLevel::Warning, "master server {0} rejected token, retrying to register server...", m_masterServerURL);
 					m_updateToken.clear();
-					m_timeBeforeRefresh = 1.f;
+					m_timeBeforeRefresh = Nz::Time::Seconds(1.f);
 					break;
 				}
 				else
@@ -172,7 +172,7 @@ namespace bw
 		request->SetJSonContent(serverData.dump());
 
 		m_webService.AddRequest(std::move(request));
-		m_timeBeforeRefresh = 15.f;
+		m_timeBeforeRefresh = Nz::Time::Seconds(15.f);
 	}
 
 	void MasterServerEntry::Register()
@@ -187,6 +187,6 @@ namespace bw
 		request->SetJSonContent(BuildServerInfo().dump());
 
 		m_webService.AddRequest(std::move(request));
-		m_timeBeforeRefresh = 15.f;
+		m_timeBeforeRefresh = Nz::Time::Seconds(15.f);
 	}
 }

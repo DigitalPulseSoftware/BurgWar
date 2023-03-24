@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Sound.hpp>
-#include <Nazara/Utils/Signal.hpp>
+#include <NazaraUtils/Signal.hpp>
 #include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <vector>
@@ -26,7 +26,7 @@ namespace bw
 			SoundSystem(entt::registry& registry, ConfigFile& playerSettings);
 			~SoundSystem() = default;
 
-			void Update(float elapsedTime);
+			void Update(Nz::Time elapsedTime);
 
 			static constexpr Nz::UInt32 InvalidSoundId = 0;
 

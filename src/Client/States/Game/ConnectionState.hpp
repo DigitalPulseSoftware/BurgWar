@@ -44,7 +44,7 @@ namespace bw
 			void ProcessNextAddress(const ServerName& name);
 			void ProcessNextAddress(const Nz::IpAddress& address);
 			void ProcessNextAddress(LocalSessionManager* sessionManager);
-			bool Update(Ndk::StateMachine& fsm, float elapsedTime) override;
+			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			struct ResolvingData
 			{

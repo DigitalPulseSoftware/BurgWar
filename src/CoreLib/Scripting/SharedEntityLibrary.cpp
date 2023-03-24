@@ -17,7 +17,7 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp> 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
-#include <Nazara/Utils/CallOnExit.hpp>
+#include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>

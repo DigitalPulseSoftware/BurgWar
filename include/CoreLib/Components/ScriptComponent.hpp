@@ -13,6 +13,7 @@
 #include <CoreLib/Scripting/ElementEvents.hpp>
 #include <CoreLib/Scripting/ScriptedElement.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <array>
 #include <functional>
 #include <optional>
@@ -52,7 +53,7 @@ namespace bw
 			inline std::size_t RegisterCallback(ElementEvent event, sol::main_protected_function callback, bool async);
 			inline std::size_t RegisterCallbackCustom(std::size_t eventIndex, sol::main_protected_function callback, bool async);
 
-			inline void SetNextTick(float seconds);
+			inline void SetNextTick(Nz::Time seconds);
 
 			inline bool UnregisterCallback(ElementEvent event, std::size_t callbackId);
 			inline bool UnregisterCallbackCustom(std::size_t eventIndex, std::size_t callbackId);
@@ -66,7 +67,7 @@ namespace bw
 			static constexpr auto in_place_delete = true;
 
 		private:
-			inline bool CanTriggerTick(float elapsedTime);
+			inline bool CanTriggerTick(Nz::Time elapsedTime);
 
 			std::array<std::vector<ScriptedElement::Callback>, ElementEventCount> m_eventCallbacks;
 			std::vector<std::vector<ScriptedElement::Callback>> m_customEventCallbacks;
@@ -76,7 +77,7 @@ namespace bw
 			std::size_t m_nextCallbackId;
 			sol::table m_entityTable;
 			PropertyValueMap m_properties;
-			float m_timeBeforeTick;
+			Nz::Time m_timeBeforeTick;
 	};
 }
 

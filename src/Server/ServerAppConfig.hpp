@@ -11,12 +11,12 @@
 
 namespace bw
 {
-	class ServerApp;
+	class ServerAppComponent;
 
 	class ServerAppConfig : public SharedAppConfig
 	{
 		public:
-			ServerAppConfig(ServerApp& app);
+			ServerAppConfig(ServerAppComponent& app);
 			~ServerAppConfig() = default;
 	};
 }

@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_EXPORT_HPP
 #define BURGWAR_CLIENTLIB_EXPORT_HPP
 
-#include <Nazara/Prerequisites.hpp>
+#include <NazaraUtils/Prerequisites.hpp>
 
 #ifdef BURGWAR_CLIENTLIB_STATIC
     #define BURGWAR_CLIENTLIB_API

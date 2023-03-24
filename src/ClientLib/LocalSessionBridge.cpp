@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/LocalSessionBridge.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Match.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 
@@ -15,7 +15,7 @@ namespace bw
 	m_sessionManager(sessionManager),
 	m_isServer(isServer)
 	{
-		BurgApp& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
+		BurgAppComponent& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
 		m_lastReceiveTime = app.GetAppTime();
 
 		m_sessionInfo.ping = 0;
@@ -42,7 +42,7 @@ namespace bw
 
 	void LocalSessionBridge::HandleIncomingPacket(Nz::NetPacket& packet)
 	{
-		BurgApp& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
+		BurgAppComponent& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
 		m_lastReceiveTime = app.GetAppTime();
 
 		m_sessionInfo.totalByteReceived += packet.GetDataSize();
@@ -53,7 +53,7 @@ namespace bw
 
 	void LocalSessionBridge::QueryInfo(std::function<void(const SessionInfo& info)> callback) const
 	{
-		BurgApp& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
+		BurgAppComponent& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
 
 		m_sessionInfo.timeSinceLastReceive = static_cast<Nz::UInt32>(app.GetAppTime() - m_lastReceiveTime);
 

@@ -12,7 +12,7 @@ namespace bw
 		return m_currentTick;
 	}
 
-	inline Nz::UInt64 SharedMatch::GetCurrentTime() const
+	inline Nz::Time SharedMatch::GetCurrentTime() const
 	{
 		return m_currentTime;
 	}
@@ -47,7 +47,7 @@ namespace bw
 		return m_scriptPacketHandler;
 	}
 
-	inline float SharedMatch::GetTickDuration() const
+	inline Nz::Time SharedMatch::GetTickDuration() const
 	{
 		return m_tickDuration;
 	}

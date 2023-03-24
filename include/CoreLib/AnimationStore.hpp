@@ -8,8 +8,8 @@
 #define BURGWAR_CORELIB_ANIMATIONSTORE_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <tsl/hopscotch_map.h>
-#include <chrono>
 #include <limits>
 #include <vector>
 
@@ -31,7 +31,7 @@ namespace bw
 			struct AnimationData
 			{
 				std::string animationName;
-				std::chrono::milliseconds duration;
+				Nz::Time duration;
 			};
 
 			static constexpr std::size_t InvalidId = std::numeric_limits<std::size_t>::max();

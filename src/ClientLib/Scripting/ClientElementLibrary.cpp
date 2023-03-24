@@ -186,7 +186,7 @@ namespace bw
 			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("OutlineColor", std::nullopt); colorParameter)
 				outlineColor = colorParameter.value();
 			else
-				outlineColor = Nz::Color::Black;
+				outlineColor = Nz::Color::Black();
 
 			/*Nz::FontRef font;
 			if (!fontName.empty())

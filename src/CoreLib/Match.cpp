@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Match.hpp>
-#include <CoreLib/BurgApp.hpp>
+#include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/MatchClientSession.hpp>
 #include <CoreLib/MatchClientVisibility.hpp>
@@ -22,6 +22,7 @@
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
+#include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
@@ -31,11 +32,11 @@
 
 namespace bw
 {
-	Match::Match(BurgApp& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings) :
+	Match::Match(BurgAppComponent& app, MatchSettings matchSettings, GamemodeSettings gamemodeSettings, ModSettings modSettings) :
 	SharedMatch(app, LogSide::Server, matchSettings.name, matchSettings.tickDuration),
 	m_maxPlayerCount(matchSettings.maxPlayerCount),
 	m_nextUniqueId(matchSettings.map.GetFreeUniqueId()),
-	m_lastPingUpdate(0),
+	m_lastPingUpdate(Nz::Time::Zero()),
 	m_app(app),
 	m_gamemodeSettings(std::move(gamemodeSettings)),
 	m_map(std::move(matchSettings.map)),
@@ -278,10 +279,12 @@ namespace bw
 
 		bool found = m_assetDirectory->GetEntry(assetPath, [&](const Nz::VirtualDirectory::Entry& entry)
 		{
-			if (!std::holds_alternative<Nz::VirtualDirectory::PhysicalFileEntry>(entry))
+			if (!std::holds_alternative<Nz::VirtualDirectory::FileEntry>(entry))
 				throw std::runtime_error(assetPath + " is not a file");
 
-			const std::filesystem::path& filepath = std::get<Nz::VirtualDirectory::PhysicalFileEntry>(entry).filePath;
+			std::filesystem::path filepath = std::get<Nz::VirtualDirectory::FileEntry>(entry).stream->GetPath();
+			if (filepath.empty())
+				throw std::runtime_error(assetPath + " is not a file");
 
 			Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
 			Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath.generic_u8string());
@@ -353,11 +356,11 @@ namespace bw
 	{
 		const std::string& assetDirectory = m_app.GetConfig().GetStringValue("Resources.AssetDirectory");
 
-		m_assetDirectory = std::make_shared<Nz::VirtualDirectory>(assetDirectory);
+		m_assetDirectory = std::make_shared<Nz::VirtualDirectory>(std::make_shared<Nz::VirtualDirectoryFilesystemResolver>(assetDirectory));
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [assetPath, physicalPath] : modPtr->GetAssets())
-				m_assetDirectory->StoreFile(assetPath, physicalPath);
+				m_assetDirectory->StoreFile(assetPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
 		}
 
 		if (!m_assetStore)
@@ -425,15 +428,15 @@ namespace bw
 
 		const std::string& scriptFolder = m_app.GetConfig().GetStringValue("Resources.ScriptDirectory");
 
-		m_scriptDirectory = std::make_shared<Nz::VirtualDirectory>(scriptFolder);
+		m_scriptDirectory = std::make_shared<Nz::VirtualDirectory>(std::make_shared<Nz::VirtualDirectoryFilesystemResolver>(scriptFolder));
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [scriptPath, physicalPath] : modPtr->GetScripts())
-				m_scriptDirectory->StoreFile(scriptPath, physicalPath);
+				m_scriptDirectory->StoreFile(scriptPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
 		}
 
 		for (const auto& mapScript : m_map.GetScripts())
-			m_scriptDirectory->StoreFile(mapScript.filepath, mapScript.content);
+			m_scriptDirectory->StoreFile(mapScript.filepath, mapScript.content.data(), mapScript.content.size());
 
 		if (!m_scriptingContext)
 		{
@@ -638,7 +641,7 @@ namespace bw
 		return matchComponent->GetUniqueId();
 	}
 
-	bool Match::Update(float elapsedTime)
+	bool Match::Update(Nz::Time elapsedTime)
 	{
 		m_sessions.Poll();
 
@@ -652,15 +655,15 @@ namespace bw
 
 		SharedMatch::Update(elapsedTime);
 
-		Nz::UInt64 appTime = m_app.GetAppTime();
-		if (appTime - m_lastPingUpdate > 1000)
+		Nz::Time appTime = m_app.GetAppTime();
+		if (appTime - m_lastPingUpdate > Nz::Time::Second())
 		{
 			SendPingUpdate();
 			m_lastPingUpdate = appTime;
 		}
 
 
-		if (m_debug && appTime - m_debug->lastBroadcastTime > 1000 / 60)
+		if (m_debug && appTime - m_debug->lastBroadcastTime > Nz::Time::TickDuration(60))
 		{
 			m_debug->lastBroadcastTime = m_app.GetAppTime();
 
@@ -736,7 +739,7 @@ namespace bw
 		const Map& mapData = m_terrain->GetMap();
 
 		m_matchData.gamemode = m_gamemodeSettings.name;
-		m_matchData.tickDuration = GetTickDuration();
+		m_matchData.tickDuration = GetTickDuration().AsSeconds();
 
 		m_matchData.layers.clear();
 		m_matchData.layers.reserve(mapData.GetLayerCount());
@@ -830,7 +833,7 @@ namespace bw
 
 	void Match::OnTick(bool lastTick)
 	{
-		float elapsedTime = GetTickDuration();
+		Nz::Time elapsedTime = GetTickDuration();
 
 		m_sessions.ForEachSession([&](MatchClientSession& session)
 		{
