@@ -9,8 +9,8 @@
 #include <CoreLib/Scripting/ElementEventConnection.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
-//#include <NDK/Components/LifetimeComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components.hpp>
+#include <Nazara/Utility/Components.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -147,7 +147,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			//entity->AddComponent<Ndk::LifetimeComponent>(lifetime);
+			entity.emplace<Nz::LifetimeComponent>(Nz::Time::Seconds(lifetime));
 		});
 
 		elementMetatable["SetScale"] = LuaFunction([&](const sol::table& entityTable, float scale)

@@ -53,7 +53,7 @@ namespace bw
 	}
 
 	EditorWindow::EditorWindow(int argc, char* argv[]) :
-	ClientEditorApp(argc, argv, LogSide::Editor, m_configFile),
+	ClientEditorAppComponent(argc, argv, LogSide::Editor, m_configFile),
 	m_entityInfoDialog(nullptr),
 	m_canvas(nullptr),
 	m_playWindow(nullptr),

@@ -18,7 +18,7 @@
 namespace bw
 {
 	ClientApp::ClientApp(int argc, char* argv[]) :
-	ClientEditorApp(argc, argv, LogSide::Client, m_configFile),
+	ClientEditorAppComponent(argc, argv, LogSide::Client, m_configFile),
 	m_stateMachine(nullptr),
 	m_configFile(*this),
 	m_networkReactors(GetLogger())
@@ -74,7 +74,7 @@ namespace bw
 
 		camera2D->AddComponent<Ndk::NodeComponent>();
 
-		Nz::EventHandler& eventHandler = m_mainWindow->GetEventHandler();
+		Nz::WindowEventHandler& eventHandler = m_mainWindow->GetEventHandler();
 
 		m_stateData = std::make_shared<StateData>();
 		m_stateData->app = this;
@@ -91,13 +91,13 @@ namespace bw
 
 			versionLabel->SetPosition(m_stateData->canvas->GetWidth() - versionLabel->GetWidth(), m_stateData->canvas->GetHeight() - versionLabel->GetHeight());
 
-			eventHandler.OnResized.Connect([=](const Nz::EventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
+			eventHandler.OnResized.Connect([=](const Nz::WindowEventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
 			{
 				versionLabel->SetPosition(sizeEvent.width - versionLabel->GetWidth(), sizeEvent.height - versionLabel->GetHeight());
 			});
 		}
 
-		eventHandler.OnResized.Connect([&](const Nz::EventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
+		eventHandler.OnResized.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
 		{
 			m_stateData->canvas->Resize(Nz::Vector2f(Nz::Vector2ui(sizeEvent.width, sizeEvent.height)));
 		});

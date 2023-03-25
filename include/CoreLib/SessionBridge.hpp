@@ -10,6 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/PlayerCommandStore.hpp>
 #include <NazaraUtils/Signal.hpp>
+#include <Nazara/Core/Time.hpp>
 
 namespace bw
 {
@@ -44,8 +45,8 @@ namespace bw
 
 			struct SessionInfo
 			{
+				Nz::Time timeSinceLastReceive;
 				Nz::UInt32 ping;
-				Nz::UInt32 timeSinceLastReceive;
 				Nz::UInt32 totalPacketReceived;
 				Nz::UInt32 totalPacketLost;
 				Nz::UInt32 totalPacketSent;

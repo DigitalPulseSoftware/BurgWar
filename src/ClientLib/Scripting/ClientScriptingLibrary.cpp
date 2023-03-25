@@ -15,8 +15,8 @@
 #include <ClientLib/Scripting/Music.hpp>
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Texture.hpp>
-#include <Nazara/Graphics/ParticleFunctionRenderer.hpp>
-#include <NDK/Components/ParticleGroupComponent.hpp>
+//#include <Nazara/Graphics/ParticleFunctionRenderer.hpp>
+//#include <NDK/Components/ParticleGroupComponent.hpp>
 
 namespace bw
 {

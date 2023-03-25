@@ -46,9 +46,9 @@ namespace bw
 		Nz::LabelWidget* gamemodeLabel = gamemodeLayout->Add<Nz::LabelWidget>();
 		gamemodeLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Gamemode: ", 24));
 
-		m_gamemodeArea = gamemodeLayout->Add<Ndk::TextAreaWidget>();
+		m_gamemodeArea = gamemodeLayout->Add<Nz::TextAreaWidget>();
 		m_gamemodeArea->EnableBackground(true);
-		m_gamemodeArea->SetBackgroundColor(Nz::Color::White);
+		m_gamemodeArea->SetBackgroundColor(Nz::Color::White());
 		m_gamemodeArea->SetTextColor(Nz::Color::Black());
 		m_gamemodeArea->SetMaximumHeight(m_gamemodeArea->GetMinimumHeight());
 
@@ -57,9 +57,9 @@ namespace bw
 		Nz::LabelWidget* mapLabel = mapLayout->Add<Nz::LabelWidget>();
 		mapLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Map: ", 24));
 
-		m_mapArea = mapLayout->Add<Ndk::TextAreaWidget>();
+		m_mapArea = mapLayout->Add<Nz::TextAreaWidget>();
 		m_mapArea->EnableBackground(true);
-		m_mapArea->SetBackgroundColor(Nz::Color::White);
+		m_mapArea->SetBackgroundColor(Nz::Color::White());
 		m_mapArea->SetTextColor(Nz::Color::Black());
 		m_mapArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
@@ -68,9 +68,9 @@ namespace bw
 		Nz::LabelWidget* portLabel = portLayout->Add<Nz::LabelWidget>();
 		portLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Port: ", 24));
 
-		m_portArea = portLayout->Add<Ndk::TextAreaWidget>();
+		m_portArea = portLayout->Add<Nz::TextAreaWidget>();
 		m_portArea->EnableBackground(true);
-		m_portArea->SetBackgroundColor(Nz::Color::White);
+		m_portArea->SetBackgroundColor(Nz::Color::White());
 		m_portArea->SetTextColor(Nz::Color::Black());
 		m_portArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 		m_portArea->SetCharacterFilter([](Nz::UInt32 character)
@@ -81,7 +81,7 @@ namespace bw
 			return true;
 		});
 
-		m_listServerCheckbox = m_serverConfigLayout->Add<Ndk::CheckboxWidget>();
+		m_listServerCheckbox = m_serverConfigLayout->Add<Nz::CheckboxWidget>();
 		m_listServerCheckbox->UpdateText(Nz::SimpleTextDrawer::Draw("Register the server online", 24));
 
 		m_nameLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
@@ -89,9 +89,9 @@ namespace bw
 		Nz::LabelWidget* nameLabel = m_nameLayout->Add<Nz::LabelWidget>();
 		nameLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Name: ", 24));
 
-		m_nameArea = m_nameLayout->Add<Ndk::TextAreaWidget>();
+		m_nameArea = m_nameLayout->Add<Nz::TextAreaWidget>();
 		m_nameArea->EnableBackground(true);
-		m_nameArea->SetBackgroundColor(Nz::Color::White);
+		m_nameArea->SetBackgroundColor(Nz::Color::White());
 		m_nameArea->SetTextColor(Nz::Color::Black());
 		m_nameArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
@@ -100,9 +100,9 @@ namespace bw
 		Nz::LabelWidget* descLabel = m_descriptionLayout->Add<Nz::LabelWidget>();
 		descLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Description: ", 24));
 
-		m_descriptionArea = m_descriptionLayout->Add<Ndk::TextAreaWidget>();
+		m_descriptionArea = m_descriptionLayout->Add<Nz::TextAreaWidget>();
 		m_descriptionArea->EnableBackground(true);
-		m_descriptionArea->SetBackgroundColor(Nz::Color::White);
+		m_descriptionArea->SetBackgroundColor(Nz::Color::White());
 		m_descriptionArea->SetTextColor(Nz::Color::Black());
 		m_descriptionArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
@@ -133,7 +133,7 @@ namespace bw
 
 		m_descriptionArea->SetText(playerConfig.GetStringValue("StartServer.Description"));
 		m_gamemodeArea->SetText(playerConfig.GetStringValue("StartServer.Gamemode"));
-		m_listServerCheckbox->SetState((playerConfig.GetBoolValue("StartServer.ListServer")) ? Ndk::CheckboxState_Checked : Ndk::CheckboxState_Unchecked);
+		m_listServerCheckbox->SetState((playerConfig.GetBoolValue("StartServer.ListServer")) ? Nz::CheckboxState::Checked : Nz::CheckboxState::Unchecked);
 		m_mapArea->SetText(playerConfig.GetStringValue("StartServer.Map"));
 		m_nameArea->SetText(playerConfig.GetStringValue("StartServer.Name"));
 		m_portArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("StartServer.Port")));
@@ -175,7 +175,7 @@ namespace bw
 			return;
 		}
 
-		Nz::String serverPort = m_portArea->GetText();
+		std::string serverPort = m_portArea->GetText();
 		if (serverPort.IsEmpty())
 		{
 			UpdateStatus("Error: blank server port", Nz::Color::Red());
@@ -191,7 +191,7 @@ namespace bw
 
 		ConfigFile& playerConfig = app->GetPlayerSettings();
 
-		bool listServer = (m_listServerCheckbox->GetState() == Ndk::CheckboxState_Checked);
+		bool listServer = (m_listServerCheckbox->GetState() == Nz::CheckboxState::Checked);
 		std::string serverName;
 		std::string serverDesc;
 		if (listServer)

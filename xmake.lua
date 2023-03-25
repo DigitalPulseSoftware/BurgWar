@@ -10,7 +10,7 @@ set_version("0.2.0")
 
 add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
 
-add_requires("cxxopts", "concurrentqueue", "entt 3.10.1", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "entt 3.11.1", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
 add_requires("nazaraengine", { configs = { debug = is_mode("debug", "asan"), shared = true } })

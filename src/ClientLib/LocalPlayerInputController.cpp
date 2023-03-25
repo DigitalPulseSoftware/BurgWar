@@ -12,7 +12,7 @@ namespace bw
 	std::optional<PlayerInputData> LocalPlayerInputController::GenerateInputs(entt::handle entity) const
 	{
 		assert(entity);
-		LocalPlayerControlledComponent* controlledComponent = registry.try_get<LocalPlayerControlledComponent>(entity);
+		LocalPlayerControlledComponent* controlledComponent = entity.try_get<LocalPlayerControlledComponent>();
 		if (!controlledComponent)
 			return std::nullopt; //< Don't override inputs (for non-local player controlled entities)
 

@@ -3,13 +3,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Scripting/Music.hpp>
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/PlayerConfig.hpp>
 #include <stdexcept>
 
 namespace bw
 {
-	Music::Music(ClientEditorApp& app, Nz::Music music) :
+	Music::Music(ClientEditorAppComponent& app, Nz::Music music) :
 	m_music(std::move(music))
 	{
 		auto& playerSettings = app.GetPlayerSettings();

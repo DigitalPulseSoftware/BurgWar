@@ -48,7 +48,7 @@ namespace bw
 			entity.emplace<PlayerMovementComponent>();
 
 		if (hasInputs)
-			entity.emplace<InputComponent>(std::make_shared<LocalPlayerInputController>());
+			entity.emplace<InputComponent>(entity, std::make_shared<LocalPlayerInputController>());
 
 		return entity;
 	}

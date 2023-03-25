@@ -329,7 +329,7 @@ namespace bw
 
 						auto& peerInfo = newEvent.data.emplace<IncomingEvent::PeerInfoResponse>();
 						peerInfo.callback = std::move(arg.callback);
-						peerInfo.peerInfo.timeSinceLastReceive = m_host.GetServiceTime() - peer->GetLastReceiveTime();
+						peerInfo.peerInfo.timeSinceLastReceive = Nz::Time::Milliseconds(m_host.GetServiceTime() - peer->GetLastReceiveTime());
 						peerInfo.peerInfo.ping = peer->GetRoundTripTime();
 						peerInfo.peerInfo.totalByteReceived = peer->GetTotalByteReceived();
 						peerInfo.peerInfo.totalByteSent = peer->GetTotalByteSent();

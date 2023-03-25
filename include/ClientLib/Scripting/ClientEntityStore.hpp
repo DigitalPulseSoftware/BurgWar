@@ -27,7 +27,7 @@ namespace bw
 			ClientEntityStore(ClientEntityStore&&) = delete;
 			~ClientEntityStore() = default;
 
-			std::optional<ClientLayerEntity> InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, entt::entity parentEntity = entt::null) const;
+			std::optional<ClientLayerEntity> InstantiateEntity(ClientLayer& layer, std::size_t elementIndex, Nz::UInt32 serverId, EntityId uniqueId, const Nz::Vector2f& position, const Nz::DegreeAnglef& rotation, float scale, const PropertyValueMap& properties, entt::handle parentEntity = entt::handle{}) const;
 	};
 }
 

@@ -3,13 +3,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/EscapeMenu.hpp>
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/OptionWidget.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 
 namespace bw
 {
-	EscapeMenu::EscapeMenu(ClientEditorApp& clientEditorApp, Nz::Canvas* canvas) :
+	EscapeMenu::EscapeMenu(ClientEditorAppComponent& clientEditorApp, Nz::Canvas* canvas) :
 	m_app(clientEditorApp)
 	{
 		m_backgroundWidget = canvas->Add<Nz::BaseWidget>();

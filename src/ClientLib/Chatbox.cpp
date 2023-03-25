@@ -25,7 +25,7 @@ namespace bw
 		m_chatBox->EnableLineWrap(true);
 		m_chatBox->SetBackgroundColor(Nz::Color(0, 0, 0, 50));
 		m_chatBox->SetCharacterSize(22);
-		m_chatBox->SetTextColor(Nz::Color::White);
+		m_chatBox->SetTextColor(Nz::Color::White());
 		//m_chatBox->SetTextFont(chatboxFont);
 		m_chatBox->SetTextOutlineColor(Nz::Color::Black());
 		m_chatBox->SetTextOutlineThickness(1.f);
@@ -156,7 +156,7 @@ namespace bw
 				}, lineItem);
 			}
 
-			m_chatBox->SetTextColor(Nz::Color::White);
+			m_chatBox->SetTextColor(Nz::Color::White());
 			m_chatBox->AppendText("\n");
 		}
 

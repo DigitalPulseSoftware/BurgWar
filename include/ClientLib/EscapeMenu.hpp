@@ -16,13 +16,13 @@
 
 namespace bw
 {
-	class ClientEditorApp;
+	class ClientEditorAppComponent;
 	class OptionWidget;
 
 	class BURGWAR_CLIENTLIB_API EscapeMenu
 	{
 		public:
-			EscapeMenu(ClientEditorApp& clientEditorApp, Nz::Canvas* canvas);
+			EscapeMenu(ClientEditorAppComponent& clientEditorApp, Nz::Canvas* canvas);
 			EscapeMenu(const EscapeMenu&) = delete;
 			EscapeMenu(EscapeMenu&&) = delete;
 			~EscapeMenu();
@@ -50,7 +50,7 @@ namespace bw
 			Nz::ButtonWidget* m_optionsButton;
 			Nz::ButtonWidget* m_quitAppButton;
 			Nz::BaseWidget* m_backgroundWidget;
-			ClientEditorApp& m_app;
+			ClientEditorAppComponent& m_app;
 			OptionWidget* m_optionWidget;
 	};
 }

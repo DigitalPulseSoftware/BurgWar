@@ -32,7 +32,7 @@ namespace bw
 
 			inline bool IsVisible() const;
 
-			void Print(const std::string& str, Nz::Color color = Nz::Color::White);
+			void Print(const std::string& str, Nz::Color color = Nz::Color::White());
 
 			void SetExecuteCallback(ExecuteCallback callback);
 			void Show(bool shouldShow);

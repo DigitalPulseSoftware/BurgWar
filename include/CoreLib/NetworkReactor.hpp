@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_NETWORK_REACTOR_HPP
 
 #include <CoreLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <Nazara/Network/ENetHost.hpp>
 #include <concurrentqueue/concurrentqueue.h>
 #include <atomic>
@@ -53,8 +54,8 @@ namespace bw
 
 			struct PeerInfo
 			{
+				Nz::Time timeSinceLastReceive;
 				Nz::UInt32 ping;
-				Nz::UInt32 timeSinceLastReceive;
 				Nz::UInt32 totalPacketLost;
 				Nz::UInt32 totalPacketReceived;
 				Nz::UInt32 totalPacketSent;

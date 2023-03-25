@@ -11,12 +11,12 @@ namespace bw
 		m_music.EnableLooping(loop);
 	}
 
-	inline Nz::UInt32 Music::GetDuration() const
+	inline Nz::Time Music::GetDuration() const
 	{
 		return m_music.GetDuration();
 	}
 
-	inline Nz::UInt32 Music::GetPlayingOffset() const
+	inline Nz::Time Music::GetPlayingOffset() const
 	{
 		return m_music.GetPlayingOffset();
 	}
@@ -38,7 +38,7 @@ namespace bw
 	
 	inline bool Music::IsPlaying() const
 	{
-		return m_music.GetStatus() == Nz::SoundStatus_Playing;
+		return m_music.GetStatus() == Nz::SoundStatus::Playing;
 	}
 	
 	inline void Music::Pause()
@@ -51,7 +51,7 @@ namespace bw
 		m_music.Play();
 	}
 	
-	inline void Music::SetPlayingOffset(Nz::UInt32 offset)
+	inline void Music::SetPlayingOffset(Nz::Time offset)
 	{
 		m_music.SetPlayingOffset(offset);
 	}

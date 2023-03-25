@@ -212,7 +212,7 @@ namespace bw
 
 		if (m_pingLabel)
 		{
-			drawer.SetText(Nz::String::Number(sessionInfo.ping) + "ms");
+			drawer.SetText(std::to_string(sessionInfo.ping) + "ms");
 
 			m_pingLabel->UpdateText(drawer);
 			m_pingLabel->Resize(m_pingLabel->GetPreferredSize());

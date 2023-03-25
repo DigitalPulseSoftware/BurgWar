@@ -21,7 +21,7 @@ namespace bw
 
 		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& data)
 		{
-			UpdateStatus("Authentication succeeded, waiting for match data...", Nz::Color::White);
+			UpdateStatus("Authentication succeeded, waiting for match data...", Nz::Color::White());
 			m_authSuccessPacket = data;
 		});
 
@@ -34,7 +34,7 @@ namespace bw
 				return;
 			}
 
-			UpdateStatus("Received match data", Nz::Color::White);
+			UpdateStatus("Received match data", Nz::Color::White());
 
 			SwitchToState(std::make_shared<ResourceDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), 0.5f);
 		});

@@ -156,7 +156,7 @@ namespace bw
 		if (hasFinished && !IsSwitching())
 		{
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Creating match...");
-			UpdateStatus("Entering match...", Nz::Color::White);
+			UpdateStatus("Entering match...", Nz::Color::White());
 
 			SwitchToState(std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(m_targetAssetDirectory), std::move(m_targetScriptDirectory)), 0.5f);
 		}
@@ -336,6 +336,6 @@ namespace bw
 		WriteData("assets", m_assetData);
 		WriteData("scripts", m_scriptData);
 
-		UpdateStatus(status.str(), Nz::Color::White);
+		UpdateStatus(status.str(), Nz::Color::White());
 	}
 }

@@ -9,7 +9,7 @@
 #include <ClientLib/ClientMatch.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
 #include <Nazara/Platform/Mouse.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 
 namespace bw
 {
@@ -17,8 +17,8 @@ namespace bw
 	m_window(window),
 	m_localPlayerIndex(localPlayerIndex)
 	{
-		Nz::EventHandler& eventHandler = m_window.GetEventHandler();
-		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		Nz::WindowEventHandler& eventHandler = m_window.GetEventHandler();
+		m_onKeyPressedSlot.Connect(eventHandler.OnKeyPressed, [this](const Nz::WindowEventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
 			switch (event.virtualKey)
 			{
@@ -49,7 +49,7 @@ namespace bw
 			}
 		});
 
-		m_onMouseWheelMovedSlot.Connect(eventHandler.OnMouseWheelMoved, [this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
+		m_onMouseWheelMovedSlot.Connect(eventHandler.OnMouseWheelMoved, [this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseWheelEvent& event)
 		{
 			OnSwitchWeapon(this, event.delta > 0.f);
 		});
@@ -92,20 +92,19 @@ namespace bw
 			Nz::Vector2f originPosition = controlledEntity->GetPosition();
 			float lookSwitch = originPosition.x;
 
-			if (entity->HasComponent<WeaponWielderComponent>())
+			if (WeaponWielderComponent* wielder = entity.try_get<WeaponWielderComponent>())
 			{
-				auto& wielderComponent = entity->GetComponent<WeaponWielderComponent>();
-				Nz::Vector2f weaponOffset = wielderComponent.GetWeaponOffset();
+				Nz::Vector2f weaponOffset = wielder->GetWeaponOffset();
 
 				if (!controlledEntity->IsFacingRight())
 					weaponOffset.x = -weaponOffset.x;
 
 				originPosition += weaponOffset;
 			}
-			else if (entity->HasComponent<Ndk::GraphicsComponent>())
+			else if (Nz::GraphicsComponent* gfxComponent = entity.try_get<Nz::GraphicsComponent>())
 			{
-				originPosition = Nz::Vector2f(entity->GetComponent<Ndk::GraphicsComponent>().GetAABB().GetCenter());
-				lookSwitch = originPosition.x;
+				//originPosition = Nz::Vector2f(gfxComponent->GetAABB().GetCenter());
+				//lookSwitch = originPosition.x;
 			}
 
 			Nz::Vector2f mousePosition = Nz::Vector2f(Nz::Mouse::GetPosition(m_window));

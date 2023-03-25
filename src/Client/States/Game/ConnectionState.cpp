@@ -31,7 +31,7 @@ namespace bw
 		m_clientSession = std::make_shared<ClientSession>(*app);
 		m_clientSessionConnectedSlot.Connect(m_clientSession->OnConnected, [this] (ClientSession*)
 		{
-			UpdateStatus("Connected, authenticating...", Nz::Color::White);
+			UpdateStatus("Connected, authenticating...", Nz::Color::White());
 
 			auto authState = std::make_shared<AuthenticationState>(GetStateDataPtr(), m_clientSession, GetOriginalState());
 			SwitchToState(std::make_shared<ConnectedState>(GetStateDataPtr(), m_clientSession, std::move(authState)), 0.5f);
@@ -100,7 +100,7 @@ namespace bw
 			bwLog(GetStateData().app->GetLogger(), LogLevel::Debug, "resolving {0}:{1}...", m_resolvingData->serverName.hostname, name.port);
 
 			Nz::ResolveError resolveError;
-			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol::Any, m_resolvingData->serverName.hostname, Nz::String::Number(name.port), &resolveError);
+			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol::Any, m_resolvingData->serverName.hostname, std::to_string(name.port), &resolveError);
 			if (serverAddresses.empty())
 			{
 				m_resolvingData->result = tl::unexpected<std::string>(Nz::ErrorToString(resolveError));
@@ -120,7 +120,7 @@ namespace bw
 			m_resolvingData->hasResult = true;
 		});
 
-		UpdateStatus("Resolving " + name.hostname + "...", Nz::Color::White);
+		UpdateStatus("Resolving " + name.hostname + "...", Nz::Color::White());
 	}
 
 	void ConnectionState::ProcessNextAddress(const Nz::IpAddress& address)
@@ -136,7 +136,7 @@ namespace bw
 			m_clientSession->Connect(std::move(sessionBridge));
 			m_timeBeforeGivingUp = 10.f;
 
-			UpdateStatus("Connecting to " + address.ToString() + "...", Nz::Color::White);
+			UpdateStatus("Connecting to " + address.ToString() + "...", Nz::Color::White());
 		}
 		else
 			HandleConnectionFailure();

@@ -12,14 +12,14 @@ namespace bw
 		/*m_widget = canvas->Add<Ndk::Console>();
 		m_widget->Hide();
 
-		m_widget->OnCommand.Connect([this](Ndk::Console*, const Nz::String& command)
+		m_widget->OnCommand.Connect([this](Ndk::Console*, const std::string& command)
 		{
 			if (m_callback)
 				m_callback(command);
 		});*/
 
 		// Connect every slot
-		m_onTargetChangeSizeSlot.Connect(window->OnRenderTargetSizeChange, this, &Console::OnRenderTargetSizeChange);
+		//m_onTargetChangeSizeSlot.Connect(window->OnRenderTargetSizeChange, this, &Console::OnRenderTargetSizeChange);
 
 		OnRenderTargetSizeChange(window);
 	}

@@ -104,7 +104,7 @@ namespace bw
 		else
 		{
 			canvas->SetCursor(Nz::SystemCursor_Default);
-			m_hoveringTileSprite->SetColor(Nz::Color::White);
+			m_hoveringTileSprite->SetColor(Nz::Color::White());
 		}
 	}
 

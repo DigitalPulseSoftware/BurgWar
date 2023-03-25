@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTAPP_HPP
 #define BURGWAR_CLIENTAPP_HPP
 
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <Client/ClientAppConfig.hpp>
 #include <Nazara/Renderer/RenderWindow.hpp>
@@ -19,7 +19,7 @@ namespace bw
 {
 	struct StateData;
 
-	class ClientApp : public ClientEditorApp
+	class ClientApp : public ClientEditorAppComponent
 	{
 		public:
 			ClientApp(int argc, char* argv[]);

@@ -15,14 +15,14 @@
 
 namespace bw
 {
-	class ClientEditorApp;
+	class ClientEditorAppComponent;
 	class Map;
 	class VirtualDirectory;
 
 	class PlayWindow : public NazaraCanvas
 	{
 		public:
-			PlayWindow(ClientEditorApp& app, Map map, float tickRate, QWidget* parent = nullptr);
+			PlayWindow(ClientEditorAppComponent& app, Map map, float tickRate, QWidget* parent = nullptr);
 			~PlayWindow() = default;
 
 		private:

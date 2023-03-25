@@ -66,30 +66,30 @@ namespace bw
 
 			struct BoolOption : Option
 			{
-				Ndk::CheckboxWidget* optionWidget;
+				Nz::CheckboxWidget* optionWidget;
 
-				NazaraSlot(Ndk::CheckboxWidget, OnStateChanged, onStateChangeSlot);
+				NazaraSlot(Nz::CheckboxWidget, OnCheckboxStateUpdate, onStateChangeSlot);
 			};
 
 			struct FloatOption : Option
 			{
-				Ndk::TextAreaWidget* optionWidget;
+				Nz::TextAreaWidget* optionWidget;
 
-				NazaraSlot(Ndk::TextAreaWidget, OnTextChanged, onTextChangedSlot);
+				NazaraSlot(Nz::TextAreaWidget, OnTextChanged, onTextChangedSlot);
 			};
 
 			struct IntegerOption : Option
 			{
-				Ndk::TextAreaWidget* optionWidget;
+				Nz::TextAreaWidget* optionWidget;
 
-				NazaraSlot(Ndk::TextAreaWidget, OnTextChanged, onTextChangedSlot);
+				NazaraSlot(Nz::TextAreaWidget, OnTextChanged, onTextChangedSlot);
 			};
 
 			struct StringOption : Option
 			{
-				Ndk::TextAreaWidget* optionWidget;
+				Nz::TextAreaWidget* optionWidget;
 
-				NazaraSlot(Ndk::TextAreaWidget, OnTextChanged, onTextChangedSlot);
+				NazaraSlot(Nz::TextAreaWidget, OnTextChanged, onTextChangedSlot);
 			};
 
 			using OptionType = std::variant<BoolOption, FloatOption, IntegerOption, StringOption>;

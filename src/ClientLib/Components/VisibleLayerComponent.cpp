@@ -69,7 +69,7 @@ namespace bw
 	{
 		assert(visibleLayer);
 
-		auto& nodeComponent = m_entity.get<Nz::NodeComponent>();
+		auto& nodeComponent = GetHandle().get<Nz::NodeComponent>();
 
 		visibleLayer->baseNode.SetParent(nodeComponent);
 		visibleLayer->baseNode.SetScale(scale);
@@ -122,6 +122,4 @@ namespace bw
 
 		m_visibleLayers.emplace_back(std::move(visibleLayer));
 	}
-
-	Ndk::ComponentIndex VisibleLayerComponent::componentIndex;
 }

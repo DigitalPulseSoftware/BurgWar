@@ -20,7 +20,7 @@ namespace bw
 
 	inline Nz::Vector2f Text::GetSize() const
 	{
-		Nz::Boxf box = m_textSprite->GetBoundingVolume().obb.localBox;
+		Nz::Boxf box = m_textSprite->GetAABB();
 		return { box.width, box.height };
 	}
 

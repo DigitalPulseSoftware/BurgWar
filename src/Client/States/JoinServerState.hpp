@@ -31,7 +31,7 @@ namespace bw
 			void OnBackPressed();
 			void OnConnectionPressed();
 
-			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White);
+			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White());
 
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
@@ -41,8 +41,8 @@ namespace bw
 			Nz::ButtonWidget* m_connectionButton;
 			Nz::LabelWidget* m_serverLabel;
 			Nz::LabelWidget* m_statusLabel;
-			Ndk::TextAreaWidget* m_serverAddressArea;
-			Ndk::TextAreaWidget* m_serverPortArea;
+			Nz::TextAreaWidget* m_serverAddressArea;
+			Nz::TextAreaWidget* m_serverPortArea;
 	};
 }
 

@@ -57,7 +57,7 @@ namespace bw
 			Nz::Vector2f parallaxFactor = parameters.get_or("ParallaxFactor", Nz::Vector2f::Unit());
 			Nz::Vector2f scale = parameters.get_or("Scale", Nz::Vector2f::Unit());
 
-			auto& visibleLayer = entity.get_or_emplace<VisibleLayerComponent>(clientMatch.GetRenderWorld());
+			auto& visibleLayer = entity.get_or_emplace<VisibleLayerComponent>(clientMatch.GetRenderWorld(), entity);
 			visibleLayer.RegisterLocalLayer(clientMatch.GetLayer(layerIndex), renderOrder, scale, parallaxFactor);
 		});
 
@@ -77,7 +77,7 @@ namespace bw
 			if (materials.empty())
 				return {};
 
-			/*Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
+			/*std::shared_ptr<Nz::Tilemap> tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
 				Nz::MaterialRef material = Nz::Material::New(); //< FIXME

@@ -27,7 +27,7 @@
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-#include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Platform/Window.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <CoreLib/EntityOwner.hpp>
@@ -41,7 +41,7 @@
 
 namespace bw
 {
-	class ClientEditorApp;
+	class ClientEditorAppComponent;
 	class Camera;
 	class ClientGamemode;
 	class ClientSession;
@@ -54,7 +54,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			ClientMatch(const ClientMatch&) = delete;
 			ClientMatch(ClientMatch&&) = delete;
 			~ClientMatch();
@@ -71,7 +71,7 @@ namespace bw
 			inline Nz::UInt16 GetActiveLayer();
 			inline AnimationManager& GetAnimationManager();
 			inline ClientAssetStore& GetAssetStore();
-			inline ClientEditorApp& GetApplication();
+			inline ClientEditorAppComponent& GetApplication();
 			inline Camera& GetCamera();
 			inline const Camera& GetCamera() const;
 			inline ClientSession& GetClientSession();
@@ -141,7 +141,7 @@ namespace bw
 
 			void BindEscapeMenu();
 			void BindPackets();
-			void BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::Canvas* canvas);
+			void BindSignals(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::Canvas* canvas);
 			void HandleChatMessage(const Packets::ChatMessage& packet);
 			void HandleConsoleAnswer(const Packets::ConsoleAnswer& packet);
 			void HandleEntityCreated(ClientLayer* layer, ClientLayerEntity& entity);
@@ -253,7 +253,7 @@ namespace bw
 				}
 
 				entt::registry registry;
-				Nz::SystemGraph systemGraph;
+				Nz::EnttSystemGraph systemGraph;
 			};
 
 			struct TickPrediction
@@ -269,8 +269,8 @@ namespace bw
 			};
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onRenderTargetSizeChange);
-			NazaraSlot(Nz::EventHandler, OnGainedFocus, m_onGainedFocus);
-			NazaraSlot(Nz::EventHandler, OnLostFocus, m_onLostFocus);
+			NazaraSlot(Nz::WindowEventHandler, OnGainedFocus, m_onGainedFocus);
+			NazaraSlot(Nz::WindowEventHandler, OnLostFocus, m_onLostFocus);
 			NazaraSlot(Nz::Canvas, OnUnhandledKeyPressed, m_onUnhandledKeyPressed);
 			NazaraSlot(Nz::Canvas, OnUnhandledKeyReleased, m_onUnhandledKeyReleased);
 			NazaraSlot(ClientLayer, OnEntityCreated, m_onEntityCreated);
@@ -300,7 +300,7 @@ namespace bw
 			RenderWorld m_renderWorld;
 			EntityId m_freeClientId;
 			Nz::RenderTarget* m_renderTarget;
-			Nz::RenderWindow* m_window;
+			Nz::Window* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			tsl::hopscotch_map<EntityId, ClientLayerEntityHandle> m_entitiesByUniqueId;
 			tsl::hopscotch_map<EntityId, std::size_t> m_playerEntitiesByUniqueId;
@@ -308,7 +308,7 @@ namespace bw
 			AnimationManager m_animationManager;
 			AverageValues<Nz::Int32> m_averageTickError;
 			Chatbox m_chatBox;
-			ClientEditorApp& m_application;
+			ClientEditorAppComponent& m_application;
 			ClientSession& m_session;
 			EscapeMenu m_escapeMenu;
 			PropertyValueMap m_gamemodeProperties;

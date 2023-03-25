@@ -15,7 +15,7 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/KeyboardAndMousePoller.hpp>
 #include <ClientLib/InputPoller.hpp>
@@ -32,6 +32,7 @@
 #include <ClientLib/Scripting/ClientWeaponLibrary.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
+#include <Nazara/Core/ApplicationBase.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
 #include <Nazara/Graphics/Systems/RenderSystem.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -45,8 +46,8 @@
 
 namespace bw
 {
-	ClientMatch::ClientMatch(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
-	SharedMatch(burgApp, LogSide::Client, "local", matchData.tickDuration),
+	ClientMatch::ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	SharedMatch(burgApp, LogSide::Client, "local", Nz::Time::Seconds(matchData.tickDuration)),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
 	m_freeClientId(-1),
@@ -98,12 +99,12 @@ namespace bw
 		m_renderWorld.systemGraph.AddSystem<AnimationSystem>(*this);
 		m_renderWorld.systemGraph.AddSystem<SoundSystem>(playerSettings);
 
-		m_camera.emplace(m_renderWorld, renderTarget, true);
+		m_camera.emplace(m_renderWorld.registry, renderTarget, true);
 		m_camera->SetZoomFactor(0.8f);
 
 		m_currentLayer = entt::handle(m_renderWorld.registry, m_renderWorld.registry.create());
 		m_currentLayer.emplace<Nz::NodeComponent>();
-		//m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld);
+		m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld.registry, m_currentLayer);
 
 		InitializeRemoteConsole();
 
@@ -356,7 +357,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			m_animationManager.PushAnimation(duration, [=](float ratio)
+			m_animationManager.PushAnimation(Nz::Time::Seconds(duration), [=](float ratio)
 			{
 				if (!entity)
 					return false;
@@ -382,7 +383,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			m_animationManager.PushAnimation(duration, [=](float ratio)
+			m_animationManager.PushAnimation(Nz::Time::Seconds(duration), [=](float ratio)
 			{
 				if (!entity)
 					return false;
@@ -657,7 +658,7 @@ namespace bw
 
 		m_escapeMenu.OnQuitApp.Connect([this](EscapeMenu*)
 		{
-			m_application.Quit();
+			m_application.GetApp().Quit();
 		});
 	}
 
@@ -790,7 +791,7 @@ namespace bw
 		});
 	}
 
-	void ClientMatch::BindSignals(ClientEditorApp& burgApp, Nz::RenderWindow* window, Nz::Canvas* canvas)
+	void ClientMatch::BindSignals(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::Canvas* canvas)
 	{
 		m_chatBox.OnChatMessage.Connect([this](const std::string& message)
 		{
@@ -801,17 +802,17 @@ namespace bw
 			m_session.SendPacket(chatPacket);
 		});
 
-		m_onGainedFocus.Connect(window->GetEventHandler().OnGainedFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		m_onGainedFocus.Connect(window->GetEventHandler().OnGainedFocus, [this](const Nz::WindowEventHandler* /*eventHandler*/)
 		{
 			m_hasFocus = true;
 		});
 
-		m_onLostFocus.Connect(window->GetEventHandler().OnLostFocus, [this](const Nz::EventHandler* /*eventHandler*/)
+		m_onLostFocus.Connect(window->GetEventHandler().OnLostFocus, [this](const Nz::WindowEventHandler* /*eventHandler*/)
 		{
 			m_hasFocus = false;
 		});
 
-		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		m_onUnhandledKeyPressed.Connect(canvas->OnUnhandledKeyPressed, [this](const Nz::WindowEventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
 			switch (event.virtualKey)
 			{
@@ -873,7 +874,7 @@ namespace bw
 			}
 		});
 
-		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& event)
+		m_onUnhandledKeyReleased.Connect(canvas->OnUnhandledKeyReleased, [this](const Nz::WindowEventHandler*, const Nz::WindowEvent::KeyEvent& event)
 		{
 			switch (event.virtualKey)
 			{
@@ -888,6 +889,7 @@ namespace bw
 			};
 		});
 
+		/* TODO
 		m_onRenderTargetSizeChange.Connect(window->GetRenderTarget()->OnRenderTargetSizeChange, [this](const Nz::RenderTarget* renderTarget)
 		{
 			Nz::Vector2f size = Nz::Vector2f(renderTarget->GetSize());
@@ -897,7 +899,7 @@ namespace bw
 				m_scoreboard->Resize({ size.x * 0.75f, size.y * 0.75f });
 				m_scoreboard->Center();
 			}
-		});
+		});*/
 
 		m_nicknameUpdateSlot.Connect(burgApp.GetPlayerSettings().GetStringUpdateSignal("Player.Name"), [this](const std::string& newValue)
 		{
@@ -936,9 +938,9 @@ namespace bw
 				playerName = "<disconnected>";
 
 			m_chatBox.PrintMessage({ 
-				Chatbox::ColorItem { Nz::Color::Yellow },
+				Chatbox::ColorItem { Nz::Color::Yellow() },
 				Chatbox::TextItem { std::move(playerName) },
-				Chatbox::ColorItem { Nz::Color::White },
+				Chatbox::ColorItem { Nz::Color::White() },
 				Chatbox::TextItem { ": " },
 				Chatbox::TextItem { packet.content }
 			});
@@ -1705,7 +1707,7 @@ namespace bw
 		if (lastTick)
 		{
 			// Remember predicted ticks for improving over time
-			if (m_tickPredictions.size() >= static_cast<std::size_t>(std::ceil(2 / GetTickDuration()))) //< Remember at most 2s of inputs
+			if (m_tickPredictions.size() >= static_cast<std::size_t>(std::ceil(2 / GetTickDuration().AsSeconds()))) //< Remember at most 2s of inputs
 				m_tickPredictions.erase(m_tickPredictions.begin());
 
 			auto& prediction = m_tickPredictions.emplace_back();

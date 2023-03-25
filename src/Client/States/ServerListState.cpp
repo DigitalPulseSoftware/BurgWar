@@ -363,7 +363,7 @@ namespace bw
 			infoDrawer.AppendText(name + '\n');
 
 			infoDrawer.SetDefaultCharacterSize(18);
-			infoDrawer.SetDefaultColor(Nz::Color::White);
+			infoDrawer.SetDefaultColor(Nz::Color::White());
 			if (!desc.empty())
 				infoDrawer.AppendText(desc + '\n');
 
@@ -372,13 +372,13 @@ namespace bw
 			infoDrawer.SetDefaultColor(Nz::Color(220, 220, 220));
 			infoDrawer.AppendText("Gamemode: ");
 
-			infoDrawer.SetDefaultColor(Nz::Color::White);
+			infoDrawer.SetDefaultColor(Nz::Color::White());
 			infoDrawer.AppendText(gamemode);
 
 			infoDrawer.SetDefaultColor(Nz::Color(220, 220, 220));
 			infoDrawer.AppendText(" Map: ");
 
-			infoDrawer.SetDefaultColor(Nz::Color::White);
+			infoDrawer.SetDefaultColor(Nz::Color::White());
 			infoDrawer.AppendText(map);
 
 			infoDrawer.AppendText("\n");

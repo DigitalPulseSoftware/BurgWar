@@ -77,7 +77,7 @@ namespace bw
 			EntityOwner m_tilemapEntity;
 			Nz::CursorRef m_eraserCursor;
 			std::shared_ptr<Nz::Sprite> m_hoveringTileSprite;
-			Nz::TileMapRef m_tileMap;
+			std::shared_ptr<Nz::Tilemap> m_tileMap;
 			EditionMode m_editionMode;
 			TileMapData m_tilemapData;
 			QDockWidget* m_tileEditorWidget;

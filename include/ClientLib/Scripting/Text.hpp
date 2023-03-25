@@ -12,7 +12,7 @@
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 #include <sol/forward.hpp>
 
 namespace bw

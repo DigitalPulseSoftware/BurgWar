@@ -30,7 +30,7 @@ namespace bw
 			void OnBackPressed();
 			void OnStartServerPressed();
 
-			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White);
+			void UpdateStatus(const std::string& status, const Nz::Color& color = Nz::Color::White());
 
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
@@ -41,14 +41,14 @@ namespace bw
 			Nz::BaseWidget* m_background;
 			Nz::ButtonWidget* m_backButton;
 			Nz::ButtonWidget* m_startServerButton;
-			Ndk::CheckboxWidget* m_listServerCheckbox;
+			Nz::CheckboxWidget* m_listServerCheckbox;
 			Nz::LabelWidget* m_title;
 			Nz::LabelWidget* m_statusLabel;
-			Ndk::TextAreaWidget* m_descriptionArea;
-			Ndk::TextAreaWidget* m_gamemodeArea;
-			Ndk::TextAreaWidget* m_mapArea;
-			Ndk::TextAreaWidget* m_nameArea;
-			Ndk::TextAreaWidget* m_portArea;
+			Nz::TextAreaWidget* m_descriptionArea;
+			Nz::TextAreaWidget* m_gamemodeArea;
+			Nz::TextAreaWidget* m_mapArea;
+			Nz::TextAreaWidget* m_nameArea;
+			Nz::TextAreaWidget* m_portArea;
 	};
 }
 

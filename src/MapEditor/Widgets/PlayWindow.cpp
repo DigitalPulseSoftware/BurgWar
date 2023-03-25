@@ -4,7 +4,7 @@
 
 #include <MapEditor/Widgets/PlayWindow.hpp>
 #include <CoreLib/NetworkSessionManager.hpp>
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
@@ -15,7 +15,7 @@
 
 namespace bw
 {
-	PlayWindow::PlayWindow(ClientEditorApp& app, Map map, float tickRate, QWidget* parent) :
+	PlayWindow::PlayWindow(ClientEditorAppComponent& app, Map map, float tickRate, QWidget* parent) :
 	NazaraCanvas(parent),
 	m_canvas(m_world.CreateHandle(), GetEventHandler(), GetCursorController().CreateHandle())
 	{

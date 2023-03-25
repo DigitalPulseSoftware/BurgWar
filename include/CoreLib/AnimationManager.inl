@@ -8,14 +8,14 @@
 
 namespace bw
 {
-	inline void AnimationManager::PushAnimation(float duration, UpdateCallback update, FinishCallback finish)
+	inline void AnimationManager::PushAnimation(Nz::Time duration, UpdateCallback update, FinishCallback finish)
 	{
 		if (!update(0.f))
 			return;
 
 		Animation& anim = m_newAnimations.emplace_back();
 		anim.duration = duration;
-		anim.elapsedtime = 0.f;
+		anim.elapsedtime = Nz::Time::Zero();
 		anim.finishCallback = std::move(finish);
 		anim.updateCallback = std::move(update);
 	}
@@ -41,7 +41,7 @@ namespace bw
 				isRunning = false;
 			}
 			else
-				isRunning = anim.updateCallback(anim.elapsedtime / anim.duration);
+				isRunning = anim.updateCallback((anim.elapsedtime / anim.duration).AsSeconds());
 
 			if (isRunning)
 				++i;

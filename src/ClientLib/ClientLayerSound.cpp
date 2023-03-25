@@ -8,12 +8,12 @@
 
 namespace bw
 {
-	float ClientLayerSound::GetSoundDuration(std::size_t soundIndex) const
+	Nz::Time ClientLayerSound::GetSoundDuration(std::size_t soundIndex) const
 	{
 		assert(soundIndex < m_playingSounds.size());
 		auto& playingSoundOpt = m_playingSounds[soundIndex];
 		if (!playingSoundOpt)
-			return -1.f;
+			return Nz::Time::Zero();
 
 		return playingSoundOpt->duration;
 	}
@@ -37,7 +37,7 @@ namespace bw
 			m_playingSounds.emplace_back();
 
 		auto& playingSound = m_playingSounds[soundIndex].emplace();
-		playingSound.duration = soundBuffer->GetDuration() / 1000.f;
+		playingSound.duration = soundBuffer->GetDuration();
 		playingSound.isLooping = isLooping;
 		playingSound.isSpatialized = isSpatialized;
 		playingSound.soundBuffer = soundBuffer;

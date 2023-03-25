@@ -26,7 +26,7 @@ namespace bw
 	m_isEnabled(false),
 	m_isPredictionEnabled(false)
 	{
-		Nz::SystemGraph& systemGraph = GetSystemGraph();
+		Nz::EnttSystemGraph& systemGraph = GetSystemGraph();
 		systemGraph.AddSystem<FrameCallbackSystem>();
 		systemGraph.AddSystem<PostFrameCallbackSystem>();
 		systemGraph.AddSystem<VisualInterpolationSystem>();

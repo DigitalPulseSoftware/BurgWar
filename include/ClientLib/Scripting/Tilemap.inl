@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Tilemap::Tilemap(LayerVisualEntityHandle visualEntity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Tilemap::Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder) :
 	m_visualEntity(std::move(visualEntity)),
 	m_transformMatrix(transformMatrix),
 	m_tilemap(std::move(tilemap)),

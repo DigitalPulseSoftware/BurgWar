@@ -45,7 +45,7 @@ namespace bw
 		return *m_assetStore;
 	}
 
-	inline ClientEditorApp& ClientMatch::GetApplication()
+	inline ClientEditorAppComponent& ClientMatch::GetApplication()
 	{
 		return m_application;
 	}

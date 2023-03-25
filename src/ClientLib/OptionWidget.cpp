@@ -91,12 +91,12 @@ namespace bw
 		BoolOption option;
 		InitOption(option, std::move(keyName), label);
 
-		option.optionWidget = Add<Ndk::CheckboxWidget>();
+		option.optionWidget = Add<Nz::CheckboxWidget>();
 		option.optionWidget->Resize(option.optionWidget->GetPreferredSize());
 
-		option.onStateChangeSlot.Connect(option.optionWidget->OnStateChanged, [this, keyName = option.keyName](const Ndk::CheckboxWidget* checkbox)
+		option.onStateChangeSlot.Connect(option.optionWidget->OnCheckboxStateUpdate, [this, keyName = option.keyName](const Nz::CheckboxWidget* checkbox, Nz::CheckboxState newState)
 		{
-			m_updatedValues[keyName] = checkbox->GetState() == Ndk::CheckboxState_Checked;
+			m_updatedValues[keyName] = newState == Nz::CheckboxState::Checked;
 		});
 
 		m_activeSection->options.emplace_back(std::move(option));
@@ -107,7 +107,7 @@ namespace bw
 		FloatOption option;
 		InitOption(option, std::move(keyName), label);
 
-		option.optionWidget = Add<Ndk::TextAreaWidget>();
+		option.optionWidget = Add<Nz::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
 		option.optionWidget->SetTextColor(Nz::Color::Black());
 
@@ -116,19 +116,20 @@ namespace bw
 			return (character >= U'0' && character <= U'9') || (character == U'.') || (character == U'-');
 		});
 
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Nz::AbstractTextAreaWidget* /*textArea*/, const std::string& text)
 		{
 			if (m_ignoreWidgetUpdate)
 				return;
 
-			double value;
-			if (text.ToDouble(&value))
+			char* end;
+			double value = std::strtod(text.c_str(), &end);
+			if (end != text.c_str())
 				m_updatedValues[keyName] = value;
 			else
 			{
 				// Revert to config value
 				m_ignoreWidgetUpdate = true;
-				textArea->SetText(Nz::String::Number(m_playerConfig.GetFloatValue<double>(keyName)));
+				textArea->SetText(std::to_string(m_playerConfig.GetFloatValue<double>(keyName)));
 				m_ignoreWidgetUpdate = false;
 			}
 		});
@@ -141,7 +142,7 @@ namespace bw
 		IntegerOption option;
 		InitOption(option, std::move(keyName), label);
 
-		option.optionWidget = Add<Ndk::TextAreaWidget>();
+		option.optionWidget = Add<Nz::TextAreaWidget>();
 		option.optionWidget->Resize({ 50.f, option.optionWidget->GetPreferredHeight() });
 		option.optionWidget->SetTextColor(Nz::Color::Black());
 		
@@ -150,19 +151,20 @@ namespace bw
 			return (character >= U'0' && character <= U'9') || (character == U'-');
 		});
 
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Nz::AbstractTextAreaWidget* /*textArea*/, const std::string& text)
 		{
 			if (m_ignoreWidgetUpdate)
 				return;
 
-			long long value;
-			if (text.ToInteger(&value))
+			char* end;
+			long long value = std::strtoll(text.c_str(), &end, 10);
+			if (end != text.c_str())
 				m_updatedValues[keyName] = value;
 			else
 			{
 				// Revert to config value
 				m_ignoreWidgetUpdate = true;
-				textArea->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(keyName)));
+				textArea->SetText(std::to_string(m_playerConfig.GetIntegerValue<long long>(keyName)));
 				m_ignoreWidgetUpdate = false;
 			}
 		});
@@ -175,11 +177,11 @@ namespace bw
 		StringOption option;
 		InitOption(option, std::move(keyName), label);
 
-		option.optionWidget = Add<Ndk::TextAreaWidget>();
+		option.optionWidget = Add<Nz::TextAreaWidget>();
 		option.optionWidget->Resize({ 200.f, option.optionWidget->GetPreferredHeight() });
 		option.optionWidget->SetTextColor(Nz::Color::Black());
 		
-		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Ndk::AbstractTextAreaWidget* /*textArea*/, const Nz::String& text)
+		option.onTextChangedSlot.Connect(option.optionWidget->OnTextChanged, [this, keyName = option.keyName, textArea = option.optionWidget](const Nz::AbstractTextAreaWidget* /*textArea*/, const std::string& text)
 		{
 			if (m_ignoreWidgetUpdate)
 				return;
@@ -337,11 +339,11 @@ namespace bw
 					using T = std::decay_t<decltype(arg)>;
 
 					if constexpr (std::is_same_v<T, BoolOption>)
-						arg.optionWidget->SetState((m_playerConfig.GetBoolValue(arg.keyName)) ? Ndk::CheckboxState_Checked : Ndk::CheckboxState_Unchecked);
+						arg.optionWidget->SetState((m_playerConfig.GetBoolValue(arg.keyName)) ? Nz::CheckboxState::Checked : Nz::CheckboxState::Unchecked);
 					else if constexpr (std::is_same_v<T, FloatOption>)
-						arg.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetFloatValue<double>(arg.keyName)));
+						arg.optionWidget->SetText(std::to_string(m_playerConfig.GetFloatValue<double>(arg.keyName)));
 					else if constexpr (std::is_same_v<T, IntegerOption>)
-						arg.optionWidget->SetText(Nz::String::Number(m_playerConfig.GetIntegerValue<long long>(arg.keyName)));
+						arg.optionWidget->SetText(std::to_string(m_playerConfig.GetIntegerValue<long long>(arg.keyName)));
 					else if constexpr (std::is_same_v<T, StringOption>)
 						arg.optionWidget->SetText(m_playerConfig.GetStringValue(arg.keyName));
 					else

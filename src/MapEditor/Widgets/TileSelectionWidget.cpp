@@ -32,18 +32,18 @@ namespace bw
 
 		m_tileSelectionCanvas = new ScrollCanvas;
 		WorldCanvas* worldCanvas = m_tileSelectionCanvas->GetWorldCanvas();
-		Nz::EventHandler& eventHandler = worldCanvas->GetEventHandler();
-		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
+		Nz::WindowEventHandler& eventHandler = worldCanvas->GetEventHandler();
+		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
 		{
 			OnMouseButtonPressed(mouseEvent);
 		});
 
-		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
+		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseEvent)
 		{
 			OnMouseButtonReleased(mouseEvent);
 		});
 
-		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseEvent)
+		eventHandler.OnMouseMoved.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseEvent)
 		{
 			OnMouseMoved(mouseEvent);
 		});
@@ -63,7 +63,7 @@ namespace bw
 			}
 			//unsigned int tileMapSide = static_cast<unsigned int>(std::ceil(std::sqrt(tileData.size() + 1)));
 
-			Nz::TileMapRef tileMap = Nz::TileMap::New(mapSize, m_tileSize, tilesetGroup.materials.size());
+			std::shared_ptr<Nz::Tilemap> tileMap = Nz::TileMap::New(mapSize, m_tileSize, tilesetGroup.materials.size());
 
 			Nz::Vector2ui tileCursor = Nz::Vector2ui::Zero();
 

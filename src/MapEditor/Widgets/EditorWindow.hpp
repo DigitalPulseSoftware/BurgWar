@@ -10,7 +10,7 @@
 #include <NDK/Prerequisites.hpp>
 #include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Map.hpp>
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <MapEditor/EditorAppConfig.hpp>
 #include <MapEditor/Enums.hpp>
 #include <MapEditor/Widgets/EditorWindowPrefabs.hpp>
@@ -37,7 +37,7 @@ namespace bw
 	class ScriptingContext;
 	class VirtualDirectory;
 
-	class EditorWindow : public ClientEditorApp, public QMainWindow
+	class EditorWindow : public ClientEditorAppComponent, public QMainWindow
 	{
 		public:
 			EditorWindow(int argc, char* argv[]);

@@ -36,7 +36,7 @@ namespace bw
 			inline ClientLayerSound(ClientLayerSound&& entity) noexcept;
 			~ClientLayerSound() = default;
 
-			float GetSoundDuration(std::size_t soundIndex) const;
+			Nz::Time GetSoundDuration(std::size_t soundIndex) const;
 
 			LayerIndex GetLayerIndex() const;
 			inline Nz::Vector2f GetPosition() const;
@@ -61,8 +61,8 @@ namespace bw
 			struct PlayingSound
 			{
 				std::shared_ptr<Nz::SoundBuffer> soundBuffer;
-				float currentOffset = 0.f;
-				float duration = 0.f;
+				Nz::Time currentOffset = Nz::Time::Zero();
+				Nz::Time duration = Nz::Time::Zero();
 				bool isLooping;
 				bool isSpatialized;
 			};

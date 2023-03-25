@@ -96,7 +96,7 @@ namespace bw
 			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("Color", std::nullopt); colorParameter)
 				color = colorParameter.value();
 			else
-				color = Nz::Color::White;
+				color = Nz::Color::White();
 
 			//TODO: Don't create a material everytime
 			/*Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
@@ -178,7 +178,7 @@ namespace bw
 			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("Color", std::nullopt); colorParameter)
 				color = colorParameter.value();
 			else
-				color = Nz::Color::White;
+				color = Nz::Color::White();
 
 			float outlineThickness = parameters.get_or("OutlineThickness", 0.f);
 
@@ -205,7 +205,7 @@ namespace bw
 			//if (font)
 			//	drawer.SetFont(font);
 
-			std::shared_ptr<Nz::TextSprite> textSprite = Nz::TextSprite::New();
+			std::shared_ptr<Nz::TextSprite> textSprite = std::make_shared<Nz::TextSprite>();
 			textSprite->Update(drawer);
 
 			auto& visualComponent = entity.get<VisualComponent>();

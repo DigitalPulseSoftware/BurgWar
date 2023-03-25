@@ -13,20 +13,20 @@
 
 namespace bw
 {
-	class ClientEditorApp;
+	class ClientEditorAppComponent;
 
 	class BURGWAR_CLIENTLIB_API Music
 	{
 		public:
-			Music(ClientEditorApp& app, Nz::Music music);
+			Music(ClientEditorAppComponent& app, Nz::Music music);
 			Music(const Music&) = delete;
 			Music(Music&&) noexcept = default;
 			~Music() = default;
 
 			inline void EnableLooping(bool loop);
 
-			inline Nz::UInt32 GetDuration() const;
-			inline Nz::UInt32 GetPlayingOffset() const;
+			inline Nz::Time GetDuration() const;
+			inline Nz::Time GetPlayingOffset() const;
 			inline Nz::UInt64 GetSampleCount() const;
 			inline Nz::UInt32 GetSampleRate() const;
 
@@ -36,7 +36,7 @@ namespace bw
 			inline void Pause();
 			inline void Play();
 
-			inline void SetPlayingOffset(Nz::UInt32 offset);
+			inline void SetPlayingOffset(Nz::Time offset);
 
 			inline void Stop();
 

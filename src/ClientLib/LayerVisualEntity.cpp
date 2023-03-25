@@ -121,7 +121,7 @@ namespace bw
 				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(worldMatrix, r.offsetMatrix));
 
 				if (first)
-					aabb.Set(boundingVolume.aabb);
+					aabb = boundingVolume.aabb;
 				else
 					aabb.ExtendTo(boundingVolume.aabb);
 
@@ -145,7 +145,7 @@ namespace bw
 				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, r.offsetMatrix));
 
 				if (first)
-					aabb.Set(boundingVolume.aabb);
+					aabb = boundingVolume.aabb;
 				else
 					aabb.ExtendTo(boundingVolume.aabb);
 

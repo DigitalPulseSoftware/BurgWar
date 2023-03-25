@@ -2,7 +2,7 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <ClientLib/ClientEditorApp.hpp>
+#include <ClientLib/ClientEditorAppComponent.hpp>
 #include <CoreLib/SharedAppConfig.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
@@ -26,8 +26,8 @@ namespace bw
 		static constexpr const char* PlayerSettingsFile = "playerconfig.lua";
 	}
 
-	ClientEditorApp::ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
-	BurgAppComponent(side, configFile),
+	ClientEditorAppComponent::ClientEditorAppComponent(Nz::ApplicationBase& app, int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :
+	BurgAppComponent(app, side, configFile),
 	m_playerSettings(*this)
 	{
 		if (!m_playerSettings.LoadFromFile(PlayerSettingsFile))
@@ -46,7 +46,7 @@ namespace bw
 		});
 	}
 
-	ClientEditorApp::~ClientEditorApp()
+	ClientEditorAppComponent::~ClientEditorAppComponent()
 	{
 		/*Nz::FontLibrary::Clear();
 		Nz::MaterialLibrary::Clear();
@@ -54,18 +54,13 @@ namespace bw
 		Nz::TextureLibrary::Clear();*/
 	}
 
-	void ClientEditorApp::SavePlayerConfig()
+	void ClientEditorAppComponent::SavePlayerConfig()
 	{
 		if (!m_playerSettings.SaveToFile(PlayerSettingsFile))
 			bwLog(GetLogger(), LogLevel::Warning, "Failed to save player config");
 	}
 
-	void ClientEditorApp::Quit()
-	{
-		//ClientApplication::Quit();
-	}
-
-	void ClientEditorApp::FillStores()
+	void ClientEditorAppComponent::FillStores()
 	{
 		const std::string& gameResourceFolder = m_config.GetStringValue("Resources.AssetDirectory");
 

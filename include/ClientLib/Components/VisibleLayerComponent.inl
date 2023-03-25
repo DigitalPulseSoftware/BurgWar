@@ -6,7 +6,8 @@
 
 namespace bw
 {
-	inline VisibleLayerComponent::VisibleLayerComponent(entt::registry& renderWorld) :
+	inline VisibleLayerComponent::VisibleLayerComponent(entt::registry& renderWorld, entt::handle entity) :
+	BaseComponent(entity),
 	m_renderWorld(renderWorld)
 	{
 	}

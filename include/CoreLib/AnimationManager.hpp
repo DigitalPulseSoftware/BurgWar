@@ -9,6 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <NazaraUtils/Signal.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <memory>
 #include <vector>
 
@@ -23,7 +24,7 @@ namespace bw
 			AnimationManager() = default;
 			~AnimationManager() = default;
 
-			inline void PushAnimation(float duration, UpdateCallback update, FinishCallback finish);
+			inline void PushAnimation(Nz::Time duration, UpdateCallback update, FinishCallback finish);
 
 			inline void Update(Nz::Time elapsedTime);
 
@@ -32,8 +33,8 @@ namespace bw
 			{
 				std::function<void()> finishCallback;
 				std::function<bool(float ratio)> updateCallback;
-				float duration;
-				float elapsedtime;
+				Nz::Time duration;
+				Nz::Time elapsedtime;
 			};
 
 			std::vector<Animation> m_newAnimations;

@@ -7,6 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 #define BURGWAR_CLIENTLIB_COMPONENTS_VISIBLELAYERCOMPONENT_HPP
 
+#include <CoreLib/Components/BaseComponent.hpp>
 #include <ClientLib/Camera.hpp>
 #include <ClientLib/Export.hpp>
 #include <ClientLib/ClientLayer.hpp>
@@ -20,10 +21,10 @@ namespace bw
 {
 	class ClientLayerEntity;
 
-	class BURGWAR_CLIENTLIB_API VisibleLayerComponent
+	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public BaseComponent
 	{
 		public:
-			inline VisibleLayerComponent(entt::registry& renderWorld);
+			inline VisibleLayerComponent(entt::registry& renderWorld, entt::handle entity);
 			VisibleLayerComponent(VisibleLayerComponent&&) noexcept = default;
 			~VisibleLayerComponent() = default;
 

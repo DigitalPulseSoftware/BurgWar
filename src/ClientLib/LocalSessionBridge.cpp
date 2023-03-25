@@ -55,7 +55,7 @@ namespace bw
 	{
 		BurgAppComponent& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
 
-		m_sessionInfo.timeSinceLastReceive = static_cast<Nz::UInt32>(app.GetAppTime() - m_lastReceiveTime);
+		m_sessionInfo.timeSinceLastReceive = app.GetAppTime() - m_lastReceiveTime;
 
 		callback(m_sessionInfo);
 	}

@@ -14,18 +14,16 @@ namespace bw
 {
 	class SharedAppConfig;
 
-	class BURGWAR_CLIENTLIB_API ClientEditorApp : public BurgAppComponent
+	class BURGWAR_CLIENTLIB_API ClientEditorAppComponent : public BurgAppComponent
 	{
 		public:
-			ClientEditorApp(int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);
-			~ClientEditorApp();
+			ClientEditorAppComponent(Nz::ApplicationBase& app, int argc, char* argv[], LogSide side, const SharedAppConfig& configFile);
+			~ClientEditorAppComponent();
 
 			inline ConfigFile& GetPlayerSettings();
 			inline const ConfigFile& GetPlayerSettings() const;
 
 			void SavePlayerConfig();
-
-			void Quit() override;
 
 		protected:
 			void FillStores();
@@ -35,6 +33,6 @@ namespace bw
 	};
 }
 
-#include <ClientLib/ClientEditorApp.inl>
+#include <ClientLib/ClientEditorAppComponent.inl>
 
 #endif

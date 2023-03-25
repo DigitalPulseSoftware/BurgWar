@@ -67,8 +67,8 @@ namespace bw
 
 		teamData.background = m_contentWidget->Add<Nz::BaseWidget>();
 
-		teamData.line = m_contentWidget->Add<Nz::ImageWidget>();
-		teamData.line->SetColor(teamData.color);
+		//teamData.line = m_contentWidget->Add<Nz::ImageWidget>();
+		//teamData.line->SetColor(teamData.color);
 
 		teamData.widget = m_contentWidget->Add<Nz::LabelWidget>();
 		teamData.widget->UpdateText(Nz::SimpleTextDrawer::Draw(scoreMenuFont, teamData.name, 24, 0, teamData.color));
@@ -93,7 +93,7 @@ namespace bw
 		playerData.color = color;
 		playerData.teamId = teamId;
 
-		Nz::Color playerColor = Nz::Color::White;
+		Nz::Color playerColor = Nz::Color::White();
 		if (playerData.color)
 			playerColor = *playerData.color;
 		else if (teamId < m_teams.size())
@@ -147,7 +147,7 @@ namespace bw
 		{
 			playerData->teamId = teamId;
 
-			Nz::Color teamColor = Nz::Color::White;
+			Nz::Color teamColor = Nz::Color::White();
 			if (teamId < m_teams.size())
 				teamColor = m_teams[teamId].color;
 
@@ -173,7 +173,7 @@ namespace bw
 		if (valueIndex >= playerData.values.size())
 			return;
 
-		Nz::Color playerColor = Nz::Color::White;
+		Nz::Color playerColor = Nz::Color::White();
 		if (playerData.color)
 			playerColor = *playerData.color;
 		else if (playerData.teamId < m_teams.size())

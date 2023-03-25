@@ -33,16 +33,16 @@ namespace bw
 
 		m_serverAddressLayout = CreateWidget<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
 
-		m_serverAddressArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
+		m_serverAddressArea = m_serverAddressLayout->Add<Nz::TextAreaWidget>();
 		m_serverAddressArea->EnableBackground(true);
-		m_serverAddressArea->SetBackgroundColor(Nz::Color::White);
+		m_serverAddressArea->SetBackgroundColor(Nz::Color::White());
 		m_serverAddressArea->Resize({ 400.f, 36.f });
 		m_serverAddressArea->SetMaximumWidth(400.f);
 		m_serverAddressArea->SetTextColor(Nz::Color::Black());
 
-		m_serverPortArea = m_serverAddressLayout->Add<Ndk::TextAreaWidget>();
+		m_serverPortArea = m_serverAddressLayout->Add<Nz::TextAreaWidget>();
 		m_serverPortArea->EnableBackground(true);
-		m_serverPortArea->SetBackgroundColor(Nz::Color::White);
+		m_serverPortArea->SetBackgroundColor(Nz::Color::White());
 		m_serverPortArea->Resize({ 50.f, 36.f });
 		m_serverPortArea->SetMaximumWidth(100.f);
 		m_serverPortArea->SetTextColor(Nz::Color::Black());
@@ -113,7 +113,7 @@ namespace bw
 			return;
 		}
 
-		Nz::String serverPort = m_serverPortArea->GetText();
+		std::string serverPort = m_serverPortArea->GetText();
 		if (serverPort.IsEmpty())
 		{
 			UpdateStatus("Error: blank server port", Nz::Color::Red());

@@ -12,7 +12,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/TileMap.hpp>
-#include <NDK/Entity.hpp>
+#include <entt/entt.hpp>
 #include <sol/forward.hpp>
 
 namespace bw
@@ -20,7 +20,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Tilemap
 	{
 		public:
-			inline Tilemap(LayerVisualEntityHandle visualEntity, Nz::TileMapRef tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);
 			Tilemap(const Tilemap&) = delete;
 			Tilemap(Tilemap&&) noexcept = default;
 			~Tilemap() = default;
@@ -47,7 +47,7 @@ namespace bw
 
 			LayerVisualEntityHandle m_visualEntity;
 			Nz::Matrix4f m_transformMatrix;
-			Nz::TileMapRef m_tilemap;
+			std::shared_ptr<Nz::Tilemap> m_tilemap;
 			int m_renderOrder;
 			bool m_isVisible;
 	};

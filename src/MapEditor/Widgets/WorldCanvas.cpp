@@ -19,44 +19,44 @@ namespace bw
 		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
 		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
 
-		Nz::EventHandler& eventHandler = GetEventHandler();
+		Nz::WindowEventHandler& eventHandler = GetEventHandler();
 
-		eventHandler.OnKeyPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
+		eventHandler.OnKeyPressed.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
 		{
 			OnKeyPressed(keyEvent);
 		});
 
-		eventHandler.OnKeyReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
+		eventHandler.OnKeyReleased.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::KeyEvent& keyEvent)
 		{
 			OnKeyReleased(keyEvent);
 		});
 
-		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+		eventHandler.OnMouseButtonPressed.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
 			OnMouseButtonPressed(mouseButton);
 		});
 
-		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
+		eventHandler.OnMouseButtonReleased.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseButtonEvent& mouseButton)
 		{
 			OnMouseButtonReleased(mouseButton);
 		});
 
-		eventHandler.OnMouseEntered.Connect([this](const Nz::EventHandler*)
+		eventHandler.OnMouseEntered.Connect([this](const Nz::WindowEventHandler*)
 		{
 			OnMouseEntered();
 		});
 
-		eventHandler.OnMouseLeft.Connect([this](const Nz::EventHandler*)
+		eventHandler.OnMouseLeft.Connect([this](const Nz::WindowEventHandler*)
 		{
 			OnMouseLeft();
 		});
 
-		eventHandler.OnMouseMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
+		eventHandler.OnMouseMoved.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseMoveEvent& mouseMoved)
 		{
 			OnMouseMoved(mouseMoved);
 		});
 
-		eventHandler.OnMouseWheelMoved.Connect([this](const Nz::EventHandler*, const Nz::WindowEvent::MouseWheelEvent& mouseWheel)
+		eventHandler.OnMouseWheelMoved.Connect([this](const Nz::WindowEventHandler*, const Nz::WindowEvent::MouseWheelEvent& mouseWheel)
 		{
 			OnMouseWheelMoved(mouseWheel);
 		});

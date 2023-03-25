@@ -32,7 +32,7 @@ namespace bw
 
 		private:
 			std::size_t m_peerId;
-			Nz::UInt64 m_lastReceiveTime;
+			Nz::Time m_lastReceiveTime;
 			mutable SessionInfo m_sessionInfo;
 			LocalSessionManager& m_sessionManager;
 			bool m_isServer;
