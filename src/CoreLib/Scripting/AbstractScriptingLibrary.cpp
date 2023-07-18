@@ -179,7 +179,7 @@ namespace bw
 		sol::state& luaState = context.GetLuaState();
 		luaState["include"] = LuaFunction([&](sol::this_state L, const std::string& scriptName)
 		{
-			std::filesystem::path scriptPath = context.GetCurrentFolder() / std::filesystem::u8path(scriptName);
+			std::filesystem::path scriptPath = context.GetCurrentFolder() / Nz::Utf8Path(scriptName);
 
 			auto result = context.Load(scriptPath.generic_u8string());
 			if (!result)

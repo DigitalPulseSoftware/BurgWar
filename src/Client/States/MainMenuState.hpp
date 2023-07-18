@@ -8,8 +8,7 @@
 #define BURGWAR_STATES_MAINMENUSTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
-#include <NDK/State.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Widgets.hpp>
 #include <vector>
 
 namespace bw
@@ -21,7 +20,7 @@ namespace bw
 			~MainMenuState() = default;
 
 		private:
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 
@@ -31,7 +30,7 @@ namespace bw
 			void OnQuitPressed();
 
 			std::shared_ptr<AbstractState> m_nextState;
-			Ndk::BoxLayout* m_serverAddressLayout;
+			Nz::BoxLayout* m_serverAddressLayout;
 			Nz::ButtonWidget* m_joinServerButton;
 			Nz::ButtonWidget* m_optionButton;
 			Nz::ButtonWidget* m_quitButton;

@@ -4,22 +4,34 @@
 
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
+#include <Nazara/Core/Application.hpp>
+#include <Nazara/Core/AppEntitySystemComponent.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Platform/AppWindowingComponent.hpp>
 #include <Nazara/Network/Network.hpp>
-#include <Client/ClientApp.hpp>
+#include <Nazara/Widgets/Widgets.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Main/Main.hpp>
 
 int BurgWarGame(int argc, char* argv[])
 {
-	Nz::Initializer<Nz::Network> network;
-	bw::ClientApp app(argc, argv);
-	app.EnableFPSCounter(true);
+	Nz::Renderer::Config config;
+	config.preferredAPI = Nz::RenderAPI::OpenGL;
 
-	Nz::Audio::SetSpeedOfSound(343.3f * 100.f);
+	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::Widgets> app(argc, argv, config);
+	app.AddComponent<Nz::AppEntitySystemComponent>();
+	app.AddComponent<Nz::AppFilesystemComponent>();
+	app.AddComponent<Nz::AppWindowingComponent>();
+	app.AddComponent<bw::ClientAppComponent>(argc, argv);
+	//app.EnableFPSCounter(true);
 
-	Nz::SoundBufferParams params;
+	//Nz::Audio::SetSpeedOfSound(343.3f * 100.f);
+
+	/*Nz::SoundBufferParams params;
 	params.forceMono = true;
 
-	Nz::SoundBufferManager::SetDefaultParameters(params);
+	Nz::SoundBufferManager::SetDefaultParameters(params);*/
 
 	return app.Run();
 }

@@ -6,8 +6,9 @@
 #include <ClientLib/ClientSession.hpp>
 #include <ClientLib/HttpDownloadManager.hpp>
 #include <ClientLib/PacketDownloadManager.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/Game/GameState.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <sstream>
 
@@ -19,31 +20,31 @@ namespace bw
 	m_authSuccess(std::move(authSuccess)),
 	m_matchData(std::move(matchData))
 	{
-		ClientApp* app = GetStateData().app;
+		ClientAppComponent* app = GetStateData().appComponent;
 		const ConfigFile& config = app->GetConfig();
+
+		auto& appfs = GetStateData().app->GetComponent<Nz::AppFilesystemComponent>();
 
 		bwLog(app->GetLogger(), LogLevel::Info, "Downloading resources...");
 
-		m_targetAssetDirectory = std::make_shared<VirtualDirectory>();
-		m_targetScriptDirectory = std::make_shared<VirtualDirectory>();
+		m_targetAssetDirectory = std::make_shared<Nz::VirtualDirectory>();
+		m_targetScriptDirectory = std::make_shared<Nz::VirtualDirectory>();
 
 		m_downloadManagers.emplace_back(std::make_unique<PacketDownloadManager>(m_clientSession));
 
 		// Register scripts before adding HTTP download manager (since we won't get theses files from fast download)
-		auto scriptDir = std::make_shared<VirtualDirectory>(config.GetStringValue("Resources.ScriptDirectory"));
-		RegisterFiles(m_matchData.scripts, scriptDir, m_targetScriptDirectory, config.GetStringValue("Resources.ScriptCacheDirectory"), m_scriptData, true);
+		RegisterFiles(m_matchData.scripts, appfs.GetDirectory("scripts"), m_targetScriptDirectory, config.GetStringValue("Resources.ScriptCacheDirectory"), m_scriptData, true);
 
 		if (!m_matchData.fastDownloadUrls.empty())
 		{
-			if (WebService::IsInitialized())
-				m_downloadManagers.emplace(m_downloadManagers.begin(), std::make_unique<HttpDownloadManager>(app->GetLogger(), std::move(m_matchData.fastDownloadUrls), 2));
+			if (app->HasWebService())
+				m_downloadManagers.emplace(m_downloadManagers.begin(), std::make_unique<HttpDownloadManager>(app->GetWebService(), app->GetLogger(), std::move(m_matchData.fastDownloadUrls), 2));
 			else
 				bwLog(app->GetLogger(), LogLevel::Warning, "web services are not initialized, fast download will be disabled");
 		}
 
 		// Register assets files
-		auto assetDir = std::make_shared<VirtualDirectory>(config.GetStringValue("Resources.AssetDirectory"));
-		RegisterFiles(m_matchData.assets, assetDir, m_targetAssetDirectory, config.GetStringValue("Resources.AssetCacheDirectory"), m_assetData, false);
+		RegisterFiles(m_matchData.assets, appfs.GetDirectory("assets"), m_targetAssetDirectory, config.GetStringValue("Resources.AssetCacheDirectory"), m_assetData, false);
 
 		for (auto& downloadManagerPtr : m_downloadManagers)
 		{
@@ -59,7 +60,7 @@ namespace bw
 			downloadManagerPtr->OnDownloadStarted.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::string& downloadPath)
 			{
 				const auto& fileEntry = downloadManager->GetEntry(fileIndex);
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloading {}... ({})", downloadPath, ByteToString(fileEntry.expectedSize));
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Downloading {}... ({})", downloadPath, ByteToString(fileEntry.expectedSize));
 			});
 
 			downloadManagerPtr->OnDownloadFinished.Connect([this](DownloadManager* downloadManager, std::size_t fileIndex, const std::filesystem::path& realPath, Nz::UInt64 downloadSpeed)
@@ -71,11 +72,13 @@ namespace bw
 				auto& downloadData = GetDownloadData(fileEntry.downloadPath, &isAsset);
 				downloadData.downloadedSize = downloadData.totalSize;
 
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloaded {} ({})", fileEntry.downloadPath, ByteToString(downloadSpeed, true));
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Downloaded {} ({})", fileEntry.downloadPath, ByteToString(downloadSpeed, true));
+
+				std::shared_ptr<Nz::File> file = std::make_shared<Nz::File>(realPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer);
 				if (isAsset)
-					m_targetAssetDirectory->StoreFile(fileEntry.downloadPath, realPath);
+					m_targetAssetDirectory->StoreFile(fileEntry.downloadPath, std::move(file));
 				else
-					m_targetScriptDirectory->StoreFile(fileEntry.downloadPath, realPath);
+					m_targetScriptDirectory->StoreFile(fileEntry.downloadPath, std::move(file));
 
 				UpdateStatus();
 			});
@@ -89,11 +92,11 @@ namespace bw
 				auto& downloadData = GetDownloadData(fileEntry.downloadPath, &isAsset);
 				downloadData.downloadedSize = downloadData.totalSize;
 
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Downloaded {} ({})", fileEntry.downloadPath, ByteToString(downloadSpeed, true));
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Downloaded {} ({})", fileEntry.downloadPath, ByteToString(downloadSpeed, true));
 				if (isAsset)
-					m_targetAssetDirectory->StoreFile(fileEntry.downloadPath, content);
+					m_targetAssetDirectory->StoreFile(fileEntry.downloadPath, Nz::ByteArray(content));
 				else
-					m_targetScriptDirectory->StoreFile(fileEntry.downloadPath, content);
+					m_targetScriptDirectory->StoreFile(fileEntry.downloadPath, Nz::ByteArray(content));
 
 				UpdateStatus();
 			});
@@ -118,7 +121,7 @@ namespace bw
 						break;
 				}
 
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Error, "File download failed ({}): {}", fileEntry.downloadPath, errorReason);
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Error, "File download failed ({}): {}", fileEntry.downloadPath, errorReason);
 
 				// Reset file data and try to download it with another download manager
 				auto& fileData = GetDownloadData(fileEntry.downloadPath);
@@ -132,14 +135,14 @@ namespace bw
 				if (it == m_downloadManagers.end())
 					return;
 
-				bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Retrying with another download manager...");
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Retrying with another download manager...");
 				const auto& nextDownloadManager = *it;
 				nextDownloadManager->RegisterFile(fileEntry.downloadPath, fileEntry.expectedChecksum, fileEntry.expectedSize, fileEntry.outputPath, fileEntry.keepInMemory);
 			});
 		}
 	}
 
-	bool ResourceDownloadState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool ResourceDownloadState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!CancelableState::Update(fsm, elapsedTime))
 			return false;
@@ -155,10 +158,10 @@ namespace bw
 
 		if (hasFinished && !IsSwitching())
 		{
-			bwLog(GetStateData().app->GetLogger(), LogLevel::Info, "Creating match...");
+			bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Creating match...");
 			UpdateStatus("Entering match...", Nz::Color::White());
 
-			SwitchToState(std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(m_targetAssetDirectory), std::move(m_targetScriptDirectory)), 0.5f);
+			SwitchToState(std::make_shared<GameState>(GetStateDataPtr(), m_clientSession, m_authSuccess, m_matchData, std::move(m_targetAssetDirectory), std::move(m_targetScriptDirectory)), Nz::Time::Seconds(0.5f));
 		}
 
 		return true;
@@ -203,83 +206,52 @@ namespace bw
 			expectedChecksum.Assign(resource.sha1Checksum.begin(), resource.sha1Checksum.end());
 
 			// Try to find file in resource directory
-			VirtualDirectory::Entry entry;
-			if (resourceDir->GetEntry(resource.path, &entry))
+			bool isFilePresent = resourceDir->GetEntry(resource.path, [&](const Nz::VirtualDirectory::Entry& entry)
 			{
-				bool isFilePresent = std::visit([&](auto&& arg)
+				return std::visit([&](auto&& arg)
 				{
 					using T = std::decay_t<decltype(arg)>;
-					if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileContentEntry>)
+					if constexpr (std::is_same_v<T, Nz::VirtualDirectory::DirectoryEntry>)
+						return false;
+					else if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					{
-						std::size_t fileSize = arg.size();
-						if (fileSize != resource.size)
-							return false;
-
-						auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
-						hash->Begin();
-						hash->Append(arg.data(), arg.size());
-
-						if (expectedChecksum != hash->End())
-							return false;
-
-						targetDir->StoreFile(resource.path, arg);
-						return true;
-					}
-					else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::PhysicalFileEntry>)
-					{
-						if (keepInMemory)
+						Nz::Stream& stream = *arg.stream;
+						if (stream.IsMemoryMapped())
 						{
-							Nz::ByteArray fileChecksum;
-							std::vector<Nz::UInt8> content;
-
-							Nz::File file(arg.generic_u8string());
-							if (!file.Open(Nz::OpenMode::ReadOnly))
-								return false;
-
-							content.resize(file.GetSize());
-							if (file.Read(content.data(), content.size()) != content.size())
-								return false;
-
-							auto fileHash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
-							fileHash->Begin();
-							fileHash->Append(content.data(), content.size());
-
-							if (expectedChecksum != fileHash->End())
-								return false;
-
-							targetDir->StoreFile(resource.path, content);
-							return true;
-						}
-						else
-						{
-							std::size_t fileSize = std::filesystem::file_size(arg);
+							std::size_t fileSize = stream.GetSize();
 							if (fileSize != resource.size)
 								return false;
 
-							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType::SHA1, arg.generic_u8string()))
+							auto hash = Nz::AbstractHash::Get(Nz::HashType::SHA1);
+							hash->Begin();
+							hash->Append(static_cast<const Nz::UInt8*>(stream.GetMappedPointer()), fileSize);
+
+							if (expectedChecksum != hash->End())
+								return false;
+						}
+						else
+						{
+							std::size_t fileSize = stream.GetSize();
+							if (fileSize != 0 && fileSize != resource.size)
 								return false;
 
-							targetDir->StoreFile(resource.path, arg);
-							return true;
+							if (expectedChecksum != Nz::File::ComputeHash(Nz::HashType::SHA1, stream.GetPath()))
+								return false;
 						}
-					}
-					else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::DirectoryEntry>)
-					{
-						return false;
-					}
-					else
-						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
+						targetDir->StoreFile(resource.path, arg.stream);
+						return true;
+					}
 				}, entry);
+			});
 
-				if (isFilePresent)
-					continue;
-			}
+			if (isFilePresent)
+				continue;
 
 			// Try to find file in cache
 			std::string hexChecksum = expectedChecksum.ToHex();
 
-			std::filesystem::path cachePath = cacheDir / std::filesystem::u8path(resource.path);
+			std::filesystem::path cachePath = cacheDir / Nz::Utf8Path(resource.path);
 			cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
 
 			if (std::filesystem::is_regular_file(cachePath))
@@ -289,7 +261,7 @@ namespace bw
 				{
 					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType::SHA1, cachePath.generic_u8string()))
 					{
-						targetDir->StoreFile(resource.path, cachePath);
+						targetDir->StoreFile(resource.path, std::make_unique<Nz::File>(cachePath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
 						continue;
 					}
 				}

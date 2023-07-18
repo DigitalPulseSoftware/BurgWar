@@ -5,12 +5,12 @@
 #include <CoreLib/BasicPlayerMovementController.hpp>
 #include <CoreLib/PlayerInputData.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
-#include <Nazara/Physics2D/Arbiter2D.hpp>
-#include <Nazara/Physics2D/RigidBody2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/ChipmunkArbiter2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/ChipmunkRigidBody2D.hpp>
 
 namespace bw
 {
-	bool BasicPlayerMovementController::PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity /*collisionBody*/, Nz::Arbiter2D& arbiter) const
+	bool BasicPlayerMovementController::PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity /*collisionBody*/, Nz::ChipmunkArbiter2D& arbiter) const
 	{
 		Nz::Vector2f up = Nz::Vector2f::UnitY();
 
@@ -23,7 +23,7 @@ namespace bw
 		return true;
 	}
 
-	void BasicPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const
+	void BasicPlayerMovementController::UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::ChipmunkRigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const
 	{
 		bool isOnGround = playerMovement.IsOnGround();
 		bool disableGravity = false;

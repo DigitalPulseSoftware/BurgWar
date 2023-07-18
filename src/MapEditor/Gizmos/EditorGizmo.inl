@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline entt::entity EditorGizmo::GetSelectionOverlayEntity() const
+	inline entt::handle EditorGizmo::GetSelectionOverlayEntity() const
 	{
 		return m_selectionOverlayEntity;
 	}

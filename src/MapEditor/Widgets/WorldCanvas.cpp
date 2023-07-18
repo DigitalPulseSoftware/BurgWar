@@ -7,17 +7,17 @@
 #include <NDK/Components/CameraComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
-#include <NDK/Systems/RenderSystem.hpp>
+#include <Nazara/Graphics/Systems/RenderSystem.hpp>
 
 namespace bw
 {
 	WorldCanvas::WorldCanvas(QWidget* parent) :
 	NazaraCanvas(parent),
 	m_backgroundColor(Nz::Color::Black()),
+	m_systemGraph(m_world),
 	m_camera(m_world, this, true)
 	{
-		Ndk::RenderSystem& renderSystem = m_world.AddSystem<Ndk::RenderSystem>();
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
+		Nz::RenderSystem& renderSystem = m_systemGraph.AddSystem<Nz::RenderSystem>();
 
 		Nz::WindowEventHandler& eventHandler = GetEventHandler();
 

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerEntityLibrary.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/CollisionDataComponent.hpp>
@@ -113,6 +114,21 @@ namespace bw
 		});
 	}
 	
+	void ServerEntityLibrary::InitRigidBody(lua_State* L, entt::handle entity, float mass)
+	{
+		std::shared_ptr<Nz::ChipmunkCollider2D> collider;
+		if (auto* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		{
+			collider = rigidBody->GetGeom();
+			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
+		}
+
+		auto& entityMatch = entity.get<MatchComponent>();
+		auto& physics = entityMatch.GetMatch().GetLayer(entityMatch.GetLayerIndex()).GetPhysicsSystem();
+
+		entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(physics.CreateRigidBody(mass, collider));
+	}
+
 	void ServerEntityLibrary::SetDirection(lua_State* L, entt::handle entity, const Nz::Vector2f& upVector)
 	{
 		SharedEntityLibrary::SetDirection(L, entity, upVector);

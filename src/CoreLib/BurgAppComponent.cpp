@@ -4,6 +4,7 @@
 
 #include <CoreLib/BurgAppComponent.hpp>
 #include <Nazara/Core/Application.hpp>
+#include <Nazara/Network/Network.hpp>
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/Mod.hpp>
 #include <CoreLib/Components/AnimationComponent.hpp>
@@ -27,6 +28,7 @@
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
+#include <fmt/std.h>
 #include <cassert>
 #include <thread>
 
@@ -58,25 +60,22 @@ namespace bw
 		assert(!s_application);
 		s_application = this;
 
-		InstallInterruptHandlers();
-
 		m_logger.RegisterSink(std::make_shared<StdSink>());
 		m_logger.SetMinimumLogLevel(LogLevel::Debug);
 
-		std::string error;
-		if (WebService::Initialize(&error))
+		try
 		{
-			bwLog(GetLogger(), LogLevel::Debug, "libcurl has been loaded");
-			m_webService.emplace(m_logger);
+			m_webService = Nz::Network::Instance()->InstantiateWebService();
 		}
-		else
-			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services ({0}), some functionalities will not work", error);
+		catch (const std::exception& e)
+		{
+			bwLog(GetLogger(), LogLevel::Error, "failed to initialize web services ({0}), some functionalities will not work", e);
+		}
 	}
 
 	BurgAppComponent::~BurgAppComponent()
 	{
 		m_webService.reset();
-		WebService::Uninitialize();
 
 		assert(s_application);
 		s_application = nullptr;
@@ -90,57 +89,6 @@ namespace bw
 			m_webService->Poll();
 	}
 
-	void BurgAppComponent::HandleInterruptSignal(const char* signalName)
-	{
-		assert(s_application);
-		bwLog(s_application->GetLogger(), LogLevel::Info, "received interruption signal {0}, exiting...", signalName);
-
-		s_application->GetApp().Quit();
-	}
-
-	void BurgAppComponent::InstallInterruptHandlers()
-	{
-		bool succeeded = false;
-
-#if defined(NAZARA_PLATFORM_WINDOWS)
-		succeeded = SetConsoleCtrlHandler([](DWORD ctrlType) -> BOOL
-		{
-			switch (ctrlType)
-			{
-				case CTRL_C_EVENT: HandleInterruptSignal("CTRL_C"); break;
-				case CTRL_BREAK_EVENT: HandleInterruptSignal("CTRL_BREAK"); break;
-				case CTRL_CLOSE_EVENT: HandleInterruptSignal("CTRL_CLOSE"); break;
-				case CTRL_LOGOFF_EVENT: HandleInterruptSignal("CTRL_LOGOFF"); break;
-				case CTRL_SHUTDOWN_EVENT: HandleInterruptSignal("CTRL_SHUTDOWN"); break;
-				default:
-				{
-					std::string signalName = "<unknown CTRL signal " + std::to_string(ctrlType) + ">";
-					HandleInterruptSignal(signalName.c_str());
-				}
-			}
-
-			return TRUE;
-		}, TRUE);
-#elif defined(NAZARA_PLATFORM_POSIX)
-		struct sigaction action;
-		sigemptyset(&action.sa_mask);
-		action.sa_flags = 0;
-		action.sa_handler = [](int sig)
-		{
-			HandleInterruptSignal(strsignal(sig));
-		};
-
-		if (sigaction(SIGINT, &action, nullptr) != 0)
-			succeeded = false;
-
-		if (sigaction(SIGTERM, &action, nullptr) != 0)
-			succeeded = false;
-#endif
-
-		if (!succeeded)
-			bwLog(GetLogger(), LogLevel::Error, "failed to install interruption signal handlers");
-	}
-	
 	void BurgAppComponent::LoadMods()
 	{
 		const std::string& modDir = m_config.GetStringValue("Resources.ModDirectory");

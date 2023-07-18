@@ -8,13 +8,12 @@
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
-#include <NDK/World.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
-#include <NDK/Components/LifetimeComponent.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
+#include <Nazara/Core/Components/LifetimeComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/Components/PhysicsComponent2D.hpp>
-#include <NDK/Components/VelocityComponent.hpp>
-#include <NDK/Systems/PhysicsSystem2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
+#include <Nazara/Utility/Components/VelocityComponent.hpp>
+#include <Nazara/ChipmunkPhysics2D/Systems/ChipmunkPhysics2DSystem.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -30,7 +29,7 @@ namespace bw
 	{
 		auto shootFunc = [](const sol::table& weaponTable, Nz::Vector2f startPos, Nz::Vector2f direction, Nz::UInt16 /*damage*/, float pushbackForce = 0.f)
 		{
-			entt::handle entity = AssertScriptEntity(weaponTable);
+			/*entt::handle entity = AssertScriptEntity(weaponTable);
 			entt::registry* world = entity->GetWorld();
 			assert(world);
 
@@ -69,7 +68,7 @@ namespace bw
 			const auto& trailEntity = localLayer.GetWorld().CreateEntity();
 			trailEntity->AddComponent<ClientMatchComponent>(clientMatch, localLayer.GetLayerIndex(), trailId);
 
-			auto& trailNode = trailEntity->AddComponent<Ndk::NodeComponent>();
+			auto& trailNode = trailEntity->AddComponent<Nz::NodeComponent>();
 			trailNode.SetPosition(startPos);
 			trailNode.SetRotation(Nz::Quaternionf::RotationBetween(Nz::Vector3f::UnitX(), direction));
 
@@ -79,7 +78,7 @@ namespace bw
 			ClientLayerEntity layerEntity(localLayer, trailEntity, ClientLayerEntity::ClientsideId, trailId);
 			layerEntity.AttachRenderable(trailSprite, Nz::Matrix4f::Identity(), -1);
 
-			entityClientMatch.GetLayer().RegisterEntity(std::move(layerEntity));
+			entityClientMatch.GetLayer().RegisterEntity(std::move(layerEntity));*/
 		};
 
 		elementMetatable["Shoot"] = sol::overload(

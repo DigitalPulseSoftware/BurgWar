@@ -11,35 +11,35 @@
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
 
 namespace bw
 {
-	std::optional<ClientLayerEntity> ClientWeaponStore::InstantiateWeapon(ClientLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, entt::entity parent)
+	std::optional<ClientLayerEntity> ClientWeaponStore::InstantiateWeapon(ClientLayer& layer, std::size_t entityIndex, Nz::UInt32 serverId, EntityId uniqueId, const PropertyValueMap& properties, entt::handle parent)
 	{
 		const auto& weaponClass = GetElement(entityIndex);
 
-		Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-		mat->SetDiffuseMap(m_assetStore.GetTexture(weaponClass->spriteName));
-		auto& sampler = mat->GetDiffuseSampler();
-		sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+		Nz::TextureSamplerInfo samplerInfo;
+		samplerInfo.magFilter = Nz::SamplerFilter::Linear;
 
-		std::shared_ptr<Nz::Sprite> sprite = Nz::Sprite::New();
-		sprite->SetMaterial(mat);
+		std::shared_ptr<Nz::MaterialInstance> material = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+		material->SetTextureProperty("BaseColorMap", m_assetStore.GetTexture(weaponClass->spriteName));
+		material->SetTextureSamplerProperty("BaseColorMap", samplerInfo);
+
+		std::shared_ptr<Nz::Sprite> sprite = std::make_shared<Nz::Sprite>(std::move(material));
 		sprite->SetSize(sprite->GetSize() * weaponClass->scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();
 		sprite->SetOrigin(weaponClass->spriteOrigin);
 
-		entt::entity weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
+		entt::handle weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
 		ClientLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
 		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
 
-		weapon->AddComponent<VisualComponent>(layerEntity.CreateHandle());
-		weapon->AddComponent<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);
+		weapon.emplace<VisualComponent>(layerEntity.CreateHandle());
+		weapon.emplace<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);
 
 		SharedWeaponStore::InitializeWeapon(*weaponClass, weapon, parent);
 

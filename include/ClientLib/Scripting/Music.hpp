@@ -18,9 +18,9 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Music
 	{
 		public:
-			Music(ClientEditorAppComponent& app, Nz::Music music);
+			Music(ClientEditorAppComponent& app, std::unique_ptr<Nz::Music> music);
 			Music(const Music&) = delete;
-			Music(Music&&) noexcept = default;
+			Music(Music&& music) noexcept;
 			~Music() = default;
 
 			inline void EnableLooping(bool loop);
@@ -41,12 +41,16 @@ namespace bw
 			inline void Stop();
 
 			Music& operator=(const Music&) = delete;
-			Music& operator=(Music&&) noexcept = default;
+			Music& operator=(Music&& music) noexcept;
 
 		private:
+			void ConnectSignals();
+			void DisconnectSignals();
+
 			typename Nz::Signal<long long>::ConnectionGuard m_musicVolumeUpdateSlot;
 
-			Nz::Music m_music;
+			std::unique_ptr<Nz::Music> m_music;
+			ClientEditorAppComponent& m_app;
 	};
 }
 

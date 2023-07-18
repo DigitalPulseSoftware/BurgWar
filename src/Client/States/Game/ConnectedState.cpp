@@ -5,18 +5,20 @@
 #include <Client/States/Game/ConnectedState.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/ClientSession.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/Game/ConnectionLostState.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	constexpr float PeerInfoPollTime = 0.1f; //< 0.1s
-	constexpr float UpdateInfoRefreshTime = 1.0f; //< 1s
-	constexpr Nz::UInt32 TimeoutThreshold = 3'000; //< 3s
+	constexpr Nz::Time PeerInfoPollTime = Nz::Time::Seconds(0.1f);
+	constexpr Nz::Time UpdateInfoRefreshTime = Nz::Time::Seconds(1.0f);
+	constexpr Nz::Time TimeoutThreshold = Nz::Time::Seconds(3);
 
 	ConnectedState::ConnectedState(std::shared_ptr<StateData> stateData, std::shared_ptr<ClientSession> clientSession, std::shared_ptr<AbstractState> firstState) :
 	AbstractState(std::move(stateData)),
@@ -30,13 +32,13 @@ namespace bw
 	m_downloadSpeed(10),
 	m_uploadSpeed(10),
 	m_connectionLost(false),
-	m_connectionLostCounter(0.f),
-	m_queryInfoTimer(0.f)
+	m_connectionLostCounter(Nz::Time::Zero()),
+	m_queryInfoTimer(Nz::Time::Zero())
 	{
 		RefreshFlags();
 	}
 
-	void ConnectedState::Enter(Ndk::StateMachine& fsm)
+	void ConnectedState::Enter(Nz::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
@@ -53,7 +55,7 @@ namespace bw
 		float cursor = 0.f;
 		if (m_connectionLostEntity)
 		{
-			auto& entityNode = m_connectionLostentity.get<Nz::NodeComponent>();
+			auto& entityNode = m_connectionLostEntity->get<Nz::NodeComponent>();
 			entityNode.SetPosition(windowSize.x - m_connectionLostSprite->GetSize().x - 10.f, cursor);
 
 			cursor += m_connectionLostSprite->GetSize().y;
@@ -75,29 +77,29 @@ namespace bw
 	{
 		if (!m_connectionLostSprite)
 		{
-			const std::string& assetsFolder = GetStateData().app->GetConfig().GetStringValue("Resources.AssetDirectory");
+			auto& appfs = GetStateData().app->GetComponent<Nz::AppFilesystemComponent>();
 
-			Nz::MaterialRef connectionLostMat = Nz::Material::New("Translucent2D");
-			connectionLostMat->SetDiffuseMap(assetsFolder + "/connection.png");
+			std::shared_ptr<Nz::MaterialInstance> connectionLostMat = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+			connectionLostMat->SetTextureProperty("BaseColorMap", appfs.Load<Nz::Texture>("assets/connection.png"));
 
-			m_connectionLostSprite = Nz::Sprite::New();
-			m_connectionLostSprite->SetMaterial(std::move(connectionLostMat));
+			m_connectionLostSprite = std::make_shared<Nz::Sprite>(std::move(connectionLostMat));
+			m_connectionLostSprite->UpdateRenderLayer(1000000);
 		}
 
-		m_connectionLostCounter = 0.f;
+		m_connectionLostCounter = Nz::Time::Zero();
 		m_connectionLostSprite->SetColor(Nz::Color(255, 0, 0, 0));
 
 		m_connectionLostEntity = CreateEntity();
-		m_connectionLostEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_connectionLostSprite, 1000000);
-		m_connectionLostEntity->AddComponent<Ndk::NodeComponent>();
+		m_connectionLostEntity->emplace<Nz::GraphicsComponent>(m_connectionLostSprite);
+		m_connectionLostEntity->emplace<Nz::NodeComponent>();
 
 		LayoutWidgets();
 	}
 
 	void ConnectedState::OnConnectionRetrieved()
 	{
-		m_connectionLostCounter = 0.f;
-		m_connectionLostSprite->SetColor(Nz::Color::Green);
+		m_connectionLostCounter = Nz::Time::Zero();
+		m_connectionLostSprite->SetColor(Nz::Color::Green());
 	}
 
 	void ConnectedState::PollSessionInfo()
@@ -111,7 +113,7 @@ namespace bw
 			{
 				const SessionBridge::SessionInfo& lastSessionInfo = *m_lastSessionInfo;
 
-				double elapsedTime = double(m_lastSessionClock.Restart()) / 1'000'000;
+				double elapsedTime = m_lastSessionClock.Restart().AsSeconds<double>();
 
 				m_downloadSpeed.InsertValue((sessionInfo.totalByteReceived - lastSessionInfo.totalByteReceived) / elapsedTime);
 				m_uploadSpeed.InsertValue((sessionInfo.totalByteSent - lastSessionInfo.totalByteSent) / elapsedTime);
@@ -147,7 +149,7 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		const std::string& enabledConnectionData = stateData.app->GetConfig().GetStringValue("Debug.ShowConnectionData");
+		const std::string& enabledConnectionData = stateData.appComponent->GetConfig().GetStringValue("Debug.ShowConnectionData");
 		SplitStringAny(enabledConnectionData, "+| ", [&](std::string_view option)
 		{
 			if (option == "ping")
@@ -159,7 +161,7 @@ namespace bw
 			else if (option == "usage")
 				m_connectionInfoFlags |= InfoFlags::DataUsage;
 			else
-				bwLog(stateData.app->GetLogger(), LogLevel::Warning, "unknown connection data option \"{0}\"", option);
+				bwLog(stateData.appComponent->GetLogger(), LogLevel::Warning, "unknown connection data option \"{0}\"", option);
 
 			return true;
 		});
@@ -167,7 +169,7 @@ namespace bw
 		if ((m_connectionInfoFlags & InfoFlags::DataUsage) &&
 			((m_connectionInfoFlags & (InfoFlags::DownloadSpeed | InfoFlags::UploadSpeed)) == 0))
 		{
-			bwLog(stateData.app->GetLogger(), LogLevel::Warning, "usage connection data option must be used with download and/or upload");
+			bwLog(stateData.appComponent->GetLogger(), LogLevel::Warning, "usage connection data option must be used with download and/or upload");
 			m_connectionInfoFlags &= ~InfoFlags::DataUsage;
 		}
 
@@ -245,7 +247,7 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	bool ConnectedState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool ConnectedState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -258,7 +260,7 @@ namespace bw
 		}
 
 		m_queryInfoTimer -= elapsedTime;
-		if (m_queryInfoTimer < 0.f)
+		if (m_queryInfoTimer < Nz::Time::Zero())
 		{
 			PollSessionInfo();
 
@@ -268,7 +270,7 @@ namespace bw
 		if (m_connectionInfoFlags != 0)
 		{
 			m_updateInfoTimer -= elapsedTime;
-			if (m_updateInfoTimer < 0.f)
+			if (m_updateInfoTimer < Nz::Time::Zero())
 			{
 				UpdateSessionInfo();
 
@@ -281,16 +283,16 @@ namespace bw
 			m_connectionLostCounter += elapsedTime;
 			if (m_connectionLost)
 			{
-				Nz::UInt8 alpha = Nz::UInt8(std::abs(std::sin(m_connectionLostCounter) * 255.f));
+				Nz::UInt8 alpha = Nz::UInt8(std::abs(std::sin(m_connectionLostCounter.AsSeconds()) * 255.f));
 				m_connectionLostSprite->SetColor(Nz::Color(255, 0, 0, alpha));
 			}
 			else
 			{
-				Nz::UInt8 alpha = Nz::UInt8(std::max(std::cos(m_connectionLostCounter) * 255.f, 0.f));
+				Nz::UInt8 alpha = Nz::UInt8(std::max(std::cos(m_connectionLostCounter.AsSeconds()) * 255.f, 0.f));
 				if (alpha > 0)
 					m_connectionLostSprite->SetColor(Nz::Color(0, 255, 0, alpha));
 				else
-					m_connectionLostEntity.Reset();
+					m_connectionLostEntity = EntityOwner{};
 			}
 		}
 

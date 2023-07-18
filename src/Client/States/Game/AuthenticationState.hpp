@@ -22,7 +22,7 @@ namespace bw
 			~AuthenticationState() = default;
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
+			void Enter(Nz::StateMachine& fsm) override;
 			void OnCancelled() override;
 
 			std::optional<Packets::AuthSuccess> m_authSuccessPacket;

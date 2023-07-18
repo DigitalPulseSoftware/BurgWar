@@ -13,7 +13,7 @@
 #include <CoreLib/Systems/TickCallbackSystem.hpp>
 #include <CoreLib/Systems/WeaponSystem.hpp>
 #include <Nazara/Core/Systems/LifetimeSystem.hpp>
-#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
+#include <Nazara/ChipmunkPhysics2D/Systems/ChipmunkPhysics2DSystem.hpp>
 #include <Nazara/Utility/Systems/VelocitySystem.hpp>
 #include <cassert>
 
@@ -25,7 +25,7 @@ namespace bw
 	m_layerIndex(layerIndex)
 	{
 		m_systemGraph.AddSystem<Nz::LifetimeSystem>();
-		m_systemGraph.AddSystem<Nz::Physics2DSystem>();
+		m_systemGraph.AddSystem<Nz::ChipmunkPhysics2DSystem>();
 		//m_systemGraph.AddSystem<Nz::VelocitySystem>();
 
 		m_systemGraph.AddSystem<AnimationSystem>(match);
@@ -34,7 +34,7 @@ namespace bw
 		m_systemGraph.AddSystem<TickCallbackSystem>(match);
 		m_systemGraph.AddSystem<WeaponSystem>(match);
 
-		Nz::PhysWorld2D& physics = m_systemGraph.GetSystem<Nz::Physics2DSystem>().GetPhysWorld();
+		Nz::ChipmunkPhysWorld2D& physics = m_systemGraph.GetSystem<Nz::ChipmunkPhysics2DSystem>().GetPhysWorld();
 		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 192.f));
 		physics.SetMaxStepCount(1);
 		physics.SetSleepTime(Nz::Time::Zero());

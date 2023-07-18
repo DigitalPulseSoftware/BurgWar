@@ -18,7 +18,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API ParticleGroup
 	{
 		public:
-			ParticleGroup(const ParticleRegistry& particleRegistry, entt::entity particleGroup);
+			ParticleGroup(const ParticleRegistry& particleRegistry, entt::handle particleGroup);
 			ParticleGroup(const ParticleGroup&) = delete;
 			ParticleGroup(ParticleGroup&&) noexcept = default;
 			~ParticleGroup() = default;

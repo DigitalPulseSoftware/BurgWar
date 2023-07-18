@@ -105,7 +105,7 @@ namespace bw
 		entt::registry& registry = layer.GetWorld();
 
 		entt::handle entity = CreateEntity(layer, entityIndex, uniqueId, position, rotation, properties, parent);
-		if (entity)
+		if (!entity)
 			return entt::handle{};
 
 		if (!InitializeEntity(entity))

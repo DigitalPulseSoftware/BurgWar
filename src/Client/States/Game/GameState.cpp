@@ -4,7 +4,7 @@
 
 #include <Client/States/Game/GameState.hpp>
 #include <ClientLib/ClientMatch.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/MainMenuState.hpp>
 
@@ -16,23 +16,23 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		m_match = std::make_shared<ClientMatch>(*stateData.app, stateData.window, stateData.window, &stateData.canvas.value(), *m_clientSession, authSuccess, matchData);
+		m_match = std::make_shared<ClientMatch>(*stateData.appComponent, stateData.window, stateData.swapchain, &stateData.canvas.value(), *stateData.world, *m_clientSession, authSuccess, matchData);
 		m_match->LoadAssets(std::move(assetDirectory));
 		m_match->LoadScripts(std::move(scriptDirectory));
 
-		if (stateData.app->GetConfig().GetBoolValue("Debug.ShowServerGhosts"))
+		if (stateData.appComponent->GetConfig().GetBoolValue("Debug.ShowServerGhosts"))
 			m_match->InitDebugGhosts();
 
 		m_clientSession->SendPacket(Packets::Ready{});
 	}
 
-	void GameState::Leave(Ndk::StateMachine& /*fsm*/)
+	void GameState::Leave(Nz::StateMachine& /*fsm*/)
 	{
 		if (m_clientSession)
 			m_clientSession->Disconnect();
 	}
 
-	bool GameState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool GameState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

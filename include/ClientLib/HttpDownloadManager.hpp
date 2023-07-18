@@ -7,7 +7,7 @@
 #ifndef BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 #define BURGWAR_CLIENTLIB_HTTPDOWNLOADMANAGER_HPP
 
-#include <CoreLib/WebService.hpp>
+#include <Nazara/Network/WebService.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <ClientLib/DownloadManager.hpp>
 #include <ClientLib/Export.hpp>
@@ -23,7 +23,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API HttpDownloadManager : public DownloadManager
 	{
 		public:
-			HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
+			HttpDownloadManager(Nz::WebService& webService, const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultanousDownload = 2);
 			HttpDownloadManager(const HttpDownloadManager&) = delete;
 			HttpDownloadManager(HttpDownloadManager&&) = delete;
 			~HttpDownloadManager() = default;
@@ -65,8 +65,8 @@ namespace bw
 			std::vector<PendingFile> m_downloadList;
 			std::vector<Request> m_requests;
 			Nz::ByteArray m_byteArray;
+			Nz::WebService& m_webService;
 			const Logger& m_logger;
-			WebService m_webService;
 	};
 }
 

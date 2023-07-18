@@ -122,13 +122,13 @@ namespace bw
 
 			m_backgroundWidget->Resize({ maxWidth, height });
 
-			float cursor = padding;
+			float cursor = height - padding;
 			for (Nz::ButtonWidget* button : buttons)
 			{
 				button->SetPosition(0.f, cursor);
 				button->CenterHorizontal();
 
-				cursor += button->GetHeight() + buttonPadding;
+				cursor -= button->GetHeight() + buttonPadding;
 			}
 		}
 		else

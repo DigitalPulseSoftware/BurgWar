@@ -8,7 +8,7 @@
 #define BURGWAR_MAPEDITOR_EDITORGIZMO_HPP
 
 #include <ClientLib/LayerVisualEntity.hpp>
-#include <Nazara/Platform/Event.hpp>
+#include <Nazara/Platform/WindowEvent.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <CoreLib/EntityOwner.hpp>
 
@@ -20,7 +20,7 @@ namespace bw
 			EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities);
 			virtual ~EditorGizmo();
 
-			inline entt::entity GetSelectionOverlayEntity() const;
+			inline entt::handle GetSelectionOverlayEntity() const;
 			inline const std::vector<LayerVisualEntityHandle>& GetTargetEntities() const;
 
 			virtual bool OnMouseButtonPressed(const Nz::WindowEvent::MouseButtonEvent& mouseButton) = 0;

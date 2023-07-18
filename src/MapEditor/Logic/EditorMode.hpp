@@ -7,7 +7,7 @@
 #ifndef BURGWAR_MAPEDITOR_SCRIPTING_EDITOR_MODE_HPP
 #define BURGWAR_MAPEDITOR_SCRIPTING_EDITOR_MODE_HPP
 
-#include <Nazara/Platform/Event.hpp>
+#include <Nazara/Platform/WindowEvent.hpp>
 #include <memory>
 
 namespace bw

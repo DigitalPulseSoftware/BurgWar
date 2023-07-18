@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/VisualEntity.hpp>
+#include <Nazara/Core/Components/DisabledComponent.hpp>
 
 namespace bw
 {
@@ -13,9 +14,14 @@ namespace bw
 
 	inline void VisualEntity::Enable(bool enable)
 	{
+		if (enable)
+			m_entity->remove<Nz::DisabledComponent>();
+		else
+			m_entity->emplace_or_replace<Nz::DisabledComponent>();
 		// TODO
-		/*m_entity->Enable(enable);
+		/*
 		for (auto& hoveringRenderable : m_hoveringRenderables)
-			hoveringRenderable.entity->Enable(enable);*/
+			hoveringRenderable.entity->Enable(enable);
+		*/
 	}
 }

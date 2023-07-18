@@ -27,10 +27,12 @@ namespace bw
 		return widget;
 	}
 
-	inline entt::entity AbstractState::CreateEntity()
+	inline entt::handle AbstractState::CreateEntity()
 	{
-		entt::entity entity = m_stateData->world->CreateEntity();
-		entity->Enable(m_isVisible);
+		entt::handle entity = m_stateData->world->CreateEntity();
+		if (!m_isVisible)
+			entity.emplace<Nz::DisabledComponent>();
+
 		m_entities.emplace_back(entity);
 
 		return entity;

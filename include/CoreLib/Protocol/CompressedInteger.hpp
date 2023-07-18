@@ -8,6 +8,7 @@
 #define BURGWAR_CORELIB_NETWORK_COMPRESSEDINTEGER_HPP
 
 #include <Nazara/Core/Algorithm.hpp>
+#include <fmt/core.h>
 #include <type_traits>
 
 namespace bw
@@ -56,6 +57,9 @@ namespace bw
 			T m_value;
 	};
 }
+
+template<typename T> struct fmt::formatter<bw::CompressedSigned<T>> : formatter<T> {};
+template<typename T> struct fmt::formatter<bw::CompressedUnsigned<T>> : formatter<T> {};
 
 namespace Nz
 {

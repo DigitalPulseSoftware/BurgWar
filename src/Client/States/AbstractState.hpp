@@ -9,14 +9,16 @@
 
 #include <Client/States/StateData.hpp>
 #include <Nazara/Widgets/BaseWidget.hpp>
-#include <NDK/State.hpp>
+#include <CoreLib/EntityOwner.hpp>
+#include <Nazara/Core/State.hpp>
+#include <Nazara/Core/Components/DisabledComponent.hpp>
 #include <functional>
 #include <memory>
 #include <vector>
 
 namespace bw
 {
-	class AbstractState : public Ndk::State, public std::enable_shared_from_this<AbstractState>
+	class AbstractState : public Nz::State, public std::enable_shared_from_this<AbstractState>
 	{
 		public:
 			AbstractState(std::shared_ptr<StateData> stateData);
@@ -24,7 +26,7 @@ namespace bw
 
 		protected:
 			template<typename T, typename... Args> void ConnectSignal(T& signal, Args&&... args);
-			inline entt::entity CreateEntity();
+			inline entt::handle CreateEntity();
 			template<typename T, typename... Args> T* CreateWidget(Args&&... args);
 			inline void DestroyWidget(Nz::BaseWidget* widget);
 
@@ -32,9 +34,9 @@ namespace bw
 			inline const StateData& GetStateData() const;
 			inline const std::shared_ptr<StateData>& GetStateDataPtr();
 
-			void Enter(Ndk::StateMachine& fsm) override;
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			virtual void LayoutWidgets();
 

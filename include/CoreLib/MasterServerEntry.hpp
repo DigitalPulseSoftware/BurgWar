@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_MASTERSERVERENTRY_HPP
 
 #include <CoreLib/Export.hpp>
-#include <CoreLib/WebService.hpp>
+#include <Nazara/Network/WebService.hpp>
 #include <Nazara/Core/Time.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
@@ -23,7 +23,7 @@ namespace bw
 	class BURGWAR_CORELIB_API MasterServerEntry
 	{
 		public:
-			MasterServerEntry(Match& match, std::string masterServerURL);
+			MasterServerEntry(Nz::WebService& webService, Match& match, std::string masterServerURL);
 			MasterServerEntry(const MasterServerEntry&) = delete;
 			MasterServerEntry(MasterServerEntry&&) = delete;
 			~MasterServerEntry() = default;
@@ -35,7 +35,7 @@ namespace bw
 
 		private:
 			nlohmann::json BuildServerInfo() const;
-			void HandleResponse(WebRequestResult&& result, bool refresh);
+			void HandleResponse(Nz::WebRequestResult&& result, bool refresh);
 
 			void Refresh();
 			void Register();
@@ -43,8 +43,8 @@ namespace bw
 			std::string m_masterServerURL;
 			std::string m_requestBody;
 			std::string m_updateToken;
+			Nz::WebService& m_webService;
 			Match& m_match;
-			WebService m_webService;
 			Nz::Time m_timeBeforeRefresh;
 	};
 }

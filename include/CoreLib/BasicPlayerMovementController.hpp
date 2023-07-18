@@ -18,9 +18,9 @@ namespace bw
 			BasicPlayerMovementController() = default;
 			~BasicPlayerMovementController() = default;
 
-			bool PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity collisionBody, Nz::Arbiter2D& arbiter) const override;
+			bool PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity collisionBody, Nz::ChipmunkArbiter2D& arbiter) const override;
 
-			void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const override;
+			void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::ChipmunkRigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const override;
 	};
 }
 

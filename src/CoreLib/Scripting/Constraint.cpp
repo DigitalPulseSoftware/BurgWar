@@ -7,11 +7,11 @@
 
 namespace bw
 {
-	Constraint::Constraint(entt::handle entity, Nz::Constraint2DHandle constraint) :
+	Constraint::Constraint(entt::handle entity, Nz::ChipmunkConstraint2DHandle constraint) :
 	m_entity(entity),
 	m_constraint(std::move(constraint))
 	{
-		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
+		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::ChipmunkConstraint2D>*) {
 			KillEntity();
 		});
 	}
@@ -21,7 +21,7 @@ namespace bw
 	m_constraint(std::move(constraint.m_constraint))
 	{
 		constraint.m_onDestruction.Disconnect();
-		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::Constraint2D>*) {
+		m_onDestruction.Connect(m_constraint->OnHandledObjectDestruction, [this](Nz::HandledObject<Nz::ChipmunkConstraint2D>*) {
 			KillEntity();
 		});
 	}
@@ -98,37 +98,37 @@ namespace bw
 	float PinConstraint::GetDistance() const
 	{
 		AssertValid();
-		return GetConstraint<Nz::PinConstraint2D>()->GetDistance();
+		return GetConstraint<Nz::ChipmunkPinConstraint2D>()->GetDistance();
 	}
 
 	void PinConstraint::SetDistance(float distance)
 	{
 		AssertValid();
-		GetConstraint<Nz::PinConstraint2D>()->SetDistance(distance);
+		GetConstraint<Nz::ChipmunkPinConstraint2D>()->SetDistance(distance);
 	}
 
 
 	Nz::RadianAnglef RotaryLimitConstraint::GetMaxAngle() const
 	{
 		AssertValid();
-		return GetConstraint<Nz::RotaryLimitConstraint2D>()->GetMaxAngle();
+		return GetConstraint<Nz::ChipmunkRotaryLimitConstraint2D>()->GetMaxAngle();
 	}
 
 	Nz::RadianAnglef RotaryLimitConstraint::GetMinAngle() const
 	{
 		AssertValid();
-		return GetConstraint<Nz::RotaryLimitConstraint2D>()->GetMinAngle();
+		return GetConstraint<Nz::ChipmunkRotaryLimitConstraint2D>()->GetMinAngle();
 	}
 
 	void RotaryLimitConstraint::SetMaxAngle(Nz::RadianAnglef maxAngle)
 	{
 		AssertValid();
-		GetConstraint<Nz::RotaryLimitConstraint2D>()->SetMaxAngle(maxAngle);
+		GetConstraint<Nz::ChipmunkRotaryLimitConstraint2D>()->SetMaxAngle(maxAngle);
 	}
 
 	void RotaryLimitConstraint::SetMinAngle(Nz::RadianAnglef minAngle)
 	{
 		AssertValid();
-		GetConstraint<Nz::RotaryLimitConstraint2D>()->SetMinAngle(minAngle);
+		GetConstraint<Nz::ChipmunkRotaryLimitConstraint2D>()->SetMinAngle(minAngle);
 	}
 }

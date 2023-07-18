@@ -8,6 +8,7 @@
 #define BURGWAR_CLIENTLIB_SYSTEMS_FRAMECALLBACKSYSTEM_HPP
 
 #include <ClientLib/Export.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <entt/entt.hpp>
 #include <vector>
 

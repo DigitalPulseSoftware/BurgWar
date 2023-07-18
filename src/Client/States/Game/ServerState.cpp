@@ -5,7 +5,7 @@
 #include <Client/States/Game/ServerState.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 
@@ -15,7 +15,7 @@ namespace bw
 	AbstractState(std::move(stateDataPtr)),
 	m_originalState(std::move(originalState))
 	{
-		ClientApp& app = *GetStateData().app;
+		ClientAppComponent& app = *GetStateData().appComponent;
 		const ConfigFile& config = app.GetConfig();
 
 		m_match.emplace(app, std::move(matchSettings), std::move(gamemodeSettings), std::move(modSettings));
@@ -27,12 +27,12 @@ namespace bw
 			m_match->InitDebugGhosts();
 	}
 
-	void ServerState::Enter(Ndk::StateMachine& fsm)
+	void ServerState::Enter(Nz::StateMachine& fsm)
 	{
 		fsm.PushState(std::make_shared<ConnectionState>(GetStateDataPtr(), m_localSessionManager, m_originalState));
 	}
 
-	bool ServerState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool ServerState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;

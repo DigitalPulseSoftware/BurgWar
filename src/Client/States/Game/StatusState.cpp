@@ -3,9 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/StatusState.hpp>
-#include <Nazara/Graphics/ColorBackground.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/Systems/RenderSystem.hpp>
 
 namespace bw
 {
@@ -15,22 +13,22 @@ namespace bw
 		m_statusLabel = CreateWidget<Nz::LabelWidget>();
 	}
 
-	void StatusState::Enter(Ndk::StateMachine& fsm)
+	void StatusState::Enter(Nz::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
 		StateData& stateData = GetStateData();
 
-		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(100, 185, 191)));
+		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(100, 185, 191)));
 	}
 
-	void StatusState::Leave(Ndk::StateMachine& fsm)
+	void StatusState::Leave(Nz::StateMachine& fsm)
 	{
 		AbstractState::Leave(fsm);
 
 		StateData& stateData = GetStateData();
 
-		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
+		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
 	}
 
 	void StatusState::UpdateStatus(const std::string& status, const Nz::Color& color)

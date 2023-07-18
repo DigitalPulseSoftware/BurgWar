@@ -44,7 +44,7 @@ namespace bw
 			void ProcessNextAddress(const ServerName& name);
 			void ProcessNextAddress(const Nz::IpAddress& address);
 			void ProcessNextAddress(LocalSessionManager* sessionManager);
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			struct ResolvingData
 			{
@@ -58,7 +58,7 @@ namespace bw
 			std::shared_ptr<ClientSession> m_clientSession;
 			std::size_t m_currentAddressIndex;
 			AddressList m_addresses;
-			float m_timeBeforeGivingUp;
+			Nz::Time m_timeBeforeGivingUp;
 
 			NazaraSlot(ClientSession, OnConnected, m_clientSessionConnectedSlot);
 			NazaraSlot(ClientSession, OnDisconnected, m_clientSessionDisconnectedSlot);

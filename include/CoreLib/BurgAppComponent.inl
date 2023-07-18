@@ -34,9 +34,14 @@ namespace bw
 		return m_mods;
 	}
 
-	inline WebService& BurgAppComponent::GetWebService()
+	inline Nz::WebService& BurgAppComponent::GetWebService()
 	{
 		assert(m_webService);
 		return *m_webService;
+	}
+
+	inline bool BurgAppComponent::HasWebService() const
+	{
+		return m_webService != nullptr;
 	}
 }

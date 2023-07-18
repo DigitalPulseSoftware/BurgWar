@@ -112,9 +112,9 @@ namespace bw
 		return &m_matchPlayers[playerIndex].value();
 	}
 
-	inline entt::registry& ClientMatch::GetRenderWorld()
+	inline Nz::EnttWorld& ClientMatch::GetRenderWorld()
 	{
-		return m_renderWorld.registry;
+		return m_renderWorld;
 	}
 
 	inline void ClientMatch::Quit()

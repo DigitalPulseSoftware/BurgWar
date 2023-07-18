@@ -8,11 +8,11 @@
 #define BURGWAR_MAPEDITOR_WIDGETS_ENTITYINFODIALOG_HPP
 
 #include <NazaraUtils/Flags.hpp>
-#include <NDK/Entity.hpp>
 #include <CoreLib/PropertyValues.hpp>
 #include <CoreLib/Map.hpp>
 #include <MapEditor/Enums.hpp>
 #include <QtWidgets/QDialog>
+#include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
 #include <filesystem>
 #include <functional>
@@ -113,7 +113,7 @@ namespace bw
 				bool isArray;
 			};
 
-			Ndk::EntityHandle m_targetEntity;
+			entt::handle m_targetEntity;
 			EntityId m_entityUniqueId;
 			LayerIndex m_entityLayer;
 			std::size_t m_entityTypeIndex;

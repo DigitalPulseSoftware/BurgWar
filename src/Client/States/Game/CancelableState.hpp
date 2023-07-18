@@ -8,6 +8,7 @@
 #define BURGWAR_STATES_GAME_CANCELABLESTATE_HPP
 
 #include <Client/States/Game/StatusState.hpp>
+#include <Nazara/Core/Time.hpp>
 #include <Nazara/Widgets/ButtonWidget.hpp>
 #include <memory>
 
@@ -19,24 +20,24 @@ namespace bw
 			CancelableState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> originalState);
 			~CancelableState() = default;
 
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 		protected:
-			void Cancel(float delay = 0.f);
+			void Cancel(Nz::Time delay = Nz::Time::Zero());
 			inline const std::shared_ptr<AbstractState>& GetOriginalState();
 			inline bool IsSwitching() const;
-			void SwitchToState(std::shared_ptr<AbstractState> state, float delay = 0.f);
-			void UpdateState(std::function<void(Ndk::StateMachine& fsm)> stateUpdate, float delay = 0.f);
+			void SwitchToState(std::shared_ptr<AbstractState> state, Nz::Time delay = Nz::Time::Zero());
+			void UpdateState(std::function<void(Nz::StateMachine& fsm)> stateUpdate, Nz::Time delay = Nz::Time::Zero());
 
 			virtual void OnCancelled() = 0;
 
 		private:
 			void LayoutWidgets() override;
 
-			std::function<void(Ndk::StateMachine& fsm)> m_nextStateCallback;
+			std::function<void(Nz::StateMachine& fsm)> m_nextStateCallback;
 			std::shared_ptr<AbstractState> m_originalState;
 			Nz::ButtonWidget* m_cancelButton;
-			float m_nextStateDelay;
+			Nz::Time m_nextStateDelay;
 	};
 }
 

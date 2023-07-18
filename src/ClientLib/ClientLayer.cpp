@@ -15,7 +15,7 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <Nazara/Core/Components/LifetimeComponent.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
@@ -285,7 +285,7 @@ namespace bw
 		{
 			auto& physProperties = *entityData.physicsProperties;
 
-			if (Nz::RigidBody2DComponent* entityPhys = layerEntity->GetEntity().try_get<Nz::RigidBody2DComponent>())
+			if (Nz::ChipmunkRigidBody2DComponent* entityPhys = layerEntity->GetEntity().try_get<Nz::ChipmunkRigidBody2DComponent>())
 			{
 				entityPhys->SetMass(physProperties.mass, false);
 				entityPhys->SetMomentOfInertia(physProperties.momentOfInertia);
@@ -457,7 +457,7 @@ namespace bw
 		{
 			entt::handle entity = localEntity.GetEntity();
 
-			auto& entityPhys = entity.get<Nz::RigidBody2DComponent>();
+			auto& entityPhys = entity.get<Nz::ChipmunkRigidBody2DComponent>();
 			entityPhys.SetMass(packet.mass, false);
 			entityPhys.SetMomentOfInertia(packet.momentOfInertia);
 

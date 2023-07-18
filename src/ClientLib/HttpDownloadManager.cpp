@@ -11,11 +11,11 @@
 
 namespace bw
 {
-	HttpDownloadManager::HttpDownloadManager(const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultaneousDownload) :
+	HttpDownloadManager::HttpDownloadManager(Nz::WebService& webService, const Logger& logger, std::vector<std::string> baseDownloadUrls, std::size_t maxSimultaneousDownload) :
 	m_nextFileIndex(0),
 	m_baseDownloadUrls(std::move(baseDownloadUrls)),
 	m_logger(logger),
-	m_webService(logger)
+	m_webService(webService)
 	{
 		assert(!m_baseDownloadUrls.empty());
 		for (std::string& downloadUrl : m_baseDownloadUrls)
@@ -83,7 +83,9 @@ namespace bw
 
 				std::string downloadUrl = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.downloadPath;
 
-				std::unique_ptr<WebRequest> webRequest = WebRequest::Get(downloadUrl);
+				std::unique_ptr<Nz::WebRequest> webRequest = m_webService.AllocateRequest();
+				webRequest->SetupGet();
+				webRequest->SetURL(downloadUrl);
 				webRequest->SetMaximumFileSize(pendingDownload.expectedSize);
 
 				webRequest->SetDataCallback([this, &request](const void* data, std::size_t size)
@@ -112,7 +114,7 @@ namespace bw
 					return true;
 				});
 				
-				webRequest->SetResultCallback([this, &request](WebRequestResult&& result)
+				webRequest->SetResultCallback([this, &request](Nz::WebRequestResult&& result)
 				{
 					// Handle download end
 					PendingFile& pendingDownload = m_downloadList[request.fileIndex];
@@ -127,7 +129,7 @@ namespace bw
 
 					if (result)
 					{
-						if (long responseCode = result.GetReponseCode(); responseCode == 200)
+						if (long responseCode = result.GetStatusCode(); responseCode == 200)
 						{
 							if (pendingDownload.downloadedSize == pendingDownload.expectedSize)
 							{
@@ -203,7 +205,7 @@ namespace bw
 				request.file.Open(filePath, Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
 				request.keepInMemory = pendingDownload.keepInMemory;
 
-				m_webService.AddRequest(std::move(webRequest));
+				m_webService.QueueRequest(std::move(webRequest));
 
 				OnDownloadStarted(this, m_nextFileIndex, downloadUrl);
 

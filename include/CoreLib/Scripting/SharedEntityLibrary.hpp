@@ -23,7 +23,7 @@ namespace bw
 			void RegisterLibrary(sol::table& elementMetatable) override;
 
 		protected:
-			virtual void InitRigidBody(lua_State* L, entt::handle entity, float mass);
+			virtual void InitRigidBody(lua_State* L, entt::handle entity, float mass) = 0;
 			virtual void SetDirection(lua_State* L, entt::handle entity, const Nz::Vector2f& upVector);
 			virtual void SetMass(lua_State* L, entt::handle entity, float mass, bool recomputeMomentOfInertia);
 			virtual void SetMomentOfInertia(lua_State* L, entt::handle entity, float momentOfInertia);

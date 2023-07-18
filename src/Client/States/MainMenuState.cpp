@@ -4,19 +4,17 @@
 
 #include <Client/States/MainMenuState.hpp>
 #include <CoreLib/ConfigFile.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/OptionState.hpp>
 #include <Client/States/ServerListState.hpp>
 #include <Client/States/StartServerState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
-#include <Nazara/Core/String.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/StateMachine.hpp>
 #include <Nazara/Widgets/CheckboxWidget.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
 #include <Nazara/Widgets/TextAreaWidget.hpp>
@@ -65,7 +63,7 @@ namespace bw
 		});
 	}
 
-	bool MainMenuState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool MainMenuState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -121,14 +119,14 @@ namespace bw
 		}
 
 		Nz::Vector2f cursor = center;
-		cursor.y -= totalSize / 2.f;
+		cursor.y += totalSize / 2.f;
 
 		for (Nz::BaseWidget* widget : widgets)
 		{
 			widget->Resize({ maxWidth, widget->GetHeight() });
 			widget->SetPosition({ 0.f, cursor.y, 0.f });
 			widget->CenterHorizontal();
-			cursor.y += widget->GetSize().y + padding;
+			cursor.y -= widget->GetSize().y + padding;
 		}
 	}
 }

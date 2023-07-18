@@ -26,22 +26,22 @@ namespace bw
 		return static_cast<T*>(m_constraint.GetObject());
 	}
 
-	inline DampedSpringConstraint::DampedSpringConstraint(entt::handle entity, Nz::DampedSpringConstraint2D* constraint) :
+	inline DampedSpringConstraint::DampedSpringConstraint(entt::handle entity, Nz::ChipmunkDampedSpringConstraint2D* constraint) :
 	Constraint(entity, constraint->CreateHandle())
 	{
 	}
 
-	inline PinConstraint::PinConstraint(entt::handle entity, Nz::PinConstraint2D* constraint) :
+	inline PinConstraint::PinConstraint(entt::handle entity, Nz::ChipmunkPinConstraint2D* constraint) :
 	Constraint(entity, constraint->CreateHandle())
 	{
 	}
 	
-	inline PivotConstraint::PivotConstraint(entt::handle entity, Nz::PivotConstraint2D* constraint) :
+	inline PivotConstraint::PivotConstraint(entt::handle entity, Nz::ChipmunkPivotConstraint2D* constraint) :
 	Constraint(entity, constraint->CreateHandle())
 	{
 	}
 
-	inline RotaryLimitConstraint::RotaryLimitConstraint(entt::handle entity, Nz::RotaryLimitConstraint2D* constraint) :
+	inline RotaryLimitConstraint::RotaryLimitConstraint(entt::handle entity, Nz::ChipmunkRotaryLimitConstraint2D* constraint) :
 	Constraint(entity, constraint->CreateHandle())
 	{
 	}

@@ -4,6 +4,7 @@
 
 #include <ClientLib/Scripting/Text.hpp>
 #include <Nazara/Core/Color.hpp>
+#include <Nazara/Graphics/MaterialInstance.hpp>
 #include <sol/sol.hpp>
 #include <optional>
 #include <stdexcept>
@@ -15,7 +16,7 @@ namespace bw
 		if (!m_visualEntity)
 			throw std::runtime_error("Invalid text");
 
-		m_textSprite->SetColor(color);
+		m_textSprite->GetMaterial()->SetValueProperty("BaseColor", color);
 	}
 
 	void Text::SetHoveringHeight(float hoveringHeight)

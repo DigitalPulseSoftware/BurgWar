@@ -10,7 +10,7 @@ namespace bw
 	m_stateData(std::move(stateData)),
 	m_isVisible(false)
 	{
-		m_onTargetChangeSizeSlot.Connect(m_stateData->window->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*)
+		m_onTargetChangeSizeSlot.Connect(m_stateData->swapchain->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*, const Nz::Vector2ui& /*newSize*/)
 		{
 			if (m_isVisible)
 				LayoutWidgets(); 
@@ -26,7 +26,7 @@ namespace bw
 			entry.widget->Destroy();
 	}
 
-	void AbstractState::Enter(Ndk::StateMachine& /*fsm*/)
+	void AbstractState::Enter(Nz::StateMachine& /*fsm*/)
 	{
 		m_isVisible = true;
 
@@ -38,10 +38,10 @@ namespace bw
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			entt::entity entity = *it;
+			entt::handle entity = *it;
 			if (entity)
 			{
-				entity->Enable();
+				entity.erase<Nz::DisabledComponent>();
 				++it;
 			}
 			else
@@ -51,7 +51,7 @@ namespace bw
 		LayoutWidgets();
 	}
 
-	void AbstractState::Leave(Ndk::StateMachine& /*fsm*/)
+	void AbstractState::Leave(Nz::StateMachine& /*fsm*/)
 	{
 		m_isVisible = false;
 
@@ -63,10 +63,10 @@ namespace bw
 
 		for (auto it = m_entities.begin(); it != m_entities.end();)
 		{
-			entt::entity entity = *it;
+			entt::handle entity = *it;
 			if (entity)
 			{
-				entity->Disable();
+				entity.emplace<Nz::DisabledComponent>();
 				++it;
 			}
 			else
@@ -74,7 +74,7 @@ namespace bw
 		}
 	}
 
-	bool AbstractState::Update(Ndk::StateMachine& /*fsm*/, float /*elapsedTime*/)
+	bool AbstractState::Update(Nz::StateMachine& /*fsm*/, Nz::Time /*elapsedTime*/)
 	{
 		return true;
 	}

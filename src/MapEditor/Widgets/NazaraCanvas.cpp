@@ -27,18 +27,13 @@ namespace bw
 		m_updateTimer.setInterval(1000 / 60);
 		m_updateTimer.connect(&m_updateTimer, &QTimer::timeout, [this]()
 		{
-			OnUpdate(m_updateTimer.intervalAsDuration().count() / 1000.f);
+			OnUpdate(Nz::Time::FromDuration(m_updateTimer.intervalAsDuration()));
 		});
 	}
 
 	NazaraCanvas::~NazaraCanvas()
 	{
 		m_updateTimer.stop();
-	}
-
-	Nz::Vector2ui NazaraCanvas::GetSize() const
-	{
-		return Nz::Vector2ui(Nz::Vector2i(width(), height()));
 	}
 
 	QSize NazaraCanvas::minimumSizeHint() const
@@ -51,9 +46,14 @@ namespace bw
 		return QSize();
 	}
 
-	void NazaraCanvas::resizeEvent(QResizeEvent*)
+	void NazaraCanvas::resizeEvent(QResizeEvent* resize)
 	{
-		OnWindowResized();
+		Nz::WindowEvent event;
+		event.type = Nz::WindowEventType::Resized;
+		event.size.width = resize->size().width();
+		event.size.height = resize->size().height();
+
+		HandleEvent(event);
 	}
 
 	void NazaraCanvas::showEvent(QShowEvent*)
@@ -64,7 +64,20 @@ namespace bw
 			XFlush(QX11Info::display());
 			#endif
 
-			Nz::RenderWindow::Create(reinterpret_cast<void*>(winId()));
+			Nz::WindowHandle windowHandle;
+#if defined(NAZARA_PLATFORM_WINDOWS)
+			windowHandle.type = Nz::WindowBackend::Windows;
+			windowHandle.windows.window = reinterpret_cast<void*>(winId());
+#elif defined(NAZARA_PLATFORM_LINUX)
+			windowHandle.type = Nz::WindowBackend::X11;
+			windowHandle.x11.display = nullptr;
+			windowHandle.x11.window = winId();
+#elif defined(NAZARA_PLATFORM_MACOS)
+			windowHandle.type = Nz::WindowBackend::Cocoa;
+			windowHandle.cocoa.window = reinterpret_cast<void*>(winId());
+#endif
+
+			Create(windowHandle);
 		}
 
 		OnShow();
@@ -80,9 +93,9 @@ namespace bw
 		m_updateTimer.stop();
 
 		Nz::WindowEvent event;
-		event.type = Nz::WindowEventType_LostFocus;
+		event.type = Nz::WindowEventType::LostFocus;
 
-		PushEvent(event);
+		HandleEvent(event);
 	}
 
 	void NazaraCanvas::OnShow()
@@ -90,15 +103,14 @@ namespace bw
 		m_updateTimer.start();
 
 		Nz::WindowEvent event;
-		event.type = Nz::WindowEventType_GainedFocus;
+		event.type = Nz::WindowEventType::GainedFocus;
 
-		PushEvent(event);
+		HandleEvent(event);
 	}
 
-	void NazaraCanvas::OnUpdate(float /*elapsedTime*/)
+	void NazaraCanvas::OnUpdate(Nz::Time /*elapsedTime*/)
 	{
 		ProcessEvents();
-		Display();
 	}
 
 	void NazaraCanvas::closeEvent(QCloseEvent* /*event*/)
@@ -160,7 +172,7 @@ namespace bw
 					Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
 
 					Nz::WindowEvent event;
-					event.type = Nz::WindowEventType_KeyPressed;
+					event.type = Nz::WindowEventType::KeyPressed;
 					event.key.alt = modifiers & Qt::AltModifier;
 					event.key.control = modifiers & Qt::ControlModifier;
 					event.key.repeated = keyEvent->isAutoRepeat();
@@ -169,7 +181,7 @@ namespace bw
 					event.key.virtualKey = key.value();
 					event.key.scancode = Nz::Keyboard::ToScanCode(event.key.virtualKey);
 
-					PushEvent(event);
+					HandleEvent(event);
 					ignoreEvent = true;
 				}
 
@@ -178,11 +190,11 @@ namespace bw
 				if (!u32str.empty())
 				{
 					Nz::WindowEvent event;
-					event.type = Nz::WindowEventType_TextEntered;
+					event.type = Nz::WindowEventType::TextEntered;
 					event.text.character = u32str[0];
 					event.text.repeated = keyEvent->isAutoRepeat();
 
-					PushEvent(event);
+					HandleEvent(event);
 				}
 
 				if (ignoreEvent)
@@ -201,7 +213,7 @@ namespace bw
 					Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
 
 					Nz::WindowEvent event;
-					event.type = Nz::WindowEventType_KeyReleased;
+					event.type = Nz::WindowEventType::KeyReleased;
 					event.key.alt = modifiers & Qt::AltModifier;
 					event.key.control = modifiers & Qt::ControlModifier;
 					event.key.repeated = keyEvent->isAutoRepeat();
@@ -210,7 +222,7 @@ namespace bw
 					event.key.virtualKey = key.value();
 					event.key.scancode = Nz::Keyboard::ToScanCode(event.key.virtualKey);
 
-					PushEvent(event);
+					HandleEvent(event);
 					return true;
 				}
 
@@ -227,12 +239,12 @@ namespace bw
 					auto pos = mouseButtonEvent->pos();
 
 					Nz::WindowEvent event;
-					event.type = Nz::WindowEventType_MouseButtonPressed;
+					event.type = Nz::WindowEventType::MouseButtonPressed;
 					event.mouseButton.x = pos.x();
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					PushEvent(event);
+					HandleEvent(event);
 					return true;
 				}
 
@@ -249,12 +261,12 @@ namespace bw
 					auto pos = mouseButtonEvent->pos();
 
 					Nz::WindowEvent event;
-					event.type = Nz::WindowEventType_MouseButtonReleased;
+					event.type = Nz::WindowEventType::MouseButtonReleased;
 					event.mouseButton.x = pos.x();
 					event.mouseButton.y = pos.y();
 					event.mouseButton.button = button.value();
 
-					PushEvent(event);
+					HandleEvent(event);
 					return true;
 				}
 
@@ -264,18 +276,18 @@ namespace bw
 			case QEvent::HoverEnter:
 			{
 				Nz::WindowEvent event;
-				event.type = Nz::WindowEventType_MouseEntered;
+				event.type = Nz::WindowEventType::MouseEntered;
 
-				PushEvent(event);
+				HandleEvent(event);
 				return true;
 			}
 
 			case QEvent::HoverLeave:
 			{
 				Nz::WindowEvent event;
-				event.type = Nz::WindowEventType_MouseLeft;
+				event.type = Nz::WindowEventType::MouseLeft;
 
-				PushEvent(event);
+				HandleEvent(event);
 				return true;
 			}
 
@@ -286,13 +298,13 @@ namespace bw
 				auto oldPos = hoverEvent->oldPos();
 
 				Nz::WindowEvent event;
-				event.type = Nz::WindowEventType_MouseMoved;
+				event.type = Nz::WindowEventType::MouseMoved;
 				event.mouseMove.x = newPos.x();
 				event.mouseMove.y = newPos.y();
 				event.mouseMove.deltaX = newPos.x() - oldPos.x();
 				event.mouseMove.deltaY = newPos.y() - oldPos.y();
 
-				PushEvent(event);
+				HandleEvent(event);
 				return true;
 			}
 
@@ -301,10 +313,10 @@ namespace bw
 				QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(e);
 
 				Nz::WindowEvent event;
-				event.type = Nz::WindowEventType_MouseWheelMoved;
+				event.type = Nz::WindowEventType::MouseWheelMoved;
 				event.mouseWheel.delta = wheelEvent->angleDelta().ry() / 120.f;
 
-				PushEvent(event);
+				HandleEvent(event);
 				return true;
 			}
 

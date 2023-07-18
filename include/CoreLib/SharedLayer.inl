@@ -26,9 +26,9 @@ namespace bw
 		return m_match;
 	}
 
-	inline Nz::Physics2DSystem& SharedLayer::GetPhysicsSystem()
+	inline Nz::ChipmunkPhysics2DSystem& SharedLayer::GetPhysicsSystem()
 	{
-		return m_systemGraph.GetSystem<Nz::Physics2DSystem>();
+		return m_systemGraph.GetSystem<Nz::ChipmunkPhysics2DSystem>();
 	}
 	
 	inline entt::registry& SharedLayer::GetWorld()

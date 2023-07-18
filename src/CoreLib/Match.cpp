@@ -24,7 +24,7 @@
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
 #include <Nazara/Network/Algorithm.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <tsl/hopscotch_set.h>
 #include <cassert>
@@ -57,7 +57,7 @@ namespace bw
 
 		BuildMatchData();
 
-		if (WebService::IsInitialized())
+		if (m_app.HasWebService())
 		{
 			if (m_settings.registerToMasterServer && m_settings.port != 0)
 			{
@@ -65,7 +65,7 @@ namespace bw
 				SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
 				{
 					if (!masterServerURI.empty())
-						m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(*this, std::string(masterServerURI)));
+						m_masterServerEntries.emplace_back(std::make_unique<MasterServerEntry>(app.GetWebService(), *this, std::string(masterServerURI)));
 
 					return true;
 				});
@@ -692,7 +692,7 @@ namespace bw
 					debugPacket << layerId;
 					debugPacket << entityId;
 
-					Nz::RigidBody2DComponent* entityPhys = entity.try_get<Nz::RigidBody2DComponent>();
+					Nz::ChipmunkRigidBody2DComponent* entityPhys = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
 					bool isPhysical = (entityPhys != nullptr);
 
 					debugPacket << isPhysical;

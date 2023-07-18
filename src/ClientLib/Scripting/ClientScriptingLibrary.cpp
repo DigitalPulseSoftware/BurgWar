@@ -103,7 +103,7 @@ namespace bw
 			Nz::Vector2f position = parameters.get_or("Position", Nz::Vector2f::Zero());
 			float scale = parameters.get_or("Scale", 1.f);
 
-			Ndk::EntityHandle lifeOwner;
+			entt::handle lifeOwner;
 			if (std::optional<sol::table> lifeOwnerEntitytable = parameters.get_or<std::optional<sol::table>>("LifeOwner", std::nullopt); lifeOwnerEntitytable)
 				lifeOwner = AssertScriptEntity(*lifeOwnerEntitytable);
 
@@ -122,7 +122,7 @@ namespace bw
 				}
 			}
 
-			Ndk::EntityHandle parentEntity;
+			entt::handle parentEntity;
 			if (std::optional<sol::table> propertyTableOpt = parameters.get_or<std::optional<sol::table>>("Parent", std::nullopt); propertyTableOpt)
 				parentEntity = AssertScriptEntity(propertyTableOpt.value());
 
@@ -133,17 +133,12 @@ namespace bw
 			if (!entityOpt)
 				TriggerLuaError(L, "failed to create \"" + entityType + "\"");
 
-			entt::entity entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
+			entt::handle entity = layer.RegisterEntity(std::move(entityOpt.value())).GetEntity();
 
 			if (lifeOwner)
-			{
-				if (!lifeOwner->HasComponent<EntityOwnerComponent>())
-					lifeOwner->AddComponent<EntityOwnerComponent>();
+				lifeOwner.get_or_emplace<EntityOwnerComponent>(lifeOwner).Register(entity);
 
-				lifeOwner->GetComponent<EntityOwnerComponent>().Register(entity);
-			}
-
-			auto& scriptComponent = entity->GetComponent<ScriptComponent>();
+			auto& scriptComponent = entity.get<ScriptComponent>();
 			return scriptComponent.GetTable();
 		});
 
@@ -244,6 +239,7 @@ namespace bw
 		{
 			ClientMatch& match = GetMatch();
 
+#if 0
 			const ParticleRegistry& registry = match.GetParticleRegistry();
 			const auto& layout = registry.GetLayout(particleType);
 			if (!layout)
@@ -257,8 +253,8 @@ namespace bw
 			{
 				// Do nothing
 			}));
-
 			return ParticleGroup(registry, particleGroupEntity);
+#endif
 		});
 	}
 
@@ -279,35 +275,30 @@ namespace bw
 			ClientMatch& match = GetMatch();
 			const auto& assetDirectory = match.GetAssetStore().GetAssetDirectory();
 
-			VirtualDirectory::Entry entry;
-			if (!assetDirectory->GetEntry(musicPath, &entry))
-				return sol::make_object(L, std::make_pair(sol::nil, "file not found"));
+			std::unique_ptr<Nz::Music> music;
 
-			Nz::Music music;
-
-			bool loaded = std::visit([&](auto&& arg)
+			bool loaded = assetDirectory->GetEntry(musicPath, [&](const Nz::VirtualDirectory::Entry& entry)
 			{
-				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileContentEntry>)
+				return std::visit([&](auto&& arg)
 				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from memory");
-					return music.OpenFromMemory(arg.data(), arg.size());
-				}
-				else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::PhysicalFileEntry>)
-				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.generic_u8string());
-					return music.OpenFromFile(arg.generic_u8string());
-				}
-				else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::DirectoryEntry>)
-				{
-					return false;
-				}
-				else
-					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
-			}, entry);
+					using T = std::decay_t<decltype(arg)>;
+					if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileEntry>)
+					{
+						bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath().generic_u8string());
+						music = std::make_unique<Nz::Music>();
+						return music->OpenFromStream(*arg.stream);
+					}
+					else if constexpr (std::is_same_v<T,Nz::VirtualDirectory::DirectoryEntry>)
+					{
+						return false;
+					}
+					else
+						static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+				}, entry);
+			});
 
 			if (!loaded)
-				return sol::make_object(L, std::make_pair(sol::nil, "failed to open music"));
+				return sol::make_object(L, std::make_pair(sol::nil, "file not found"));
 
 			return sol::make_object(L, Music(match.GetApplication(), std::move(music)));
 		});
@@ -382,11 +373,11 @@ namespace bw
 				if (controlledEntityId == InvalidEntityId)
 					return sol::nil;
 
-				entt::entity controlledEntity = GetMatch().RetrieveEntityByUniqueId(controlledEntityId);
+				entt::handle controlledEntity = GetMatch().RetrieveEntityByUniqueId(controlledEntityId);
 				if (!controlledEntity)
 					return sol::nil;
 
-				auto& scriptComponent = controlledEntity->GetComponent<ScriptComponent>();
+				auto& scriptComponent = controlledEntity.get<ScriptComponent>();
 				return scriptComponent.GetTable();
 			}),
 

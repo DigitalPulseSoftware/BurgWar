@@ -9,8 +9,7 @@
 
 #include <Client/States/AbstractState.hpp>
 #include <Nazara/Network/IpAddress.hpp>
-#include <NDK/State.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Widgets.hpp>
 #include <variant>
 #include <vector>
 
@@ -23,8 +22,8 @@ namespace bw
 			~JoinServerState() = default;
 
 		private:
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 
@@ -36,7 +35,7 @@ namespace bw
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
-			Ndk::BoxLayout* m_serverAddressLayout;
+			Nz::BoxLayout* m_serverAddressLayout;
 			Nz::ButtonWidget* m_backButton;
 			Nz::ButtonWidget* m_connectionButton;
 			Nz::LabelWidget* m_serverLabel;

@@ -18,7 +18,7 @@ namespace bw
 			NoclipPlayerMovementController() = default;
 			~NoclipPlayerMovementController() = default;
 
-			void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const override;
+			void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::ChipmunkRigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const override;
 	};
 }
 

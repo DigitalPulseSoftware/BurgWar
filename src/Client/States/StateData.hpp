@@ -7,21 +7,30 @@
 #ifndef BURGWAR_STATES_STATEDATA_HPP
 #define BURGWAR_STATES_STATEDATA_HPP
 
-#include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Core/EnttWorld.hpp>
+#include <Nazara/Renderer/WindowSwapchain.hpp>
+#include <Nazara/Platform/Window.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <entt/fwd.hpp>
 #include <optional>
 
+namespace Nz
+{
+	class ApplicationBase;
+}
+
 namespace bw
 {
-	class ClientApp;
+	class ClientAppComponent;
 
 	struct StateData
 	{
 		std::optional<Nz::Canvas> canvas;
-		ClientApp* app;
-		entt::registry* world;
-		Nz::RenderWindow* window;
+		ClientAppComponent* appComponent;
+		Nz::ApplicationBase* app;
+		Nz::EnttWorld* world;
+		Nz::Window* window;
+		Nz::WindowSwapchain* swapchain;
 	};
 }
 

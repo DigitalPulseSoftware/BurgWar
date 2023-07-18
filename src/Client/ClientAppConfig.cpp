@@ -3,11 +3,11 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ClientAppConfig.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 
 namespace bw
 {
-	ClientAppConfig::ClientAppConfig(ClientApp& app) :
+	ClientAppConfig::ClientAppConfig(ClientAppComponent& app) :
 	SharedAppConfig(app)
 	{
 		RegisterStringOption("Debug.ShowConnectionData");

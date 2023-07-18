@@ -3,47 +3,46 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/BackgroundState.hpp>
-#include <Nazara/Core/Directory.hpp>
-#include <Nazara/Graphics/ColorBackground.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <Nazara/Core/ApplicationBase.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
+#include <Nazara/Graphics/Systems/RenderSystem.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/Systems/RenderSystem.hpp>
-#include <NDK/Entity.hpp>
 #include <random>
 
 namespace bw
 {
-	void BackgroundState::Enter(Ndk::StateMachine& fsm)
+	void BackgroundState::Enter(Nz::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
 		StateData& stateData = GetStateData();
-		//stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(Nz::ColorBackground::New(Nz::Color(131, 180, 205)));
 
-		if (std::shared_ptr<Nz::Texture> backgroundTexture = Nz::TextureLibrary::Get("MenuBackground"))
+		auto& appfs = stateData.app->GetComponent<Nz::AppFilesystemComponent>();
+
+		if (std::shared_ptr<Nz::Texture> backgroundTexture = appfs.Load<Nz::Texture>("assets/background.png"))
 		{
-			m_backgroundSprite = Nz::Sprite::New();
-			m_backgroundSprite->SetTexture(backgroundTexture);
+			std::shared_ptr<Nz::MaterialInstance> mat = Nz::Graphics::Instance()->GetDefaultMaterials().basicNoDepth->Clone();
+			mat->SetTextureProperty("BaseColorMap", std::move(backgroundTexture));
+
+			m_backgroundSprite = std::make_shared<Nz::Sprite>(std::move(mat));
 
 			m_spriteEntity = stateData.world->CreateEntity();
-			m_spriteEntity->AddComponent<Ndk::GraphicsComponent>().Attach(m_backgroundSprite, -100);
-			m_spriteEntity->AddComponent<Ndk::NodeComponent>();
+			m_spriteEntity->emplace<Nz::GraphicsComponent>().AttachRenderable(m_backgroundSprite, 1);
+			m_spriteEntity->emplace<Nz::NodeComponent>();
 		}
 
 		LayoutWidgets();
 	}
 
-	void BackgroundState::Leave(Ndk::StateMachine& fsm)
+	void BackgroundState::Leave(Nz::StateMachine& fsm)
 	{
 		AbstractState::Leave(fsm);
 
-		/*
-		StateData& stateData = GetStateData();
-		stateData.world->GetSystem<Ndk::RenderSystem>().SetDefaultBackground(nullptr);
-		*/
+		m_spriteEntity = {};
 	}
 
-	bool BackgroundState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool BackgroundState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -67,7 +66,7 @@ namespace bw
 
 			m_backgroundSprite->SetSize(newSize);
 
-			m_spriteentity.get<Nz::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
+			m_spriteEntity->get<Nz::NodeComponent>().SetPosition(canvasSize / 2.f - newSize / 2.f);
 		}
 	}
 }

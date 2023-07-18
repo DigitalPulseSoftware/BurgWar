@@ -314,6 +314,8 @@ namespace bw
 			return {};
 		}
 
+		entry.stream->SetCursorPos(0);
+
 		std::string content(fileSize, '\0');
 		if (entry.stream->Read(&content[0], fileSize) != fileSize)
 		{

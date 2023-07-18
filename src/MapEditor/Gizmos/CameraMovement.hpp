@@ -9,8 +9,7 @@
 
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Platform/CursorController.hpp>
-#include <Nazara/Platform/Event.hpp>
-#include <NDK/Entity.hpp>
+#include <Nazara/Platform/WindowEvent.hpp>
 
 namespace bw
 {

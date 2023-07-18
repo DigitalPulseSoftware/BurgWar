@@ -4,27 +4,27 @@
 
 #include <Client/States/Game/ConnectionLostState.hpp>
 #include <Client/States/MainMenuState.hpp>
+#include <Nazara/Core/StateMachine.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/StateMachine.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
 
 namespace bw
 {
 	ConnectionLostState::ConnectionLostState(std::shared_ptr<StateData> stateData) :
 	AbstractState(std::move(stateData)),
-	m_timer(5.f)
+	m_timer(Nz::Time::Seconds(5))
 	{
 		Nz::LabelWidget* labelWidget = CreateWidget<Nz::LabelWidget>();
 		labelWidget->UpdateText(Nz::SimpleTextDrawer::Draw("Connection lost.", 36, Nz::TextStyle_Regular, Nz::Color::Red()));
 		labelWidget->Center();
 	}
 
-	bool ConnectionLostState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool ConnectionLostState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
 
-		if ((m_timer -= elapsedTime) < 0.f)
+		if ((m_timer -= elapsedTime) < Nz::Time::Zero())
 			fsm.ChangeState(std::make_shared<MainMenuState>(GetStateDataPtr()));
 
 		return true;

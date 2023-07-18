@@ -5,8 +5,7 @@
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/Components/VisualInterpolationComponent.hpp>
-#include <Nazara/Math/Algorithm.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <cmath>
 
@@ -29,14 +28,14 @@ namespace bw
 		});
 
 		float C = 10.f;
-		float factor = 1.f - std::exp(-elapsedTime * C);
+		float factor = 1.f - std::exp(-elapsedTime.AsSeconds() * C);
 
-		auto view = m_registry.view<VisualInterpolationComponent, Nz::RigidBody2DComponent, Nz::NodeComponent>();
+		auto view = m_registry.view<VisualInterpolationComponent, Nz::ChipmunkRigidBody2DComponent, Nz::NodeComponent>();
 		for (entt::entity entity : view)
 		{
 			auto& entityLerp = m_registry.get<VisualInterpolationComponent>(entity);
 			auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
-			auto& entityPhysics = m_registry.get<Nz::RigidBody2DComponent>(entity);
+			auto& entityPhysics = m_registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
 
 			// x = x + (target-x) * (1-Exp(-deltaTime*C))
 			Nz::RadianAnglef sourceRot = entityLerp.GetLastRotation();

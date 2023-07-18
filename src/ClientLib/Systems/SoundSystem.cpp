@@ -32,11 +32,11 @@ namespace bw
 	
 	void SoundSystem::Update(Nz::Time elapsedTime)
 	{
-		float invElapsedTime = 1.f / elapsedTime;
+		float invElapsedTime = 1.f / elapsedTime.AsSeconds();
 
 		m_observer.each([&](entt::entity entity)
 		{
-			if (m_registry.try_get<Nz::NodeComponent>(entity) && m_registry.try_get<SoundEmitterComponent>())
+			if (m_registry.try_get<Nz::NodeComponent>(entity) && m_registry.try_get<SoundEmitterComponent>(entity))
 				m_movableEntities.insert(entity);
 		});
 
@@ -110,7 +110,7 @@ namespace bw
 					break;
 				}
 
-				float score = 1.f - float(soundEntry.sound.GetPlayingOffset()) / soundEntry.sound.GetDuration();
+				float score = 1.f - soundEntry.sound.GetPlayingOffset().AsSeconds() / soundEntry.sound.GetDuration().AsSeconds();
 				if (score > bestScore)
 				{
 					bestScore = score;

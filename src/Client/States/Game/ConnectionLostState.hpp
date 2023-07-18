@@ -18,9 +18,9 @@ namespace bw
 			~ConnectionLostState() = default;
 
 		private:
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
-			float m_timer;
+			Nz::Time m_timer;
 	};
 }
 

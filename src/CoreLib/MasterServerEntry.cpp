@@ -17,10 +17,10 @@ namespace bw
 		constexpr Nz::UInt32 MasterServerDataVersion = 1U;
 	}
 
-	MasterServerEntry::MasterServerEntry(Match& match, std::string masterServerURL) :
+	MasterServerEntry::MasterServerEntry(Nz::WebService& webService, Match& match, std::string masterServerURL) :
 	m_masterServerURL(std::move(masterServerURL)),
-	m_match(match),
-	m_webService(m_match.GetLogger())
+	m_webService(webService),
+	m_match(match)
 	{
 	}
 
@@ -73,7 +73,7 @@ namespace bw
 		return serverData;
 	}
 
-	void MasterServerEntry::HandleResponse(WebRequestResult&& result, bool refresh)
+	void MasterServerEntry::HandleResponse(Nz::WebRequestResult&& result, bool refresh)
 	{
 		if (!result)
 		{
@@ -81,7 +81,7 @@ namespace bw
 			return;
 		}
 
-		switch (result.GetReponseCode())
+		switch (result.GetStatusCode())
 		{
 			case 200:
 			{
@@ -102,14 +102,14 @@ namespace bw
 						std::string ipv4Url = ipv4UrlValue;
 						if (!ipv4Url.empty())
 						{
-							std::unique_ptr<WebRequest> request = WebRequest::Post(ipv4Url, [&](WebRequestResult&& result)
+							std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(ipv4Url, [&](Nz::WebRequestResult&& result)
 							{
 								if (result.HasSucceeded())
 								{
-									if (result.GetReponseCode() == 200)
+									if (result.GetStatusCode() == 200)
 										bwLog(m_match.GetLogger(), LogLevel::Debug, "successfully registered ipv4 to master server {0}", m_masterServerURL);
 									else
-										bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}, unexpected response {1}: {2}", m_masterServerURL, result.GetReponseCode(), result.GetBody());
+										bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}, unexpected response {1}: {2}", m_masterServerURL, result.GetStatusCode(), result.GetBody());
 								}
 								else
 									bwLog(m_match.GetLogger(), LogLevel::Error, "failed to register ipv4 to master server {0}: {1}", m_masterServerURL, result.GetErrorMessage());
@@ -122,7 +122,7 @@ namespace bw
 
 							request->SetJSonContent(requestData.dump());
 
-							m_webService.AddRequest(std::move(request));
+							m_webService.QueueRequest(std::move(request));
 						}
 					}
 				}
@@ -152,14 +152,14 @@ namespace bw
 			}
 
 			default:
-				bwLog(m_match.GetLogger(), LogLevel::Info, (refresh) ? "failed to refresh to {0}: refresh request failed with code {1}" : "failed to register to {0}: register request failed with code {1}", m_masterServerURL, result.GetReponseCode());
+				bwLog(m_match.GetLogger(), LogLevel::Info, (refresh) ? "failed to refresh to {0}: refresh request failed with code {1}" : "failed to register to {0}: register request failed with code {1}", m_masterServerURL, result.GetStatusCode());
 				break;
 		}
 	}
 
 	void MasterServerEntry::Refresh()
 	{
-		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
 		{
 			HandleResponse(std::move(result), true);
 		});
@@ -171,13 +171,13 @@ namespace bw
 
 		request->SetJSonContent(serverData.dump());
 
-		m_webService.AddRequest(std::move(request));
+		m_webService.QueueRequest(std::move(request));
 		m_timeBeforeRefresh = Nz::Time::Seconds(15.f);
 	}
 
 	void MasterServerEntry::Register()
 	{
-		std::unique_ptr<WebRequest> request = WebRequest::Post(m_masterServerURL + "/servers", [&](WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
 		{
 			HandleResponse(std::move(result), false);
 		});
@@ -186,7 +186,7 @@ namespace bw
 
 		request->SetJSonContent(BuildServerInfo().dump());
 
-		m_webService.AddRequest(std::move(request));
+		m_webService.QueueRequest(std::move(request));
 		m_timeBeforeRefresh = Nz::Time::Seconds(15.f);
 	}
 }

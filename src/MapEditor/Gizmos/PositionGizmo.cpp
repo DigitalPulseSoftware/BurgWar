@@ -6,9 +6,9 @@
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <NDK/World.hpp>
 
 namespace bw
 {
@@ -19,40 +19,40 @@ namespace bw
 	m_movementType(MovementType::None),
 	m_positionAlignment(positionAlignment)
 	{
-		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red;
-		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue;
+		m_spriteDefaultColors[MovementType::XAxis] = Nz::Color::Red();
+		m_spriteDefaultColors[MovementType::YAxis] = Nz::Color::Blue();
 		m_spriteDefaultColors[MovementType::XYAxis] = Nz::Color(255, 255, 255, 128);
 
-		Nz::MaterialRef translucent = Nz::Material::New("Translucent2D");
+		std::shared_ptr<Nz::MaterialInstance> translucent = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
 
-		m_sprites[MovementType::XYAxis] = Nz::Sprite::New();
+		m_sprites[MovementType::XYAxis] = std::make_shared<Nz::Sprite>(translucent);
 		m_sprites[MovementType::XYAxis]->SetMaterial(translucent);
 		m_sprites[MovementType::XYAxis]->SetColor(m_spriteDefaultColors[MovementType::XYAxis]);
-		m_sprites[MovementType::XYAxis]->SetSize(16.f, 16.f);
+		m_sprites[MovementType::XYAxis]->SetSize({ 16.f, 16.f });
 		m_sprites[MovementType::XYAxis]->SetOrigin(Nz::Vector2f(0.f, 16.f));
 
-		m_sprites[MovementType::XAxis] = Nz::Sprite::New();
-		m_sprites[MovementType::XAxis]->SetMaterial(Nz::MaterialLibrary::Get("GizmoArrow"));
+		/*m_sprites[MovementType::XAxis] = std::make_shared<Nz::Sprite>(translucent);
+		//m_sprites[MovementType::XAxis]->SetMaterial(Nz::MaterialLibrary::Get("GizmoArrow"));
 		m_sprites[MovementType::XAxis]->SetColor(m_spriteDefaultColors[MovementType::XAxis]);
 		m_sprites[MovementType::XAxis]->SetSize(m_sprites[MovementType::XAxis]->GetSize() / 2.f);
 		m_sprites[MovementType::XAxis]->SetOrigin(Nz::Vector2f(0.f, m_sprites[MovementType::XAxis]->GetSize().y / 2.f));
 
-		m_sprites[MovementType::YAxis] = Nz::Sprite::New(*m_sprites[MovementType::XAxis]);
-		m_sprites[MovementType::YAxis]->SetColor(m_spriteDefaultColors[MovementType::YAxis]);
+		m_sprites[MovementType::YAxis] = std::make_shared(*m_sprites[MovementType::XAxis]);
+		m_sprites[MovementType::YAxis]->SetColor(m_spriteDefaultColors[MovementType::YAxis]);*/
 
 		m_allowedMovements[MovementType::XAxis].Set(1.f, 0.f);
 		m_allowedMovements[MovementType::YAxis].Set(0.f, 1.f);
 		m_allowedMovements[MovementType::XYAxis].Set(1.f, 1.f);
 
-		entt::entity selectionOverlayEntity = GetSelectionOverlayEntity();
-		m_arrowEntity = selectionOverlayEntity->GetWorld()->CreateEntity();
+		entt::handle selectionOverlayEntity = GetSelectionOverlayEntity();
+		m_arrowEntity = entt::handle(*selectionOverlayEntity.registry(), selectionOverlayEntity.registry()->create());
 
-		auto& gfx = m_arrowEntity->AddComponent<Ndk::GraphicsComponent>();
-		gfx.Attach(m_sprites[MovementType::XYAxis], 2);
-		gfx.Attach(m_sprites[MovementType::XAxis], 1);
-		gfx.Attach(m_sprites[MovementType::YAxis], Nz::Matrix4f::Rotate(Nz::DegreeAnglef(-90.f)), 1);
+		auto& gfx = m_arrowEntity->emplace<Nz::GraphicsComponent>();
+		gfx.AttachRenderable(m_sprites[MovementType::XYAxis], 2);
+		gfx.AttachRenderable(m_sprites[MovementType::XAxis], 1);
+		gfx.AttachRenderable(m_sprites[MovementType::YAxis], Nz::Matrix4f::Rotate(Nz::DegreeAnglef(-90.f)), 1);
 
-		auto& node = m_arrowEntity->AddComponent<Ndk::NodeComponent>();
+		auto& node = m_arrowEntity->emplace<Nz::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
 		node.SetParent(selectionOverlayEntity);
@@ -61,7 +61,7 @@ namespace bw
 
 		for (const LayerVisualEntityHandle& visualEntity : GetTargetEntities())
 		{
-			auto& entityNode = visualEntity->GetEntity()->GetComponent<Ndk::NodeComponent>();
+			auto& entityNode = visualEntity->GetEntity().get<Nz::NodeComponent>();
 			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global)) - arrowPosition);
 		}
 	}
@@ -77,7 +77,7 @@ namespace bw
 		Nz::Vector3f start = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 0.f));
 		Nz::Vector3f end = m_camera.Unproject(Nz::Vector3f(float(mouseButton.x), float(mouseButton.y), 1.f));
 
-		auto& graphicsComponent = m_arrowEntity->GetComponent<Ndk::GraphicsComponent>();
+		auto& graphicsComponent = m_arrowEntity->get<Nz::GraphicsComponent>();
 
 		Nz::Rayf ray(start, end - start);
 

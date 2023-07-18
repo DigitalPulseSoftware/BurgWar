@@ -10,6 +10,7 @@
 #include <ClientLib/DownloadManager.hpp>
 #include <CoreLib/Protocol/Packets.hpp>
 #include <Client/States/Game/CancelableState.hpp>
+#include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
 #include <tsl/hopscotch_map.h>
 #include <memory>
@@ -41,7 +42,7 @@ namespace bw
 			void OnCancelled() override;
 
 			void RegisterFiles(const std::vector<Packets::MatchData::ClientFile>& files, const std::shared_ptr<Nz::VirtualDirectory>& resourceDir, const std::shared_ptr<Nz::VirtualDirectory>& targetDir, const std::string& cacheDir, FileMap& fileMap, bool keepInMemory);
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			using CancelableState::UpdateStatus;
 			void UpdateStatus();

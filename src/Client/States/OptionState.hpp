@@ -9,8 +9,6 @@
 
 #include <ClientLib/OptionWidget.hpp>
 #include <Client/States/AbstractState.hpp>
-#include <NDK/State.hpp>
-#include <NDK/Widgets.hpp>
 #include <future>
 #include <vector>
 
@@ -23,8 +21,8 @@ namespace bw
 			~OptionState() = default;
 
 		private:
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 

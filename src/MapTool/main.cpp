@@ -111,7 +111,7 @@ int BurgWarMapTool(int argc, char* argv[])
 			}
 		}
 	}
-	catch (const cxxopts::OptionException& e)
+	catch (const cxxopts::exceptions::exception& e)
 	{
 		fmt::print(stderr, "{}\n{}\n", e.what(), options.help());
 	}

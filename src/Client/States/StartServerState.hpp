@@ -8,8 +8,8 @@
 #define BURGWAR_STATES_LOGINSTATE_HPP
 
 #include <Client/States/AbstractState.hpp>
-#include <NDK/State.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Core/State.hpp>
+#include <Nazara/Widgets.hpp>
 #include <future>
 #include <vector>
 
@@ -22,8 +22,8 @@ namespace bw
 			~StartServerState() = default;
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 
@@ -35,9 +35,9 @@ namespace bw
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
-			Ndk::BoxLayout* m_descriptionLayout;
-			Ndk::BoxLayout* m_nameLayout;
-			Ndk::BoxLayout* m_serverConfigLayout;
+			Nz::BoxLayout* m_descriptionLayout;
+			Nz::BoxLayout* m_nameLayout;
+			Nz::BoxLayout* m_serverConfigLayout;
 			Nz::BaseWidget* m_background;
 			Nz::ButtonWidget* m_backButton;
 			Nz::ButtonWidget* m_startServerButton;

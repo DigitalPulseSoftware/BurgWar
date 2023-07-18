@@ -27,8 +27,8 @@ namespace bw
 			inline const Match& GetMatch() const;
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			std::optional<Match> m_match;
 			std::shared_ptr<AbstractState> m_originalState;

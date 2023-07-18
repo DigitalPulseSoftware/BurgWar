@@ -10,34 +10,36 @@
 #include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/NetworkReactorManager.hpp>
 #include <Client/ClientAppConfig.hpp>
-#include <Nazara/Renderer/RenderWindow.hpp>
-#include <NDK/Application.hpp>
-#include <NDK/StateMachine.hpp>
+#include <Nazara/Core/ApplicationBase.hpp>
+#include <Nazara/Renderer/WindowSwapchain.hpp>
+#include <Nazara/Platform/Window.hpp>
+#include <Nazara/Core/StateMachine.hpp>
+#include <optional>
 #include <vector>
 
 namespace bw
 {
 	struct StateData;
 
-	class ClientApp : public ClientEditorAppComponent
+	class ClientAppComponent : public ClientEditorAppComponent
 	{
 		public:
-			ClientApp(int argc, char* argv[]);
-			~ClientApp();
+			ClientAppComponent(Nz::ApplicationBase& app, int argc, char* argv[]);
+			~ClientAppComponent();
 
 			inline NetworkReactorManager& GetReactorManager();
 
-			int Run();
+			void Update(Nz::Time elapsedTime) override;
 
 		private:
 			std::shared_ptr<StateData> m_stateData;
-			Ndk::StateMachine m_stateMachine;
-			Nz::RenderWindow* m_mainWindow;
+			Nz::StateMachine m_stateMachine;
+			Nz::Window* m_mainWindow;
 			ClientAppConfig m_configFile;
 			NetworkReactorManager m_networkReactors;
 	};
 }
 
-#include <Client/ClientApp.inl>
+#include <Client/ClientAppComponent.inl>
 
 #endif

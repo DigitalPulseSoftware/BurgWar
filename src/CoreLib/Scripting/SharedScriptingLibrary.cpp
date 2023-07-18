@@ -17,8 +17,8 @@
 #include <CoreLib/Scripting/SharedGamemode.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
-#include <Nazara/Physics2D/Constraint2D.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/ChipmunkPhysics2D/ChipmunkConstraint2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
 #include <CoreLib/SharedMatch.hpp>
 
 namespace bw

@@ -9,13 +9,12 @@
 
 #include <CoreLib/EntityId.hpp>
 #include <CoreLib/LayerIndex.hpp>
-#include <NDK/Component.hpp>
 
 namespace bw
 {
 	class MapCanvas;
 
-	class CanvasComponent : public Ndk::Component<CanvasComponent>
+	class CanvasComponent
 	{
 		public:
 			inline CanvasComponent(MapCanvas& mapCanvas, LayerIndex layerIndex, EntityId uniqueId);
@@ -25,8 +24,6 @@ namespace bw
 			inline MapCanvas& GetMapCanvas();
 			inline const MapCanvas& GetMapCanvas() const;
 			inline EntityId GetUniqueId() const;
-
-			static Ndk::ComponentIndex componentIndex;
 
 		private:
 			EntityId m_uniqueId;

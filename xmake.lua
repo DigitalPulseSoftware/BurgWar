@@ -3,17 +3,17 @@ set_xmakever("2.5.6")
 
 option("build_mapeditor", { default = true, showmenu = true, description = "Should the map editor be compiled as part of the project? (requires Qt)" })
 
-set_policy("package.requires_lock", true)
+--set_policy("package.requires_lock", true)
 
 set_project("BurgWar")
 set_version("0.2.0")
 
 add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
 
-add_requires("cxxopts", "concurrentqueue", "entt 3.11.1", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
-add_requires("nazaraengine", { configs = { debug = is_mode("debug", "asan"), shared = true } })
+add_requires("nazaraengine", { configs = { debug = is_mode("debug", "asan"), shared = true, entt = true, with_symbols = is_mode("debug", "releasedbg") } })
 add_requires("sol2 v3.2.1", { verify = false, configs = { includes_lua = false } })
 
 if is_plat("windows") then
@@ -21,7 +21,7 @@ if is_plat("windows") then
 end
 
 add_requireconfs("fmt", "stackwalker", { debug = is_mode("debug", "asan") })
-add_requireconfs("libcurl")
+add_requireconfs("libcurl", { configs = { shared = true }})
 
 set_allowedmodes("asan", "debug", "releasedbg")
 set_allowedplats("windows", "mingw", "linux", "macosx")
@@ -104,8 +104,8 @@ target("CoreLib")
 	add_headerfiles("include/(CoreLib/**.hpp)", "include/(CoreLib/**.inl)")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "entt", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
-	add_packages("nazaraengine", { components = { "core", "network", "physics2d", "utility" }, public = true })
+	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
+	add_packages("nazaraengine", { components = { "core", "network", "chipmunkphysics2d", "utility" }, public = true })
 	add_packages("libcurl", { public = true, links = {} })
 
 if is_plat("windows") then
@@ -182,7 +182,7 @@ target("ClientLib")
 	add_headerfiles("include/(ClientLib/**.hpp)", "include/(ClientLib/**.inl)")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
-	add_packages("nazaraengine", { components = { "graphics", "platform", "renderer", "widgets" }, public = true })
+	add_packages("nazaraengine", { components = { "audio", "graphics", "platform", "renderer", "widgets" }, public = true })
 
 target("Main")
 	set_group("Common")

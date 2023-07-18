@@ -3,11 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <MapEditor/Gizmos/EditorGizmo.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/IndexBuffer.hpp>
 #include <Nazara/Utility/Mesh.hpp>
 #include <Nazara/Utility/StaticMesh.hpp>
 #include <Nazara/Utility/VertexBuffer.hpp>
-#include <NDK/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
@@ -15,10 +16,10 @@ namespace bw
 	EditorGizmo::EditorGizmo(entt::registry& renderWorld, std::vector<LayerVisualEntityHandle> entities) :
 	m_targetEntities(std::move(entities))
 	{
-		m_selectionOverlayEntity = renderWorld.CreateEntity();
-		m_selectionOverlayEntity->AddComponent<Ndk::GraphicsComponent>();
+		m_selectionOverlayEntity = entt::handle(renderWorld, renderWorld.create());
+		m_selectionOverlayEntity->emplace<Nz::GraphicsComponent>();
 		
-		auto& node = m_selectionOverlayEntity->AddComponent<Ndk::NodeComponent>();
+		auto& node = m_selectionOverlayEntity->emplace<Nz::NodeComponent>();
 		node.SetInheritRotation(false);
 		node.SetInheritScale(false);
 
@@ -46,21 +47,21 @@ namespace bw
 
 		Nz::Vector3f origin = globalAABB.GetCenter();
 
-		auto& node = m_selectionOverlayentity.get<Nz::NodeComponent>();
+		auto& node = m_selectionOverlayEntity->get<Nz::NodeComponent>();
 		node.SetPosition(origin);
 
-		auto& gfx = m_selectionOverlayEntity->GetComponent<Ndk::GraphicsComponent>();
+		auto& gfx = m_selectionOverlayEntity->get<Nz::GraphicsComponent>();
 		gfx.Clear();
 
 		std::shared_ptr<Nz::Model> aabbModel = GenerateBoxModel();
 
-		gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), std::numeric_limits<int>::max());
+		/*gfx.Attach(aabbModel, Nz::Matrix4f::Transform(globalAABB.GetPosition() - origin, Nz::Quaternionf::Identity(), globalAABB.GetLengths()), std::numeric_limits<int>::max());
 
 		if (aabbs.size() > 1)
 		{
 			for (const Nz::Boxf& aabb : aabbs)
 				gfx.Attach(aabbModel, Nz::Matrix4f::Transform(aabb.GetPosition() - origin, Nz::Quaternionf::Identity(), aabb.GetLengths()), std::numeric_limits<int>::max() - 1);
-		}
+		}*/
 	}
 
 	std::shared_ptr<Nz::Model> EditorGizmo::GenerateBoxModel()
@@ -88,38 +89,38 @@ namespace bw
 
 		std::array<Nz::Vector3f, 8> positions = {
 			{
-				box.GetCorner(Nz::BoxCorner_FarLeftBottom),
-				box.GetCorner(Nz::BoxCorner_NearLeftBottom),
-				box.GetCorner(Nz::BoxCorner_NearRightBottom),
-				box.GetCorner(Nz::BoxCorner_FarRightBottom),
-				box.GetCorner(Nz::BoxCorner_FarLeftTop),
-				box.GetCorner(Nz::BoxCorner_NearLeftTop),
-				box.GetCorner(Nz::BoxCorner_NearRightTop),
-				box.GetCorner(Nz::BoxCorner_FarRightTop)
+				box.GetCorner(Nz::BoxCorner::FarLeftBottom),
+				box.GetCorner(Nz::BoxCorner::NearLeftBottom),
+				box.GetCorner(Nz::BoxCorner::NearRightBottom),
+				box.GetCorner(Nz::BoxCorner::FarRightBottom),
+				box.GetCorner(Nz::BoxCorner::FarLeftTop),
+				box.GetCorner(Nz::BoxCorner::NearLeftTop),
+				box.GetCorner(Nz::BoxCorner::NearRightTop),
+				box.GetCorner(Nz::BoxCorner::FarRightTop)
 			}
 		};
 
-		Nz::IndexBufferRef boxIndexBuffer = Nz::IndexBuffer::New(false, Nz::UInt32(indices.size()), Nz::DataStorage_Hardware, Nz::BufferUsageFlags{});
+		std::shared_ptr<Nz::IndexBuffer> boxIndexBuffer = std::make_shared<Nz::IndexBuffer>(false, Nz::UInt32(indices.size()), Nz::DataStorage::Hardware, Nz::BufferUsageFlags{});
 		boxIndexBuffer->Fill(indices.data(), 0, Nz::UInt32(indices.size()));
 
-		Nz::VertexBufferRef boxVertexBuffer = Nz::VertexBuffer::New(Nz::VertexDeclaration::Get(Nz::VertexLayout_XYZ), Nz::UInt32(positions.size()), Nz::DataStorage_Hardware, Nz::BufferUsageFlags{});
+		std::shared_ptr<Nz::IndexBuffer> boxVertexBuffer = std::make_shared<Nz::VertexBuffer>(Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ), Nz::UInt32(positions.size()), Nz::DataStorage_Hardware, Nz::BufferUsageFlags{});
 		boxVertexBuffer->Fill(positions.data(), 0, Nz::UInt32(positions.size()));
 
-		Nz::StaticMeshRef boxMesh = Nz::StaticMesh::New(boxVertexBuffer, boxIndexBuffer);
+		std::shared_ptr<Nz::StaticMesh> boxMesh = std::make_shared<Nz::StaticMesh>(boxVertexBuffer, boxIndexBuffer);
 		boxMesh->GenerateAABB();
-		boxMesh->SetPrimitiveMode(Nz::PrimitiveMode_LineList);
+		boxMesh->SetPrimitiveMode(Nz::PrimitiveMode::LineList);
 
-		Nz::MeshRef mesh = Nz::Mesh::New();
+		std::shared_ptr<Nz::Mesh> mesh = std::make_shared<Nz::Mesh>();
 		mesh->CreateStatic();
 		mesh->AddSubMesh(boxMesh);
 
-		Nz::MaterialRef translucent = Nz::Material::New();
-		translucent->SetDiffuseColor(Nz::Color::Orange);
-		translucent->EnableDepthBuffer(false);
+		std::shared_ptr<Nz::GraphicalMesh> gfxMesh = Nz::GraphicalMesh::BuildFromMesh(*mesh);
 
-		std::shared_ptr<Nz::Model> model = Nz::Model::New();
-		model->SetMesh(mesh);
-		model->SetMaterial(0, translucent);
+		std::shared_ptr<Nz::MaterialInstance> translucentMat = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+		translucentMat->SetValueProperty("BaseColor", Nz::Color::Orange());
+
+		std::shared_ptr<Nz::Model> model = std::make_shared<Nz::Model>(std::move(gfxMesh));
+		model->SetMaterial(0, std::move(translucentMat));
 
 		return model;
 	}

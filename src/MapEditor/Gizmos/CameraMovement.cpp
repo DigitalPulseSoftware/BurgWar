@@ -5,7 +5,6 @@
 #include <MapEditor/Gizmos/CameraMovement.hpp>
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Math/Ray.hpp>
-#include <NDK/World.hpp>
 
 constexpr float zoomLevel = 10.f;
 constexpr float maxZoomLevel = zoomLevel;
@@ -35,7 +34,7 @@ namespace bw
 		if (mouseButton.button != Nz::Mouse::Middle && mouseButton.button != Nz::Mouse::Right)
 			return false;
 
-		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Move));
+		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor::Move));
 		m_isActive = true;
 
 		m_originalWorldPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
@@ -47,7 +46,7 @@ namespace bw
 		if (mouseButton.button != Nz::Mouse::Middle && mouseButton.button != Nz::Mouse::Right)
 			return false;
 
-		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor_Default));
+		m_cursorController.UpdateCursor(Nz::Cursor::Get(Nz::SystemCursor::Default));
 		m_isActive = false;
 
 		return true;

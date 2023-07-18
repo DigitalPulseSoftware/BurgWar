@@ -17,6 +17,11 @@
 #include <Nazara/Utility/Node.hpp>
 #include <memory>
 
+namespace Nz
+{
+	class EnttWorld;
+}
+
 namespace bw
 {
 	class ClientLayerEntity;
@@ -24,7 +29,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API VisibleLayerComponent : public BaseComponent
 	{
 		public:
-			inline VisibleLayerComponent(entt::registry& renderWorld, entt::handle entity);
+			inline VisibleLayerComponent(Nz::EnttWorld& renderWorld, entt::handle entity);
 			VisibleLayerComponent(VisibleLayerComponent&&) noexcept = default;
 			~VisibleLayerComponent() = default;
 
@@ -67,7 +72,7 @@ namespace bw
 
 			//FIXME (shared_ptr => unique_ptr)
 			std::vector<std::shared_ptr<VisibleLayer>> m_visibleLayers;
-			entt::registry& m_renderWorld;
+			Nz::EnttWorld& m_renderWorld;
 	};
 }
 

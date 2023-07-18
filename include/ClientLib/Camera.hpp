@@ -15,6 +15,11 @@
 #include <Nazara/Renderer/RenderTarget.hpp>
 #include <CoreLib/EntityOwner.hpp>
 
+namespace Nz
+{
+	class EnttWorld;
+}
+
 namespace bw
 {
 	class Camera;
@@ -24,7 +29,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Camera : public Nz::HandledObject<Camera>
 	{
 		public:
-			Camera(entt::registry& registry, Nz::RenderTarget* renderTarget, bool perspective);
+			Camera(Nz::EnttWorld& world, Nz::RenderTarget* renderTarget, bool perspective);
 			Camera(const Camera&) = delete;
 			Camera(Camera&&) = delete;
 			~Camera() = default;

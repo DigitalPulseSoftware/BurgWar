@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	float Sound::GetDuration() const
+	Nz::Time Sound::GetDuration() const
 	{
 		if (!m_sound)
 			throw std::runtime_error("Invalid sound");

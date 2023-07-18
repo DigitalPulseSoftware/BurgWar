@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_BURGAPP_HPP
 
 #include <CoreLib/Export.hpp>
-#include <CoreLib/WebService.hpp>
+#include <Nazara/Network/WebService.hpp>
 #include <CoreLib/LogSystem/Enums.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Core/ApplicationComponent.hpp>
@@ -33,15 +33,13 @@ namespace bw
 			inline Logger& GetLogger();
 			inline Nz::Time GetLogTime() const;
 			inline const tsl::hopscotch_map<std::string, std::shared_ptr<Mod>>& GetMods() const;
-			inline WebService& GetWebService();
+			inline Nz::WebService& GetWebService();
+
+			inline bool HasWebService() const;
 
 			void Update(Nz::Time elapsedTime) override;
 
 		private:
-			static void HandleInterruptSignal(const char* signalName);
-
-			void InstallInterruptHandlers();
-
 			Logger m_logger;
 			
 			static BurgAppComponent* s_application;
@@ -50,7 +48,7 @@ namespace bw
 			void LoadMods();
 
 			const ConfigFile& m_config;
-			std::optional<WebService> m_webService;
+			std::unique_ptr<Nz::WebService> m_webService;
 			tsl::hopscotch_map<std::string, std::shared_ptr<Mod>> m_mods;
 			Nz::Time m_appTime;
 			Nz::Time m_startTime;

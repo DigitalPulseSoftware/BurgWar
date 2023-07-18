@@ -16,12 +16,14 @@
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Tilemap.hpp>
 #include <ClientLib/Utility/TileMapData.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Graphics/MaterialInstance.hpp>
 #include <Nazara/Graphics/Model.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
-//#include <Nazara/Graphics/TileMap.hpp>
+#include <Nazara/Graphics/Tilemap.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Math/EulerAngles.hpp>
-#include <Nazara/Physics2D/RigidBody2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/ChipmunkRigidBody2D.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
@@ -35,10 +37,20 @@ namespace bw
 
 	void ClientEntityLibrary::InitRigidBody(lua_State* L, entt::handle entity, float mass)
 	{
-		SharedEntityLibrary::InitRigidBody(L, entity, mass);
+		std::shared_ptr<Nz::ChipmunkCollider2D> collider;
+		if (auto* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		{
+			collider = rigidBody->GetGeom();
+			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
+		}
 
-		//entity.get<Nz::RigidBody2DComponent>().EnableNodeSynchronization(false);
-		entity.emplace<VisualInterpolationComponent>();
+		auto& entityMatch = entity.get<ClientMatchComponent>();
+		auto& physics = entityMatch.GetClientMatch().GetLayer(entityMatch.GetLayerIndex()).GetPhysicsSystem();
+
+		auto& entityPhys = entity.emplace<Nz::ChipmunkRigidBody2DComponent>(physics.CreateRigidBody(mass, collider));
+
+		//entity.get<Nz::ChipmunkRigidBody2DComponent>().EnableNodeSynchronization(false);
+		entity.emplace_or_replace<VisualInterpolationComponent>();
 	}
 
 	void ClientEntityLibrary::RegisterClientLibrary(sol::table& elementMetatable)
@@ -77,20 +89,11 @@ namespace bw
 			if (materials.empty())
 				return {};
 
-			/*std::shared_ptr<Nz::Tilemap> tileMap = Nz::TileMap::New(mapSize, cellSize, materials.size());
+			std::shared_ptr<Nz::Tilemap> tileMap = std::make_shared<Nz::Tilemap>(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
-				Nz::MaterialRef material = Nz::Material::New(); //< FIXME
-				material->SetDiffuseMap(m_assetStore.GetTexture(materialPath));
-
-				if (material)
-				{
-					// Force alpha blending
-					material->Configure("Translucent2D");
-					material->SetDiffuseMap(m_assetStore.GetTexture(materialPath)); //< FIXME
-				}
-				else
-					material = Nz::Material::GetDefault();
+				std::shared_ptr<Nz::MaterialInstance> material = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+				material->SetTextureProperty("BaseColorMap", m_assetStore.GetTexture(materialPath));
 
 				tileMap->SetMaterial(matIndex, material);
 			}
@@ -117,20 +120,19 @@ namespace bw
 						auto matIt = materials.find(tileData.materialPath);
 						assert(matIt != materials.end());
 
-						tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White, matIt->second);
+						tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White(), matIt->second);
 					}
 				}
 			}
 
 			Nz::Matrix4f transformMatrix = Nz::Matrix4f::Identity();
 
-			auto& visualComponent = entity->GetComponent<VisualComponent>();
+			auto& visualComponent = entity.get<VisualComponent>();
 
 			Tilemap scriptTilemap(visualComponent.GetLayerVisual(), std::move(tileMap), transformMatrix, renderOrder);
 			scriptTilemap.Show();
 
-			return scriptTilemap;*/
-			return {};
+			return scriptTilemap;
 		});
 
 		elementMetatable["ClearLayers"] = LuaFunction([](const sol::table& entityTable)

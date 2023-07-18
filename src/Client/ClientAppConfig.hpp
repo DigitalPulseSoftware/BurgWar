@@ -11,12 +11,12 @@
 
 namespace bw
 {
-	class ClientApp;
+	class ClientAppComponent;
 
 	class ClientAppConfig : public SharedAppConfig
 	{
 		public:
-			ClientAppConfig(ClientApp& app);
+			ClientAppConfig(ClientAppComponent& app);
 			~ClientAppConfig() = default;
 	};
 }

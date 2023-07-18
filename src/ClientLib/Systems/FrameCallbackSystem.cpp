@@ -14,7 +14,7 @@ namespace bw
 		m_scriptDestroyConnection = m_registry.on_destroy<ScriptComponent>().connect<&FrameCallbackSystem::OnScriptDestroy>(this);
 	}
 
-	void FrameCallbackSystem::Update(float /*elapsedTime*/)
+	void FrameCallbackSystem::Update(Nz::Time /*elapsedTime*/)
 	{
 		for (entt::entity entity : m_frameUpdateEntities)
 		{

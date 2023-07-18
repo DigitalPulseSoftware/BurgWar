@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/Game/AuthenticationState.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/MainMenuState.hpp>
 #include <Client/States/Game/ResourceDownloadState.hpp>
 
@@ -16,7 +16,7 @@ namespace bw
 		m_onAuthFailedSlot.Connect(m_clientSession->OnAuthFailure, [this](ClientSession*, const Packets::AuthFailure& /*data*/)
 		{
 			UpdateStatus("Failed to authenticate", Nz::Color::Red());
-			Cancel(3.f);
+			Cancel(Nz::Time::Seconds(3));
 		});
 
 		m_onAuthSucceededSlot.Connect(m_clientSession->OnAuthSuccess, [this](ClientSession*, const Packets::AuthSuccess& data)
@@ -30,21 +30,21 @@ namespace bw
 			if (!m_authSuccessPacket)
 			{
 				UpdateStatus("Protocol error", Nz::Color::Red());
-				Cancel(3.f);
+				Cancel(Nz::Time::Seconds(3));
 				return;
 			}
 
 			UpdateStatus("Received match data", Nz::Color::White());
 
-			SwitchToState(std::make_shared<ResourceDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), 0.5f);
+			SwitchToState(std::make_shared<ResourceDownloadState>(GetStateDataPtr(), m_clientSession, m_authSuccessPacket.value(), data, GetOriginalState()), Nz::Time::Seconds(0.5f));
 		});
 	}
 
-	void AuthenticationState::Enter(Ndk::StateMachine& fsm)
+	void AuthenticationState::Enter(Nz::StateMachine& fsm)
 	{
 		StatusState::Enter(fsm);
 
-		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		ConfigFile& playerConfig = GetStateData().appComponent->GetPlayerSettings();
 
 		Packets::Auth authPacket;
 		authPacket.players.emplace_back().nickname = playerConfig.GetStringValue("Player.Name");

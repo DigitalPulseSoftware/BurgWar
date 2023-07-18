@@ -20,7 +20,7 @@ namespace bw
 			Sound(Sound&&) noexcept = default;
 			~Sound() = default;
 
-			float GetDuration() const;
+			Nz::Time GetDuration() const;
 
 			void Stop();
 

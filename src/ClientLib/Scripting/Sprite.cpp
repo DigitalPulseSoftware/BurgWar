@@ -25,13 +25,13 @@ namespace bw
 
 		Nz::RectCorner rectCorner;
 		if (corner == "TopLeft")
-			rectCorner = Nz::RectCorner_LeftTop;
+			rectCorner = Nz::RectCorner::LeftTop;
 		else if (corner == "TopRight")
-			rectCorner = Nz::RectCorner_RightTop;
+			rectCorner = Nz::RectCorner::RightTop;
 		else if (corner == "BottomLeft")
-			rectCorner = Nz::RectCorner_LeftBottom;
+			rectCorner = Nz::RectCorner::LeftBottom;
 		else if (corner == "BottomRight")
-			rectCorner = Nz::RectCorner_RightBottom;
+			rectCorner = Nz::RectCorner::RightBottom;
 		else
 			throw std::runtime_error("Invalid corner " + std::string(corner));
 
@@ -53,19 +53,19 @@ namespace bw
 			{
 				{
 					"TopLeft",
-					Nz::RectCorner_LeftTop
+					Nz::RectCorner::LeftTop
 				},
 				{
 					"TopRight",
-					Nz::RectCorner_RightTop
+					Nz::RectCorner::RightTop
 				},
 				{
 					"BottomLeft",
-					Nz::RectCorner_LeftBottom
+					Nz::RectCorner::LeftBottom
 				},
 				{
 					"BottomRight",
-					Nz::RectCorner_RightBottom
+					Nz::RectCorner::RightBottom
 				}
 			}
 		};

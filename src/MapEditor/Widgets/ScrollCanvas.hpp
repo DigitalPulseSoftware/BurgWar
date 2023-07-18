@@ -9,7 +9,6 @@
 
 #include <Nazara/Core/Color.hpp>
 #include <Nazara/Math/Vector2.hpp>
-#include <NDK/World.hpp>
 #include <QtWidgets/QDialog>
 #include <vector>
 

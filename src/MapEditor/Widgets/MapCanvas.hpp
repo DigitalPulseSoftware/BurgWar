@@ -19,7 +19,6 @@
 #include <MapEditor/Widgets/EditorWindow.hpp>
 #include <MapEditor/Widgets/MapCanvasLayer.hpp>
 #include <MapEditor/Widgets/WorldCanvas.hpp>
-#include <NDK/World.hpp>
 #include <memory>
 #include <vector>
 
@@ -44,7 +43,7 @@ namespace bw
 			void EditEntitiesPosition(const std::vector<EntityId>& entityIds);
 			void EnablePhysicsDebugDraw(bool enable);
 
-			void ForEachEntity(std::function<void(entt::entity entity)> func) override;
+			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachEntity(F&& func);
 			template<typename F> void ForEachMapEntity(F&& func);
 
@@ -67,9 +66,9 @@ namespace bw
 			void ReloadScripts();
 			void ResetLayers(std::size_t layerCount);
 
-			entt::entity RetrieveEntityByUniqueId(EntityId uniqueId) const override;
+			entt::handle RetrieveEntityByUniqueId(EntityId uniqueId) const override;
 			const LayerVisualEntityHandle& RetrieveLayerEntityByUniqueId(EntityId uniqueId) const;
-			EntityId RetrieveUniqueIdByEntity(entt::entity entity) const override;
+			EntityId RetrieveUniqueIdByEntity(entt::handle entity) const override;
 
 			void ShowGrid(bool show);
 

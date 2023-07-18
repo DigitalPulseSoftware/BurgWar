@@ -61,7 +61,7 @@ namespace bw
 
 		for (entt::entity entity : m_physicsEntities)
 		{
-			auto& entityPhys = m_registry.get<Nz::RigidBody2DComponent>(entity);
+			auto& entityPhys = m_registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
 			if (entityPhys.IsSleeping())
 				continue;
 
@@ -118,7 +118,7 @@ namespace bw
 		auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
 		creationEvent.scale = entityNode.GetScale().y; //< x is affected by the "looking right" flag
 
-		if (Nz::RigidBody2DComponent* entityPhys = m_registry.try_get<Nz::RigidBody2DComponent>(entity))
+		if (Nz::ChipmunkRigidBody2DComponent* entityPhys = m_registry.try_get<Nz::ChipmunkRigidBody2DComponent>(entity))
 		{
 			creationEvent.position = entityPhys->GetPosition();
 			creationEvent.rotation = entityPhys->GetRotation();
@@ -216,7 +216,7 @@ namespace bw
 		const NetworkSyncComponent& syncComponent = m_registry.get<NetworkSyncComponent>(entity);
 		movementEvent.entityId = syncComponent.GetNetworkId();
 
-		if (Nz::RigidBody2DComponent* entityPhys = m_registry.try_get<Nz::RigidBody2DComponent>(entity))
+		if (Nz::ChipmunkRigidBody2DComponent* entityPhys = m_registry.try_get<Nz::ChipmunkRigidBody2DComponent>(entity))
 		{
 			//TODO: Handle parents?
 			movementEvent.position = entityPhys->GetPosition();
@@ -258,7 +258,7 @@ namespace bw
 		assert(m_entitySlots.find(entity) == m_entitySlots.end());
 		auto& slots = m_entitySlots.emplace(entity, EntitySlots()).first.value();
 
-		if (m_registry.try_get<Nz::RigidBody2DComponent>(entity))
+		if (m_registry.try_get<Nz::ChipmunkRigidBody2DComponent>(entity))
 			m_physicsEntities.insert(entity);
 		else
 			m_staticEntities.insert(entity);
@@ -389,7 +389,7 @@ namespace bw
 			for (entt::entity entity : m_physicsUpdateEntities)
 			{
 				const auto& entityNetwork = m_registry.get<NetworkSyncComponent>(entity);
-				const auto& entityPhysics = m_registry.get<Nz::RigidBody2DComponent>(entity);
+				const auto& entityPhysics = m_registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
 
 				EntityPhysics& physicsEvent = m_physicsEvent.emplace_back();
 				physicsEvent.entityId = entityNetwork.GetNetworkId();

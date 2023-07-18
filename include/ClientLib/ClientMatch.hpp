@@ -26,6 +26,7 @@
 #include <ClientLib/Scripting/ClientEntityStore.hpp>
 #include <ClientLib/Scripting/ClientWeaponStore.hpp>
 #include <ClientLib/Scripting/ParticleRegistry.hpp>
+#include <Nazara/Core/EnttWorld.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Platform/Window.hpp>
 #include <Nazara/Network/UdpSocket.hpp>
@@ -54,7 +55,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			ClientMatch(const ClientMatch&) = delete;
 			ClientMatch(ClientMatch&&) = delete;
 			~ClientMatch();
@@ -88,7 +89,7 @@ namespace bw
 			//inline ParticleRegistry& GetParticleRegistry();
 			//inline const ParticleRegistry& GetParticleRegistry() const;
 			inline ClientPlayer* GetPlayerByIndex(Nz::UInt16 playerIndex);
-			inline entt::registry& GetRenderWorld();
+			inline Nz::EnttWorld& GetRenderWorld();
 			std::shared_ptr<const SharedGamemode> GetSharedGamemode() const override;
 			ClientWeaponStore& GetWeaponStore() override;
 			const ClientWeaponStore& GetWeaponStore() const override;
@@ -245,17 +246,6 @@ namespace bw
 				std::vector<LayerData> layers;
 			};
 
-			struct RenderWorld
-			{
-				RenderWorld() :
-				systemGraph(registry)
-				{
-				}
-
-				entt::registry registry;
-				Nz::EnttSystemGraph systemGraph;
-			};
-
 			struct TickPrediction
 			{
 				Nz::UInt16 serverTick;
@@ -297,8 +287,8 @@ namespace bw
 			std::vector<TickPrediction> m_tickPredictions;
 			Nz::Canvas* m_canvas;
 			entt::handle m_currentLayer;
-			RenderWorld m_renderWorld;
 			EntityId m_freeClientId;
+			Nz::EnttWorld& m_renderWorld;
 			Nz::RenderTarget* m_renderTarget;
 			Nz::Window* m_window;
 			Nz::UInt16 m_activeLayerIndex;

@@ -48,6 +48,8 @@ namespace bw
 			m_timerManager.Update(m_currentTime);
 
 			OnTick(m_tickTimer < m_tickDuration);
+
+			m_currentTick++;
 		}
 	}
 }

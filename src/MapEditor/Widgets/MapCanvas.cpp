@@ -30,12 +30,12 @@
 namespace bw
 {
 	MapCanvas::MapCanvas(EditorWindow& editor, QWidget* parent) :
-	SharedMatch(editor, LogSide::Editor, "editor", 1.f / 60.f),
+	SharedMatch(editor, LogSide::Editor, "editor", Nz::Time::TickDuration(60)),
 	WorldCanvas(parent),
 	m_editor(editor),
 	m_isPhysicsDebugDrawEnabled(false)
 	{
-		entt::registry& world = GetWorld();
+		entt::registry& world = GetSystemGraph();
 		world.AddSystem<Ndk::ListenerSystem>();
 		world.AddSystem<Ndk::PhysicsSystem2D>();
 
@@ -170,11 +170,11 @@ namespace bw
 		m_isPhysicsDebugDrawEnabled = enable;
 	}
 
-	void MapCanvas::ForEachEntity(std::function<void(entt::entity entity)> func)
+	void MapCanvas::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
 	{
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
 		{
-			entt::entity entity = visualEntityHandle->GetEntity();
+			entt::handle entity = visualEntityHandle->GetEntity();
 			if (!entity)
 				continue;
 
@@ -284,9 +284,9 @@ namespace bw
 		m_weaponStore->LoadDirectory("weapons");
 		m_weaponStore->Resolve();
 
-		ForEachEntity([this](entt::entity entity)
+		ForEachEntity([this](entt::handle entity)
 		{
-			if (entity->HasComponent<ScriptComponent>())
+			if (entity.try_get<ScriptComponent>())
 				m_entityStore->UpdateEntityElement(entity);
 		});
 
@@ -307,7 +307,7 @@ namespace bw
 			m_layers.emplace_back(*this, LayerIndex(i));
 	}
 
-	entt::entity MapCanvas::RetrieveEntityByUniqueId(EntityId uniqueId) const
+	entt::handle MapCanvas::RetrieveEntityByUniqueId(EntityId uniqueId) const
 	{
 		auto it = m_entitiesByUniqueId.find(uniqueId);
 		if (it == m_entitiesByUniqueId.end())
@@ -325,12 +325,16 @@ namespace bw
 		return it->second;
 	}
 
-	EntityId MapCanvas::RetrieveUniqueIdByEntity(entt::entity entity) const
+	EntityId MapCanvas::RetrieveUniqueIdByEntity(entt::handle entity) const
 	{
-		if (!entity || !entity->HasComponent<CanvasComponent>())
+		if (!entity)
 			return InvalidEntityId;
 
-		return entity->GetComponent<CanvasComponent>().GetUniqueId();
+		CanvasComponent* canvasComponent = entity.try_get<CanvasComponent>();
+		if (!canvasComponent)
+			return InvalidEntityId;
+
+		return canvasComponent->GetUniqueId();
 	}
 
 	void MapCanvas::ShowGrid(bool show)

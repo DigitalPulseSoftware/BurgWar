@@ -2,9 +2,15 @@
 // This file is part of the "Burgwar" project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include <Client/ClientApp.hpp>
-#include <NDK/Components.hpp>
-#include <NDK/Systems.hpp>
+#include <Client/ClientAppComponent.hpp>
+#include <Nazara/Core/AppEntitySystemComponent.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Core/EnttWorld.hpp>
+#include <Nazara/Graphics/Components.hpp>
+#include <Nazara/Graphics/Systems.hpp>
+#include <Nazara/Utility/Components.hpp>
+#include <Nazara/Platform/AppWindowingComponent.hpp>
+#include <Nazara/Widgets.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Version.hpp>
 #include <ClientLib/ClientSession.hpp>
@@ -17,14 +23,21 @@
 
 namespace bw
 {
-	ClientApp::ClientApp(int argc, char* argv[]) :
-	ClientEditorAppComponent(argc, argv, LogSide::Client, m_configFile),
+	ClientAppComponent::ClientAppComponent(Nz::ApplicationBase& app, int argc, char* argv[]) :
+	ClientEditorAppComponent(app, argc, argv, LogSide::Client, m_configFile),
 	m_stateMachine(nullptr),
 	m_configFile(*this),
 	m_networkReactors(GetLogger())
 	{
 		if (!m_configFile.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("failed to load config file");
+
+		Nz::AppFilesystemComponent& appFilesystem = app.GetComponent<Nz::AppFilesystemComponent>();
+		appFilesystem.Mount("assetCache",  Nz::Utf8Path(m_configFile.GetStringValue("Resources.AssetCacheDirectory")));
+		appFilesystem.Mount("assets",      Nz::Utf8Path(m_configFile.GetStringValue("Resources.AssetDirectory")));
+		appFilesystem.Mount("mods",        Nz::Utf8Path(m_configFile.GetStringValue("Resources.ModDirectory")));
+		appFilesystem.Mount("scriptCache", Nz::Utf8Path(m_configFile.GetStringValue("Resources.ScriptCacheDirectory")));
+		appFilesystem.Mount("scripts",     Nz::Utf8Path(m_configFile.GetStringValue("Resources.ScriptDirectory")));
 
 		LoadMods();
 		FillStores();
@@ -55,32 +68,34 @@ namespace bw
 		else
 			chosenVideoMode = Nz::VideoMode(width, height);
 
-		m_mainWindow = &AddWindow<Nz::RenderWindow>(chosenVideoMode, "Burg'war", (fullscreen) ? Nz::WindowStyle_Fullscreen : Nz::WindowStyle_Default, Nz::RenderTargetParameters(aaLevel));
+		auto& windowingComponent = app.GetComponent<Nz::AppWindowingComponent>();
+		m_mainWindow = &windowingComponent.CreateWindow(chosenVideoMode, "Burg'war", (fullscreen) ? Nz::WindowStyle::Fullscreen : Nz::WindowStyle_Default);
 
-		m_mainWindow->EnableVerticalSync(vsync);
-		m_mainWindow->SetFramerateLimit(fpsLimit);
+		auto& ecsComponent = app.GetComponent<Nz::AppEntitySystemComponent>();
 
-		entt::registry& world = AddWorld();
+		Nz::EnttWorld& world = ecsComponent.AddWorld<Nz::EnttWorld>();
 
-		Ndk::RenderSystem& renderSystem = world.AddSystem<Ndk::RenderSystem>();
-		renderSystem.SetDefaultBackground(nullptr);
-		renderSystem.SetGlobalUp(Nz::Vector3f::Down());
+		Nz::RenderSystem& renderSystem = world.AddSystem<Nz::RenderSystem>();
+		Nz::WindowSwapchain& swapchain = renderSystem.CreateSwapchain(*m_mainWindow);
 
-		entt::entity camera2D = world.CreateEntity();
+		entt::handle camera2D = world.CreateEntity();
 
-		auto& cameraComponent2D = camera2D->AddComponent<Ndk::CameraComponent>();
-		cameraComponent2D.SetProjectionType(Nz::ProjectionType_Orthogonal);
-		cameraComponent2D.SetTarget(m_mainWindow);
+		auto& cameraComponent2D = camera2D.emplace<Nz::CameraComponent>(&swapchain, Nz::ProjectionType::Orthographic);
+		cameraComponent2D.UpdateClearColor(Nz::Color(1.f, 1.f, 1.f, 0.f));
+		cameraComponent2D.UpdateRenderOrder(1);
+		cameraComponent2D.UpdateRenderMask(1);
 
-		camera2D->AddComponent<Ndk::NodeComponent>();
+		camera2D.emplace<Nz::NodeComponent>();
 
 		Nz::WindowEventHandler& eventHandler = m_mainWindow->GetEventHandler();
 
 		m_stateData = std::make_shared<StateData>();
-		m_stateData->app = this;
+		m_stateData->app = &app;
+		m_stateData->appComponent = this;
+		m_stateData->swapchain = &swapchain;
 		m_stateData->window = m_mainWindow;
 		m_stateData->world = &world;
-		m_stateData->canvas.emplace(world.CreateHandle(), eventHandler, m_mainWindow->GetCursorController().CreateHandle());
+		m_stateData->canvas.emplace(world.GetRegistry(), eventHandler, m_mainWindow->GetCursorController().CreateHandle(), 0xFFFFFFFF);
 		m_stateData->canvas->Resize(Nz::Vector2f(m_mainWindow->GetSize()));
 
 		if (m_config.GetBoolValue("Debug.ShowVersion"))
@@ -106,28 +121,21 @@ namespace bw
 		m_stateMachine.PushState(std::make_shared<MainMenuState>(m_stateData));
 	}
 
-	ClientApp::~ClientApp()
+	ClientAppComponent::~ClientAppComponent()
 	{
 		m_stateMachine.ResetState(nullptr);
-		m_stateMachine.Update(0.f);
+		m_stateMachine.Update(Nz::Time::Zero());
 
 		m_networkReactors.ClearReactors();
 	}
 
-	int ClientApp::Run()
+	void ClientAppComponent::Update(Nz::Time elapsedTime)
 	{
-		while (ClientApplication::Run())
-		{
-			m_mainWindow->Display();
+		ClientEditorAppComponent::Update(elapsedTime);
 
-			BurgAppComponent::Update();
+		m_networkReactors.Update();
 
-			m_networkReactors.Update();
-
-			if (!m_stateMachine.Update(GetUpdateTime()))
-				break;
-		}
-
-		return 0;
+		if (!m_stateMachine.Update(elapsedTime))
+			GetApp().Quit();
 	}
 }

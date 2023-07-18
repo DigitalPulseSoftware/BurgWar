@@ -11,7 +11,7 @@
 #include <MapEditor/Gizmos/CameraMovement.hpp>
 #include <MapEditor/Widgets/NazaraCanvas.hpp>
 #include <Nazara/Core/Color.hpp>
-#include <NDK/World.hpp>
+#include <Nazara/Core/EnttSystemGraph.hpp>
 #include <optional>
 
 namespace bw
@@ -52,6 +52,7 @@ namespace bw
 			std::optional<CameraMovement> m_cameraMovement;
 			Nz::Color m_backgroundColor;
 			entt::registry m_world;
+			Nz::EnttSystemGraph m_systemGraph;
 			Camera m_camera;
 	};
 }

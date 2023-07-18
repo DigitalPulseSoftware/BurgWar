@@ -14,8 +14,10 @@
 #include <ClientLib/Scripting/Sound.hpp>
 #include <ClientLib/Scripting/Sprite.hpp>
 #include <ClientLib/Scripting/Text.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
+#include <Nazara/Graphics/MaterialInstance.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>
 
@@ -98,17 +100,17 @@ namespace bw
 			else
 				color = Nz::Color::White();
 
-			//TODO: Don't create a material everytime
-			/*Nz::MaterialRef mat = Nz::Material::New("Translucent2D");
-			if (!texturePath.empty())
-				mat->SetDiffuseMap(m_assetStore.GetTexture(texturePath));
+			std::shared_ptr<Nz::MaterialInstance> mat = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
 
-			auto& sampler = mat->GetDiffuseSampler();
-			sampler.SetFilterMode(Nz::SamplerFilter_Bilinear);
+			Nz::TextureSamplerInfo samplerInfo;
+			samplerInfo.magFilter = Nz::SamplerFilter::Linear;
+			samplerInfo.minFilter = Nz::SamplerFilter::Linear;
 			if (repeatTexture)
-				sampler.SetWrapMode(Nz::SamplerWrap_Repeat);
+				samplerInfo.wrapModeU = samplerInfo.wrapModeV = Nz::SamplerWrap::Repeat;
+			
+			mat->SetTextureProperty("BaseColorMap", m_assetStore.GetTexture(texturePath), samplerInfo);
 
-			std::shared_ptr<Nz::Sprite> sprite = std::make_shared<Nz::Sprite>();
+			std::shared_ptr<Nz::Sprite> sprite = std::make_shared<Nz::Sprite>(std::move(mat));
 			sprite->SetColor(color);
 			sprite->SetTextureCoords(textureCoords);
 
@@ -158,7 +160,7 @@ namespace bw
 			Sprite scriptSprite(visualComponent.GetLayerVisual(), sprite, transformMatrix, renderOrder);
 			scriptSprite.Show();
 
-			return scriptSprite;*/
+			return scriptSprite;
 		});
 
 		elementTable["AddText"] = LuaFunction([this](const sol::table& entityTable, const sol::table& parameters)

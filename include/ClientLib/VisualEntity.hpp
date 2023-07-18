@@ -14,6 +14,11 @@
 #include <CoreLib/EntityOwner.hpp>
 #include <vector>
 
+namespace Nz
+{
+	class EnttWorld;
+};
+
 namespace bw
 {
 	class LayerVisualEntity;
@@ -25,8 +30,8 @@ namespace bw
 		friend LayerVisualEntity;
 
 		public:
-			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
-			VisualEntity(entt::registry& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
+			VisualEntity(Nz::EnttWorld& renderWorld, LayerVisualEntityHandle visualEntityHandle, int baseRenderOrder = 0);
+			VisualEntity(Nz::EnttWorld& renderWorld, LayerVisualEntityHandle visualEntityHandle, const Nz::Node& parentNode, int baseRenderOrder = 0);
 			VisualEntity(const VisualEntity&) = delete;
 			VisualEntity(VisualEntity&& entity) noexcept;
 			~VisualEntity();
@@ -60,7 +65,14 @@ namespace bw
 				std::shared_ptr<Nz::InstancedRenderable> renderable;
 			};
 
+			struct Renderable
+			{
+				EntityOwner entity;
+				std::shared_ptr<Nz::InstancedRenderable> renderable;
+			};
+
 			std::vector<HoveringRenderable> m_hoveringRenderables;
+			std::vector<Renderable> m_renderables;
 			EntityOwner m_entity;
 			LayerVisualEntityHandle m_visualEntity;
 			int m_baseRenderOrder;

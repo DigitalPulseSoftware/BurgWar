@@ -23,7 +23,7 @@ namespace bw
 {
 	namespace
 	{
-		static constexpr const char* PlayerSettingsFile = "playerconfig.lua";
+		static constexpr std::string_view PlayerSettingsFile = "playerconfig.lua";
 	}
 
 	ClientEditorAppComponent::ClientEditorAppComponent(Nz::ApplicationBase& app, int argc, char* argv[], LogSide side, const SharedAppConfig& configFile) :

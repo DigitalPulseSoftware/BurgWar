@@ -4,12 +4,12 @@
 
 #include <Client/States/ServerListState.hpp>
 #include <CoreLib/Version.hpp>
-#include <CoreLib/WebRequest.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/JoinServerState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Nazara/Utility/RichTextDrawer.hpp>
-#include <NDK/StateMachine.hpp>
+#include <Nazara/Core/StateMachine.hpp>
+#include <Nazara/Network/WebRequest.hpp>
 #include <nlohmann/json.hpp>
 
 namespace bw
@@ -19,16 +19,19 @@ namespace bw
 		constexpr Nz::UInt32 MasterServerDataVersion = 1U;
 	}
 
-	constexpr float RefreshTime = 15.f;
+	constexpr Nz::Time RefreshTime = Nz::Time::Seconds(15);
 
 	ServerListState::ServerListState(std::shared_ptr<StateData> stateData, std::shared_ptr<AbstractState> previousState) :
 	AbstractState(std::move(stateData)),
 	m_previousState(std::move(previousState))
 	{
-		if (WebService::IsInitialized())
-			m_webService.emplace(GetStateData().app->GetLogger());
+		if (GetStateData().appComponent->HasWebService())
+			m_webService = &GetStateData().appComponent->GetWebService();
 		else
-			bwLog(GetStateData().app->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
+		{
+			bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Warning, "web services are not initialized, server listing will not work");
+			m_webService = nullptr;
+		}
 
 		m_serverListWidget = GetStateData().canvas->Add<Nz::BaseWidget>();
 
@@ -55,7 +58,7 @@ namespace bw
 			OnDirectConnectionPressed();
 		});
 
-		const std::string& masterServerList = GetStateData().app->GetConfig().GetStringValue("ServerSettings.MasterServers");
+		const std::string& masterServerList = GetStateData().appComponent->GetConfig().GetStringValue("ServerSettings.MasterServers");
 		SplitStringAny(masterServerList, "\f\n\r\t\v ", [&](const std::string_view& masterServerURI)
 		{
 			if (!masterServerURI.empty())
@@ -68,25 +71,25 @@ namespace bw
 	ServerListState::~ServerListState()
 	{
 		//FIXME: ScrollAreaWidget uses SetParent which is broken as it doesn't register children to parent
-		m_serverListWidget->SetParent(&GetStateData().canvas.value());
+		//m_serverListWidget->SetParent(&GetStateData().canvas.value());
 		m_serverListWidget->Destroy();
 	}
 
-	void ServerListState::Enter(Ndk::StateMachine& fsm)
+	void ServerListState::Enter(Nz::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
 		m_serverListWidget->Show();
 	}
 
-	void ServerListState::Leave(Ndk::StateMachine& fsm)
+	void ServerListState::Leave(Nz::StateMachine& fsm)
 	{
 		AbstractState::Leave(fsm);
 
 		m_serverListWidget->Hide();
 	}
 
-	bool ServerListState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool ServerListState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -98,10 +101,7 @@ namespace bw
 			fsm.ChangeState(std::move(m_nextState));
 
 		if (m_webService)
-		{
-			m_webService->Poll();
 			RefreshServers(elapsedTime);
-		}
 
 		return true;
 	}
@@ -180,19 +180,19 @@ namespace bw
 
 	void ServerListState::OnServerConnectionPressed(const std::string& masterServer, const std::string& uuid)
 	{
-		std::unique_ptr<WebRequest> request = WebRequest::Get(masterServer + "/server/" + uuid + "/connection_details", [this, stateData = GetStateDataPtr(), masterServer, uuid](WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService->CreateGetRequest(masterServer + "/server/" + uuid + "/connection_details", [this, stateData = GetStateDataPtr(), masterServer, uuid](Nz::WebRequestResult&& result)
 		{
 			if (!result)
 			{
-				bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to connect to server {0} from {1}, connect request failed: {2}", uuid, masterServer, result.GetErrorMessage());
+				bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "failed to connect to server {0} from {1}, connect request failed: {2}", uuid, masterServer, result.GetErrorMessage());
 				return;
 			}
 
-			switch (result.GetReponseCode())
+			switch (result.GetStatusCode())
 			{
 				case 200:
 				{
-					bwLog(stateData->app->GetLogger(), LogLevel::Debug, "successfully received connection info of {0} from {1}", uuid, masterServer);
+					bwLog(stateData->appComponent->GetLogger(), LogLevel::Debug, "successfully received connection info of {0} from {1}", uuid, masterServer);
 					nlohmann::json connectionDetails;
 					
 					try
@@ -201,25 +201,25 @@ namespace bw
 					}
 					catch (const std::exception& e)
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to parse connection details: {0}", e.what());
+						bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "failed to parse connection details: {0}", e.what());
 						return;
 					}
 
 					Nz::UInt32 dataVersion = connectionDetails.value("data_version", 0);
 					if (dataVersion != MasterServerDataVersion)
-						bwLog(stateData->app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
+						bwLog(stateData->appComponent->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
 					std::string addresses = connectionDetails.value("ip", "");
 					if (addresses.empty())
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Error, "missing ip field, aborting connection.");
+						bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "missing ip field, aborting connection.");
 						return;
 					}
 
 					Nz::UInt16 serverPort = connectionDetails.value("port", Nz::UInt16(0));
 					if (serverPort == 0)
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Error, "missing or invalid port field ({0}), aborting connection.", serverPort);
+						bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "missing or invalid port field ({0}), aborting connection.", serverPort);
 						return;
 					}
 
@@ -239,12 +239,12 @@ namespace bw
 				}
 
 				default:
-					bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to connect to server {0} from {1}, request failed with code {2}", uuid, masterServer, result.GetReponseCode());
+					bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "failed to connect to server {0} from {1}, request failed with code {2}", uuid, masterServer, result.GetStatusCode());
 					break;
 			}
 		});
 
-		m_webService->AddRequest(std::move(request));
+		m_webService->QueueRequest(std::move(request));
 	}
 
 	void ServerListState::RefreshServers(Nz::Time elapsedTime)
@@ -255,23 +255,23 @@ namespace bw
 			MasterServerData& masterServerData = it.value();
 
 			masterServerData.timeBeforeRefresh -= elapsedTime;
-			if (masterServerData.timeBeforeRefresh < 0.f)
+			if (masterServerData.timeBeforeRefresh < Nz::Time::Zero())
 			{
-				masterServerData.timeBeforeRefresh = RefreshTime / 2.f;
+				masterServerData.timeBeforeRefresh = RefreshTime / Nz::Time::Seconds(2.f);
 
-				std::unique_ptr<WebRequest> request = WebRequest::Get(masterServer + "/servers", [this, stateData = GetStateDataPtr(), url = masterServer](WebRequestResult&& result)
+				std::unique_ptr<Nz::WebRequest> request = m_webService->CreateGetRequest(masterServer + "/servers", [this, stateData = GetStateDataPtr(), url = masterServer](Nz::WebRequestResult&& result)
 				{
 					if (!result)
 					{
-						bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, register request failed: {1}", url, result.GetErrorMessage());
+						bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, register request failed: {1}", url, result.GetErrorMessage());
 						return;
 					}
 
-					switch (result.GetReponseCode())
+					switch (result.GetStatusCode())
 					{
 						case 200:
 						{
-							bwLog(stateData->app->GetLogger(), LogLevel::Debug, "successfully refreshed server list from {0}", url);
+							bwLog(stateData->appComponent->GetLogger(), LogLevel::Debug, "successfully refreshed server list from {0}", url);
 							
 							UpdateServerList(url, nlohmann::json::parse(result.GetBody()));
 
@@ -283,12 +283,12 @@ namespace bw
 						}
 
 						default:
-							bwLog(stateData->app->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, request failed with code {1}", url, result.GetReponseCode());
+							bwLog(stateData->appComponent->GetLogger(), LogLevel::Error, "failed to refresh server list from {0}, request failed with code {1}", url, result.GetStatusCode());
 							break;
 					}
 				});
 
-				m_webService->AddRequest(std::move(request));
+				m_webService->QueueRequest(std::move(request));
 			}
 		}
 	}
@@ -305,7 +305,7 @@ namespace bw
 
 		Nz::UInt32 dataVersion = serverListDoc.value("data_version", 0);
 		if (dataVersion != MasterServerDataVersion)
-			bwLog(stateData.app->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
+			bwLog(stateData.appComponent->GetLogger(), LogLevel::Warning, "unexpected data version (expected {0}, got {1})", MasterServerDataVersion, dataVersion);
 
 		tsl::hopscotch_map<std::string, ServerData> newServerList;
 
@@ -314,14 +314,14 @@ namespace bw
 			std::string uuid = serverDoc.value("uuid", "");
 			if (uuid.empty())
 			{
-				bwLog(stateData.app->GetLogger(), LogLevel::Error, "got server without mandatory uuid field");
+				bwLog(stateData.appComponent->GetLogger(), LogLevel::Error, "got server without mandatory uuid field");
 				continue;
 			}
 
 			Nz::UInt32 version = serverDoc.value("game_version", Nz::UInt32(0));
 			if (version != GameVersion)
 			{
-				bwLog(stateData.app->GetLogger(), LogLevel::Debug, "ignored server {0} because version didn't match (got {1}, expected {2})", uuid, version, GameVersion);
+				bwLog(stateData.appComponent->GetLogger(), LogLevel::Debug, "ignored server {0} because version didn't match (got {1}, expected {2})", uuid, version, GameVersion);
 				continue;
 			}
 
@@ -344,7 +344,7 @@ namespace bw
 			else
 			{
 				if (masterServerData.receivedData)
-					bwLog(stateData.app->GetLogger(), LogLevel::Debug, "server {0} appeared (from {1})", uuid, masterServer);
+					bwLog(stateData.appComponent->GetLogger(), LogLevel::Debug, "server {0} appeared (from {1})", uuid, masterServer);
 
 				// New server
 				serverData.connectButton = m_serverListWidget->Add<Nz::ButtonWidget>();
@@ -396,7 +396,7 @@ namespace bw
 
 		for (auto&& [uuid, serverData] : masterServerData.serverList)
 		{
-			bwLog(stateData.app->GetLogger(), LogLevel::Debug, "server {0} disappeared (from {1})", uuid, masterServer);
+			bwLog(stateData.appComponent->GetLogger(), LogLevel::Debug, "server {0} disappeared (from {1})", uuid, masterServer);
 
 			// Delete old servers
 			serverData.connectButton->Destroy();
@@ -405,7 +405,7 @@ namespace bw
 
 		if (!masterServerData.receivedData)
 		{
-			bwLog(stateData.app->GetLogger(), LogLevel::Debug, "received {0} server(s) from {1}", newServerList.size(), masterServer);
+			bwLog(stateData.appComponent->GetLogger(), LogLevel::Debug, "received {0} server(s) from {1}", newServerList.size(), masterServer);
 			masterServerData.receivedData = true;
 		}
 

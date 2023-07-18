@@ -25,7 +25,7 @@
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
-#include <Nazara/Physics2D/Collider2D.hpp>
+#include <Nazara/ChipmunkPhysics2D/ChipmunkCollider2D.hpp>
 
 namespace bw
 {
@@ -162,7 +162,7 @@ namespace bw
 	{
 		if (lastTick && m_shouldSendWeapons)
 		{
-			Packets::PlayerWeapons weaponPacket;
+			/*Packets::PlayerWeapons weaponPacket;
 			weaponPacket.localIndex = m_localIndex;
 			weaponPacket.layerIndex = m_layerIndex;
 
@@ -184,7 +184,7 @@ namespace bw
 				}
 			}
 
-			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));
+			m_session.GetVisibility().PushEntitiesPacket(m_layerIndex, std::move(weaponIds), std::move(weaponPacket));*/
 
 			m_shouldSendWeapons = false;
 		}

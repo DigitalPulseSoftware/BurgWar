@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/OptionState.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 
 namespace bw
 {
@@ -11,7 +11,7 @@ namespace bw
 	AbstractState(std::move(stateData)),
 	m_previousState(std::move(previousState))
 	{
-		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		ConfigFile& playerConfig = GetStateData().appComponent->GetPlayerSettings();
 
 		m_optionWidget = CreateWidget<OptionWidget>(playerConfig);
 		m_optionWidget->EnableBackground(true);
@@ -23,14 +23,14 @@ namespace bw
 		});
 	}
 
-	void OptionState::Leave(Ndk::StateMachine& fsm)
+	void OptionState::Leave(Nz::StateMachine& fsm)
 	{
 		AbstractState::Leave(fsm);
 
-		GetStateData().app->SavePlayerConfig();
+		GetStateData().appComponent->SavePlayerConfig();
 	}
 
-	bool OptionState::Update(Ndk::StateMachine& fsm, float /*elapsedTime*/)
+	bool OptionState::Update(Nz::StateMachine& fsm, Nz::Time /*elapsedTime*/)
 	{
 		if (m_nextState)
 			fsm.ChangeState(std::move(m_nextState));

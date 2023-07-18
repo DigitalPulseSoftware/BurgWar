@@ -5,7 +5,7 @@
 #include <Client/States/Game/CancelableState.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/MainMenuState.hpp>
-#include <NDK/StateMachine.hpp>
+#include <Nazara/Core/StateMachine.hpp>
 
 namespace bw
 {
@@ -23,9 +23,9 @@ namespace bw
 		});
 	}
 
-	void CancelableState::Cancel(float delay)
+	void CancelableState::Cancel(Nz::Time delay)
 	{
-		UpdateState([this](Ndk::StateMachine& fsm)
+		UpdateState([this](Nz::StateMachine& fsm)
 		{
 			fsm.ResetState(std::make_shared<BackgroundState>(GetStateDataPtr()));
 			fsm.PushState(std::move(m_originalState));
@@ -34,15 +34,15 @@ namespace bw
 		OnCancelled();
 	}
 
-	void CancelableState::SwitchToState(std::shared_ptr<AbstractState> state, float delay)
+	void CancelableState::SwitchToState(std::shared_ptr<AbstractState> state, Nz::Time delay)
 	{
-		UpdateState([this, state = std::move(state)](Ndk::StateMachine& fsm) mutable
+		UpdateState([this, state = std::move(state)](Nz::StateMachine& fsm) mutable
 		{
 			fsm.ChangeState(std::move(state));
 		}, delay);
 	}
 
-	void CancelableState::UpdateState(std::function<void(Ndk::StateMachine& fsm)> stateUpdate, float delay)
+	void CancelableState::UpdateState(std::function<void(Nz::StateMachine& fsm)> stateUpdate, Nz::Time delay)
 	{
 		m_nextStateCallback = std::move(stateUpdate);
 		m_nextStateDelay = delay;
@@ -54,14 +54,14 @@ namespace bw
 		m_cancelButton->SetPosition(canvasSize.x / 2.f - m_cancelButton->GetWidth() / 2.f, canvasSize.y - 10.f - m_cancelButton->GetHeight());
 	}
 
-	bool CancelableState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool CancelableState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!StatusState::Update(fsm, elapsedTime))
 			return false;
 
 		if (m_nextStateCallback)
 		{
-			if ((m_nextStateDelay -= elapsedTime) < 0.f)
+			if ((m_nextStateDelay -= elapsedTime) < Nz::Time::Zero())
 			{
 				m_nextStateCallback(fsm);
 				return true;

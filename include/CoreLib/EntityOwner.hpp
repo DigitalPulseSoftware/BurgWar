@@ -21,9 +21,10 @@ namespace bw
 
 			inline entt::handle GetEntity() const;
 
-			operator entt::handle() const;
-			entt::handle* operator->();
-			const entt::handle* operator->() const;
+			inline explicit operator bool() const;
+			inline operator entt::handle() const;
+			inline entt::handle* operator->();
+			inline const entt::handle* operator->() const;
 
 			EntityOwner& operator=(const EntityOwner&) = delete;
 			inline EntityOwner& operator=(EntityOwner&& entityOwner) noexcept;

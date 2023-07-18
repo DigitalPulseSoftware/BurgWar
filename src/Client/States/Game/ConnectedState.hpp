@@ -35,14 +35,14 @@ namespace bw
 				UploadSpeed   = 1 << 3
 			};
 
-			void Enter(Ndk::StateMachine& fsm) override;
+			void Enter(Nz::StateMachine& fsm) override;
 			void LayoutWidgets() override;
 			void OnConnectionLost();
 			void OnConnectionRetrieved();
 			void PollSessionInfo();
 			void RefreshFlags();
 			void UpdateSessionInfo();
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			std::optional<SessionBridge::SessionInfo> m_lastSessionInfo;
 			std::shared_ptr<AbstractState> m_firstState;
@@ -51,16 +51,16 @@ namespace bw
 			Nz::LabelWidget* m_downloadSpeedLabel;
 			Nz::LabelWidget* m_pingLabel;
 			Nz::LabelWidget* m_uploadSpeedLabel;
-			Nz::Clock m_lastSessionClock;
+			Nz::MillisecondClock m_lastSessionClock;
 			std::shared_ptr<Nz::Sprite> m_connectionLostSprite;
+			Nz::Time m_connectionLostCounter;
+			Nz::Time m_queryInfoTimer;
+			Nz::Time m_updateInfoTimer;
 			Nz::UInt8 m_connectionInfoFlags;
 			Nz::UInt32 m_queryId;
 			AverageValues<double> m_downloadSpeed;
 			AverageValues<double> m_uploadSpeed;
 			bool m_connectionLost;
-			float m_connectionLostCounter;
-			float m_queryInfoTimer;
-			float m_updateInfoTimer;
 	};
 }
 

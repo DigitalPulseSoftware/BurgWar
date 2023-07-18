@@ -11,8 +11,8 @@
 #include <CoreLib/Components/WeaponComponent.hpp>
 #include <CoreLib/Utils.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
 #include <Nazara/Math/BoundingVolume.hpp>
-#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
@@ -158,7 +158,7 @@ namespace bw
 
 	bool LayerVisualEntity::IsPhysical() const
 	{
-		return m_entity->try_get<Nz::RigidBody2D>() != nullptr; //< TODO: Cache this?
+		return m_entity->try_get<Nz::ChipmunkRigidBody2D>() != nullptr; //< TODO: Cache this?
 	}
 
 	void LayerVisualEntity::SyncVisuals()
@@ -230,7 +230,7 @@ namespace bw
 
 		if (CollisionDataComponent* entityCollData = m_entity->try_get<CollisionDataComponent>())
 		{
-			auto& entityCollider = m_entity->get<Nz::RigidBody2DComponent>();
+			auto& entityCollider = m_entity->get<Nz::ChipmunkRigidBody2DComponent>();
 
 			entityCollider.SetGeom(entityCollData->BuildCollider(newScale), false, false);
 		}
@@ -240,7 +240,7 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
+			auto& entityPhys = m_entity->get<Nz::ChipmunkRigidBody2DComponent>();
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);
 		}
@@ -256,7 +256,7 @@ namespace bw
 	{
 		if (IsPhysical())
 		{
-			auto& entityPhys = m_entity->get<Nz::RigidBody2DComponent>();
+			auto& entityPhys = m_entity->get<Nz::ChipmunkRigidBody2DComponent>();
 			entityPhys.SetAngularVelocity(angularVel);
 			entityPhys.SetPosition(position);
 			entityPhys.SetRotation(rotation);

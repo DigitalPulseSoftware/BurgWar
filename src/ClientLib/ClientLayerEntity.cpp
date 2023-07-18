@@ -39,7 +39,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
 		return entityPhys.GetAngularVelocity();
 	}
 
@@ -47,12 +47,14 @@ namespace bw
 	{
 		if (!m_ghostEntity)
 		{
-			/*entt::entity ghostEntity = GetEntity()->GetWorld()->CreateEntity();
-			ghostEntity->AddComponent<Nz::NodeComponent>();
+			entt::registry& registry = *GetEntity().registry();
+
+			entt::handle ghostEntity(registry, registry.create());
+			ghostEntity.emplace<Nz::NodeComponent>();
 
 			m_ghostEntity = std::make_unique<ClientLayerEntity>(m_layer, ghostEntity, ClientsideId, m_layer.GetClientMatch().AllocateClientUniqueId());
 
-			for (auto& renderable : m_attachedRenderables)
+			/*for (auto& renderable : m_attachedRenderables)
 			{
 				if (std::unique_ptr<Nz::InstancedRenderable> clonedRenderable = renderable.renderable->Clone())
 				{
@@ -86,7 +88,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
 		return entityPhys.GetVelocity();
 	}
 
@@ -94,7 +96,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 		
-		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
 		return entityPhys.GetPosition();
 	}
 
@@ -102,7 +104,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
 		return entityPhys.GetRotation();
 	}
 

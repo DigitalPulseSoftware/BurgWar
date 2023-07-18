@@ -707,7 +707,7 @@ namespace bw
 			textures.insert(texturePath);
 		});
 
-		std::filesystem::path gameResourceFolder = std::filesystem::u8path(m_config.GetStringValue("Resources.AssetDirectory"));
+		std::filesystem::path gameResourceFolder = Nz::Utf8Path(m_config.GetStringValue("Resources.AssetDirectory"));
 
 		std::vector<Map::Asset>& assets = map.GetAssets();
 		assets.clear();
@@ -716,7 +716,7 @@ namespace bw
 
 		for (const std::string& texturePath : textures)
 		{
-			std::filesystem::path fullPath = gameResourceFolder / std::filesystem::u8path(texturePath);
+			std::filesystem::path fullPath = gameResourceFolder / Nz::Utf8Path(texturePath);
 
 			auto& asset = assets.emplace_back();
 			asset.filepath = texturePath;
@@ -1581,7 +1581,7 @@ namespace bw
 	{
 		Map map;
 
-		std::filesystem::path workingMapPath = std::filesystem::u8path(mapFolder.toStdString());
+		std::filesystem::path workingMapPath = Nz::Utf8Path(mapFolder.toStdString());
 		try
 		{
 			map = Map::LoadFromDirectory(workingMapPath);

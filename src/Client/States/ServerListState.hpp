@@ -7,10 +7,9 @@
 #ifndef BURGWAR_STATES_SERVERLISTSTATE_HPP
 #define BURGWAR_STATES_SERVERLISTSTATE_HPP
 
-#include <CoreLib/WebService.hpp>
+#include <Nazara/Network/WebService.hpp>
 #include <Client/States/AbstractState.hpp>
-#include <NDK/State.hpp>
-#include <NDK/Widgets.hpp>
+#include <Nazara/Widgets.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <tsl/hopscotch_map.h>
 #include <optional>
@@ -26,9 +25,9 @@ namespace bw
 			~ServerListState();
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 
@@ -49,7 +48,7 @@ namespace bw
 			struct MasterServerData
 			{
 				tsl::hopscotch_map<std::string, ServerData> serverList;
-				float timeBeforeRefresh = 0.f;
+				Nz::Time timeBeforeRefresh = Nz::Time::Zero();
 				bool receivedData = false; //< Did we already successfully refresh from this master server?
 			};
 
@@ -57,12 +56,12 @@ namespace bw
 			Nz::ButtonWidget* m_backButton;
 			Nz::ButtonWidget* m_directConnectButton;
 			Nz::ScrollAreaWidget* m_serverListScrollbar;
+			Nz::WebService* m_webService;
 			std::shared_ptr<AbstractState> m_previousState;
 			std::shared_ptr<AbstractState> m_nextGameState;
 			std::shared_ptr<AbstractState> m_nextState;
 			std::vector<std::reference_wrapper<const ServerData>> m_tempOrderedServerList;
 			tsl::hopscotch_map<std::string, MasterServerData> m_masterServers;
-			std::optional<WebService> m_webService;
 	};
 }
 

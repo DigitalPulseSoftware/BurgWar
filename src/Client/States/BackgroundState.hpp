@@ -20,9 +20,9 @@ namespace bw
 			~BackgroundState() = default;
 
 		private:
-			void Enter(Ndk::StateMachine& fsm) override;
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			void LayoutWidgets() override;
 

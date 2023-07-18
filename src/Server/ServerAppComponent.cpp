@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Server/ServerAppComponent.hpp>
+#include <Nazara/Core/AppFilesystemComponent.hpp>
 #include <Nazara/Core/ApplicationBase.hpp>
 
 namespace bw
@@ -13,6 +14,11 @@ namespace bw
 	{
 		if (!m_configFile.LoadFromFile("serverconfig.lua"))
 			throw std::runtime_error("failed to load config file");
+
+		Nz::AppFilesystemComponent& appFilesystem = app.GetComponent<Nz::AppFilesystemComponent>();
+		appFilesystem.Mount("assets", Nz::Utf8Path(m_configFile.GetStringValue("Resources.AssetDirectory")));
+		appFilesystem.Mount("mods", Nz::Utf8Path(m_configFile.GetStringValue("Resources.ModDirectory")));
+		appFilesystem.Mount("scripts", Nz::Utf8Path(m_configFile.GetStringValue("Resources.ScriptDirectory")));
 
 		LoadMods();
 

@@ -11,66 +11,29 @@
 namespace bw
 {
 	ClientEditorLayer::ClientEditorLayer(SharedMatch& match, LayerIndex layerIndex) :
-	SharedLayer(match, layerIndex)
+	SharedLayer(match, layerIndex),
+	m_frameSystemGraph(GetWorld()),
+	m_preFrameSystemGraph(GetWorld()),
+	m_postFrameSystemGraph(GetWorld())
 	{
-		auto& systemGraph = GetSystemGraph();
-		systemGraph.AddSystem<FrameCallbackSystem>();
-		systemGraph.AddSystem<PostFrameCallbackSystem>();
-		systemGraph.AddSystem<VisualInterpolationSystem>();
+		m_frameSystemGraph.AddSystem<Nz::LifetimeSystem>();
+		m_frameSystemGraph.AddSystem<FrameCallbackSystem>();
+		m_preFrameSystemGraph.AddSystem<VisualInterpolationSystem>();
+		m_postFrameSystemGraph.AddSystem<PostFrameCallbackSystem>();
 	}
 
-	/*void ClientEditorLayer::FrameUpdate(Nz::Time elapsedTime)
+	void ClientEditorLayer::FrameUpdate(Nz::Time elapsedTime)
 	{
-		entt::registry& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<Ndk::LifetimeSystem>().Enable(true);
-		world.GetSystem<FrameCallbackSystem>().Enable(true);
-
-		world.Update(elapsedTime);
+		m_frameSystemGraph.Update(elapsedTime);
 	}
 
 	void ClientEditorLayer::PreFrameUpdate(Nz::Time elapsedTime)
 	{
-		entt::registry& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<VisualInterpolationSystem>().Enable(true);
-
-		world.Update(elapsedTime);
+		m_preFrameSystemGraph.Update(elapsedTime);
 	}
 
 	void ClientEditorLayer::PostFrameUpdate(Nz::Time elapsedTime)
 	{
-		entt::registry& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(false);
-		});
-
-		world.GetSystem<PostFrameCallbackSystem>().Enable(true);
-
-		world.Update(elapsedTime);
+		m_postFrameSystemGraph.Update(elapsedTime);
 	}
-
-	void ClientEditorLayer::TickUpdate(Nz::Time elapsedTime)
-	{
-		entt::registry& world = GetWorld();
-		world.ForEachSystem([](Ndk::BaseSystem& system)
-		{
-			system.Enable(true);
-		});
-
-		world.GetSystem<Ndk::LifetimeSystem>().Enable(false);
-		world.GetSystem<FrameCallbackSystem>().Enable(false);
-		world.GetSystem<VisualInterpolationSystem>().Enable(false);
-
-		SharedLayer::TickUpdate(elapsedTime);
-	}*/
 }

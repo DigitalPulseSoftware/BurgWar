@@ -3,23 +3,25 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <ClientLib/Camera.hpp>
+#include <Nazara/Core/EnttWorld.hpp>
 #include <Nazara/Graphics/Components/CameraComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 namespace bw
 {
-	Camera::Camera(entt::registry& registry, Nz::RenderTarget* renderTarget, bool perspective) :
+	Camera::Camera(Nz::EnttWorld& world, Nz::RenderTarget* renderTarget, bool perspective) :
 	m_isPerspective(!perspective), // To enable it after
 	m_zoomFactor(1.f)
 	{
 		constexpr float fov = 30.f;
 
-		m_cameraEntity = entt::handle(registry, registry.create());
+		m_cameraEntity = world.CreateEntity();
 
 		auto& camera = m_cameraEntity->emplace<Nz::CameraComponent>(renderTarget, Nz::ProjectionType::Orthographic);
 		camera.UpdateFOV(fov);
 		camera.UpdateTarget(renderTarget);
 		camera.UpdateZFar(20000.f);
+		camera.UpdateRenderMask(2);
 
 		m_cameraEntity->emplace<Nz::NodeComponent>();
 
@@ -60,16 +62,14 @@ namespace bw
 
 	Nz::Vector2f Camera::Project(const Nz::Vector2f& worldPosition) const
 	{
-		throw std::runtime_error("EnTT TODO");
-		//auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
-		//return Nz::Vector2f(entityCamera.Project(worldPosition));
+		auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
+		return Nz::Vector2f(entityCamera.Project(worldPosition));
 	}
 
 	Nz::Vector3f Camera::Project(const Nz::Vector3f& worldPosition) const
 	{
-		throw std::runtime_error("EnTT TODO");
-		//auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
-		//return entityCamera.Project(worldPosition);
+		auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
+		return entityCamera.Project(worldPosition);
 	}
 
 	void Camera::MoveBy(const Nz::Vector2f& offset)
@@ -113,20 +113,14 @@ namespace bw
 
 	Nz::Vector2f Camera::Unproject(const Nz::Vector2f& screenPosition) const
 	{
-		throw std::runtime_error("EnTT TODO");
-
-		//auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
-
-		//return Nz::Vector2f(entityCamera.Unproject(Nz::Vector3f(screenPosition.x, screenPosition.y, m_projectedDepth)));
+		auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
+		return Nz::Vector2f(entityCamera.Unproject(Nz::Vector3f(screenPosition.x, screenPosition.y, m_projectedDepth)));
 	}
 
 	Nz::Vector3f Camera::Unproject(const Nz::Vector3f& screenPosition) const
 	{
-		throw std::runtime_error("EnTT TODO");
-
-		//auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
-
-		//return entityCamera.Unproject(screenPosition);
+		auto& entityCamera = m_cameraEntity->get<Nz::CameraComponent>();
+		return entityCamera.Unproject(screenPosition);
 	}
 	
 	void Camera::UpdateProjection()
@@ -174,8 +168,7 @@ namespace bw
 			initialPosition.z = size.y * 0.5f * m_invFovTan;
 			entityNode.SetInitialPosition(initialPosition);
 
-			throw std::runtime_error("EnTT TODO");
-			//m_projectedDepth = entityCamera.Project({ 0.f, 0.f, 0.f }).z;
+			m_projectedDepth = entityCamera.Project({ 0.f, 0.f, 0.f }).z;
 		}
 		else
 			entityCamera.UpdateSize(size);

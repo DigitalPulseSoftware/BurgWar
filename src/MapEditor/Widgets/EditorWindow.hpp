@@ -7,7 +7,6 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOW_HPP
 
-#include <NDK/Prerequisites.hpp>
 #include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Map.hpp>
 #include <ClientLib/ClientEditorAppComponent.hpp>

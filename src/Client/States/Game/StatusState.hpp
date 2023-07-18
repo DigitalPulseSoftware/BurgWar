@@ -19,8 +19,8 @@ namespace bw
 			~StatusState() = default;
 
 		protected:
-			void Enter(Ndk::StateMachine& fsm) override;
-			void Leave(Ndk::StateMachine& fsm) override;
+			void Enter(Nz::StateMachine& fsm) override;
+			void Leave(Nz::StateMachine& fsm) override;
 			void UpdateStatus(const std::string& status, const Nz::Color& color);
 
 		private:

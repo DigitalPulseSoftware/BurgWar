@@ -46,11 +46,12 @@
 
 namespace bw
 {
-	ClientMatch::ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	ClientMatch::ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", Nz::Time::Seconds(matchData.tickDuration)),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
 	m_freeClientId(-1),
+	m_renderWorld(renderWorld),
 	m_renderTarget(renderTarget),
 	m_window(window),
 	m_activeLayerIndex(NoLayer),
@@ -95,16 +96,15 @@ namespace bw
 
 		auto& playerSettings = burgApp.GetPlayerSettings();
 
-		m_renderWorld.systemGraph.AddSystem<Nz::RenderSystem>();
-		m_renderWorld.systemGraph.AddSystem<AnimationSystem>(*this);
-		m_renderWorld.systemGraph.AddSystem<SoundSystem>(playerSettings);
+		m_renderWorld.AddSystem<AnimationSystem>(*this);
+		m_renderWorld.AddSystem<SoundSystem>(playerSettings);
 
-		m_camera.emplace(m_renderWorld.registry, renderTarget, true);
-		m_camera->SetZoomFactor(0.8f);
-
-		m_currentLayer = entt::handle(m_renderWorld.registry, m_renderWorld.registry.create());
+		m_currentLayer = m_renderWorld.CreateEntity();
 		m_currentLayer.emplace<Nz::NodeComponent>();
-		m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld.registry, m_currentLayer);
+		m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld, m_currentLayer);
+
+		m_camera.emplace(m_renderWorld, renderTarget, false);
+		m_camera->SetZoomFactor(0.8f);
 
 		InitializeRemoteConsole();
 
@@ -571,7 +571,7 @@ namespace bw
 									}
 									else
 									{
-										auto& ghostNode = serverEntity.serverGhost->GetComponent<Ndk::NodeComponent>();
+										auto& ghostNode = serverEntity.serverGhost->GetComponent<Nz::NodeComponent>();
 										ghostNode.SetPosition(position);
 										ghostNode.SetRotation(rotation);
 									}
@@ -611,7 +611,7 @@ namespace bw
 				layerPtr->SyncVisuals();
 		}
 
-		m_renderWorld.systemGraph.Update(elapsedTime);
+		//m_renderWorld.Update(elapsedTime);
 
 		if (m_gamemode)
 			m_gamemode->ExecuteCallback<GamemodeEvent::PostFrame>(elapsedTime);
@@ -1491,13 +1491,16 @@ namespace bw
 					if (playerInputData.movement)
 					{
 						auto& playerMovement = controlledEntity.get<PlayerMovementComponent>();
-						auto& playerPhysics = controlledEntity.get<Nz::RigidBody2DComponent>();
+						auto& playerPhysics = controlledEntity.get<Nz::ChipmunkRigidBody2DComponent>();
 						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
 						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
 						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
 
-						playerPhysics.SetFriction(0, playerInputData.movement->friction);
-						playerPhysics.SetSurfaceVelocity(0, playerInputData.movement->surfaceVelocity);
+						if (playerPhysics.GetShapeCount() > 0)
+						{
+							playerPhysics.SetFriction(0, playerInputData.movement->friction);
+							playerPhysics.SetSurfaceVelocity(0, playerInputData.movement->surfaceVelocity);
+						}
 					}
 
 					// WTF?
@@ -1732,15 +1735,18 @@ namespace bw
 					auto entity = controllerData.controlledEntity->GetEntity();
 					if (PlayerMovementComponent* playerMovement = entity.try_get<PlayerMovementComponent>())
 					{
-						auto& playerPhysics = entity.get<Nz::RigidBody2DComponent>();
+						auto& playerPhysics = entity.get<Nz::ChipmunkRigidBody2DComponent>();
 
 						auto& movementData = playerData.movement.emplace();
 						movementData.isOnGround = playerMovement->IsOnGround();
 						movementData.jumpTime = playerMovement->GetJumpTime();
 						movementData.wasJumping = playerMovement->WasJumping();
 
-						movementData.friction = playerPhysics.GetFriction(0);
-						movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
+						if (playerPhysics.GetShapeCount() > 0)
+						{
+							movementData.friction = playerPhysics.GetFriction(0);
+							movementData.surfaceVelocity = playerPhysics.GetSurfaceVelocity(0);
+						}
 					}
 
 					if (InputComponent* inputComponent = entity.try_get<InputComponent>())

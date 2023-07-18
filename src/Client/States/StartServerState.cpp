@@ -4,20 +4,17 @@
 
 #include <Client/States/StartServerState.hpp>
 #include <CoreLib/ConfigFile.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
+#include <Nazara/Core/StateMachine.hpp>
 #include <Client/States/OptionState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
-#include <Nazara/Core/String.hpp>
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/StateMachine.hpp>
-#include <Nazara/Widgets/CheckboxWidget.hpp>
-#include <Nazara/Widgets/LabelWidget.hpp>
-#include <Nazara/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Widgets.hpp>
 #include <cassert>
 #include <chrono>
 
@@ -34,14 +31,14 @@ namespace bw
 		m_background->EnableBackground(true);
 		m_background->SetBackgroundColor(Nz::Color(0, 0, 0, 100));
 
-		m_serverConfigLayout = m_background->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Vertical);
+		m_serverConfigLayout = m_background->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::TopToBottom);
 		m_serverConfigLayout->SetPosition(10.f, 10.f);
 
 		m_title = m_serverConfigLayout->Add<Nz::LabelWidget>();
 		m_title->UpdateText(Nz::SimpleTextDrawer::Draw("Server configuration", 36));
 		m_title->CenterHorizontal();
 
-		Ndk::BoxLayout* gamemodeLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		Nz::BoxLayout* gamemodeLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		Nz::LabelWidget* gamemodeLabel = gamemodeLayout->Add<Nz::LabelWidget>();
 		gamemodeLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Gamemode: ", 24));
@@ -52,7 +49,7 @@ namespace bw
 		m_gamemodeArea->SetTextColor(Nz::Color::Black());
 		m_gamemodeArea->SetMaximumHeight(m_gamemodeArea->GetMinimumHeight());
 
-		Ndk::BoxLayout* mapLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		Nz::BoxLayout* mapLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		Nz::LabelWidget* mapLabel = mapLayout->Add<Nz::LabelWidget>();
 		mapLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Map: ", 24));
@@ -63,7 +60,7 @@ namespace bw
 		m_mapArea->SetTextColor(Nz::Color::Black());
 		m_mapArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
-		Ndk::BoxLayout* portLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		Nz::BoxLayout* portLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		Nz::LabelWidget* portLabel = portLayout->Add<Nz::LabelWidget>();
 		portLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Port: ", 24));
@@ -81,10 +78,14 @@ namespace bw
 			return true;
 		});
 
-		m_listServerCheckbox = m_serverConfigLayout->Add<Nz::CheckboxWidget>();
-		m_listServerCheckbox->UpdateText(Nz::SimpleTextDrawer::Draw("Register the server online", 24));
+		Nz::BoxLayout* listServerLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
-		m_nameLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		Nz::LabelWidget* listServerLabel = listServerLayout->Add<Nz::LabelWidget>();
+		listServerLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Register the server online", 24));
+
+		m_listServerCheckbox = listServerLayout->Add<Nz::CheckboxWidget>();
+
+		m_nameLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		Nz::LabelWidget* nameLabel = m_nameLayout->Add<Nz::LabelWidget>();
 		nameLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Name: ", 24));
@@ -95,7 +96,7 @@ namespace bw
 		m_nameArea->SetTextColor(Nz::Color::Black());
 		m_nameArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
-		m_descriptionLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		m_descriptionLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		Nz::LabelWidget* descLabel = m_descriptionLayout->Add<Nz::LabelWidget>();
 		descLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Description: ", 24));
@@ -106,7 +107,7 @@ namespace bw
 		m_descriptionArea->SetTextColor(Nz::Color::Black());
 		m_descriptionArea->SetMaximumHeight(m_mapArea->GetMinimumHeight());
 
-		Ndk::BoxLayout* buttonLayout = m_serverConfigLayout->Add<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		Nz::BoxLayout* buttonLayout = m_serverConfigLayout->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		m_backButton = buttonLayout->Add<Nz::ButtonWidget>();
 		m_backButton->UpdateText(Nz::SimpleTextDrawer::Draw("Back", 24));
@@ -125,11 +126,11 @@ namespace bw
 		});
 	}
 
-	void StartServerState::Enter(Ndk::StateMachine& fsm)
+	void StartServerState::Enter(Nz::StateMachine& fsm)
 	{
 		AbstractState::Enter(fsm);
 
-		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		const ConfigFile& playerConfig = GetStateData().appComponent->GetPlayerSettings();
 
 		m_descriptionArea->SetText(playerConfig.GetStringValue("StartServer.Description"));
 		m_gamemodeArea->SetText(playerConfig.GetStringValue("StartServer.Gamemode"));
@@ -139,7 +140,7 @@ namespace bw
 		m_portArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("StartServer.Port")));
 	}
 
-	bool StartServerState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool StartServerState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -159,7 +160,7 @@ namespace bw
 
 	void StartServerState::OnStartServerPressed()
 	{
-		ClientApp* app = GetStateData().app;
+		ClientAppComponent* app = GetStateData().appComponent;
 
 		std::string gamemode = m_gamemodeArea->GetText();
 		if (gamemode.empty())
@@ -176,14 +177,15 @@ namespace bw
 		}
 
 		std::string serverPort = m_portArea->GetText();
-		if (serverPort.IsEmpty())
+		if (serverPort.empty())
 		{
 			UpdateStatus("Error: blank server port", Nz::Color::Red());
 			return;
 		}
 
-		long long rawPort;
-		if (!serverPort.ToInteger(&rawPort) || rawPort < 0 || rawPort > 0xFFFF)
+		bool ok;
+		long long rawPort = Nz::StringToNumber(serverPort, 10, &ok);
+		if (!ok || rawPort < 0 || rawPort > 0xFFFF)
 		{
 			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red());
 			return;
@@ -240,7 +242,7 @@ namespace bw
 			matchSettings.name = std::move(serverName);
 			matchSettings.registerToMasterServer = listServer;
 			matchSettings.port = static_cast<Nz::UInt16>(rawPort);
-			matchSettings.tickDuration = 1.f / config.GetFloatValue<float>("ServerSettings.TickRate");
+			matchSettings.tickDuration = Nz::Time::TickDuration(config.GetFloatValue<float>("ServerSettings.TickRate"));
 
 			Match::ModSettings modSettings;
 

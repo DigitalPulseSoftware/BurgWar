@@ -7,7 +7,6 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOWPREFABS_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_EDITORWINDOWPREFABS_HPP
 
-#include <NDK/Prerequisites.hpp>
 #include <QtCore/QObject>
 
 class QMenu;

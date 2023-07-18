@@ -11,10 +11,14 @@
 #include <Client/States/AbstractState.hpp>
 #include <ClientLib/ClientSession.hpp>
 
+namespace Nz
+{
+	class VirtualDirectory;
+}
+
 namespace bw
 {
 	class ClientMatch;
-	class VirtualDirectory;
 
 	class GameState final : public AbstractState
 	{
@@ -25,8 +29,8 @@ namespace bw
 			inline const std::shared_ptr<ClientMatch>& GetMatch();
 
 		private:
-			void Leave(Ndk::StateMachine& fsm) override;
-			bool Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime) override;
+			void Leave(Nz::StateMachine& fsm) override;
+			bool Update(Nz::StateMachine& fsm, Nz::Time elapsedTime) override;
 
 			std::shared_ptr<AbstractState> m_nextState;
 			std::shared_ptr<ClientSession> m_clientSession;

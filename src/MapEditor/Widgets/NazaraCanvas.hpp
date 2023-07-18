@@ -7,19 +7,18 @@
 #ifndef BURGWAR_MAPEDITOR_WIDGETS_NAZARACANVAS_HPP
 #define BURGWAR_MAPEDITOR_WIDGETS_NAZARACANVAS_HPP
 
-#include <Nazara/Renderer/RenderWindow.hpp>
+#include <Nazara/Core/Time.hpp>
+#include <Nazara/Platform/Window.hpp>
 #include <QtCore/QTimer>
 #include <QtWidgets/QWidget>
 
 namespace bw
 {
-	class NazaraCanvas : public QWidget, public Nz::RenderWindow
+	class NazaraCanvas : public QWidget, public Nz::Window
 	{
 		public:
 			NazaraCanvas(QWidget* parent = nullptr);
 			virtual ~NazaraCanvas();
-
-			Nz::Vector2ui GetSize() const override;
 
 			QSize minimumSizeHint() const override;
 			QSize sizeHint() const override;

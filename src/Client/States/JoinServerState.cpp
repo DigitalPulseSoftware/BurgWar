@@ -4,18 +4,15 @@
 
 #include <Client/States/JoinServerState.hpp>
 #include <CoreLib/ConfigFile.hpp>
-#include <Client/ClientApp.hpp>
+#include <Client/ClientAppComponent.hpp>
 #include <Client/States/OptionState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
 #include <Client/States/Game/ServerState.hpp>
-#include <Nazara/Core/String.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <NDK/StateMachine.hpp>
-#include <Nazara/Widgets/CheckboxWidget.hpp>
-#include <Nazara/Widgets/LabelWidget.hpp>
-#include <Nazara/Widgets/TextAreaWidget.hpp>
+#include <Nazara/Core/StateMachine.hpp>
+#include <Nazara/Widgets.hpp>
 #include <cassert>
 #include <chrono>
 
@@ -31,7 +28,7 @@ namespace bw
 		m_serverLabel = CreateWidget<Nz::LabelWidget>();
 		m_serverLabel->UpdateText(Nz::SimpleTextDrawer::Draw("Server: ", 24));
 
-		m_serverAddressLayout = CreateWidget<Ndk::BoxLayout>(Ndk::BoxLayoutOrientation_Horizontal);
+		m_serverAddressLayout = CreateWidget<Nz::BoxLayout>(Nz::BoxLayoutOrientation::LeftToRight);
 
 		m_serverAddressArea = m_serverAddressLayout->Add<Nz::TextAreaWidget>();
 		m_serverAddressArea->EnableBackground(true);
@@ -73,20 +70,20 @@ namespace bw
 			OnBackPressed();
 		});
 
-		const ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		const ConfigFile& playerConfig = GetStateData().appComponent->GetPlayerSettings();
 
 		m_serverAddressArea->SetText(playerConfig.GetStringValue("JoinServer.Address"));
 		m_serverPortArea->SetText(std::to_string(playerConfig.GetIntegerValue<Nz::UInt16>("JoinServer.Port")));
 	}
 
-	void JoinServerState::Leave(Ndk::StateMachine& fsm)
+	void JoinServerState::Leave(Nz::StateMachine& fsm)
 	{
 		m_statusLabel->Hide();
 
 		AbstractState::Leave(fsm);
 	}
 
-	bool JoinServerState::Update(Ndk::StateMachine& fsm, Nz::Time elapsedTime)
+	bool JoinServerState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)
 	{
 		if (!AbstractState::Update(fsm, elapsedTime))
 			return false;
@@ -114,24 +111,24 @@ namespace bw
 		}
 
 		std::string serverPort = m_serverPortArea->GetText();
-		if (serverPort.IsEmpty())
+		if (serverPort.empty())
 		{
 			UpdateStatus("Error: blank server port", Nz::Color::Red());
 			return;
 		}
 
-		long long rawPort;
-		if (!serverPort.ToInteger(&rawPort) || rawPort <= 0 || rawPort > 0xFFFF)
+		long long rawPort = std::stoi(serverPort);
+		if (rawPort <= 0 || rawPort > 0xFFFF)
 		{
 			UpdateStatus("Error: " + serverPort + " is not a valid port", Nz::Color::Red());
 			return;
 		}
 
-		ConfigFile& playerConfig = GetStateData().app->GetPlayerSettings();
+		ConfigFile& playerConfig = GetStateData().appComponent->GetPlayerSettings();
 		playerConfig.SetStringValue("JoinServer.Address", serverHostname);
 		playerConfig.SetIntegerValue("JoinServer.Port", rawPort);
 
-		GetStateData().app->SavePlayerConfig();
+		GetStateData().appComponent->SavePlayerConfig();
 
 		ConnectionState::ServerName address;
 		address.hostname = serverHostname;
