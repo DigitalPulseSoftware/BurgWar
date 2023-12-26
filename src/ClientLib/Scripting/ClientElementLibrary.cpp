@@ -40,16 +40,16 @@ namespace bw
 			int renderOrder = parameters.get_or("RenderOrder", 0);
 			Nz::Vector3f offset = parameters.get_or("Offset", Nz::Vector3f::Zero());
 			Nz::Vector3f rotation = parameters.get_or("Rotation", Nz::Vector3f::Zero()); //< TODO: Euler angles
-			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit());
+			Nz::Vector3f scale = parameters.get_or("Scale", Nz::Vector3f::Unit()); //< TODO
 
 			std::shared_ptr<Nz::Model> model = m_assetStore.GetModel(modelPath);
 			if (!model)
 				return;
 
-			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, Nz::EulerAnglesf(rotation.x, rotation.y, rotation.z), scale);
+			Nz::EulerAnglesf eulerRotation(rotation.x, rotation.y, rotation.z);
 
 			auto& visualComponent = entity.get<VisualComponent>();
-			visualComponent.GetLayerVisual()->AttachRenderable(model, transformMatrix, renderOrder);
+			visualComponent.GetLayerVisual()->AttachRenderable(model, offset, eulerRotation);
 		});
 
 		auto DealDamage = [](const sol::table& entityTable, const Nz::Vector2f& origin, Nz::UInt16 /*damage*/, Nz::Rectf damageZone, float pushbackForce = 0.f)
@@ -92,15 +92,13 @@ namespace bw
 			Nz::Rectf textureCoords = parameters.get_or("TextureCoords", Nz::Rectf(0.f, 0.f, 1.f, 1.f));
 			bool repeatTexture = parameters.get_or("RepeatTexture", false);
 
-			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
-
 			Nz::Color color;
 			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("Color", std::nullopt); colorParameter)
 				color = colorParameter.value();
 			else
 				color = Nz::Color::White();
 
-			std::shared_ptr<Nz::MaterialInstance> mat = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+			std::shared_ptr<Nz::MaterialInstance> mat = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::Transparent);
 
 			Nz::TextureSamplerInfo samplerInfo;
 			samplerInfo.magFilter = Nz::SamplerFilter::Linear;
@@ -154,10 +152,11 @@ namespace bw
 
 			sprite->SetSize(size * scale);
 			sprite->SetOrigin(sprite->GetSize() * origin);
+			sprite->UpdateRenderLayer(renderOrder);
 
 			auto& visualComponent = entity.get<VisualComponent>();
 
-			Sprite scriptSprite(visualComponent.GetLayerVisual(), sprite, transformMatrix, renderOrder);
+			Sprite scriptSprite(visualComponent.GetLayerVisual(), sprite, offset, rotation);
 			scriptSprite.Show();
 
 			return scriptSprite;
@@ -173,8 +172,6 @@ namespace bw
 			Nz::DegreeAnglef rotation = parameters.get_or("Rotation", Nz::DegreeAnglef::Zero());
 			std::string text = parameters["Text"];
 			bool isHovering = parameters.get_or("Hovering", false);
-
-			Nz::Matrix4 transformMatrix = Nz::Matrix4f::Transform(offset, rotation);
 
 			Nz::Color color;
 			if (std::optional<Nz::Color> colorParameter = parameters.get_or<std::optional<Nz::Color>>("Color", std::nullopt); colorParameter)
@@ -199,9 +196,9 @@ namespace bw
 			}*/
 
 			Nz::SimpleTextDrawer drawer;
-			drawer.SetColor(color);
-			drawer.SetOutlineColor(outlineColor);
-			drawer.SetOutlineThickness(outlineThickness);
+			drawer.SetTextColor(color);
+			drawer.SetTextOutlineColor(outlineColor);
+			drawer.SetTextOutlineThickness(outlineThickness);
 			drawer.SetText(text);
 
 			//if (font)
@@ -209,10 +206,11 @@ namespace bw
 
 			std::shared_ptr<Nz::TextSprite> textSprite = std::make_shared<Nz::TextSprite>();
 			textSprite->Update(drawer);
+			textSprite->UpdateRenderLayer(renderOrder);
 
 			auto& visualComponent = entity.get<VisualComponent>();
 
-			Text scriptText(visualComponent.GetLayerVisual(), std::move(drawer), std::move(textSprite), transformMatrix, renderOrder, isHovering);
+			Text scriptText(visualComponent.GetLayerVisual(), std::move(drawer), std::move(textSprite), offset, rotation, isHovering);
 			scriptText.Show();
 
 			return scriptText;

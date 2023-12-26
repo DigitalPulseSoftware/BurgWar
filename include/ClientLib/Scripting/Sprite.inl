@@ -6,11 +6,11 @@
 
 namespace bw
 {
-	inline Sprite::Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Sprite::Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Vector2f& offset, const Nz::DegreeAnglef& rotation) :
 	m_visualEntity(std::move(visualEntity)),
-	m_transformMatrix(transformMatrix),
+	m_rotation(rotation),
+	m_offset(offset),
 	m_sprite(std::move(sprite)),
-	m_renderOrder(renderOrder),
 	m_isVisible(false)
 	{
 	}
@@ -42,16 +42,16 @@ namespace bw
 
 	inline void Sprite::SetOffset(const Nz::Vector2f& newOffset)
 	{
-		m_transformMatrix.SetTranslation(newOffset);
+		m_offset = newOffset;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 
 	inline void Sprite::SetRotation(const Nz::DegreeAnglef& newRotation)
 	{
-		m_transformMatrix.SetRotation(newRotation);
+		m_rotation = newRotation;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 
 	inline void Sprite::SetSize(const Nz::Vector2f& newSize)

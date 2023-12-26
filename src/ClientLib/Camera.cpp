@@ -9,7 +9,7 @@
 
 namespace bw
 {
-	Camera::Camera(Nz::EnttWorld& world, Nz::RenderTarget* renderTarget, bool perspective) :
+	Camera::Camera(Nz::EnttWorld& world, std::shared_ptr<const Nz::RenderTarget> renderTarget, bool perspective) :
 	m_isPerspective(!perspective), // To enable it after
 	m_zoomFactor(1.f)
 	{
@@ -19,7 +19,6 @@ namespace bw
 
 		auto& camera = m_cameraEntity->emplace<Nz::CameraComponent>(renderTarget, Nz::ProjectionType::Orthographic);
 		camera.UpdateFOV(fov);
-		camera.UpdateTarget(renderTarget);
 		camera.UpdateZFar(20000.f);
 		camera.UpdateRenderMask(2);
 

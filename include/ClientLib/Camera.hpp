@@ -9,10 +9,10 @@
 
 #include <ClientLib/Export.hpp>
 #include <Nazara/Core/HandledObject.hpp>
+#include <Nazara/Graphics/RenderTarget.hpp>
 #include <Nazara/Math/Rect.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <Nazara/Math/Vector3.hpp>
-#include <Nazara/Renderer/RenderTarget.hpp>
 #include <CoreLib/EntityOwner.hpp>
 
 namespace Nz
@@ -29,7 +29,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Camera : public Nz::HandledObject<Camera>
 	{
 		public:
-			Camera(Nz::EnttWorld& world, Nz::RenderTarget* renderTarget, bool perspective);
+			Camera(Nz::EnttWorld& world, std::shared_ptr<const Nz::RenderTarget> renderTarget, bool perspective);
 			Camera(const Camera&) = delete;
 			Camera(Camera&&) = delete;
 			~Camera() = default;

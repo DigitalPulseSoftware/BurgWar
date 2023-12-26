@@ -20,7 +20,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Tilemap
 	{
 		public:
-			inline Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Vector2f& offset, const Nz::DegreeAnglef& rotation);
 			Tilemap(const Tilemap&) = delete;
 			Tilemap(Tilemap&&) noexcept = default;
 			~Tilemap() = default;
@@ -43,12 +43,12 @@ namespace bw
 			Tilemap& operator=(Tilemap&&) noexcept = default;
 
 		private:
-			void UpdateTransformMatrix();
+			void UpdateTransform();
 
 			LayerVisualEntityHandle m_visualEntity;
-			Nz::Matrix4f m_transformMatrix;
+			Nz::DegreeAnglef m_rotation;
+			Nz::Vector2f m_offset;
 			std::shared_ptr<Nz::Tilemap> m_tilemap;
-			int m_renderOrder;
 			bool m_isVisible;
 	};
 }

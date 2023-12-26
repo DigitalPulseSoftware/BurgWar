@@ -8,6 +8,7 @@
 #define BURGWAR_STATES_ABSTRACTSTATE_HPP
 
 #include <Client/States/StateData.hpp>
+#include <Nazara/Graphics/RenderTarget.hpp>
 #include <Nazara/Widgets/BaseWidget.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <Nazara/Core/State.hpp>

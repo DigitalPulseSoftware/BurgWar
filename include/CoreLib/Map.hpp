@@ -141,15 +141,21 @@ namespace bw
 			static nlohmann::json Serialize(const Map& map);
 			static nlohmann::json SerializeEntity(const Entity& entity);
 			static Map Unserialize(const nlohmann::json& mapInfo);
-			static Entity UnserializeEntity(const nlohmann::json& entityInfo);
+			static Entity UnserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 fileVersion);
 
 		private:
 			bool CheckEntityIndices() const;
 			void LoadFromBinaryInternal(const std::filesystem::path& mapFile);
 			void LoadFromDirectoryInternal(const std::filesystem::path& mapFolder);
+			void HandleVersionUpdate(Nz::UInt16 fileVersion);
+			void HandleVersionUpdate(Asset& asset, Nz::UInt16 fileVersion);
+			void HandleVersionUpdate(Entity& entity, Nz::UInt16 fileVersion);
+			void HandleVersionUpdate(Layer& layer, Nz::UInt16 fileVersion);
+			void HandleVersionUpdate(Script& script, Nz::UInt16 fileVersion);
 			inline void RegisterEntity(EntityId uniqueId, LayerIndex layerIndex, std::size_t entityIndex);
 			void Sanitize();
 			inline void UnregisterEntity(EntityId uniqueId);
+
 
 			std::vector<Asset> m_assets;
 			std::vector<Layer> m_layers;

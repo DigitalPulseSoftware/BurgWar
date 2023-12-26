@@ -41,7 +41,7 @@ namespace bw
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 				{
-					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath().generic_u8string());
+					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath());
 					return (resource = ResourceType::LoadFromStream(*arg.stream, params)) != nullptr;
 				}
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)

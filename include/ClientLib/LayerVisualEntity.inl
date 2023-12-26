@@ -25,7 +25,7 @@ namespace bw
 	void LayerVisualEntity::ForEachRenderable(Func&& func) const
 	{
 		for (const auto& renderableData : m_attachedRenderables)
-			func(std::as_const(renderableData.renderable), std::as_const(renderableData.offsetMatrix), std::as_const(renderableData.renderOrder));
+			func(std::as_const(renderableData.renderable), std::as_const(renderableData.offset), std::as_const(renderableData.rotation));
 	}
 
 	inline entt::handle LayerVisualEntity::GetEntity() const

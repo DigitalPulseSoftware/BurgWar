@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	Console::Console(Nz::RenderTarget* window, Nz::Canvas* canvas)
+	Console::Console(const Nz::RenderTarget& window, Nz::Canvas* canvas)
 	{
 		/*m_widget = canvas->Add<Ndk::Console>();
 		m_widget->Hide();
@@ -21,7 +21,7 @@ namespace bw
 		// Connect every slot
 		//m_onTargetChangeSizeSlot.Connect(window->OnRenderTargetSizeChange, this, &Console::OnRenderTargetSizeChange);
 
-		OnRenderTargetSizeChange(window);
+		OnRenderTargetSizeChange(&window);
 	}
 
 	Console::~Console()

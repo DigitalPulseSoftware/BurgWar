@@ -19,7 +19,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API Sprite
 	{
 		public:
-			inline Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Matrix4f& transformMatrix, int renderOrder);
+			inline Sprite(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Sprite> sprite, const Nz::Vector2f& offset, const Nz::DegreeAnglef& rotation);
 			Sprite(const Sprite&) = delete;
 			Sprite(Sprite&&) noexcept = default;
 			~Sprite() = default;
@@ -32,8 +32,8 @@ namespace bw
 			inline bool IsValid() const;
 			inline bool IsVisible() const;
 
-			void SetColor(Nz::Color color);
-			void SetCornerColor(const std::string_view& corner, Nz::Color cornerColor);
+			void SetColor(const Nz::Color& color);
+			void SetCornerColor(const std::string_view& corner, const Nz::Color& cornerColor);
 			void SetCornerColors(const sol::table& cornerTable);
 			inline void SetOffset(const Nz::Vector2f& newOffset);
 			inline void SetRotation(const Nz::DegreeAnglef& newRotation);
@@ -44,12 +44,12 @@ namespace bw
 			Sprite& operator=(Sprite&&) noexcept = default;
 
 		private:
-			void UpdateTransformMatrix();
+			void UpdateTransform();
 
 			LayerVisualEntityHandle m_visualEntity;
-			Nz::Matrix4f m_transformMatrix;
+			Nz::DegreeAnglef m_rotation;
+			Nz::Vector2f m_offset;
 			std::shared_ptr<Nz::Sprite> m_sprite;
-			int m_renderOrder;
 			bool m_isVisible;
 	};
 }

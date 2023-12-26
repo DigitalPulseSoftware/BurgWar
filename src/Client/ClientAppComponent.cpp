@@ -6,6 +6,7 @@
 #include <Nazara/Core/AppEntitySystemComponent.hpp>
 #include <Nazara/Core/AppFilesystemComponent.hpp>
 #include <Nazara/Core/EnttWorld.hpp>
+#include <Nazara/Graphics/RenderWindow.hpp>
 #include <Nazara/Graphics/Components.hpp>
 #include <Nazara/Graphics/Systems.hpp>
 #include <Nazara/Utility/Components.hpp>
@@ -78,9 +79,11 @@ namespace bw
 		Nz::RenderSystem& renderSystem = world.AddSystem<Nz::RenderSystem>();
 		Nz::WindowSwapchain& swapchain = renderSystem.CreateSwapchain(*m_mainWindow);
 
+		auto renderWindow = std::make_shared<Nz::RenderWindow>(swapchain);
+
 		entt::handle camera2D = world.CreateEntity();
 
-		auto& cameraComponent2D = camera2D.emplace<Nz::CameraComponent>(&swapchain, Nz::ProjectionType::Orthographic);
+		auto& cameraComponent2D = camera2D.emplace<Nz::CameraComponent>(renderWindow, Nz::ProjectionType::Orthographic);
 		cameraComponent2D.UpdateClearColor(Nz::Color(1.f, 1.f, 1.f, 0.f));
 		cameraComponent2D.UpdateRenderOrder(1);
 		cameraComponent2D.UpdateRenderMask(1);
@@ -92,7 +95,7 @@ namespace bw
 		m_stateData = std::make_shared<StateData>();
 		m_stateData->app = &app;
 		m_stateData->appComponent = this;
-		m_stateData->swapchain = &swapchain;
+		m_stateData->renderTarget = renderWindow;
 		m_stateData->window = m_mainWindow;
 		m_stateData->world = &world;
 		m_stateData->canvas.emplace(world.GetRegistry(), eventHandler, m_mainWindow->GetCursorController().CreateHandle(), 0xFFFFFFFF);

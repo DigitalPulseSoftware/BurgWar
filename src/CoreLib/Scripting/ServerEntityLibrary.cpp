@@ -123,10 +123,21 @@ namespace bw
 			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
 		}
 
-		auto& entityMatch = entity.get<MatchComponent>();
-		auto& physics = entityMatch.GetMatch().GetLayer(entityMatch.GetLayerIndex()).GetPhysicsSystem();
+		if (mass >= 0.f)
+		{
+			Nz::ChipmunkRigidBody2D::DynamicSettings settings;
+			settings.geom = collider;
+			settings.mass = mass;
 
-		entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(physics.CreateRigidBody(mass, collider));
+			entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(std::move(settings));
+		}
+		else
+		{
+			Nz::ChipmunkRigidBody2D::StaticSettings settings;
+			settings.geom = collider;
+
+			entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(std::move(settings));
+		}
 	}
 
 	void ServerEntityLibrary::SetDirection(lua_State* L, entt::handle entity, const Nz::Vector2f& upVector)

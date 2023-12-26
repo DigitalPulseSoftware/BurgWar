@@ -6,15 +6,15 @@
 
 namespace bw
 {
-	inline Text::Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, std::shared_ptr<Nz::TextSprite> textSprite, const Nz::Matrix4f& transformMatrix, int renderOrder, bool isHovering) :
+	inline Text::Text(LayerVisualEntityHandle visualEntity, Nz::SimpleTextDrawer drawer, std::shared_ptr<Nz::TextSprite> textSprite, const Nz::Vector2f& offset, const Nz::DegreeAnglef& rotation, bool isHovering) :
 	m_visualEntity(std::move(visualEntity)),
-	m_transformMatrix(transformMatrix),
+	m_rotation(rotation),
+	m_offset(offset),
 	m_drawer(std::move(drawer)),
 	m_textSprite(std::move(textSprite)),
 	m_isHovering(isHovering),
 	m_isVisible(false),
-	m_hoveringHeight(0.f),
-	m_renderOrder(renderOrder)
+	m_hoveringHeight(0.f)
 	{
 	}
 
@@ -46,16 +46,16 @@ namespace bw
 
 	inline void Text::SetOffset(const Nz::Vector2f& newOffset)
 	{
-		m_transformMatrix.SetTranslation(newOffset);
+		m_offset = newOffset;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 
 	inline void Text::SetRotation(const Nz::DegreeAnglef& newRotation)
 	{
-		m_transformMatrix.SetRotation(newRotation);
+		m_rotation = newRotation;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 	
 	inline void Text::SetText(const std::string& text)

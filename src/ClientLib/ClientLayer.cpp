@@ -296,7 +296,7 @@ namespace bw
 					entityPhys->ForceSleep();
 			}
 			else
-				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {0} has physical properties but is not physical client-side");
+				bwLog(GetMatch().GetLogger(), LogLevel::Warning, "Entity {0} has physical properties but is not physical client-side", entityId);
 		}
 
 		RegisterEntity(std::move(layerEntity.value()));

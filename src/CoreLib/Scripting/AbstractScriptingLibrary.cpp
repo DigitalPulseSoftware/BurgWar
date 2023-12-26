@@ -181,7 +181,7 @@ namespace bw
 		{
 			std::filesystem::path scriptPath = context.GetCurrentFolder() / Nz::Utf8Path(scriptName);
 
-			auto result = context.Load(scriptPath.generic_u8string());
+			auto result = context.Load(scriptPath);
 			if (!result)
 				TriggerLuaError(L, result.error());
 		});

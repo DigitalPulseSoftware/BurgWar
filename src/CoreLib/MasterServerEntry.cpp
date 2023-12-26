@@ -77,7 +77,7 @@ namespace bw
 	{
 		if (!result)
 		{
-			bwLog(m_match.GetLogger(), LogLevel::Error, (refresh) ? "failed to refresh to {0}, register request failed: {1}" : "failed to register to {0}, register request failed: {1}", m_masterServerURL, result.GetErrorMessage());
+			bwLog(m_match.GetLogger(), LogLevel::Error, "failed to {0} to {1}, request failed: {2}", (refresh) ? "refresh" : "register", m_masterServerURL, result.GetErrorMessage());
 			return;
 		}
 
@@ -128,11 +128,11 @@ namespace bw
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(m_match.GetLogger(), LogLevel::Error, (refresh) ? "failed to refresh to {0}: failed to parse response: {1}" : "failed to register to {0}: failed to parse response: {1}", m_masterServerURL, e.what());
+					bwLog(m_match.GetLogger(), LogLevel::Error, "failed to {0} to {1}: failed to parse response: {2}", (refresh) ? "refresh" : "registered", m_masterServerURL, e.what());
 					return;
 				}
 
-				bwLog(m_match.GetLogger(), LogLevel::Info, (refresh) ? "successfully refreshed server to {0}" : "successfully registered server to {0}", m_masterServerURL);
+				bwLog(m_match.GetLogger(), LogLevel::Info,"successfully {0} server to {1}", (refresh) ? "refresh" : "registered", m_masterServerURL);
 				m_updateToken = std::move(updateToken);
 				m_timeBeforeRefresh = Nz::Time::Seconds(30.f);
 				break;
@@ -152,7 +152,7 @@ namespace bw
 			}
 
 			default:
-				bwLog(m_match.GetLogger(), LogLevel::Info, (refresh) ? "failed to refresh to {0}: refresh request failed with code {1}" : "failed to register to {0}: register request failed with code {1}", m_masterServerURL, result.GetStatusCode());
+				bwLog(m_match.GetLogger(), LogLevel::Info, "failed to {0} to {1}: request failed with code {2}", (refresh) ? "refresh" : "registered", m_masterServerURL, result.GetStatusCode());
 				break;
 		}
 	}

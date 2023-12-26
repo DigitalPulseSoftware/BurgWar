@@ -9,7 +9,7 @@
 
 #include <ClientLib/Export.hpp>
 #include <NazaraUtils/Signal.hpp>
-#include <Nazara/Renderer/RenderTarget.hpp>
+#include <Nazara/Graphics/RenderTarget.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <functional>
 #include <memory>
@@ -21,7 +21,7 @@ namespace bw
 		public:
 			using ExecuteCallback = std::function<bool(const std::string& command)>;
 
-			Console(Nz::RenderTarget* window, Nz::Canvas* canvas);
+			Console(const Nz::RenderTarget& window, Nz::Canvas* canvas);
 			Console(const Console&) = delete;
 			Console(Console&&) = delete;
 			~Console();

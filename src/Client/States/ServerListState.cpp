@@ -359,31 +359,31 @@ namespace bw
 			}
 
 			Nz::RichTextDrawer infoDrawer;
-			infoDrawer.SetDefaultCharacterSize(24);
+			infoDrawer.SetCharacterSize(24);
 			infoDrawer.AppendText(name + '\n');
 
-			infoDrawer.SetDefaultCharacterSize(18);
-			infoDrawer.SetDefaultColor(Nz::Color::White());
+			infoDrawer.SetCharacterSize(18);
+			infoDrawer.SetTextColor(Nz::Color::White());
 			if (!desc.empty())
 				infoDrawer.AppendText(desc + '\n');
 
-			infoDrawer.SetDefaultCharacterSize(18);
+			infoDrawer.SetCharacterSize(18);
 
-			infoDrawer.SetDefaultColor(Nz::Color(220, 220, 220));
+			infoDrawer.SetTextColor(Nz::Color::FromRGB8(220, 220, 220));
 			infoDrawer.AppendText("Gamemode: ");
 
-			infoDrawer.SetDefaultColor(Nz::Color::White());
+			infoDrawer.SetTextColor(Nz::Color::White());
 			infoDrawer.AppendText(gamemode);
 
-			infoDrawer.SetDefaultColor(Nz::Color(220, 220, 220));
+			infoDrawer.SetTextColor(Nz::Color::FromRGB8(220, 220, 220));
 			infoDrawer.AppendText(" Map: ");
 
-			infoDrawer.SetDefaultColor(Nz::Color::White());
+			infoDrawer.SetTextColor(Nz::Color::White());
 			infoDrawer.AppendText(map);
 
 			infoDrawer.AppendText("\n");
 
-			infoDrawer.SetDefaultCharacterSize(16);
+			infoDrawer.SetCharacterSize(16);
 			infoDrawer.AppendText(std::to_string(playerCount) + "/" + std::to_string(maxPlayerCount) + " players");
 
 			serverData.infoLabel->UpdateText(infoDrawer);

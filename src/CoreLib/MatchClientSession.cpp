@@ -297,7 +297,7 @@ namespace bw
 	{
 		if (!std::filesystem::is_regular_file(filePath))
 		{
-			bwLog(m_match.GetLogger(), LogLevel::Error, "Client asset {} does not exist", filePath.generic_u8string());
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Client asset {} does not exist", filePath);
 
 			Packets::DownloadClientFileResponse response;
 			auto& failure = response.content.emplace<Packets::DownloadClientFileResponse::Failure>();
@@ -308,10 +308,10 @@ namespace bw
 		}
 
 		//FIXME: Use fragments instead of sending the whole file at once
-		Nz::File file(filePath.generic_u8string(), Nz::OpenMode::ReadOnly);
+		Nz::File file(filePath, Nz::OpenMode::Read);
 		if (!file.IsOpen())
 		{
-			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to open {}", filePath.generic_u8string());
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to open {}", filePath);
 
 			// An error occurred, send 0 fragment to notify the issue
 			Packets::DownloadClientFileResponse response;
@@ -325,7 +325,7 @@ namespace bw
 		std::vector<Nz::UInt8> content(file.GetSize());
 		if (file.Read(content.data(), content.size()) != content.size())
 		{
-			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to read {}", filePath.generic_u8string());
+			bwLog(m_match.GetLogger(), LogLevel::Error, "Failed to read {}", filePath);
 
 			// An error occurred, send 0 fragment to notify the issue
 			Packets::DownloadClientFileResponse response;
@@ -338,7 +338,7 @@ namespace bw
 
 		file.Close();
 
-		bwLog(m_match.GetLogger(), LogLevel::Info, "Sending asset {}", filePath.generic_u8string());
+		bwLog(m_match.GetLogger(), LogLevel::Info, "Sending asset {}", filePath);
 		SendClientFile(content);
 	}
 

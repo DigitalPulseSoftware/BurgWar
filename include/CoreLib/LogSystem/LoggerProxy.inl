@@ -14,9 +14,9 @@ namespace bw
 	}
 
 	template<typename... Args>
-	void LoggerProxy::LogFormat(const LogContext& context, Args&&... args) const
+	void LoggerProxy::LogFormat(const LogContext& context, fmt::format_string<Args...> fmt, Args&&... args) const
 	{
-		Log(context, fmt::format(std::forward<Args>(args)...));
+		Log(context, fmt::format(fmt, std::forward<Args>(args)...));
 	}
 
 	inline LogContextPtr LoggerProxy::PushContext() const

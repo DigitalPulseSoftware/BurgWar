@@ -284,7 +284,7 @@ namespace bw
 					using T = std::decay_t<decltype(arg)>;
 					if constexpr (std::is_same_v<T,Nz::VirtualDirectory::FileEntry>)
 					{
-						bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath().generic_u8string());
+						bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath());
 						music = std::make_unique<Nz::Music>();
 						return music->OpenFromStream(*arg.stream);
 					}

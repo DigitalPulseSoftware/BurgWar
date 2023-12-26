@@ -115,7 +115,7 @@ entity:On("init", function (self)
 						x = x + 1
 					end
 
-					local mins = Vec2(startX * cellSize.x, y * cellSize.y)
+					local mins = Vec2(startX * cellSize.x, -y * cellSize.y)
 					local maxs = mins + Vec2((x - startX) * cellSize.x, cellSize.y)
 
 					table.insert(colliders, Rect(mins, maxs))

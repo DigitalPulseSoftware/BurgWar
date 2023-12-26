@@ -14,31 +14,31 @@ namespace bw
 	m_info(std::move(modInfo))
 	{
 		assert(!m_modDirectory.empty());
-		m_id = m_modDirectory.filename().generic_u8string();
+		m_id = Nz::PathToString(m_modDirectory.filename());
 		assert(!m_id.empty());
 
 		// Fetch all assets and scripts files
-		if (std::filesystem::path assetDir = m_modDirectory / "assets"; std::filesystem::is_directory(assetDir))
+		if (std::filesystem::path assetDir = m_modDirectory / Nz::Utf8Path("assets"); std::filesystem::is_directory(assetDir))
 		{
 			for (const std::filesystem::path& path : std::filesystem::recursive_directory_iterator(assetDir))
 			{
 				if (std::filesystem::is_regular_file(path))
 				{
 					auto& assetEntry = m_assets.emplace_back();
-					assetEntry.assetPath = std::filesystem::relative(path, assetDir).generic_u8string();
+					assetEntry.assetPath = Nz::PathToString(std::filesystem::relative(path, assetDir));
 					assetEntry.physicalPath = path;
 				}
 			}
 		}
 
-		if (std::filesystem::path scriptDir = m_modDirectory / "scripts"; std::filesystem::is_directory(scriptDir))
+		if (std::filesystem::path scriptDir = m_modDirectory / Nz::Utf8Path("scripts"); std::filesystem::is_directory(scriptDir))
 		{
 			for (const std::filesystem::path& path : std::filesystem::recursive_directory_iterator(scriptDir))
 			{
 				if (std::filesystem::is_regular_file(path))
 				{
 					auto& scriptEntry = m_scripts.emplace_back();
-					scriptEntry.assetPath = std::filesystem::relative(path, scriptDir).generic_u8string();
+					scriptEntry.assetPath = Nz::PathToString(std::filesystem::relative(path, scriptDir));
 					scriptEntry.physicalPath = path;
 				}
 			}
@@ -49,7 +49,7 @@ namespace bw
 	{
 		std::vector<Nz::UInt8> content;
 
-		Nz::File infoFile((modDirectory / "info.json").generic_u8string(), Nz::OpenMode::ReadOnly);
+		Nz::File infoFile(modDirectory / Nz::Utf8Path("info.json"), Nz::OpenMode::Read);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open info.json file");
 
@@ -81,7 +81,7 @@ namespace bw
 				}
 				catch (const std::exception& e)
 				{
-					bwLog(logger, LogLevel::Error, "failed to load mod info from {}: {}", path.generic_u8string(), e.what());
+					bwLog(logger, LogLevel::Error, "failed to load mod info from {0}: {1}", path, e.what());
 				}
 			}
 		}

@@ -17,16 +17,6 @@
 
 namespace bw
 {
-	namespace
-	{
-		// Reverse Y
-		Nz::Matrix4f s_coordinateMatrix(
-			1.f, 0.f, 0.f, 0.f,
-			0.f, -1.f, 0.f, 0.f,
-			0.f, 0.f, 1.f, 0.f,
-			0.f, 0.f, 0.f, 1.f);
-	}
-
 	LayerVisualEntity::LayerVisualEntity(LayerVisualEntity&& entity) noexcept :
 	HandledObject(std::move(entity)),
 	m_attachedHoveringRenderables(std::move(entity.m_attachedHoveringRenderables)),
@@ -41,27 +31,27 @@ namespace bw
 
 	LayerVisualEntity::~LayerVisualEntity() = default;
 
-	void LayerVisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight)
+	void LayerVisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation, float hoveringHeight)
 	{
 		auto& renderableData = m_attachedHoveringRenderables.emplace_back();
 		renderableData.hoveringHeight = hoveringHeight;
-		renderableData.data.offsetMatrix = offsetMatrix;
 		renderableData.data.renderable = std::move(renderable);
-		renderableData.data.renderOrder = renderOrder;
+		renderableData.data.offset = offset;
+		renderableData.data.rotation = rotation;
 
 		for (VisualEntity* visualEntity : m_visualEntities)
-			visualEntity->AttachHoveringRenderable(renderableData.data.renderable, renderableData.data.offsetMatrix, renderableData.data.renderOrder, hoveringHeight);
+			visualEntity->AttachHoveringRenderable(renderableData.data.renderable, renderableData.data.offset, renderableData.data.rotation, hoveringHeight);
 	}
 
-	void LayerVisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
+	void LayerVisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		auto& renderableData = m_attachedRenderables.emplace_back();
-		renderableData.offsetMatrix = offsetMatrix;
 		renderableData.renderable = std::move(renderable);
-		renderableData.renderOrder = renderOrder;
+		renderableData.offset = offset;
+		renderableData.rotation = rotation;
 
 		for (VisualEntity* visualEntity : m_visualEntities)
-			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
+			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.rotation);
 	}
 
 	void LayerVisualEntity::DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable)
@@ -97,8 +87,11 @@ namespace bw
 		if (IsEnabled() == enable)
 			return;
 
-		// TODO
-		//m_entity->Enable(enable);
+		if (enable)
+			m_entity->remove<Nz::DisabledComponent>();
+		else
+			m_entity->emplace_or_replace<Nz::DisabledComponent>();
+
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Enable(enable);
 	}
@@ -106,7 +99,7 @@ namespace bw
 	Nz::Boxf LayerVisualEntity::GetGlobalBounds() const
 	{
 		auto& entityNode = m_entity->get<Nz::NodeComponent>();
-		Nz::Matrix4f worldMatrix = Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, entityNode.GetTransformMatrix());
+		Nz::Matrix4f worldMatrix = entityNode.GetTransformMatrix();
 
 		Nz::Vector3f globalPos = worldMatrix.GetTranslation();
 
@@ -115,10 +108,10 @@ namespace bw
 		Nz::Boxf aabb(globalPos.x, globalPos.y, globalPos.z, 0.f, 0.f, 0.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
+			Nz::BoundingVolumef boundingVolume(r.renderable->GetAABB());
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(worldMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(worldMatrix, Nz::Matrix4f::Transform(r.offset, r.rotation)));
 
 				if (first)
 					aabb = boundingVolume.aabb;
@@ -139,10 +132,10 @@ namespace bw
 		Nz::Boxf aabb(-1.f, -1.f, -1.f);
 		for (const RenderableData& r : m_attachedRenderables)
 		{
-			Nz::BoundingVolumef boundingVolume = r.renderable->GetAABB();
+			Nz::BoundingVolumef boundingVolume(r.renderable->GetAABB());
 			if (boundingVolume.IsFinite())
 			{
-				boundingVolume.Update(Nz::Matrix4f::ConcatenateTransform(s_coordinateMatrix, r.offsetMatrix));
+				boundingVolume.Update(Nz::Matrix4f::Transform(r.offset, r.rotation));
 
 				if (first)
 					aabb = boundingVolume.aabb;
@@ -188,31 +181,33 @@ namespace bw
 		}
 	}
 
-	void LayerVisualEntity::UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateHoveringRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		for (auto& hoveringRenderable : m_attachedHoveringRenderables)
 		{
 			if (hoveringRenderable.data.renderable == renderable)
 			{
 				for (VisualEntity* visualEntity : m_visualEntities)
-					visualEntity->UpdateHoveringRenderableMatrix(renderable, offsetMatrix);
+					visualEntity->UpdateHoveringRenderableTransform(renderable, offset, rotation);
 
-				hoveringRenderable.data.offsetMatrix = offsetMatrix;
+				hoveringRenderable.data.offset = offset;
+				hoveringRenderable.data.rotation = rotation;
 				break;
 			}
 		}
 	}
 
-	void LayerVisualEntity::UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
+	void LayerVisualEntity::UpdateRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		auto it = std::find_if(m_attachedRenderables.begin(), m_attachedRenderables.end(), [&](const RenderableData& renderableData) { return renderableData.renderable == renderable; });
 		if (it != m_attachedRenderables.end())
 		{
 			RenderableData& renderableData = *it;
-			renderableData.offsetMatrix = offsetMatrix;
+			renderableData.offset = offset;
+			renderableData.rotation = rotation;
 
 			for (VisualEntity* visualEntity : m_visualEntities)
-				visualEntity->UpdateRenderableMatrix(renderable, offsetMatrix);
+				visualEntity->UpdateRenderableTransform(renderable, offset, rotation);
 		}
 	}
 
@@ -293,10 +288,10 @@ namespace bw
 		visualEntity->Update(position, rotation, scale);
 
 		for (auto& renderableData : m_attachedRenderables)
-			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offsetMatrix, renderableData.renderOrder);
+			visualEntity->AttachRenderable(renderableData.renderable, renderableData.offset, renderableData.rotation);
 
 		for (auto& hoveringRenderableData : m_attachedHoveringRenderables)
-			visualEntity->AttachHoveringRenderable(hoveringRenderableData.data.renderable, hoveringRenderableData.data.offsetMatrix, hoveringRenderableData.data.renderOrder, hoveringRenderableData.hoveringHeight);
+			visualEntity->AttachHoveringRenderable(hoveringRenderableData.data.renderable, hoveringRenderableData.data.offset, hoveringRenderableData.data.rotation, hoveringRenderableData.hoveringHeight);
 	}
 
 	void LayerVisualEntity::UnregisterVisualEntity(VisualEntity* visualEntity)

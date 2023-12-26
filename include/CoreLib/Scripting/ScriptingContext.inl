@@ -36,7 +36,7 @@ namespace bw
 		if (!result.valid())
 		{
 			sol::error err = result;
-			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", m_currentFile.generic_u8string(), err.what());
+			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", m_currentFile, err.what());
 			return {};
 		}
 

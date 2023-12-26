@@ -12,6 +12,8 @@ entity:On("init", function (self)
 		return
 	end
 
+	print("init burger!")
+
 	local cursor = 0
 	local maxWidth = 0
 	local defaultOrigin = Vec2(0.5, 1)

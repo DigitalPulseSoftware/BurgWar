@@ -13,6 +13,7 @@
 #include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
+#include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
@@ -127,21 +128,23 @@ namespace bw
 		healthData.maxHealth = maxHealth;
 		healthData.spriteWidth = GetLocalBounds().width * 0.85f;
 
-		/*std::shared_ptr<Nz::Sprite> lostHealthBar = Nz::Sprite::New();
-		lostHealthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
-		lostHealthBar->SetSize(healthData.spriteWidth, 10);
+		std::shared_ptr<Nz::MaterialInstance> material = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic);
+
+		std::shared_ptr<Nz::Sprite> lostHealthBar = std::make_shared<Nz::Sprite>(material);
+		lostHealthBar->SetSize({ healthData.spriteWidth, 10 });
 		lostHealthBar->SetColor(Nz::Color::Red());
 		lostHealthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, lostHealthBar->GetSize().y));
+		lostHealthBar->UpdateRenderLayer(1);
 
-		std::shared_ptr<Nz::Sprite> healthBar = Nz::Sprite::New();
-		healthBar->SetMaterial(Nz::MaterialLibrary::Get("SpriteNoDepth"));
-		healthBar->SetSize(healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10);
-		healthBar->SetColor(Nz::Color::Green);
+		std::shared_ptr<Nz::Sprite> healthBar = std::make_shared<Nz::Sprite>(material);
+		healthBar->SetSize({ healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10 });
+		healthBar->SetColor(Nz::Color::Green());
 		healthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, healthBar->GetSize().y));
+		healthBar->UpdateRenderLayer(2);
 
 		healthData.lostHealthSprite = lostHealthBar;
 		healthData.healthSprite = healthBar;
-		*/
+		
 		if (currentHealth != maxHealth)
 			ShowHealthBar();
 	}
@@ -239,7 +242,7 @@ namespace bw
 
 	void ClientLayerEntity::ShowHealthBar()
 	{
-		AttachHoveringRenderable(m_health->healthSprite, Nz::Matrix4f::Identity(), 2, 10.f);
-		AttachHoveringRenderable(m_health->lostHealthSprite, Nz::Matrix4f::Identity(), 1, 10.f);
+		AttachHoveringRenderable(m_health->healthSprite, Nz::Vector2f::Zero(), Nz::RadianAnglef::Zero(), 10.f);
+		AttachHoveringRenderable(m_health->lostHealthSprite, Nz::Vector2f::Zero(), Nz::RadianAnglef::Zero(), 10.f);
 	}
 }

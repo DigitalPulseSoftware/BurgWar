@@ -81,7 +81,7 @@ namespace bw
 			});
 		};
 
-		scriptDir->GetDirectoryEntry(directoryPath.generic_u8string(), callback);
+		scriptDir->GetDirectoryEntry(Nz::PathToString(directoryPath), callback);
 	}
 
 	template<typename Element>
@@ -89,9 +89,9 @@ namespace bw
 	{
 		std::string elementName;
 		if (!isDirectory)
-			elementName = elementPath.stem().u8string();
+			elementName = Nz::PathToString(elementPath.stem());
 		else
-			elementName = elementPath.filename().u8string();
+			elementName = Nz::PathToString(elementPath.filename());
 
 		CurrentElementData elementData;
 		elementData.elementPath = std::move(elementPath);
@@ -107,13 +107,13 @@ namespace bw
 		std::optional<ScriptingContext::FileLoadCoroutine> fileLoadCoOpt;
 
 		if (isDirectory)
-			fileLoadCoOpt = m_context->Load(elementData.elementPath / "shared.lua", ScriptingContext::Async{});
+			fileLoadCoOpt = m_context->Load(elementData.elementPath / Nz::Utf8Path("shared.lua"), ScriptingContext::Async{});
 		else
 			fileLoadCoOpt = m_context->Load(elementData.elementPath, ScriptingContext::Async{});
 
 		if (!fileLoadCoOpt)
 		{
-			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath);
 			return false;
 		}
 
@@ -121,7 +121,7 @@ namespace bw
 
 		if (!m_context->Exec(elementData.fileCoro))
 		{
-			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementPath);
 			return false;
 		}
 
@@ -131,7 +131,7 @@ namespace bw
 
 			if (!m_context->Load(elementData.elementPath / fileName))
 			{
-				bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementData.elementPath.generic_u8string());
+				bwLog(m_logger, LogLevel::Error, "{0} loading failed", elementData.elementPath);
 				return false;
 			}
 		}
@@ -198,7 +198,7 @@ namespace bw
 
 						if (!m_context->Exec(pendingElement.fileCoro, pendingElement.element->elementTable))
 						{
-							bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath.generic_u8string());
+							bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath);
 							continue;
 						}
 
@@ -208,7 +208,7 @@ namespace bw
 
 							if (!m_context->Load(pendingElement.elementPath / fileName))
 							{
-								bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath.generic_u8string());
+								bwLog(m_logger, LogLevel::Error, "{0} loading failed", pendingElement.elementPath);
 								continue;
 							}
 						}

@@ -116,15 +116,15 @@ namespace bw
 				pendingFileData.fragmentSize = arg.fragmentSize;
 
 				std::filesystem::path clientFolderPath = pendingFileData.outputPath.parent_path();
-				std::string filePath = pendingFileData.outputPath.generic_u8string();
+				std::string filePath = Nz::PathToString(pendingFileData.outputPath);
 
 				if (!clientFolderPath.empty() && !std::filesystem::is_directory(clientFolderPath))
 				{
 					if (!std::filesystem::create_directories(clientFolderPath))
-						throw std::runtime_error("failed to create client script cache directory: " + clientFolderPath.generic_u8string());
+						throw std::runtime_error("failed to create client script cache directory: " + Nz::PathToString(clientFolderPath));
 				}
 
-				if (!m_outputFile.Open(filePath, Nz::OpenMode::Truncate | Nz::OpenMode::WriteOnly))
+				if (!m_outputFile.Open(filePath, Nz::OpenMode::Truncate | Nz::OpenMode::Write))
 					throw std::runtime_error("failed to open file " + filePath);
 			}
 			else if constexpr (std::is_same_v<T, Packets::DownloadClientFileResponse::Failure>)

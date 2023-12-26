@@ -24,7 +24,7 @@ namespace bw
 		Nz::TextureSamplerInfo samplerInfo;
 		samplerInfo.magFilter = Nz::SamplerFilter::Linear;
 
-		std::shared_ptr<Nz::MaterialInstance> material = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+		std::shared_ptr<Nz::MaterialInstance> material = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::Transparent);
 		material->SetTextureProperty("BaseColorMap", m_assetStore.GetTexture(weaponClass->spriteName));
 		material->SetTextureSamplerProperty("BaseColorMap", samplerInfo);
 
@@ -32,11 +32,12 @@ namespace bw
 		sprite->SetSize(sprite->GetSize() * weaponClass->scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();
 		sprite->SetOrigin(weaponClass->spriteOrigin);
+		sprite->UpdateRenderLayer(-1);
 
 		entt::handle weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);
 
 		ClientLayerEntity layerEntity(layer, weapon, serverId, uniqueId);
-		layerEntity.AttachRenderable(sprite, Nz::Matrix4f::Identity(), -1);
+		layerEntity.AttachRenderable(sprite, Nz::Vector2f::Zero(), Nz::RadianAnglef::Zero());
 
 		weapon.emplace<VisualComponent>(layerEntity.CreateHandle());
 		weapon.emplace<ClientMatchComponent>(layer.GetClientMatch(), layer.GetLayerIndex(), uniqueId);

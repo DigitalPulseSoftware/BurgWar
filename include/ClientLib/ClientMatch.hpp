@@ -55,7 +55,7 @@ namespace bw
 		friend ClientSession;
 
 		public:
-			ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
+			ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, std::shared_ptr<const Nz::RenderTarget> renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData);
 			ClientMatch(const ClientMatch&) = delete;
 			ClientMatch(ClientMatch&&) = delete;
 			~ClientMatch();
@@ -268,6 +268,7 @@ namespace bw
 
 			typename Nz::Signal<const std::string&>::ConnectionGuard m_nicknameUpdateSlot;
 
+			std::shared_ptr<const Nz::RenderTarget> m_renderTarget;
 			std::optional<ClientAssetStore> m_assetStore;
 			std::optional<ClientEntityStore> m_entityStore;
 			std::optional<ClientWeaponStore> m_weaponStore;
@@ -289,7 +290,6 @@ namespace bw
 			entt::handle m_currentLayer;
 			EntityId m_freeClientId;
 			Nz::EnttWorld& m_renderWorld;
-			Nz::RenderTarget* m_renderTarget;
 			Nz::Window* m_window;
 			Nz::UInt16 m_activeLayerIndex;
 			tsl::hopscotch_map<EntityId, ClientLayerEntityHandle> m_entitiesByUniqueId;

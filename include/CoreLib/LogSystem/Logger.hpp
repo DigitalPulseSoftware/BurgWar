@@ -15,6 +15,7 @@
 #include <NazaraUtils/MovablePtr.hpp>
 #include <NazaraUtils/MemoryPool.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <memory>
 #include <vector>
 
@@ -44,7 +45,7 @@ namespace bw
 			Logger(Logger&&) noexcept = default;
 			~Logger() = default;
 
-			template<typename... Args> void LogFormat(const LogContext& context, Args&& ... args) const;
+			template<typename... Args> void LogFormat(const LogContext& context, fmt::format_string<Args...> fmt, Args&& ... args) const;
 
 			void Log(const LogContext& context, std::string content) const override;
 			void LogRaw(const LogContext& context, std::string_view content) const override;

@@ -43,14 +43,14 @@ namespace bw
 		if (m_isHovering)
 		{
 			if (show)
-				m_visualEntity->AttachHoveringRenderable(m_textSprite, m_transformMatrix, m_renderOrder, m_hoveringHeight);
+				m_visualEntity->AttachHoveringRenderable(m_textSprite, m_offset, m_rotation, m_hoveringHeight);
 			else
 				m_visualEntity->DetachHoveringRenderable(m_textSprite);
 		}
 		else
 		{
 			if (show)
-				m_visualEntity->AttachRenderable(m_textSprite, m_transformMatrix, m_renderOrder);
+				m_visualEntity->AttachRenderable(m_textSprite, m_offset, m_rotation);
 			else
 				m_visualEntity->DetachRenderable(m_textSprite);
 		}
@@ -63,11 +63,11 @@ namespace bw
 		m_textSprite->Update(m_drawer);
 	}
 
-	void Text::UpdateTransformMatrix()
+	void Text::UpdateTransform()
 	{
 		if (m_isHovering)
-			m_visualEntity->UpdateHoveringRenderableMatrix(m_textSprite, m_transformMatrix);
+			m_visualEntity->UpdateHoveringRenderableTransform(m_textSprite, m_offset, m_rotation);
 		else
-			m_visualEntity->UpdateRenderableMatrix(m_textSprite, m_transformMatrix);
+			m_visualEntity->UpdateRenderableTransform(m_textSprite, m_offset, m_rotation);
 	}
 }

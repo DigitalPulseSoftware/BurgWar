@@ -44,10 +44,11 @@ namespace bw
 			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
 		}
 
-		auto& entityMatch = entity.get<ClientMatchComponent>();
-		auto& physics = entityMatch.GetClientMatch().GetLayer(entityMatch.GetLayerIndex()).GetPhysicsSystem();
+		Nz::ChipmunkRigidBody2D::DynamicSettings settings;
+		settings.geom = collider;
+		settings.mass = mass;
 
-		auto& entityPhys = entity.emplace<Nz::ChipmunkRigidBody2DComponent>(physics.CreateRigidBody(mass, collider));
+		auto& entityPhys = entity.emplace<Nz::ChipmunkRigidBody2DComponent>(settings);
 
 		//entity.get<Nz::ChipmunkRigidBody2DComponent>().EnableNodeSynchronization(false);
 		entity.emplace_or_replace<VisualInterpolationComponent>();
@@ -89,14 +90,16 @@ namespace bw
 			if (materials.empty())
 				return {};
 
-			std::shared_ptr<Nz::Tilemap> tileMap = std::make_shared<Nz::Tilemap>(mapSize, cellSize, materials.size());
+			std::shared_ptr<Nz::Tilemap> tilemap = std::make_shared<Nz::Tilemap>(mapSize, cellSize, materials.size());
 			for (auto&& [materialPath, matIndex] : materials)
 			{
-				std::shared_ptr<Nz::MaterialInstance> material = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+				std::shared_ptr<Nz::MaterialInstance> material = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::Transparent);
 				material->SetTextureProperty("BaseColorMap", m_assetStore.GetTexture(materialPath));
 
-				tileMap->SetMaterial(matIndex, material);
+				tilemap->SetMaterial(matIndex, material);
 			}
+
+			tilemap->UpdateRenderLayer(renderOrder);
 
 			std::size_t cellCount = content.size();
 			std::size_t expectedCellCount = mapSize.x * mapSize.y;
@@ -120,7 +123,7 @@ namespace bw
 						auto matIt = materials.find(tileData.materialPath);
 						assert(matIt != materials.end());
 
-						tileMap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White(), matIt->second);
+						tilemap->EnableTile(tilePos, tileData.texCoords, Nz::Color::White(), matIt->second);
 					}
 				}
 			}
@@ -129,7 +132,7 @@ namespace bw
 
 			auto& visualComponent = entity.get<VisualComponent>();
 
-			Tilemap scriptTilemap(visualComponent.GetLayerVisual(), std::move(tileMap), transformMatrix, renderOrder);
+			Tilemap scriptTilemap(visualComponent.GetLayerVisual(), std::move(tilemap), Nz::Vector2f::Zero(), Nz::RadianAnglef::Zero());
 			scriptTilemap.Show();
 
 			return scriptTilemap;

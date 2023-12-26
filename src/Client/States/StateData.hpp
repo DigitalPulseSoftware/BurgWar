@@ -12,11 +12,13 @@
 #include <Nazara/Platform/Window.hpp>
 #include <Nazara/Widgets/Canvas.hpp>
 #include <entt/fwd.hpp>
+#include <memory>
 #include <optional>
 
 namespace Nz
 {
 	class ApplicationBase;
+	class RenderTarget;
 }
 
 namespace bw
@@ -26,6 +28,7 @@ namespace bw
 	struct StateData
 	{
 		std::optional<Nz::Canvas> canvas;
+		std::shared_ptr<Nz::RenderTarget> renderTarget;
 		ClientAppComponent* appComponent;
 		Nz::ApplicationBase* app;
 		Nz::EnttWorld* world;

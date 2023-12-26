@@ -287,7 +287,7 @@ namespace bw
 				throw std::runtime_error(assetPath + " is not a file");
 
 			Nz::UInt64 assetSize = std::filesystem::file_size(filepath);
-			Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath.generic_u8string());
+			Nz::ByteArray assetHash = Nz::File::ComputeHash(Nz::HashType::SHA1, filepath);
 
 			RegisterClientAssetInternal(std::move(assetPath), assetSize, std::move(assetHash), filepath);
 		});
@@ -360,7 +360,7 @@ namespace bw
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [assetPath, physicalPath] : modPtr->GetAssets())
-				m_assetDirectory->StoreFile(assetPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
+				m_assetDirectory->StoreFile(assetPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::Read | Nz::OpenMode::Defer));
 		}
 
 		if (!m_assetStore)
@@ -374,9 +374,7 @@ namespace bw
 		assert(m_map.IsValid());
 		for (const auto& asset : m_map.GetAssets())
 		{
-			std::filesystem::path assetPath = assetDirectory;
-			assetPath /= asset.filepath;
-
+			std::filesystem::path assetPath = Nz::Utf8Path(assetDirectory) / Nz::Utf8Path(asset.filepath);
 			if (!std::filesystem::is_regular_file(assetPath))
 			{
 				bwLog(GetLogger(), LogLevel::Error, "Map asset file not found ({0})", asset.filepath);
@@ -393,7 +391,7 @@ namespace bw
 			Nz::ByteArray expectedChecksum(asset.sha1Checksum.size(), 0);
 			std::memcpy(expectedChecksum.GetBuffer(), asset.sha1Checksum.data(), asset.sha1Checksum.size());
 
-			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType::SHA1, assetPath.generic_u8string());
+			Nz::ByteArray fileChecksum = Nz::File::ComputeHash(Nz::HashType::SHA1, assetPath);
 			if (fileChecksum != expectedChecksum)
 			{
 				bwLog(GetLogger(), LogLevel::Error, "Map asset doesn't match file ({0}): checksum doesn't match", asset.filepath, asset.size, fileSize);
@@ -432,7 +430,7 @@ namespace bw
 		for (const auto& modPtr : m_enabledMods)
 		{
 			for (const auto& [scriptPath, physicalPath] : modPtr->GetScripts())
-				m_scriptDirectory->StoreFile(scriptPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
+				m_scriptDirectory->StoreFile(scriptPath, std::make_shared<Nz::File>(physicalPath, Nz::OpenMode::Read | Nz::OpenMode::Defer));
 		}
 
 		for (const auto& mapScript : m_map.GetScripts())
@@ -726,7 +724,7 @@ namespace bw
 				localAddress.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
 				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
-					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {1}", Nz::ErrorToString(m_debug->socket.GetLastError()));
+					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}
 
@@ -862,13 +860,13 @@ namespace bw
 			const ClientAsset& asset = it->second;
 			if (asset.size != assetSize)
 			{
-				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and size doesn't match", assetPath);
+				bwLog(GetLogger(), LogLevel::Error, "Asset {0} registered twice and size doesn't match", assetPath);
 				return;
 			}
 
 			if (asset.checksum != assetChecksum)
 			{
-				bwLog(GetLogger(), LogLevel::Error, "Asset {1} registered twice and checksum doesn't match", assetPath);
+				bwLog(GetLogger(), LogLevel::Error, "Asset {0} registered twice and checksum doesn't match", assetPath);
 				return;
 			}
 		}

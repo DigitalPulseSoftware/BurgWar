@@ -25,6 +25,7 @@ end)
 function gamemode:UpdateCameraPosition()
 	local camera = match.GetCamera()
 	local playerPosition = engine_GetPlayerPosition(0)
+	print("playerpos", playerPosition)
 	if (playerPosition) then
 		local viewportSize = camera:GetViewport():GetSize() / camera:GetZoomFactor()
 		local cameraOrigin = playerPosition - viewportSize / 2
@@ -59,6 +60,7 @@ function gamemode:UpdateCameraPosition()
 			end
 		end
 
+		print("camera move to ", clampedOrigin)
 		camera:MoveToPosition(clampedOrigin)
 	end
 end

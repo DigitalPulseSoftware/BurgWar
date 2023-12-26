@@ -14,14 +14,19 @@ namespace bw
 
 	inline void VisualEntity::Enable(bool enable)
 	{
-		if (enable)
-			m_entity->remove<Nz::DisabledComponent>();
-		else
-			m_entity->emplace_or_replace<Nz::DisabledComponent>();
-		// TODO
-		/*
+		auto EnableEntity = [enable](const entt::handle& entity)
+		{
+			if (enable)
+				entity.remove<Nz::DisabledComponent>();
+			else
+				entity.emplace_or_replace<Nz::DisabledComponent>();
+		};
+
+		EnableEntity(m_entity);
+		for (auto& renderable : m_renderables)
+			EnableEntity(renderable.entity);
+
 		for (auto& hoveringRenderable : m_hoveringRenderables)
-			hoveringRenderable.entity->Enable(enable);
-		*/
+			EnableEntity(hoveringRenderable.entity);
 	}
 }

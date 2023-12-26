@@ -101,11 +101,11 @@ namespace Nz
 
 namespace bw
 {
-	constexpr Nz::UInt16 MapFileVersion = 1;
+	constexpr Nz::UInt16 MapFileVersion = 2;
 
 	bool Map::Compile(const std::filesystem::path& outputPath)
 	{
-		Nz::File infoFile(outputPath.generic_u8string(), Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
+		Nz::File infoFile(outputPath, Nz::OpenMode::Write | Nz::OpenMode::Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
@@ -233,7 +233,7 @@ namespace bw
 
 		std::string content = Serialize(*this).dump(1, '\t');
 
-		Nz::File infoFile((mapFolderPath / "info.json").generic_u8string(), Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
+		Nz::File infoFile(mapFolderPath / Nz::Utf8Path("info.json"), Nz::OpenMode::Write | Nz::OpenMode::Truncate);
 		if (!infoFile.IsOpen())
 			return false;
 
@@ -250,6 +250,7 @@ namespace bw
 		const MapInfo& mapInfo = map.GetMapInfo();
 
 		nlohmann::json mapJson;
+		mapJson["fileVersion"] = MapFileVersion;
 		mapJson["name"] = mapInfo.name;
 		mapJson["author"] = mapInfo.author;
 		mapJson["description"] = mapInfo.description;
@@ -335,6 +336,8 @@ namespace bw
 
 	Map Map::Unserialize(const nlohmann::json& mapJson)
 	{
+		Nz::UInt16 mapFileVersion = mapJson.value("fileVersion", Nz::UInt16(1));
+
 		MapInfo mapInfo;
 
 		mapInfo.author = mapJson.value("author", "unknown");
@@ -360,8 +363,11 @@ namespace bw
 			layer.name = entry.value("name", "");
 
 			for (auto&& entityInfo : entry["entities"])
-				layer.entities.emplace_back(UnserializeEntity(entityInfo));
+				layer.entities.emplace_back(UnserializeEntity(entityInfo, mapFileVersion));
+		
 		}
+
+		map.HandleVersionUpdate(mapFileVersion);
 
 		map.RebuildEntityIndices();
 		map.Sanitize();
@@ -369,7 +375,7 @@ namespace bw
 		return map;
 	}
 
-	auto Map::UnserializeEntity(const nlohmann::json& entityInfo) -> Entity
+	auto Map::UnserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 /*fileVersion*/) -> Entity
 	{
 		Entity entity;
 		entity.entityType = entityInfo.at("entityType");
@@ -447,7 +453,7 @@ namespace bw
 
 	void Map::LoadFromBinaryInternal(const std::filesystem::path& mapFile)
 	{
-		Nz::File infoFile(mapFile.generic_u8string(), Nz::OpenMode::ReadOnly);
+		Nz::File infoFile(mapFile, Nz::OpenMode::Read);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open map file");
 
@@ -595,6 +601,8 @@ namespace bw
 			stream.Read(asset.sha1Checksum.data(), asset.sha1Checksum.size());
 		}
 
+		HandleVersionUpdate(fileVersion);
+
 		RebuildEntityIndices();
 		Sanitize();
 
@@ -605,7 +613,7 @@ namespace bw
 	{
 		std::vector<Nz::UInt8> content;
 
-		Nz::File infoFile((mapFolder / "info.json").generic_u8string(), Nz::OpenMode::ReadOnly);
+		Nz::File infoFile(mapFolder / Nz::Utf8Path("info.json"), Nz::OpenMode::Read);
 		if (!infoFile.IsOpen())
 			throw std::runtime_error("failed to open info.json file");
 
@@ -618,7 +626,7 @@ namespace bw
 		Map map = Unserialize(json);
 
 		// Load map scripts
-		std::filesystem::path mapScriptDir = mapFolder / "scripts";
+		std::filesystem::path mapScriptDir = mapFolder / Nz::Utf8Path("scripts");
 		if (std::filesystem::is_directory(mapScriptDir))
 		{
 			for (std::filesystem::path filepath : std::filesystem::recursive_directory_iterator(mapScriptDir))
@@ -626,20 +634,18 @@ namespace bw
 				if (!std::filesystem::is_regular_file(filepath))
 					continue;
 
-				std::string filepathStr = filepath.generic_u8string();
-
-				Nz::File file(filepath.generic_u8string());
-				if (!file.Open(Nz::OpenMode::ReadOnly))
-					throw std::runtime_error("failed to open map script " + filepathStr);
+				Nz::File file(filepath);
+				if (!file.Open(Nz::OpenMode::Read))
+					throw std::runtime_error("failed to open map script " + Nz::PathToString(filepath));
 
 				content.resize(file.GetSize());
 				if (file.Read(content.data(), content.size()) != content.size())
-					throw std::runtime_error("failed to read map script " + filepathStr);
+					throw std::runtime_error("failed to read map script " + Nz::PathToString(filepath));
 
 				std::filesystem::path relativePath = std::filesystem::relative(filepath, mapScriptDir);
 
 				map.m_scripts.push_back({
-					relativePath.generic_u8string(),
+					Nz::PathToString(relativePath),
 					std::move(content)
 				});
 			}
@@ -648,6 +654,67 @@ namespace bw
 		operator=(std::move(map));
 	}
 
+	void Map::HandleVersionUpdate(Nz::UInt16 fileVersion)
+	{
+		for (Asset& asset : m_assets)
+			HandleVersionUpdate(asset, fileVersion);
+
+		for (Layer& layer : m_layers)
+			HandleVersionUpdate(layer, fileVersion);
+
+		for (Script& script : m_scripts)
+			HandleVersionUpdate(script, fileVersion);
+	}
+	
+	void Map::HandleVersionUpdate(Asset& /*asset*/, Nz::UInt16 /*fileVersion*/)
+	{
+	}
+
+	void Map::HandleVersionUpdate(Entity& entity, Nz::UInt16 fileVersion)
+	{
+		// Flip Y
+		if (fileVersion < 2)
+		{
+			entity.position.y = -entity.position.y;
+		}
+	}
+
+	void Map::HandleVersionUpdate(Layer& layer, Nz::UInt16 fileVersion)
+	{
+		for (Entity& entity : layer.entities)
+			HandleVersionUpdate(entity, fileVersion);
+
+		// Flip Y
+		if (fileVersion < 2)
+		{
+#if 0
+			// Update entities properties
+			ForeachEntityPropertyValue<PropertyType::FloatPosition>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Vector2f& position)
+			{
+				position.y = -position.y;
+			});
+			
+			ForeachEntityPropertyValue<PropertyType::FloatRect>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Vector4f& rect)
+			{
+				rect.y = -rect.y;
+			});
+
+			ForeachEntityPropertyValue<PropertyType::IntegerPosition>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Vector2i64& position)
+			{
+				position.y = -position.y;
+			});
+			
+			ForeachEntityPropertyValue<PropertyType::IntegerRect>([&](Map::Entity& /*entity*/, const std::string& /*name*/, Nz::Vector4i64& rect)
+			{
+				rect.y = -rect.y;
+			});
+#endif
+		}
+	}
+
+	void Map::HandleVersionUpdate(Script& /*script*/, Nz::UInt16 /*fileVersion*/)
+	{
+	}
 	void Map::Sanitize()
 	{
 		assert(CheckEntityIndices());

@@ -10,7 +10,7 @@
 
 namespace bw
 {
-	void Sprite::SetColor(Nz::Color color)
+	void Sprite::SetColor(const Nz::Color& color)
 	{
 		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
@@ -18,7 +18,7 @@ namespace bw
 		m_sprite->SetColor(color);
 	}
 
-	void Sprite::SetCornerColor(const std::string_view& corner, Nz::Color cornerColor)
+	void Sprite::SetCornerColor(const std::string_view& corner, const Nz::Color& cornerColor)
 	{
 		if (!m_visualEntity)
 			throw std::runtime_error("Invalid sprite");
@@ -86,15 +86,15 @@ namespace bw
 			return;
 
 		if (show)
-			m_visualEntity->AttachRenderable(m_sprite, m_transformMatrix, m_renderOrder);
+			m_visualEntity->AttachRenderable(m_sprite, m_offset, m_rotation);
 		else
 			m_visualEntity->DetachRenderable(m_sprite);
 
 		m_isVisible = show;
 	}
 	
-	void Sprite::UpdateTransformMatrix()
+	void Sprite::UpdateTransform()
 	{
-		m_visualEntity->UpdateRenderableMatrix(m_sprite, m_transformMatrix);
+		m_visualEntity->UpdateRenderableTransform(m_sprite, m_offset, m_rotation);
 	}
 }

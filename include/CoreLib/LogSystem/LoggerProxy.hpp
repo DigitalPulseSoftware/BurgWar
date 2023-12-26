@@ -22,7 +22,7 @@ namespace bw
 			LoggerProxy(LoggerProxy&&) noexcept = default;
 			~LoggerProxy() = default;
 
-			template<typename... Args> void LogFormat(const LogContext& context, Args&& ... args) const;
+			template<typename... Args> void LogFormat(const LogContext& context, fmt::format_string<Args...> fmt, Args&& ... args) const;
 
 			void Log(const LogContext& context, std::string content) const override;
 			void LogRaw(const LogContext& context, std::string_view content) const override;

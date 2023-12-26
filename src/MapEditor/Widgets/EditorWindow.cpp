@@ -576,7 +576,7 @@ namespace bw
 			m_entityInfoDialog = nullptr;
 		}
 
-		setWindowFilePath(QString::fromStdString(mapPath.generic_u8string()));
+		setWindowFilePath(QString::fromStdString(Nz::PathToString(mapPath)));
 
 		bool hasWorkingMap = m_workingMap.IsValid();
 
@@ -634,7 +634,7 @@ namespace bw
 	{
 		assert(!m_workingMapPath.empty());
 
-		std::filesystem::path rootScriptFolder = m_workingMapPath / "scripts";
+		std::filesystem::path rootScriptFolder = m_workingMapPath / Nz::Utf8Path("scripts");
 		if (!std::filesystem::is_directory(rootScriptFolder))
 			return;
 
@@ -644,26 +644,24 @@ namespace bw
 			if (!std::filesystem::is_regular_file(filepath))
 				continue;
 
-			std::string filepathStr = filepath.generic_u8string();
-
-			Nz::File file(filepath.generic_u8string());
-			if (!file.Open(Nz::OpenMode::ReadOnly))
+			Nz::File file(filepath);
+			if (!file.Open(Nz::OpenMode::Read))
 			{
-				bwLog(GetLogger(), LogLevel::Warning, "failed to open script {} when preparing map test", filepathStr);
+				bwLog(GetLogger(), LogLevel::Warning, "failed to open script {} when preparing map test", filepath);
 				continue;
 			}
 
 			std::vector<Nz::UInt8> content(file.GetSize());
 			if (file.Read(content.data(), content.size()) != content.size())
 			{
-				bwLog(GetLogger(), LogLevel::Warning, "failed to read script {} when preparing map test", filepathStr);
+				bwLog(GetLogger(), LogLevel::Warning, "failed to read script {} when preparing map test", filepath);
 				continue;
 			}
 
 			std::filesystem::path relativePath = std::filesystem::relative(filepath, rootScriptFolder);
 
 			mapScripts.push_back({
-				relativePath.generic_u8string(),
+				Nz::PathToString(relativePath),
 				std::move(content)
 			});
 		}
@@ -725,13 +723,13 @@ namespace bw
 			{
 				asset.size = std::filesystem::file_size(fullPath);
 
-				Nz::ByteArray assetHash = Nz::File::ComputeHash(hash.get(), fullPath.generic_u8string());
+				Nz::ByteArray assetHash = Nz::File::ComputeHash(hash.get(), fullPath);
 				assert(assetHash.GetSize() == asset.sha1Checksum.size());
 
 				std::memcpy(asset.sha1Checksum.data(), assetHash.GetConstBuffer(), assetHash.GetSize());
 			}
 			else
-				bwLog(GetLogger(), LogLevel::Error, "Texture not found: {0}", fullPath.generic_u8string());
+				bwLog(GetLogger(), LogLevel::Error, "Texture not found: {0}", fullPath);
 		}
 
 		std::sort(assets.begin(), assets.end(), [&](const Map::Asset& lhs, const Map::Asset& rhs)

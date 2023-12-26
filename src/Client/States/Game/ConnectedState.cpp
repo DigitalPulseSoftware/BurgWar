@@ -79,7 +79,7 @@ namespace bw
 		{
 			auto& appfs = GetStateData().app->GetComponent<Nz::AppFilesystemComponent>();
 
-			std::shared_ptr<Nz::MaterialInstance> connectionLostMat = Nz::Graphics::Instance()->GetDefaultMaterials().basicTransparent->Clone();
+			std::shared_ptr<Nz::MaterialInstance> connectionLostMat = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::Transparent);
 			connectionLostMat->SetTextureProperty("BaseColorMap", appfs.Load<Nz::Texture>("assets/connection.png"));
 
 			m_connectionLostSprite = std::make_shared<Nz::Sprite>(std::move(connectionLostMat));
@@ -210,7 +210,7 @@ namespace bw
 
 		Nz::SimpleTextDrawer drawer;
 		drawer.SetCharacterSize(18);
-		drawer.SetOutlineThickness(1.f);
+		drawer.SetTextOutlineThickness(1.f);
 
 		if (m_pingLabel)
 		{

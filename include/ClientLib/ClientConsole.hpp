@@ -20,7 +20,7 @@ namespace bw
 	class BURGWAR_CLIENTLIB_API ClientConsole : public Console
 	{
 		public:
-			ClientConsole(const Logger& logger, Nz::RenderTarget* window, Nz::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir);
+			ClientConsole(const Logger& logger, const Nz::RenderTarget& renderTarget, Nz::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir);
 			ClientConsole(const ClientConsole&) = delete;
 			ClientConsole(ClientConsole&&) = delete;
 			~ClientConsole() = default;

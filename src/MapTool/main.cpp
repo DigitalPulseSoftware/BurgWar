@@ -6,6 +6,7 @@
 #include <Main/Main.hpp>
 #include <cxxopts.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <filesystem>
 #include <stdexcept>
 
@@ -45,7 +46,7 @@ int BurgWarMapTool(int argc, char* argv[])
 			std::filesystem::path mapName;
 
 			if (inputMaps.size() > 1)
-				fmt::print("--- {0} ---\n", inputPath.generic_u8string());
+				fmt::print("--- {0} ---\n", inputPath);
 
 			bw::Map map;
 
@@ -86,9 +87,9 @@ int BurgWarMapTool(int argc, char* argv[])
 					outputPath += ".bmap";
 
 				if (!map.Compile(outputPath))
-					throw std::runtime_error("failed to compile map: failed to open " + outputPath.generic_u8string());
+					throw std::runtime_error("failed to compile map: failed to open " + Nz::PathToString(outputPath));
 
-				fmt::print("successfully compiled map {0} to {1}\n", inputMap, outputPath.generic_u8string());
+				fmt::print("successfully compiled map {0} to {1}\n", inputMap, outputPath);
 			}
 			else
 			{

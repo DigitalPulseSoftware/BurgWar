@@ -6,11 +6,11 @@
 
 namespace bw
 {
-	inline Tilemap::Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Matrix4f& transformMatrix, int renderOrder) :
+	inline Tilemap::Tilemap(LayerVisualEntityHandle visualEntity, std::shared_ptr<Nz::Tilemap> tilemap, const Nz::Vector2f& offset, const Nz::DegreeAnglef& rotation) :
 	m_visualEntity(std::move(visualEntity)),
-	m_transformMatrix(transformMatrix),
+	m_rotation(rotation),
+	m_offset(offset),
 	m_tilemap(std::move(tilemap)),
-	m_renderOrder(renderOrder),
 	m_isVisible(false)
 	{
 	}
@@ -47,15 +47,15 @@ namespace bw
 
 	inline void Tilemap::SetOffset(const Nz::Vector2f& newOffset)
 	{
-		m_transformMatrix.SetTranslation(newOffset);
+		m_offset = newOffset;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 
 	inline void Tilemap::SetRotation(const Nz::DegreeAnglef& newRotation)
 	{
-		m_transformMatrix.SetRotation(newRotation);
+		m_rotation = newRotation;
 
-		UpdateTransformMatrix();
+		UpdateTransform();
 	}
 }

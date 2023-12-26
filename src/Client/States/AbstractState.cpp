@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/States/AbstractState.hpp>
+#include <Nazara/Graphics/RenderTarget.hpp>
 
 namespace bw
 {
@@ -10,7 +11,7 @@ namespace bw
 	m_stateData(std::move(stateData)),
 	m_isVisible(false)
 	{
-		m_onTargetChangeSizeSlot.Connect(m_stateData->swapchain->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*, const Nz::Vector2ui& /*newSize*/)
+		m_onTargetChangeSizeSlot.Connect(m_stateData->renderTarget->OnRenderTargetSizeChange, [this](const Nz::RenderTarget*, const Nz::Vector2ui& /*newSize*/)
 		{
 			if (m_isVisible)
 				LayoutWidgets(); 

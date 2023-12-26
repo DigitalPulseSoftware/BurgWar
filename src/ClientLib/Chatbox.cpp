@@ -12,7 +12,7 @@ namespace bw
 {
 	static constexpr std::size_t maxChatLines = 100;
 
-	Chatbox::Chatbox(const Logger& logger, Nz::RenderTarget* rt, Nz::Canvas* canvas) :
+	Chatbox::Chatbox(const Logger& logger, const Nz::RenderTarget& renderTarget, Nz::Canvas* canvas) :
 	m_chatEnteringBox(nullptr),
 	m_logger(logger)
 	{
@@ -43,9 +43,9 @@ namespace bw
 		m_chatEnteringBox->Hide();
 
 		// Connect every slot
-		m_onTargetChangeSizeSlot.Connect(rt->OnRenderTargetSizeChange, this, &Chatbox::OnRenderTargetSizeChange);
+		m_onTargetChangeSizeSlot.Connect(renderTarget.OnRenderTargetSizeChange, this, &Chatbox::OnRenderTargetSizeChange);
 
-		OnRenderTargetSizeChange(rt, rt->GetSize());
+		OnRenderTargetSizeChange(&renderTarget, renderTarget.GetSize());
 	}
 
 	Chatbox::~Chatbox()
@@ -120,7 +120,7 @@ namespace bw
 			OnChatMessage(text);
 	}
 
-	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* renderTarget, const Nz::Vector2ui& newSize)
+	void Chatbox::OnRenderTargetSizeChange(const Nz::RenderTarget* /*renderTarget*/, const Nz::Vector2ui& newSize)
 	{
 		Nz::Vector2f size = Nz::Vector2f(newSize);
 

@@ -87,7 +87,7 @@ namespace bw
 
 			if (m_layerIndex != NoLayer && layerIndex != NoLayer)
 			{
-				if (m_playerEntity)
+				if (m_playerEntity && *m_playerEntity)
 				{
 					Terrain& terrain = m_match.GetTerrain();
 					entt::registry& world = terrain.GetLayer(layerIndex).GetWorld();
@@ -204,7 +204,7 @@ namespace bw
 	{
 		MatchClientVisibility& visibility = m_session.GetVisibility();
 
-		if (m_playerEntity)
+		if (m_playerEntity && *m_playerEntity)
 		{
 			EntityOwner& playerEntity = *m_playerEntity;
 
@@ -269,7 +269,7 @@ namespace bw
 		{
 			Packets::ControlEntity controlEntity;
 			controlEntity.localIndex = m_localIndex;
-			if (m_playerEntity)
+			if (m_playerEntity && *m_playerEntity)
 			{
 				EntityOwner& playerEntity = *m_playerEntity;
 
@@ -327,7 +327,7 @@ namespace bw
 
 	void Player::OnDeath(entt::handle attacker)
 	{
-		assert(m_playerEntity);
+		assert(m_playerEntity && *m_playerEntity);
 
 		UpdateControlledEntity(entt::handle{}, false);
 

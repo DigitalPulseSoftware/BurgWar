@@ -63,20 +63,20 @@ namespace bw
 			Nz::Vector3f absoluteScale = visualNode.GetScale(Nz::CoordSys::Global);
 			Nz::Vector2f positiveScale(std::abs(absoluteScale.x), std::abs(absoluteScale.y));
 
-			/*const Nz::Boxf& aabb = visualGfx.GetAABB();
+			const Nz::Boxf& aabb = visualGfx.GetAABB();
 			float halfHeight = aabb.height / 2.f;
 			Nz::Vector3f center = aabb.GetCenter();
 
 			for (auto& hoveringRenderable : m_hoveringRenderables)
 			{
-				auto& node = hoveringRenderable.entity.get<Nz::NodeComponent>();
+				auto& node = hoveringRenderable.entity->get<Nz::NodeComponent>();
 				node.SetPosition(center.x, center.y - halfHeight - absoluteScale.y * hoveringRenderable.offset);
 				node.SetScale(positiveScale);
-			}*/
+			}
 		}
 	}
 
-	void VisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoverOffset)
+	void VisualEntity::AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation, float hoverOffset)
 	{
 		entt::registry& registry = *m_entity.GetEntity().registry();
 
@@ -86,13 +86,12 @@ namespace bw
 
 		hoveringRenderable.entity = entt::handle(registry, registry.create());
 		auto& node = hoveringRenderable.entity->emplace<Nz::NodeComponent>();
-		node.SetParent(m_entity);
-		//node.SetTransformMatrix(offsetMatrix);
+		node.SetTransform(offset, rotation);
 
 		auto& gfxComponent = hoveringRenderable.entity->emplace<Nz::GraphicsComponent>(hoveringRenderable.renderable, 2);
 	}
 
-	void VisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder)
+	void VisualEntity::AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		entt::registry& registry = *m_entity.GetEntity().registry();
 
@@ -102,7 +101,7 @@ namespace bw
 		hoveringRenderable.entity = entt::handle(registry, registry.create());
 		auto& node = hoveringRenderable.entity->emplace<Nz::NodeComponent>();
 		node.SetParent(m_entity);
-		//node.SetTransformMatrix(offsetMatrix);
+		node.SetTransform(offset, rotation);
 
 		auto& gfxComponent = hoveringRenderable.entity->emplace<Nz::GraphicsComponent>(hoveringRenderable.renderable, 2);
 	}
@@ -147,44 +146,27 @@ namespace bw
 		}
 	}
 
-	void VisualEntity::UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
+	void VisualEntity::UpdateHoveringRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		for (auto& hoveringRenderable : m_hoveringRenderables)
 		{
 			if (hoveringRenderable.renderable == renderable)
 			{
-				hoveringRenderable.entity->get<Nz::NodeComponent>().SetTransformMatrix(offsetMatrix);
+				hoveringRenderable.entity->get<Nz::NodeComponent>().SetTransform(offset, rotation);
 				break;
 			}
 		}
 	}
 
-	void VisualEntity::UpdateHoveringRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder)
-	{
-		for (auto& hoveringRenderable : m_hoveringRenderables)
-		{
-			if (hoveringRenderable.renderable == renderable)
-			{
-				//hoveringRenderable.entity->GetComponent<Nz::GraphicsComponent>().UpdateRenderOrder(renderable, renderOrder);
-				break;
-			}
-		}
-	}
-
-	void VisualEntity::UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix)
+	void VisualEntity::UpdateRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation)
 	{
 		for (auto& hoveringRenderable : m_renderables)
 		{
 			if (hoveringRenderable.renderable == renderable)
 			{
-				hoveringRenderable.entity->get<Nz::NodeComponent>().SetTransformMatrix(offsetMatrix);
+				hoveringRenderable.entity->get<Nz::NodeComponent>().SetTransform(offset, rotation);
 				break;
 			}
 		}
-	}
-
-	void VisualEntity::UpdateRenderableRenderOrder(const std::shared_ptr<Nz::InstancedRenderable>& renderable, int renderOrder)
-	{
-		//m_entity->GetComponent<Nz::GraphicsComponent>().UpdateRenderOrder(renderable, m_baseRenderOrder + renderOrder);
 	}
 }

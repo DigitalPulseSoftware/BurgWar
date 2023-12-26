@@ -21,7 +21,7 @@ namespace bw
 		std::filesystem::path gamemodePath = gamemodeFolder / gamemodeName;
 
 		auto& context = GetScriptingContext();
-		context->Load(gamemodePath / "shared.lua");
-		context->Load(gamemodePath / "cl_init.lua");
+		context->Load(gamemodePath / Nz::Utf8Path("shared.lua"));
+		context->Load(gamemodePath / Nz::Utf8Path("cl_init.lua"));
 	}
 }

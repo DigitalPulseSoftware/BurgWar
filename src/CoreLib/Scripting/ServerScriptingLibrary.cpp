@@ -106,7 +106,7 @@ namespace bw
 				if (path)
 				{
 					std::filesystem::path fullPath = context.GetCurrentFolder() / *path;
-					GetMatch().RegisterClientScript(fullPath.generic_u8string());
+					GetMatch().RegisterClientScript(Nz::PathToString(fullPath));
 				}
 				else
 				{
@@ -114,7 +114,7 @@ namespace bw
 					if (currentFilepath.empty())
 						throw ParameterError{ "RegisterClientScript cannot be called without argument outside of a file" };
 
-					GetMatch().RegisterClientScript(currentFilepath.generic_u8string());
+					GetMatch().RegisterClientScript(Nz::PathToString(currentFilepath));
 				}
 
 				return { true, sol::nil };

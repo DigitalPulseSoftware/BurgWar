@@ -183,7 +183,7 @@ namespace bw
 							OnDownloadError(this, request.fileIndex, errorCode);
 
 							if (!request.file.Delete())
-								bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath.generic_u8string());
+								bwLog(m_logger, LogLevel::Warning, "Failed to delete {0} after a download error", pendingDownload.outputPath);
 						}
 					}
 
@@ -192,17 +192,17 @@ namespace bw
 				});
 
 				std::filesystem::path directory = pendingDownload.outputPath.parent_path();
-				std::string filePath = pendingDownload.outputPath.generic_u8string();
+				std::string filePath = Nz::PathToString(pendingDownload.outputPath);
 
 				if (!directory.empty() && !std::filesystem::is_directory(directory))
 				{
 					if (!std::filesystem::create_directories(directory))
-						throw std::runtime_error("failed to create client script asset directory: " + directory.generic_u8string());
+						throw std::runtime_error("failed to create client script asset directory: " + Nz::PathToString(directory));
 				}
 
 				request.fileIndex = m_nextFileIndex;
 				request.hash->Begin();
-				request.file.Open(filePath, Nz::OpenMode::WriteOnly | Nz::OpenMode::Truncate);
+				request.file.Open(filePath, Nz::OpenMode::Write | Nz::OpenMode::Truncate);
 				request.keepInMemory = pendingDownload.keepInMemory;
 
 				m_webService.QueueRequest(std::move(webRequest));

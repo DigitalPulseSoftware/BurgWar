@@ -22,10 +22,10 @@ namespace bw
 
 		if (std::shared_ptr<Nz::Texture> backgroundTexture = appfs.Load<Nz::Texture>("assets/background.png"))
 		{
-			std::shared_ptr<Nz::MaterialInstance> mat = Nz::Graphics::Instance()->GetDefaultMaterials().basicNoDepth->Clone();
-			mat->SetTextureProperty("BaseColorMap", std::move(backgroundTexture));
+			std::shared_ptr<Nz::MaterialInstance> material = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::NoDepth);
+			material->SetTextureProperty("BaseColorMap", std::move(backgroundTexture));
 
-			m_backgroundSprite = std::make_shared<Nz::Sprite>(std::move(mat));
+			m_backgroundSprite = std::make_shared<Nz::Sprite>(std::move(material));
 
 			m_spriteEntity = stateData.world->CreateEntity();
 			m_spriteEntity->emplace<Nz::GraphicsComponent>().AttachRenderable(m_backgroundSprite, 1);

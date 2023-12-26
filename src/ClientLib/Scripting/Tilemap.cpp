@@ -19,7 +19,7 @@ namespace bw
 			return;
 
 		if (show)
-			m_visualEntity->AttachRenderable(m_tilemap, m_transformMatrix, m_renderOrder);
+			m_visualEntity->AttachRenderable(m_tilemap, m_offset, m_rotation);
 		else
 			m_visualEntity->DetachRenderable(m_tilemap);
 
@@ -41,8 +41,8 @@ namespace bw
 		m_tilemap->EnableTile(tilePos, tileData.textureCoords, color, tileData.layerIndex);
 	}
 
-	void Tilemap::UpdateTransformMatrix()
+	void Tilemap::UpdateTransform()
 	{
-		m_visualEntity->UpdateRenderableMatrix(m_tilemap, m_transformMatrix);
+		m_visualEntity->UpdateRenderableTransform(m_tilemap, m_offset, m_rotation);
 	}
 }

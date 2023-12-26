@@ -40,7 +40,7 @@ namespace bw
 		sol::state lua;
 		lua.open_libraries();
 
-		std::string path = filePath.generic_u8string();
+		std::string path = Nz::PathToString(filePath);
 
 		try
 		{
@@ -99,7 +99,7 @@ namespace bw
 		std::fstream file(filePath, std::ios::out | std::ios::trunc);
 		if (!file.is_open())
 		{
-			bwLog(m_app.GetLogger(), LogLevel::Error, "failed to open config file {0}: {1}", filePath.generic_u8string());
+			bwLog(m_app.GetLogger(), LogLevel::Error, "failed to open config file {0}", filePath);
 			return false;
 		}
 

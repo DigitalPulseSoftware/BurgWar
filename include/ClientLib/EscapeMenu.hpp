@@ -9,7 +9,6 @@
 
 #include <ClientLib/Export.hpp>
 #include <NazaraUtils/Signal.hpp>
-#include <Nazara/Renderer/RenderTarget.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <Nazara/Widgets/ButtonWidget.hpp>
 #include <Nazara/Widgets/Canvas.hpp>

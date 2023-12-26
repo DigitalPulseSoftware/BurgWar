@@ -37,8 +37,8 @@ namespace bw
 			LayerVisualEntity(LayerVisualEntity&& entity) noexcept;
 			virtual ~LayerVisualEntity();
 
-			void AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder, float hoveringHeight);
-			void AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Matrix4f& offsetMatrix, int renderOrder);
+			void AttachHoveringRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation, float hoveringHeight);
+			void AttachRenderable(std::shared_ptr<Nz::InstancedRenderable> renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation);
 			void DetachHoveringRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
 			void DetachRenderable(const std::shared_ptr<Nz::InstancedRenderable>& renderable);
 
@@ -59,8 +59,8 @@ namespace bw
 			void SyncVisuals();
 
 			void UpdateHoveringRenderableHoveringHeight(const std::shared_ptr<Nz::InstancedRenderable>& renderable, float newHoveringHeight);
-			void UpdateHoveringRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
-			void UpdateRenderableMatrix(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Matrix4f& offsetMatrix);
+			void UpdateHoveringRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation);
+			void UpdateRenderableTransform(const std::shared_ptr<Nz::InstancedRenderable>& renderable, const Nz::Vector3f& offset, const Nz::Quaternionf& rotation);
 			void UpdateScale(float newScale);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation);
 			void UpdateState(const Nz::Vector2f& position, const Nz::RadianAnglef& rotation, const Nz::Vector2f& linearVel, const Nz::RadianAnglef& angularVel);
@@ -76,8 +76,8 @@ namespace bw
 			struct RenderableData
 			{
 				std::shared_ptr<Nz::InstancedRenderable> renderable;
-				Nz::Matrix4f offsetMatrix;
-				int renderOrder;
+				Nz::Quaternionf rotation;
+				Nz::Vector3f offset;
 			};
 
 			struct HoveringRenderableData

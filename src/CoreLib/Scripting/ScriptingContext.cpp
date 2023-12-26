@@ -46,24 +46,24 @@ namespace bw
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					return LoadFile(file, arg);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
-					return tl::unexpected(file.generic_u8string() + " is a directory, expected a file");
+					return tl::unexpected(Nz::PathToString(file) + " is a directory, expected a file");
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
 			}, entry);
 		};
 
-		if (!m_scriptDirectory->GetEntry(file.generic_u8string(), Callback))
+		if (!m_scriptDirectory->GetEntry(Nz::PathToString(file), Callback))
 		{
-			result = tl::unexpected("unknown path " + file.generic_u8string());
+			result = tl::unexpected("unknown path " + Nz::PathToString(file));
 			if (logError && !result)
-				bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file.generic_u8string(), result.error());
+				bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.error());
 
 			return result;
 		}
 		
 		if (logError && !result)
-			bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file.generic_u8string(), result.error());
+			bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.error());
 
 		return result;
 	}
@@ -82,7 +82,7 @@ namespace bw
 					return LoadFile(file, arg, Async{});
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
-					bwLog(m_logger, LogLevel::Error, "{0} is a directory, expected a file", file.generic_u8string());
+					bwLog(m_logger, LogLevel::Error, "{0} is a directory, expected a file", file);
 					return {};
 				}
 				else
@@ -91,9 +91,9 @@ namespace bw
 			}, entry);
 		};
 
-		if (!m_scriptDirectory->GetEntry(file.generic_u8string(), Callback))
+		if (!m_scriptDirectory->GetEntry(Nz::PathToString(file), Callback))
 		{
-			bwLog(m_logger, LogLevel::Error, "Unknown path {0}", file.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "unknown path {0}", file);
 			return {};
 		}
 
@@ -109,7 +109,7 @@ namespace bw
 				using T = std::decay_t<decltype(arg)>;
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
-					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
+					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
 				else
@@ -118,9 +118,9 @@ namespace bw
 			}, entry);
 		};
 
-		if (!m_scriptDirectory->GetEntry(folder.generic_u8string(), Callback))
+		if (!m_scriptDirectory->GetEntry(Nz::PathToString(folder), Callback))
 		{
-			bwLog(m_logger, LogLevel::Error, "unknown path {0}", folder.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "unknown path {0}", folder);
 			return false;
 		}
 
@@ -136,7 +136,7 @@ namespace bw
 				using T = std::decay_t<decltype(arg)>;
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
-					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder.generic_u8string());
+					bwLog(m_logger, LogLevel::Error, "{0} is a file, expected a directory", folder);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 					LoadDirectory(folder, arg);
 				else
@@ -145,7 +145,7 @@ namespace bw
 			}, entry);
 		};
 
-		m_scriptDirectory->GetEntry(folder.generic_u8string(), Callback);
+		m_scriptDirectory->GetEntry(Nz::PathToString(folder), Callback);
 		return true;
 	}
 
@@ -252,7 +252,7 @@ namespace bw
 		if (!result.valid())
 		{
 			sol::error err = result;
-			return tl::unexpected("failed to load " + m_currentFile.generic_u8string() + ": " + err.what());
+			return tl::unexpected("failed to load " + Nz::PathToString(m_currentFile) + ": " + err.what());
 		}
 
 		return result;
@@ -265,7 +265,7 @@ namespace bw
 		if (!result.valid())
 		{
 			sol::error err = result;
-			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", path.generic_u8string(), err.what());
+			bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", path, err.what());
 			return {};
 		}
 
@@ -301,7 +301,7 @@ namespace bw
 			}, entry);
 
 			if (!result)
-				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath.generic_u8string(), result.error());
+				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath, result.error());
 		});
 	}
 
@@ -310,7 +310,7 @@ namespace bw
 		Nz::UInt64 fileSize = entry.stream->GetSize();
 		if (fileSize == 0)
 		{
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: unhandled streaming", path.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: unhandled streaming", path);
 			return {};
 		}
 
@@ -319,7 +319,7 @@ namespace bw
 		std::string content(fileSize, '\0');
 		if (entry.stream->Read(&content[0], fileSize) != fileSize)
 		{
-			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", path.generic_u8string());
+			bwLog(m_logger, LogLevel::Error, "Failed to load {0}: failed to read file", path);
 			return {};
 		}
 

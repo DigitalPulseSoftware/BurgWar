@@ -16,10 +16,7 @@
 
 int BurgWarGame(int argc, char* argv[])
 {
-	Nz::Renderer::Config config;
-	config.preferredAPI = Nz::RenderAPI::OpenGL;
-
-	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::Widgets> app(argc, argv, config);
+	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::Widgets> app(argc, argv);
 	app.AddComponent<Nz::AppEntitySystemComponent>();
 	app.AddComponent<Nz::AppFilesystemComponent>();
 	app.AddComponent<Nz::AppWindowingComponent>();

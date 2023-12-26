@@ -33,6 +33,7 @@
 #include <ClientLib/Components/ClientMatchComponent.hpp>
 #include <ClientLib/Systems/SoundSystem.hpp>
 #include <Nazara/Core/ApplicationBase.hpp>
+#include <Nazara/Graphics/FramePipeline.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
 #include <Nazara/Graphics/Systems/RenderSystem.hpp>
 #include <Nazara/Math/Angle.hpp>
@@ -46,17 +47,17 @@
 
 namespace bw
 {
-	ClientMatch::ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, Nz::RenderTarget* renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
+	ClientMatch::ClientMatch(ClientEditorAppComponent& burgApp, Nz::Window* window, std::shared_ptr<const Nz::RenderTarget> renderTarget, Nz::Canvas* canvas, Nz::EnttWorld& renderWorld, ClientSession& session, const Packets::AuthSuccess& authSuccess, const Packets::MatchData& matchData) :
 	SharedMatch(burgApp, LogSide::Client, "local", Nz::Time::Seconds(matchData.tickDuration)),
+	m_renderTarget(std::move(renderTarget)),
 	m_gamemodeName(matchData.gamemode),
 	m_canvas(canvas),
 	m_freeClientId(-1),
 	m_renderWorld(renderWorld),
-	m_renderTarget(renderTarget),
 	m_window(window),
 	m_activeLayerIndex(NoLayer),
 	m_averageTickError(20),
-	m_chatBox(GetLogger(), renderTarget, canvas),
+	m_chatBox(GetLogger(), *m_renderTarget, canvas),
 	m_application(burgApp),
 	m_session(session),
 	m_escapeMenu(burgApp, canvas),
@@ -103,7 +104,7 @@ namespace bw
 		m_currentLayer.emplace<Nz::NodeComponent>();
 		m_currentLayer.emplace<VisibleLayerComponent>(m_renderWorld, m_currentLayer);
 
-		m_camera.emplace(m_renderWorld, renderTarget, false);
+		m_camera.emplace(m_renderWorld, m_renderTarget, false);
 		m_camera->SetZoomFactor(0.8f);
 
 		InitializeRemoteConsole();
@@ -306,7 +307,7 @@ namespace bw
 			m_scriptingContext->LoadLibrary(std::make_shared<ClientEditorScriptingLibrary>(GetLogger(), *m_assetStore));
 
 			if (!m_localConsole)
-				m_localConsole.emplace(GetLogger(), m_renderTarget, m_canvas, scriptingLibrary, scriptDir);
+				m_localConsole.emplace(GetLogger(), *m_renderTarget, m_canvas, scriptingLibrary, scriptDir);
 		}
 		else
 		{
@@ -622,29 +623,28 @@ namespace bw
 				layer->PostFrameUpdate(elapsedTime);
 		}
 
-		/*Ndk::PhysicsSystem2D::DebugDrawOptions options;
-		options.polygonCallback = [](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, Nz::Color outline, Nz::Color fillColor, void* userData)
+		auto& debugDrawer = m_renderWorld.GetSystem<Nz::RenderSystem>().GetFramePipeline().GetDebugDrawer();
+
+		Nz::ChipmunkPhysWorld2D::DebugDrawOptions options;
+		options.polygonCallback = [&](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, const Nz::Color& outline, const Nz::Color& fillColor, void* userData)
 		{
-			//Nz::DebugDrawer::SetPrimaryColor(outline);
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
-				Nz::DebugDrawer::DrawLine(vertices[i], vertices[i + 1]);
+				debugDrawer.DrawLine(vertices[i], vertices[i + 1], outline);
 
-			Nz::DebugDrawer::DrawLine(vertices[vertexCount - 1], vertices[0]);
+			debugDrawer.DrawLine(vertices[vertexCount - 1], vertices[0], outline);
 		};
 
-		options.segmentCallback = [](const Nz::Vector2f& first, const Nz::Vector2f& second, Nz::Color color, void* userdata)
+		options.segmentCallback = [&](const Nz::Vector2f& first, const Nz::Vector2f& second, const Nz::Color& color, void* userdata)
 		{
-			//Nz::DebugDrawer::SetPrimaryColor(color);
-			Nz::DebugDrawer::DrawLine(first, second);
+			debugDrawer.DrawLine(first, second, color);
 		};
 
-		options.thickSegmentCallback = [](const Nz::Vector2f& first, const Nz::Vector2f& second, float thickness, Nz::Color outline, Nz::Color fillColor, void* userdata)
+		options.thickSegmentCallback = [&](const Nz::Vector2f& first, const Nz::Vector2f& second, float thickness, const Nz::Color& outline, const Nz::Color& fillColor, void* userdata)
 		{
-			//Nz::DebugDrawer::SetPrimaryColor(outline);
-			Nz::DebugDrawer::DrawLine(first, second);
+			debugDrawer.DrawLine(first, second, outline);
 		};
 
-		m_layers[0]->GetWorld().GetSystem<Ndk::PhysicsSystem2D>().DebugDraw(options);*/
+		m_layers[0]->GetSystemGraph().GetSystem<Nz::ChipmunkPhysics2DSystem>().GetPhysWorld().DebugDraw(options);
 
 		return true;
 	}
@@ -1655,7 +1655,7 @@ namespace bw
 
 	void ClientMatch::InitializeRemoteConsole()
 	{
-		m_remoteConsole.emplace(m_renderTarget, m_canvas);
+		m_remoteConsole.emplace(*m_renderTarget, m_canvas);
 		m_remoteConsole->SetExecuteCallback([this](const std::string& command) -> bool
 		{
 			Packets::PlayerConsoleCommand commandPacket;

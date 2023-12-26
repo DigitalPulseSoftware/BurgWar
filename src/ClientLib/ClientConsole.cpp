@@ -6,8 +6,8 @@
 
 namespace bw
 {
-	ClientConsole::ClientConsole(const Logger& logger, Nz::RenderTarget* window, Nz::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir) :
-	Console(window, canvas),
+	ClientConsole::ClientConsole(const Logger& logger, const Nz::RenderTarget& renderTarget, Nz::Canvas* canvas, std::shared_ptr<AbstractScriptingLibrary> scriptingLibrary, const std::shared_ptr<Nz::VirtualDirectory>& scriptDir) :
+	Console(renderTarget, canvas),
 	m_environment(logger, std::move(scriptingLibrary), scriptDir)
 	{
 		m_environment.SetOutputCallback([this](const std::string& text, Nz::Color color)

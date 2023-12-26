@@ -200,3 +200,7 @@ entity:On("init", function (self)
 	self:InitRigidBody(50)
 	self:SetMomentOfInertia(math.huge) -- Disable rotation
 end)
+
+entity:On("tick", function (self)
+	print(self:GetPosition())
+end)

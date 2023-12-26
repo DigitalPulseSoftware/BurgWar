@@ -74,7 +74,7 @@ namespace bw
 
 				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Info, "Downloaded {} ({})", fileEntry.downloadPath, ByteToString(downloadSpeed, true));
 
-				std::shared_ptr<Nz::File> file = std::make_shared<Nz::File>(realPath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer);
+				std::shared_ptr<Nz::File> file = std::make_shared<Nz::File>(realPath, Nz::OpenMode::Read | Nz::OpenMode::Defer);
 				if (isAsset)
 					m_targetAssetDirectory->StoreFile(fileEntry.downloadPath, std::move(file));
 				else
@@ -252,16 +252,16 @@ namespace bw
 			std::string hexChecksum = expectedChecksum.ToHex();
 
 			std::filesystem::path cachePath = cacheDir / Nz::Utf8Path(resource.path);
-			cachePath.replace_extension(hexChecksum + cachePath.extension().generic_u8string());
+			cachePath.replace_extension(hexChecksum + Nz::PathToString(cachePath.extension()));
 
 			if (std::filesystem::is_regular_file(cachePath))
 			{
 				std::size_t fileSize = std::filesystem::file_size(cachePath);
 				if (fileSize == resource.size)
 				{
-					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType::SHA1, cachePath.generic_u8string()))
+					if (expectedChecksum == Nz::File::ComputeHash(Nz::HashType::SHA1, cachePath))
 					{
-						targetDir->StoreFile(resource.path, std::make_unique<Nz::File>(cachePath, Nz::OpenMode::ReadOnly | Nz::OpenMode::Defer));
+						targetDir->StoreFile(resource.path, std::make_unique<Nz::File>(cachePath, Nz::OpenMode::Read | Nz::OpenMode::Defer));
 						continue;
 					}
 				}

@@ -16,7 +16,7 @@ namespace bw
 	{
 		StateData& stateData = GetStateData();
 
-		m_match = std::make_shared<ClientMatch>(*stateData.appComponent, stateData.window, stateData.swapchain, &stateData.canvas.value(), *stateData.world, *m_clientSession, authSuccess, matchData);
+		m_match = std::make_shared<ClientMatch>(*stateData.appComponent, stateData.window, stateData.renderTarget, &stateData.canvas.value(), *stateData.world, *m_clientSession, authSuccess, matchData);
 		m_match->LoadAssets(std::move(assetDirectory));
 		m_match->LoadScripts(std::move(scriptDirectory));
 
