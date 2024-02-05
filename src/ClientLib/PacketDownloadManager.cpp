@@ -4,6 +4,7 @@
 
 #include <ClientLib/PacketDownloadManager.hpp>
 #include <CoreLib/Utils.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 
 namespace bw
 {

@@ -63,10 +63,10 @@ namespace bw
 	{
 		auto& entityStore = GetMatch().GetEntityStore();
 		entt::registry& registry = GetWorld();
-		GetWorld().each([&](entt::entity entity)
+		for (auto [entity] : registry.storage<entt::entity>().each())
 		{
 			if (!entityStore.InitializeEntity(entt::handle(registry, entity)))
-			registry.destroy(entity);
-		});
+				registry.destroy(entity);
+		}
 	}
 }

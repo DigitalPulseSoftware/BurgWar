@@ -8,7 +8,7 @@
 #include <Client/ClientAppComponent.hpp>
 #include <Client/States/BackgroundState.hpp>
 #include <Client/States/Game/ConnectionLostState.hpp>
-#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Core/FilesystemAppComponent.hpp>
 #include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
@@ -77,7 +77,7 @@ namespace bw
 	{
 		if (!m_connectionLostSprite)
 		{
-			auto& appfs = GetStateData().app->GetComponent<Nz::AppFilesystemComponent>();
+			auto& appfs = GetStateData().app->GetComponent<Nz::FilesystemAppComponent>();
 
 			std::shared_ptr<Nz::MaterialInstance> connectionLostMat = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::Transparent);
 			connectionLostMat->SetTextureProperty("BaseColorMap", appfs.Load<Nz::Texture>("assets/connection.png"));

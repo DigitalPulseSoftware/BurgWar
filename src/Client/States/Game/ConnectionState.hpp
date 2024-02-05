@@ -11,7 +11,7 @@
 #include <Client/States/Game/CancelableState.hpp>
 #include <Nazara/Network/IpAddress.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
-#include <tl/expected.hpp>
+#include <NazaraUtils/Result.hpp>
 #include <optional>
 #include <thread>
 #include <variant>
@@ -50,7 +50,7 @@ namespace bw
 			{
 				std::atomic_bool hasResult = false;
 				std::thread thread;
-				tl::expected<std::vector<Nz::IpAddress>, std::string /*error*/> result;
+				Nz::Result<std::vector<Nz::IpAddress>, std::string /*error*/> result = Nz::Err("");
 				ServerName serverName;
 			};
 

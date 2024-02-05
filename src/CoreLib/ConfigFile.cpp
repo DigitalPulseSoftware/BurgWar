@@ -5,6 +5,7 @@
 #include <CoreLib/ConfigFile.hpp>
 #include <CoreLib/BurgAppComponent.hpp>
 #include <CoreLib/Utils.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <sol/sol.hpp>
 #include <fstream>
 
@@ -192,9 +193,9 @@ namespace bw
 							{
 								auto valueOrErr = option.validation(std::move(optionValue));
 								if (!valueOrErr)
-									throw std::runtime_error("option value failed validation: " + valueOrErr.error());
+									throw std::runtime_error("option value failed validation: " + valueOrErr.GetError());
 
-								optionValue = std::move(valueOrErr).value();
+								optionValue = std::move(valueOrErr).GetValue();
 							}
 						}
 
@@ -341,11 +342,11 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.GetError());
 				return false;
 			}
 
-			value = valueOrErr.value();
+			value = valueOrErr.GetValue();
 		}
 
 		if (option.value != value)
@@ -379,11 +380,11 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.GetError());
 				return false;
 			}
 
-			value = valueOrErr.value();
+			value = valueOrErr.GetValue();
 		}
 
 		if (option.value != value)
@@ -406,11 +407,11 @@ namespace bw
 			auto valueOrErr = option.validation(value);
 			if (!valueOrErr)
 			{
-				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.error());
+				bwLog(m_app.GetLogger(), LogLevel::Error, "option {0} value ({1}) failed validation: {2}", m_options[optionIndex].name, value, valueOrErr.GetError());
 				return false;
 			}
 
-			value = std::move(valueOrErr).value();
+			value = std::move(valueOrErr).GetValue();
 		}
 
 		if (option.value != value)

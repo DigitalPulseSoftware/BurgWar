@@ -186,10 +186,8 @@ namespace bw
 		{
 			auto& layer = m_terrain->GetLayer(i);
 			entt::registry& registry = layer.GetWorld();
-			registry.each([&](entt::entity entity)
-			{
+			for (auto [entity] : registry.storage<entt::entity>().each())
 				func(entt::handle(registry, entity));
-			});
 		}
 	}
 

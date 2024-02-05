@@ -16,23 +16,23 @@ namespace bw
 		RegisterIntegerOption("ServerSettings.Port", 1, 0xFFFF, 14768);
 		RegisterBoolOption("ServerSettings.SleepWhenEmpty", true);
 
-		RegisterStringOption("ServerSettings.Description", "", [](std::string value) -> tl::expected<std::string, std::string>
+		RegisterStringOption("ServerSettings.Description", "", [](std::string value) -> Nz::Result<std::string, std::string>
 		{
 			if (value.size() > 1024)
-				return tl::make_unexpected("description is too long");
+				return Nz::Err("description is too long");
 
-			return value;
+			return Nz::Ok(std::move(value));
 		});
 
-		RegisterStringOption("ServerSettings.Name", "a server has no name", [](std::string value) -> tl::expected<std::string, std::string>
+		RegisterStringOption("ServerSettings.Name", "a server has no name", [](std::string value) -> Nz::Result<std::string, std::string>
 		{
 			if (value.empty())
-				return tl::make_unexpected("name cannot be empty");
+				return Nz::Err("name cannot be empty");
 
 			if (value.size() > 32)
-				return tl::make_unexpected("name is too long");
+				return Nz::Err("name is too long");
 
-			return value;
+			return Nz::Ok(std::move(value));
 		});
 	}
 }

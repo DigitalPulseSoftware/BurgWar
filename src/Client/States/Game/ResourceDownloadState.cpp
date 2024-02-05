@@ -8,7 +8,7 @@
 #include <ClientLib/PacketDownloadManager.hpp>
 #include <Client/ClientAppComponent.hpp>
 #include <Client/States/Game/GameState.hpp>
-#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Core/FilesystemAppComponent.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <sstream>
 
@@ -23,7 +23,7 @@ namespace bw
 		ClientAppComponent* app = GetStateData().appComponent;
 		const ConfigFile& config = app->GetConfig();
 
-		auto& appfs = GetStateData().app->GetComponent<Nz::AppFilesystemComponent>();
+		auto& appfs = GetStateData().app->GetComponent<Nz::FilesystemAppComponent>();
 
 		bwLog(app->GetLogger(), LogLevel::Info, "Downloading resources...");
 

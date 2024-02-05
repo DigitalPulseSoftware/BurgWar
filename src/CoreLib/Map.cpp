@@ -7,6 +7,7 @@
 #include <CoreLib/Version.hpp>
 #include <CoreLib/Utils.hpp>
 #include <NazaraUtils/Bitset.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Core/ErrorFlags.hpp>
 #include <Nazara/Core/File.hpp>

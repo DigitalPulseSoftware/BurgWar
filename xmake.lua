@@ -36,6 +36,7 @@ add_includedirs("include", "src")
 
 add_rpathdirs("@executable_path")
 
+set_exceptions("cxx")
 set_languages("c89", "cxx20")
 set_rundir("./bin/$(plat)_$(arch)_$(mode)")
 set_symbols("debug", "hidden")

@@ -103,8 +103,8 @@ namespace bw
 			std::vector<Nz::HostnameInfo> serverAddresses = Nz::IpAddress::ResolveHostname(Nz::NetProtocol::Any, m_resolvingData->serverName.hostname, std::to_string(name.port), &resolveError);
 			if (serverAddresses.empty())
 			{
-				m_resolvingData->result = tl::unexpected<std::string>(Nz::ErrorToString(resolveError));
-				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Debug, "resolution of {0}:{1} failed: {2}", m_resolvingData->serverName.hostname, name.port, m_resolvingData->result.error());
+				m_resolvingData->result = Nz::Err(Nz::ErrorToString(resolveError));
+				bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Debug, "resolution of {0}:{1} failed: {2}", m_resolvingData->serverName.hostname, name.port, m_resolvingData->result.GetError());
 			}
 			else
 			{
@@ -160,15 +160,15 @@ namespace bw
 			{
 				m_resolvingData->thread.join();
 
-				if (m_resolvingData->result.has_value())
+				if (m_resolvingData->result)
 				{
 					// Register resolved addresses as next addresses
-					const auto& addresses = m_resolvingData->result.value();
+					const auto& addresses = m_resolvingData->result.GetValue();
 					for (auto resultIt = addresses.rbegin(); resultIt != addresses.rend(); ++resultIt)
 						m_addresses.emplace(m_addresses.begin() + m_currentAddressIndex, *resultIt);
 				}
 				else
-					bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Error, "hostname resolution of {0} failed: {1}", m_resolvingData->serverName.hostname, m_resolvingData->result.error());
+					bwLog(GetStateData().appComponent->GetLogger(), LogLevel::Error, "hostname resolution of {0} failed: {1}", m_resolvingData->serverName.hostname, m_resolvingData->result.GetError());
 
 				m_resolvingData.reset();
 				ProcessNextAddress();

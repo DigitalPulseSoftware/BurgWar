@@ -10,10 +10,8 @@ namespace bw
 	template<typename F>
 	void SharedLayer::ForEachEntity(F&& func)
 	{
-		m_registry.each([&](entt::entity entity)
-		{
+		for (auto [entity] : m_registry.storage<entt::entity>().each())
 			func(entt::handle(m_registry, entity));
-		});
 	}
 
 	inline LayerIndex SharedLayer::GetLayerIndex() const

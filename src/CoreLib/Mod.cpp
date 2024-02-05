@@ -5,6 +5,7 @@
 #include <CoreLib/Mod.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <Nazara/Core/File.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <nlohmann/json.hpp>
 
 namespace bw

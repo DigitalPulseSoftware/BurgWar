@@ -1,0 +1,77 @@
+{
+	"assets": [],
+	"author": "",
+	"description": "",
+	"gameVersion": "0.2.1",
+	"layers": [
+		{
+			"backgroundColor": {
+				"b": 0,
+				"g": 0,
+				"r": 0
+			},
+			"entities": [
+				{
+					"entityType": "entity_spawnpoint",
+					"name": "",
+					"position": {
+						"x": 313.0,
+						"y": 311.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 1
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 355.0,
+						"y": 3075.0
+					},
+					"properties": {
+						"dynamic": {
+							"type": "Bool",
+							"value": false
+						},
+						"size": {
+							"type": "Float",
+							"value": 100.0
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 2
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 194.0,
+						"y": 381.0
+					},
+					"properties": {
+						"dynamic": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 3
+				},
+				{
+					"entityType": "entity_box",
+					"name": "",
+					"position": {
+						"x": 528.0,
+						"y": 319.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 4
+				}
+			],
+			"name": "Layer #1"
+		}
+	],
+	"name": "Test_next"
+}

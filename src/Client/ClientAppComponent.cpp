@@ -3,14 +3,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <Client/ClientAppComponent.hpp>
-#include <Nazara/Core/AppEntitySystemComponent.hpp>
-#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Core/EntitySystemAppComponent.hpp>
+#include <Nazara/Core/FilesystemAppComponent.hpp>
 #include <Nazara/Core/EnttWorld.hpp>
 #include <Nazara/Graphics/RenderWindow.hpp>
 #include <Nazara/Graphics/Components.hpp>
 #include <Nazara/Graphics/Systems.hpp>
 #include <Nazara/Utility/Components.hpp>
-#include <Nazara/Platform/AppWindowingComponent.hpp>
+#include <Nazara/Platform/WindowingAppComponent.hpp>
 #include <Nazara/Widgets.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Version.hpp>
@@ -33,7 +33,7 @@ namespace bw
 		if (!m_configFile.LoadFromFile("clientconfig.lua"))
 			throw std::runtime_error("failed to load config file");
 
-		Nz::AppFilesystemComponent& appFilesystem = app.GetComponent<Nz::AppFilesystemComponent>();
+		Nz::FilesystemAppComponent& appFilesystem = app.GetComponent<Nz::FilesystemAppComponent>();
 		appFilesystem.Mount("assetCache",  Nz::Utf8Path(m_configFile.GetStringValue("Resources.AssetCacheDirectory")));
 		appFilesystem.Mount("assets",      Nz::Utf8Path(m_configFile.GetStringValue("Resources.AssetDirectory")));
 		appFilesystem.Mount("mods",        Nz::Utf8Path(m_configFile.GetStringValue("Resources.ModDirectory")));
@@ -69,10 +69,10 @@ namespace bw
 		else
 			chosenVideoMode = Nz::VideoMode(width, height);
 
-		auto& windowingComponent = app.GetComponent<Nz::AppWindowingComponent>();
+		auto& windowingComponent = app.GetComponent<Nz::WindowingAppComponent>();
 		m_mainWindow = &windowingComponent.CreateWindow(chosenVideoMode, "Burg'war", (fullscreen) ? Nz::WindowStyle::Fullscreen : Nz::WindowStyle_Default);
 
-		auto& ecsComponent = app.GetComponent<Nz::AppEntitySystemComponent>();
+		auto& ecsComponent = app.GetComponent<Nz::EntitySystemAppComponent>();
 
 		Nz::EnttWorld& world = ecsComponent.AddWorld<Nz::EnttWorld>();
 

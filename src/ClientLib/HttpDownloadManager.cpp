@@ -6,6 +6,7 @@
 #include <CoreLib/LogSystem/Logger.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/File.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <algorithm>
 #include <stdexcept>
 

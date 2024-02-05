@@ -10,6 +10,7 @@
 #include <CoreLib/Scripting/RandomEngine.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 
 namespace bw
 {

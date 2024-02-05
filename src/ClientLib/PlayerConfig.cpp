@@ -21,15 +21,15 @@ namespace bw
 		RegisterIntegerOption("Sound.EffectVolume", 0, 100, 100);
 		RegisterIntegerOption("Sound.MusicVolume", 0, 100, 60);
 		
-		RegisterStringOption("Player.Name", "mingebag", [](std::string value) -> tl::expected<std::string, std::string>
+		RegisterStringOption("Player.Name", "mingebag", [](std::string value) -> Nz::Result<std::string, std::string>
 		{
 			if (value.empty())
-				return tl::make_unexpected("name cannot be empty");
+				return Nz::Err("name cannot be empty");
 
 			if (value.size() > 32)
-				return tl::make_unexpected("name is too long");
+				return Nz::Err("name is too long");
 
-			return value;
+			return Nz::Ok(std::move(value));
 		});
 	}
 }

@@ -7,6 +7,7 @@
 #include <CoreLib/SharedMatch.hpp>
 #include <CoreLib/Utils.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <Nazara/Core/File.hpp>
 #include <filesystem>
 

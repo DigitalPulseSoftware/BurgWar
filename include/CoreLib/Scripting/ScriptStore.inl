@@ -8,6 +8,7 @@
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
+#include <NazaraUtils/PathUtils.hpp>
 #include <cassert>
 #include <filesystem>
 #include <sstream>

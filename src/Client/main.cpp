@@ -5,10 +5,10 @@
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Core/Application.hpp>
-#include <Nazara/Core/AppEntitySystemComponent.hpp>
-#include <Nazara/Core/AppFilesystemComponent.hpp>
+#include <Nazara/Core/EntitySystemAppComponent.hpp>
+#include <Nazara/Core/FilesystemAppComponent.hpp>
 #include <Nazara/Graphics/Graphics.hpp>
-#include <Nazara/Platform/AppWindowingComponent.hpp>
+#include <Nazara/Platform/WindowingAppComponent.hpp>
 #include <Nazara/Network/Network.hpp>
 #include <Nazara/Widgets/Widgets.hpp>
 #include <Client/ClientAppComponent.hpp>
@@ -17,9 +17,9 @@
 int BurgWarGame(int argc, char* argv[])
 {
 	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::Widgets> app(argc, argv);
-	app.AddComponent<Nz::AppEntitySystemComponent>();
-	app.AddComponent<Nz::AppFilesystemComponent>();
-	app.AddComponent<Nz::AppWindowingComponent>();
+	app.AddComponent<Nz::EntitySystemAppComponent>();
+	app.AddComponent<Nz::FilesystemAppComponent>();
+	app.AddComponent<Nz::WindowingAppComponent>();
 	app.AddComponent<bw::ClientAppComponent>(argc, argv);
 	//app.EnableFPSCounter(true);
 
