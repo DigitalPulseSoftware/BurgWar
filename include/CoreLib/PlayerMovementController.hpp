@@ -13,8 +13,8 @@
 
 namespace Nz
 {
-	class ChipmunkArbiter2D;
-	class ChipmunkRigidBody2D;
+	class PhysArbiter2D;
+	class RigidBody2D;
 }
 
 namespace bw
@@ -28,9 +28,9 @@ namespace bw
 			PlayerMovementController() = default;
 			virtual ~PlayerMovementController();
 
-			virtual bool PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity collisionBody, Nz::ChipmunkArbiter2D& arbiter) const;
+			virtual bool PreSolveCollision(PlayerMovementComponent& playerMovement, entt::entity collisionBody, Nz::PhysArbiter2D& arbiter) const;
 
-			virtual void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::ChipmunkRigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const = 0;
+			virtual void UpdateVelocity(const PlayerInputData& inputs, PlayerMovementComponent& playerMovement, Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt) const = 0;
 	};
 }
 

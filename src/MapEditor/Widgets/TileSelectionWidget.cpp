@@ -9,7 +9,7 @@
 #include <Nazara/Graphics/TileMap.hpp>
 #include <Nazara/Platform/EventHandler.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolBar>

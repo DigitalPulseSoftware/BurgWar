@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Core/ObjectRef.hpp>
-#include <Nazara/Utility/Image.hpp>
+#include <Nazara/Core/Image.hpp>
 #include <tsl/hopscotch_map.h>
 
 namespace bw

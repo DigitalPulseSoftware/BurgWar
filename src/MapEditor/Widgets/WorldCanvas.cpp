@@ -5,7 +5,7 @@
 #include <MapEditor/Widgets/WorldCanvas.hpp>
 #include <Nazara/Graphics/ColorBackground.hpp>
 #include <NDK/Components/CameraComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <NDK/Systems/PhysicsSystem2D.hpp>
 #include <Nazara/Graphics/Systems/RenderSystem.hpp>
 

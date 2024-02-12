@@ -10,7 +10,7 @@
 #include <Nazara/Graphics/Sprite.hpp>
 #include <NDK/Components/CameraComponent.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMessageBox>
 

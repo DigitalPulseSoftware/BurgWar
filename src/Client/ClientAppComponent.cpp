@@ -9,7 +9,7 @@
 #include <Nazara/Graphics/RenderWindow.hpp>
 #include <Nazara/Graphics/Components.hpp>
 #include <Nazara/Graphics/Systems.hpp>
-#include <Nazara/Utility/Components.hpp>
+#include <Nazara/Core/Components.hpp>
 #include <Nazara/Platform/WindowingAppComponent.hpp>
 #include <Nazara/Widgets.hpp>
 #include <CoreLib/Match.hpp>

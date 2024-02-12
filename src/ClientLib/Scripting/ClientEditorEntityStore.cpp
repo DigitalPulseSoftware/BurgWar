@@ -10,8 +10,8 @@
 #include <ClientLib/LocalPlayerInputController.hpp>
 #include <Nazara/Graphics/Sprite.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

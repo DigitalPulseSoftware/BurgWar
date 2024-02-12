@@ -25,7 +25,7 @@
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkCollider2D.hpp>
+#include <Nazara/Physics2D/Collider2D.hpp>
 
 namespace bw
 {

@@ -13,9 +13,9 @@
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Player.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/ChipmunkPhysics2D/Systems/ChipmunkPhysics2DSystem.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -166,7 +166,7 @@ namespace bw
 
 		if (CollisionDataComponent* entityCollData = entity.try_get<CollisionDataComponent>())
 		{
-			auto& entityCollider = entity.get<Nz::ChipmunkRigidBody2DComponent>();
+			auto& entityCollider = entity.get<Nz::RigidBody2DComponent>();
 
 			entityCollider.SetGeom(entityCollData->BuildCollider(newScale), false, false);
 		}

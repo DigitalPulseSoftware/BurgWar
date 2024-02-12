@@ -40,8 +40,8 @@
 #include <Nazara/Network/Algorithm.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Platform/Keyboard.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <cassert>
 #include <fstream>
 
@@ -625,7 +625,7 @@ namespace bw
 
 		auto& debugDrawer = m_renderWorld.GetSystem<Nz::RenderSystem>().GetFramePipeline().GetDebugDrawer();
 
-		Nz::ChipmunkPhysWorld2D::DebugDrawOptions options;
+		Nz::PhysWorld2D::DebugDrawOptions options;
 		options.polygonCallback = [&](const Nz::Vector2f* vertices, std::size_t vertexCount, float radius, const Nz::Color& outline, const Nz::Color& fillColor, void* userData)
 		{
 			for (std::size_t i = 0; i < vertexCount - 1; ++i)
@@ -644,7 +644,7 @@ namespace bw
 			debugDrawer.DrawLine(first, second, outline);
 		};
 
-		m_layers[0]->GetSystemGraph().GetSystem<Nz::ChipmunkPhysics2DSystem>().GetPhysWorld().DebugDraw(options);
+		m_layers[0]->GetSystemGraph().GetSystem<Nz::Physics2DSystem>().GetPhysWorld().DebugDraw(options);
 
 		return true;
 	}
@@ -1491,7 +1491,7 @@ namespace bw
 					if (playerInputData.movement)
 					{
 						auto& playerMovement = controlledEntity.get<PlayerMovementComponent>();
-						auto& playerPhysics = controlledEntity.get<Nz::ChipmunkRigidBody2DComponent>();
+						auto& playerPhysics = controlledEntity.get<Nz::RigidBody2DComponent>();
 						playerMovement.UpdateGroundState(playerInputData.movement->isOnGround);
 						playerMovement.UpdateJumpTime(playerInputData.movement->jumpTime);
 						playerMovement.UpdateWasJumpingState(playerInputData.movement->wasJumping);
@@ -1735,7 +1735,7 @@ namespace bw
 					auto entity = controllerData.controlledEntity->GetEntity();
 					if (PlayerMovementComponent* playerMovement = entity.try_get<PlayerMovementComponent>())
 					{
-						auto& playerPhysics = entity.get<Nz::ChipmunkRigidBody2DComponent>();
+						auto& playerPhysics = entity.get<Nz::RigidBody2DComponent>();
 
 						auto& movementData = playerData.movement.emplace();
 						movementData.isOnGround = playerMovement->IsOnGround();

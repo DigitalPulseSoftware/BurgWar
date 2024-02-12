@@ -10,13 +10,14 @@
 #include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Platform/WindowingAppComponent.hpp>
 #include <Nazara/Network/Network.hpp>
+#include <Nazara/TextRenderer/TextRenderer.hpp>
 #include <Nazara/Widgets/Widgets.hpp>
 #include <Client/ClientAppComponent.hpp>
 #include <Main/Main.hpp>
 
 int BurgWarGame(int argc, char* argv[])
 {
-	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::Widgets> app(argc, argv);
+	Nz::Application<Nz::Audio, Nz::Graphics, Nz::Network, Nz::TextRenderer, Nz::Widgets> app(argc, argv);
 	app.AddComponent<Nz::EntitySystemAppComponent>();
 	app.AddComponent<Nz::FilesystemAppComponent>();
 	app.AddComponent<Nz::WindowingAppComponent>();

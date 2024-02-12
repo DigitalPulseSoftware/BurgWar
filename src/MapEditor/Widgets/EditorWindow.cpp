@@ -21,7 +21,7 @@
 #include <MapEditor/Widgets/MapCanvas.hpp>
 #include <MapEditor/Widgets/FileDescDialog.hpp>
 #include <MapEditor/Widgets/PlayWindow.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <QtCore/QSettings>
 #include <QtCore/QStringBuilder>
 #include <QtGui/QKeyEvent>

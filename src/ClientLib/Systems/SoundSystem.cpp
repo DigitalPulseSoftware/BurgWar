@@ -6,7 +6,7 @@
 #include <CoreLib/ConfigFile.hpp>
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
 #include <array>
 

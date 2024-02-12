@@ -10,7 +10,7 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/LayerIndex.hpp>
 #include <Nazara/Core/EnttSystemGraph.hpp>
-#include <Nazara/ChipmunkPhysics2D/Systems/ChipmunkPhysics2DSystem.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
 #include <entt/entt.hpp>
 
 namespace bw
@@ -29,7 +29,7 @@ namespace bw
 
 			inline LayerIndex GetLayerIndex() const;
 			inline SharedMatch& GetMatch();
-			inline Nz::ChipmunkPhysics2DSystem& GetPhysicsSystem();
+			inline Nz::Physics2DSystem& GetPhysicsSystem();
 			inline entt::registry& GetWorld();
 			inline const entt::registry& GetWorld() const;
 

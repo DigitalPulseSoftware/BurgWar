@@ -13,7 +13,7 @@
 #include <Nazara/Network/IpAddress.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 #include <Nazara/Widgets.hpp>
 #include <cassert>
 #include <chrono>

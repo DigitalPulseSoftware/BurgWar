@@ -7,7 +7,7 @@
 
 namespace bw
 {
-	std::shared_ptr<Nz::ChipmunkCollider2D> CollisionDataComponent::BuildCollider(float scale) const
+	std::shared_ptr<Nz::Collider2D> CollisionDataComponent::BuildCollider(float scale) const
 	{
 		if (m_colliders.empty())
 		{
@@ -23,29 +23,29 @@ namespace bw
 		{
 			// Multiple colliders
 
-			std::vector<std::shared_ptr<Nz::ChipmunkCollider2D>> simpleColliders;
+			std::vector<std::shared_ptr<Nz::Collider2D>> simpleColliders;
 			simpleColliders.reserve(m_colliders.size());
 
 			for (const auto& collider : m_colliders)
 				simpleColliders.emplace_back(ToCollider(collider, scale));
 
-			std::shared_ptr<Nz::ChipmunkCompoundCollider2D> compound = std::make_shared<Nz::ChipmunkCompoundCollider2D>(std::move(simpleColliders));
+			std::shared_ptr<Nz::CompoundCollider2D> compound = std::make_shared<Nz::CompoundCollider2D>(std::move(simpleColliders));
 			compound->OverridesCollisionProperties(false);
 
 			return compound;
 		}
 	}
 
-	std::shared_ptr<Nz::ChipmunkCollider2D> CollisionDataComponent::ToCollider(const Collider& collider, float scale)
+	std::shared_ptr<Nz::Collider2D> CollisionDataComponent::ToCollider(const Collider& collider, float scale)
 	{
-		return std::visit([&](auto&& arg) -> std::shared_ptr<Nz::ChipmunkCollider2D>
+		return std::visit([&](auto&& arg) -> std::shared_ptr<Nz::Collider2D>
 		{
 			using T = std::decay_t<decltype(arg)>;
 
-			std::shared_ptr<Nz::ChipmunkCollider2D> collider;
+			std::shared_ptr<Nz::Collider2D> collider;
 
 			if constexpr (std::is_same_v<T, CircleCollider>)
-				collider = std::make_shared<Nz::ChipmunkCircleCollider2D>(arg.radius * scale, arg.offset * scale);
+				collider = std::make_shared<Nz::CircleCollider2D>(arg.radius * scale, arg.offset * scale);
 			else if constexpr (std::is_same_v<T, RectangleCollider>)
 			{
 				Nz::Rectf scaledRect = arg.data;
@@ -54,10 +54,10 @@ namespace bw
 				scaledRect.width *= scale;
 				scaledRect.height *= scale;
 
-				collider = std::make_shared<Nz::ChipmunkBoxCollider2D>(scaledRect);
+				collider = std::make_shared<Nz::BoxCollider2D>(scaledRect);
 			}
 			else if constexpr (std::is_same_v<T, SegmentCollider>)
-				collider = std::make_shared<Nz::ChipmunkSegmentCollider2D>(arg.from * scale, arg.fromNeighbor * scale, arg.to * scale, arg.toNeighbor * scale);
+				collider = std::make_shared<Nz::SegmentCollider2D>(arg.from * scale, arg.fromNeighbor * scale, arg.to * scale, arg.toNeighbor * scale);
 			else
 				static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 

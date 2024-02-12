@@ -5,7 +5,7 @@
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/ClientLayerSound.hpp>
 #include <ClientLib/Components/SoundEmitterComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

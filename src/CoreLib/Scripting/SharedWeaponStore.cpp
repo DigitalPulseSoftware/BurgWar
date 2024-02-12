@@ -11,7 +11,7 @@
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
 #include <Nazara/Core/Clock.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <stdexcept>
 
 namespace bw

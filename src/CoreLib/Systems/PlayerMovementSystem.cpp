@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkArbiter2D.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/PhysArbiter2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <CoreLib/PlayerMovementController.hpp>
 #include <CoreLib/Components/InputComponent.hpp>
 #include <CoreLib/Components/PlayerMovementComponent.hpp>
@@ -14,7 +14,7 @@
 namespace bw
 {
 	PlayerMovementSystem::PlayerMovementSystem(entt::registry& registry) :
-	m_controllerObserver(registry, entt::collector.group<InputComponent, PlayerMovementComponent, Nz::ChipmunkRigidBody2DComponent>()),
+	m_controllerObserver(registry, entt::collector.group<InputComponent, PlayerMovementComponent, Nz::RigidBody2DComponent>()),
 	m_registry(registry)
 	{
 		m_inputDestroyConnection = registry.on_destroy<InputComponent>().connect<&PlayerMovementSystem::OnInputDestroy>(this);
@@ -33,8 +33,8 @@ namespace bw
 		{
 			assert(m_inputControlledEntities.find(entity) == m_inputControlledEntities.end());
 
-			auto& entityPhys = m_registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
-			entityPhys.SetVelocityFunction([handle = entt::handle(m_registry, entity)](Nz::ChipmunkRigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt)
+			auto& entityPhys = m_registry.get<Nz::RigidBody2DComponent>(entity);
+			entityPhys.SetVelocityFunction([handle = entt::handle(m_registry, entity)](Nz::RigidBody2D& rigidBody, const Nz::Vector2f& gravity, float damping, float dt)
 			{
 				auto& movementComponent = handle.get<PlayerMovementComponent>();
 
@@ -53,20 +53,20 @@ namespace bw
 			m_inputControlledEntities.emplace(entity);
 		});
 
-		auto view = m_registry.view<InputComponent, PlayerMovementComponent, Nz::NodeComponent, Nz::ChipmunkRigidBody2DComponent>();
+		auto view = m_registry.view<InputComponent, PlayerMovementComponent, Nz::NodeComponent, Nz::RigidBody2DComponent>();
 		for (entt::entity entity : view)
 		{
 			auto& inputComponent = view.get<InputComponent>(entity);
 			auto& playerMovement = view.get<PlayerMovementComponent>(entity);
 			auto& nodeComponent = view.get<Nz::NodeComponent>(entity);
-			auto& entityPhys = view.get<Nz::ChipmunkRigidBody2DComponent>(entity);
+			auto& entityPhys = view.get<Nz::RigidBody2DComponent>(entity);
 
 			const auto& inputs = inputComponent.GetInputs();
 			
 			Nz::Vector2f up = Nz::Vector2f::UnitY();
 
 			bool isOnGround = false;
-			entityPhys.ForEachArbiter([&](Nz::ChipmunkArbiter2D& arbiter)
+			entityPhys.ForEachArbiter([&](Nz::PhysArbiter2D& arbiter)
 			{
 				if (up.DotProduct(arbiter.GetNormal()) > 0.75f)
 					isOnGround = true;
@@ -87,7 +87,7 @@ namespace bw
 		if (it == m_inputControlledEntities.end())
 			return;
 
-		auto& entityPhys = registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
+		auto& entityPhys = registry.get<Nz::RigidBody2DComponent>(entity);
 		entityPhys.ResetVelocityFunction();
 
 		m_inputControlledEntities.erase(it);
@@ -99,7 +99,7 @@ namespace bw
 		if (it == m_inputControlledEntities.end())
 			return;
 
-		auto& entityPhys = registry.get<Nz::ChipmunkRigidBody2DComponent>(entity);
+		auto& entityPhys = registry.get<Nz::RigidBody2DComponent>(entity);
 		entityPhys.ResetVelocityFunction();
 
 		m_inputControlledEntities.erase(it);

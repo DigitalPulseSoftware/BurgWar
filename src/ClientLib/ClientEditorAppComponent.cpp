@@ -17,7 +17,7 @@
 #include <ClientLib/Systems/VisualInterpolationSystem.hpp>
 #include <Nazara/Audio/Audio.hpp>
 #include <Nazara/Graphics/Model.hpp>
-#include <Nazara/Utility/Font.hpp>
+#include <Nazara/TextRenderer/Font.hpp>
 
 namespace bw
 {

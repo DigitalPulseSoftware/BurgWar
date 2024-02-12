@@ -10,6 +10,7 @@
 #include <Nazara/Math/Vector2.hpp>
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QWidget>
+#include <type_traits>
 
 class QDoubleSpinBox;
 

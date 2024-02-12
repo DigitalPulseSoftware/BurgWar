@@ -5,7 +5,7 @@
 #include <Client/States/Game/ConnectionLostState.hpp>
 #include <Client/States/MainMenuState.hpp>
 #include <Nazara/Core/StateMachine.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 #include <Nazara/Widgets/LabelWidget.hpp>
 
 namespace bw

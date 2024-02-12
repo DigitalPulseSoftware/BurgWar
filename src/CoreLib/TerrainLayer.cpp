@@ -10,7 +10,7 @@
 #include <CoreLib/Systems/AnimationSystem.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkArbiter2D.hpp>
+#include <Nazara/Physics2D/PhysArbiter2D.hpp>
 
 namespace bw
 {

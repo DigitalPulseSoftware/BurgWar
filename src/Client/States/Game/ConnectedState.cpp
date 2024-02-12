@@ -11,8 +11,8 @@
 #include <Nazara/Core/FilesystemAppComponent.hpp>
 #include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

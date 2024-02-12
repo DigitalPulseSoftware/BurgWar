@@ -5,7 +5,7 @@
 #include <ClientLib/Camera.hpp>
 #include <Nazara/Core/EnttWorld.hpp>
 #include <Nazara/Graphics/Components/CameraComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

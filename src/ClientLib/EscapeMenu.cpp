@@ -5,7 +5,7 @@
 #include <ClientLib/EscapeMenu.hpp>
 #include <ClientLib/ClientEditorAppComponent.hpp>
 #include <ClientLib/OptionWidget.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 
 namespace bw
 {

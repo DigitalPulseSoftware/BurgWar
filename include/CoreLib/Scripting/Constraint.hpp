@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_CONSTRAINT_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkConstraint2D.hpp>
+#include <Nazara/Physics2D/PhysConstraint2D.hpp>
 #include <entt/entt.hpp>
 
 namespace bw
@@ -16,7 +16,7 @@ namespace bw
 	class BURGWAR_CORELIB_API Constraint
 	{
 		public:
-			Constraint(entt::handle entity, Nz::ChipmunkConstraint2DHandle constraint);
+			Constraint(entt::handle entity, Nz::PhysConstraint2DHandle constraint);
 			Constraint(const Constraint&) = delete;
 			Constraint(Constraint&& constraint) noexcept;
 			virtual ~Constraint();
@@ -45,16 +45,16 @@ namespace bw
 			void KillEntity();
 
 		private:
-			NazaraSlot(Nz::HandledObject<Nz::ChipmunkConstraint2D>, OnHandledObjectDestruction, m_onDestruction);
+			NazaraSlot(Nz::HandledObject<Nz::PhysConstraint2D>, OnHandledObjectDestruction, m_onDestruction);
 
 			entt::handle m_entity;
-			Nz::ChipmunkConstraint2DHandle m_constraint;
+			Nz::PhysConstraint2DHandle m_constraint;
 	};
 
 	class BURGWAR_CORELIB_API DampedSpringConstraint : public Constraint
 	{
 		public:
-			inline DampedSpringConstraint(entt::handle entity, Nz::ChipmunkDampedSpringConstraint2D* constraint);
+			inline DampedSpringConstraint(entt::handle entity, Nz::PhysDampedSpringConstraint2D* constraint);
 			DampedSpringConstraint(DampedSpringConstraint&&) noexcept = default;
 			~DampedSpringConstraint() = default;
 
@@ -65,7 +65,7 @@ namespace bw
 	class BURGWAR_CORELIB_API PinConstraint : public Constraint
 	{
 		public:
-			inline PinConstraint(entt::handle entity, Nz::ChipmunkPinConstraint2D* constraint);
+			inline PinConstraint(entt::handle entity, Nz::PhysPinConstraint2D* constraint);
 			PinConstraint(PinConstraint&&) noexcept = default;
 			~PinConstraint() = default;
 
@@ -80,7 +80,7 @@ namespace bw
 	class BURGWAR_CORELIB_API PivotConstraint : public Constraint
 	{
 		public:
-			inline PivotConstraint(entt::handle entity, Nz::ChipmunkPivotConstraint2D* constraint);
+			inline PivotConstraint(entt::handle entity, Nz::PhysPivotConstraint2D* constraint);
 			PivotConstraint(PivotConstraint&&) noexcept = default;
 			~PivotConstraint() = default;
 
@@ -91,7 +91,7 @@ namespace bw
 	class BURGWAR_CORELIB_API RotaryLimitConstraint : public Constraint
 	{
 		public:
-			inline RotaryLimitConstraint(entt::handle entity, Nz::ChipmunkRotaryLimitConstraint2D* constraint);
+			inline RotaryLimitConstraint(entt::handle entity, Nz::PhysRotaryLimitConstraint2D* constraint);
 			RotaryLimitConstraint(RotaryLimitConstraint&&) noexcept = default;
 			~RotaryLimitConstraint() = default;
 

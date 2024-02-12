@@ -10,7 +10,7 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/Sound.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Utility/Node.hpp>
+#include <Nazara/Core/Node.hpp>
 #include <CoreLib/EntityOwner.hpp>
 
 namespace bw

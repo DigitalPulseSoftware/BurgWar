@@ -9,7 +9,7 @@
 #include <ClientLib/LocalSessionBridge.hpp>
 #include <ClientLib/LocalSessionManager.hpp>
 #include <NDK/Components/CameraComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <NDK/Systems/RenderSystem.hpp>
 #include <QtGui/QResizeEvent>
 

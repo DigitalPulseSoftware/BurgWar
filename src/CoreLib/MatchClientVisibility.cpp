@@ -8,7 +8,7 @@
 #include <CoreLib/Terrain.hpp>
 #include <NazaraUtils/StackArray.hpp>
 #include <NazaraUtils/StackVector.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <cassert>
 #include <queue>
 

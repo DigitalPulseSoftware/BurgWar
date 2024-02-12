@@ -64,7 +64,7 @@ elseif is_plat("mingw") then
 	add_ldflags("-Wa,-mbig-obj")
 end
 
-target("lua")
+target("lua", function ()
 	set_group("3rdparties")
 
 	on_load(function (target)
@@ -88,8 +88,9 @@ target("lua")
 	add_headerfiles("contrib/lua/include/**.h")
 	add_files("contrib/lua/src/**.c")
 	set_symbols("debug")
+end)
 
-target("CoreLib")
+target("CoreLib", function ()
 	set_group("Common")
 	set_basename("BurgCore")
 
@@ -106,7 +107,7 @@ target("CoreLib")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
 	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
-	add_packages("nazaraengine", { components = { "core", "network", "chipmunkphysics2d", "utility" }, public = true })
+	add_packages("nazaraengine", { components = { "core", "network", "physics2d" }, public = true })
 	add_packages("libcurl", { public = true, links = {} })
 
 if is_plat("windows") then
@@ -166,8 +167,9 @@ const char* BuildDate = "%s";
 			values = {system, branch, commitHash}
 		})
 	end)
+end)
 
-target("ClientLib")
+target("ClientLib", function ()
 	set_group("Common")
 	set_basename("BurgClient")
 
@@ -184,8 +186,9 @@ target("ClientLib")
 	add_headerfiles("src/ClientLib/**.hpp", "src/ClientLib/**.inl")
 	add_files("src/ClientLib/**.cpp")
 	add_packages("nazaraengine", { components = { "audio", "graphics", "platform", "renderer", "widgets" }, public = true })
+end)
 
-target("Main")
+target("Main", function ()
 	set_group("Common")
 	set_basename("BurgMain")
 
@@ -196,8 +199,9 @@ target("Main")
 	add_headerfiles("include/(Main/**.hpp)", "include/(Main/**.inl)")
 	add_headerfiles("src/Main/**.hpp", "src/Main/**.inl")
 	add_files("src/Main/**.cpp")
+end)
 
-target("BurgWar")
+target("BurgWar", function ()
 	set_group("Executable")
 
 	set_kind("binary")
@@ -214,8 +218,9 @@ target("BurgWar")
 	after_install(function (target)
 		os.vcp("clientconfig.lua", path.join(target:installdir(), "bin"))
 	end)
+end)
 
-target("BurgWarServer")
+target("BurgWarServer", function ()
 	set_group("Executable")
 
 	set_kind("binary")
@@ -228,8 +233,9 @@ target("BurgWarServer")
 	after_install(function (target)
 		os.vcp("serverconfig.lua", path.join(target:installdir(), "bin"))
 	end)
+end)
 
-target("BurgWarMapTool")
+target("BurgWarMapTool", function ()
 	set_group("Executable")
 	set_basename("maptool")
 
@@ -239,10 +245,13 @@ target("BurgWarMapTool")
 	add_deps("Main", "CoreLib")
 	add_headerfiles("src/MapTool/**.hpp", "src/MapTool/**.inl")
 	add_files("src/MapTool/**.cpp")
-	add_packages("cxxopts", "nazaraserver")
+	add_packages("cxxopts")
+end)
 
 if has_config("build_mapeditor") then
-	target("BurgWarMapEditor")
+	add_requires("qt5core", "qt5gui", "qt5widgets")
+
+	target("BurgWarMapEditor", function ()
 		set_group("Executable")
 
 		set_kind("binary")
@@ -278,6 +287,7 @@ if has_config("build_mapeditor") then
 		after_install(function (target)
 			os.vcp("editorconfig.lua", path.join(target:installdir(), "bin"))
 		end)
+	end)
 end
 
 -- Tasks and options

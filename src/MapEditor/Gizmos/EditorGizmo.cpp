@@ -5,11 +5,11 @@
 #include <MapEditor/Gizmos/EditorGizmo.hpp>
 #include <Nazara/Graphics/Graphics.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/IndexBuffer.hpp>
-#include <Nazara/Utility/Mesh.hpp>
-#include <Nazara/Utility/StaticMesh.hpp>
-#include <Nazara/Utility/VertexBuffer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/IndexBuffer.hpp>
+#include <Nazara/Core/Mesh.hpp>
+#include <Nazara/Core/StaticMesh.hpp>
+#include <Nazara/Core/VertexBuffer.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

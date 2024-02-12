@@ -10,7 +10,7 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Utils.hpp>
 #include <Nazara/Core/Components.hpp>
-#include <Nazara/Utility/Components.hpp>
+#include <Nazara/Core/Components.hpp>
 #include <sol/sol.hpp>
 
 namespace bw

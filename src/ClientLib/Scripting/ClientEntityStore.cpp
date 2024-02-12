@@ -6,7 +6,7 @@
 #include <ClientLib/ClientLayer.hpp>
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <ClientLib/Components/ClientMatchComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

@@ -10,7 +10,7 @@
 #include <Client/States/Game/ServerState.hpp>
 #include <Nazara/Renderer/DebugDrawer.hpp>
 #include <Nazara/Renderer/Renderer.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 #include <Nazara/Core/StateMachine.hpp>
 #include <Nazara/Widgets.hpp>
 #include <cassert>

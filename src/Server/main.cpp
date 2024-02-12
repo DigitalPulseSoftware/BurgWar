@@ -6,13 +6,12 @@
 #include <Nazara/Core/Application.hpp>
 #include <Nazara/Core/SignalHandlerAppComponent.hpp>
 #include <Nazara/Network/Network.hpp>
-#include <Nazara/Utility/Utility.hpp>
 #include <Server/ServerAppComponent.hpp>
 #include <Main/Main.hpp>
 
 int BurgWarServer(int argc, char* argv[])
 {
-	Nz::Application<Nz::Core, Nz::Network, Nz::Utility> app(argc, argv);
+	Nz::Application<Nz::Core, Nz::Network> app(argc, argv);
 	app.AddComponent<Nz::FilesystemAppComponent>();
 	app.AddComponent<Nz::SignalHandlerAppComponent>();
 	

@@ -5,7 +5,7 @@
 #include <ClientLib/Chatbox.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/LogSystem/Logger.hpp>
-#include <Nazara/Utility/Font.hpp>
+#include <Nazara/TextRenderer/Font.hpp>
 #include <Nazara/Widgets.hpp>
 
 namespace bw

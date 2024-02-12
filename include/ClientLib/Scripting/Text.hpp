@@ -11,7 +11,7 @@
 #include <Nazara/Core/ObjectHandle.hpp>
 #include <Nazara/Math/Matrix4.hpp>
 #include <Nazara/Graphics/TextSprite.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 #include <entt/entt.hpp>
 #include <sol/forward.hpp>
 

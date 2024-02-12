@@ -14,7 +14,7 @@
 #include <ClientLib/SoundEntity.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <ClientLib/VisualLayer.hpp>
-#include <Nazara/Utility/Node.hpp>
+#include <Nazara/Core/Node.hpp>
 #include <memory>
 
 namespace Nz

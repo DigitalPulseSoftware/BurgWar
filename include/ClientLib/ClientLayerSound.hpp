@@ -13,7 +13,7 @@
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Core/HandledObject.hpp>
 #include <Nazara/Core/ObjectHandle.hpp>
-#include <Nazara/Utility/Node.hpp>
+#include <Nazara/Core/Node.hpp>
 #include <optional>
 #include <vector>
 

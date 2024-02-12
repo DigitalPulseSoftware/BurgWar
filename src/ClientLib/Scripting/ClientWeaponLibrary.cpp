@@ -10,10 +10,10 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Core/Components/LifetimeComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/Utility/Components/VelocityComponent.hpp>
-#include <Nazara/ChipmunkPhysics2D/Systems/ChipmunkPhysics2DSystem.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Core/Components/VelocityComponent.hpp>
+#include <Nazara/Physics2D/Systems/Physics2DSystem.hpp>
 #include <sol/sol.hpp>
 
 namespace bw

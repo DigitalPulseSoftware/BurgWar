@@ -9,7 +9,7 @@
 
 #include <CoreLib/Colliders.hpp>
 #include <CoreLib/Export.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkCollider2D.hpp>
+#include <Nazara/Physics2D/Collider2D.hpp>
 #include <vector>
 
 namespace bw
@@ -26,7 +26,7 @@ namespace bw
 
 			inline void AddCollider(Collider collider);
 
-			std::shared_ptr<Nz::ChipmunkCollider2D> BuildCollider(float scale = 1.f) const;
+			std::shared_ptr<Nz::Collider2D> BuildCollider(float scale = 1.f) const;
 
 			inline const std::vector<Collider>& GetColliders() const;
 
@@ -34,7 +34,7 @@ namespace bw
 			CollisionDataComponent& operator=(CollisionDataComponent&&) = default;
 
 		private:
-			static std::shared_ptr<Nz::ChipmunkCollider2D> ToCollider(const Collider& collider, float scale);
+			static std::shared_ptr<Nz::Collider2D> ToCollider(const Collider& collider, float scale);
 
 			std::vector<Collider> m_colliders;
 	};

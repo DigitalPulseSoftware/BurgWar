@@ -8,7 +8,7 @@
 #define BURGWAR_CORELIB_SCRIPTING_SERVERTEXTURE_HPP
 
 #include <CoreLib/Export.hpp>
-#include <Nazara/Utility/Image.hpp>
+#include <Nazara/Core/Image.hpp>
 
 namespace bw
 {

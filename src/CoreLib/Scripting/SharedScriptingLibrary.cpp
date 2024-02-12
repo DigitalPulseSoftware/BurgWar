@@ -17,8 +17,8 @@
 #include <CoreLib/Scripting/SharedGamemode.hpp>
 #include <CoreLib/Scripting/ScriptingContext.hpp>
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkConstraint2D.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
+#include <Nazara/Physics2D/PhysConstraint2D.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
 #include <CoreLib/SharedMatch.hpp>
 
 namespace bw
@@ -358,7 +358,7 @@ namespace bw
 			entt::entity constraintEntity = registry.create();
 			auto& constraintComponent = registry.emplace<ConstraintComponent2D>(constraintEntity);
 
-			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::DampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
+			return DampedSpringConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PhysDampedSpringConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor, restLength, stiffness, damping));
 		});
 
 		library["CreatePinConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
@@ -372,7 +372,7 @@ namespace bw
 			entt::entity constraintEntity = firstEntity.registry()->create();
 			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
-			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
+			return PinConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PhysPinConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreatePivotConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::Vector2f& firstAnchor, const Nz::Vector2f& secondAnchor)
@@ -386,7 +386,7 @@ namespace bw
 			entt::entity constraintEntity = firstEntity.registry()->create();
 			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
-			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
+			return PivotConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PhysPivotConstraint2D>(firstEntity, secondEntity, firstAnchor, secondAnchor));
 		});
 
 		library["CreateRotaryLimitConstraint"] = LuaFunction([](sol::this_state L, const sol::table& firstEntityTable, const sol::table& secondEntityTable, const Nz::RadianAnglef& minAngle, const Nz::RadianAnglef& maxAngle)
@@ -400,7 +400,7 @@ namespace bw
 			entt::entity constraintEntity = firstEntity.registry()->create();
 			auto& constraintComponent = constraintEntity->AddComponent<ConstraintComponent2D>();
 
-			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::RotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
+			return RotaryLimitConstraint(constraintEntity, constraintComponent.CreateConstraint<Nz::PhysRotaryLimitConstraint2D>(firstEntity, secondEntity, minAngle, maxAngle));
 		});
 
 		library["RegionQuery"] = LuaFunction([this](sol::this_state L, LayerIndex layer, const Nz::Rectf& rect, const sol::protected_function& callback)

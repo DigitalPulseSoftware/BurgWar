@@ -23,8 +23,8 @@
 #include <Nazara/Graphics/Tilemap.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Math/EulerAngles.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkRigidBody2D.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/RigidBody2D.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -37,20 +37,20 @@ namespace bw
 
 	void ClientEntityLibrary::InitRigidBody(lua_State* L, entt::handle entity, float mass)
 	{
-		std::shared_ptr<Nz::ChipmunkCollider2D> collider;
-		if (auto* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		std::shared_ptr<Nz::Collider2D> collider;
+		if (auto* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 		{
 			collider = rigidBody->GetGeom();
-			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
+			entity.erase<Nz::RigidBody2DComponent>();
 		}
 
-		Nz::ChipmunkRigidBody2D::DynamicSettings settings;
+		Nz::RigidBody2D::DynamicSettings settings;
 		settings.geom = collider;
 		settings.mass = mass;
 
-		auto& entityPhys = entity.emplace<Nz::ChipmunkRigidBody2DComponent>(settings);
+		auto& entityPhys = entity.emplace<Nz::RigidBody2DComponent>(settings);
 
-		//entity.get<Nz::ChipmunkRigidBody2DComponent>().EnableNodeSynchronization(false);
+		//entity.get<Nz::RigidBody2DComponent>().EnableNodeSynchronization(false);
 		entity.emplace_or_replace<VisualInterpolationComponent>();
 	}
 

@@ -5,7 +5,7 @@
 #include <MapEditor/Widgets/ScrollCanvas.hpp>
 #include <MapEditor/Widgets/WorldCanvas.hpp>
 #include <NDK/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QScrollBar>
 

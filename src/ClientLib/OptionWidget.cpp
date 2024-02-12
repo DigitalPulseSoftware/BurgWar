@@ -5,7 +5,7 @@
 #include <ClientLib/OptionWidget.hpp>
 #include <CoreLib/Utils.hpp>
 #include <CoreLib/ConfigFile.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
 
 namespace bw
 {

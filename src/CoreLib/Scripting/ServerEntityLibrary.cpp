@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include <CoreLib/Scripting/ServerEntityLibrary.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <CoreLib/Match.hpp>
 #include <CoreLib/Terrain.hpp>
 #include <CoreLib/Components/CollisionDataComponent.hpp>
@@ -116,27 +116,27 @@ namespace bw
 	
 	void ServerEntityLibrary::InitRigidBody(lua_State* L, entt::handle entity, float mass)
 	{
-		std::shared_ptr<Nz::ChipmunkCollider2D> collider;
-		if (auto* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		std::shared_ptr<Nz::Collider2D> collider;
+		if (auto* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 		{
 			collider = rigidBody->GetGeom();
-			entity.erase<Nz::ChipmunkRigidBody2DComponent>();
+			entity.erase<Nz::RigidBody2DComponent>();
 		}
 
 		if (mass >= 0.f)
 		{
-			Nz::ChipmunkRigidBody2D::DynamicSettings settings;
+			Nz::RigidBody2D::DynamicSettings settings;
 			settings.geom = collider;
 			settings.mass = mass;
 
-			entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(std::move(settings));
+			entity.emplace_or_replace<Nz::RigidBody2DComponent>(std::move(settings));
 		}
 		else
 		{
-			Nz::ChipmunkRigidBody2D::StaticSettings settings;
+			Nz::RigidBody2D::StaticSettings settings;
 			settings.geom = collider;
 
-			entity.emplace_or_replace<Nz::ChipmunkRigidBody2DComponent>(std::move(settings));
+			entity.emplace_or_replace<Nz::RigidBody2DComponent>(std::move(settings));
 		}
 	}
 

@@ -14,8 +14,8 @@
 #include <ClientLib/ClientMatch.hpp>
 #include <ClientLib/VisualEntity.hpp>
 #include <Nazara/Graphics/Graphics.hpp>
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/TextRenderer/SimpleTextDrawer.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {
@@ -40,7 +40,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetAngularVelocity();
 	}
 
@@ -89,7 +89,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetVelocity();
 	}
 
@@ -97,7 +97,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 		
-		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetPosition();
 	}
 
@@ -105,7 +105,7 @@ namespace bw
 	{
 		assert(IsPhysical());
 
-		auto& entityPhys = GetEntity().get<Nz::ChipmunkRigidBody2DComponent>();
+		auto& entityPhys = GetEntity().get<Nz::RigidBody2DComponent>();
 		return entityPhys.GetRotation();
 	}
 

@@ -18,8 +18,8 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp> 
 #include <CoreLib/Scripting/SharedScriptingLibrary.hpp>
 #include <NazaraUtils/CallOnExit.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <sol/sol.hpp>
 
 namespace bw
@@ -164,7 +164,7 @@ namespace bw
 	{
 		Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + Nz::Pi<float> / 2.f);
 
-		if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetRotation(angle);
 
 		auto& nodeComponent = entity.get<Nz::NodeComponent>();
@@ -173,19 +173,19 @@ namespace bw
 
 	void SharedEntityLibrary::SetMass(lua_State* /*L*/, entt::handle entity, float mass, bool recomputeMomentOfInertia)
 	{
-		if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetMass(mass, recomputeMomentOfInertia);
 	}
 
 	void SharedEntityLibrary::SetMomentOfInertia(lua_State* /*L*/, entt::handle entity, float momentOfInertia)
 	{
-		if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetMomentOfInertia(momentOfInertia);
 	}
 
 	void SharedEntityLibrary::SetPosition(lua_State* L, entt::handle entity, const Nz::Vector2f& position)
 	{
-		if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetPosition(position);
 
 		auto& nodeComponent = entity.get<Nz::NodeComponent>();
@@ -194,7 +194,7 @@ namespace bw
 
 	void SharedEntityLibrary::SetRotation(lua_State* L, entt::handle entity, const Nz::DegreeAnglef& rotation)
 	{
-		if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetRotation(rotation);
 
 		auto& nodeComponent = entity.get<Nz::NodeComponent>();
@@ -226,7 +226,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				rigidBody->AddForce(force);
 		});
 
@@ -234,7 +234,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				rigidBody->AddImpulse(force);
 		});
 
@@ -253,7 +253,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				rigidBody->ForceSleep();
 		});
 		
@@ -296,7 +296,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				return sol::make_object(L, rigidBody->GetMass());
 			else
 				return sol::nil;
@@ -306,7 +306,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				return sol::make_object(L, rigidBody->GetMomentOfInertia());
 			else
 				return sol::nil;
@@ -360,7 +360,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 			
-			Nz::ChipmunkRigidBody2DComponent* physComponent = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
+			Nz::RigidBody2DComponent* physComponent = entity.try_get<Nz::RigidBody2DComponent>();
 			if (!physComponent)
 				return Nz::Vector2f::Zero();
 
@@ -418,7 +418,7 @@ namespace bw
 		elementMetatable["IsSleeping"] = LuaFunction([](const sol::table& entityTable)
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 				return rigidBody->IsSleeping();
 			else
 				return false;
@@ -428,11 +428,11 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			if (Nz::ChipmunkRigidBody2DComponent* rigidBody = entity.try_get<Nz::ChipmunkRigidBody2DComponent>())
+			if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			{
 				if (fn)
 				{
-					rigidBody->SetVelocityFunction([entity, fn = std::move(fn)](Nz::ChipmunkRigidBody2D& body2D, const Nz::Vector2f& gravity, float damping, float deltaTime)
+					rigidBody->SetVelocityFunction([entity, fn = std::move(fn)](Nz::RigidBody2D& body2D, const Nz::Vector2f& gravity, float damping, float deltaTime)
 					{
 						auto& entityScript = entity.get<ScriptComponent>();
 
@@ -467,7 +467,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			Nz::ChipmunkRigidBody2DComponent* physComponent = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
+			Nz::RigidBody2DComponent* physComponent = entity.try_get<Nz::RigidBody2DComponent>();
 			if (!physComponent)
 				return;
 
@@ -515,13 +515,13 @@ namespace bw
 				}
 			}
 
-			std::shared_ptr<Nz::ChipmunkCollider2D> collider = entityCollData.BuildCollider(entityNode.GetScale().y);
+			std::shared_ptr<Nz::Collider2D> collider = entityCollData.BuildCollider(entityNode.GetScale().y);
 
-			Nz::ChipmunkRigidBody2DComponent* physComponent = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
+			Nz::RigidBody2DComponent* physComponent = entity.try_get<Nz::RigidBody2DComponent>();
 			if (!physComponent)
 			{
 				InitRigidBody(L, entity, 0.f);
-				physComponent = &entity.get<Nz::ChipmunkRigidBody2DComponent>();
+				physComponent = &entity.get<Nz::RigidBody2DComponent>();
 			}
 
 			physComponent->SetGeom(std::move(collider));
@@ -583,7 +583,7 @@ namespace bw
 		{
 			entt::handle entity = AssertScriptEntity(entityTable);
 
-			Nz::ChipmunkRigidBody2DComponent* physComponent = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
+			Nz::RigidBody2DComponent* physComponent = entity.try_get<Nz::RigidBody2DComponent>();
 			if (!physComponent)
 				return;
 

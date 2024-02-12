@@ -6,7 +6,7 @@
 #include <ClientLib/Components/VisualComponent.hpp>
 #include <MapEditor/Components/CanvasComponent.hpp>
 #include <MapEditor/Widgets/MapCanvas.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 
 namespace bw
 {

@@ -7,7 +7,7 @@
 #include <Client/ClientAppComponent.hpp>
 #include <Client/States/JoinServerState.hpp>
 #include <Client/States/Game/ConnectionState.hpp>
-#include <Nazara/Utility/RichTextDrawer.hpp>
+#include <Nazara/TextRenderer/RichTextDrawer.hpp>
 #include <Nazara/Core/StateMachine.hpp>
 #include <Nazara/Network/WebRequest.hpp>
 #include <nlohmann/json.hpp>

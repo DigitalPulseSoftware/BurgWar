@@ -14,8 +14,8 @@
 #include <CoreLib/Scripting/ScriptingUtils.hpp>
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
-#include <Nazara/Utility/Image.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Core/Image.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <entt/entt.hpp>
 
 namespace bw

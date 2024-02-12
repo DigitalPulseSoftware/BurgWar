@@ -24,8 +24,8 @@
 #include <Nazara/Core/VirtualDirectory.hpp>
 #include <Nazara/Core/VirtualDirectoryFilesystemResolver.hpp>
 #include <Nazara/Network/Algorithm.hpp>
-#include <Nazara/ChipmunkPhysics2D/Components/ChipmunkRigidBody2DComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Physics2D/Components/RigidBody2DComponent.hpp>
+#include <Nazara/Core/Components/NodeComponent.hpp>
 #include <tsl/hopscotch_set.h>
 #include <cassert>
 #include <fstream>
@@ -688,7 +688,7 @@ namespace bw
 					debugPacket << layerId;
 					debugPacket << entityId;
 
-					Nz::ChipmunkRigidBody2DComponent* entityPhys = entity.try_get<Nz::ChipmunkRigidBody2DComponent>();
+					Nz::RigidBody2DComponent* entityPhys = entity.try_get<Nz::RigidBody2DComponent>();
 					bool isPhysical = (entityPhys != nullptr);
 
 					debugPacket << isPhysical;

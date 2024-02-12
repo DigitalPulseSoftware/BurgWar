@@ -12,7 +12,7 @@
 #include <CoreLib/Systems/NetworkSyncSystem.hpp>
 #include <CoreLib/Systems/PlayerMovementSystem.hpp>
 #include <Nazara/Math/Rect.hpp>
-#include <Nazara/Utility/Image.hpp>
+#include <Nazara/Core/Image.hpp>
 
 namespace bw
 {

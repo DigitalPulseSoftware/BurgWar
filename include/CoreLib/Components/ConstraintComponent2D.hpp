@@ -9,7 +9,7 @@
 
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Components/DestructionWatcherComponent.hpp>
-#include <Nazara/ChipmunkPhysics2D/ChipmunkConstraint2D.hpp>
+#include <Nazara/Physics2D/PhysConstraint2D.hpp>
 #include <Nazara/Math/Vector3.hpp>
 #include <entt/entt.hpp>
 #include <memory>
@@ -25,7 +25,7 @@ namespace bw
 			ConstraintComponent2D(ConstraintComponent2D&& joint) noexcept = default;
 
 			template<typename T, typename... Args> T* CreateConstraint(entt::registry& registry, entt::entity first, entt::entity second, Args&&... args);
-			bool RemoveConstraint(Nz::ChipmunkConstraint2D* constraint);
+			bool RemoveConstraint(Nz::PhysConstraint2D* constraint);
 
 			ConstraintComponent2D& operator=(const ConstraintComponent2D& joint) = delete;
 			ConstraintComponent2D& operator=(ConstraintComponent2D&& joint) noexcept = default;
@@ -34,7 +34,7 @@ namespace bw
 		private:
 			struct ConstraintData
 			{
-				std::unique_ptr<Nz::ChipmunkConstraint2D> constraint;
+				std::unique_ptr<Nz::PhysConstraint2D> constraint;
 
 				NazaraSlot(DestructionWatcherComponent, OnDestruction, onBodyADestruction);
 				NazaraSlot(DestructionWatcherComponent, OnDestruction, onBodyBDestruction);
