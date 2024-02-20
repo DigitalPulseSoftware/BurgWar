@@ -705,8 +705,8 @@ namespace bw
 					}
 					else
 					{
-						entityPosition = Nz::Vector2f(entityNode->GetPosition(Nz::CoordSys::Global));
-						entityRotation = AngleFromQuaternion(entityNode->GetRotation(Nz::CoordSys::Global));
+						entityPosition = Nz::Vector2f(entityNode->GetGlobalPosition());
+						entityRotation = AngleFromQuaternion(entityNode->GetGlobalRotation());
 					}
 
 					debugPacket << entityPosition << entityRotation;

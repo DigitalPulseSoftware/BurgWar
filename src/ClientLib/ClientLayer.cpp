@@ -166,8 +166,8 @@ namespace bw
 
 	void ClientLayer::CreateEntity(Nz::UInt32 entityId, const Packets::Helper::EntityData& entityData)
 	{
-		static std::string entityPrefix = "entity_";
-		static std::string weaponPrefix = "weapon_";
+		constexpr std::string_view entityPrefix = "entity_";
+		constexpr std::string_view weaponPrefix = "weapon_";
 
 		assert(m_isEnabled);
 
@@ -211,7 +211,7 @@ namespace bw
 		//FIXME: Entity creation failure should instantiate some placeholder entity
 		try
 		{
-			if (entityClass.compare(0, entityPrefix.size(), entityPrefix) == 0)
+			if (entityClass.starts_with(entityPrefix))
 			{
 				// Entity
 				if (std::size_t elementIndex = entityStore.GetElementIndex(entityClass); elementIndex != ClientEntityStore::InvalidIndex)
@@ -231,7 +231,7 @@ namespace bw
 					return;
 				}
 			}
-			else if (entityClass.compare(0, weaponPrefix.size(), weaponPrefix) == 0)
+			else if (entityClass.starts_with(weaponPrefix))
 			{
 				// Weapon
 				if (std::size_t weaponIndex = weaponStore.GetElementIndex(entityClass); weaponIndex != ClientEntityStore::InvalidIndex)

@@ -158,9 +158,9 @@ namespace bw
 	{
 		auto& entityNode = m_entity->get<Nz::NodeComponent>();
 
-		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
-		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
-		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetGlobalPosition());
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetGlobalScale());
+		Nz::Quaternionf rotation = entityNode.GetGlobalRotation();
 
 		for (VisualEntity* visualEntity : m_visualEntities)
 			visualEntity->Update(position, rotation, scale);
@@ -221,7 +221,7 @@ namespace bw
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
-		node.SetScale(scale, Nz::CoordSys::Local);
+		node.SetScale(scale);
 
 		if (CollisionDataComponent* entityCollData = m_entity->try_get<CollisionDataComponent>())
 		{
@@ -281,9 +281,9 @@ namespace bw
 		visualEntity->Enable(IsEnabled());
 
 		auto& entityNode = m_entity->get<Nz::NodeComponent>();
-		Nz::Vector2f position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global));
-		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetScale(Nz::CoordSys::Global));
-		Nz::Quaternionf rotation = entityNode.GetRotation(Nz::CoordSys::Global);
+		Nz::Vector2f position = Nz::Vector2f(entityNode.GetGlobalPosition());
+		Nz::Vector2f scale = Nz::Vector2f(entityNode.GetGlobalScale());
+		Nz::Quaternionf rotation = entityNode.GetGlobalRotation();
 
 		visualEntity->Update(position, rotation, scale);
 

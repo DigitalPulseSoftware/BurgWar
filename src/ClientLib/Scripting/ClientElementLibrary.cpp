@@ -151,7 +151,7 @@ namespace bw
 			Nz::Vector2f size = parameters.get_or("Size", sprite->GetSize());
 
 			sprite->SetSize(size * scale);
-			sprite->SetOrigin(sprite->GetSize() * origin);
+			sprite->SetOrigin(origin);
 			sprite->UpdateRenderLayer(renderOrder);
 
 			auto& visualComponent = entity.get<VisualComponent>();
@@ -231,7 +231,7 @@ namespace bw
 			{
 				// Fallback on position
 				auto& nodeComponent = entity.get<Nz::NodeComponent>();
-				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetPosition(Nz::CoordSys::Global));
+				Nz::Vector2f position = Nz::Vector2f(nodeComponent.GetGlobalPosition());
 				return Nz::Rectf(position.x, position.y, 0.f, 0.f);
 			}
 

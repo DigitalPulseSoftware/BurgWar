@@ -389,9 +389,9 @@ namespace bw
 				if (!entity)
 					return false;
 
-				Nz::Vector2f offset = Nz::Lerp(fromOffset, toOffset, ratio * ratio); //< FIXME
+				/*Nz::Vector2f offset = Nz::Lerp(fromOffset, toOffset, ratio * ratio); //< FIXME
 				auto& nodeComponent = entity.get<Nz::NodeComponent>();
-				nodeComponent.SetInitialPosition(offset); //< FIXME
+				nodeComponent.SetInitialPosition(offset); //< FIXME*/
 
 				return true;
 			}, [this, callback]()

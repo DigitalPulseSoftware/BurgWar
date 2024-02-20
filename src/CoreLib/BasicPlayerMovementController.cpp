@@ -72,7 +72,7 @@ namespace bw
 
 		Nz::Vector2f velocity = rigidBody.GetVelocity();
 
-		velocity.y -= jumpVelocity;
+		velocity.y += jumpVelocity;
 
 		// Air control
 		if (!isOnGround)

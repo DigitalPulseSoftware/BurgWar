@@ -31,8 +31,8 @@ namespace bw
 				const auto& previousInputs = ownerInputs.GetPreviousInputs();
 
 				Nz::RadianAnglef angle(std::atan2(inputs.aimDirection.y, inputs.aimDirection.x));
-				if (std::signbit(ownerNode.GetScale(Nz::CoordSys::Global).x) != std::signbit(weaponNode.GetScale(Nz::CoordSys::Global).x))
-					weaponNode.Scale(-1.f, 1.f);
+				if (std::signbit(ownerNode.GetGlobalScale().x) != std::signbit(weaponNode.GetGlobalScale().x))
+					weaponNode.Scale({ -1.f, 1.f });
 
 				if (weaponNode.GetScale().x < 0.f)
 					angle += Nz::RadianAnglef(Nz::Pi<float>);

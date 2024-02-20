@@ -212,7 +212,7 @@ namespace bw
 			auto& columnData = m_columns[i];
 			columnOffsets[i] = cursor;
 
-			columnData.widget->SetPosition(cursor, padding);
+			columnData.widget->SetPosition({ cursor, padding });
 			cursor += spaceBetweenColumn;
 
 			height = std::max(height, columnData.widget->GetHeight());
@@ -232,13 +232,13 @@ namespace bw
 			{
 				auto& columnData = playerData.values[columnIndex];
 				float offset = columnOffsets[columnIndex];
-				columnData.label->SetPosition(offset, cursor);
+				columnData.label->SetPosition({ offset, cursor });
 
 				height = std::max(height, columnData.label->GetHeight());
 			}
 
 			playerData.background->Resize({ 0.f, height });
-			playerData.background->SetPosition(0.f, cursor);
+			playerData.background->SetPosition({ 0.f, cursor });
 
 			cursor += height + playerMargin;
 		};
@@ -258,10 +258,10 @@ namespace bw
 		{
 			auto& teamData = m_teams[teamIndex];
 
-			teamData.widget->SetPosition(0.f, cursor);
+			teamData.widget->SetPosition({ 0.f, cursor });
 			cursor += teamData.widget->GetHeight();
 
-			teamData.line->SetPosition(0.f, cursor);
+			teamData.line->SetPosition({ 0.f, cursor });
 			teamData.line->Resize({ size.x, 2.f });
 			cursor += teamData.line->GetHeight() + 5.f;
 
@@ -276,7 +276,7 @@ namespace bw
 
 		m_contentWidget->Resize({ scoreboardWidth, cursor + playerMargin });
 		m_scrollArea->Resize({ scoreboardWidth, size.y - titleHeight - padding * 2.f }); // force layout update
-		m_scrollArea->SetPosition(padding, titleHeight + padding);
+		m_scrollArea->SetPosition({ padding, titleHeight + padding });
 
 		float playerWidth = m_contentWidget->GetWidth();
 		for (auto& playerOpt : m_players)

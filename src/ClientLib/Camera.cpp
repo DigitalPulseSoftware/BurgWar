@@ -10,6 +10,7 @@
 namespace bw
 {
 	Camera::Camera(Nz::EnttWorld& world, std::shared_ptr<const Nz::RenderTarget> renderTarget, bool perspective) :
+	m_offset(Nz::Vector3f::Zero()),
 	m_isPerspective(!perspective), // To enable it after
 	m_zoomFactor(1.f)
 	{
@@ -87,7 +88,7 @@ namespace bw
 		OnCameraMove(this, position);
 
 		auto& entityNode = m_cameraEntity->get<Nz::NodeComponent>();
-		entityNode.SetPosition(position);
+		entityNode.SetPosition(Nz::Vector3f(position) + m_offset);
 	}
 
 	void Camera::SetFOV(float fov)
@@ -161,15 +162,16 @@ namespace bw
 
 		if (m_isPerspective)
 		{
-			Nz::Vector3f initialPosition;
-			initialPosition.x = size.x * 0.5f;
-			initialPosition.y = size.y * 0.5f;
-			initialPosition.z = size.y * 0.5f * m_invFovTan;
-			entityNode.SetInitialPosition(initialPosition);
+			m_offset.x = size.x * 0.5f;
+			m_offset.y = size.y * 0.5f;
+			m_offset.z = size.y * 0.5f * m_invFovTan;
 
 			m_projectedDepth = entityCamera.Project({ 0.f, 0.f, 0.f }).z;
 		}
 		else
+		{
+			m_offset = Nz::Vector3f::Zero();
 			entityCamera.UpdateSize(size);
+		}
 	}
 }

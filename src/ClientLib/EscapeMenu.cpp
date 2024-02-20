@@ -46,7 +46,7 @@ namespace bw
 
 		m_optionWidget = m_backgroundWidget->Add<OptionWidget>(m_app.GetPlayerSettings());
 		m_optionWidget->Resize(m_optionWidget->GetPreferredSize());
-		m_optionWidget->SetPosition(10.f, 10.f);
+		m_optionWidget->SetPosition({ 10.f, 10.f });
 		m_optionWidget->Hide();
 		
 		m_optionWidget->OnBackButtonTriggered.Connect([this](OptionWidget*) {
@@ -125,7 +125,7 @@ namespace bw
 			float cursor = height - padding;
 			for (Nz::ButtonWidget* button : buttons)
 			{
-				button->SetPosition(0.f, cursor);
+				button->SetPosition({ 0.f, cursor });
 				button->CenterHorizontal();
 
 				cursor -= button->GetHeight() + buttonPadding;

@@ -51,7 +51,7 @@ namespace bw
 	void CancelableState::LayoutWidgets()
 	{
 		Nz::Vector2f canvasSize = GetStateData().canvas->GetSize();
-		m_cancelButton->SetPosition(canvasSize.x / 2.f - m_cancelButton->GetWidth() / 2.f, canvasSize.y - 10.f - m_cancelButton->GetHeight());
+		m_cancelButton->SetPosition({ canvasSize.x / 2.f - m_cancelButton->GetWidth() / 2.f, canvasSize.y - 10.f - m_cancelButton->GetHeight() });
 	}
 
 	bool CancelableState::Update(Nz::StateMachine& fsm, Nz::Time elapsedTime)

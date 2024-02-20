@@ -56,7 +56,7 @@ namespace bw
 		if (m_connectionLostEntity)
 		{
 			auto& entityNode = m_connectionLostEntity->get<Nz::NodeComponent>();
-			entityNode.SetPosition(windowSize.x - m_connectionLostSprite->GetSize().x - 10.f, cursor);
+			entityNode.SetPosition({ windowSize.x - m_connectionLostSprite->GetSize().x - 10.f, cursor });
 
 			cursor += m_connectionLostSprite->GetSize().y;
 		}
@@ -67,7 +67,7 @@ namespace bw
 			{
 				Nz::Vector2f size = label->GetSize();
 
-				label->SetPosition(windowSize.x - size.x - 5.f, cursor);
+				label->SetPosition({ windowSize.x - size.x - 5.f, cursor });
 				cursor += size.y;
 			}
 		}

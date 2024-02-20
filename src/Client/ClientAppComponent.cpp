@@ -107,11 +107,11 @@ namespace bw
 			versionLabel->UpdateText(Nz::SimpleTextDrawer::Draw(std::to_string(GameMajorVersion) + "." + std::to_string(GameMinorVersion) + "." + std::to_string(GamePatchVersion), 14));
 			versionLabel->Resize(versionLabel->GetPreferredSize());
 
-			versionLabel->SetPosition(m_stateData->canvas->GetWidth() - versionLabel->GetWidth(), m_stateData->canvas->GetHeight() - versionLabel->GetHeight());
+			versionLabel->SetPosition({ m_stateData->canvas->GetWidth() - versionLabel->GetWidth(), m_stateData->canvas->GetHeight() - versionLabel->GetHeight() });
 
 			eventHandler.OnResized.Connect([=](const Nz::WindowEventHandler*, const Nz::WindowEvent::SizeEvent& sizeEvent)
 			{
-				versionLabel->SetPosition(sizeEvent.width - versionLabel->GetWidth(), sizeEvent.height - versionLabel->GetHeight());
+				versionLabel->SetPosition({ sizeEvent.width - versionLabel->GetWidth(), sizeEvent.height - versionLabel->GetHeight() });
 			});
 		}
 

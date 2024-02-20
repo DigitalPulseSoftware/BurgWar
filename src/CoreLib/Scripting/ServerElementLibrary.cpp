@@ -162,7 +162,7 @@ namespace bw
 		scale.x = std::copysign(newScale, scale.x);
 		scale.y = std::copysign(newScale, scale.y);
 
-		node.SetScale(scale, Nz::CoordSys::Local);
+		node.SetScale(scale);
 
 		if (CollisionDataComponent* entityCollData = entity.try_get<CollisionDataComponent>())
 		{

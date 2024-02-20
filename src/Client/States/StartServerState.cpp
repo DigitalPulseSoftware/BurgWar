@@ -32,7 +32,7 @@ namespace bw
 		m_background->SetBackgroundColor(Nz::Color(0, 0, 0, 100));
 
 		m_serverConfigLayout = m_background->Add<Nz::BoxLayout>(Nz::BoxLayoutOrientation::TopToBottom);
-		m_serverConfigLayout->SetPosition(10.f, 10.f);
+		m_serverConfigLayout->SetPosition({ 10.f, 10.f });
 
 		m_title = m_serverConfigLayout->Add<Nz::LabelWidget>();
 		m_title->UpdateText(Nz::SimpleTextDrawer::Draw("Server configuration", 36));

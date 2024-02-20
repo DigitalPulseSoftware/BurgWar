@@ -133,13 +133,13 @@ namespace bw
 		std::shared_ptr<Nz::Sprite> lostHealthBar = std::make_shared<Nz::Sprite>(material);
 		lostHealthBar->SetSize({ healthData.spriteWidth, 10 });
 		lostHealthBar->SetColor(Nz::Color::Red());
-		lostHealthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, lostHealthBar->GetSize().y));
+		lostHealthBar->SetOrigin({ 0.5f, 1.f });
 		lostHealthBar->UpdateRenderLayer(1);
 
 		std::shared_ptr<Nz::Sprite> healthBar = std::make_shared<Nz::Sprite>(material);
 		healthBar->SetSize({ healthData.spriteWidth * healthData.currentHealth / healthData.maxHealth, 10 });
 		healthBar->SetColor(Nz::Color::Green());
-		healthBar->SetOrigin(Nz::Vector2f(healthData.spriteWidth / 2.f, healthBar->GetSize().y));
+		healthBar->SetOrigin({ 0.5f, 1.f });
 		healthBar->UpdateRenderLayer(2);
 
 		healthData.lostHealthSprite = lostHealthBar;
@@ -168,7 +168,7 @@ namespace bw
 		if (playerMovementComponent.UpdateFacingRightState(isFacingRight))
 		{
 			auto& entityNode = GetEntity().get<Nz::NodeComponent>();
-			entityNode.Scale(-1.f, 1.f);
+			entityNode.Scale({ -1.f, 1.f });
 		}
 	}
 

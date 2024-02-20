@@ -132,8 +132,8 @@ namespace bw
 		}
 		else
 		{
-			creationEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Local));
-			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Local))); //< Eww
+			creationEvent.position = Nz::Vector2f(entityNode.GetPosition());
+			creationEvent.rotation = Nz::DegreeAnglef(AngleFromQuaternion(entityNode.GetRotation())); //< Eww
 		}
 
 		if (PlayerMovementComponent* entityPlayerMovement = m_registry.try_get<PlayerMovementComponent>(entity))
@@ -231,8 +231,8 @@ namespace bw
 		else
 		{
 			auto& entityNode = m_registry.get<Nz::NodeComponent>(entity);
-			movementEvent.position = Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Local));
-			movementEvent.rotation = AngleFromQuaternion(entityNode.GetRotation(Nz::CoordSys::Local)); //< Ew
+			movementEvent.position = Nz::Vector2f(entityNode.GetPosition());
+			movementEvent.rotation = AngleFromQuaternion(entityNode.GetRotation()); //< Ew
 		}
 
 		if (PlayerMovementComponent* entityPlayerMovement = m_registry.try_get<PlayerMovementComponent>(entity))

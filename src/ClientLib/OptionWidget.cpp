@@ -76,7 +76,7 @@ namespace bw
 		section.button = Add<Nz::ButtonWidget>();
 		section.button->UpdateText(Nz::SimpleTextDrawer::Draw(it->first, 36));
 		section.button->Resize(section.button->GetPreferredSize());
-		section.button->SetPosition(0.f, cursor);
+		section.button->SetPosition({ 0.f, cursor });
 
 		section.onTriggerSlot.Connect(section.button->OnButtonTrigger, [this, sectionName = it->first](const Nz::ButtonWidget*)
 		{
@@ -240,8 +240,8 @@ namespace bw
 			{
 				std::visit([&](auto&& arg)
 				{
-					arg.label->SetPosition(size.x - arg.label->GetWidth() - arg.optionWidget->GetWidth() - optionSpace, cursor);
-					arg.optionWidget->SetPosition(size.x - arg.optionWidget->GetWidth(), cursor);
+					arg.label->SetPosition({ size.x - arg.label->GetWidth() - arg.optionWidget->GetWidth() - optionSpace, cursor });
+					arg.optionWidget->SetPosition({ size.x - arg.optionWidget->GetWidth(), cursor });
 					
 					cursor += std::max(arg.label->GetHeight(), arg.optionWidget->GetHeight()) + optionPadding;
 				}, option);
@@ -251,7 +251,7 @@ namespace bw
 		float cursor = size.x;
 		for (Nz::ButtonWidget* button : { m_applyButton, m_resetButton, m_backButton })
 		{
-			button->SetPosition(cursor - button->GetWidth(), size.y - button->GetHeight());
+			button->SetPosition({ cursor - button->GetWidth(), size.y - button->GetHeight() });
 			cursor -= button->GetWidth() + 10.f;
 		}
 	}

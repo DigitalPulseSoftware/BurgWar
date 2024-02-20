@@ -77,7 +77,7 @@ namespace bw
 			playerMovement.UpdateWasJumpingState(inputs.isJumping);
 
 			if (playerMovement.UpdateFacingRightState(inputs.isLookingRight))
-				nodeComponent.Scale(-1.f, 1.f);
+				nodeComponent.Scale({ -1.f, 1.f });
 		}
 	}
 	

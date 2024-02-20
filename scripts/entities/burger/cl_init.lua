@@ -56,7 +56,7 @@ entity:On("init", function (self)
 		end
 
 		maxWidth = math.max(maxWidth, spriteSize.x)
-		cursor = cursor - spriteSize.y * offsetScale
+		cursor = cursor + spriteSize.y * offsetScale
 		renderOrder = renderOrder + 1
 
 		table.insert(self.Sprites, {

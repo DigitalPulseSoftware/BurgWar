@@ -68,6 +68,7 @@ namespace bw
 
 			NazaraSlot(Nz::RenderTarget, OnRenderTargetSizeChange, m_onTargetSizeChanged);
 
+			Nz::Vector3f m_offset;
 			EntityOwner m_cameraEntity;
 			bool m_isPerspective;
 			float m_projectedDepth;

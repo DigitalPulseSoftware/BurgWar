@@ -31,7 +31,7 @@ namespace bw
 		std::shared_ptr<Nz::Sprite> sprite = std::make_shared<Nz::Sprite>(std::move(material));
 		sprite->SetSize(sprite->GetSize() * weaponClass->scale);
 		Nz::Vector2f burgerSize = sprite->GetSize();
-		sprite->SetOrigin(weaponClass->spriteOrigin);
+		sprite->SetOrigin(weaponClass->spriteOrigin / burgerSize);
 		sprite->UpdateRenderLayer(-1);
 
 		entt::handle weapon = CreateEntity(layer.GetWorld(), weaponClass, properties);

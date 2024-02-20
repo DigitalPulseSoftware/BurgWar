@@ -16,7 +16,7 @@
 					"name": "",
 					"position": {
 						"x": 313.0,
-						"y": 311.0
+						"y": 445.0
 					},
 					"properties": {},
 					"rotation": 0.0,
@@ -46,7 +46,7 @@
 					"entityType": "entity_box",
 					"name": "",
 					"position": {
-						"x": 194.0,
+						"x": 131.0,
 						"y": 381.0
 					},
 					"properties": {
@@ -60,14 +60,57 @@
 				},
 				{
 					"entityType": "entity_box",
+					"name": " (Clone)",
+					"position": {
+						"x": 437.0,
+						"y": 516.0
+					},
+					"properties": {
+						"dynamic": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 5
+				},
+				{
+					"entityType": "entity_box",
+					"name": " (Clone) (Clone)",
+					"position": {
+						"x": 197.0,
+						"y": 381.0
+					},
+					"properties": {
+						"dynamic": {
+							"type": "Bool",
+							"value": false
+						}
+					},
+					"rotation": 0.0,
+					"uniqueId": 6
+				},
+				{
+					"entityType": "entity_box",
 					"name": "",
+					"position": {
+						"x": 323.0,
+						"y": 319.0
+					},
+					"properties": {},
+					"rotation": 0.0,
+					"uniqueId": 4
+				},
+				{
+					"entityType": "entity_box",
+					"name": " (Clone)",
 					"position": {
 						"x": 528.0,
 						"y": 319.0
 					},
 					"properties": {},
 					"rotation": 0.0,
-					"uniqueId": 4
+					"uniqueId": 7
 				}
 			],
 			"name": "Layer #1"

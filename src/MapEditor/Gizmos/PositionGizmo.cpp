@@ -57,12 +57,12 @@ namespace bw
 		node.SetInheritScale(false);
 		node.SetParent(selectionOverlayEntity);
 
-		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys::Global));
+		Nz::Vector2f arrowPosition = Nz::Vector2f(node.GetGlobalPosition());
 
 		for (const LayerVisualEntityHandle& visualEntity : GetTargetEntities())
 		{
 			auto& entityNode = visualEntity->GetEntity().get<Nz::NodeComponent>();
-			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetPosition(Nz::CoordSys::Global)) - arrowPosition);
+			m_entitiesOffsets.push_back(Nz::Vector2f(entityNode.GetGlobalPosition()) - arrowPosition);
 		}
 	}
 
@@ -95,7 +95,7 @@ namespace bw
 		if (m_movementType != MovementType::None)
 		{
 			auto& node = GetSelectionOverlayEntity()->GetComponent<Ndk::NodeComponent>();
-			m_originalPosition = Nz::Vector2f(node.GetPosition(Nz::CoordSys::Global));
+			m_originalPosition = Nz::Vector2f(node.GetGlobalPosition());
 			m_movementStartPos = m_camera.Unproject({ float(mouseButton.x), float(mouseButton.y) });
 
 			return true;

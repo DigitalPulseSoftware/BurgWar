@@ -35,7 +35,7 @@ namespace bw
 		m_systemGraph.AddSystem<WeaponSystem>(match);
 
 		Nz::PhysWorld2D& physics = m_systemGraph.GetSystem<Nz::Physics2DSystem>().GetPhysWorld();
-		physics.SetGravity(Nz::Vector2f(0.f, 9.81f * 192.f));
+		physics.SetGravity(Nz::Vector2f(0.f, -9.81f * 192.f));
 		physics.SetMaxStepCount(1);
 		physics.SetSleepTime(Nz::Time::Zero());
 		physics.SetStepSize(match.GetTickDuration());
