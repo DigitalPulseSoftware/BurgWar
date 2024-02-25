@@ -52,7 +52,7 @@ namespace bw
 		{
 			reactorPtr->Poll([&](bool outgoing, std::size_t clientId, Nz::UInt32 data) { HandlePeerConnection(outgoing, clientId, data); },
 			                 [&](std::size_t clientId, Nz::UInt32 data) { HandlePeerDisconnection(clientId, data); },
-			                 [&](std::size_t clientId, Nz::NetPacket&& packet) { HandlePeerPacket(clientId, packet); });
+			                 [&](std::size_t clientId, Nz::ByteArray&& packet) { HandlePeerPacket(clientId, packet); });
 		}
 	}
 
@@ -67,7 +67,7 @@ namespace bw
 		m_connections[peerId].reset();
 	}
 
-	void NetworkReactorManager::HandlePeerPacket(std::size_t peerId, Nz::NetPacket& packet)
+	void NetworkReactorManager::HandlePeerPacket(std::size_t peerId, Nz::ByteArray& packet)
 	{
 		m_connections[peerId]->HandleIncomingPacket(packet);
 	}

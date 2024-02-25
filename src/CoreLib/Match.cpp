@@ -664,12 +664,13 @@ namespace bw
 			m_debug->lastBroadcastTime = m_app.GetAppTime();
 
 			// Send all entities state
-			Nz::NetPacket debugPacket(1);
+			Nz::ByteArray debugPacket;
+			Nz::ByteStream stream(&debugPacket);
 
-			std::size_t offset = debugPacket.GetStream()->GetCursorPos();
+			std::size_t offset = stream.GetStream()->GetCursorPos();
 
 			Nz::UInt32 entityCount = 0;
-			debugPacket << entityCount;
+			stream << entityCount;
 
 			for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 			{
@@ -685,13 +686,13 @@ namespace bw
 
 					CompressedUnsigned<Nz::UInt16> layerId(i);
 					CompressedUnsigned<Nz::UInt32> entityId(entitySync->GetNetworkId());
-					debugPacket << layerId;
-					debugPacket << entityId;
+					stream << layerId;
+					stream << entityId;
 
 					Nz::RigidBody2DComponent* entityPhys = entity.try_get<Nz::RigidBody2DComponent>();
 					bool isPhysical = (entityPhys != nullptr);
 
-					debugPacket << isPhysical;
+					stream << isPhysical;
 
 					Nz::Vector2f entityPosition;
 					Nz::RadianAnglef entityRotation;
@@ -701,7 +702,7 @@ namespace bw
 						entityPosition = entityPhys->GetPosition();
 						entityRotation = entityPhys->GetRotation();
 
-						debugPacket << entityPhys->GetVelocity() << entityPhys->GetAngularVelocity();
+						stream << entityPhys->GetVelocity() << entityPhys->GetAngularVelocity();
 					}
 					else
 					{
@@ -709,19 +710,19 @@ namespace bw
 						entityRotation = AngleFromQuaternion(entityNode->GetGlobalRotation());
 					}
 
-					debugPacket << entityPosition << entityRotation;
+					stream << entityPosition << entityRotation;
 				});
 			}
 
-			debugPacket.GetStream()->SetCursorPos(offset);
-			debugPacket << entityCount;
+			stream.GetStream()->SetCursorPos(offset);
+			stream << entityCount;
 
 			Nz::IpAddress localAddress = Nz::IpAddress::LoopbackIpV4;
 			for (std::size_t i = 0; i < 4; ++i)
 			{
 				localAddress.SetPort(static_cast<Nz::UInt16>(42000 + i));
 
-				if (!m_debug->socket.SendPacket(localAddress, debugPacket))
+				if (!m_debug->socket.Send(localAddress, debugPacket.GetConstBuffer(), debugPacket.GetSize(), nullptr))
 					bwLog(GetLogger(), LogLevel::Error, "Failed to send debug packet: {0}", Nz::ErrorToString(m_debug->socket.GetLastError()));
 			}
 		}

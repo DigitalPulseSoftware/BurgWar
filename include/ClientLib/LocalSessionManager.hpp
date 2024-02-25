@@ -38,14 +38,14 @@ namespace bw
 
 		private:
 			void DisconnectPeer(std::size_t peerId);
-			void SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer);
+			void SendPacket(std::size_t peerId, Nz::ByteArray&& packet, bool isServer);
 
 			struct Peer
 			{
 				std::shared_ptr<LocalSessionBridge> clientBridge;
 				std::shared_ptr<LocalSessionBridge> serverBridge;
-				std::vector<Nz::NetPacket> clientPackets;
-				std::vector<Nz::NetPacket> serverPackets;
+				std::vector<Nz::ByteArray> clientPackets;
+				std::vector<Nz::ByteArray> serverPackets;
 				MatchClientSession* session;
 				bool disconnectionRequested = false;
 			};

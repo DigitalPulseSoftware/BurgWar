@@ -52,7 +52,7 @@ namespace bw
 
 		IncomingCommand& newCommand = m_incomingCommands[packetId];
 		newCommand.enabled = true;
-		newCommand.unserialize = [this, cb = std::forward<CB>(callback)](PeerRef peer, Nz::NetPacket& packet)
+		newCommand.unserialize = [this, cb = std::forward<CB>(callback)](PeerRef peer, Nz::ByteStream& packet)
 		{
 			T data;
 			try
@@ -91,7 +91,7 @@ namespace bw
 
 	template<typename Peer>
 	template<typename T>
-	void CommandStore<Peer>::SerializePacket(Nz::NetPacket& packet, const T& data) const
+	void CommandStore<Peer>::SerializePacket(Nz::ByteStream& packet, const T& data) const
 	{
 		packet << static_cast<Nz::UInt8>(T::Type);
 
@@ -106,7 +106,7 @@ namespace bw
 	}
 
 	template<typename Peer>
-	bool CommandStore<Peer>::UnserializePacket(PeerRef peer, Nz::NetPacket& packet) const
+	bool CommandStore<Peer>::UnserializePacket(PeerRef peer, Nz::ByteStream& packet) const
 	{
 		Nz::UInt8 opcode;
 		try

@@ -19,7 +19,6 @@
 #include <Nazara/Math/Box.hpp>
 #include <Nazara/Math/Quaternion.hpp>
 #include <Nazara/Math/Vector3.hpp>
-#include <Nazara/Network/NetPacket.hpp>
 #include <array>
 #include <optional>
 #include <variant>

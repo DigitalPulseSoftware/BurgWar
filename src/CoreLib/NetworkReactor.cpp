@@ -97,7 +97,7 @@ namespace bw
 		m_outgoingQueue.enqueue(std::move(outgoingRequest));
 	}
 
-	void NetworkReactor::SendData(std::size_t peerId, Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet)
+	void NetworkReactor::SendData(std::size_t peerId, Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::ByteArray&& packet)
 	{
 		assert(peerId >= m_firstId);
 

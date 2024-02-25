@@ -7,8 +7,8 @@
 #ifndef BURGWAR_CORELIB_COMMANDSTORE_HPP
 #define BURGWAR_CORELIB_COMMANDSTORE_HPP
 
+#include <Nazara/Core/ByteStream.hpp>
 #include <Nazara/Network/ENetPacket.hpp>
-#include <Nazara/Network/NetPacket.hpp>
 #include <functional>
 #include <type_traits>
 #include <vector>
@@ -33,11 +33,11 @@ namespace bw
 			template<typename T> const OutgoingCommand& GetOutgoingCommand() const;
 
 			template<typename T>
-			void SerializePacket(Nz::NetPacket& packet, const T& data) const;
+			void SerializePacket(Nz::ByteStream& packet, const T& data) const;
 
-			bool UnserializePacket(PeerRef peer, Nz::NetPacket& packet) const;
+			bool UnserializePacket(PeerRef peer, Nz::ByteStream& packet) const;
 
-			using UnserializeFunction = std::function<void(PeerRef peer, Nz::NetPacket& packet)>;
+			using UnserializeFunction = std::function<void(PeerRef peer, Nz::ByteStream& packet)>;
 
 			struct IncomingCommand
 			{
@@ -59,7 +59,7 @@ namespace bw
 			template<typename T> void RegisterOutgoingCommand(const char* name, Nz::ENetPacketFlags flags, Nz::UInt8 channelId);
 
 		private:
-			using HandleFunction = std::function<void(Nz::NetPacket& packet)>;
+			using HandleFunction = std::function<void(Nz::ByteArray& packet)>;
 
 			std::vector<IncomingCommand> m_incomingCommands;
 			std::vector<OutgoingCommand> m_outgoingCommands;

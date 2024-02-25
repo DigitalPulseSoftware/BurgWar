@@ -47,7 +47,7 @@ namespace bw
 
 			void QueryInfo(std::size_t peerId, PeerInfoCallback callback);
 
-			void SendData(std::size_t peerId, Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet);
+			void SendData(std::size_t peerId, Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::ByteArray&& packet);
 
 			NetworkReactor& operator=(const NetworkReactor&) = delete;
 			NetworkReactor& operator=(NetworkReactor&&) = delete;
@@ -96,7 +96,7 @@ namespace bw
 
 				struct PacketEvent
 				{
-					Nz::NetPacket packet;
+					Nz::ByteArray packet;
 				};
 
 				struct PeerInfoResponse
@@ -121,7 +121,7 @@ namespace bw
 				{
 					Nz::ENetPacketFlags flags;
 					Nz::UInt8 channelId;
-					Nz::NetPacket packet;
+					Nz::ByteArray packet;
 				};
 
 				struct QueryPeerInfo 

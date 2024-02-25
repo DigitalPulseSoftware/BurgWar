@@ -15,6 +15,7 @@
 #include <CoreLib/Scripting/ServerGamemode.hpp>
 #include <CoreLib/Components/PlayerControlledComponent.hpp>
 #include <CoreLib/Components/WeaponWielderComponent.hpp>
+#include <Nazara/Core/ByteStream.hpp>
 #include <cassert>
 
 namespace
@@ -33,7 +34,7 @@ namespace bw
 	m_peerInfoUpdateCounter(Nz::Time::Zero())
 	{
 		m_visibility = std::make_unique<MatchClientVisibility>(match, *this);
-		m_bridge->OnIncomingPacket.Connect([this](Nz::NetPacket& packet)
+		m_bridge->OnIncomingPacket.Connect([this](Nz::ByteArray& packet)
 		{
 			HandleIncomingPacket(packet);
 		});
@@ -52,9 +53,10 @@ namespace bw
 		m_bridge->Disconnect();
 	}
 
-	void MatchClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
+	void MatchClientSession::HandleIncomingPacket(Nz::ByteArray& packet)
 	{
-		m_commandStore.UnserializePacket(*this, packet);
+		Nz::ByteStream stream(&packet, Nz::OpenMode::Read);
+		m_commandStore.UnserializePacket(*this, stream);
 	}
 
 	void MatchClientSession::OnTick(Nz::Time /*elapsedTime*/)

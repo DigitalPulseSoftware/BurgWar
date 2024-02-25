@@ -36,9 +36,8 @@ namespace bw
 		});
 	}
 
-	void NetworkSessionBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket && packet)
+	void NetworkSessionBridge::SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::ByteArray && packet)
 	{
-		packet.FlushBits();
 		m_reactor.SendData(m_peerId, channelId, flags, std::move(packet));
 	}
 }

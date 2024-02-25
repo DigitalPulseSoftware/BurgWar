@@ -4,7 +4,6 @@
 
 #include <ClientLib/ClientSession.hpp>
 #include <CoreLib/BurgAppComponent.hpp>
-#include <Nazara/Network/NetPacket.hpp>
 
 namespace bw
 {
@@ -48,8 +47,9 @@ namespace bw
 		if (!IsConnected())
 			return;
 
-		Nz::NetPacket data;
-		m_commandStore.SerializePacket(data, packet);
+		Nz::ByteArray data;
+		Nz::ByteStream byteStream(&data, Nz::OpenMode::Write);
+		m_commandStore.SerializePacket(byteStream, packet);
 
 		const auto& command = m_commandStore.GetOutgoingCommand<T>();
 		m_bridge->SendPacket(command.channelId, command.flags, std::move(data));

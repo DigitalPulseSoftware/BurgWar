@@ -511,80 +511,73 @@ namespace bw
 
 		if (m_debug)
 		{
-			Nz::NetPacket debugPacket;
-			while (m_debug->socket.ReceivePacket(&debugPacket, nullptr))
+			Nz::ByteArray debugPacket(0xFFFF);
+			std::size_t received;
+			while (m_debug->socket.Receive(debugPacket.GetBuffer(), debugPacket.GetSize(), nullptr, &received) && received > 0)
 			{
-				switch (debugPacket.GetNetCode())
+				debugPacket.Resize(received);
+				Nz::ByteStream stream(&debugPacket, Nz::OpenMode::Read);
+
+				Nz::UInt32 entityCount;
+				stream >> entityCount;
+
+				for (Nz::UInt32 i = 0; i < entityCount; ++i)
 				{
-					case 1: //< StatePacket
+					CompressedUnsigned<Nz::UInt16> layerId;
+					CompressedUnsigned<Nz::UInt32> entityId;
+					stream >> layerId;
+					stream >> entityId;
+
+					bool isPhysical;
+					Nz::Vector2f linearVelocity;
+					Nz::RadianAnglef angularVelocity;
+					Nz::Vector2f position;
+					Nz::RadianAnglef rotation;
+
+					stream >> isPhysical;
+
+					if (isPhysical)
+						stream >> linearVelocity >> angularVelocity;
+
+					stream >> position >> rotation;
+
+					auto& layer = m_layers[layerId];
+					if (layer->IsEnabled())
 					{
-						Nz::UInt32 entityCount;
-						debugPacket >> entityCount;
-
-						for (Nz::UInt32 i = 0; i < entityCount; ++i)
+						if (auto entityOpt = layer->GetEntityByServerId(entityId))
 						{
-							CompressedUnsigned<Nz::UInt16> layerId;
-							CompressedUnsigned<Nz::UInt32> entityId;
-							debugPacket >> layerId;
-							debugPacket >> entityId;
+							ClientLayerEntity& entity = entityOpt.value();
+							ClientLayerEntity* ghostEntity = entity.GetGhost();
+							/*if (isPhysical)
+								ghostEntity->UpdateState(position, rotation, linearVelocity, angularVelocity);
+							else*/
+								ghostEntity->UpdateState(position, rotation);
 
-							bool isPhysical;
-							Nz::Vector2f linearVelocity;
-							Nz::RadianAnglef angularVelocity;
-							Nz::Vector2f position;
-							Nz::RadianAnglef rotation;
-
-							debugPacket >> isPhysical;
-
-							if (isPhysical)
-								debugPacket >> linearVelocity >> angularVelocity;
-
-							debugPacket >> position >> rotation;
-
-							auto& layer = m_layers[layerId];
-							if (layer->IsEnabled())
-							{
-								if (auto entityOpt = layer->GetEntityByServerId(entityId))
-								{
-									ClientLayerEntity& entity = entityOpt.value();
-									ClientLayerEntity* ghostEntity = entity.GetGhost();
-									/*if (isPhysical)
-										ghostEntity->UpdateState(position, rotation, linearVelocity, angularVelocity);
-									else*/
-										ghostEntity->UpdateState(position, rotation);
-
-									ghostEntity->SyncVisuals();
-								}
-							}
-
-							/*if (auto it = m_serverEntityIdToClient.find(entityId); it != m_serverEntityIdToClient.end())
-							{
-								ServerEntity& serverEntity = it.value();
-								if (serverEntity.serverGhost)
-								{
-									if (isPhysical && serverEntity.serverGhost->HasComponent<Ndk::PhysicsComponent2D>())
-									{
-										auto& ghostPhysics = serverEntity.serverGhost->GetComponent<Ndk::PhysicsComponent2D>();
-										ghostPhysics.SetPosition(position);
-										ghostPhysics.SetRotation(rotation);
-										ghostPhysics.SetAngularVelocity(angularVelocity);
-										ghostPhysics.SetVelocity(linearVelocity);
-									}
-									else
-									{
-										auto& ghostNode = serverEntity.serverGhost->GetComponent<Nz::NodeComponent>();
-										ghostNode.SetPosition(position);
-										ghostNode.SetRotation(rotation);
-									}
-								}
-							}*/
+							ghostEntity->SyncVisuals();
 						}
-
-						break;
 					}
 
-					default:
-						break;
+					/*if (auto it = m_serverEntityIdToClient.find(entityId); it != m_serverEntityIdToClient.end())
+					{
+						ServerEntity& serverEntity = it.value();
+						if (serverEntity.serverGhost)
+						{
+							if (isPhysical && serverEntity.serverGhost->HasComponent<Ndk::PhysicsComponent2D>())
+							{
+								auto& ghostPhysics = serverEntity.serverGhost->GetComponent<Ndk::PhysicsComponent2D>();
+								ghostPhysics.SetPosition(position);
+								ghostPhysics.SetRotation(rotation);
+								ghostPhysics.SetAngularVelocity(angularVelocity);
+								ghostPhysics.SetVelocity(linearVelocity);
+							}
+							else
+							{
+								auto& ghostNode = serverEntity.serverGhost->GetComponent<Nz::NodeComponent>();
+								ghostNode.SetPosition(position);
+								ghostNode.SetRotation(rotation);
+							}
+						}
+					}*/
 				}
 			}
 		}

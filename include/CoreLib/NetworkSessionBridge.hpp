@@ -28,7 +28,7 @@ namespace bw
 
 			void QueryInfo(std::function<void(const SessionInfo& info)> callback) const override;
 
-			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& packet) override;
+			void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::ByteArray&& packet) override;
 
 		private:
 			std::size_t m_peerId;

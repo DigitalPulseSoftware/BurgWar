@@ -72,14 +72,12 @@ namespace bw
 		peer.disconnectionRequested = true;
 	}
 
-	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::NetPacket&& packet, bool isServer)
+	void LocalSessionManager::SendPacket(std::size_t peerId, Nz::ByteArray&& packet, bool isServer)
 	{
 		assert(peerId < m_peers.size() && m_peers[peerId]);
 		Peer& peer = m_peers[peerId].value();
 
 		// Reset cursor position
-		packet.GetStream()->SetCursorPos(Nz::NetPacket::HeaderSize);
-
 		if (isServer)
 			peer.clientPackets.emplace_back(std::move(packet));
 		else

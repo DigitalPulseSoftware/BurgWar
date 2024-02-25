@@ -53,16 +53,16 @@ namespace bw
 		IncomingCommand(ScriptPacket);
 
 		// Outgoing commands
-		OutgoingCommand(Auth,                        Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(DownloadClientFileRequest,   Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(PlayerConsoleCommand,        Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(PlayerSelectWeapon,          Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(Ready,                       Nz::ENetPacketFlag_Reliable, 0);
-		OutgoingCommand(ScriptPacket,                Nz::ENetPacketFlag_Reliable, 1);
-		OutgoingCommand(UpdatePlayerName,            Nz::ENetPacketFlag_Reliable, 1);
+		OutgoingCommand(Auth,                        Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(DownloadClientFileRequest,   Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(NetworkStrings,              Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(PlayerChat,                  Nz::ENetPacketFlag::Reliable, 1);
+		OutgoingCommand(PlayerConsoleCommand,        Nz::ENetPacketFlag::Reliable, 1);
+		OutgoingCommand(PlayerSelectWeapon,          Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(PlayersInput,                Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(Ready,                       Nz::ENetPacketFlag::Reliable, 0);
+		OutgoingCommand(ScriptPacket,                Nz::ENetPacketFlag::Reliable, 1);
+		OutgoingCommand(UpdatePlayerName,            Nz::ENetPacketFlag::Reliable, 1);
 
 #undef IncomingCommand
 #undef OutgoingCommand

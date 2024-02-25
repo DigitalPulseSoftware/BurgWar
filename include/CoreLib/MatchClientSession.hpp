@@ -50,7 +50,7 @@ namespace bw
 			inline MatchClientVisibility& GetVisibility();
 			inline const MatchClientVisibility& GetVisibility() const;
 
-			void HandleIncomingPacket(Nz::NetPacket& packet);
+			void HandleIncomingPacket(Nz::ByteArray& packet);
 
 			void OnTick(Nz::Time elapsedTime);
 

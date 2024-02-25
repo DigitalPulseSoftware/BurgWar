@@ -39,7 +39,7 @@ namespace bw
 
 			inline bool IsConnected() const;
 
-			void HandleIncomingPacket(Nz::NetPacket& packet);
+			void HandleIncomingPacket(Nz::ByteArray& packet);
 
 			inline void QuerySessionInfo(std::function<void(const SessionBridge::SessionInfo& info)> callback) const;
 

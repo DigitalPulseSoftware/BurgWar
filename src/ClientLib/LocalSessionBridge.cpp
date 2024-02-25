@@ -40,12 +40,12 @@ namespace bw
 		return true;
 	}
 
-	void LocalSessionBridge::HandleIncomingPacket(Nz::NetPacket& packet)
+	void LocalSessionBridge::HandleIncomingPacket(Nz::ByteArray& packet)
 	{
 		BurgAppComponent& app = m_sessionManager.GetOwner()->GetMatch().GetApp();
 		m_lastReceiveTime = app.GetAppTime();
 
-		m_sessionInfo.totalByteReceived += packet.GetDataSize();
+		m_sessionInfo.totalByteReceived += packet.GetSize();
 		m_sessionInfo.totalPacketReceived++;
 
 		SessionBridge::HandleIncomingPacket(packet);
@@ -60,11 +60,11 @@ namespace bw
 		callback(m_sessionInfo);
 	}
 
-	void LocalSessionBridge::SendPacket(Nz::UInt8 /*channelId*/, Nz::ENetPacketFlags /*flags*/, Nz::NetPacket&& packet)
+	void LocalSessionBridge::SendPacket(Nz::UInt8 /*channelId*/, Nz::ENetPacketFlags /*flags*/, Nz::ByteArray&& packet)
 	{
 		assert(IsConnected());
 
-		m_sessionInfo.totalByteSent += packet.GetDataSize();
+		m_sessionInfo.totalByteSent += packet.GetSize();
 		m_sessionInfo.totalPacketSent++;
 
 		m_sessionManager.SendPacket(m_peerId, std::move(packet), m_isServer);

@@ -28,7 +28,7 @@ namespace bw
 			OnSessionDisconnected();
 		});
 
-		m_onIncomingPacketSlot.Connect(m_bridge->OnIncomingPacket, [this](Nz::NetPacket& packet)
+		m_onIncomingPacketSlot.Connect(m_bridge->OnIncomingPacket, [this](Nz::ByteArray& packet)
 		{
 			HandleIncomingPacket(packet);
 		});
@@ -65,9 +65,10 @@ namespace bw
 		}
 	}
 
-	void ClientSession::HandleIncomingPacket(Nz::NetPacket& packet)
+	void ClientSession::HandleIncomingPacket(Nz::ByteArray& packet)
 	{
-		m_commandStore.UnserializePacket(this, packet);
+		Nz::ByteStream stream(&packet, Nz::OpenMode::Read);
+		m_commandStore.UnserializePacket(this, stream);
 	}
 
 	void ClientSession::OnSessionConnected()

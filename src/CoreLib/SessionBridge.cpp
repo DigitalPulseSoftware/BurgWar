@@ -22,7 +22,7 @@ namespace bw
 		OnDisconnected(data);
 	}
 
-	void SessionBridge::HandleIncomingPacket(Nz::NetPacket& packet)
+	void SessionBridge::HandleIncomingPacket(Nz::ByteArray& packet)
 	{
 		assert(m_isConnected);
 

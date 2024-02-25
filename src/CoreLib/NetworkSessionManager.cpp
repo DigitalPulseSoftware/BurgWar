@@ -23,7 +23,7 @@ namespace bw
 	{
 		m_reactor.Poll([&](bool outgoing, std::size_t peerId, Nz::UInt32 data) { HandlePeerConnection(outgoing, peerId, data); },
 		               [&](std::size_t peerId, Nz::UInt32 data) { HandlePeerDisconnection(peerId, data); },
-		               [&](std::size_t peerId, Nz::NetPacket&& packet) { HandlePeerPacket(peerId, std::move(packet)); });
+		               [&](std::size_t peerId, Nz::ByteArray&& packet) { HandlePeerPacket(peerId, std::move(packet)); });
 	}
 
 	void NetworkSessionManager::HandlePeerConnection(bool /*outgoing*/, std::size_t peerId, Nz::UInt32 /*data*/)
@@ -51,7 +51,7 @@ namespace bw
 		session = nullptr;
 	}
 
-	void NetworkSessionManager::HandlePeerPacket(std::size_t peerId, Nz::NetPacket&& packet)
+	void NetworkSessionManager::HandlePeerPacket(std::size_t peerId, Nz::ByteArray&& packet)
 	{
 		MatchClientSession* session = m_peerIdToSession[peerId];
 		assert(session);

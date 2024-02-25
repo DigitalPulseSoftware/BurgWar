@@ -45,8 +45,10 @@ namespace bw
 	template<typename T>
 	void MatchClientSession::SendPacket(const T& packet)
 	{
-		Nz::NetPacket data;
-		m_commandStore.SerializePacket(data, packet);
+		Nz::ByteArray data;
+		Nz::ByteStream stream(&data, Nz::OpenMode::Write);
+		m_commandStore.SerializePacket(stream, packet);
+		stream.FlushBits();
 
 		const auto& command = m_commandStore.GetOutgoingCommand<T>();
 		m_bridge->SendPacket(command.channelId, command.flags, std::move(data));

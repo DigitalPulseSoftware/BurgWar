@@ -33,15 +33,15 @@ namespace bw
 
 			virtual void HandleConnection(Nz::UInt32 data);
 			virtual void HandleDisconnection(Nz::UInt32 data);
-			virtual void HandleIncomingPacket(Nz::NetPacket& packet);
+			virtual void HandleIncomingPacket(Nz::ByteArray& packet);
 
 			virtual void QueryInfo(std::function<void(const SessionInfo& info)> callback) const = 0;
 
-			virtual void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::NetPacket&& data) = 0;
+			virtual void SendPacket(Nz::UInt8 channelId, Nz::ENetPacketFlags flags, Nz::ByteArray&& data) = 0;
 
 			NazaraSignal(OnConnected, Nz::UInt32 /*data*/);
 			NazaraSignal(OnDisconnected, Nz::UInt32 /*data*/);
-			NazaraSignal(OnIncomingPacket, Nz::NetPacket& /*packet*/);
+			NazaraSignal(OnIncomingPacket, Nz::ByteArray& /*packet*/);
 
 			struct SessionInfo
 			{
