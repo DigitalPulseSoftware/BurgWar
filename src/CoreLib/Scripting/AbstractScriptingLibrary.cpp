@@ -184,7 +184,7 @@ namespace bw
 
 			auto result = context.Load(scriptPath);
 			if (!result)
-				TriggerLuaError(L, result.error());
+				TriggerLuaError(L, result.GetError());
 		});
 
 		luaState["tostring"] = [](lua_State* L) -> int

@@ -35,14 +35,14 @@ namespace bw
 			template<typename T>
 			void SerializePacket(Nz::ByteStream& packet, const T& data) const;
 
-			bool UnserializePacket(PeerRef peer, Nz::ByteStream& packet) const;
+			bool DeserializePacket(PeerRef peer, Nz::ByteStream& packet) const;
 
-			using UnserializeFunction = std::function<void(PeerRef peer, Nz::ByteStream& packet)>;
+			using DeserializeFunction = std::function<void(PeerRef peer, Nz::ByteStream& packet)>;
 
 			struct IncomingCommand
 			{
 				bool enabled = false;
-				UnserializeFunction unserialize;
+				DeserializeFunction deserialize;
 				const char* name;
 			};
 

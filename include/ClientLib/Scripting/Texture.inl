@@ -6,7 +6,7 @@
 
 namespace bw
 {
-	inline Texture::Texture(std::shared_ptr<Nz::Texture> texture) :
+	inline Texture::Texture(std::shared_ptr<Nz::TextureAsset> texture) :
 	m_texture(std::move(texture))
 	{
 	}

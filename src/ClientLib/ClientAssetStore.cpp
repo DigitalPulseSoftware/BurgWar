@@ -27,7 +27,7 @@ namespace bw
 		loaderParameters.mesh.center = true;
 		loaderParameters.mesh.storage = Nz::DataStorage_Hardware;
 
-		return GetResource(modelPath, m_models, loaderParameters);*/
+		return GetResource<false>(modelPath, m_models, loaderParameters);*/
 	}
 
 	const std::shared_ptr<Nz::SoundBuffer>& ClientAssetStore::GetSoundBuffer(const std::string& soundPath) const
@@ -35,14 +35,14 @@ namespace bw
 		Nz::SoundBufferParams loaderParameters;
 		loaderParameters.forceMono = true;
 
-		return GetResource(soundPath, m_soundBuffers, loaderParameters);
+		return GetResource<false>(soundPath, m_soundBuffers, loaderParameters);
 	}
 
-	const std::shared_ptr<Nz::Texture>& ClientAssetStore::GetTexture(const std::string& texturePath) const
+	const std::shared_ptr<Nz::TextureAsset>& ClientAssetStore::GetTexture(const std::string& texturePath) const
 	{
-		Nz::TextureParams loaderParameters;
-		loaderParameters.renderDevice = Nz::Graphics::Instance()->GetRenderDevice();
+		Nz::TextureAssetParams loaderParameters;
+		loaderParameters.sRGB = false;
 
-		return GetResource(texturePath, m_textures, loaderParameters);
+		return GetResource<true>(texturePath, m_textures, loaderParameters);
 	}
 }

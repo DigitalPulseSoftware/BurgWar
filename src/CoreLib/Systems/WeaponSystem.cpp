@@ -35,7 +35,7 @@ namespace bw
 					weaponNode.Scale({ -1.f, 1.f });
 
 				if (weaponNode.GetScale().x < 0.f)
-					angle += Nz::RadianAnglef(Nz::Pi<float>);
+					angle += Nz::RadianAnglef(Nz::Pi<float>());
 
 				weaponNode.SetRotation(angle);
 

@@ -335,7 +335,7 @@ namespace bw
 		return entityInfo;
 	}
 
-	Map Map::Unserialize(const nlohmann::json& mapJson)
+	Map Map::Deserialize(const nlohmann::json& mapJson)
 	{
 		Nz::UInt16 mapFileVersion = mapJson.value("fileVersion", Nz::UInt16(1));
 
@@ -364,7 +364,7 @@ namespace bw
 			layer.name = entry.value("name", "");
 
 			for (auto&& entityInfo : entry["entities"])
-				layer.entities.emplace_back(UnserializeEntity(entityInfo, mapFileVersion));
+				layer.entities.emplace_back(DeserializeEntity(entityInfo, mapFileVersion));
 		
 		}
 
@@ -376,7 +376,7 @@ namespace bw
 		return map;
 	}
 
-	auto Map::UnserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 /*fileVersion*/) -> Entity
+	auto Map::DeserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 /*fileVersion*/) -> Entity
 	{
 		Entity entity;
 		entity.entityType = entityInfo.at("entityType");
@@ -393,7 +393,7 @@ namespace bw
 			auto&& value = propertyData.at("value");
 
 			// Waiting for template lambda in C++20
-			auto Unserialize = [&, propertyName = propertyName](auto dummyType)
+			auto Deserialize = [&, propertyName = propertyName](auto dummyType)
 			{
 				using T = std::decay_t<decltype(dummyType)>;
 
@@ -425,7 +425,7 @@ namespace bw
 
 			switch (propertyType)
 			{
-#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Deserialize(PropertyTag<PropertyType:: T>{}); break;
 
 #include <CoreLib/PropertyTypeList.hpp>
 			}
@@ -534,7 +534,7 @@ namespace bw
 					stream >> isArray;
 
 					// Waiting for template lambda in C++20
-					auto Unserialize = [&](auto dummyType)
+					auto Deserialize = [&](auto dummyType)
 					{
 						using T = std::decay_t<decltype(dummyType)>;
 
@@ -562,7 +562,7 @@ namespace bw
 
 					switch (propertyType)
 					{
-#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+#define BURGWAR_PROPERTYTYPE(V, T, IT) case PropertyType:: T: Deserialize(PropertyTag<PropertyType:: T>{}); break;
 
 #include <CoreLib/PropertyTypeList.hpp>
 					}
@@ -624,7 +624,7 @@ namespace bw
 
 		nlohmann::json json = nlohmann::json::parse(content.begin(), content.end());
 
-		Map map = Unserialize(json);
+		Map map = Deserialize(json);
 
 		// Load map scripts
 		std::filesystem::path mapScriptDir = mapFolder / Nz::Utf8Path("scripts");

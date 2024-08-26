@@ -24,7 +24,7 @@ namespace bw
 		m_assetDirectory = std::move(assetDirectory);
 	}
 
-	template<typename ResourceType, typename ParameterType>
+	template<bool Streaming, typename ResourceType, typename ParameterType>
 	const std::shared_ptr<ResourceType>& AssetStore::GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, std::shared_ptr<ResourceType>>& cache, const ParameterType& params) const
 	{
 		static std::shared_ptr<ResourceType> InvalidResource;
@@ -42,14 +42,19 @@ namespace bw
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 				{
 					bwLog(m_logger, LogLevel::Info, "Loading asset from {}", arg.stream->GetPath());
-					return (resource = ResourceType::LoadFromStream(*arg.stream, params)) != nullptr;
+					if constexpr (Streaming)
+						resource = ResourceType::OpenFromStream(*arg.stream, params);
+					else
+						resource = ResourceType::LoadFromStream(*arg.stream, params);
+
+					return resource != nullptr;
 				}
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
 					return false;
 				}
 				else
-					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
+					static_assert(AlwaysFalse<T>(), "non-exhaustive visitor");
 			}, entry);
 		};
 

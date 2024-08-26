@@ -178,7 +178,7 @@ namespace bw
 		try
 		{
 			nlohmann::json prefabJson = nlohmann::json::parse(content.begin(), content.end());
-			prefab = Map::Unserialize(prefabJson);
+			prefab = Map::Deserialize(prefabJson);
 
 			if (prefab.GetLayerCount() != 1)
 				throw std::logic_error("one layer expected, " + std::to_string(prefab.GetLayerCount()) + " found");

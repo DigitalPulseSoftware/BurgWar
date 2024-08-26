@@ -43,7 +43,7 @@ namespace bw
 			void EditEntitiesPosition(const std::vector<EntityId>& entityIds);
 			void EnablePhysicsDebugDraw(bool enable);
 
-			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
+			void ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachEntity(F&& func);
 			template<typename F> void ForEachMapEntity(F&& func);
 

@@ -11,7 +11,7 @@
 #include <ClientLib/Export.hpp>
 #include <Nazara/Audio/SoundBuffer.hpp>
 #include <Nazara/Graphics/Model.hpp>
-#include <Nazara/Renderer/Texture.hpp>
+#include <Nazara/Graphics/TextureAsset.hpp>
 
 namespace bw
 {
@@ -25,12 +25,12 @@ namespace bw
 
 			const std::shared_ptr<Nz::Model>& GetModel(const std::string& modelPath) const;
 			const std::shared_ptr<Nz::SoundBuffer>& GetSoundBuffer(const std::string& soundPath) const;
-			const std::shared_ptr<Nz::Texture>& GetTexture(const std::string& texturePath) const;
+			const std::shared_ptr<Nz::TextureAsset>& GetTexture(const std::string& texturePath) const;
 
 		private:
 			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::Model>> m_models;
 			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::SoundBuffer>> m_soundBuffers;
-			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::Texture>> m_textures;
+			mutable tsl::hopscotch_map<std::string, std::shared_ptr<Nz::TextureAsset>> m_textures;
 	};
 }
 

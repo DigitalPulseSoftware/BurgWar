@@ -162,7 +162,7 @@ namespace bw
 
 	void SharedEntityLibrary::SetDirection(lua_State* L, entt::handle entity, const Nz::Vector2f& upVector)
 	{
-		Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + Nz::Pi<float> / 2.f);
+		Nz::RadianAnglef angle(std::atan2(upVector.y, upVector.x) + Nz::Pi<float>() / 2.f);
 
 		if (Nz::RigidBody2DComponent* rigidBody = entity.try_get<Nz::RigidBody2DComponent>())
 			rigidBody->SetRotation(angle);

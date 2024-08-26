@@ -170,7 +170,7 @@ namespace bw
 		m_isPhysicsDebugDrawEnabled = enable;
 	}
 
-	void MapCanvas::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
+	void MapCanvas::ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func)
 	{
 		for (auto&& [uniqueId, visualEntityHandle] : m_entitiesByUniqueId)
 		{

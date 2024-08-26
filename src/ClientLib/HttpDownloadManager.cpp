@@ -85,7 +85,7 @@ namespace bw
 				std::string downloadUrl = m_baseDownloadUrls[pendingDownload.downloadUrlIndex] + "/" + pendingDownload.downloadPath;
 
 				std::unique_ptr<Nz::WebRequest> webRequest = m_webService.AllocateRequest();
-				webRequest->SetupGet();
+				webRequest->SetMethod(Nz::WebRequestMethod::Get);
 				webRequest->SetURL(downloadUrl);
 				webRequest->SetMaximumFileSize(pendingDownload.expectedSize);
 

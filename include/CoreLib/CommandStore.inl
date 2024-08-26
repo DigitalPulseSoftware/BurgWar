@@ -52,7 +52,7 @@ namespace bw
 
 		IncomingCommand& newCommand = m_incomingCommands[packetId];
 		newCommand.enabled = true;
-		newCommand.unserialize = [this, cb = std::forward<CB>(callback)](PeerRef peer, Nz::ByteStream& packet)
+		newCommand.deserialize = [this, cb = std::forward<CB>(callback)](PeerRef peer, Nz::ByteStream& packet)
 		{
 			T data;
 			try
@@ -63,7 +63,7 @@ namespace bw
 			}
 			catch (const std::exception&)
 			{
-				bwLog(m_logger, LogLevel::Error, "Failed to unserialize packet");
+				bwLog(m_logger, LogLevel::Error, "Failed to deserialize packet");
 				return false;
 			}
 
@@ -106,7 +106,7 @@ namespace bw
 	}
 
 	template<typename Peer>
-	bool CommandStore<Peer>::UnserializePacket(PeerRef peer, Nz::ByteStream& packet) const
+	bool CommandStore<Peer>::DeserializePacket(PeerRef peer, Nz::ByteStream& packet) const
 	{
 		Nz::UInt8 opcode;
 		try
@@ -115,7 +115,7 @@ namespace bw
 		}
 		catch (const std::exception&)
 		{
-			bwLog(m_logger, LogLevel::Error, "Failed to unserialize opcode");
+			bwLog(m_logger, LogLevel::Error, "Failed to deserialize opcode");
 			return false;
 		}
 
@@ -125,7 +125,7 @@ namespace bw
 			return false;
 		}
 
-		m_incomingCommands[opcode].unserialize(peer, packet);
+		m_incomingCommands[opcode].deserialize(peer, packet);
 		return true;
 	}
 }

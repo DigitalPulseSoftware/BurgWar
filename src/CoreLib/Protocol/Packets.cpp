@@ -872,7 +872,7 @@ namespace bw
 				bool isArray = (isArrayInt != 0);
 
 				// Waiting for template lambda in C++20
-				auto Unserialize = [&](auto dummyType)
+				auto Deserialize = [&](auto dummyType)
 				{
 					using T = std::decay_t<decltype(dummyType)>;
 
@@ -896,7 +896,7 @@ namespace bw
 
 				switch (propertyType)
 				{
-#define BURGWAR_PROPERTYTYPE(V, T, UT) case PropertyType:: T: Unserialize(PropertyTag<PropertyType:: T>{}); break;
+#define BURGWAR_PROPERTYTYPE(V, T, UT) case PropertyType:: T: Deserialize(PropertyTag<PropertyType:: T>{}); break;
 
 #include <CoreLib/PropertyTypeList.hpp>
 				}

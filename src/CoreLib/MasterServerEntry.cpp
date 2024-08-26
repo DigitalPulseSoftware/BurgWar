@@ -102,7 +102,7 @@ namespace bw
 						std::string ipv4Url = ipv4UrlValue;
 						if (!ipv4Url.empty())
 						{
-							std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(ipv4Url, [&](Nz::WebRequestResult&& result)
+							std::unique_ptr<Nz::WebRequest> request = m_webService.CreateRequest(Nz::WebRequestMethod::Post, ipv4Url, [&](Nz::WebRequestResult&& result)
 							{
 								if (result.HasSucceeded())
 								{
@@ -159,7 +159,7 @@ namespace bw
 
 	void MasterServerEntry::Refresh()
 	{
-		std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService.CreateRequest(Nz::WebRequestMethod::Post, m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
 		{
 			HandleResponse(std::move(result), true);
 		});
@@ -177,7 +177,7 @@ namespace bw
 
 	void MasterServerEntry::Register()
 	{
-		std::unique_ptr<Nz::WebRequest> request = m_webService.CreatePostRequest(m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService.CreateRequest(Nz::WebRequestMethod::Post, m_masterServerURL + "/servers", [&](Nz::WebRequestResult&& result)
 		{
 			HandleResponse(std::move(result), false);
 		});

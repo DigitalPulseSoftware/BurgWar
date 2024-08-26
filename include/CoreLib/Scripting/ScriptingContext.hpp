@@ -10,8 +10,8 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/Scripting/AbstractScriptingLibrary.hpp>
 #include <Nazara/Core/VirtualDirectory.hpp>
+#include <NazaraUtils/Result.hpp>
 #include <sol/sol.hpp>
-#include <tl/expected.hpp>
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -40,7 +40,7 @@ namespace bw
 			inline const sol::state& GetLuaState() const;
 			inline const std::shared_ptr<Nz::VirtualDirectory>& GetScriptDirectory() const;
 
-			tl::expected<sol::object, std::string> Load(const std::filesystem::path& file, bool logError = true);
+			Nz::Result<sol::object, std::string> Load(const std::filesystem::path& file, bool logError = true);
 			std::optional<FileLoadCoroutine> Load(const std::filesystem::path& file, Async);
 			bool LoadDirectory(const std::filesystem::path& folder);
 			bool LoadDirectoryOpt(const std::filesystem::path& folder);
@@ -65,9 +65,9 @@ namespace bw
 		private:
 			sol::thread& CreateThread();
 
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry);
+			Nz::Result<sol::object, std::string> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry, Async);
-			tl::expected<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
+			Nz::Result<sol::object, std::string> LoadFile(std::filesystem::path path, const std::string_view& content);
 			std::optional<FileLoadCoroutine> LoadFile(std::filesystem::path path, const std::string_view& content, Async);
 			void LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::DirectoryEntry& folder);
 			std::string ReadFile(const std::filesystem::path& path, const Nz::VirtualDirectory::FileEntry& entry);

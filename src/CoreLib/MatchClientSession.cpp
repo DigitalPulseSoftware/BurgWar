@@ -56,7 +56,7 @@ namespace bw
 	void MatchClientSession::HandleIncomingPacket(Nz::ByteArray& packet)
 	{
 		Nz::ByteStream stream(&packet, Nz::OpenMode::Read);
-		m_commandStore.UnserializePacket(*this, stream);
+		m_commandStore.DeserializePacket(*this, stream);
 	}
 
 	void MatchClientSession::OnTick(Nz::Time /*elapsedTime*/)

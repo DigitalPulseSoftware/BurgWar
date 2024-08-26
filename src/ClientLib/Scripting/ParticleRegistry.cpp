@@ -333,7 +333,7 @@ namespace bw
 					auto velPtr = mapper.GetComponentPtr<Nz::Vector2f>(Nz::ParticleComponent_Velocity);
 
 					auto& gen = GetRandomGenerator();
-					std::uniform_real_distribution<float> disAngle(-Nz::Pi<float>, Nz::Pi<float>);
+					std::uniform_real_distribution<float> disAngle(-Nz::Pi<float>(), Nz::Pi<float>());
 					std::uniform_real_distribution<float> disLength(minSpeed, maxSpeed);
 
 					for (unsigned int i = startId; i <= endId; ++i)

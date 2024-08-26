@@ -12,7 +12,6 @@
 #include <NazaraUtils/Result.hpp>
 #include <NazaraUtils/Signal.hpp>
 #include <sol/forward.hpp>
-#include <tl/expected.hpp>
 #include <filesystem>
 #include <fstream>
 #include <optional>

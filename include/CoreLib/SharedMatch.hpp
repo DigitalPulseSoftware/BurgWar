@@ -13,8 +13,8 @@
 #include <CoreLib/LogSystem/MatchLogger.hpp>
 #include <CoreLib/Protocol/NetworkStringStore.hpp>
 #include <CoreLib/Scripting/ScriptHandlerRegistry.hpp>
+#include <NazaraUtils/FunctionRef.hpp>
 #include <entt/entt.hpp>
-#include <tl/function_ref.hpp>
 
 namespace bw
 {
@@ -33,7 +33,7 @@ namespace bw
 			SharedMatch(SharedMatch&&) = delete;
 			virtual ~SharedMatch();
 
-			virtual void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) = 0;
+			virtual void ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func) = 0;
 
 			inline Nz::UInt64 GetCurrentTick() const;
 			inline Nz::Time GetCurrentTime() const;

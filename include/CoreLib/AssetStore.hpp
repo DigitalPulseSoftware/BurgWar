@@ -31,7 +31,7 @@ namespace bw
 			inline void UpdateAssetDirectory(std::shared_ptr<Nz::VirtualDirectory> assetDirectory);
 
 		protected:
-			template<typename ResourceType, typename ParameterType> const std::shared_ptr<ResourceType>& GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, std::shared_ptr<ResourceType>>& cache, const ParameterType& params) const;
+			template<bool Streaming, typename ResourceType, typename ParameterType> const std::shared_ptr<ResourceType>& GetResource(const std::string& resourcePath, tsl::hopscotch_map<std::string, std::shared_ptr<ResourceType>>& cache, const ParameterType& params) const;
 
 			const Logger& m_logger;
 

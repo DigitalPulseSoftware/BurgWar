@@ -10,7 +10,7 @@ set_version("0.2.0")
 
 add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
 
-add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json", "tl_expected", "tl_function_ref")
+add_requires("cxxopts", "concurrentqueue", "hopscotch-map", "nlohmann_json")
 add_requires("fmt", { configs = { header_only = false, pic = true } })
 add_requires("libcurl", { optional = true })
 add_requires("nazaraengine", { configs = { debug = is_mode("debug", "asan"), shared = true, entt = true, with_symbols = is_mode("debug", "releasedbg") } })
@@ -36,6 +36,7 @@ add_includedirs("include", "src")
 
 add_rpathdirs("@executable_path")
 
+set_encodings("utf-8")
 set_exceptions("cxx")
 set_languages("c89", "cxx20")
 set_rundir("./bin/$(plat)_$(arch)_$(mode)")
@@ -106,7 +107,7 @@ target("CoreLib", function ()
 	add_headerfiles("include/(CoreLib/**.hpp)", "include/(CoreLib/**.inl)")
 	add_headerfiles("src/CoreLib/**.hpp", "src/CoreLib/**.inl")
 	add_files("src/CoreLib/**.cpp")
-	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", "tl_expected", "tl_function_ref", { public = true })
+	add_packages("concurrentqueue", "fmt", "hopscotch-map", "nlohmann_json", "sol2", { public = true })
 	add_packages("nazaraengine", { components = { "core", "network", "physics2d" }, public = true })
 	add_packages("libcurl", { public = true, links = {} })
 

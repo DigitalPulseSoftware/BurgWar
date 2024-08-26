@@ -34,20 +34,20 @@ namespace bw
 		m_runningThreads.clear();
 	}
 
-	tl::expected<sol::object, std::string> ScriptingContext::Load(const std::filesystem::path& file, bool logError)
+	Nz::Result<sol::object, std::string> ScriptingContext::Load(const std::filesystem::path& file, bool logError)
 	{
-		tl::expected<sol::object, std::string> result;
+		Nz::Result<sol::object, std::string> result(sol::object{});
 
 		auto Callback = [&](const Nz::VirtualDirectory::Entry& entry)
 		{
-			result = std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
+			result = std::visit([&](auto&& arg) -> Nz::Result<sol::object, std::string>
 			{
 				using T = std::decay_t<decltype(arg)>;
 
 				if constexpr (std::is_same_v<T, Nz::VirtualDirectory::FileEntry>)
 					return LoadFile(file, arg);
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
-					return tl::unexpected(Nz::PathToString(file) + " is a directory, expected a file");
+					return Nz::Err(Nz::PathToString(file) + " is a directory, expected a file");
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
 
@@ -56,15 +56,15 @@ namespace bw
 
 		if (!m_scriptDirectory->GetEntry(Nz::PathToString(file), Callback))
 		{
-			result = tl::unexpected("unknown path " + Nz::PathToString(file));
+			result = Nz::Err("unknown path " + Nz::PathToString(file));
 			if (logError && !result)
-				bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.error());
+				bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.GetError());
 
 			return result;
 		}
 		
 		if (logError && !result)
-			bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.error());
+			bwLog(m_logger, LogLevel::Error, "failed to load {}: {}", file, result.GetError());
 
 		return result;
 	}
@@ -219,11 +219,11 @@ namespace bw
 		return (!m_availableThreads.empty()) ? PopThread() : AllocateThread();
 	}
 
-	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry)
+	Nz::Result<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const Nz::VirtualDirectory::FileEntry& entry)
 	{
 		std::string fileContent = ReadFile(path, entry);
 		if (fileContent.empty())
-			return {};
+			return Nz::Ok(sol::object{});
 
 		return LoadFile(std::move(path), std::string_view(fileContent));
 	}
@@ -237,7 +237,7 @@ namespace bw
 		return LoadFile(std::move(path), std::string_view(fileContent), Async{});
 	}
 
-	tl::expected<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content)
+	Nz::Result<sol::object, std::string> ScriptingContext::LoadFile(std::filesystem::path path, const std::string_view& content)
 	{
 		Nz::CallOnExit resetOnExit([this, currentFile = std::move(m_currentFile), currentFolder = std::move(m_currentFolder)]() mutable
 		{
@@ -253,7 +253,7 @@ namespace bw
 		if (!result.valid())
 		{
 			sol::error err = result;
-			return tl::unexpected("failed to load " + Nz::PathToString(m_currentFile) + ": " + err.what());
+			return Nz::Err("failed to load " + Nz::PathToString(m_currentFile) + ": " + err.what());
 		}
 
 		return result;
@@ -282,10 +282,10 @@ namespace bw
 
 	void ScriptingContext::LoadDirectory(std::filesystem::path path, const Nz::VirtualDirectory::DirectoryEntry& folder)
 	{
-		folder.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
+		folder.directory->ForEach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
 		{
 			std::filesystem::path entryPath = path / entryName;
-			auto result = std::visit([&](auto&& arg) -> tl::expected<sol::object, std::string>
+			auto result = std::visit([&](auto&& arg) -> Nz::Result<sol::object, std::string>
 			{
 				using T = std::decay_t<decltype(arg)>;
 
@@ -294,7 +294,7 @@ namespace bw
 				else if constexpr (std::is_base_of_v<Nz::VirtualDirectory::DirectoryEntry, T>)
 				{
 					LoadDirectory(entryPath, arg);
-					return sol::nil;
+					return Nz::Ok(sol::nil);
 				}
 				else
 					static_assert(AlwaysFalse<T>::value, "non-exhaustive visitor");
@@ -302,7 +302,7 @@ namespace bw
 			}, entry);
 
 			if (!result)
-				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath, result.error());
+				bwLog(m_logger, LogLevel::Error, "failed to load {0}: {1}", entryPath, result.GetError());
 		});
 	}
 

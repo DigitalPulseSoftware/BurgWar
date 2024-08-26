@@ -189,7 +189,7 @@ namespace bw
 		m_gamemode.reset();
 	}
 
-	void ClientMatch::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
+	void ClientMatch::ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func)
 	{
 		for (auto& layer : m_layers)
 		{

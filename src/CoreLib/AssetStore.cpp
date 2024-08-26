@@ -17,6 +17,6 @@ namespace bw
 	{
 		Nz::ImageParams loaderParameters;
 
-		return GetResource(imagePath, m_images, loaderParameters);
+		return GetResource<false>(imagePath, m_images, loaderParameters);
 	}
 }

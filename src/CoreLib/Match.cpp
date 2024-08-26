@@ -180,7 +180,7 @@ namespace bw
 		return player;
 	}
 
-	void Match::ForEachEntity(tl::function_ref<void(entt::handle entity)> func)
+	void Match::ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func)
 	{
 		for (LayerIndex i = 0; i < m_terrain->GetLayerCount(); ++i)
 		{

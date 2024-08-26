@@ -66,7 +66,7 @@ namespace bw
 
 			Nz::UInt64 EstimateServerTick() const;
 
-			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
+			void ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func);
 
 			inline Nz::UInt16 GetActiveLayer();

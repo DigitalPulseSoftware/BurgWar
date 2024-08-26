@@ -10,11 +10,11 @@
 #include <CoreLib/Export.hpp>
 #include <CoreLib/EntityOwner.hpp>
 #include <CoreLib/Components/BaseComponent.hpp>
+#include <NazaraUtils/FunctionRef.hpp>
 #include <NazaraUtils/Signal.hpp>
 #include <Nazara/Math/Vector2.hpp>
 #include <entt/entt.hpp>
 #include <tsl/hopscotch_map.h>
-#include <tl/function_ref.hpp>
 #include <functional>
 #include <limits>
  
@@ -23,7 +23,7 @@ namespace bw
 	class BURGWAR_CORELIB_API WeaponWielderComponent : public BaseComponent
 	{
 		public:
-			using WeaponInitCallback = tl::function_ref<entt::handle (const std::string& /*weaponName*/)>;
+			using WeaponInitCallback = Nz::FunctionRef<entt::handle (const std::string& /*weaponName*/)>;
 
 			inline WeaponWielderComponent(entt::handle entity);
 			inline WeaponWielderComponent(const WeaponWielderComponent& weaponWielder);

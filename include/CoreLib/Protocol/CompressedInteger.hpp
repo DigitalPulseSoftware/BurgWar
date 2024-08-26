@@ -65,8 +65,8 @@ namespace Nz
 {
 	template<typename T> bool Serialize(SerializationContext& context, bw::CompressedSigned<T> value, TypeTag<bw::CompressedSigned<T>>);
 	template<typename T> bool Serialize(SerializationContext& context, bw::CompressedUnsigned<T> value, TypeTag<bw::CompressedUnsigned<T>>);
-	template<typename T> bool Unserialize(SerializationContext& context, bw::CompressedSigned<T>* value, TypeTag<bw::CompressedSigned<T>>);
-	template<typename T> bool Unserialize(SerializationContext& context, bw::CompressedUnsigned<T>* value, TypeTag<bw::CompressedUnsigned<T>>);
+	template<typename T> bool Deserialize(SerializationContext& context, bw::CompressedSigned<T>* value, TypeTag<bw::CompressedSigned<T>>);
+	template<typename T> bool Deserialize(SerializationContext& context, bw::CompressedUnsigned<T>* value, TypeTag<bw::CompressedUnsigned<T>>);
 }
 
 #include <CoreLib/Protocol/CompressedInteger.inl>

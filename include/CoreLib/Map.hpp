@@ -140,8 +140,8 @@ namespace bw
 
 			static nlohmann::json Serialize(const Map& map);
 			static nlohmann::json SerializeEntity(const Entity& entity);
-			static Map Unserialize(const nlohmann::json& mapInfo);
-			static Entity UnserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 fileVersion);
+			static Map Deserialize(const nlohmann::json& mapInfo);
+			static Entity DeserializeEntity(const nlohmann::json& entityInfo, Nz::UInt16 fileVersion);
 
 		private:
 			bool CheckEntityIndices() const;

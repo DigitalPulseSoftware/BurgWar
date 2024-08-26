@@ -8,14 +8,14 @@
 #define BURGWAR_CLIENTLIB_SCRIPTING_TEXTURE_HPP
 
 #include <ClientLib/Export.hpp>
-#include <Nazara/Renderer/Texture.hpp>
+#include <Nazara/Graphics/TextureAsset.hpp>
 
 namespace bw
 {
 	class BURGWAR_CLIENTLIB_API Texture
 	{
 		public:
-			inline Texture(std::shared_ptr<Nz::Texture> texture);
+			inline Texture(std::shared_ptr<Nz::TextureAsset> texture);
 			Texture(const Texture&) = default;
 			Texture(Texture&&) = default;
 			~Texture() = default;
@@ -26,7 +26,7 @@ namespace bw
 			Texture& operator=(Texture&&) = default;
 
 		private:
-			std::shared_ptr<Nz::Texture> m_texture;
+			std::shared_ptr<Nz::TextureAsset> m_texture;
 	};
 }
 

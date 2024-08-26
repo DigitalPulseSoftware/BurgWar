@@ -35,7 +35,7 @@ namespace bw
 		if (!resultOpt)
 			throw std::runtime_error("failed to load gamemode " + gamemodeName + " data");
 
-		sol::table gamemodeTable = resultOpt->as<sol::table>();
+		sol::table gamemodeTable = resultOpt.GetValue().as<sol::table>();
 		gamemodeTable["__index"] = gamemodeTable;
 
 		std::string baseGamemode = gamemodeTable.get_or("Base", std::string{});

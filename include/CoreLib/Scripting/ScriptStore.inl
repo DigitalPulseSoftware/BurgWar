@@ -75,7 +75,7 @@ namespace bw
 
 		auto callback = [&](const Nz::VirtualDirectory::DirectoryEntry& directoryEntry)
 		{
-			directoryEntry.directory->Foreach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
+			directoryEntry.directory->ForEach([&](std::string_view entryName, const Nz::VirtualDirectory::Entry& entry)
 			{
 				bool isDirectory = std::holds_alternative<Nz::VirtualDirectory::DirectoryEntry>(entry);
 				LoadElement(isDirectory, directoryPath / entryName);

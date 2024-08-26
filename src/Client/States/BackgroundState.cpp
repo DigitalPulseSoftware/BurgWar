@@ -5,6 +5,7 @@
 #include <Client/States/BackgroundState.hpp>
 #include <Nazara/Core/ApplicationBase.hpp>
 #include <Nazara/Core/FilesystemAppComponent.hpp>
+#include <Nazara/Graphics/TextureAsset.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Graphics/Systems/RenderSystem.hpp>
 #include <Nazara/Core/Components/NodeComponent.hpp>
@@ -20,7 +21,7 @@ namespace bw
 
 		auto& appfs = stateData.app->GetComponent<Nz::FilesystemAppComponent>();
 
-		if (std::shared_ptr<Nz::Texture> backgroundTexture = appfs.Load<Nz::Texture>("assets/background.png"))
+		if (std::shared_ptr<Nz::TextureAsset> backgroundTexture = appfs.Open<Nz::TextureAsset>("assets/background.png"))
 		{
 			std::shared_ptr<Nz::MaterialInstance> material = Nz::MaterialInstance::Instantiate(Nz::MaterialType::Basic, Nz::MaterialInstancePreset::NoDepth);
 			material->SetTextureProperty("BaseColorMap", std::move(backgroundTexture));

@@ -180,7 +180,7 @@ namespace bw
 
 	void ServerListState::OnServerConnectionPressed(const std::string& masterServer, const std::string& uuid)
 	{
-		std::unique_ptr<Nz::WebRequest> request = m_webService->CreateGetRequest(masterServer + "/server/" + uuid + "/connection_details", [this, stateData = GetStateDataPtr(), masterServer, uuid](Nz::WebRequestResult&& result)
+		std::unique_ptr<Nz::WebRequest> request = m_webService->CreateRequest(Nz::WebRequestMethod::Get, masterServer + "/server/" + uuid + "/connection_details", [this, stateData = GetStateDataPtr(), masterServer, uuid](Nz::WebRequestResult&& result)
 		{
 			if (!result)
 			{
@@ -259,7 +259,7 @@ namespace bw
 			{
 				masterServerData.timeBeforeRefresh = RefreshTime / Nz::Time::Seconds(2.f);
 
-				std::unique_ptr<Nz::WebRequest> request = m_webService->CreateGetRequest(masterServer + "/servers", [this, stateData = GetStateDataPtr(), url = masterServer](Nz::WebRequestResult&& result)
+				std::unique_ptr<Nz::WebRequest> request = m_webService->CreateRequest(Nz::WebRequestMethod::Get, masterServer + "/servers", [this, stateData = GetStateDataPtr(), url = masterServer](Nz::WebRequestResult&& result)
 				{
 					if (!result)
 					{

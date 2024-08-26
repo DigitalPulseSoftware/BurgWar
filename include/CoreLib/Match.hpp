@@ -74,7 +74,7 @@ namespace bw
 
 			Player* CreatePlayer(MatchClientSession& session, Nz::UInt8 localIndex, std::string name);
 
-			void ForEachEntity(tl::function_ref<void(entt::handle entity)> func) override;
+			void ForEachEntity(Nz::FunctionRef<void(entt::handle entity)> func) override;
 			template<typename F> void ForEachPlayer(F&& func, bool onlyReady = true);
 
 			inline BurgAppComponent& GetApp();
